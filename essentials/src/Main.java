@@ -1,4 +1,5 @@
 
+import io.agi.coordinator.CoordinatorServer;
 import io.agi.http.ClientServer;
 import io.agi.http.StaticServer;
 import java.util.ArrayList;
@@ -50,7 +51,9 @@ public class Main {
     
     public static void run( String mode, ArrayList< String > files ) {
         if( mode.equalsIgnoreCase( ARG_MODE_SERVER ) ) {
-            StaticServer.run( files );
+
+            CoordinatorServer.run( files );
+
         }
         else if( mode.equalsIgnoreCase( ARG_MODE_CLIENT ) ) {
             ClientServer.run( files );

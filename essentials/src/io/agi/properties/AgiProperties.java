@@ -12,7 +12,7 @@ import java.util.Properties;
  * 
  * @author dave
  */
-public class AgiProperties {
+public class AGIProperties {
 
     public static String get( String file, String key, String defaultValue ) {
         try {

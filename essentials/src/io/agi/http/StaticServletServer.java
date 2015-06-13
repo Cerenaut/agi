@@ -6,7 +6,9 @@
 
 package io.agi.http;
 
-import io.agi.properties.AgiProperties;
+import io.agi.coordinator.ServletContextHandlerControl;
+import io.agi.coordinator.ServletContextHandlerData;
+import io.agi.properties.AGIProperties;
 import java.util.ArrayList;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
@@ -27,7 +29,7 @@ public class StaticServletServer {
     
     public static final String PROPERTY_PORT = "port"; 
     public static final int DEFAULT_PORT = 80;
-    
+
     public static final String PROPERTY_SERVLET_CONTEXT = "servletContext";
     public static final String PROPERTY_STATIC_CONTEXT = "staticContext";
     public static final String PROPERTY_STATIC_DIRECTORY = "staticDirectory";
@@ -42,6 +44,8 @@ public class StaticServletServer {
     String _staticContext;
     String _staticDirectory;
 
+    private ContextHandlerCollection _contextHandlers = null;
+
     public void setProperties( ArrayList< String > propertiesFiles ) {
         _port = DEFAULT_PORT;
         _servletContext  = DEFAULT_SERVLET_CONTEXT;
@@ -49,10 +53,10 @@ public class StaticServletServer {
         _staticDirectory = DEFAULT_STATIC_DIRECTORY;
         
         for( String file : propertiesFiles ) {
-            _port = Integer.valueOf( AgiProperties.get( file, PROPERTY_PORT, String.valueOf( _port ) ) );
-            _servletContext  = AgiProperties.get( file, PROPERTY_SERVLET_CONTEXT, _servletContext );
-            _staticContext   = AgiProperties.get( file, PROPERTY_STATIC_CONTEXT, _staticContext );
-            _staticDirectory = AgiProperties.get( file, PROPERTY_STATIC_DIRECTORY, _staticDirectory );
+            _port = Integer.valueOf( AGIProperties.get( file, PROPERTY_PORT, String.valueOf( _port ) ) );
+            _servletContext  = AGIProperties.get( file, PROPERTY_SERVLET_CONTEXT, _servletContext );
+            _staticContext   = AGIProperties.get( file, PROPERTY_STATIC_CONTEXT, _staticContext );
+            _staticDirectory = AGIProperties.get( file, PROPERTY_STATIC_DIRECTORY, _staticDirectory );
         }
     }
         
@@ -78,8 +82,8 @@ public class StaticServletServer {
         
         try {
             _s = new org.eclipse.jetty.server.Server( _port );
-            ContextHandlerCollection contexts = new ContextHandlerCollection();
-            _s.setHandler( contexts );
+            _contextHandlers = new ContextHandlerCollection();
+            _s.setHandler( _contextHandlers );
 
             // add file handling context:
             ResourceHandler rh = new ResourceHandler();
@@ -91,10 +95,10 @@ public class StaticServletServer {
             ch.setContextPath( _staticContext );
             ch.setClassLoader( Thread.currentThread().getContextClassLoader() );
             ch.setHandler( rh );
-            contexts.addHandler( ch );
+            _contextHandlers.addHandler( ch );
 
             // add servlet contexts:
-            ServletContextHandler shc = new ServletContextHandler( contexts, _servletContext );
+            ServletContextHandler shc = new ServletContextHandler( _contextHandlers, _servletContext );
         }
         catch( Exception e ) {
             e.printStackTrace();
@@ -102,9 +106,12 @@ public class StaticServletServer {
         }
         
         addServlets();
+        addServletContextHandlers( _contextHandlers );
     }
 
     public void addServlets() {
     }
-    
+
+    public void addServletContextHandlers( ContextHandlerCollection chc ) {
+    }
 }
