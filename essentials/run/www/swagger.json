@@ -1,0 +1,154 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "AGI Experimental Framework",
+        "description": "An open universal framework for running AGI experiments.",
+        "version": "1.0.0"
+    },
+    "host": "agi.io",
+    "schemes": [
+        "http"
+    ],
+    "basePath": "/",
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/control/step": {
+            "get": {
+                "summary": "Step the Coordinator",
+                "description": "The Step endpoint steps the World and Agents.\n",
+                "tags": [
+                    "Control"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Timestamp",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Timestamp"
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/control/stop": {
+            "get": {
+                "summary": "Stop the Coordinator",
+                "description": "The Stop endpoint stops the World and Agents.\n",
+                "tags": [
+                    "Control"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Timestamp",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Timestamp"
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/control/run": {
+            "get": {
+                "summary": "Run the Coordinator",
+                "description": "The Run endpoint starts the World and Agents to run freely.\n",
+                "tags": [
+                    "Control"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Timestamp",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Timestamp"
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/state": {
+            "get": {
+                "summary": "Get the State of the system.",
+                "description": "The State endpoint returns a model that describes the current state.\n",
+                "tags": [
+                    "Data"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "State",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/State"
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Timestamp": {
+            "properties": {
+                "product_id": {
+                    "type": "number",
+                    "description": "Timestamp of the current step of the coordinator."
+                }
+            }
+        },
+        "State": {
+            "properties": {
+                "product_id": {
+                    "type": "number",
+                    "description": "The state."
+                }
+            }
+        },
+        "Error": {
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "fields": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
