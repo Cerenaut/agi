@@ -10,12 +10,10 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
-/essentials/build/
-/essentials/nbproject/private/
-/out/
+out/
 
 # intellij project files
-*/.idea/workspace.xml
+.idea/workspace.xml
 
 # maven output folder
-*/target/
+target/
