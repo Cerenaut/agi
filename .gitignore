@@ -13,3 +13,9 @@ hs_err_pid*
 /essentials/build/
 /essentials/nbproject/private/
 /out/
+
+# intellij project files
+.idea/workspace.xml
+
+# maven output folder
+/target
