@@ -1,0 +1,13 @@
+io/swagger/api/ControlApiService.class
+io/swagger/api/ControlApi.class
+io/swagger/api/factories/ControlApiServiceFactory.class
+io/swagger/model/State.class
+io/swagger/api/DataApiService.class
+io/swagger/api/ApiOriginFilter.class
+io/swagger/api/DataApi.class
+io/swagger/api/ApiResponseMessage.class
+io/swagger/model/TStamp.class
+io/swagger/api/NotFoundException.class
+io/swagger/model/Error.class
+io/swagger/api/factories/DataApiServiceFactory.class
+io/swagger/api/ApiException.class

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/essentials/essentials.iml" filepath="$PROJECT_DIR$/essentials/essentials.iml" />
+      <module fileurl="file://$PROJECT_DIR$/agi.iml" filepath="$PROJECT_DIR$/agi.iml" />
     </modules>
   </component>
 </project>
