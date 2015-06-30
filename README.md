@@ -1,4 +1,4 @@
-*note: the framework is currently in poc phase, not all modules described below are implemented. So far implemented are Agent, Coordinator and Documentation. These are operational as described, with one call working as an example.*
+*Note: The framework is currently in proof of concept phase. Not all the modules described below are implemented, which is indicated in the text. The functionality described is implemented.*
 
 # Artificial General Intelligence Experimental Framework
 
