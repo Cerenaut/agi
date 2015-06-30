@@ -28,7 +28,7 @@ This section explains how to install the system and get the modules talking to e
 	*	**Server**
 	* 	_cd lib/CoordinatorServerLib_
 	*	_mvn install_
-* Build the modules, listed below. They can all be built using the Maven command **mvn package*. Additionally, each is an IntelliJ project:
+* Build the modules, listed below. They can all be built using the Maven command **mvn package**. Additionally, each is an IntelliJ project:
 	*	Agent (located at **/Agent**)
 	*	World (located at not yet implemented) and
 	* 	Coordinator (located at **/Coordinator**)
