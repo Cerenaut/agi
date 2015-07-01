@@ -9,7 +9,7 @@
     <version>1.0.0</version>
 
     <dependencies>
-        <!--swagger generated server-->
+        <!--swagger generated client-->
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-java-client</artifactId>
