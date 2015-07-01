@@ -1,20 +1,13 @@
+package io.agi.agief;
 
-
-import javax.naming.ldap.Control;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-
-import io.swagger.api.ControlApi;
-import io.swagger.api.ControlApiService;
-import io.swagger.api.DataApiService;
+import io.agi.agief.services.ControlApiServiceImpl;
+import io.agi.agief.services.DataApiServiceImpl;
 import io.swagger.api.factories.ControlApiServiceFactory;
 import io.swagger.api.factories.DataApiServiceFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
 
 

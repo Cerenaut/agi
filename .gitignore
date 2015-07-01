@@ -12,8 +12,5 @@
 hs_err_pid*
 out/
 
-# intellij project files
-.idea/workspace.xml
-
 # maven output folder
 target/
