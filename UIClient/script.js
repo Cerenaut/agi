@@ -1,7 +1,7 @@
 var Demo = {
 
   onResponse : function( response ) {
-       var e = document.getElementById( "target" );
+       var e = document.getElementById( "stepTarget" );
        var o = JSON.parse( response ); // parse into object
        // pick out property of object
        var kind = o.kind;
