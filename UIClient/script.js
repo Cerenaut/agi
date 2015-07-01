@@ -18,7 +18,7 @@ var Demo = {
       }
     };
 
-    var url = "http://www.reddit.com/r/pics.json";
+    var url = "http://localhost:9999/control/step";
     xmlhttp.open( "GET", url, true );
     xmlhttp.send();
   }
