@@ -30,7 +30,7 @@ This section explains how to install the system and get the modules talking to e
 	*	_mvn install_
 * Build the modules, listed below. They can all be built using the Maven command **mvn package**. Additionally, each is an IntelliJ project:
 	*	Agent (located at **/Agent**)
-	*	World (located at not yet implemented) and
+	*	World (located at **/World**)
 	* 	Coordinator (located at **/Coordinator**)
 * Run the Coordinator. It is an embedded Jetty web server, so will launch a server that will be listening on a port (hard coded to 9999 now).
 	*	You can test it out by going to **http://localhost:9999** and trying any of the calls documented in the API Documentation, which can be viewed by opening **/APIDocumentation/index.html**.
