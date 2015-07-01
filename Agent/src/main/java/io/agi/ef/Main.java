@@ -1,4 +1,4 @@
-package io.agi.agief;
+package io.agi.ef;
 
 import io.swagger.client.ApiClient;
 import io.swagger.client.Configuration;

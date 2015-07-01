@@ -1,7 +1,7 @@
-package io.agi.agief;
+package io.agi.ef;
 
-import io.agi.agief.services.ControlApiServiceImpl;
-import io.agi.agief.services.DataApiServiceImpl;
+import io.agi.ef.services.ControlApiServiceImpl;
+import io.agi.ef.services.DataApiServiceImpl;
 import io.swagger.api.factories.ControlApiServiceFactory;
 import io.swagger.api.factories.DataApiServiceFactory;
 import org.eclipse.jetty.server.Server;
