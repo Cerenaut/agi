@@ -1,4 +1,4 @@
-package io.agi.ef.services;
+package io.agi.ef.coordinator.services;
 
 import io.swagger.api.*;
 

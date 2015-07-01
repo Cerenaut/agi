@@ -1,4 +1,4 @@
-package io.agi.ef;
+package io.agi.ef.world;
 
 import io.swagger.client.ApiClient;
 import io.swagger.client.Configuration;
@@ -16,7 +16,7 @@ public class Main {
 
         ApiClient apiClient = Configuration.getDefaultApiClient();
         apiClient.setBasePath( "http://localhost:9999" );
-        apiClient.setUserAgent( "Agent" );
+        apiClient.setUserAgent( "World" );
 
         // test a call
         ControlApi capi = new ControlApi(  );
