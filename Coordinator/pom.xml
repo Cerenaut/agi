@@ -8,6 +8,46 @@
     <artifactId>io-agi-agief-coordinator</artifactId>
     <version>1.0.0</version>
 
+
+    <build>
+
+        <plugins>
+
+            <!-- Set a compiler level -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>${jdk.version}</source>
+                    <target>${jdk.version}</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>io.agi.ef.coordinator.Main</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>io.swagger</groupId>
@@ -101,6 +141,7 @@
         </repository>
     </repositories>
     <properties>
+        <jdk.version>1.7</jdk.version>
         <swagger-core-version>1.5.0</swagger-core-version>
         <jersey-version>1.13</jersey-version>
         <slf4j-version>1.6.3</slf4j-version>

@@ -8,6 +8,18 @@
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
     <plugins>
+
+      <!-- Set a compiler level -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <source>${jdk.version}</source>
+          <target>${jdk.version}</target>
+        </configuration>
+      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
@@ -148,6 +160,7 @@
     </repository>
   </repositories>
   <properties>
+    <jdk.version>1.7</jdk.version>
     <swagger-core-version>1.5.0</swagger-core-version>
     <jetty-version>9.2.9.v20150224</jetty-version>
     <jersey-version>1.13</jersey-version>
