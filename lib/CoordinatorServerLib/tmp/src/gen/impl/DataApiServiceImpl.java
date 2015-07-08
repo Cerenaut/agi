@@ -1,15 +1,15 @@
-package io.swagger.api.impl;
+package io.agi.ef.serverapi.api.impl;
 
-import io.swagger.api.*;
-import io.swagger.model.*;
+import io.agi.ef.serverapi.api.*;
+import io.agi.ef.serverapi.model.*;
 
 import com.sun.jersey.multipart.FormDataParam;
 
-import io.swagger.model.State;
-import io.swagger.model.Error;
+import io.agi.ef.serverapi.model.State;
+import io.agi.ef.serverapi.model.Error;
 
 import java.util.List;
-import io.swagger.api.NotFoundException;
+import io.agi.ef.serverapi.api.NotFoundException;
 
 import java.io.InputStream;
 

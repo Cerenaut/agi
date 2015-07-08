@@ -1,15 +1,14 @@
 package io.agi.ef.coordinator;
 
+import com.sun.jersey.spi.container.servlet.ServletContainer;
+import io.agi.ef.clientapi.ApiClient;
 import io.agi.ef.coordinator.services.ControlApiServiceImpl;
 import io.agi.ef.coordinator.services.DataApiServiceImpl;
-import io.swagger.api.factories.ControlApiServiceFactory;
-import io.swagger.api.factories.DataApiServiceFactory;
-import io.swagger.client.ApiClient;
+import io.agi.ef.serverapi.api.factories.ControlApiServiceFactory;
+import io.agi.ef.serverapi.api.factories.DataApiServiceFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-
-import com.sun.jersey.spi.container.servlet.ServletContainer;
 
 
 public class Main {
@@ -36,7 +35,7 @@ public class Main {
         // setup server with jetty and jersey
         ServletHolder sh = new ServletHolder(ServletContainer.class);
         sh.setInitParameter("com.sun.jersey.config.property.resourceConfigClass", "com.sun.jersey.api.core.PackagesResourceConfig");
-        sh.setInitParameter( "com.sun.jersey.config.property.packages", "io.swagger" );//Set the package where the services reside
+        sh.setInitParameter( "com.sun.jersey.config.property.packages", "io.agi.ef.serverapi" );//Set the package where the services reside
         sh.setInitParameter( "com.sun.jersey.api.json.POJOMappingFeature", "true" );
 
         Server server = new Server( port );

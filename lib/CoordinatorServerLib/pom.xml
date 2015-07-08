@@ -1,25 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>io.swagger</groupId>
-  <artifactId>swagger-jaxrs-server</artifactId>
+  <groupId>io.agi.ef</groupId>
+  <artifactId>api-server</artifactId>
   <packaging>jar</packaging>
-  <name>swagger-jaxrs-server</name>
-  <version>1.0.0</version>
+  <name>api-server</name>
+  <version>1.0.1</version>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
     <plugins>
-
-      <!-- Set a compiler level -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
-        <configuration>
-          <source>${jdk.version}</source>
-          <target>${jdk.version}</target>
-        </configuration>
-      </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
@@ -160,7 +148,6 @@
     </repository>
   </repositories>
   <properties>
-    <jdk.version>1.7</jdk.version>
     <swagger-core-version>1.5.0</swagger-core-version>
     <jetty-version>9.2.9.v20150224</jetty-version>
     <jersey-version>1.13</jersey-version>

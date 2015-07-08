@@ -1,0 +1,9 @@
+{
+    "modelPackage": "io.agi.ef.clientapi.model",
+    "apiPackage": "io.agi.ef.clientapi.api",
+    "invokerPackage": "io.agi.ef.clientapi",
+    "groupId": "io.agi.ef",
+    "artifactId": "api-client",
+    "artifactVersion": "1.0.1",
+    "sourceFolder": "src/main/java"
+}
