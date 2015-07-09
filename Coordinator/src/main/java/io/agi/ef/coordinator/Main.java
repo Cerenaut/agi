@@ -17,9 +17,6 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        // create coordinator singleton
-        Coord coord = Coord.getInstance();
-
         setupClients();
 
         Server server = setupServer( PORT );
@@ -39,6 +36,9 @@ public class Main {
         sh.setInitParameter( "com.sun.jersey.api.json.POJOMappingFeature", "true" );
 
         Server server = new Server( port );
+
+
+
         ServletContextHandler context = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
         context.addServlet( sh, "/*" );
 
