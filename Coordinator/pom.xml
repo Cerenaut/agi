@@ -114,6 +114,11 @@
             <artifactId>jetty-servlet</artifactId>
             <version>${jettyVersion}</version>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlets</artifactId>
+            <version>${jettyVersion}</version>
+        </dependency>
 
         <!--swagger generated server-->
         <dependency>

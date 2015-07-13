@@ -7,8 +7,14 @@ import io.agi.ef.coordinator.services.DataApiServiceImpl;
 import io.agi.ef.serverapi.api.factories.ControlApiServiceFactory;
 import io.agi.ef.serverapi.api.factories.DataApiServiceFactory;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.servlets.CrossOriginFilter;
+
+import javax.servlet.DispatcherType;
+import java.util.EnumSet;
 
 
 public class Main {
@@ -37,10 +43,23 @@ public class Main {
 
         Server server = new Server( port );
 
-
-
-        ServletContextHandler context = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
+        ServletContextHandler context = new ServletContextHandler( server, "/", ServletContextHandler.SESSIONS );
         context.addServlet( sh, "/*" );
+
+        // Add the filter, and then use the provided FilterHolder to configure it
+        FilterHolder cors = context.addFilter( CrossOriginFilter.class,"/*", EnumSet.of( DispatcherType.REQUEST ) );
+        cors.setInitParameter( CrossOriginFilter.ALLOWED_ORIGINS_PARAM, "*" );
+        cors.setInitParameter( CrossOriginFilter.ACCESS_CONTROL_ALLOW_ORIGIN_HEADER, "*" );
+        cors.setInitParameter( CrossOriginFilter.ALLOWED_METHODS_PARAM, "GET,POST,HEAD" );
+        cors.setInitParameter( CrossOriginFilter.ALLOWED_HEADERS_PARAM, "X-Requested-With,Content-Type,Accept,Origin" );
+
+//        sh.getServletHandler().addFilter( cors );
+//
+//        // Use a DefaultServlet to serve static files. Alternate Holder technique, prepare then add.
+//        ServletHolder def = new ServletHolder( "default", DefaultServlet.class );     // DefaultServlet should be named 'default'
+//        def.setInitParameter( "resourceBase","./http/" );
+//        def.setInitParameter( "dirAllowed", "false" );
+//        context.addServlet( def, "/" );
 
         return server;
     }

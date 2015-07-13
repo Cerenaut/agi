@@ -1,20 +1,23 @@
 package io.agi.ef.agent;
 
+import com.sun.jersey.spi.container.servlet.ServletContainer;
 import io.agi.ef.agent.services.ControlApiServiceImpl;
 import io.agi.ef.agent.services.DataApiServiceImpl;
-import io.agi.ef.clientapi.*;
-
-import java.util.List;
-
+import io.agi.ef.clientapi.ApiClient;
+import io.agi.ef.clientapi.Configuration;
 import io.agi.ef.clientapi.api.ControlApi;
 import io.agi.ef.clientapi.model.TStamp;
 import io.agi.ef.serverapi.api.factories.ControlApiServiceFactory;
 import io.agi.ef.serverapi.api.factories.DataApiServiceFactory;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
-import com.sun.jersey.spi.container.servlet.ServletContainer;
+import javax.servlet.DispatcherType;
+import java.util.EnumSet;
+import java.util.List;
 
 /**
  * Created by gideon on 25/06/15.
@@ -59,7 +62,7 @@ public class Main {
         Server server = new Server( port );
         ServletContextHandler context = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
         context.addServlet( sh, "/*" );
-
+        
         return server;
     }
 

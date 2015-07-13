@@ -5,8 +5,8 @@ var Demo = {
        var o = JSON.parse( response ); // parse into object
        // pick out property of object
        var kind = o.kind;
-       var s = JSON.stringify( kind );// back to string
-       e.innerHTML = "Kind: " + s;
+       var s = JSON.stringify( o );// back to string
+       e.innerHTML = "Object: " + s;
   },
 
   onClick : function() {
@@ -17,6 +17,9 @@ var Demo = {
          Demo.onResponse( xmlhttp.responseText );
       }
     };
+
+    var e = document.getElementById( "stepTarget" );
+    e.innerHTML = "... sent request"
 
     var url = "http://localhost:9999/control/step";
     xmlhttp.open( "GET", url, true );
