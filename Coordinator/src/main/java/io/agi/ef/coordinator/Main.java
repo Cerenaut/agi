@@ -53,13 +53,13 @@ public class Main {
         cors.setInitParameter( CrossOriginFilter.ALLOWED_METHODS_PARAM, "GET,POST,HEAD" );
         cors.setInitParameter( CrossOriginFilter.ALLOWED_HEADERS_PARAM, "X-Requested-With,Content-Type,Accept,Origin" );
 
-//        sh.getServletHandler().addFilter( cors );
-//
-//        // Use a DefaultServlet to serve static files. Alternate Holder technique, prepare then add.
-//        ServletHolder def = new ServletHolder( "default", DefaultServlet.class );     // DefaultServlet should be named 'default'
-//        def.setInitParameter( "resourceBase","./http/" );
-//        def.setInitParameter( "dirAllowed", "false" );
-//        context.addServlet( def, "/" );
+        sh.getServletHandler().addFilter( cors );
+
+        // Use a DefaultServlet to serve static files. Alternate Holder technique, prepare then add.
+        ServletHolder def = new ServletHolder( "default", DefaultServlet.class );     // DefaultServlet should be named 'default'
+        def.setInitParameter( "resourceBase","./http/" );
+        def.setInitParameter( "dirAllowed", "false" );
+        context.addServlet( def, "/" );
 
         return server;
     }

@@ -2,13 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="97da7b49-8e0a-4853-8cc6-3e19d8c683d4" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../Coordinator/.idea/libraries/Maven__org_eclipse_jetty_jetty_continuation_9_2_11_v20150529.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../Coordinator/.idea/libraries/Maven__org_eclipse_jetty_jetty_servlets_9_2_11_v20150529.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../Coordinator/Coordinator.iml" afterPath="$PROJECT_DIR$/../Coordinator/Coordinator.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/io/agi/ef/agent/Main.java" afterPath="$PROJECT_DIR$/src/main/java/io/agi/ef/agent/Main.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../Coordinator/src/main/java/io/agi/ef/coordinator/Main.java" afterPath="$PROJECT_DIR$/../Coordinator/src/main/java/io/agi/ef/coordinator/Main.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../Coordinator/pom.xml" afterPath="$PROJECT_DIR$/../Coordinator/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../Coordinator/.idea/workspace.xml" afterPath="$PROJECT_DIR$/../Coordinator/.idea/workspace.xml" />
     </list>
     <ignored path="Agent.iws" />
