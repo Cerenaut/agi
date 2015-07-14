@@ -6,7 +6,7 @@ CONFIG_FILE="$AGI_PROJECT_DIR/ApiSpec/clientConfig.json"
 
 mkdir -p $AGI_PROJECT_DIR/lib
 
-cmd="java -jar $SWAGGER_CODEGEN/modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate \
+cmd="java -jar $SWAGGER_CODEGEN_DIR/modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate \
   -i $SPEC_FILE \
   -c $CONFIG_FILE \
   -l java \

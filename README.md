@@ -67,6 +67,7 @@ If you want to get further into the implementation details, knowledge of the fol
 * These scripts will generate code, adjust folder structure where necessary, build the libs and install to local Maven repository.
 * Then modify the server and client projects accordingly (see below).
 
+GOTCHA: You must copy the modified mustache files as described above, BEFORE you build the swagger-codgen project. If you make any further changes to any mustache files, you must re-compile the project before the changes take effect.
 
 Modify Coordinator Server:
 
