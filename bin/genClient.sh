@@ -15,7 +15,7 @@ cmd="java -jar $SWAGGER_CODEGEN_DIR/modules/swagger-codegen-cli/target/swagger-c
 echo $cmd;
 eval $cmd;
 
-bBuild=true
+bBuild=true;
 if [ "$bBuild" = true ] ; then
     echo 'Build and install lib'
 
