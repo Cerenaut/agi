@@ -114,19 +114,24 @@
             <artifactId>jetty-servlet</artifactId>
             <version>${jettyVersion}</version>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlets</artifactId>
+            <version>${jettyVersion}</version>
+        </dependency>
 
         <!--swagger generated server-->
         <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-jaxrs-server</artifactId>
-            <version>1.0.0</version>
+            <groupId>io.agi.ef</groupId>
+            <artifactId>api-server</artifactId>
+            <version>1.0.1</version>
         </dependency>
 
         <!--swagger generated client-->
         <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-java-client</artifactId>
-            <version>1.0.0</version>
+            <groupId>io.agi.ef</groupId>
+            <artifactId>api-client</artifactId>
+            <version>1.0.1</version>
         </dependency>
 
     </dependencies>

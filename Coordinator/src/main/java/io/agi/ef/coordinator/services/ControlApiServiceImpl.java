@@ -1,21 +1,30 @@
 package io.agi.ef.coordinator.services;
 
-import io.agi.ef.coordinator.Coord;
-import io.swagger.api.*;
+import io.agi.ef.clientapi.*;
 
-import io.swagger.api.ControlApi;
-import io.swagger.client.*;
-import io.swagger.client.ApiException;
-import io.swagger.client.api.*;
-import io.swagger.model.TStamp;
+import io.agi.ef.coordinator.Coord;
+import io.agi.ef.serverapi.api.*;
+import io.agi.ef.serverapi.api.ApiException;
+import io.agi.ef.serverapi.model.*;
+
+import com.sun.jersey.multipart.FormDataParam;
+
+import io.agi.ef.serverapi.model.TStamp;
+import io.agi.ef.serverapi.model.Error;
 
 import java.math.BigDecimal;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
+import io.agi.ef.serverapi.api.NotFoundException;
 
-import io.swagger.api.NotFoundException;
+import java.io.InputStream;
+
+import com.sun.jersey.core.header.FormDataContentDisposition;
+import com.sun.jersey.multipart.FormDataParam;
 
 import javax.ws.rs.core.Response;
+
 
 public class ControlApiServiceImpl extends ControlApiService {
 
@@ -42,23 +51,33 @@ public class ControlApiServiceImpl extends ControlApiService {
 
         // step the world
         ApiClient agent = coord.getWorld();
-        io.swagger.client.api.ControlApi capi = new io.swagger.client.api.ControlApi( agent );
+        io.agi.ef.clientapi.api.ControlApi capi = new io.agi.ef.clientapi.api.ControlApi( agent );
         try {
             capi.controlStepGet();
         }
-        catch ( ApiException e ) {
+        catch ( io.agi.ef.clientapi.ApiException e ) {
+            e.printStackTrace();
+        }
+        // todo: this catches a connection refused exception, but should be tidied up
+        catch ( Exception e ) {
             e.printStackTrace();
         }
 
+
         // step the agents
         for ( ApiClient client : coord.getAgents() ) {
-            capi = new io.swagger.client.api.ControlApi( client );
+            capi = new io.agi.ef.clientapi.api.ControlApi( client );
             try {
                 capi.controlStepGet();
             }
-            catch ( io.swagger.client.ApiException e ) {
+            catch ( io.agi.ef.clientapi.ApiException e ) {
                 e.printStackTrace();
             }
+            // todo: this catches a connection refused exception, but should be tidied up
+            catch ( Exception e ) {
+                e.printStackTrace();
+            }
+
         }
 
         return Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "sent request to step the world and agents!" ) ).build();

@@ -12,9 +12,15 @@ If you'd like to modify or add to the functionality of the framework, this is al
 
 
 Each scenario is elaborated below.
+
+## Prerequisites
+You must set an environment variable for the AGI project dir. In bash:
+````
+export $AGI_PROJECT_DIR=path/to/folder
+````
+
 Installation of the following popular tools is required and some background knowledge recommended:
 - [Maven](https://maven.apache.org/) 
-
 
 
 ## Getting Started

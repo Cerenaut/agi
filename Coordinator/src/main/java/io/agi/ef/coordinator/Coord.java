@@ -1,6 +1,6 @@
 package io.agi.ef.coordinator;
 
-import io.swagger.client.ApiClient;
+import io.agi.ef.clientapi.*;
 
 import java.util.ArrayList;
 

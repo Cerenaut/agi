@@ -1,13 +1,14 @@
 #!/bin/sh
 
-PROJECT_DIR="$HOME/Development/AI/ProAGI/agi"
-TGT_DIR="$PROJECT_DIR/lib/CoordinatorClientLib"
-SPEC_FILE="$PROJECT_DIR/ApiSpec/coordinator.yaml"
+TGT_DIR="$AGI_PROJECT_DIR/lib/CoordinatorClientLib"
+SPEC_FILE="$AGI_PROJECT_DIR/ApiSpec/coordinator.yaml"
+CONFIG_FILE="$AGI_PROJECT_DIR/ApiSpec/clientConfig.json"
 
-mkdir -p $PROJECT_DIR/lib
+mkdir -p $AGI_PROJECT_DIR/lib
 
 cmd="java -jar $SWAGGER_CODEGEN/modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate \
   -i $SPEC_FILE \
+  -c $CONFIG_FILE \
   -l java \
   -o $TGT_DIR"
 
