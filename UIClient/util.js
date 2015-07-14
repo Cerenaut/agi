@@ -1,7 +1,7 @@
 var Http = {
 
   postJson : function( url, onSuccess, onFailure ) {
-    Http.request( "POST", url, onSuccess, onFailure );
+    Http.requestJson( "POST", url, onSuccess, onFailure );
   },
 
   post : function( url, onSuccess, onFailure ) {
@@ -9,7 +9,7 @@ var Http = {
   },
 
   getJson : function( url, onSuccess, onFailure ) {
-    Http.request( "GET", url, onSuccess, onFailure );
+    Http.requestJson( "GET", url, onSuccess, onFailure );
   },
 
   get : function( url, onSuccess, onFailure ) {

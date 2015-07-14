@@ -3,9 +3,9 @@ var Demo = {
   onStep : function( json ) {
        var e = document.getElementById( "stepTarget" );
        // pick out property of object
-       var kind = json.kind;
+       var kind = json.message;
        var s = JSON.stringify( kind );// back to string
-       e.innerHTML = "Kind: " + s;
+       e.innerHTML = "Message: " + s;
   },
 
   onClick : function() {
