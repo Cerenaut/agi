@@ -124,14 +124,14 @@
         <dependency>
             <groupId>io.agi.ef</groupId>
             <artifactId>api-server</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
 
         <!--swagger generated client-->
         <dependency>
             <groupId>io.agi.ef</groupId>
             <artifactId>api-client</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
 
     </dependencies>

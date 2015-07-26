@@ -1,30 +1,16 @@
 package io.agi.ef.coordinator.services;
 
-import io.agi.ef.clientapi.*;
-
-import io.agi.ef.coordinator.Coord;
+import io.agi.ef.ConnectionManager;
 import io.agi.ef.serverapi.api.*;
-import io.agi.ef.serverapi.api.ApiException;
-import io.agi.ef.serverapi.model.*;
-
-import com.sun.jersey.multipart.FormDataParam;
 
 import io.agi.ef.serverapi.model.TStamp;
-import io.agi.ef.serverapi.model.Error;
 
 import java.math.BigDecimal;
-import java.net.ConnectException;
 import java.util.ArrayList;
-import java.util.List;
+
 import io.agi.ef.serverapi.api.NotFoundException;
 
-import java.io.InputStream;
-
-import com.sun.jersey.core.header.FormDataContentDisposition;
-import com.sun.jersey.multipart.FormDataParam;
-
 import javax.ws.rs.core.Response;
-
 
 public class ControlApiServiceImpl extends ControlApiService {
 
@@ -47,26 +33,17 @@ public class ControlApiServiceImpl extends ControlApiService {
     public Response controlStepGet()
             throws NotFoundException {
 
-        Coord coord = Coord.getInstance();
-
-        // step the world
-        ApiClient agent = coord.getWorld();
-        io.agi.ef.clientapi.api.ControlApi capi = new io.agi.ef.clientapi.api.ControlApi( agent );
-        try {
-            capi.controlStepGet();
-        }
-        catch ( io.agi.ef.clientapi.ApiException e ) {
-            e.printStackTrace();
-        }
-        // todo: this catches a connection refused exception, but should be tidied up
-        catch ( Exception e ) {
-            e.printStackTrace();
-        }
+        ConnectionManager cm = ConnectionManager.getInstance();
 
 
-        // step the agents
-        for ( ApiClient client : coord.getAgents() ) {
-            capi = new io.agi.ef.clientapi.api.ControlApi( client );
+        // step the clients
+        for ( ConnectionManager.ServerConnection sc : cm.getServers() ) {
+
+            if ( sc.getClientApi() == null ) {
+                continue;
+            }
+
+            io.agi.ef.clientapi.api.ControlApi capi = new io.agi.ef.clientapi.api.ControlApi( sc.getClientApi() );
             try {
                 capi.controlStepGet();
             }
@@ -80,7 +57,14 @@ public class ControlApiServiceImpl extends ControlApiService {
 
         }
 
-        return Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "sent request to step the world and agents!" ) ).build();
+        TStamp tstamp = new TStamp();
+        tstamp.setTimeId( new BigDecimal( "2" ) );      // todo: temporarily hard coded time step
+
+        ArrayList<TStamp> tsl = new ArrayList<TStamp>();
+        tsl.add(tstamp);
+
+        return Response.ok().entity( tsl ).build();
+
     }
 
     @Override

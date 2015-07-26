@@ -10,10 +10,26 @@ host: agi.io
 schemes:
   - https
 # will be prefixed to all paths
-basePath: /v1
+basePath: /
 produces:
   - application/json
 paths:
+  /connect/agent/{baseurl}:
+    get:
+      summary: Connect to Agent
+      description: |
+        Send request to connect this Agent server as specified url base path.
+      tags:
+        - Connect
+      parameters:
+        - name: baseurl
+          in: path
+          description: "ID of agent to connect to"
+          required: true
+          type: string
+      responses:
+        200:
+          description: OK
   /control/step:
     get:
       summary: Step the Coordinator

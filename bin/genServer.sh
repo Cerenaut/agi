@@ -4,7 +4,7 @@ TGT_DIR="$AGI_PROJECT_DIR/lib/CoordinatorServerLib"
 SPEC_FILE="$AGI_PROJECT_DIR/ApiSpec/coordinator.yaml"
 CONFIG_FILE="$AGI_PROJECT_DIR/ApiSpec/serverConfig.json"
 
-mkdir -p $PROJECT_DIR/lib
+mkdir -p $AGI_PROJECT_DIR/lib
 
 cmd="java -jar $SWAGGER_CODEGEN_DIR/modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate \
   -i $SPEC_FILE \
@@ -13,6 +13,10 @@ cmd="java -jar $SWAGGER_CODEGEN_DIR/modules/swagger-codegen-cli/target/swagger-c
   -o $TGT_DIR"
 
 echo $cmd;
+
+bRun=true;
+if [ "$bRun" = true ] ; then
+
 eval $cmd;
 
 bBuild=true;
@@ -27,4 +31,6 @@ if [ "$bBuild" = true ] ; then
     cd $TGT_DIR
     mvn package -q	# build quietly
     mvn install
+fi
+
 fi
