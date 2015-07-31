@@ -2,16 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="bd896a3c-a6e7-4729-a334-313e0addb8fa" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/io/agi/ef/core/ApiInterfaces/ConnectInterface.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/main/java/io/agi/ef/core/ControlInterface.java" afterPath="$PROJECT_DIR$/src/main/java/io/agi/ef/core/ApiInterfaces/ControlInterface.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/main/java/io/agi/ef/core/DataInterface.java" afterPath="$PROJECT_DIR$/src/main/java/io/agi/ef/core/ApiInterfaces/DataInterface.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/io/agi/ef/agent/Agent.java" afterPath="$PROJECT_DIR$/src/main/java/io/agi/ef/agent/Agent.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/io/agi/ef/helloworld/AgentHello.java" afterPath="$PROJECT_DIR$/src/main/java/io/agi/ef/helloworld/AgentHello.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/io/agi/ef/coordinator/services/ConnectApiServiceImpl.java" afterPath="$PROJECT_DIR$/src/main/java/io/agi/ef/coordinator/services/ConnectApiServiceImpl.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/io/agi/ef/core/ConnectionManager.java" afterPath="$PROJECT_DIR$/src/main/java/io/agi/ef/core/ConnectionManager.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/io/agi/ef/coordinator/services/ControlApiServiceImpl.java" afterPath="$PROJECT_DIR$/src/main/java/io/agi/ef/coordinator/services/ControlApiServiceImpl.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/io/agi/ef/coordinator/Coordinator.java" afterPath="$PROJECT_DIR$/src/main/java/io/agi/ef/coordinator/Coordinator.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="io-agi-agief-coordinator.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -73,23 +64,23 @@
       <file leaf-file-name="ConnectionManager.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/io/agi/ef/core/ConnectionManager.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-2.0781012">
-              <caret line="48" column="0" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.36567163">
+              <caret line="212" column="16" selection-start-line="212" selection-start-column="16" selection-end-line="212" selection-end-column="16" />
               <folding>
                 <element signature="imports" expanded="true" />
+                <element signature="e#5906#5907#0" expanded="true" />
+                <element signature="e#5937#5938#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AgentHello.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/io/agi/ef/helloworld/AgentHello.java">
+      <file leaf-file-name="Level.java" pinned="false" current-in-tab="false">
+        <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.7.0_45.jdk/Contents/Home/src.zip!/java/util/logging/Level.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="19" column="4" selection-start-line="19" selection-start-column="4" selection-end-line="19" selection-end-column="4" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
+              <caret line="121" column="30" selection-start-line="121" selection-start-column="30" selection-end-line="121" selection-end-column="30" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -469,7 +460,7 @@
       <recent name="io.agi.ef.coordinator" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.Agent">
+  <component name="RunManager" selected="Application.HelloWorld">
     <configuration default="true" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" factoryName="Plugin">
       <module name="" />
       <option name="VM_PARAMETERS" value="-Xmx512m -Xms256m -XX:MaxPermSize=250m -ea" />
@@ -728,7 +719,7 @@
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24959612" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32892805" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32892805" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -1039,12 +1030,22 @@
         </state>
       </provider>
     </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.7.0_45.jdk/Contents/Home/src.zip!/java/util/logging/Level.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="121" column="30" selection-start-line="121" selection-start-column="30" selection-end-line="121" selection-end-column="30" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/io/agi/ef/core/ConnectionManager.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-2.0781012">
-          <caret line="48" column="0" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.36567163">
+          <caret line="212" column="16" selection-start-line="212" selection-start-column="16" selection-end-line="212" selection-end-column="16" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#5906#5907#0" expanded="true" />
+            <element signature="e#5937#5938#0" expanded="true" />
           </folding>
         </state>
       </provider>

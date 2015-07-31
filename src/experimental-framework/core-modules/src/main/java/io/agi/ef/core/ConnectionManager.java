@@ -13,6 +13,10 @@ import javax.servlet.DispatcherType;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.*;
 
 /**
  *
@@ -28,6 +32,7 @@ public class ConnectionManager {
         void connectionAccepted( ServerConnection sc ) throws ApiException;
     }
 
+    private static final Logger _logger = Logger.getLogger( ConnectionManager.class.getName() );
     private static ConnectToServers _connectToServers = null;
     private HashSet< ServerConnection > _servers = new HashSet<>(  );
 
@@ -40,6 +45,7 @@ public class ConnectionManager {
     public void removeListener( ConnectionManagerListener cm ) {
         _listeners.remove( cm );
     }
+
 
     /**
      * Data structure to encapsulate information about a connection, as a client, to an AGIEF core server.
@@ -117,7 +123,7 @@ public class ConnectionManager {
 
                     if ( sc.getClientApi() == null ) {
 
-                        System.out.println( "Try to connect to server sc: " + sc );
+                        _logger.log( FINE, "Try to connect to server sc: {0}", sc );
 
                         try {
                             connectToServer( sc );
@@ -141,7 +147,7 @@ public class ConnectionManager {
         private void connectToServer( ServerConnection sc ) throws ApiException {
 
             String basePath = sc.basePath();
-            System.out.println( "ConnectToServer: ApiClient basepath = " + basePath );
+            _logger.log( FINE, "ConnectToServer: ApiClient basepath = {0}", basePath );
 
             ApiClient apiClient = new ApiClient();
             apiClient.setBasePath( basePath );
@@ -172,7 +178,7 @@ public class ConnectionManager {
      */
     public ServerConnection registerServer( ServerConnection.ServerType type, int port, String contextPath ) {
 
-        System.out.println( "Register server type: " + type + ", at contextPath = " + contextPath );
+        _logger.log( FINE, "Register server type: {0}, at contextPath: {1}", new Object[]{ type , contextPath } );
 
         ServerConnection sc = new ServerConnection( type, port, contextPath );
         _servers.add( sc ) ;
@@ -196,8 +202,10 @@ public class ConnectionManager {
      */
     public Server setupServer( int port, String contextPath ) {
 
-        System.out.println( "Setup server on port: " + port + ", at contextpath: " + contextPath + ". Basepath: " +
-            EndpointUtils.basePath( port, contextPath ) );
+        _logger.log( Level.FINE, "Setup server on port: {0}, at contextpath: {1}. Basepath = {2}",
+                new Object[]{   port,
+                                contextPath,
+                                EndpointUtils.basePath( port, contextPath )} );
 
         // setup server with jetty and jersey
         ServletHolder sh = new ServletHolder( ServletContainer.class );
