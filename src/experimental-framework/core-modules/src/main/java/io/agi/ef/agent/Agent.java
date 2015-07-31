@@ -5,13 +5,14 @@ import io.agi.ef.agent.services.ControlApiServiceImpl;
 import io.agi.ef.agent.services.DataApiServiceImpl;
 import io.agi.ef.clientapi.ApiException;
 import io.agi.ef.core.ConnectionManager;
-import io.agi.ef.core.ControlInterface;
-import io.agi.ef.core.DataInterface;
+import io.agi.ef.core.ApiInterfaces.ControlInterface;
+import io.agi.ef.core.ApiInterfaces.DataInterface;
 import io.agi.ef.core.EndpointUtils;
 import io.agi.ef.serverapi.api.factories.ControlApiServiceFactory;
 import io.agi.ef.serverapi.api.factories.DataApiServiceFactory;
 import org.eclipse.jetty.server.Server;
 
+import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 
 
@@ -20,6 +21,7 @@ import java.util.ArrayList;
  */
 public class Agent implements ConnectionManager.ConnectionManagerListener, ControlInterface, DataInterface {
 
+    private ConnectionManager _cm = new ConnectionManager();
     ConnectionManager.ServerConnection _coordinatorConnection = null;
     private String _agentContextPath = null;
 
@@ -38,7 +40,7 @@ public class Agent implements ConnectionManager.ConnectionManagerListener, Contr
         public void run() {
             // run agent server
             // todo: this should first, so need to move that server initiation into its own thread
-            Server server = ConnectionManager.getInstance().setupServer(
+            Server server = _cm.setupServer(
                     EndpointUtils.agentListenPort(),
                     _agentContextPath );
             try {
@@ -83,30 +85,34 @@ public class Agent implements ConnectionManager.ConnectionManagerListener, Contr
 
         // connect to coordinator
         // ------------------------------------------------------------
-        _coordinatorConnection = ConnectionManager.getInstance().registerServer(
+        _coordinatorConnection = _cm.registerServer(
                 ConnectionManager.ServerConnection.ServerType.Coordinator,
                 EndpointUtils.coordinatorListenPort(),
                 EndpointUtils.coordinatorContextPath() );
 
-        ConnectionManager.getInstance().addListener( this );
+        _cm.addListener( this );
     }
 
     @Override
-    public final void run() {
+    public final Response run() {
         // To Discuss:
         // I don't think this should be an option in AGENT - only in Coordinator for synchronisation
         // Dave will disagree
+        return null;
     }
 
     @Override
-    public void step() {
+    public Response step() {
         _time++;
+        return null;
     }
 
     @Override
-    public final void stop() {
+    public final Response stop() {
         // this shouldn't be implemented in derived classes
         // for reasons given for 'run()' above
+
+        return null;
     }
 
     @Override

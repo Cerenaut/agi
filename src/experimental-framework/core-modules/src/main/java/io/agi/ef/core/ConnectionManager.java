@@ -25,10 +25,9 @@ import java.util.HashSet;
 public class ConnectionManager {
 
     public interface ConnectionManagerListener {
-        public void connectionAccepted( ServerConnection sc ) throws ApiException;
+        void connectionAccepted( ServerConnection sc ) throws ApiException;
     }
 
-    static private ConnectionManager _cm = null;
     private static ConnectToServers _connectToServers = null;
     private HashSet< ServerConnection > _servers = new HashSet<>(  );
 
@@ -102,11 +101,17 @@ public class ConnectionManager {
      */
     public static class ConnectToServers implements Runnable {
 
+        private ConnectionManager _cm = null;
+
+        ConnectToServers ( ConnectionManager cm ) {
+            _cm = cm;
+        }
+
         @Override
         public void run() {
             while ( true ) {
 
-                for ( ServerConnection sc : ConnectionManager.getInstance()._servers ) {
+                for ( ServerConnection sc : _cm._servers ) {
 
                     // System.out.println( "ConnectToServers:run(): process sc: " + sc );
 
@@ -134,7 +139,6 @@ public class ConnectionManager {
         }
 
         private void connectToServer( ServerConnection sc ) throws ApiException {
-            ConnectionManager connectionsManager = ConnectionManager.getInstance();
 
             String basePath = sc.basePath();
             System.out.println( "ConnectToServer: ApiClient basepath = " + basePath );
@@ -147,24 +151,15 @@ public class ConnectionManager {
 
             // todo: this ISN'T actually connected yet, just sets it up need to test before calling back to listener
 
-            for ( ConnectionManagerListener cml : connectionsManager._listeners ) {
+            for ( ConnectionManagerListener cml : _cm._listeners ) {
                 cml.connectionAccepted( sc );
             }
         }
     }
 
 
-    static public ConnectionManager getInstance() {
-
-        if ( _cm == null ) {
-            _cm = new ConnectionManager();
-        }
-
-        return _cm;
-    }
-
-    private ConnectionManager() {
-        _connectToServers = new ConnectToServers();
+    public ConnectionManager() {
+        _connectToServers = new ConnectToServers( this );
         new Thread( _connectToServers ).start();
     }
 

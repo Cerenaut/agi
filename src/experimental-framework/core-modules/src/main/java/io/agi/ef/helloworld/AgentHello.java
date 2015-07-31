@@ -2,6 +2,8 @@ package io.agi.ef.helloworld;
 
 import io.agi.ef.agent.Agent;
 
+import javax.ws.rs.core.Response;
+
 /**
  * Created by gideon on 30/07/15.
  */
@@ -16,9 +18,12 @@ public class AgentHello extends Agent {
     }
 
     @Override
-    public void step() {
-        super.step();
+    public Response step() {
+        Response response = super.step();
+
         System.out.println( "Hello world, i'm at step " + getTime() );
+
+        return response;
     }
 
     @Override
