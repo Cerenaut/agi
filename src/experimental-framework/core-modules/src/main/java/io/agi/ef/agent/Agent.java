@@ -58,7 +58,6 @@ public class Agent implements ConnectionManager.ConnectionManagerListener, Contr
             System.out.println( "Sending request to coordinator" );
 
             io.agi.ef.clientapi.api.ConnectApi capi = new io.agi.ef.clientapi.api.ConnectApi( sc.getClientApi() );
-            // TODO: Use contextPath for consistency, that is the string that was sent as the name of the agent
             capi.connectAgentBaseurlGet( _agentContextPath );
 
             System.out.println( "Sent request to coordinator" );
@@ -71,10 +70,10 @@ public class Agent implements ConnectionManager.ConnectionManagerListener, Contr
 
         // inject service implementations to be used by the server lib
         DataApiServiceFactory.setService( new DataApiServiceImpl() );
+
         ControlApiServiceImpl controlApiService = new ControlApiServiceImpl();
         controlApiService._agent = this;
         ControlApiServiceFactory.setService( controlApiService );
-        // ConnectApiServiceFactory.setService( new ConnectApiServiceImpl() );
 
         // start server
         // ------------------------------------------------------------

@@ -41,7 +41,6 @@ public class Coordinator implements ControlInterface, ConnectInterface {
 
     public Coordinator() { }
 
-
     public void setupProperties( ArrayList<String> properties ) {}
 
     public void start() throws Exception {
