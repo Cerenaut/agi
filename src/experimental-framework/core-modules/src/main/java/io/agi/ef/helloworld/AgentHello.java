@@ -17,11 +17,11 @@ public class AgentHello extends Agent {
 
     @Override
     public void step() {
-        System.out.println( "hello world, i'm at step " + _sTime );
+        super.step();
+        System.out.println( "Hello world, i'm at step " + getTime() );
     }
 
     @Override
     public void state() {
-
     }
 }

@@ -16,11 +16,15 @@ import javax.ws.rs.core.Response;
 
 public class ControlApiServiceImpl extends ControlApiService {
 
+    public Agent _agent = null;
+
     @Override
     public Response controlRunGet()
             throws NotFoundException {
 
-        List< TStamp > tsl = Utils.currentServerTimeStamp( Agent._sTime );
+        _agent.run();
+
+        List< TStamp > tsl = Utils.currentServerTimeStamp( _agent.getTime() );
         return Response.ok().entity( tsl ).build();
     }
 
@@ -28,9 +32,9 @@ public class ControlApiServiceImpl extends ControlApiService {
     public Response controlStepGet()
             throws NotFoundException {
 
-        ++Agent._sTime;
+        _agent.step();
 
-        List< TStamp > tsl = Utils.currentServerTimeStamp( Agent._sTime );
+        List< TStamp > tsl = Utils.currentServerTimeStamp( _agent.getTime() );
 
         System.out.println( "Agent received step.\nResponse is " + tsl );
         return Response.ok().entity( tsl ).build();
@@ -40,7 +44,9 @@ public class ControlApiServiceImpl extends ControlApiService {
     public Response controlStopGet()
             throws NotFoundException {
 
-        List< TStamp > tsl = Utils.currentServerTimeStamp( Agent._sTime );
+        _agent.stop();
+
+        List< TStamp > tsl = Utils.currentServerTimeStamp( _agent.getTime() );
         return Response.ok().entity( tsl ).build();
     }
 

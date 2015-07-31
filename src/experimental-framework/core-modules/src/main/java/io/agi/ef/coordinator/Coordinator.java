@@ -2,6 +2,7 @@ package io.agi.ef.coordinator;
 
 import io.agi.ef.coordinator.services.*;
 import io.agi.ef.core.ConnectionManager;
+import io.agi.ef.core.ControlInterface;
 import io.agi.ef.core.EndpointUtils;
 import io.agi.ef.serverapi.api.factories.ConnectApiServiceFactory;
 import io.agi.ef.serverapi.api.factories.ControlApiServiceFactory;
@@ -13,31 +14,66 @@ import java.util.ArrayList;
 /**
  * Created by gideon on 30/07/15.
  */
-public class Coordinator {
+public class Coordinator implements ControlInterface {
 
-    public Coordinator() throws Exception {
-
+    private class RunServer implements Runnable {
+        public void run() {
+            // instantiate and run server
+            Server server = ConnectionManager.getInstance().setupServer(
+                    EndpointUtils.coordinatorListenPort(),
+                    EndpointUtils.coordinatorContextPath() );
+            try {
+                server.start();
+                server.join();
+            }
+            catch ( Exception e ) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    public void setupProperties( ArrayList<String> properties ) {
-//        _var = DEFAULT_VAL;
-//        for( String file : properties ) {
-//            _var = Integer.valueOf( io.agi.properties.Properties.get( file, PROPERTY_VAL, String.valueOf( _var ) ) );
-//        }
-    }
+    public Coordinator() { }
+
+
+    public void setupProperties( ArrayList<String> properties ) {}
 
     public void start() throws Exception {
 
         // inject service implementations to be used by the server lib
         DataApiServiceFactory.setService( new DataApiServiceImpl() );
-        ControlApiServiceFactory.setService( new ControlApiServiceImpl() );
+
+        ControlApiServiceImpl controlApiServiceImpl = new ControlApiServiceImpl();
+        controlApiServiceImpl._coordinator = this;
+        ControlApiServiceFactory.setService( controlApiServiceImpl );
+
         ConnectApiServiceFactory.setService( new ConnectApiServiceImpl() );
 
-        // instantiate and run server
-        Server server = ConnectionManager.getInstance().setupServer(
-                EndpointUtils.coordinatorListenPort(),
-                EndpointUtils.coordinatorContextPath() );
-        server.start();
-        server.join();
+
+        Thread th = new Thread( new RunServer() );
+        th.start();
     }
+
+
+    @Override
+    public void run() {
+
+    }
+
+    @Override
+    public void step() {
+        /*
+            THIS SHOULD PROBABLY JUST BE CALLED BACK TO FROM ControlApiServiceImpl,
+            THEN WE COULD TRIGGER THE NEXT ACTION VIA A NETWORK LAYER (currently all in ControlApiServiceImpl)
+
+            e.g. ConnectionManager.forAllServers.step();
+         */
+
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+
 }

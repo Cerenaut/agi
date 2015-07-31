@@ -23,7 +23,7 @@ public class Agent implements ConnectionManager.ConnectionManagerListener, Contr
     ConnectionManager.ServerConnection _coordinatorConnection = null;
     private String _agentContextPath = null;
 
-    public static int _sTime = 0;
+    private int _time = 0;
 
     /**
      *
@@ -34,6 +34,22 @@ public class Agent implements ConnectionManager.ConnectionManagerListener, Contr
         _agentContextPath = agentContextPath;
     }
 
+    private class RunServer implements Runnable {
+        public void run() {
+            // run agent server
+            // todo: this should first, so need to move that server initiation into its own thread
+            Server server = ConnectionManager.getInstance().setupServer(
+                    EndpointUtils.agentListenPort(),
+                    _agentContextPath );
+            try {
+                server.start();
+                server.join();
+            }
+            catch ( Exception e ) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     @Override
     public void connectionAccepted( ConnectionManager.ServerConnection sc ) throws ApiException {
@@ -49,11 +65,21 @@ public class Agent implements ConnectionManager.ConnectionManagerListener, Contr
         }
     }
 
-    public void setupProperties( ArrayList<String> properties ) {
-
-    }
+    public void setupProperties( ArrayList<String> properties ) { }
 
     public void start() throws Exception {
+
+        // inject service implementations to be used by the server lib
+        DataApiServiceFactory.setService( new DataApiServiceImpl() );
+        ControlApiServiceImpl controlApiService = new ControlApiServiceImpl();
+        controlApiService._agent = this;
+        ControlApiServiceFactory.setService( controlApiService );
+        // ConnectApiServiceFactory.setService( new ConnectApiServiceImpl() );
+
+        // start server
+        // ------------------------------------------------------------
+        Thread th = new Thread( new RunServer() );
+        th.start();
 
         // connect to coordinator
         // ------------------------------------------------------------
@@ -63,29 +89,10 @@ public class Agent implements ConnectionManager.ConnectionManagerListener, Contr
                 EndpointUtils.coordinatorContextPath() );
 
         ConnectionManager.getInstance().addListener( this );
-
-
-        // start server
-        // ------------------------------------------------------------
-
-        // inject service implementations to be used by the server lib
-        DataApiServiceFactory.setService( new DataApiServiceImpl() );
-        ControlApiServiceFactory.setService( new ControlApiServiceImpl() );
-        // ConnectApiServiceFactory.setService( new ConnectApiServiceImpl() );
-
-
-        // run agent server
-        // todo: this should first, so need to move that server initiation into its own thread
-        Server server = ConnectionManager.getInstance().setupServer(
-                EndpointUtils.agentListenPort(),
-                _agentContextPath );
-        server.start();
-        server.join();
     }
 
     @Override
     public final void run() {
-
         // To Discuss:
         // I don't think this should be an option in AGENT - only in Coordinator for synchronisation
         // Dave will disagree
@@ -93,7 +100,7 @@ public class Agent implements ConnectionManager.ConnectionManagerListener, Contr
 
     @Override
     public void step() {
-        ++_sTime;
+        _time++;
     }
 
     @Override
@@ -105,5 +112,9 @@ public class Agent implements ConnectionManager.ConnectionManagerListener, Contr
     @Override
     public void state() {
 
+    }
+
+    public int getTime() {
+        return _time;
     }
 }

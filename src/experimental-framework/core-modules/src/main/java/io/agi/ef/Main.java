@@ -1,7 +1,7 @@
 package io.agi.ef;
 
+import io.agi.ef.agent.Agent;
 import io.agi.ef.coordinator.Coordinator;
-import io.agi.ef.helloworld.AgentHello;
 
 import java.util.ArrayList;
 
@@ -33,7 +33,6 @@ public class Main {
         run( mode, files );
     }
 
-
     public static void run( String mode, ArrayList< String > files ) throws Exception {
         if( mode.equalsIgnoreCase( ARG_MODE_COORDINATOR ) ) {
             Coordinator coordinator = new Coordinator();
@@ -44,7 +43,7 @@ public class Main {
             // create an agent at contextPath /agent
             // we could make this string anything we wanted, and in theory create multiple agents
             // ---> except that at this point, the port is hardcoded and it will conflict
-            AgentHello agent = new AgentHello( "agent" );
+            Agent agent = new Agent( "agent" );
             agent.setupProperties( files );
             agent.start();
         }
