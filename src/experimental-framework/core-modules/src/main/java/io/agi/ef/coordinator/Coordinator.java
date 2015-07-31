@@ -24,17 +24,8 @@ public class Coordinator implements ControlInterface, ConnectInterface {
 
     private ConnectionManager _cm = new ConnectionManager();
 
-    public void connectAgentBaseurl( String contextPath ) {
-        _cm.registerServer(
-                ConnectionManager.ServerConnection.ServerType.Agent,
-                EndpointUtils.agentListenPort(),        // todo: ugly hardcoding. This should come from the request, but wishing to remove need for it completely.
-                contextPath );
-
-    }
-
     private class RunServer implements Runnable {
         public void run() {
-            // instantiate and run server
             Server server = _cm.setupServer(
                     EndpointUtils.coordinatorListenPort(),
                     EndpointUtils.coordinatorContextPath() );
@@ -58,9 +49,9 @@ public class Coordinator implements ControlInterface, ConnectInterface {
         // inject service implementations to be used by the server lib
         DataApiServiceFactory.setService( new DataApiServiceImpl() );
 
-        ControlApiServiceImpl controlApiServiceImpl = new ControlApiServiceImpl();
-        controlApiServiceImpl._coordinator = this;
-        ControlApiServiceFactory.setService( controlApiServiceImpl );
+        ControlApiServiceImpl controlApiService = new ControlApiServiceImpl();
+        controlApiService._coordinator = this;
+        ControlApiServiceFactory.setService( controlApiService );
 
         ConnectApiServiceImpl connectApiService = new ConnectApiServiceImpl();
         connectApiService._coordinator = this;
@@ -150,6 +141,14 @@ public class Coordinator implements ControlInterface, ConnectInterface {
         }
 
         return response;
+    }
+
+    public void connectAgentBaseurl( String contextPath ) {
+        _cm.registerServer(
+                ConnectionManager.ServerConnection.ServerType.Agent,
+                EndpointUtils.agentListenPort(),        // todo: ugly hardcoding. This should come from the request, but wishing to remove need for it completely.
+                contextPath );
+
     }
 
 

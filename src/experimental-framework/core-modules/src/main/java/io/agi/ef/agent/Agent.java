@@ -38,8 +38,6 @@ public class Agent implements ConnectionManager.ConnectionManagerListener, Contr
 
     private class RunServer implements Runnable {
         public void run() {
-            // run agent server
-            // todo: this should first, so need to move that server initiation into its own thread
             Server server = _cm.setupServer(
                     EndpointUtils.agentListenPort(),
                     _agentContextPath );
