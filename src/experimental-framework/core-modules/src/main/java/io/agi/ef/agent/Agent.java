@@ -1,101 +1,74 @@
 package io.agi.ef.agent;
 
 
-import io.agi.ef.agent.services.ControlApiServiceImpl;
-import io.agi.ef.agent.services.DataApiServiceImpl;
-import io.agi.ef.clientapi.ApiException;
+import io.agi.ef.agent.actuators.Actuator;
+import io.agi.ef.agent.sensors.Sensor;
+import io.agi.ef.coordinator.CoordinatorClientServer;
 import io.agi.ef.core.CommsMode;
-import io.agi.ef.core.network.ConnectionManager;
-import io.agi.ef.core.apiInterfaces.ControlInterface;
-import io.agi.ef.core.apiInterfaces.DataInterface;
-import io.agi.ef.core.network.ConnectionManagerListener;
 import io.agi.ef.core.network.EndpointUtils;
-import io.agi.ef.core.network.ServerConnection;
-import io.agi.ef.serverapi.api.factories.ControlApiServiceFactory;
-import io.agi.ef.serverapi.api.factories.DataApiServiceFactory;
-import org.eclipse.jetty.server.Server;
 
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
 /**
  *
+ * One of the major modules of the AGIEF. This the intelligent Agent.
+ *
  * When CommsMode == NETWORK, all communications between entities occurs over the network
  *      CommsMode == NON_NETWORK, the Agent does not start a Server, and does not request the Coordinator connect to it
  *
  * Created by gideon on 26/07/15.
  */
-public class Agent implements ConnectionManagerListener, ControlInterface, DataInterface {
+public class Agent extends CoordinatorClientServer {
 
     private static final Logger _logger = Logger.getLogger( Agent.class.getName() );
-    private final CommsMode _Comms_mode;
-    private ConnectionManager _cm = new ConnectionManager();
-    private ServerConnection _coordinatorConnection = null;
-    private String _agentContextPath = null;
+    private HashSet< Sensor > _sensors = new HashSet<>( );
+    private HashSet< Actuator > _actuators = new HashSet<>( );
 
-    private int _time = 0;
-
-    public Agent( String agentContextPath, CommsMode commsMode ) {
-        _agentContextPath = agentContextPath;
-        _Comms_mode = commsMode;
+    public Agent( CommsMode commsMode ) {
+        super( commsMode );    // Default context path. This will conflict with other agents if not customised.
     }
 
-    private class RunServer implements Runnable {
-        public void run() {
-            Server server = _cm.setupServer(
-                    EndpointUtils.agentListenPort(),
-                    _agentContextPath );
-            try {
-                server.start();
-                server.join();
-            }
-            catch ( Exception e ) {
-                e.printStackTrace();
-            }
-        }
+    public Agent( CommsMode commsMode, String agentContextPath ) {
+        super( commsMode, agentContextPath );
+    }
+
+    protected int listenerPort() {
+        return EndpointUtils.agentListenPort();
     }
 
     @Override
-    public void connectionAccepted( ServerConnection sc ) throws ApiException {
-        if ( sc.getId() == _coordinatorConnection.getId() ) {
-
-            _logger.log( Level.FINE, "Agent. Connection to server accepted, now send request to connect to this (Agent) running Server.." );
-
-            io.agi.ef.clientapi.api.ConnectApi capi = new io.agi.ef.clientapi.api.ConnectApi( sc.getClientApi() );
-            capi.connectAgentBaseurlGet( _agentContextPath );
-        }
+    protected Logger getLogger() {
+        return _logger;
     }
 
-    public void setupProperties( ArrayList<String> properties ) { }
-
-    public void start() throws Exception {
-
-        // if Network mode, run server, and request Coordinator to connect
-        if ( _Comms_mode == CommsMode.NETWORK) {
-
-            // inject service implementations to be used by the server lib
-            DataApiServiceFactory.setService( new DataApiServiceImpl() );
-
-            ControlApiServiceImpl controlApiService = new ControlApiServiceImpl();
-            controlApiService._agent = this;
-            ControlApiServiceFactory.setService( controlApiService );
-
-
-            // start server
-            Thread th = new Thread( new RunServer() );
-            th.start();
-
-            _coordinatorConnection = _cm.registerServer(
-                    ServerConnection.ServerType.Coordinator,
-                    EndpointUtils.coordinatorListenPort(),
-                    EndpointUtils.coordinatorContextPath() );
-
-            _cm.addListener( this );
-        }
+    public void addSensor( Sensor sensor ) {
+        _sensors.add( sensor );
     }
+
+    public void removeSensor( Sensor sensor ) {
+        _sensors.remove( sensor );
+    }
+
+    public void addActuator( Actuator actuator ) {
+        _actuators.add( actuator );
+    }
+
+    public void removeActuator( Actuator actuator ) {
+        _actuators.remove( actuator );
+    }
+
+    public HashSet< Sensor > getSensors() {
+        return _sensors;
+    }
+
+    public HashSet< Actuator > getActuators() {
+        return _actuators;
+    }
+
 
     @Override
     public final Response run() {
@@ -107,10 +80,11 @@ public class Agent implements ConnectionManagerListener, ControlInterface, DataI
 
     @Override
     public Response step() {
-        _time++;
-        _logger.log( Level.INFO, "Agent received step at time: {0}", _time );
+        incTime();
+        _logger.log( Level.INFO, "Agent received step at time: {0}", getTime() );
         return null;
     }
+
 
     @Override
     public final Response stop() {
@@ -123,9 +97,5 @@ public class Agent implements ConnectionManagerListener, ControlInterface, DataI
     @Override
     public void state() {
 
-    }
-
-    public int getTime() {
-        return _time;
     }
 }

@@ -1,6 +1,8 @@
 package io.agi.ef.helloworld;
 
 import io.agi.ef.agent.Agent;
+import io.agi.ef.agent.actuators.Motor;
+import io.agi.ef.agent.sensors.LightSensor;
 import io.agi.ef.core.CommsMode;
 
 import javax.ws.rs.core.Response;
@@ -10,15 +12,25 @@ import javax.ws.rs.core.Response;
  */
 public class AgentHello extends Agent {
 
-    public AgentHello( String agentContextPath, CommsMode commsMode ) {
-        super( agentContextPath, commsMode );
+    public AgentHello( CommsMode commsMode, String agentContextPath ) {
+        super( commsMode, agentContextPath );
+
+        LightSensor sensor = new LightSensor();
+        addSensor( sensor );
+
+        Motor motor = new Motor();
+        addActuator( motor );
+    }
+
+    public AgentHello( CommsMode commsMode ) {
+        super( commsMode );
     }
 
     @Override
     public Response step() {
         Response response = super.step();
 
-        System.out.println( "Hello world, i'm at step " + getTime() );
+        System.out.println( "Hello world, I'm at step " + getTime() );
 
         return response;
     }

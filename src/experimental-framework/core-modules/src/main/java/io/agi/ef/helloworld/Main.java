@@ -2,6 +2,7 @@ package io.agi.ef.helloworld;
 
 import io.agi.ef.coordinator.Coordinator;
 import io.agi.ef.core.CommsMode;
+import io.agi.ef.world.World;
 
 /**
  * Created by gideon on 31/07/15.
@@ -18,12 +19,15 @@ public class Main {
             // create and run a Coordinator
             Coordinator c = new Coordinator( CommsMode.NON_NETWORK );
 
+            World w = new World( CommsMode.NON_NETWORK );
+
             // Create and run a 'hello world' Agent
-            AgentHello a = new AgentHello( "agent", CommsMode.NON_NETWORK );
+            AgentHello a = new AgentHello( CommsMode.NON_NETWORK );
 
             c.addAgent( a );
 
             c.start();
+            w.start();
             a.start();
         }
         else if ( mode == 1 ) {
@@ -33,7 +37,7 @@ public class Main {
         }
         else if ( mode == 2 ) {
             // Create and run a 'hello world' Agent
-            AgentHello a = new AgentHello( "agent", CommsMode.NETWORK );
+            AgentHello a = new AgentHello( CommsMode.NETWORK, "agent" );
             a.start();
         }
 

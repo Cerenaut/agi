@@ -26,7 +26,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- **
+ *
+ * This is one of the main modules of the AGIEF. The Coordinator receives user input (usually via web front end)
+ * and coordinators the Agent(s) and World.
+ *
  * When CommsMode == NETWORK, all communications between entities occurs over the network
  *      CommsMode == NON_NETWORK, to reject all requests from Agents/Worlds for a connection
  *

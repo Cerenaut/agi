@@ -44,7 +44,7 @@ public class Main {
             // create an agent at contextPath /agent
             // we could make this string anything we wanted, and in theory create multiple agents
             // ---> except that at this point, the port is hardcoded and it will conflict
-            Agent agent = new Agent( "agent", CommsMode.NETWORK );
+            Agent agent = new Agent( CommsMode.NETWORK, "agent" );
             agent.setupProperties( files );
             agent.start();
         }
@@ -52,9 +52,10 @@ public class Main {
 
     public static void help() {
         System.out.println( "Usage: Zero or more arguments in any order." );
-        System.out.println( "Arguments 'coordinator' and 'agent' will trigger the corresponding modes." );
+        System.out.println( "Arguments 'coordinator' and 'agent' will run the base version of the respective module." );
         System.out.println( "Argument 'help' will display this message." );
         System.out.println( "Any other arguments are interpreted as the name[s] of .properties file[s] that configures the program." );
+        System.out.println( "----> To run custom versions of Agent, Coordinator, World or combinations, see the HelloWorld Main() ." );
         System.exit( 0 );
     }
 
