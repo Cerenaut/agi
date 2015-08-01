@@ -19,10 +19,10 @@ public class Main {
             // create and run a Coordinator
             Coordinator c = new Coordinator( CommsMode.NON_NETWORK );
 
-            World w = new World( CommsMode.NON_NETWORK );
+            HelloWorld w = new HelloWorld( CommsMode.NON_NETWORK );
 
-            // Create and run a 'hello world' Agent
-            AgentHello a = new AgentHello( CommsMode.NON_NETWORK );
+            // create and run a 'hello world' Agent
+            HelloAgent a = new HelloAgent( CommsMode.NON_NETWORK );
 
             c.addAgent( a );
 
@@ -37,7 +37,7 @@ public class Main {
         }
         else if ( mode == 2 ) {
             // Create and run a 'hello world' Agent
-            AgentHello a = new AgentHello( CommsMode.NETWORK, "agent" );
+            HelloAgent a = new HelloAgent( CommsMode.NETWORK, "agent" );
             a.start();
         }
 

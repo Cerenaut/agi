@@ -1,5 +1,7 @@
 package io.agi.ef.world;
 
+import io.agi.ef.agent.actuators.Actuator;
+import io.agi.ef.agent.sensors.Sensor;
 import io.agi.ef.clientapi.ApiException;
 import io.agi.ef.coordinator.CoordinatorClientServer;
 import io.agi.ef.core.CommsMode;
@@ -7,6 +9,7 @@ import io.agi.ef.core.network.EndpointUtils;
 import io.agi.ef.core.network.ServerConnection;
 
 import javax.ws.rs.core.Response;
+import java.util.HashSet;
 import java.util.logging.Logger;
 
 /**
@@ -19,6 +22,7 @@ import java.util.logging.Logger;
 public class World extends CoordinatorClientServer {
 
     private static final Logger _logger = Logger.getLogger( World.class.getName() );
+    private HashSet< Actuator > _actuators = new HashSet<>( );
 
     public World( CommsMode commsMode ) {
         super( commsMode );
@@ -28,6 +32,17 @@ public class World extends CoordinatorClientServer {
         super( commsMode, contextPath );
     }
 
+    public void addActuator( Actuator actuator ) {
+        _actuators.add( actuator );
+    }
+
+    public void removeActuator( Actuator actuator ) {
+        _actuators.remove( actuator );
+    }
+
+    public HashSet< Actuator > getActuators() {
+        return _actuators;
+    }
 
     @Override
     protected int listenerPort() {
