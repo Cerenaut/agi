@@ -1,4 +1,4 @@
-package io.agi.ef.core.ApiInterfaces;
+package io.agi.ef.core.apiInterfaces;
 
 /**
  * Created by gideon on 30/07/15.

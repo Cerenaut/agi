@@ -1,4 +1,4 @@
-package io.agi.ef.core.ApiInterfaces;
+package io.agi.ef.core.apiInterfaces;
 
 import javax.ws.rs.core.Response;
 

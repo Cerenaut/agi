@@ -4,36 +4,43 @@ package io.agi.ef.agent;
 import io.agi.ef.agent.services.ControlApiServiceImpl;
 import io.agi.ef.agent.services.DataApiServiceImpl;
 import io.agi.ef.clientapi.ApiException;
-import io.agi.ef.core.ConnectionManager;
-import io.agi.ef.core.ApiInterfaces.ControlInterface;
-import io.agi.ef.core.ApiInterfaces.DataInterface;
-import io.agi.ef.core.EndpointUtils;
+import io.agi.ef.core.CommsMode;
+import io.agi.ef.core.network.ConnectionManager;
+import io.agi.ef.core.apiInterfaces.ControlInterface;
+import io.agi.ef.core.apiInterfaces.DataInterface;
+import io.agi.ef.core.network.ConnectionManagerListener;
+import io.agi.ef.core.network.EndpointUtils;
+import io.agi.ef.core.network.ServerConnection;
 import io.agi.ef.serverapi.api.factories.ControlApiServiceFactory;
 import io.agi.ef.serverapi.api.factories.DataApiServiceFactory;
 import org.eclipse.jetty.server.Server;
 
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
+ *
+ * When CommsMode == NETWORK, all communications between entities occurs over the network
+ *      CommsMode == NON_NETWORK, the Agent does not start a Server, and does not request the Coordinator connect to it
+ *
  * Created by gideon on 26/07/15.
  */
-public class Agent implements ConnectionManager.ConnectionManagerListener, ControlInterface, DataInterface {
+public class Agent implements ConnectionManagerListener, ControlInterface, DataInterface {
 
+    private static final Logger _logger = Logger.getLogger( Agent.class.getName() );
+    private final CommsMode _Comms_mode;
     private ConnectionManager _cm = new ConnectionManager();
-    ConnectionManager.ServerConnection _coordinatorConnection = null;
+    private ServerConnection _coordinatorConnection = null;
     private String _agentContextPath = null;
 
     private int _time = 0;
 
-    /**
-     *
-     * @param agentContextPath is the word used in the context path i.e. no '/'
-     * @throws Exception
-     */
-    public Agent( String agentContextPath ) {
+    public Agent( String agentContextPath, CommsMode commsMode ) {
         _agentContextPath = agentContextPath;
+        _Comms_mode = commsMode;
     }
 
     private class RunServer implements Runnable {
@@ -52,15 +59,13 @@ public class Agent implements ConnectionManager.ConnectionManagerListener, Contr
     }
 
     @Override
-    public void connectionAccepted( ConnectionManager.ServerConnection sc ) throws ApiException {
+    public void connectionAccepted( ServerConnection sc ) throws ApiException {
         if ( sc.getId() == _coordinatorConnection.getId() ) {
 
-            System.out.println( "Sending request to coordinator" );
+            _logger.log( Level.FINE, "Agent. Connection to server accepted, now send request to connect to this (Agent) running Server.." );
 
             io.agi.ef.clientapi.api.ConnectApi capi = new io.agi.ef.clientapi.api.ConnectApi( sc.getClientApi() );
             capi.connectAgentBaseurlGet( _agentContextPath );
-
-            System.out.println( "Sent request to coordinator" );
         }
     }
 
@@ -68,26 +73,28 @@ public class Agent implements ConnectionManager.ConnectionManagerListener, Contr
 
     public void start() throws Exception {
 
-        // inject service implementations to be used by the server lib
-        DataApiServiceFactory.setService( new DataApiServiceImpl() );
+        // if Network mode, run server, and request Coordinator to connect
+        if ( _Comms_mode == CommsMode.NETWORK) {
 
-        ControlApiServiceImpl controlApiService = new ControlApiServiceImpl();
-        controlApiService._agent = this;
-        ControlApiServiceFactory.setService( controlApiService );
+            // inject service implementations to be used by the server lib
+            DataApiServiceFactory.setService( new DataApiServiceImpl() );
 
-        // start server
-        // ------------------------------------------------------------
-        Thread th = new Thread( new RunServer() );
-        th.start();
+            ControlApiServiceImpl controlApiService = new ControlApiServiceImpl();
+            controlApiService._agent = this;
+            ControlApiServiceFactory.setService( controlApiService );
 
-        // connect to coordinator
-        // ------------------------------------------------------------
-        _coordinatorConnection = _cm.registerServer(
-                ConnectionManager.ServerConnection.ServerType.Coordinator,
-                EndpointUtils.coordinatorListenPort(),
-                EndpointUtils.coordinatorContextPath() );
 
-        _cm.addListener( this );
+            // start server
+            Thread th = new Thread( new RunServer() );
+            th.start();
+
+            _coordinatorConnection = _cm.registerServer(
+                    ServerConnection.ServerType.Coordinator,
+                    EndpointUtils.coordinatorListenPort(),
+                    EndpointUtils.coordinatorContextPath() );
+
+            _cm.addListener( this );
+        }
     }
 
     @Override
@@ -101,6 +108,7 @@ public class Agent implements ConnectionManager.ConnectionManagerListener, Contr
     @Override
     public Response step() {
         _time++;
+        _logger.log( Level.INFO, "Agent received step at time: {0}", _time );
         return null;
     }
 

@@ -8,6 +8,8 @@ import io.agi.ef.serverapi.api.*;
 import io.agi.ef.serverapi.model.TStamp;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import io.agi.ef.serverapi.api.NotFoundException;
 
@@ -16,6 +18,7 @@ import javax.ws.rs.core.Response;
 
 public class ControlApiServiceImpl extends ControlApiService {
 
+    private static final Logger _logger = Logger.getLogger( ControlApiServiceImpl.class.getName() + "-agent" );
     public Agent _agent = null;
 
     @Override
@@ -36,7 +39,7 @@ public class ControlApiServiceImpl extends ControlApiService {
 
         List< TStamp > tsl = Utils.currentServerTimeStamp( _agent.getTime() );
 
-        System.out.println( "Agent received step.\nResponse is " + tsl );
+        _logger.log( Level.INFO, "Agent received network step.\nResponse is {0}", tsl );
         return Response.ok().entity( tsl ).build();
     }
 

@@ -1,6 +1,7 @@
 package io.agi.ef.helloworld;
 
 import io.agi.ef.agent.Agent;
+import io.agi.ef.core.CommsMode;
 
 import javax.ws.rs.core.Response;
 
@@ -9,12 +10,8 @@ import javax.ws.rs.core.Response;
  */
 public class AgentHello extends Agent {
 
-    /**
-     * @param agentContextPath is the word used in the context path i.e. no '/'
-     * @throws Exception
-     */
-    public AgentHello( String agentContextPath ) {
-        super( agentContextPath );
+    public AgentHello( String agentContextPath, CommsMode commsMode ) {
+        super( agentContextPath, commsMode );
     }
 
     @Override

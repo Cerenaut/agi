@@ -1,4 +1,4 @@
-package io.agi.ef.core;
+package io.agi.ef.core.network;
 
 /**
  * Created by gideon on 19/07/15.

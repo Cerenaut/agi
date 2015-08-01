@@ -1,8 +1,6 @@
 package io.agi.ef.coordinator.services;
 
 import io.agi.ef.coordinator.Coordinator;
-import io.agi.ef.core.ConnectionManager;
-import io.agi.ef.core.EndpointUtils;
 import io.agi.ef.serverapi.api.*;
 
 

@@ -1,11 +1,16 @@
 package io.agi.ef.coordinator;
 
+import io.agi.ef.agent.Agent;
 import io.agi.ef.clientapi.model.TStamp;
-import io.agi.ef.coordinator.services.*;
-import io.agi.ef.core.ApiInterfaces.ConnectInterface;
-import io.agi.ef.core.ConnectionManager;
-import io.agi.ef.core.ApiInterfaces.ControlInterface;
-import io.agi.ef.core.EndpointUtils;
+import io.agi.ef.coordinator.services.ControlApiServiceImpl;
+import io.agi.ef.coordinator.services.DataApiServiceImpl;
+import io.agi.ef.coordinator.services.ConnectApiServiceImpl;
+import io.agi.ef.core.CommsMode;
+import io.agi.ef.core.apiInterfaces.ConnectInterface;
+import io.agi.ef.core.network.ConnectionManager;
+import io.agi.ef.core.apiInterfaces.ControlInterface;
+import io.agi.ef.core.network.EndpointUtils;
+import io.agi.ef.core.network.ServerConnection;
 import io.agi.ef.serverapi.api.ApiResponseMessage;
 import io.agi.ef.serverapi.api.factories.ConnectApiServiceFactory;
 import io.agi.ef.serverapi.api.factories.ControlApiServiceFactory;
@@ -15,14 +20,24 @@ import org.eclipse.jetty.server.Server;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
+ **
+ * When CommsMode == NETWORK, all communications between entities occurs over the network
+ *      CommsMode == NON_NETWORK, to reject all requests from Agents/Worlds for a connection
+ *
  * Created by gideon on 30/07/15.
  */
 public class Coordinator implements ControlInterface, ConnectInterface {
 
+    private static final Logger _logger = Logger.getLogger( Coordinator.class.getName() );
+    private final CommsMode _Comms_mode;
     private ConnectionManager _cm = new ConnectionManager();
+    private HashSet< Agent > _agents = new HashSet<>( ); // todo: consider moving to ConnectionManager
 
     private class RunServer implements Runnable {
         public void run() {
@@ -39,9 +54,19 @@ public class Coordinator implements ControlInterface, ConnectInterface {
         }
     }
 
-    public Coordinator() { }
+    public Coordinator( CommsMode commsMode ) {
+        _Comms_mode = commsMode;
+    }
 
     public void setupProperties( ArrayList<String> properties ) {}
+
+    public void addAgent( Agent agent ) {
+        _agents.add( agent );
+    }
+
+    public void removeAgent( Agent agent ) {
+        _agents.remove( agent );
+    }
 
     public void start() throws Exception {
 
@@ -84,40 +109,52 @@ public class Coordinator implements ControlInterface, ConnectInterface {
     @Override
     public Response step() {
 
-        HashMap<String, List<TStamp>> serverTimeStamps = new HashMap<String, List<io.agi.ef.clientapi.model.TStamp>>();
+        _logger.log( Level.FINE, "Coordinator received step.");
 
-        // step the clients
+        HashMap< String, List< TStamp >> serverTimeStamps = new HashMap<>();
+        List<io.agi.ef.clientapi.model.TStamp> tStamps;
+
+        // 1) step the Agents/Worlds connected directly
+        int agentCount = 0;
+        for ( Agent agent : _agents ) {
+            agentCount++;
+            agent.step();
+        }
+
+        // 2) step the Agents/Worlds connected via the network
         Response response = null;
-        if ( _cm.getServers().size() == 0 ) {
+        for ( ServerConnection sc : _cm.getServers() ) {
+
+            if ( sc.getClientApi() == null ) {
+                continue;
+            }
+
+            agentCount++;
+
+            io.agi.ef.clientapi.api.ControlApi capi = new io.agi.ef.clientapi.api.ControlApi( sc.getClientApi() );
+            try {
+
+                // todo: known bug: doesn't seem to be able to deserialise tStamps, but i want to change their format anyway
+                tStamps = capi.controlStepGet();
+                serverTimeStamps.put( sc.basePath(), tStamps );
+            }
+            catch ( io.agi.ef.clientapi.ApiException e ) {
+                e.printStackTrace();
+            }
+            // todo: this catches a connection refused exception, but should be tidied up
+            catch ( Exception e ) {
+                e.printStackTrace();
+            }
+        }
+
+        if ( agentCount == 0 ) {
             response = Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "There are no connected servers to step.")).build();
         }
         else {
-            for ( ConnectionManager.ServerConnection sc : _cm.getServers() ) {
-
-                if ( sc.getClientApi() == null ) {
-                    continue;
-                }
-
-                List<io.agi.ef.clientapi.model.TStamp> tStamps;
-                io.agi.ef.clientapi.api.ControlApi capi = new io.agi.ef.clientapi.api.ControlApi( sc.getClientApi() );
-                try {
-
-                    // known bug: doesn't seem to be able to deserialise tStamps, but i want to change their format anyway
-                    tStamps = capi.controlStepGet();
-                    serverTimeStamps.put( sc.basePath(), tStamps );
-                }
-                catch ( io.agi.ef.clientapi.ApiException e ) {
-                    e.printStackTrace();
-                }
-                // todo: this catches a connection refused exception, but should be tidied up
-                catch ( Exception e ) {
-                    e.printStackTrace();
-                }
-            }
             response = Response.ok().entity( serverTimeStamps ).build();
         }
 
-        System.out.println( "Stepped all servers, the response is: " + response );
+        _logger.log( Level.FINE, "Stepped all servers, the response is: {0}", response );
 
         return response;
     }
@@ -136,19 +173,20 @@ public class Coordinator implements ControlInterface, ConnectInterface {
         }
         else {
             // to implement
-            response = Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "to do... stop all servers")).build();
+            response = Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "To do... stop all servers")).build();
         }
 
         return response;
     }
 
     public void connectAgentBaseurl( String contextPath ) {
-        _cm.registerServer(
-                ConnectionManager.ServerConnection.ServerType.Agent,
-                EndpointUtils.agentListenPort(),        // todo: ugly hardcoding. This should come from the request, but wishing to remove need for it completely.
-                contextPath );
 
+        if ( _Comms_mode == CommsMode.NETWORK ) {
+            _cm.registerServer(
+                    ServerConnection.ServerType.Agent,
+                    EndpointUtils.agentListenPort(),     // todo: ugly hardcoding. This should come from the request, but wishing to remove need for it completely.
+                    contextPath );
+        }
     }
-
 
 }
