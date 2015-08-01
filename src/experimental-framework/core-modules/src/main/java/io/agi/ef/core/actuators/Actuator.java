@@ -1,4 +1,4 @@
-package io.agi.ef.agent.actuators;
+package io.agi.ef.core.actuators;
 
 /**
  *

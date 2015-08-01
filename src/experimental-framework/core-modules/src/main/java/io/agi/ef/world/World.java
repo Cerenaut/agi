@@ -1,7 +1,6 @@
 package io.agi.ef.world;
 
-import io.agi.ef.agent.actuators.Actuator;
-import io.agi.ef.agent.sensors.Sensor;
+import io.agi.ef.core.actuators.Actuator;
 import io.agi.ef.clientapi.ApiException;
 import io.agi.ef.coordinator.CoordinatorClientServer;
 import io.agi.ef.core.CommsMode;

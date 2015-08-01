@@ -1,8 +1,8 @@
-package io.agi.ef.helloworld;
+package io.agi.ef.demos.helloworld;
 
 import io.agi.ef.agent.Agent;
-import io.agi.ef.agent.actuators.MotorActuator;
-import io.agi.ef.agent.sensors.LightSensor;
+import io.agi.ef.core.actuators.MotorActuator;
+import io.agi.ef.core.sensors.LightSensor;
 import io.agi.ef.core.CommsMode;
 
 import javax.ws.rs.core.Response;

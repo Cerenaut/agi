@@ -1,4 +1,4 @@
-package io.agi.ef.agent.sensors;
+package io.agi.ef.core.sensors;
 
 /**
  *

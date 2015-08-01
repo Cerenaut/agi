@@ -1,6 +1,6 @@
-package io.agi.ef.helloworld;
+package io.agi.ef.demos.helloworld;
 
-import io.agi.ef.agent.actuators.LightActuator;
+import io.agi.ef.core.actuators.LightActuator;
 import io.agi.ef.core.CommsMode;
 import io.agi.ef.world.World;
 

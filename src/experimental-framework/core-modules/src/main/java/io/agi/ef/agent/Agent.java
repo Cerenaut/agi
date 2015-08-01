@@ -1,8 +1,8 @@
 package io.agi.ef.agent;
 
 
-import io.agi.ef.agent.actuators.Actuator;
-import io.agi.ef.agent.sensors.Sensor;
+import io.agi.ef.core.actuators.Actuator;
+import io.agi.ef.core.sensors.Sensor;
 import io.agi.ef.coordinator.CoordinatorClientServer;
 import io.agi.ef.core.CommsMode;
 import io.agi.ef.core.network.EndpointUtils;

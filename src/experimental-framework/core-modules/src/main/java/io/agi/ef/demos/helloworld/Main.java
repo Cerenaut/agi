@@ -1,8 +1,7 @@
-package io.agi.ef.helloworld;
+package io.agi.ef.demos.helloworld;
 
 import io.agi.ef.coordinator.Coordinator;
 import io.agi.ef.core.CommsMode;
-import io.agi.ef.world.World;
 
 /**
  * Created by gideon on 31/07/15.
