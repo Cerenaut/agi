@@ -19,6 +19,16 @@ You must set an environment variable for the AGI project dir. In bash:
 export $AGI_PROJECT_DIR=path/to/folder
 ````
 
+You must set an environment variable for the maven binaries. In bash:
+````
+export PATH=~MAVEN_DIR:$PATH
+````
+... where MAVEN_DIR is the bin folder of your maven install. For example, 
+
+````
+export PATH=~/workspace/maven/apache-maven-3.3.3/bin:$PATH
+````
+
 Installation of the following popular tools is required and some background knowledge recommended:
 - [Maven](https://maven.apache.org/) 
 
