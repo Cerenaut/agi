@@ -1,5 +1,6 @@
 package io.agi.ef.world;
 
+import io.agi.ef.core.UniversalState;
 import io.agi.ef.core.actuators.Actuator;
 import io.agi.ef.clientapi.ApiException;
 import io.agi.ef.coordinator.CoordinatorClientServer;
@@ -8,6 +9,7 @@ import io.agi.ef.core.network.EndpointUtils;
 import io.agi.ef.core.network.ServerConnection;
 
 import javax.ws.rs.core.Response;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.logging.Logger;
 
@@ -22,6 +24,7 @@ public class World extends CoordinatorClientServer {
 
     private static final Logger _logger = Logger.getLogger( World.class.getName() );
     private HashSet< Actuator > _actuators = new HashSet<>( );
+    private Collection<UniversalState> _agentStates = null;
 
     public World( CommsMode commsMode ) {
         super( commsMode );
@@ -74,7 +77,16 @@ public class World extends CoordinatorClientServer {
     }
 
     @Override
-    public void state() {
+    public UniversalState getState() {
+        return null;
+    }
 
+    @Override
+    public void setWorldState( UniversalState state ) {
+        // not relevant here
+    }
+
+    public void setAgentStates( Collection<UniversalState> agentStates ) {
+        _agentStates = agentStates;
     }
 }

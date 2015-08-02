@@ -47,6 +47,20 @@ public class ServerConnection {
         return _id;
     }
 
+    public boolean isAgent() {
+        if ( _type == ServerType.Agent ) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isWorld() {
+        if ( _type == ServerType.World ) {
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public String toString() {
         String str = "[id:" + _id + "], type:(" + _type + "), port:(" + _port + "), contextPath:(" + _contextPath + "), clientApi:(" + _client + ")";

@@ -10,9 +10,9 @@ public class Main {
 
     public static void main( String[] args ) throws Exception {
 
-//        int mode = 0;           // Create and run a Coordinator and a Client
+        int mode = 0;           // Create and run a Coordinator and a Client
 //        int mode = 1;         // Create and run a Coordinator only
-        int mode = 2;         // Create and run a HelloWorld Agent only
+//        int mode = 2;         // Create and run a HelloWorld Agent only
 
         if ( mode == 0 ) {
             // create and run a Coordinator
@@ -23,6 +23,7 @@ public class Main {
             // create and run a 'hello world' Agent
             HelloAgent a = new HelloAgent( CommsMode.NON_NETWORK );
 
+            c.addWorld( w );
             c.addAgent( a );
 
             c.start();

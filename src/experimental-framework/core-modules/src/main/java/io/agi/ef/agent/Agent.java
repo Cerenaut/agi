@@ -1,6 +1,7 @@
 package io.agi.ef.agent;
 
 
+import io.agi.ef.core.UniversalState;
 import io.agi.ef.core.actuators.Actuator;
 import io.agi.ef.core.sensors.Sensor;
 import io.agi.ef.coordinator.CoordinatorClientServer;
@@ -8,6 +9,8 @@ import io.agi.ef.core.CommsMode;
 import io.agi.ef.core.network.EndpointUtils;
 
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,6 +30,7 @@ public class Agent extends CoordinatorClientServer {
     private static final Logger _logger = Logger.getLogger( Agent.class.getName() );
     private HashSet< Sensor > _sensors = new HashSet<>( );
     private HashSet< Actuator > _actuators = new HashSet<>( );
+    private UniversalState _worldState = null;
 
     public Agent( CommsMode commsMode ) {
         super( commsMode );    // Default context path. This will conflict with other agents if not customised.
@@ -79,23 +83,57 @@ public class Agent extends CoordinatorClientServer {
     }
 
     @Override
-    public Response step() {
+    /**
+     * Assumes that the _worldState object is up-to-date
+     */
+    public final Response step() {
+
+        updateSensors();        // requires updated World 'state' (so the Coord must supply it)
+
         incTime();
-        _logger.log( Level.INFO, "Agent received step at time: {0}", getTime() );
+        _logger.log( Level.FINE, "Agent received step at time: {0}", getTime() );
+
+        stepBody();     // todo: want a better pattern than requiring developer to only override stepBody, it's a bit opaque
+
+        updateActuators();      // updates the Agents 'state'     (Coord must request 'state' now)
+
         return null;
     }
 
+    /**
+     * This should be overrided
+     */
+    protected void stepBody() {
+    }
+
+    private void updateActuators() {
+        for ( Actuator actuator : _actuators ) {
+            actuator.update();
+        }
+    }
+
+    private void updateSensors() {
+
+        for ( Sensor sensor : _sensors ) {
+            sensor.update( _worldState );
+        }
+    }
 
     @Override
     public final Response stop() {
         // this shouldn't be implemented in derived classes
         // for reasons given for 'run()' above
-
         return null;
     }
 
     @Override
-    public void state() {
-
+    public UniversalState getState() {
+        return null;
     }
+
+    @Override
+    public void setWorldState( UniversalState state ) {
+        _worldState = state;
+    }
+
 }

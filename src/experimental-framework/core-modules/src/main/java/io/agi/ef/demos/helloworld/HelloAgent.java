@@ -34,15 +34,8 @@ public class HelloAgent extends Agent {
     }
 
     @Override
-    public Response step() {
-        Response response = super.step();
-
+    public void stepBody() {
         System.out.println( "Hello world, I'm at step " + getTime() );
-
-        return response;
     }
 
-    @Override
-    public void state() {
-    }
 }
