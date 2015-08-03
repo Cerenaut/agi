@@ -2,7 +2,7 @@ package io.agi.ef.demos.helloworld;
 
 import io.agi.ef.core.actuators.LightActuator;
 import io.agi.ef.core.CommsMode;
-import io.agi.ef.world.World;
+import io.agi.ef.core.network.entities.World;
 
 /**
  *
@@ -12,13 +12,13 @@ import io.agi.ef.world.World;
  */
 public class HelloWorld extends World {
 
-    public HelloWorld( CommsMode commsMode ) {
-        super( commsMode );
+    public HelloWorld() {
+        super();
         setup();
     }
 
-    public HelloWorld( CommsMode commsMode, String contextPath ) {
-        super( commsMode, contextPath );
+    public HelloWorld( String contextPath ) throws Exception {
+        super( contextPath );
         setup();
     }
 

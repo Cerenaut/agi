@@ -96,8 +96,7 @@ public class ConnectionManager {
 
             sc.setClient( apiClient );
 
-
-            // todo: this ISN'T actually connected yet, just sets it up need to test before calling back to listener
+            // todo: This ISN'T actually connected, just sets it up for requests. Is this pattern relevant? It is extensible and flexible.
 
             for ( ConnectionManagerListener cml : _cm._listeners ) {
                 cml.connectionAccepted( sc );
@@ -126,14 +125,6 @@ public class ConnectionManager {
         _servers.add( sc ) ;
 
         return sc;
-    }
-
-    /**
-     * Get the list of ApiClient agents
-     * @return
-     */
-    public HashSet< ServerConnection > getServers() {
-        return _servers;
     }
 
     /**

@@ -1,16 +1,13 @@
-package io.agi.ef.world;
+package io.agi.ef.core.network.entities;
 
 import io.agi.ef.core.UniversalState;
 import io.agi.ef.core.actuators.Actuator;
-import io.agi.ef.clientapi.ApiException;
-import io.agi.ef.coordinator.CoordinatorClientServer;
-import io.agi.ef.core.CommsMode;
 import io.agi.ef.core.network.EndpointUtils;
-import io.agi.ef.core.network.ServerConnection;
 
 import javax.ws.rs.core.Response;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -20,18 +17,27 @@ import java.util.logging.Logger;
  *
  * Created by gideon on 1/08/15.
  */
-public class World extends CoordinatorClientServer {
+public class World extends AbstractEntity {
 
     private static final Logger _logger = Logger.getLogger( World.class.getName() );
     private HashSet< Actuator > _actuators = new HashSet<>( );
     private Collection<UniversalState> _agentStates = null;
 
-    public World( CommsMode commsMode ) {
-        super( commsMode );
+    public World() {
+        super();
     }
 
-    public World( CommsMode commsMode, String contextPath ) {
-        super( commsMode, contextPath );
+    public World( String contextPath ) throws Exception {
+        super( contextPath );
+    }
+
+    protected int listenerPort() {
+        return EndpointUtils.worldListenPort();
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return _logger;
     }
 
     public void addActuator( Actuator actuator ) {
@@ -47,27 +53,14 @@ public class World extends CoordinatorClientServer {
     }
 
     @Override
-    protected int listenerPort() {
-        return EndpointUtils.worldListenPort();
-    }
-
-    @Override
-    protected Logger getLogger() {
-        return null;
-    }
-
-    @Override
-    public void connectionAccepted( ServerConnection sc ) throws ApiException {
-
-    }
-
-    @Override
     public Response run() {
         return null;
     }
 
     @Override
     public Response step() {
+        incTime();
+        System.out.println( "World stepped at time: " + getTime() );
         return null;
     }
 

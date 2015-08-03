@@ -11,4 +11,5 @@ public interface DataInterface {
 
     UniversalState getState();
     void setWorldState( UniversalState state );
+    public void setAgentStates( Collection<UniversalState> agentStates );
 }

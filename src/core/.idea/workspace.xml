@@ -2,20 +2,25 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="da80cadf-6972-4afb-8d8f-62efa367113d" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/UniversalState.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/actuators/Actuator.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/actuators/Actuator.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/agent/Agent.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/agent/Agent.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/coordinator/Coordinator.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/coordinator/Coordinator.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/network/entities/AbstractEntity.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/network/entities/NetworkEntity.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/network/entities/NetworkProxyEntity.java" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/coordinator/CoordinatorClientServer.java" afterPath="" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/agent/Agent.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/network/entities/Agent.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/agent/services/ControlApiServiceImpl.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/network/entities/services/ControlApiServiceImpl.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/agent/services/DataApiServiceImpl.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/network/entities/services/DataApiServiceImpl.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/coordinator/Coordinator.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/network/coordinator/Coordinator.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/coordinator/services/ConnectApiServiceImpl.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/network/coordinator/services/ConnectApiServiceImpl.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/coordinator/services/ControlApiServiceImpl.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/network/coordinator/services/ControlApiServiceImpl.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/coordinator/services/DataApiServiceImpl.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/network/coordinator/services/DataApiServiceImpl.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/world/World.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/network/entities/World.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/network/ConnectionManager.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/network/ConnectionManager.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/apiInterfaces/DataInterface.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/apiInterfaces/DataInterface.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/demos/helloworld/HelloAgent.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/demos/helloworld/HelloAgent.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/actuators/LightActuator.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/actuators/LightActuator.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/sensors/LightSensor.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/sensors/LightSensor.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/demos/helloworld/HelloWorld.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/demos/helloworld/HelloWorld.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/Main.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/Main.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/demos/helloworld/Main.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/demos/helloworld/Main.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/actuators/MotorActuator.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/actuators/MotorActuator.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/sensors/Sensor.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/sensors/Sensor.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/network/ServerConnection.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/network/ServerConnection.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/world/World.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/world/World.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/Utils.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/Utils.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/.idea/workspace.xml" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/.idea/workspace.xml" />
     </list>
@@ -39,31 +44,21 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="Main.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/io/agi/core/Main.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="5" column="32" selection-start-line="5" selection-start-column="32" selection-end-line="5" selection-end-column="32" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Main.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/io/agi/core/demo/Main.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="20" column="23" selection-start-line="20" selection-start-column="23" selection-end-line="20" selection-end-column="23" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="World.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/World.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
               <caret line="12" column="39" selection-start-line="12" selection-start-column="39" selection-end-line="12" selection-end-column="39" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="AbstractAgent.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/AbstractAgent.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="14" column="22" selection-start-line="14" selection-start-column="22" selection-end-line="14" selection-end-column="22" />
               <folding />
             </state>
           </provider>
@@ -79,11 +74,21 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="FactoryExperiment.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/FactoryExperiment.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="25" column="8" selection-start-line="25" selection-start-column="8" selection-end-line="25" selection-end-column="8" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="ScalarWorld.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/io/agi/core/demo/ScalarWorld.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="19" column="38" selection-start-line="19" selection-start-column="38" selection-end-line="19" selection-end-column="38" />
+              <caret line="52" column="25" selection-start-line="52" selection-start-column="25" selection-end-line="52" selection-end-column="25" />
               <folding />
             </state>
           </provider>
@@ -103,7 +108,7 @@
         <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/StatefulThread.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="29" column="13" selection-start-line="29" selection-start-column="13" selection-end-line="29" selection-end-column="13" />
+              <caret line="94" column="4" selection-start-line="94" selection-start-column="4" selection-end-line="94" selection-end-column="4" />
               <folding />
             </state>
           </provider>
@@ -119,21 +124,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AbstractWorld.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="AbstractWorld.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/AbstractWorld.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
+            <state vertical-scroll-proportion="0.22970903">
               <caret line="14" column="80" selection-start-line="14" selection-start-column="80" selection-end-line="14" selection-end-column="80" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Experiment.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="Experiment.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/Experiment.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.27565083">
-              <caret line="16" column="17" selection-start-line="16" selection-start-column="17" selection-end-line="16" selection-end-column="17" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="24" column="4" selection-start-line="24" selection-start-column="4" selection-end-line="24" selection-end-column="4" />
               <folding />
             </state>
           </provider>
@@ -192,7 +197,7 @@
     <ConfirmationsSetting value="0" id="Remove" />
   </component>
   <component name="ProjectView">
-    <navigator currentView="ProjectPane" proportions="" version="1">
+    <navigator currentView="PackagesPane" proportions="" version="1">
       <flattenPackages />
       <showMembers />
       <showModules />
@@ -227,6 +232,42 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="io.agi.core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageElementNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="io.agi.core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ef" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageElementNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="io.agi.core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="demo" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageElementNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -652,16 +693,8 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="22" column="13" selection-start-line="22" selection-start-column="13" selection-end-line="22" selection-end-column="13" />
           <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="imports" expanded="false" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/AbstractAgent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="14" column="22" selection-start-line="14" selection-start-column="22" selection-end-line="14" selection-end-column="22" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -681,16 +714,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/FactoryExperiment.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="25" column="8" selection-start-line="25" selection-start-column="8" selection-end-line="25" selection-end-column="8" />
-          <folding>
-            <element signature="e#658#667#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/io/agi/core/Main.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -707,42 +730,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/World.java">
+    <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/Experiment.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="12" column="39" selection-start-line="12" selection-start-column="39" selection-end-line="12" selection-end-column="39" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/Problem.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="12" column="17" selection-start-line="12" selection-start-column="17" selection-end-line="12" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/AbstractWorld.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="14" column="80" selection-start-line="14" selection-start-column="80" selection-end-line="14" selection-end-column="80" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/io/agi/core/demo/ScalarWorld.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="19" column="38" selection-start-line="19" selection-start-column="38" selection-end-line="19" selection-end-column="38" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/StatefulThread.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="29" column="13" selection-start-line="29" selection-start-column="13" selection-end-line="29" selection-end-column="13" />
+          <caret line="24" column="4" selection-start-line="24" selection-start-column="4" selection-end-line="24" selection-end-column="4" />
           <folding />
         </state>
       </provider>
@@ -755,6 +746,38 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/Problem.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="12" column="17" selection-start-line="12" selection-start-column="17" selection-end-line="12" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/FactoryExperiment.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="25" column="8" selection-start-line="25" selection-start-column="8" selection-end-line="25" selection-end-column="8" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/io/agi/core/demo/ScalarWorld.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="52" column="25" selection-start-line="52" selection-start-column="25" selection-end-line="52" selection-end-column="25" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/StatefulThread.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="94" column="4" selection-start-line="94" selection-start-column="4" selection-end-line="94" selection-end-column="4" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/Agent.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -763,10 +786,26 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/Experiment.java">
+    <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/World.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.27565083">
-          <caret line="16" column="17" selection-start-line="16" selection-start-column="17" selection-end-line="16" selection-end-column="17" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="12" column="39" selection-start-line="12" selection-start-column="39" selection-end-line="12" selection-end-column="39" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/AbstractAgent.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="14" column="22" selection-start-line="14" selection-start-column="22" selection-end-line="14" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/AbstractWorld.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.22970903">
+          <caret line="14" column="80" selection-start-line="14" selection-start-column="80" selection-end-line="14" selection-end-column="80" />
           <folding />
         </state>
       </provider>
