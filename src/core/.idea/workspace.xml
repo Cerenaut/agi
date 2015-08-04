@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="da80cadf-6972-4afb-8d8f-62efa367113d" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/network/entities/Agent.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/core/network/entities/Agent.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/demos/helloworld/HelloAgent.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/demos/helloworld/HelloAgent.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/demos/helloworld/HelloWorld.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/demos/helloworld/HelloWorld.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/Main.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/demos/Main.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/demos/helloworld/Main.java" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/src/main/java/io/agi/ef/demos/helloworld/Main.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../experimental-framework/core-modules/.idea/workspace.xml" afterPath="$PROJECT_DIR$/../experimental-framework/core-modules/.idea/workspace.xml" />
@@ -29,11 +27,34 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
+      <file leaf-file-name="Main.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/io/agi/core/Main.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.114854515">
+              <caret line="5" column="32" selection-start-line="5" selection-start-column="32" selection-end-line="5" selection-end-column="32" />
+              <folding>
+                <element signature="e#86#87#0" expanded="true" />
+                <element signature="e#133#134#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="AbstractAgent.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/AbstractAgent.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
               <caret line="14" column="52" selection-start-line="14" selection-start-column="52" selection-end-line="14" selection-end-column="52" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Main.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/io/agi/core/demo/Main.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="20" column="23" selection-start-line="20" selection-start-column="23" selection-end-line="20" selection-end-column="23" />
               <folding />
             </state>
           </provider>
@@ -89,20 +110,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Callback.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/io/agi/core/orm/Callback.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="12" column="17" selection-start-line="12" selection-start-column="17" selection-end-line="12" selection-end-column="17" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ScalarWorld.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="ScalarWorld.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/io/agi/core/demo/ScalarWorld.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.035222054">
+            <state vertical-scroll-proportion="0.0">
               <caret line="19" column="37" selection-start-line="19" selection-start-column="37" selection-end-line="19" selection-end-column="37" />
               <folding />
             </state>
@@ -118,16 +129,6 @@
                 <element signature="e#1266#1267#0" expanded="true" />
                 <element signature="e#1298#1299#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="AbstractWorld.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/AbstractWorld.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="14" column="82" selection-start-line="14" selection-start-column="82" selection-end-line="14" selection-end-column="82" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -668,22 +669,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/io/agi/core/Main.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="5" column="32" selection-start-line="5" selection-start-column="32" selection-end-line="5" selection-end-column="32" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/io/agi/core/demo/Main.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="20" column="23" selection-start-line="20" selection-start-column="23" selection-end-line="20" selection-end-column="23" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/io/agi/core/ef/FactoryExperiment.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -793,9 +778,28 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/io/agi/core/demo/ScalarWorld.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.035222054">
+        <state vertical-scroll-proportion="0.0">
           <caret line="19" column="37" selection-start-line="19" selection-start-column="37" selection-end-line="19" selection-end-column="37" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/io/agi/core/demo/Main.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="20" column="23" selection-start-line="20" selection-start-column="23" selection-end-line="20" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/io/agi/core/Main.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.114854515">
+          <caret line="5" column="32" selection-start-line="5" selection-start-column="32" selection-end-line="5" selection-end-column="32" />
+          <folding>
+            <element signature="e#86#87#0" expanded="true" />
+            <element signature="e#133#134#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

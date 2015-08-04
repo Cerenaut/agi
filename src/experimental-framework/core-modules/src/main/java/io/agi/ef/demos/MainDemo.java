@@ -1,4 +1,4 @@
-package io.agi.ef;
+package io.agi.ef.demos;
 
 import io.agi.ef.core.network.entities.Agent;
 import io.agi.ef.core.network.coordinator.Coordinator;
@@ -7,20 +7,26 @@ import io.agi.ef.core.CommsMode;
 import java.util.ArrayList;
 
 
-public class Main {
+public abstract class MainDemo {
 
     public static final String ARG_MODE_COORDINATOR = "coordinator";
     public static final String ARG_MODE_AGENT = "agent";
+    public static final String ARG_MODE_WORLD = "world";
+    public static final String ARG_MODE_ALL = "all";
     public static final String ARG_MODE_HELP = "help";
 
-    public static void main( String[] args ) throws Exception {
+    public void run( String[] args ) throws Exception {
 
         String mode = ARG_MODE_COORDINATOR;
         ArrayList<String> files = new ArrayList<String>();
 
         for ( String arg : args ) {
-            if ( ( arg.equalsIgnoreCase( ARG_MODE_AGENT ) )
-                    || ( arg.equalsIgnoreCase( ARG_MODE_COORDINATOR ) ) ) {
+            if (        arg.equalsIgnoreCase( ARG_MODE_AGENT )
+                    ||  arg.equalsIgnoreCase( ARG_MODE_COORDINATOR )
+                    ||  arg.equalsIgnoreCase( ARG_MODE_WORLD )
+                    ||  arg.equalsIgnoreCase( ARG_MODE_ALL )
+                )
+            {
                 mode = arg;
             }
             else if ( arg.equalsIgnoreCase( ARG_MODE_HELP ) ) {
@@ -31,18 +37,17 @@ public class Main {
             }
         }
 
-        run( mode, files );
-    }
-
-    public static void run( String mode, ArrayList< String > files ) throws Exception {
         if( mode.equalsIgnoreCase( ARG_MODE_COORDINATOR ) ) {
-            Coordinator coordinator = new Coordinator( CommsMode.NETWORK );
+            runCoordinatorOnly();
         }
         else if( mode.equalsIgnoreCase( ARG_MODE_AGENT ) ) {
-            // create an agent at contextPath /agent
-            // we could make this string anything we wanted, and in theory create multiple agents
-            // ---> except that at this point, the port is hardcoded and it will conflict
-            Agent agent = new Agent( "agent" );
+            runAgentOnly();
+        }
+        else if( mode.equalsIgnoreCase( ARG_MODE_WORLD ) ) {
+            runWorldOnly();
+        }
+        else if( mode.equalsIgnoreCase( ARG_MODE_ALL ) ) {
+            runAllLocally();
         }
     }
 
@@ -55,6 +60,10 @@ public class Main {
         System.exit( 0 );
     }
 
+    public abstract void runAgentOnly() throws Exception;
+    public abstract void runWorldOnly() throws Exception;
+    public abstract void runCoordinatorOnly() throws Exception;
+    public abstract void runAllLocally() throws Exception;
 }
 
 

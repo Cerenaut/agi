@@ -24,14 +24,6 @@ public class NetworkProxyEntity extends AbstractEntity {
         _sc = sc;
     }
 
-    /**
-     * NOT RELEVANT for the NetworkProxyEntity
-     */
-    @Override
-    protected int listenerPort() {
-        return 0;
-    }
-
     @Override
     protected Logger getLogger() {
         return _logger;
