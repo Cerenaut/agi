@@ -72,7 +72,7 @@ public class World extends AbstractEntity {
 
     @Override
     public void setWorldState( UniversalState state ) {
-        // not relevant here
+        // wipe out the current world state, adn replace with state
     }
 
     public void setAgentStates( Collection<UniversalState> agentStates ) {

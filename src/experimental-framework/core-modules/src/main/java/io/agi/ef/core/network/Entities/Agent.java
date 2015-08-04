@@ -129,7 +129,7 @@ public class Agent extends AbstractEntity {
 
     @Override
     public void setAgentStates( Collection<UniversalState> agentStates ) {
-        // not relevant here
+        // useful if the agent uses other agents states (not most common use case)
     }
 
 }
