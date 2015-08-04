@@ -1,5 +1,6 @@
 package io.agi.ef.demos.helloworld;
 
+import io.agi.ef.core.network.EndpointUtils;
 import io.agi.ef.core.network.coordinator.Coordinator;
 import io.agi.ef.core.CommsMode;
 
@@ -32,11 +33,11 @@ public class Main {
         }
         else if ( mode == 2 ) {
             // Create and run a 'hello world' Agent
-            HelloAgent a = new HelloAgent( "agent" );
+            HelloAgent a = new HelloAgent( "agent", EndpointUtils.agentListenPort() );
         }
         else if ( mode == 3 ) {
             // Create and run a 'hello world' Agent
-            HelloWorld w = new HelloWorld( "world" );
+            HelloWorld w = new HelloWorld( "world", EndpointUtils.worldListenPort() );
         }
 
     }

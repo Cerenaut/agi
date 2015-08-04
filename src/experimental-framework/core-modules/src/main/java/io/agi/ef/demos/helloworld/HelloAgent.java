@@ -22,8 +22,8 @@ public class HelloAgent extends Agent {
         setup();
     }
 
-    public HelloAgent( String agentContextPath ) throws Exception {
-        super( agentContextPath );
+    public HelloAgent( String agentContextPath, int port ) throws Exception {
+        super( agentContextPath, port );
         setup();
     }
 

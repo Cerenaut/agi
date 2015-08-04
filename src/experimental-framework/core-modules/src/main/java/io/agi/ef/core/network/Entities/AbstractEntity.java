@@ -28,15 +28,14 @@ public abstract class AbstractEntity implements ControlInterface, DataInterface 
     /**
      * Constructor with contextPath parameter sets the CommsMode to Network.
      */
-    public AbstractEntity( String contextPath ) throws Exception {
+    public AbstractEntity( String contextPath, int port ) throws Exception {
         super();
         _commsMode = CommsMode.NETWORK;
 
-        _networkEntity = new NetworkEntity( contextPath, listenerPort() );
+        _networkEntity = new NetworkEntity( contextPath, port );
         _networkEntity.start( this );
     }
 
-    protected abstract int listenerPort();
     protected abstract Logger getLogger();
 
     public int getTime() {
