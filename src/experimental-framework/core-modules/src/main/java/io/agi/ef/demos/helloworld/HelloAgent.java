@@ -1,5 +1,6 @@
 package io.agi.ef.demos.helloworld;
 
+import io.agi.ef.core.network.EndpointUtils;
 import io.agi.ef.core.network.entities.Agent;
 import io.agi.ef.core.actuators.MotorActuator;
 import io.agi.ef.core.sensors.LightSensor;
@@ -22,8 +23,8 @@ public class HelloAgent extends Agent {
         setup();
     }
 
-    public HelloAgent( String agentContextPath, int port ) throws Exception {
-        super( agentContextPath, port );
+    public HelloAgent( String agentContextPath ) throws Exception {
+        super( agentContextPath );
         setup();
     }
 

@@ -27,8 +27,8 @@ public class World extends AbstractEntity {
         super();
     }
 
-    public World( String contextPath, int port ) throws Exception {
-        super( contextPath, port );
+    public World( String contextPath ) throws Exception {
+        super( contextPath, EndpointUtils.worldListenPort() );
     }
 
     @Override

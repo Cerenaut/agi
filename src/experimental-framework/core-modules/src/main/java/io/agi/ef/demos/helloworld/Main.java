@@ -18,12 +18,12 @@ public class Main extends MainDemo {
     @Override
     public void runAgentOnly() throws Exception {
         // Create and run a 'hello world' Agent
-        HelloAgent a = new HelloAgent( "agent", EndpointUtils.agentListenPort() );
+        HelloAgent a = new HelloAgent( "agent" );
     }
 
     @Override
     public void runWorldOnly() throws Exception {
-        HelloWorld w = new HelloWorld( "world", EndpointUtils.worldListenPort() );
+        HelloWorld w = new HelloWorld( "world" );
     }
 
     @Override

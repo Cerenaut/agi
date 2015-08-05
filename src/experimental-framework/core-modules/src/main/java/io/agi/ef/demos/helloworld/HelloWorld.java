@@ -17,8 +17,8 @@ public class HelloWorld extends World {
         setup();
     }
 
-    public HelloWorld( String contextPath, int port ) throws Exception {
-        super( contextPath, port );
+    public HelloWorld( String contextPath ) throws Exception {
+        super( contextPath );
         setup();
     }
 

@@ -32,8 +32,8 @@ public class Agent extends AbstractEntity {
         super();
     }
 
-    public Agent( String contextPath, int port ) throws Exception {
-        super( contextPath, port );
+    public Agent( String contextPath ) throws Exception {
+        super( contextPath, EndpointUtils.agentListenPort() );
     }
 
     @Override

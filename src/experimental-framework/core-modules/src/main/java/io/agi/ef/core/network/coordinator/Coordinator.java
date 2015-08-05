@@ -41,7 +41,7 @@ public class Coordinator implements ConnectionManagerListener, ControlInterface,
 
     private static final Logger _logger = Logger.getLogger( Coordinator.class.getName() );
     private final CommsMode _Comms_mode;
-    private ConnectionManager _cm = new ConnectionManager();
+    private ConnectionManager _cm = null;
     private HashSet<AbstractEntity> _agents = new HashSet<>( );
     private AbstractEntity _world = null;
 
@@ -88,7 +88,7 @@ public class Coordinator implements ConnectionManagerListener, ControlInterface,
      */
     public Coordinator() throws Exception {
         _Comms_mode = CommsMode.NETWORK;
-        start();
+        setup();
     }
 
     /**
@@ -98,6 +98,13 @@ public class Coordinator implements ConnectionManagerListener, ControlInterface,
      */
     public Coordinator( CommsMode commsMode ) throws Exception {
         _Comms_mode = commsMode;
+        setup();
+    }
+
+    private void setup() throws Exception {
+        _cm = new ConnectionManager();
+        _cm.addListener( this );
+
         start();
     }
 
@@ -172,17 +179,16 @@ public class Coordinator implements ConnectionManagerListener, ControlInterface,
     @Override
     public Response step() {
 
-        Response response = Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "Step() error: No agents or world.")).build();
+        Response response = null;
 
-        if ( _world == null || _agents.size() == 0 ) {
-             return response;
+        if ( _world == null && _agents.size() == 0 ) {
+            response = Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "Step() error: No Agent or World.")).build();
+            return response;
         }
-
-        _logger.log( Level.INFO, "Coordinator received step." );
 
         UniversalState worldState = getWorldState();                        // get updated world state
 
-        response = stepAllAgents( worldState );                    // progress agents (use world sensor inputs)
+        response = stepAllAgents( worldState );                             // progress agents (use world sensor inputs)
 
         Collection< UniversalState > combinedStates = getAgentStates();     // get Actuator outputs
 
@@ -240,7 +246,7 @@ public class Coordinator implements ConnectionManagerListener, ControlInterface,
             response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "All agents stepped." ) ).build();
         }
         else {
-            response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "There are no connected servers to step." ) ).build();
+            response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "There are no connected Agents to step." ) ).build();
         }
 
         return response;
@@ -271,12 +277,13 @@ public class Coordinator implements ConnectionManagerListener, ControlInterface,
         return response;
     }
 
+    // todo: Add a call for World
     public void connectAgentBaseurl( String contextPath ) {
 
         if ( _Comms_mode == CommsMode.NETWORK ) {
             _cm.registerServer(
                     ServerConnection.ServerType.Agent,
-                    EndpointUtils.agentListenPort(),     // todo: ugly hardcoding. This should come from the request, but wishing to remove need for it completely.
+                    EndpointUtils.agentListenPort(),     // todo: Port number - this should come from the request, but wishing to remove need for it completely.
                     contextPath );
         }
     }
