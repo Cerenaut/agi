@@ -1,11 +1,10 @@
 package io.agi.ef.demos.helloworld;
 
-import io.agi.ef.agent.Agent;
+import io.agi.ef.core.network.EndpointUtils;
+import io.agi.ef.core.network.entities.Agent;
 import io.agi.ef.core.actuators.MotorActuator;
 import io.agi.ef.core.sensors.LightSensor;
 import io.agi.ef.core.CommsMode;
-
-import javax.ws.rs.core.Response;
 
 /**
  *
@@ -19,9 +18,17 @@ import javax.ws.rs.core.Response;
  */
 public class HelloAgent extends Agent {
 
-    public HelloAgent( CommsMode commsMode, String agentContextPath ) {
-        super( commsMode, agentContextPath );
+    public HelloAgent() {
+        super();
+        setup();
+    }
 
+    public HelloAgent( String agentContextPath ) throws Exception {
+        super( agentContextPath );
+        setup();
+    }
+
+    void setup() {
         LightSensor sensor = new LightSensor();
         addSensor( sensor );
 
@@ -29,9 +36,6 @@ public class HelloAgent extends Agent {
         addActuator( motorActuator );
     }
 
-    public HelloAgent( CommsMode commsMode ) {
-        super( commsMode );
-    }
 
     @Override
     public void stepBody() {

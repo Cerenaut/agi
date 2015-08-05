@@ -1,22 +1,25 @@
-package io.agi.ef.coordinator;
+package io.agi.ef.core.network.coordinator;
 
-import io.agi.ef.agent.Agent;
-import io.agi.ef.clientapi.model.TStamp;
-import io.agi.ef.coordinator.services.ControlApiServiceImpl;
-import io.agi.ef.coordinator.services.DataApiServiceImpl;
-import io.agi.ef.coordinator.services.ConnectApiServiceImpl;
+import io.agi.ef.core.network.entities.AbstractEntity;
+import io.agi.ef.core.network.entities.Agent;
+import io.agi.ef.clientapi.ApiException;
+import io.agi.ef.core.network.entities.NetworkProxyEntity;
+import io.agi.ef.core.network.coordinator.services.ControlApiServiceImpl;
+import io.agi.ef.core.network.coordinator.services.DataApiServiceImpl;
+import io.agi.ef.core.network.coordinator.services.ConnectApiServiceImpl;
 import io.agi.ef.core.CommsMode;
 import io.agi.ef.core.UniversalState;
 import io.agi.ef.core.apiInterfaces.ConnectInterface;
 import io.agi.ef.core.network.ConnectionManager;
 import io.agi.ef.core.apiInterfaces.ControlInterface;
+import io.agi.ef.core.network.ConnectionManagerListener;
 import io.agi.ef.core.network.EndpointUtils;
 import io.agi.ef.core.network.ServerConnection;
 import io.agi.ef.serverapi.api.ApiResponseMessage;
 import io.agi.ef.serverapi.api.factories.ConnectApiServiceFactory;
 import io.agi.ef.serverapi.api.factories.ControlApiServiceFactory;
 import io.agi.ef.serverapi.api.factories.DataApiServiceFactory;
-import io.agi.ef.world.World;
+import io.agi.ef.core.network.entities.World;
 import org.eclipse.jetty.server.Server;
 
 import javax.ws.rs.core.Response;
@@ -34,13 +37,13 @@ import java.util.logging.Logger;
  *
  * Created by gideon on 30/07/15.
  */
-public class Coordinator implements ControlInterface, ConnectInterface {
+public class Coordinator implements ConnectionManagerListener, ControlInterface, ConnectInterface {
 
     private static final Logger _logger = Logger.getLogger( Coordinator.class.getName() );
     private final CommsMode _Comms_mode;
-    private ConnectionManager _cm = new ConnectionManager();
-    private HashSet< Agent > _agents = new HashSet<>( ); // todo: consider moving to ConnectionManager
-    private World _world = null;
+    private ConnectionManager _cm = null;
+    private HashSet<AbstractEntity> _agents = new HashSet<>( );
+    private AbstractEntity _world = null;
 
     private boolean _running = false;
 
@@ -79,25 +82,39 @@ public class Coordinator implements ControlInterface, ConnectInterface {
         }
     }
 
-    public Coordinator( CommsMode commsMode ) {
+    /**
+     * Constructor with no parameters sets the CommsMode to Network
+     * @throws Exception
+     */
+    public Coordinator() throws Exception {
+        _Comms_mode = CommsMode.NETWORK;
+        setup();
+    }
+
+    /**
+     * Constructor with no ability to set CommsMode explicitly
+     * @param commsMode
+     * @throws Exception
+     */
+    public Coordinator( CommsMode commsMode ) throws Exception {
         _Comms_mode = commsMode;
+        setup();
+    }
+
+    private void setup() throws Exception {
+        _cm = new ConnectionManager();
+        _cm.addListener( this );
+
+        start();
     }
 
     public void setupProperties( ArrayList<String> properties ) {}
-
-    public void addAgent( Agent agent ) {
-        _agents.add( agent );
-    }
-
-    public void addWorld( World w ) {
-        _world = w;
-    }
 
     public void removeAgent( Agent agent ) {
         _agents.remove( agent );
     }
 
-    public void start() throws Exception {
+    private void start() throws Exception {
 
         // inject service implementations to be used by the server lib
         DataApiServiceFactory.setService( new DataApiServiceImpl() );
@@ -120,6 +137,39 @@ public class Coordinator implements ControlInterface, ConnectInterface {
 
 
     @Override
+    public void connectionAccepted( ServerConnection sc ) throws ApiException {
+
+        if ( sc.isAgent() ) {
+            addAgent( sc );
+        }
+        else if ( sc.isWorld() ) {
+            addWorld( sc );
+        }
+        else {
+            _logger.log( Level.WARNING, "You are trying to add a non Agent or World to the Coordinator" );
+        }
+
+    }
+
+    private void addWorld( ServerConnection sc ) {
+        NetworkProxyEntity networkEntity = new NetworkProxyEntity( sc );
+        _world = networkEntity;
+    }
+
+    private void addAgent( ServerConnection sc ) {
+        NetworkProxyEntity networkEntity = new NetworkProxyEntity( sc );
+        _agents.add( networkEntity );
+    }
+
+    public void addAgent( Agent agent ) {
+        _agents.add( agent );
+    }
+
+    public void addWorld( World world ) {
+        _world = world;
+    }
+
+    @Override
     public Response run() {
         _running = true;
         Response response = Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "Run Run Run")).build();
@@ -129,11 +179,16 @@ public class Coordinator implements ControlInterface, ConnectInterface {
     @Override
     public Response step() {
 
-        _logger.log( Level.INFO, "Coordinator received step." );
+        Response response = null;
+
+        if ( _world == null && _agents.size() == 0 ) {
+            response = Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "Step() error: No Agent or World.")).build();
+            return response;
+        }
 
         UniversalState worldState = getWorldState();                        // get updated world state
 
-        Response response = stepAllAgents( worldState );                    // progress agents (use world sensor inputs)
+        response = stepAllAgents( worldState );                             // progress agents (use world sensor inputs)
 
         Collection< UniversalState > combinedStates = getAgentStates();     // get Actuator outputs
 
@@ -150,7 +205,6 @@ public class Coordinator implements ControlInterface, ConnectInterface {
      */
     private Collection<UniversalState> getAgentStates() {
 
-
         return null;
     }
 
@@ -161,43 +215,19 @@ public class Coordinator implements ControlInterface, ConnectInterface {
      */
     private void updateAndStepWorld( Collection<UniversalState> combinedStates ) {
 
-        // 1) send combined Agent states to the World
-        // ------------------------------------------------------
+        if ( _world == null ) {
+            return;
+        }
 
-        // local world
+        // send combined Agent states to the World
         _world.setAgentStates( combinedStates );
 
-        // network world
 
-
-        // 2) step the world
-        // ------------------------------------------------------
-        // If World is local
+        // step the world
         if ( _world != null ) {
             _world.step();
         }
 
-        // If the World is remote
-        Response response = null;
-        HashMap< String, List< TStamp >> serverTimeStamps = new HashMap<>();
-        List<io.agi.ef.clientapi.model.TStamp> tStamps;
-        for ( ServerConnection sc : _cm.getServers() ) {
-
-            if ( sc.getClientApi() == null || sc.isWorld() ) {
-                continue;
-            }
-            io.agi.ef.clientapi.api.ControlApi capi = new io.agi.ef.clientapi.api.ControlApi( sc.getClientApi() );
-            try {
-                tStamps = capi.controlStepGet();
-                serverTimeStamps.put( sc.basePath(), tStamps );
-            }
-            catch ( io.agi.ef.clientapi.ApiException e ) {
-                e.printStackTrace();
-            }
-            catch ( Exception e ) {
-                e.printStackTrace();
-            }
-        }
     }
 
     /**
@@ -207,47 +237,16 @@ public class Coordinator implements ControlInterface, ConnectInterface {
      */
     private Response stepAllAgents( UniversalState worldState ) {
 
-        HashMap< String, List< TStamp >> serverTimeStamps = new HashMap<>();
-        List<io.agi.ef.clientapi.model.TStamp> tStamps;
         Response response = null;
-        int agentCount = 0;
 
-        // 1) step the Agents/Worlds connected directly
-        for ( Agent agent : _agents ) {
-            agentCount++;
-            agent.step();
-        }
-
-        // 2) step the Agents/Worlds connected via the network
-        for ( ServerConnection sc : _cm.getServers() ) {
-
-            if ( sc.getClientApi() == null || sc.isAgent() ) {
-                continue;
+        if ( _agents.size() != 0 ) {
+            for ( AbstractEntity agent : _agents ) {
+                agent.step();
             }
-
-            agentCount++;
-
-            io.agi.ef.clientapi.api.ControlApi capi = new io.agi.ef.clientapi.api.ControlApi( sc.getClientApi() );
-            try {
-
-                // todo: known bug: doesn't seem to be able to deserialise tStamps, but i want to change their format anyway
-                tStamps = capi.controlStepGet();
-                serverTimeStamps.put( sc.basePath(), tStamps );
-            }
-            catch ( io.agi.ef.clientapi.ApiException e ) {
-                e.printStackTrace();
-            }
-            // todo: this catches a connection refused exception, but should be tidied up
-            catch ( Exception e ) {
-                e.printStackTrace();
-            }
-        }
-
-        if ( agentCount == 0 ) {
-            response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "There are no connected servers to step." ) ).build();
+            response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "All agents stepped." ) ).build();
         }
         else {
-            response = Response.ok().entity( serverTimeStamps ).build();
+            response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "There are no connected Agents to step." ) ).build();
         }
 
         return response;
@@ -259,16 +258,13 @@ public class Coordinator implements ControlInterface, ConnectInterface {
      */
     private UniversalState getWorldState() {
 
-        // 1) local world
-        UniversalState state = _world.getState();
+        UniversalState state = null;
 
-        // 2) network world
+        if ( _world == null ) {
+            return state;
+        }
 
-                //
-                // to implement
-                //
-                //
-
+        state = _world.getState();
         return state;
     }
 
@@ -281,12 +277,13 @@ public class Coordinator implements ControlInterface, ConnectInterface {
         return response;
     }
 
+    // todo: Add a call for World
     public void connectAgentBaseurl( String contextPath ) {
 
         if ( _Comms_mode == CommsMode.NETWORK ) {
             _cm.registerServer(
                     ServerConnection.ServerType.Agent,
-                    EndpointUtils.agentListenPort(),     // todo: ugly hardcoding. This should come from the request, but wishing to remove need for it completely.
+                    EndpointUtils.agentListenPort(),     // todo: Port number - this should come from the request, but wishing to remove need for it completely.
                     contextPath );
         }
     }

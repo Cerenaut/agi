@@ -1,46 +1,47 @@
 package io.agi.ef.demos.helloworld;
 
-import io.agi.ef.coordinator.Coordinator;
+import io.agi.ef.core.network.EndpointUtils;
+import io.agi.ef.core.network.coordinator.Coordinator;
 import io.agi.ef.core.CommsMode;
+import io.agi.ef.demos.MainDemo;
 
 /**
  * Created by gideon on 31/07/15.
  */
-public class Main {
+public class Main extends MainDemo {
 
     public static void main( String[] args ) throws Exception {
+        Main m = new Main();
+        m.run( args );
+    }
 
-        int mode = 0;           // Create and run a Coordinator and a Client
-//        int mode = 1;         // Create and run a Coordinator only
-//        int mode = 2;         // Create and run a HelloWorld Agent only
+    @Override
+    public void runAgentOnly() throws Exception {
+        // Create and run a 'hello world' Agent
+        HelloAgent a = new HelloAgent( "agent" );
+    }
 
-        if ( mode == 0 ) {
-            // create and run a Coordinator
-            Coordinator c = new Coordinator( CommsMode.NON_NETWORK );
+    @Override
+    public void runWorldOnly() throws Exception {
+        HelloWorld w = new HelloWorld( "world" );
+    }
 
-            HelloWorld w = new HelloWorld( CommsMode.NON_NETWORK );
+    @Override
+    public void runCoordinatorOnly() throws Exception {
+        Coordinator c = new Coordinator();
+    }
 
-            // create and run a 'hello world' Agent
-            HelloAgent a = new HelloAgent( CommsMode.NON_NETWORK );
+    @Override
+    public void runAllLocally() throws Exception {
+        Coordinator c = new Coordinator();
 
-            c.addWorld( w );
-            c.addAgent( a );
+        HelloWorld w = new HelloWorld();
 
-            c.start();
-            w.start();
-            a.start();
-        }
-        else if ( mode == 1 ) {
-            // create and run a Coordinator
-            Coordinator c = new Coordinator( CommsMode.NETWORK );
-            c.start();
-        }
-        else if ( mode == 2 ) {
-            // Create and run a 'hello world' Agent
-            HelloAgent a = new HelloAgent( CommsMode.NETWORK, "agent" );
-            a.start();
-        }
+        // create and run a 'hello world' Agent
+        HelloAgent a = new HelloAgent();
 
+        c.addWorld( w );
+        c.addAgent( a );
     }
 
 }

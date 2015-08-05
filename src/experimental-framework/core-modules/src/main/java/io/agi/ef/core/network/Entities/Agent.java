@@ -1,15 +1,12 @@
-package io.agi.ef.agent;
+package io.agi.ef.core.network.entities;
 
 
 import io.agi.ef.core.UniversalState;
 import io.agi.ef.core.actuators.Actuator;
 import io.agi.ef.core.sensors.Sensor;
-import io.agi.ef.coordinator.CoordinatorClientServer;
-import io.agi.ef.core.CommsMode;
 import io.agi.ef.core.network.EndpointUtils;
 
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.logging.Level;
@@ -17,7 +14,6 @@ import java.util.logging.Logger;
 
 
 /**
- *
  * One of the major modules of the AGIEF. This the intelligent Agent.
  *
  * When CommsMode == NETWORK, all communications between entities occurs over the network
@@ -25,23 +21,19 @@ import java.util.logging.Logger;
  *
  * Created by gideon on 26/07/15.
  */
-public class Agent extends CoordinatorClientServer {
+public class Agent extends AbstractEntity {
 
     private static final Logger _logger = Logger.getLogger( Agent.class.getName() );
     private HashSet< Sensor > _sensors = new HashSet<>( );
     private HashSet< Actuator > _actuators = new HashSet<>( );
     private UniversalState _worldState = null;
 
-    public Agent( CommsMode commsMode ) {
-        super( commsMode );    // Default context path. This will conflict with other agents if not customised.
+    public Agent() {
+        super();
     }
 
-    public Agent( CommsMode commsMode, String agentContextPath ) {
-        super( commsMode, agentContextPath );
-    }
-
-    protected int listenerPort() {
-        return EndpointUtils.agentListenPort();
+    public Agent( String contextPath ) throws Exception {
+        super( contextPath, EndpointUtils.agentListenPort() );
     }
 
     @Override
@@ -113,7 +105,6 @@ public class Agent extends CoordinatorClientServer {
     }
 
     private void updateSensors() {
-
         for ( Sensor sensor : _sensors ) {
             sensor.update( _worldState );
         }
@@ -134,6 +125,11 @@ public class Agent extends CoordinatorClientServer {
     @Override
     public void setWorldState( UniversalState state ) {
         _worldState = state;
+    }
+
+    @Override
+    public void setAgentStates( Collection<UniversalState> agentStates ) {
+        // useful if the agent uses other agents states (not most common use case)
     }
 
 }

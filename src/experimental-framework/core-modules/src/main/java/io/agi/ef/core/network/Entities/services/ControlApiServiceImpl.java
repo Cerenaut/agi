@@ -1,7 +1,7 @@
-package io.agi.ef.agent.services;
+package io.agi.ef.core.network.entities.services;
 
 
-import io.agi.ef.coordinator.CoordinatorClientServer;
+import io.agi.ef.core.network.entities.AbstractEntity;
 import io.agi.ef.core.Utils;
 import io.agi.ef.serverapi.api.*;
 
@@ -19,15 +19,15 @@ import javax.ws.rs.core.Response;
 public class ControlApiServiceImpl extends ControlApiService {
 
     private static final Logger _logger = Logger.getLogger( ControlApiServiceImpl.class.getName() + "-agent" );
-    public CoordinatorClientServer _coordClientServer = null;
+    public AbstractEntity _entity = null;
 
     @Override
     public Response controlRunGet()
             throws NotFoundException {
 
-        _coordClientServer.run();
+        _entity.run();
 
-        List< TStamp > tsl = Utils.currentServerTimeStamp( _coordClientServer.getTime() );
+        List< TStamp > tsl = Utils.currentServerTimeStamp( _entity.getTime() );
         return Response.ok().entity( tsl ).build();
     }
 
@@ -35,9 +35,9 @@ public class ControlApiServiceImpl extends ControlApiService {
     public Response controlStepGet()
             throws NotFoundException {
 
-        _coordClientServer.step();
+        _entity.step();
 
-        List< TStamp > tsl = Utils.currentServerTimeStamp( _coordClientServer.getTime() );
+        List< TStamp > tsl = Utils.currentServerTimeStamp( _entity.getTime() );
 
         _logger.log( Level.INFO, "Agent received network step.\nResponse is {0}", tsl );
         return Response.ok().entity( tsl ).build();
@@ -47,9 +47,9 @@ public class ControlApiServiceImpl extends ControlApiService {
     public Response controlStopGet()
             throws NotFoundException {
 
-        _coordClientServer.stop();
+        _entity.stop();
 
-        List< TStamp > tsl = Utils.currentServerTimeStamp( _coordClientServer.getTime() );
+        List< TStamp > tsl = Utils.currentServerTimeStamp( _entity.getTime() );
         return Response.ok().entity( tsl ).build();
     }
 

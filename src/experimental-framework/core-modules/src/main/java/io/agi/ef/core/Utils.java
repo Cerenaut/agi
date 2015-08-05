@@ -1,6 +1,5 @@
 package io.agi.ef.core;
 
-import io.agi.ef.coordinator.Coordinator;
 import io.agi.ef.clientapi.model.TStamp;
 
 import java.math.BigDecimal;

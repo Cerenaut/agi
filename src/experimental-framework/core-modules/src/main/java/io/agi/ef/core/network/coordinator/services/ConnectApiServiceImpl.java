@@ -1,6 +1,6 @@
-package io.agi.ef.coordinator.services;
+package io.agi.ef.core.network.coordinator.services;
 
-import io.agi.ef.coordinator.Coordinator;
+import io.agi.ef.core.network.coordinator.Coordinator;
 import io.agi.ef.serverapi.api.*;
 
 
