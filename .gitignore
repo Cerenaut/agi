@@ -14,3 +14,6 @@ out/
 
 # maven output folder
 target/
+
+# intellij files
+workspace.xml
