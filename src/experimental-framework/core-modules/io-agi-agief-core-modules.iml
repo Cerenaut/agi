@@ -62,6 +62,7 @@
     <orderEntry type="library" name="Maven: org.eclipse.jetty:jetty-servlets:9.2.11.v20150529" level="project" />
     <orderEntry type="library" name="Maven: org.eclipse.jetty:jetty-continuation:9.2.11.v20150529" level="project" />
     <orderEntry type="library" name="Maven: org.eclipse.jetty:jetty-util:9.2.11.v20150529" level="project" />
+    <orderEntry type="library" name="Maven: io.agi.core:io-agi-core:1.0.0" level="project" />
     <orderEntry type="library" name="Maven: io.agi.ef:api-server:1.0.2" level="project" />
     <orderEntry type="library" name="Maven: io.agi.ef:api-client:1.0.2" level="project" />
     <orderEntry type="library" name="Maven: io.swagger:swagger-annotations:1.5.0" level="project" />

@@ -120,6 +120,14 @@
             <version>${jettyVersion}</version>
         </dependency>
 
+
+        <!--agi core-->
+        <dependency>
+            <groupId>io.agi.core</groupId>
+            <artifactId>io-agi-core</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
         <!--swagger generated server-->
         <dependency>
             <groupId>io.agi.ef</groupId>
