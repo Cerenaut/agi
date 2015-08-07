@@ -1,3 +1,3 @@
 #!/bin/sh
 
-java -cp $AGI_PROJECT_DIR/Coordinator/target/io-agi-agief-coordinator-1.0.0-jar-with-dependencies.jar io.agi.ef.coordinator.Main
+java -cp $AGI_PROJECT_DIR/src/experimental-framework/core-modules/target/io-agi-agief-core-modules-1.0.0-jar-with-dependencies.jar io.agi.ef.demos.helloworld.Main coordinator

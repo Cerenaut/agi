@@ -1,8 +1,8 @@
 #!/bin/sh
 
 TGT_DIR="$AGI_PROJECT_DIR/lib/CoordinatorClientLib"
-SPEC_FILE="$AGI_PROJECT_DIR/ApiSpec/coordinator.yaml"
-CONFIG_FILE="$AGI_PROJECT_DIR/ApiSpec/clientConfig.json"
+SPEC_FILE="$AGI_PROJECT_DIR/src/experimental-framework/api/api-spec/coordinator.yaml"
+CONFIG_FILE="$AGI_PROJECT_DIR/src/experimental-framework/api/api-spec/clientConfig.json"
 
 mkdir -p $AGI_PROJECT_DIR/lib
 
