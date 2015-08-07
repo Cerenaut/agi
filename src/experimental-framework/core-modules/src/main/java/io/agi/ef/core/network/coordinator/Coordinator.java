@@ -278,14 +278,23 @@ public class Coordinator implements ConnectionManagerListener, ControlInterface,
     }
 
     // todo: Add a call for World
-    public void connectAgentBaseurl( String contextPath ) {
+    public Response connectAgentBaseurl( String contextPath ) {
+
+        Response response = null;
 
         if ( _Comms_mode == CommsMode.NETWORK ) {
             _cm.registerServer(
                     ServerConnection.ServerType.Agent,
                     EndpointUtils.agentListenPort(),     // todo: Port number - this should come from the request, but wishing to remove need for it completely.
                     contextPath );
+
+            response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "connect to agent: " + contextPath + "." ) ).build();
         }
+        else {
+            response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "Not in network mode") ).build();
+        }
+
+        return response;
     }
 
 }
