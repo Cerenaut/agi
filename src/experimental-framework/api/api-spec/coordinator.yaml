@@ -3,18 +3,18 @@ swagger: '2.0'
 info:
   title: AGI Experimental Framework
   description: An open universal framework for running AGI experiments.
-  version: "1.0.0"
+  version: "1.0.2"
 # the domain of the service
 host: agi.io
 # array of all schemes that your API supports
 schemes:
-  - https
+  - http
 # will be prefixed to all paths
 basePath: /
 produces:
   - application/json
 paths:
-  /connect/agent/{baseurl}:
+  /connect/agent/{contextPath}:
     get:
       summary: Connect to Agent
       description: |
@@ -22,7 +22,7 @@ paths:
       tags:
         - Connect
       parameters:
-        - name: baseurl
+        - name: contextPath
           in: path
           description: "ID of agent to connect to"
           required: true
@@ -30,9 +30,25 @@ paths:
       responses:
         200:
           description: OK
+  /connect/world/{contextPath}:
+    get:
+      summary: Connect to World
+      description: |
+        Send request to connect this World server as specified url base path.
+      tags:
+        - Connect
+      parameters:
+        - name: contextPath
+          in: path
+          description: "ID of agent to connect to"
+          required: true
+          type: string
+      responses:
+        200:
+          description: OK          
   /control/step:
     get:
-      summary: Step the Coordinator
+      summary: Step the server
       description: |
         The Step endpoint steps the World and Agents.
       tags:
@@ -50,7 +66,7 @@ paths:
             $ref: '#/definitions/Error'
   /control/stop:
     get:
-      summary: Stop the Coordinator
+      summary: Stop the server
       description: |
         The Stop endpoint stops the World and Agents.
       tags:
@@ -68,9 +84,9 @@ paths:
             $ref: '#/definitions/Error'
   /control/run:
     get:
-      summary: Run the Coordinator
+      summary: Run continuously
       description: |
-        The Run endpoint starts the World and Agents to run freely.
+        The Run endpoint starts the server to run freely.
       tags:
         - Control
       responses:
@@ -107,7 +123,7 @@ definitions:
     properties:
       time_id:
         type: number
-        description: Timestamp of the current step of the coordinator.
+        description: Timestamp of the current step of the server.
   State:
     properties:
       state_id:

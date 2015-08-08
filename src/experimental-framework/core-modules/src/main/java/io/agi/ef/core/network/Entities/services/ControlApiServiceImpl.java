@@ -19,27 +19,27 @@ import javax.ws.rs.core.Response;
 
 public class ControlApiServiceImpl extends ControlApiService {
 
-    public ControlInterface _entity = null;
+    public ControlInterface _serviceDelegate = null;
 
     @Override
     public Response controlRunGet()
             throws NotFoundException {
 
-        return _entity.run();
+        return _serviceDelegate.run();
     }
 
     @Override
     public Response controlStepGet()
             throws NotFoundException {
 
-        return _entity.step();
+        return _serviceDelegate.step();
     }
 
     @Override
     public Response controlStopGet()
             throws NotFoundException {
 
-        return _entity.stop();
+        return _serviceDelegate.stop();
     }
 
 }

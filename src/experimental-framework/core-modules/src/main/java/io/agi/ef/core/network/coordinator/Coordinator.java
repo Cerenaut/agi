@@ -120,11 +120,11 @@ public class Coordinator implements ConnectionManagerListener, ControlInterface,
         DataApiServiceFactory.setService( new DataApiServiceImpl() );
 
         ControlApiServiceImpl controlApiService = new ControlApiServiceImpl();
-        controlApiService._coordinator = this;
+        controlApiService._serviceDelegate = this;
         ControlApiServiceFactory.setService( controlApiService );
 
         ConnectApiServiceImpl connectApiService = new ConnectApiServiceImpl();
-        connectApiService._coordinator = this;
+        connectApiService._serviceDelegate = this;
         ConnectApiServiceFactory.setService( connectApiService );
 
 
@@ -277,15 +277,23 @@ public class Coordinator implements ConnectionManagerListener, ControlInterface,
         return response;
     }
 
-    // todo: Add a call for World
-    public Response connectAgentBaseurl( String contextPath ) {
+    public Response connectWorld( String contextPath ) {
+        return connectServer( contextPath, ServerConnection.ServerType.World, EndpointUtils.worldListenPort() );
+    }
 
+    public Response connectAgent( String contextPath ) {
+
+        return connectServer( contextPath, ServerConnection.ServerType.Agent, EndpointUtils.agentListenPort() );
+    }
+
+    public Response connectServer( String contextPath, ServerConnection.ServerType type, int port ) {
         Response response = null;
 
+        // todo: Port number - this should come from the request, but wishing to remove need for it completely.
         if ( _Comms_mode == CommsMode.NETWORK ) {
             _cm.registerServer(
-                    ServerConnection.ServerType.Agent,
-                    EndpointUtils.agentListenPort(),     // todo: Port number - this should come from the request, but wishing to remove need for it completely.
+                    type,
+                    port,
                     contextPath );
 
             response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "connect to agent: " + contextPath + "." ) ).build();

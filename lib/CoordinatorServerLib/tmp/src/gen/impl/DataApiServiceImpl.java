@@ -20,11 +20,14 @@ import javax.ws.rs.core.Response;
 
 public class DataApiServiceImpl extends DataApiService {
   
+
+  	public DataApiInterface _serviceDelegate = null;
+
       @Override
       public Response dataStateGet()
       throws NotFoundException {
-      // do some magic!
-      return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+      
+      return _serviceDelegate.dataStateGet()
   }
   
 }

@@ -30,10 +30,12 @@ public class NetworkEntity implements ConnectionManagerListener {
     private ConnectionManager _cm = new ConnectionManager();    // manages connections required for network comms
     private ServerConnection _coordinatorConnection = null;     // special connection for Coordinator
     private int _listenerPort;
+    private ServerConnection.ServerType _type;
 
-    public NetworkEntity( String contextPath, int port ) {
+    public NetworkEntity( String contextPath, int port, ServerConnection.ServerType type ) {
         _contextPath = contextPath;
         _listenerPort = port;
+        _type = type;
     }
 
     private class RunServer implements Runnable {
@@ -58,7 +60,13 @@ public class NetworkEntity implements ConnectionManagerListener {
             _logger.log( Level.FINE, "Connection to server accepted, now send request to connect to this (Agent/World) running Server.." );
 
             io.agi.ef.clientapi.api.ConnectApi capi = new io.agi.ef.clientapi.api.ConnectApi( sc.getClientApi() );
-            capi.connectAgentBaseurlGet( _contextPath );
+
+            if ( _type == ServerConnection.ServerType.Agent ) {
+                capi.connectAgentContextPathGet( _contextPath );
+            }
+            else if ( _type == ServerConnection.ServerType.World ) {
+                capi.connectWorldContextPathGet( _contextPath );
+            }
         }
     }
 
@@ -69,7 +77,7 @@ public class NetworkEntity implements ConnectionManagerListener {
         DataApiServiceFactory.setService( new DataApiServiceImpl() );
 
         ControlApiServiceImpl controlApiService = new ControlApiServiceImpl();
-        controlApiService._entity = entity;
+        controlApiService._serviceDelegate = entity;
         ControlApiServiceFactory.setService( controlApiService );
 
 

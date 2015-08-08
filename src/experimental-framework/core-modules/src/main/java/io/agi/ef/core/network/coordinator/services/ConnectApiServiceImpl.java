@@ -12,13 +12,19 @@ import javax.ws.rs.core.Response;
 
 public class ConnectApiServiceImpl extends ConnectApiService {
 
-    public ConnectInterface _coordinator = null;
+    public ConnectInterface _serviceDelegate = null;
 
     @Override
-    public Response connectAgentBaseurlGet( String contextPath )
+    public Response connectAgentContextPathGet( String contextPath )
             throws NotFoundException {
 
-        return _coordinator.connectAgentBaseurl( contextPath );
+        return _serviceDelegate.connectAgent(contextPath);
     }
 
+    @Override
+    public Response connectWorldContextPathGet( String contextPath )
+            throws NotFoundException {
+
+        return _serviceDelegate.connectWorld( contextPath );
+    }
 }

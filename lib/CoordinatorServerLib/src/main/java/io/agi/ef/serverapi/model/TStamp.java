@@ -13,9 +13,9 @@ public class TStamp  {
 
   
   /**
-   * Timestamp of the current step of the coordinator.
+   * Timestamp of the current step of the server.
    **/
-  @ApiModelProperty(value = "Timestamp of the current step of the coordinator.")
+  @ApiModelProperty(value = "Timestamp of the current step of the server.")
   @JsonProperty("timeId")
   public BigDecimal getTimeId() {
     return timeId;

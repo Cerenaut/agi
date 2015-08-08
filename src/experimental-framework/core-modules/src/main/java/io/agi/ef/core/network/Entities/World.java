@@ -3,6 +3,7 @@ package io.agi.ef.core.network.entities;
 import io.agi.ef.core.UniversalState;
 import io.agi.ef.core.actuators.Actuator;
 import io.agi.ef.core.network.EndpointUtils;
+import io.agi.ef.core.network.ServerConnection;
 
 import javax.ws.rs.core.Response;
 import java.util.Collection;
@@ -28,7 +29,7 @@ public class World extends AbstractEntity {
     }
 
     public World( String contextPath ) throws Exception {
-        super( contextPath, EndpointUtils.worldListenPort() );
+        super( contextPath, EndpointUtils.worldListenPort(), ServerConnection.ServerType.World );
     }
 
     @Override

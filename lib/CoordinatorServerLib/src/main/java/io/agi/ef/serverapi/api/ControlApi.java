@@ -34,7 +34,7 @@ public class ControlApi  {
     @Path("/run")
     
     
-    @io.swagger.annotations.ApiOperation(value = "Run the Coordinator", notes = "The Run endpoint starts the World and Agents to run freely.\n", response = TStamp.class, responseContainer = "List")
+    @io.swagger.annotations.ApiOperation(value = "Run continuously", notes = "The Run endpoint starts the server to run freely.\n", response = TStamp.class, responseContainer = "List")
     @io.swagger.annotations.ApiResponses(value = { 
         @io.swagger.annotations.ApiResponse(code = 200, message = "Timestamps"),
         
@@ -48,7 +48,7 @@ public class ControlApi  {
     @Path("/step")
     
     
-    @io.swagger.annotations.ApiOperation(value = "Step the Coordinator", notes = "The Step endpoint steps the World and Agents.\n", response = TStamp.class, responseContainer = "List")
+    @io.swagger.annotations.ApiOperation(value = "Step the server", notes = "The Step endpoint steps the World and Agents.\n", response = TStamp.class, responseContainer = "List")
     @io.swagger.annotations.ApiResponses(value = { 
         @io.swagger.annotations.ApiResponse(code = 200, message = "Timestamps"),
         
@@ -62,7 +62,7 @@ public class ControlApi  {
     @Path("/stop")
     
     
-    @io.swagger.annotations.ApiOperation(value = "Stop the Coordinator", notes = "The Stop endpoint stops the World and Agents.\n", response = TStamp.class, responseContainer = "List")
+    @io.swagger.annotations.ApiOperation(value = "Stop the server", notes = "The Stop endpoint stops the World and Agents.\n", response = TStamp.class, responseContainer = "List")
     @io.swagger.annotations.ApiResponses(value = { 
         @io.swagger.annotations.ApiResponse(code = 200, message = "Timestamps"),
         

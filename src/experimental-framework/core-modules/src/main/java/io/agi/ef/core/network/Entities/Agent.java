@@ -3,6 +3,7 @@ package io.agi.ef.core.network.entities;
 
 import io.agi.ef.core.UniversalState;
 import io.agi.ef.core.actuators.Actuator;
+import io.agi.ef.core.network.ServerConnection;
 import io.agi.ef.core.sensors.Sensor;
 import io.agi.ef.core.network.EndpointUtils;
 
@@ -33,7 +34,7 @@ public class Agent extends AbstractEntity {
     }
 
     public Agent( String contextPath ) throws Exception {
-        super( contextPath, EndpointUtils.agentListenPort() );
+        super( contextPath, EndpointUtils.agentListenPort(), ServerConnection.ServerType.Agent );
     }
 
     @Override

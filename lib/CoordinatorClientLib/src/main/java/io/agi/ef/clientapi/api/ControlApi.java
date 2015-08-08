@@ -41,8 +41,8 @@ public class ControlApi {
 
   
   /**
-   * Run the Coordinator
-   * The Run endpoint starts the World and Agents to run freely.\n
+   * Run continuously
+   * The Run endpoint starts the server to run freely.\n
    * @return List<TStamp>
    */
   public List<TStamp> controlRunGet () throws ApiException {
@@ -97,7 +97,7 @@ public class ControlApi {
   }
   
   /**
-   * Step the Coordinator
+   * Step the server
    * The Step endpoint steps the World and Agents.\n
    * @return List<TStamp>
    */
@@ -153,7 +153,7 @@ public class ControlApi {
   }
   
   /**
-   * Stop the Coordinator
+   * Stop the server
    * The Stop endpoint stops the World and Agents.\n
    * @return List<TStamp>
    */

@@ -3,6 +3,7 @@ package io.agi.ef.core.network.entities;
 import io.agi.ef.core.CommsMode;
 import io.agi.ef.core.apiInterfaces.ControlInterface;
 import io.agi.ef.core.apiInterfaces.DataInterface;
+import io.agi.ef.core.network.ServerConnection;
 
 import java.util.logging.Logger;
 
@@ -28,11 +29,11 @@ public abstract class AbstractEntity implements ControlInterface, DataInterface 
     /**
      * Constructor with contextPath parameter sets the CommsMode to Network.
      */
-    public AbstractEntity( String contextPath, int port ) throws Exception {
+    public AbstractEntity( String contextPath, int port, ServerConnection.ServerType type ) throws Exception {
         super();
         _commsMode = CommsMode.NETWORK;
 
-        _networkEntity = new NetworkEntity( contextPath, port );
+        _networkEntity = new NetworkEntity( contextPath, port, type );
         _networkEntity.start( this );
     }
 

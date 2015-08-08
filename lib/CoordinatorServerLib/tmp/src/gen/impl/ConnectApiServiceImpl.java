@@ -18,11 +18,24 @@ import javax.ws.rs.core.Response;
 
 public class ConnectApiServiceImpl extends ConnectApiService {
   
+
+  	public ConnectApiInterface _serviceDelegate = null;
+
       @Override
-      public Response connectAgentBaseurlGet(String baseurl)
+      public Response connectAgentContextPathGet(String contextPath)
       throws NotFoundException {
-      // do some magic!
-      return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+      
+      return _serviceDelegate.connectAgentContextPathGet(String contextPath)
+  }
+  
+
+  	public ConnectApiInterface _serviceDelegate = null;
+
+      @Override
+      public Response connectWorldContextPathGet(String contextPath)
+      throws NotFoundException {
+      
+      return _serviceDelegate.connectWorldContextPathGet(String contextPath)
   }
   
 }

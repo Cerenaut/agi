@@ -29,16 +29,28 @@ public class ConnectApi  {
    private final ConnectApiService delegate = ConnectApiServiceFactory.getConnectApi();
 
     @GET
-    @Path("/agent/{baseurl}")
+    @Path("/agent/{contextPath}")
     
     
     @io.swagger.annotations.ApiOperation(value = "Connect to Agent", notes = "Send request to connect this Agent server as specified url base path.\n", response = Void.class)
     @io.swagger.annotations.ApiResponses(value = { 
         @io.swagger.annotations.ApiResponse(code = 200, message = "OK") })
 
-    public Response connectAgentBaseurlGet(@ApiParam(value = "ID of agent to connect to",required=true ) @PathParam("baseurl") String baseurl)
+    public Response connectAgentContextPathGet(@ApiParam(value = "ID of agent to connect to",required=true ) @PathParam("contextPath") String contextPath)
     throws NotFoundException {
-    return delegate.connectAgentBaseurlGet(baseurl);
+    return delegate.connectAgentContextPathGet(contextPath);
+    }
+    @GET
+    @Path("/world/{contextPath}")
+    
+    
+    @io.swagger.annotations.ApiOperation(value = "Connect to World", notes = "Send request to connect this World server as specified url base path.\n", response = Void.class)
+    @io.swagger.annotations.ApiResponses(value = { 
+        @io.swagger.annotations.ApiResponse(code = 200, message = "OK") })
+
+    public Response connectWorldContextPathGet(@ApiParam(value = "ID of agent to connect to",required=true ) @PathParam("contextPath") String contextPath)
+    throws NotFoundException {
+    return delegate.connectWorldContextPathGet(contextPath);
     }
 }
 
