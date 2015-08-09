@@ -38,7 +38,7 @@ public class HelloWorld extends World {
 
         System.out.println( "-------------------------------" );
         System.out.println( "HelloWorld: time: " + getTime() );
-        System.out.println( "HolloWorld: light brightness: " + _light.getBrightness() );
+        System.out.println( "HelloWorld: light brightness: " + _light.getBrightness() );
 
         // Read the agents motors and increment the position of the Agent accordingly.
         getAgentStates();

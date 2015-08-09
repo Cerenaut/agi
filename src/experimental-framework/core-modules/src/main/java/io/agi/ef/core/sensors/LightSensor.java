@@ -5,11 +5,15 @@ import io.agi.core.data.Data;
 import io.agi.ef.core.UniversalState;
 import io.agi.ef.core.actuators.LightActuator;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Created by gideon on 1/08/15.
  */
 public class LightSensor extends Sensor {
 
+    private static final Logger _logger = Logger.getLogger( LightSensor.class.getName() );
     private Data _outData = null;
     private float _gain = 1.0f;
     private float _brightness;
@@ -25,18 +29,18 @@ public class LightSensor extends Sensor {
     public void update( UniversalState worldState ) {
 
         if ( worldState == null ) {
-            System.out.println( "WARNING: LightSensor update with null worldState" );
+            _logger.log( Level.WARNING, "LightSensor update with null worldState" );
             return;
         }
 
         if ( worldState._state == null ) {
-            System.out.println( "WARNING: LightSensor update with null worldState._state" );
+            _logger.log( Level.WARNING, "LightSensor update with null worldState._state" );
             return;
         }
 
         String key = LightActuator.class.getName();
         if ( worldState._state.containsKey( key ) == false ) {
-            System.out.println( "WARNING: LightSensor update could not get value of LightActuator from the world state" );
+            _logger.log( Level.WARNING, "LightSensor update could not get value of LightActuator from the world state" );
         }
 
         String val = worldState._state.get( key );
