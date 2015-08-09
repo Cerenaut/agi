@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  *
  * Created by gideon on 26/07/15.
  */
-public class Agent extends AbstractEntity {
+public abstract class Agent extends AbstractEntity {
 
     private static final Logger _logger = Logger.getLogger( Agent.class.getName() );
     private HashSet< Sensor > _sensors = new HashSet<>( );
@@ -66,7 +66,6 @@ public class Agent extends AbstractEntity {
         return _actuators;
     }
 
-
     @Override
     public final Response run() {
         // To Discuss:
@@ -77,31 +76,35 @@ public class Agent extends AbstractEntity {
 
     @Override
     /**
-     * Assumes that the _worldState object is up-to-date
+     * Assumes that the _worldState object is up-to-date.
+     * Updates the Actuator outputs.
      */
     public final Response step() {
 
-        updateSensors();        // requires updated World 'state' (so the Coord must supply it)
-
-        incTime();
         _logger.log( Level.FINE, "Agent received step at time: {0}", getTime() );
 
-        stepBody();     // todo: want a better pattern than requiring developer to only override stepBody, it's a bit opaque
-
-        updateActuators();      // updates the Agents 'state'     (Coord must request 'state' now)
+        incTime();
+        updateSensors();        // Requires updated World 'state' (so the Coord must supply it)
+        stepBody();             // todo: want a better pattern than requiring developer to only override stepBody, it's a bit opaque
+        setActuatorInputs();    // This is overriden by concrete Agent
+        stepActuators();        // Updates the Agents 'state'     (Coord can request 'state' now)
 
         return null;
     }
 
     /**
-     * This should be overrided
+     * It is up to the concrete Agent, to update it's actuators with appropriate inputs.
      */
-    protected void stepBody() {
-    }
+    protected abstract void setActuatorInputs();
 
-    private void updateActuators() {
+    /**
+     * This should be overridden
+     */
+    protected abstract void stepBody();
+
+    private void stepActuators() {
         for ( Actuator actuator : _actuators ) {
-            actuator.update();
+            actuator.step();
         }
     }
 
@@ -120,7 +123,20 @@ public class Agent extends AbstractEntity {
 
     @Override
     public UniversalState getState() {
-        return null;
+
+        UniversalState uState = new UniversalState();
+
+        // todo: refactor this code to the state object
+
+        for ( Actuator actuator : _actuators ) {
+            uState._state.put( actuator.getClass().getName(), actuator.getOutput().toString() );
+        }
+
+        for ( Sensor sensor : _sensors ) {
+            uState._state.put( sensor.getClass().getName(), sensor.getOutput().toString() );
+        }
+
+        return uState;
     }
 
     @Override

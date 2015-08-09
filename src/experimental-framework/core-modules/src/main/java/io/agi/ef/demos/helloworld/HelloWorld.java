@@ -3,6 +3,9 @@ package io.agi.ef.demos.helloworld;
 import io.agi.ef.core.actuators.LightActuator;
 import io.agi.ef.core.CommsMode;
 import io.agi.ef.core.network.entities.World;
+import io.agi.ef.serverapi.api.ApiResponseMessage;
+
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -11,6 +14,8 @@ import io.agi.ef.core.network.entities.World;
  * Created by gideon on 1/08/15.
  */
 public class HelloWorld extends World {
+
+    private LightActuator _light = null;
 
     public HelloWorld() {
         super();
@@ -23,7 +28,21 @@ public class HelloWorld extends World {
     }
 
     private void setup() {
-        LightActuator lightActuator = new LightActuator();
-        addActuator( lightActuator );
+        _light = new LightActuator( 0, 10 );
+        addActuator( _light );
     }
+
+    public Response step() {
+        super.step();
+
+        System.out.println( "-------------------------------" );
+        System.out.println( "HelloWorld: time: " + getTime() );
+        System.out.println( "HolloWorld: light brightness: " + _light.getBrightness() );
+
+        // Read the agents motors and increment the position of the Agent accordingly.
+        getAgentStates();
+
+        return null;
+    }
+
 }

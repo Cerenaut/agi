@@ -127,7 +127,6 @@ public class Coordinator implements ConnectionManagerListener, ControlInterface,
         connectApiService._serviceDelegate = this;
         ConnectApiServiceFactory.setService( connectApiService );
 
-
         Thread serverThread = new Thread( new RunServer() );
         serverThread.start();
 
@@ -148,7 +147,6 @@ public class Coordinator implements ConnectionManagerListener, ControlInterface,
         else {
             _logger.log( Level.WARNING, "You are trying to add a non Agent or World to the Coordinator" );
         }
-
     }
 
     private void addWorld( ServerConnection sc ) {
@@ -205,6 +203,8 @@ public class Coordinator implements ConnectionManagerListener, ControlInterface,
      */
     private Collection<UniversalState> getAgentStates() {
 
+        // todo: need to implement for World to respond to Agents
+
         return null;
     }
 
@@ -216,18 +216,17 @@ public class Coordinator implements ConnectionManagerListener, ControlInterface,
     private void updateAndStepWorld( Collection<UniversalState> combinedStates ) {
 
         if ( _world == null ) {
+            _logger.log( Level.WARNING, "updateAndStepWorld(): _world is null" );
             return;
         }
 
         // send combined Agent states to the World
         _world.setAgentStates( combinedStates );
 
-
         // step the world
         if ( _world != null ) {
             _world.step();
         }
-
     }
 
     /**
@@ -241,6 +240,7 @@ public class Coordinator implements ConnectionManagerListener, ControlInterface,
 
         if ( _agents.size() != 0 ) {
             for ( AbstractEntity agent : _agents ) {
+                agent.setWorldState( worldState );
                 agent.step();
             }
             response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "All agents stepped." ) ).build();
@@ -258,12 +258,12 @@ public class Coordinator implements ConnectionManagerListener, ControlInterface,
      */
     private UniversalState getWorldState() {
 
-        UniversalState state = null;
-
         if ( _world == null ) {
-            return state;
+            _logger.log( Level.WARNING, "getWorldState(): _world is null" );
+            return null;
         }
 
+        UniversalState state = null;
         state = _world.getState();
         return state;
     }

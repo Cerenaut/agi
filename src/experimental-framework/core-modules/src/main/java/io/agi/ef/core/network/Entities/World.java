@@ -4,6 +4,7 @@ import io.agi.ef.core.UniversalState;
 import io.agi.ef.core.actuators.Actuator;
 import io.agi.ef.core.network.EndpointUtils;
 import io.agi.ef.core.network.ServerConnection;
+import io.agi.ef.core.sensors.Sensor;
 
 import javax.ws.rs.core.Response;
 import java.util.Collection;
@@ -22,7 +23,8 @@ public class World extends AbstractEntity {
 
     private static final Logger _logger = Logger.getLogger( World.class.getName() );
     private HashSet< Actuator > _actuators = new HashSet<>( );
-    private Collection<UniversalState> _agentStates = null;
+    private Collection< UniversalState > _agentStates = null;
+    private UniversalState _worldState = new UniversalState();
 
     public World() {
         super();
@@ -41,12 +43,26 @@ public class World extends AbstractEntity {
         _actuators.add( actuator );
     }
 
+    private void stepActuators() {
+        for ( Actuator actuator : _actuators ) {
+            actuator.step();
+        }
+    }
+
     public void removeActuator( Actuator actuator ) {
         _actuators.remove( actuator );
     }
 
     public HashSet< Actuator > getActuators() {
         return _actuators;
+    }
+
+    public void setAgentStates( Collection< UniversalState > agentStates ) {
+        _agentStates = agentStates;
+    }
+
+    public Collection< UniversalState > getAgentStates( ) {
+        return _agentStates;
     }
 
     @Override
@@ -56,8 +72,9 @@ public class World extends AbstractEntity {
 
     @Override
     public Response step() {
+        _logger.log( Level.FINER, "World stepped, time: {0}", getTime() );
         incTime();
-        System.out.println( "World stepped at time: " + getTime() );
+        stepActuators();
         return null;
     }
 
@@ -68,15 +85,23 @@ public class World extends AbstractEntity {
 
     @Override
     public UniversalState getState() {
-        return null;
+
+        _worldState.reset();
+
+        // todo: refactor this code to the state object
+
+        for ( Actuator actuator : _actuators ) {
+            Float val = actuator.getOutput().max();
+            _worldState._state.put( actuator.getClass().getName(), val.toString() );
+        }
+
+        return _worldState;
     }
 
     @Override
     public void setWorldState( UniversalState state ) {
-        // wipe out the current world state, adn replace with state
+        // wipe out the current world state, and replace with state
+        _worldState = state;
     }
 
-    public void setAgentStates( Collection<UniversalState> agentStates ) {
-        _agentStates = agentStates;
-    }
 }

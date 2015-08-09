@@ -1,11 +1,32 @@
 package io.agi.ef.core.actuators;
 
+import io.agi.core.data.Data;
+import io.agi.ef.core.UniversalState;
+
 /**
  *
- * The means by which an Agent can sense the World.
+ * The Agent acts in the the World via an Actuator.
  *
  * Created by gideon on 1/08/15.
  */
 public abstract class Actuator {
-    public abstract void update();
+
+    public Actuator( int dimInput, int dimOutput ) {}
+
+    /**
+     * Update the input of the Actuator.
+     * @param input
+     */
+    public abstract void setInput( Data input );
+
+    /**
+     * Step Actuator.
+     */
+    public abstract void step();
+
+    /**
+     * Get current output of Actuator. It can change after an update() cycle.
+     * @return
+     */
+    public abstract Data getOutput();
 }

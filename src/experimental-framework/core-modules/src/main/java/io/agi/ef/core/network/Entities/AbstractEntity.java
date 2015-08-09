@@ -8,7 +8,7 @@ import io.agi.ef.core.network.ServerConnection;
 import java.util.logging.Logger;
 
 /**
- * Base class for Agent and World (referred to generically as 'entities'.
+ * Base class for Agent and World (referred to generically as 'entities').
  *
  * Created by gideon on 3/08/15.
  */
