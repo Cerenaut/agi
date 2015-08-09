@@ -10,6 +10,7 @@ import javax.ws.rs.core.Response;
 /**
  *
  * Simple test World that contains a single light source.
+ * The light source fluctuates (according to a triangular wave profile).
  *
  * Created by gideon on 1/08/15.
  */
