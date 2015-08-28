@@ -32,7 +32,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>io.agi.ef.demos.helloworld.Main</mainClass>
+                            <mainClass>io.agi.ef.demo.helloworld.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -121,7 +121,7 @@
         </dependency>
 
 
-        <!--agi core-->
+        <!--agi experiment-->
         <dependency>
             <groupId>io.agi.core</groupId>
             <artifactId>io-agi-core</artifactId>
