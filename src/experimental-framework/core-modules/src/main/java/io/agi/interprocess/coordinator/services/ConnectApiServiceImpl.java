@@ -16,13 +16,7 @@ public class ConnectApiServiceImpl extends ConnectApiService {
     public Response connectAgentContextPathGet( String contextPath )
             throws NotFoundException {
 
-        return _serviceDelegate.connectAgent(contextPath);
+        return _serviceDelegate.connectNode(contextPath);
     }
 
-    @Override
-    public Response connectWorldContextPathGet( String contextPath )
-            throws NotFoundException {
-
-        return _serviceDelegate.connectWorld( contextPath );
-    }
 }

@@ -1,4 +1,4 @@
-package io.agi.interprocess.entity.services;
+package io.agi.interprocess.coordinator.slave.services;
 
 
 import io.agi.interprocess.apiInterfaces.ControlInterface;

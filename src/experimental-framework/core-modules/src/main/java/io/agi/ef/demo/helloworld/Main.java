@@ -1,8 +1,11 @@
 package io.agi.ef.demo.helloworld;
 
-import io.agi.interprocess.coordinator.Coordinator;
+import io.agi.core.ef.Experiment;
+import io.agi.ef.experiment.Exp;
+import io.agi.interprocess.coordinator.CoordinatorMaster;
 import io.agi.ef.demo.MainDemo;
-import io.agi.interprocess.coordinator.CoordinatorProxy;
+import io.agi.interprocess.coordinator.CoordinatorSlave;
+import sun.management.resources.agent;
 
 /**
  * Created by gideon on 31/07/15.
@@ -16,10 +19,16 @@ public class Main extends MainDemo {
 
     @Override
     public void runAgentOnly() throws Exception {
+
         String host = "http://localhost";
         int port = 8080;
-        CoordinatorProxy coordinatorProxy = CoordinatorProxy.createInstance( host, port );
-        HelloAgent a = new HelloAgent( "agent" );
+
+        CoordinatorSlave.setup( "slave1", 8080, host, port );
+        CoordinatorSlave coordinator = CoordinatorSlave.getInstance();
+
+        HelloAgent agent = new HelloAgent();
+
+        Exp experiment = new Exp( coordinator, agent.getName() );
     }
 
     @Override
@@ -29,12 +38,12 @@ public class Main extends MainDemo {
 
     @Override
     public void runCoordinatorOnly() throws Exception {
-        Coordinator c = new Coordinator();
+        CoordinatorMaster c = new CoordinatorMaster();
     }
 
     @Override
     public void runAllLocally() throws Exception {
-        Coordinator c = new Coordinator();
+        CoordinatorMaster c = new CoordinatorMaster();
 
         HelloWorld w = new HelloWorld();
 

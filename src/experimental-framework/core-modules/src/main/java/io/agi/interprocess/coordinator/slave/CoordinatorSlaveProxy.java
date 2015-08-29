@@ -1,9 +1,9 @@
-package io.agi.interprocess.entity;
+package io.agi.interprocess.coordinator.slave;
 
 import io.agi.ef.clientapi.model.TStamp;
-import io.agi.ef.experiment.entities.AbstractEntity;
 import io.agi.interprocess.ServerConnection;
 import io.agi.ef.serverapi.api.ApiResponseMessage;
+import io.agi.interprocess.coordinator.CoordinatorInterface;
 
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
@@ -11,21 +11,23 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
+ *
+ * This is used by the Coordinator as a proxy to the Coordinator slave, also referred to as CoordinatorProxy.
+ * The class used by remote nodes to access the Coordinator functionality.
+ *
+ * It is essentially used as a local representation of the remote CoordinatorProxy.
+ * e.g. The Coordinator tells it to step, and it passes the step on to the remote Coordinator
+ *
  * Created by gideon on 3/08/15.
  */
-public class EntityProxy extends AbstractEntity {
+public class CoordinatorSlaveProxy extends CoordinatorInterface {
 
-    private static final Logger _logger = Logger.getLogger( EntityProxy.class.getName() );
+    private static final Logger _logger = Logger.getLogger( CoordinatorSlaveProxy.class.getName() );
     ServerConnection _sc = null;
 
-    public EntityProxy( ServerConnection sc ) {
+    public CoordinatorSlaveProxy( ServerConnection sc ) {
         super();
         _sc = sc;
-    }
-
-    @Override
-    protected Logger getLogger() {
-        return _logger;
     }
 
     @Override

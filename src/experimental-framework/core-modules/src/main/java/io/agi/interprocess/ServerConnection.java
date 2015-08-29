@@ -11,8 +11,7 @@ public class ServerConnection {
     private ApiClient client;
 
     public enum ServerType {
-        Agent,
-        World,
+        Node,
         Coordinator
     }
 
@@ -47,15 +46,8 @@ public class ServerConnection {
         return _id;
     }
 
-    public boolean isAgent() {
-        if ( _type == ServerType.Agent ) {
-            return true;
-        }
-        return false;
-    }
-
-    public boolean isWorld() {
-        if ( _type == ServerType.World ) {
+    public boolean isNode() {
+        if ( _type == ServerType.Node ) {
             return true;
         }
         return false;

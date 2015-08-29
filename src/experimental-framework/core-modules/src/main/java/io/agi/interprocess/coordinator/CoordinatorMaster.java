@@ -1,17 +1,15 @@
 package io.agi.interprocess.coordinator;
 
-import io.agi.ef.experiment.entities.AbstractEntity;
 import io.agi.ef.clientapi.ApiException;
+import io.agi.interprocess.apiInterfaces.ConnectInterface;
 import io.agi.interprocess.coordinator.services.ControlApiServiceImpl;
 import io.agi.interprocess.coordinator.services.DataApiServiceImpl;
 import io.agi.interprocess.coordinator.services.ConnectApiServiceImpl;
-import io.agi.interprocess.apiInterfaces.ConnectInterface;
 import io.agi.interprocess.ConnectionManager;
-import io.agi.interprocess.apiInterfaces.ControlInterface;
 import io.agi.interprocess.ConnectionManagerListener;
 import io.agi.interprocess.EndpointUtils;
 import io.agi.interprocess.ServerConnection;
-import io.agi.interprocess.entity.EntityProxy;
+import io.agi.interprocess.coordinator.slave.CoordinatorSlaveProxy;
 import io.agi.ef.serverapi.api.ApiResponseMessage;
 import io.agi.ef.serverapi.api.factories.ConnectApiServiceFactory;
 import io.agi.ef.serverapi.api.factories.ControlApiServiceFactory;
@@ -26,17 +24,19 @@ import java.util.logging.Logger;
 /**
  *
  * This is one of the main modules of the AGIEF.
- * //todo fill in from documentation
+ * It is the heart of Interprocess communication.
+ *
+ * todo: to copy material from the writeup
  *
  * Created by gideon on 30/07/15.
  */
-public class Coordinator implements ConnectionManagerListener, ControlInterface, ConnectInterface {
+public class CoordinatorMaster extends CoordinatorInterface implements ConnectInterface, ConnectionManagerListener {
 
-    private static final Logger _logger = Logger.getLogger( Coordinator.class.getName() );
+    private static final Logger _logger = Logger.getLogger( CoordinatorMaster.class.getName() );
     private ConnectionManager _cm = null;
 
     private boolean _running = false;
-    private Collection< EntityProxy > _entities;
+    private Collection< CoordinatorInterface > _slave;
 
     private class RunServer implements Runnable {
         public void run() {
@@ -77,10 +77,9 @@ public class Coordinator implements ConnectionManagerListener, ControlInterface,
      * Constructor with no parameters sets the CommsMode to Network
      * @throws Exception
      */
-    public Coordinator() throws Exception {
+    public CoordinatorMaster() throws Exception {
         setup();
     }
-
 
     private void setup() throws Exception {
         _cm = new ConnectionManager();
@@ -112,23 +111,25 @@ public class Coordinator implements ConnectionManagerListener, ControlInterface,
         expThread.start();
     }
 
-
     @Override
     public void connectionAccepted( ServerConnection sc ) throws ApiException {
 
         if ( sc.isAgent() ) {
-            addEntityProxy( sc );
+            addSlave( sc );
         }
         else {
             _logger.log( Level.WARNING, "You are trying to add a non Agent or World to the Coordinator" );
         }
     }
 
-    private void addEntityProxy( ServerConnection sc ) {
-        EntityProxy entityProxy = new EntityProxy( sc );
-        _entities.add( entityProxy );
+    private void addSlave( ServerConnection sc ) {
+        CoordinatorSlaveProxy slaveProxy = new CoordinatorSlaveProxy( sc );
+        _slave.add( slaveProxy );
     }
 
+    private void addSlave( CoordinatorSlave slave ) {
+        _slave.add( slave );
+    }
 
     @Override
     public Response run() {
@@ -141,7 +142,6 @@ public class Coordinator implements ConnectionManagerListener, ControlInterface,
     public Response step() {
 
         Response response = null;
-
 
         response = stepAllNodes();                             // progress agents (use world sensor inputs)
 
@@ -158,8 +158,8 @@ public class Coordinator implements ConnectionManagerListener, ControlInterface,
 
         Response response = null;
 
-        if ( _entities.size() != 0 ) {
-            for ( AbstractEntity agent : _entities ) {
+        if ( _slave.size() != 0 ) {
+            for ( CoordinatorSlaveProxy agent : _slave ) {
                 agent.step();
             }
             response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "All agents stepped." ) ).build();
@@ -179,13 +179,8 @@ public class Coordinator implements ConnectionManagerListener, ControlInterface,
         return response;
     }
 
-    public Response connectWorld( String contextPath ) {
+    public Response connectNode( String contextPath ) {
         return connectServer( contextPath, ServerConnection.ServerType.World, EndpointUtils.worldListenPort() );
-    }
-
-    public Response connectAgent( String contextPath ) {
-
-        return connectServer( contextPath, ServerConnection.ServerType.Agent, EndpointUtils.agentListenPort() );
     }
 
     public Response connectServer( String contextPath, ServerConnection.ServerType type, int port ) {

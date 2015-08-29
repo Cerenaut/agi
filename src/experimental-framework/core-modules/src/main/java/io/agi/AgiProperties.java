@@ -1,4 +1,4 @@
-package io.agi.ef.experiment;
+package io.agi;
 
 import java.io.FileInputStream;
 import java.util.Properties;

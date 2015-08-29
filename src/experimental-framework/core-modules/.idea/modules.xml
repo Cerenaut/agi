@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/io-agi-agief-core-modules.iml" filepath="$PROJECT_DIR$/io-agi-agief-core-modules.iml" />
+      <module fileurl="file://$PROJECT_DIR$/io-agi.iml" filepath="$PROJECT_DIR$/io-agi.iml" />
     </modules>
   </component>
 </project>

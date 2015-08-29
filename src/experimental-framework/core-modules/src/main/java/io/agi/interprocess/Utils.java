@@ -1,4 +1,4 @@
-package io.agi.ef.experiment;
+package io.agi.interprocess;
 
 import io.agi.ef.clientapi.model.TStamp;
 

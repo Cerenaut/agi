@@ -1,7 +1,7 @@
 package io.agi.ef.experiment.entities;
 
 
-import io.agi.interprocess.coordinator.CoordinatorProxy;
+import io.agi.interprocess.coordinator.CoordinatorSlave;
 import io.agi.interprocess.apiInterfaces.ControlInterface;
 
 import java.util.logging.Logger;
@@ -13,8 +13,9 @@ import java.util.logging.Logger;
  */
 public abstract class AbstractEntity implements ControlInterface {
 
+    private String _name = null;
     private int _time = 0;                      // time step
-    CoordinatorProxy _networkEntity = null;
+    CoordinatorSlave _slave = null;
 
     public AbstractEntity() {
         super();
@@ -28,5 +29,9 @@ public abstract class AbstractEntity implements ControlInterface {
 
     protected void incTime() {
         ++_time;
+    }
+
+    public String getName() {
+        return _name;
     }
 }
