@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package io.agi.core.ef;
+package io.agi.ef.dave;
 
 import io.agi.core.data.Data;
 import io.agi.core.orm.CallbackThread;

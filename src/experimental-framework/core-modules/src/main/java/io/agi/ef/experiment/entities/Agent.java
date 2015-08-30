@@ -21,8 +21,8 @@ public abstract class Agent extends AbstractEntity {
     private HashSet< Sensor > _sensors = new HashSet<>( );
     private HashSet< Actuator > _actuators = new HashSet<>( );
 
-    public Agent() {
-        super();
+    public Agent( String name ) throws Exception {
+        super( name );
     }
 
 
@@ -58,7 +58,7 @@ public abstract class Agent extends AbstractEntity {
     @Override
     public final Response run() {
         // To Discuss:
-        // I don't think this should be an option in AGENT - only in Coordinator for synchronisation
+        // I don't think this should be an option in AGENT - only in Master for synchronisation
         // Dave will disagree
         return null;
     }
@@ -110,5 +110,11 @@ public abstract class Agent extends AbstractEntity {
         return null;
     }
 
+    public void receivedEvent( String eventName ) {
+        System.out.println( "Received eventName = " + eventName );
+
+        // handle event
+
+    }
 
 }

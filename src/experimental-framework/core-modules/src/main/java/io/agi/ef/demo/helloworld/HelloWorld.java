@@ -16,8 +16,8 @@ public class HelloWorld extends World {
 
     private LightActuator _light = null;
 
-    public HelloWorld() {
-        super();
+    public HelloWorld( String name ) throws Exception {
+        super( name );
         setup();
     }
 

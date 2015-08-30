@@ -19,9 +19,10 @@ public class World extends AbstractEntity {
     private static final Logger _logger = Logger.getLogger( World.class.getName() );
     private HashSet< Actuator > _actuators = new HashSet<>( );
 
-    public World() {
-        super();
+    public World( String name ) throws Exception {
+        super( name );
     }
+
     @Override
     protected Logger getLogger() {
         return _logger;
@@ -63,4 +64,10 @@ public class World extends AbstractEntity {
         return null;
     }
 
+    @Override
+    public void receivedEvent( String eventName ) {
+        System.out.println( "Received eventName = " + eventName );
+
+        // handle event
+    }
 }

@@ -1,9 +1,9 @@
-package io.agi.interprocess.coordinator.slave;
+package io.agi.interprocess.coordinator;
 
 import io.agi.ef.clientapi.model.TStamp;
 import io.agi.interprocess.ServerConnection;
 import io.agi.ef.serverapi.api.ApiResponseMessage;
-import io.agi.interprocess.coordinator.CoordinatorInterface;
+import io.agi.interprocess.apiInterfaces.ControlInterface;
 
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
@@ -12,15 +12,15 @@ import java.util.logging.Logger;
 
 /**
  *
- * This is used by the Coordinator as a proxy to the Coordinator slave, also referred to as CoordinatorProxy.
- * The class used by remote nodes to access the Coordinator functionality.
+ * This is used by the Master as a proxy to the Master slave, also referred to as CoordinatorProxy.
+ * The class used by remote nodes to access the Master functionality.
  *
  * It is essentially used as a local representation of the remote CoordinatorProxy.
- * e.g. The Coordinator tells it to step, and it passes the step on to the remote Coordinator
+ * e.g. The Master tells it to step, and it passes the step on to the remote Master
  *
  * Created by gideon on 3/08/15.
  */
-public class CoordinatorSlaveProxy extends CoordinatorInterface {
+public class CoordinatorSlaveProxy implements ControlInterface {
 
     private static final Logger _logger = Logger.getLogger( CoordinatorSlaveProxy.class.getName() );
     ServerConnection _sc = null;

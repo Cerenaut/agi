@@ -19,8 +19,8 @@ public class HelloAgent extends Agent {
     private MotorActuator _motor = null;
     private LightSensor _lightSensor = null;
 
-    public HelloAgent() {
-        super();
+    public HelloAgent( String name ) throws Exception {
+        super( name );
         setup();
     }
 

@@ -4,9 +4,10 @@
  * and open the template in the editor.
  */
 
-package io.agi.core.ef;
+package io.agi.ef.dave;
 
 import io.agi.core.orm.AbstractFactory;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -19,21 +20,21 @@ import java.util.Collection;
  */
 public class FactoryExperiment implements Experiment {
 
-    ArrayList< Agent > _agents = new ArrayList< Agent >();
+    ArrayList<Agent> _agents = new ArrayList<Agent>();
     World _world;
 
     public FactoryExperiment() {
         
     }
    
-    public void createAgent( AbstractFactory< Agent > agentFactory, String name ) {
+    public void createAgent( AbstractFactory<Agent> agentFactory, String name ) {
         Agent a = agentFactory.create();
         a.setExperiment( this );
         a.setName( name );
         _agents.add( a );        
     }
 
-    public void createWorld( AbstractFactory< World > worldFactory ) {
+    public void createWorld( AbstractFactory<World> worldFactory ) {
         World w = worldFactory.create();
         setWorld( w );
     }
@@ -46,7 +47,7 @@ public class FactoryExperiment implements Experiment {
         _world = w;
     }
     
-    @Override public Collection< Agent > getAgents() {
+    @Override public Collection<Agent> getAgents() {
         return _agents;
     }
 

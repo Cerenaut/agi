@@ -1,6 +1,12 @@
 package io.agi.ef.demo;
 
+import io.agi.interprocess.coordinator.CoordinatorMaster;
+import io.agi.interprocess.coordinator.CoordinatorSlave;
+import io.agi.interprocess.coordinator.CoordinatorSlaveProxy;
+
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
 
 
 public abstract class MainDemo {
@@ -52,7 +58,7 @@ public abstract class MainDemo {
         System.out.println( "Arguments 'coordinator' and 'agent' will run the base version of the respective module." );
         System.out.println( "Argument 'help' will display this message." );
         System.out.println( "Any other arguments are interpreted as the name[s] of .properties file[s] that configures the program." );
-        System.out.println( "----> To run custom versions of Agent, Coordinator, World or combinations, see the HelloWorld Main() ." );
+        System.out.println( "----> To run custom versions of Agent, Master, World or combinations, see the HelloWorld Main() ." );
         System.exit( 0 );
     }
 

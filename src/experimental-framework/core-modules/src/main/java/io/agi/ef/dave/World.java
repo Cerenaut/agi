@@ -4,14 +4,14 @@
  * and open the template in the editor.
  */
 
-package io.agi.core.ef;
+package io.agi.ef.dave;
 
 /**
- *
+ * 
  * @author dave
  */
-public interface Agent extends Asynchronous, Stateful {
- 
+public interface World extends Asynchronous, Stateful {
+
     public void reset();
     public String getName();
     public void setName( String name );

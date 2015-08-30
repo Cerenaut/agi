@@ -9,29 +9,23 @@ import io.agi.ef.clientapi.ApiClient;
 public class ServerConnection {
 
     private ApiClient client;
-
-    public enum ServerType {
-        Node,
-        Coordinator
-    }
-
     static public int _sCount = 0;
 
     private int _id = ++_sCount;             // unique id
-    private ServerType _type = null;         // which 'type' of server to connect to (Agents and Worlds are types of AGIEF experiment servers)
     private int _port = -1;
-    private String _contextPath = null;      // the context that appears after the base basic url and port name. Together with _contextPath you have the 'basepath'. DO NOT include preceding or trailing slashes.
+    private String _host = null;
+    private String _contextPath = null;      // the context that appears after the base basic url and listenerPort name. Together with _contextPath you have the 'basepath'. DO NOT include preceding or trailing slashes.
     private ApiClient _client = null;        // data structure that enables making requests
 
 
-    public ServerConnection( ServerType type, int port, String contextPath ) {
-        _type = type;
-        _port = port;
+    public ServerConnection( String host, String contextPath, int port ) {
+        _host = host;
         _contextPath = contextPath;
+        _port = port;
     }
 
     public String basePath() {
-        return EndpointUtils.basePath( _port, _contextPath );
+        return EndpointUtils.basePath( _host, _contextPath, _port );
     }
 
     public void setClient( ApiClient client ) {
@@ -46,16 +40,9 @@ public class ServerConnection {
         return _id;
     }
 
-    public boolean isNode() {
-        if ( _type == ServerType.Node ) {
-            return true;
-        }
-        return false;
-    }
-
     @Override
     public String toString() {
-        String str = "[id:" + _id + "], type:(" + _type + "), port:(" + _port + "), contextPath:(" + _contextPath + "), clientApi:(" + _client + ")";
+        String str = "[id:" + _id + "), host:(" + _host + "), contextPath:(" + _contextPath + "), listenerPort:(" + _port + "), clientApi:(" + _client + ")";
         return str;
     }
 }

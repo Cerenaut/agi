@@ -12,11 +12,18 @@ public class ConnectApiServiceImpl extends ConnectApiService {
 
     public ConnectInterface _serviceDelegate = null;
 
-    @Override
-    public Response connectAgentContextPathGet( String contextPath )
-            throws NotFoundException {
 
-        return _serviceDelegate.connectNode(contextPath);
+    // todo: change spec to one call  connect/slave
+
+
+    @Override
+    public Response connectWorldContextPathGet( String contextPath ) throws NotFoundException {
+        return _serviceDelegate.connectCoordinator( contextPath );
+    }
+
+    @Override
+    public Response connectAgentContextPathGet( String contextPath ) throws NotFoundException {
+        return _serviceDelegate.connectCoordinator( contextPath );
     }
 
 }

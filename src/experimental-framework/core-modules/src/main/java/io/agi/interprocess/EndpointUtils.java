@@ -5,19 +5,8 @@ package io.agi.interprocess;
  */
 public class EndpointUtils {
 
-    private static int BASE_PORT = 8080;     // Shared between all servers in the agi framework
-
-    public static int coordinatorListenPort() {
-        return BASE_PORT;
+    public static String basePath( String host, String contextPath, int port ) {
+        return "http://" + host + ":" + port + "/" + contextPath;
     }
-
-    public static String coordinatorContextPath() {
-        return "coordinator";
-    }
-
-    public static String basePath( int port, String contextPath ) {
-        return "http://localhost:" + port + "/" + contextPath;
-    }
-
 
 }

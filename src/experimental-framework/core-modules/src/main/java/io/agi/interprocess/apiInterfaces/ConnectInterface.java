@@ -6,5 +6,5 @@ import javax.ws.rs.core.Response;
  * Created by gideon on 1/08/15.
  */
 public interface ConnectInterface {
-    Response connectNode( String contextPath );
+    Response connectCoordinator( String contextPath );
 }

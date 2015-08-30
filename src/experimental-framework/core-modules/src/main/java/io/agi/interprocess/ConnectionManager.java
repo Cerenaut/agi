@@ -113,15 +113,12 @@ public class ConnectionManager {
 
     /**
      * Register Server to try to connect to it.
-     *
-     * @param type
-     * @param contextPath
      */
-    public ServerConnection registerServer( ServerConnection.ServerType type, int port, String contextPath ) {
+    public ServerConnection registerServer( String host, String contextPath, int port ) {
 
-        _logger.log( FINE, "Register server type: {0}, at contextPath: {1}", new Object[]{ type , contextPath } );
+        _logger.log( FINE, "Register at contextPath: {0}", contextPath );
 
-        ServerConnection sc = new ServerConnection( type, port, contextPath );
+        ServerConnection sc = new ServerConnection( host, contextPath, port );
         _servers.add( sc ) ;
 
         return sc;
@@ -129,16 +126,16 @@ public class ConnectionManager {
 
     /**
      * Set up AGIEF server. It accepts clients, and receives requests to become a client of other servers (Agents and Worlds).
-     * @param port
      * @param contextPath does not include slashes
+     * @param port
      * @return
      */
-    public Server setupServer( int port, String contextPath ) {
+    public Server setupServer( String contextPath, int port ) {
 
-        _logger.log( Level.FINE, "Setup server on port: {0}, at contextpath: {1}. Basepath = {2}",
-                new Object[]{   port,
-                                contextPath,
-                                EndpointUtils.basePath( port, contextPath )} );
+        _logger.log( Level.FINE, "Setup server at contextpath: {0}, listenerPort: {1}. Basepath = {2}",
+                new Object[]{   contextPath,
+                                port,
+                                EndpointUtils.basePath( "localhost", contextPath, port )} );
 
         // setup server with jetty and jersey
         ServletHolder sh = new ServletHolder( ServletContainer.class );

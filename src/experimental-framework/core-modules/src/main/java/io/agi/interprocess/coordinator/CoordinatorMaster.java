@@ -2,24 +2,26 @@ package io.agi.interprocess.coordinator;
 
 import io.agi.ef.clientapi.ApiException;
 import io.agi.interprocess.apiInterfaces.ConnectInterface;
+import io.agi.interprocess.apiInterfaces.ControlInterface;
 import io.agi.interprocess.coordinator.services.ControlApiServiceImpl;
 import io.agi.interprocess.coordinator.services.DataApiServiceImpl;
 import io.agi.interprocess.coordinator.services.ConnectApiServiceImpl;
-import io.agi.interprocess.ConnectionManager;
 import io.agi.interprocess.ConnectionManagerListener;
-import io.agi.interprocess.EndpointUtils;
 import io.agi.interprocess.ServerConnection;
-import io.agi.interprocess.coordinator.slave.CoordinatorSlaveProxy;
 import io.agi.ef.serverapi.api.ApiResponseMessage;
 import io.agi.ef.serverapi.api.factories.ConnectApiServiceFactory;
 import io.agi.ef.serverapi.api.factories.ControlApiServiceFactory;
 import io.agi.ef.serverapi.api.factories.DataApiServiceFactory;
-import org.eclipse.jetty.server.Server;
 
 import javax.ws.rs.core.Response;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+// ************************************************
+// WARNING !!!!!! :        currently assumes that slaves are at localhost on port 8081  (hardcoded below)
+// ************************************************
+
 
 /**
  *
@@ -30,34 +32,18 @@ import java.util.logging.Logger;
  *
  * Created by gideon on 30/07/15.
  */
-public class CoordinatorMaster extends CoordinatorInterface implements ConnectInterface, ConnectionManagerListener {
+public class CoordinatorMaster extends Coordinator implements ConnectInterface, ConnectionManagerListener {
 
     private static final Logger _logger = Logger.getLogger( CoordinatorMaster.class.getName() );
-    private ConnectionManager _cm = null;
+    public static final String sContextPath = "coordinator";
+    private final int _port;
+    private HashSet< ControlInterface > _slave = new HashSet();
 
+    // todo: move to the Experiment class
     private boolean _running = false;
-    private Collection< CoordinatorInterface > _slave;
-
-    private class RunServer implements Runnable {
-        public void run() {
-            Server server = _cm.setupServer(
-                    EndpointUtils.coordinatorListenPort(),
-                    EndpointUtils.coordinatorContextPath() );
-            try {
-                server.start();
-                server.join();
-            }
-            catch ( Exception e ) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    // todo: this is a rudimentary mechanism, first pass to provide base functionality
     private class RunExperiment implements Runnable {
         public void run() {
             while ( true ) {
-
                 if ( _running == true ) {
                     step();
                 }
@@ -68,31 +54,26 @@ public class CoordinatorMaster extends CoordinatorInterface implements ConnectIn
                 catch ( InterruptedException e ) {
                     e.printStackTrace();
                 }
-
             }
         }
     }
 
-    /**
-     * Constructor with no parameters sets the CommsMode to Network
-     * @throws Exception
-     */
-    public CoordinatorMaster() throws Exception {
-        setup();
-    }
+    public CoordinatorMaster( int port ) throws Exception {
+        super();
 
-    private void setup() throws Exception {
-        _cm = new ConnectionManager();
+        _logger.setLevel( Level.FINE );
+
+        _port = port;
         _cm.addListener( this );
 
-        start();
+        startServer();
+
+        // todo: move to the Experiment class
+        Thread expThread = new Thread( new RunExperiment() );
+        expThread.start();
     }
 
-    public void setupProperties( ArrayList<String> properties ) {}
-
-
-    private void start() throws Exception {
-
+    protected void setServiceImplementation() {
         // inject service implementations to be used by the server lib
         DataApiServiceFactory.setService( new DataApiServiceImpl() );
 
@@ -103,31 +84,23 @@ public class CoordinatorMaster extends CoordinatorInterface implements ConnectIn
         ConnectApiServiceImpl connectApiService = new ConnectApiServiceImpl();
         connectApiService._serviceDelegate = this;
         ConnectApiServiceFactory.setService( connectApiService );
+    }
 
-        Thread serverThread = new Thread( new RunServer() );
-        serverThread.start();
+    protected String contextPath() {
+        return CoordinatorMaster.sContextPath;
+    }
 
-        Thread expThread = new Thread( new RunExperiment() );
-        expThread.start();
+    protected int listenerPort() {
+        return _port;
     }
 
     @Override
     public void connectionAccepted( ServerConnection sc ) throws ApiException {
-
-        if ( sc.isAgent() ) {
-            addSlave( sc );
-        }
-        else {
-            _logger.log( Level.WARNING, "You are trying to add a non Agent or World to the Coordinator" );
-        }
-    }
-
-    private void addSlave( ServerConnection sc ) {
         CoordinatorSlaveProxy slaveProxy = new CoordinatorSlaveProxy( sc );
-        _slave.add( slaveProxy );
+        addSlave( slaveProxy );
     }
 
-    private void addSlave( CoordinatorSlave slave ) {
+    private void addSlave( ControlInterface slave ) {
         _slave.add( slave );
     }
 
@@ -140,11 +113,8 @@ public class CoordinatorMaster extends CoordinatorInterface implements ConnectIn
 
     @Override
     public Response step() {
-
         Response response = null;
-
-        response = stepAllNodes();                             // progress agents (use world sensor inputs)
-
+        response = stepAllSlaves();
         _logger.log( Level.FINE, "Stepped all servers, the response is: {0}", response );
 
         return response;
@@ -154,13 +124,13 @@ public class CoordinatorMaster extends CoordinatorInterface implements ConnectIn
      * Step all Agents, and provide the combined state.
      * @return
      */
-    private Response stepAllNodes( ) {
+    private Response stepAllSlaves() {
 
         Response response = null;
 
         if ( _slave.size() != 0 ) {
-            for ( CoordinatorSlaveProxy agent : _slave ) {
-                agent.step();
+            for ( ControlInterface slave : _slave ) {
+                slave.step();
             }
             response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "All agents stepped." ) ).build();
         }
@@ -179,22 +149,16 @@ public class CoordinatorMaster extends CoordinatorInterface implements ConnectIn
         return response;
     }
 
-    public Response connectNode( String contextPath ) {
-        return connectServer( contextPath, ServerConnection.ServerType.World, EndpointUtils.worldListenPort() );
-    }
-
-    public Response connectServer( String contextPath, ServerConnection.ServerType type, int port ) {
+    /**
+     * We are in the Master, so this has the meaning, connectSlave
+     * @param contextPath
+     * @return
+     */
+    // todo: change call to give the host and listenerPort as well as contextPath (or wrapped up in one basepath variable)
+    public Response connectCoordinator( String contextPath ) {
         Response response = null;
-
-        // todo: Port number - this should come from the request, but wishing to remove need for it completely.
-
-        _cm.registerServer(
-                type,
-                port,
-                contextPath );
-
+        _cm.registerServer( "localhost", contextPath, 8081 );
         response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "connect to agent: " + contextPath + "." ) ).build();
-
         return response;
     }
 
