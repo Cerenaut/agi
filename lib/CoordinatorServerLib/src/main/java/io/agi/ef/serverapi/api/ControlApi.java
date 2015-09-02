@@ -31,46 +31,32 @@ public class ControlApi  {
    private final ControlApiService delegate = ControlApiServiceFactory.getControlApi();
 
     @GET
-    @Path("/run")
+    @Path("/command/{command}")
     
     
-    @io.swagger.annotations.ApiOperation(value = "Run continuously", notes = "The Run endpoint starts the server to run freely.\n", response = TStamp.class, responseContainer = "List")
+    @io.swagger.annotations.ApiOperation(value = "Send command to the server.", notes = "Send a control command signal to the server. It can consist of Step, Stop, Start, Pause and Resume.\n", response = TStamp.class, responseContainer = "List")
     @io.swagger.annotations.ApiResponses(value = { 
         @io.swagger.annotations.ApiResponse(code = 200, message = "Timestamps"),
         
         @io.swagger.annotations.ApiResponse(code = 0, message = "Unexpected error") })
 
-    public Response controlRunGet()
+    public Response controlCommandCommandGet(@ApiParam(value = "The command to send.",required=true ) @PathParam("command") String command)
     throws NotFoundException {
-    return delegate.controlRunGet();
+    return delegate.controlCommandCommandGet(command);
     }
     @GET
-    @Path("/step")
+    @Path("/status/{state}")
     
     
-    @io.swagger.annotations.ApiOperation(value = "Step the server", notes = "The Step endpoint steps the World and Agents.\n", response = TStamp.class, responseContainer = "List")
+    @io.swagger.annotations.ApiOperation(value = "Get the status.", notes = "Get the status of a particular state, Paused, Running and Stopping.\n", response = Boolean.class)
     @io.swagger.annotations.ApiResponses(value = { 
-        @io.swagger.annotations.ApiResponse(code = 200, message = "Timestamps"),
+        @io.swagger.annotations.ApiResponse(code = 200, message = "status"),
         
         @io.swagger.annotations.ApiResponse(code = 0, message = "Unexpected error") })
 
-    public Response controlStepGet()
+    public Response controlStatusStateGet(@ApiParam(value = "The status returns refers to this state.",required=true ) @PathParam("state") String state)
     throws NotFoundException {
-    return delegate.controlStepGet();
-    }
-    @GET
-    @Path("/stop")
-    
-    
-    @io.swagger.annotations.ApiOperation(value = "Stop the server", notes = "The Stop endpoint stops the World and Agents.\n", response = TStamp.class, responseContainer = "List")
-    @io.swagger.annotations.ApiResponses(value = { 
-        @io.swagger.annotations.ApiResponse(code = 200, message = "Timestamps"),
-        
-        @io.swagger.annotations.ApiResponse(code = 0, message = "Unexpected error") })
-
-    public Response controlStopGet()
-    throws NotFoundException {
-    return delegate.controlStopGet();
+    return delegate.controlStatusStateGet(state);
     }
 }
 

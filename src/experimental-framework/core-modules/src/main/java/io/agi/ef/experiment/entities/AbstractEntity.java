@@ -1,10 +1,11 @@
 package io.agi.ef.experiment.entities;
 
 
-import io.agi.interprocess.coordinator.CoordinatorSlave;
-import io.agi.interprocess.apiInterfaces.ControlInterface;
-import io.agi.interprocess.coordinator.CoordinatorSlaveDelegate;
+import io.agi.ef.interprocess.coordinator.CoordinatorSlave;
+import io.agi.ef.interprocess.apiInterfaces.ControlInterface;
+import io.agi.ef.interprocess.coordinator.CoordinatorSlaveDelegate;
 
+import javax.ws.rs.core.Response;
 import java.util.logging.Logger;
 
 /**
@@ -14,21 +15,19 @@ import java.util.logging.Logger;
  */
 public abstract class AbstractEntity implements ControlInterface, CoordinatorSlaveDelegate {
 
-    // todo: move _logger to here, and get class name dynamically, instead of hardcoding to THIS Class name.
-    // String className = this.getClass().getSimpleName();
-
+    protected Logger _logger = null;
     private String _name = null;
     private int _time = 0;                      // time step
     CoordinatorSlave _slave = null;
 
     public AbstractEntity( String name ) throws Exception {
+        _logger = Logger.getLogger( this.getClass().getPackage().getName() );
+
         _name = name;
         _slave = CoordinatorSlave.getInstance();
 
-        _slave.setDelegate( this );
+        _slave.set_delegate( this );
     }
-
-    protected abstract Logger getLogger();
 
     public int getTime() {
         return _time;
@@ -40,5 +39,17 @@ public abstract class AbstractEntity implements ControlInterface, CoordinatorSla
 
     public String name() {
         return _name;
+    }
+
+
+
+    @Override
+    public Response command( String command ) {
+        return null;
+    }
+
+    @Override
+    public Response status( String state ) {
+        return null;
     }
 }

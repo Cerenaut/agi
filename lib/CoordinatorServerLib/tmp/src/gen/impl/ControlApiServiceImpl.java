@@ -24,30 +24,20 @@ public class ControlApiServiceImpl extends ControlApiService {
   	public ControlApiInterface _serviceDelegate = null;
 
       @Override
-      public Response controlRunGet()
+      public Response controlCommandCommandGet(String command)
       throws NotFoundException {
       
-      return _serviceDelegate.controlRunGet()
+      return _serviceDelegate.controlCommandCommandGet(String command)
   }
   
 
   	public ControlApiInterface _serviceDelegate = null;
 
       @Override
-      public Response controlStepGet()
+      public Response controlStatusStateGet(String state)
       throws NotFoundException {
       
-      return _serviceDelegate.controlStepGet()
-  }
-  
-
-  	public ControlApiInterface _serviceDelegate = null;
-
-      @Override
-      public Response controlStopGet()
-      throws NotFoundException {
-      
-      return _serviceDelegate.controlStopGet()
+      return _serviceDelegate.controlStatusStateGet(String state)
   }
   
 }

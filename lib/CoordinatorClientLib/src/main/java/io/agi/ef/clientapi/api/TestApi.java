@@ -8,8 +8,6 @@ import io.agi.ef.clientapi.model.*;
 
 import java.util.*;
 
-import io.agi.ef.clientapi.model.State;
-import io.agi.ef.clientapi.model.Error;
 
 import com.sun.jersey.multipart.FormDataMultiPart;
 import com.sun.jersey.multipart.file.FileDataBodyPart;
@@ -20,14 +18,14 @@ import java.io.File;
 import java.util.Map;
 import java.util.HashMap;
 
-public class DataApi {
+public class TestApi {
   private ApiClient apiClient;
 
-  public DataApi() {
+  public TestApi() {
     this(Configuration.getDefaultApiClient());
   }
 
-  public DataApi(ApiClient apiClient) {
+  public TestApi(ApiClient apiClient) {
     this.apiClient = apiClient;
   }
 
@@ -41,16 +39,16 @@ public class DataApi {
 
   
   /**
-   * Get the State of the system.
-   * The State endpoint returns a model that describes the current state.\n
-   * @return List<State>
+   * test call
+   * this is a test call to test server is running\n
+   * @return void
    */
-  public List<State> dataStateGet () throws ApiException {
+  public void testGet () throws ApiException {
     Object postBody = null;
     
 
     // create path and map variables
-    String path = "/data/state".replaceAll("\\{format\\}","json");
+    String path = "/test".replaceAll("\\{format\\}","json");
 
     // query params
     Map<String, String> queryParams = new HashMap<String, String>();
@@ -86,10 +84,10 @@ public class DataApi {
       String[] authNames = new String[] {  };
       String response = apiClient.invokeAPI(path, "GET", queryParams, postBody, headerParams, formParams, accept, contentType, authNames);
       if(response != null){
-        return (List<State>) apiClient.deserialize(response, "array", State.class);
+        return ;
       }
       else {
-        return null;
+        return ;
       }
     } catch (ApiException ex) {
       throw ex;

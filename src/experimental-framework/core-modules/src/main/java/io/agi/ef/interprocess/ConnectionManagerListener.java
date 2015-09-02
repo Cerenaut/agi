@@ -1,4 +1,4 @@
-package io.agi.interprocess;
+package io.agi.ef.interprocess;
 
 import io.agi.ef.clientapi.ApiException;
 

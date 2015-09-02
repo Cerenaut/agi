@@ -5,8 +5,6 @@ import io.agi.ef.serverapi.model.*;
 
 import com.sun.jersey.multipart.FormDataParam;
 
-import io.agi.ef.serverapi.model.State;
-import io.agi.ef.serverapi.model.Error;
 
 import java.util.List;
 import io.agi.ef.serverapi.api.NotFoundException;
@@ -18,9 +16,9 @@ import com.sun.jersey.multipart.FormDataParam;
 
 import javax.ws.rs.core.Response;
 
-public abstract class DataApiService {
+public abstract class TestApiService {
   
-      public abstract Response dataStateGet()
+      public abstract Response testGet()
       throws NotFoundException;
   
 }

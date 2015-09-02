@@ -1,4 +1,4 @@
-package io.agi.interprocess.coordinator;
+package io.agi.ef.interprocess.coordinator;
 
 /**
  * Created by gideon on 30/08/15.

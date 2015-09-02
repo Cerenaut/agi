@@ -1,12 +1,6 @@
 package io.agi.ef.demo;
 
-import io.agi.interprocess.coordinator.CoordinatorMaster;
-import io.agi.interprocess.coordinator.CoordinatorSlave;
-import io.agi.interprocess.coordinator.CoordinatorSlaveProxy;
-
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
 
 
 public abstract class MainDemo {

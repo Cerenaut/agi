@@ -1,19 +1,18 @@
-package io.agi.interprocess.coordinator;
+package io.agi.ef.interprocess.coordinator;
 
 import io.agi.ef.clientapi.ApiException;
 import io.agi.ef.experiment.entities.AbstractEntity;
+import io.agi.ef.serverapi.api.ApiResponseMessage;
 import io.agi.ef.serverapi.api.factories.ControlApiServiceFactory;
-import io.agi.ef.serverapi.api.factories.DataApiServiceFactory;
-import io.agi.interprocess.ConnectionManager;
-import io.agi.interprocess.ConnectionManagerListener;
-import io.agi.interprocess.ServerConnection;
-import io.agi.interprocess.coordinator.services.*;
-import io.agi.interprocess.apiInterfaces.ConnectInterface;
+import io.agi.ef.interprocess.ConnectionManager;
+import io.agi.ef.interprocess.ConnectionManagerListener;
+import io.agi.ef.interprocess.ServerConnection;
+import io.agi.ef.interprocess.coordinator.services.*;
+import io.agi.ef.interprocess.apiInterfaces.ConnectInterface;
 
 import javax.ws.rs.core.Response;
 import java.util.Collection;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * CoordinatorSlave provides an interface to the CoordinatorMaster.
@@ -24,24 +23,25 @@ import java.util.logging.Logger;
  */
 public class CoordinatorSlave extends Coordinator implements ConnectionManagerListener, ConnectInterface {
 
-    private static final Logger _logger = Logger.getLogger( CoordinatorSlave.class.getName() );
-
     // Communications
-    private static String _contextPath;      // CoordinatorSlave server's context path
+    private static String _host;             // CoordinatorSlave server's host
     private static int _listenerPort;        // CoordinatorSlave server's listener listenerPort
+    private static String _contextPath;      // CoordinatorSlave server's context path
     private static String _masterHost;
     private static int _masterPort;
-    private ConnectionManager _cm = new ConnectionManager();    // manages connections required for Master comms
+    private ConnectionManager _cm = null;    // manages connections required for Master comms
     private ServerConnection _coordinatorConnection = null;     // special connection for Master
 
     Collection< AbstractEntity > _entities;
 
     public static boolean _setup = false;
-    private CoordinatorSlaveDelegate delegate;
+    private CoordinatorSlaveDelegate _delegate = null;
 
-    public static void setup( String contextPath, int listenerPort, String masterHost, int masterPort ) {
-        _contextPath = contextPath;
-        _listenerPort = listenerPort;
+    public static void setup( String slaveHost, int slaveListenerPort, String slaveContextPath, String masterHost, int masterPort ) {
+        _contextPath = slaveContextPath;
+        _listenerPort = slaveListenerPort;
+        _host = slaveHost;
+
         _masterHost = masterHost;
         _masterPort = masterPort;
 
@@ -65,57 +65,28 @@ public class CoordinatorSlave extends Coordinator implements ConnectionManagerLi
     private CoordinatorSlave() throws Exception {
         super();
 
-        _logger.setLevel( Level.FINE );
+        _cm = new ConnectionManager();
 
         startServer();
 
         _cm.addListener( this );
         _coordinatorConnection = _cm.registerServer(
                 _masterHost,
-                CoordinatorMaster.sContextPath,
-                _masterPort );
+                _masterPort,
+                CoordinatorMaster.sContextPath );
     }
 
-    @Override
-    public Response run() {
 
-        // iterate _entities, and call run()
-
-        return null;
-    }
-
-    @Override
-    public Response step() {
-
-        // iterate _entities, and call step()
-
-        return null;
-    }
-
-    @Override
-    public Response stop() {
-
-        // iterate _entities, and call stop()
-
-        return null;
-    }
 
     /**
      * We are in the Slave, so this has the meaning, connectMaster
-     * @param contextPath
-     * @return
-     */
-    @Override
-    public Response connectCoordinator( String contextPath ) {
-        return null;
-    }
+*/
 
 
     @Override
     protected void setServiceImplementation() {
-        // inject service implementations to be used by the server lib
-        DataApiServiceFactory.setService( new DataApiServiceImpl() );
 
+        // inject service implementations to be used by the server lib
         ControlApiServiceImpl controlApiService = new ControlApiServiceImpl();
         controlApiService._serviceDelegate = this;
         ControlApiServiceFactory.setService( controlApiService );
@@ -135,13 +106,33 @@ public class CoordinatorSlave extends Coordinator implements ConnectionManagerLi
     @Override
     public void connectionAccepted( ServerConnection sc ) throws ApiException {
         if ( sc.getId() == _coordinatorConnection.getId() ) {
-            _logger.log( Level.FINE, "Connection to server accepted, now send request to connect to this (Agent/World) running Server.." );
+            _logger.log( Level.FINE, "Connection to server accepted, now send request to connect to this (node) running Server.." );
             io.agi.ef.clientapi.api.ConnectApi capi = new io.agi.ef.clientapi.api.ConnectApi( sc.getClientApi() );
-            capi.connectAgentContextPathGet( _contextPath );
+
+            String port = "" + _listenerPort;
+            capi.connectHostHostPortPortContextPathContextPathGet( _host, port, _contextPath );
         }
     }
 
-    public void setDelegate( CoordinatorSlaveDelegate delegate ) {
-        this.delegate = delegate;
+    public void set_delegate( CoordinatorSlaveDelegate _delegate ) {
+        this._delegate = _delegate;
+    }
+
+    @Override
+    public Response connect( String host, String port, String contextPath ) {
+        return null;
+    }
+
+    @Override
+    public Response command( String command ) {
+
+        _delegate.receivedEvent( command );
+
+        return  Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "command = " + command)).build();
+    }
+
+    @Override
+    public Response status( String state ) {
+        return null;
     }
 }

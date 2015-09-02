@@ -4,6 +4,6 @@
     "invokerPackage": "io.agi.ef.clientapi",
     "groupId": "io.agi.ef",
     "artifactId": "api-client",
-    "artifactVersion": "1.0.3",
+    "artifactVersion": "1.0.4",
     "sourceFolder": "src/main/java"
 }

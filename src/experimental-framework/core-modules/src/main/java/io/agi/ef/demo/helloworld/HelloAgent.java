@@ -4,6 +4,8 @@ import io.agi.ef.experiment.entities.Agent;
 import io.agi.ef.experiment.actuators.MotorActuator;
 import io.agi.ef.experiment.sensors.LightSensor;
 
+import javax.ws.rs.core.Response;
+
 /**
  *
  * Simple test Agent that contains a light sensor and a motor actuator.
@@ -45,4 +47,5 @@ public class HelloAgent extends Agent {
         float brightness = _lightSensor.getBrightness();
         _motor.setInput( brightness );
     }
+
 }

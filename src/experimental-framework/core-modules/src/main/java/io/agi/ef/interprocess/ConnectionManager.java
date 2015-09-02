@@ -1,4 +1,4 @@
-package io.agi.interprocess;
+package io.agi.ef.interprocess;
 
 import com.sun.jersey.spi.container.servlet.ServletContainer;
 import io.agi.ef.clientapi.*;
@@ -28,20 +28,16 @@ import static java.util.logging.Level.*;
  */
 public class ConnectionManager {
 
-    private static final Logger _logger = Logger.getLogger( ConnectionManager.class.getName() );
+    protected static Logger _logger = Logger.getLogger( ConnectionManager.class.getClass().getPackage().getName() );
     private static ConnectToServers _connectToServers = null;
     private HashSet< ServerConnection > _servers = new HashSet<>(  );
-
     private ArrayList< ConnectionManagerListener > _listeners = new ArrayList<>(  );
-
     public void addListener( ConnectionManagerListener cm ) {
         _listeners.add( cm );
     }
-
     public void removeListener( ConnectionManagerListener cm ) {
         _listeners.remove( cm );
     }
-
 
     /**
      * Manage connections to servers.
@@ -86,6 +82,9 @@ public class ConnectionManager {
             }
         }
 
+        // TODO:
+        // TODO: Overidding BasePath (it is already set in the client) with a Full Path (now it is a full path, not base path)
+
         private void connectToServer( ServerConnection sc ) throws ApiException {
 
             String basePath = sc.basePath();
@@ -106,6 +105,7 @@ public class ConnectionManager {
 
 
     public ConnectionManager() {
+        _logger = Logger.getLogger( this.getClass().getPackage().getName() );
         _connectToServers = new ConnectToServers( this );
         new Thread( _connectToServers ).start();
     }
@@ -114,10 +114,11 @@ public class ConnectionManager {
     /**
      * Register Server to try to connect to it.
      */
-    public ServerConnection registerServer( String host, String contextPath, int port ) {
+    public ServerConnection registerServer( String host, int port, String contextPath ) {
 
-        _logger.log( FINE, "Register at contextPath: {0}", contextPath );
-
+        _logger.log( FINE, "Register at host: {0}, port: {1}, and contextPath: {2}", new Object[] { host,
+                                                                                                    port,
+                                                                                                    contextPath } );
         ServerConnection sc = new ServerConnection( host, contextPath, port );
         _servers.add( sc ) ;
 
@@ -135,12 +136,12 @@ public class ConnectionManager {
         _logger.log( Level.FINE, "Setup server at contextpath: {0}, listenerPort: {1}. Basepath = {2}",
                 new Object[]{   contextPath,
                                 port,
-                                EndpointUtils.basePath( "localhost", contextPath, port )} );
+                                EndpointUtils.basePath( "localhost", port, contextPath )} );
 
         // setup server with jetty and jersey
         ServletHolder sh = new ServletHolder( ServletContainer.class );
-        sh.setInitParameter( "com.sun.jersey.config.property.resourceConfigClass", "com.sun.jersey.api.experiment.PackagesResourceConfig" );
-        sh.setInitParameter( "com.sun.jersey.config.property.packages", "io.agi.ef.serverapi" );//Set the package where the services reside
+        sh.setInitParameter( "com.sun.jersey.config.property.resourceConfigClass", "com.sun.jersey.api.core.PackagesResourceConfig" );
+        sh.setInitParameter( "com.sun.jersey.config.property.packages", "io.agi.ef.serverapi" ); //Set the package where the services reside
         sh.setInitParameter( "com.sun.jersey.api.json.POJOMappingFeature", "true" );
 
         Server server = new Server( port );

@@ -17,18 +17,11 @@ import java.util.logging.Logger;
  */
 public abstract class Agent extends AbstractEntity {
 
-    private static final Logger _logger = Logger.getLogger( Agent.class.getName() );
     private HashSet< Sensor > _sensors = new HashSet<>( );
     private HashSet< Actuator > _actuators = new HashSet<>( );
 
     public Agent( String name ) throws Exception {
         super( name );
-    }
-
-
-    @Override
-    protected Logger getLogger() {
-        return _logger;
     }
 
     public void addSensor( Sensor sensor ) {
@@ -55,19 +48,7 @@ public abstract class Agent extends AbstractEntity {
         return _actuators;
     }
 
-    @Override
-    public final Response run() {
-        // To Discuss:
-        // I don't think this should be an option in AGENT - only in Master for synchronisation
-        // Dave will disagree
-        return null;
-    }
 
-    @Override
-    /**
-     * Assumes that the _worldState object is up-to-date.
-     * Updates the Actuator outputs.
-     */
     public final Response step() {
 
         _logger.log( Level.FINE, "Agent received step at time: {0}", getTime() );
@@ -103,7 +84,6 @@ public abstract class Agent extends AbstractEntity {
         }
     }
 
-    @Override
     public final Response stop() {
         // this shouldn't be implemented in derived classes
         // for reasons given for 'run()' above

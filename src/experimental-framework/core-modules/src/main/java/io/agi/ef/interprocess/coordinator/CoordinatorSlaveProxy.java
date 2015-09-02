@@ -1,9 +1,9 @@
-package io.agi.interprocess.coordinator;
+package io.agi.ef.interprocess.coordinator;
 
 import io.agi.ef.clientapi.model.TStamp;
-import io.agi.interprocess.ServerConnection;
+import io.agi.ef.interprocess.ServerConnection;
 import io.agi.ef.serverapi.api.ApiResponseMessage;
-import io.agi.interprocess.apiInterfaces.ControlInterface;
+import io.agi.ef.interprocess.apiInterfaces.ControlInterface;
 
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
@@ -22,20 +22,18 @@ import java.util.logging.Logger;
  */
 public class CoordinatorSlaveProxy implements ControlInterface {
 
-    private static final Logger _logger = Logger.getLogger( CoordinatorSlaveProxy.class.getName() );
+    private Logger _logger = null;
     ServerConnection _sc = null;
 
     public CoordinatorSlaveProxy( ServerConnection sc ) {
-        super();
+        _logger = Logger.getLogger( this.getClass().getPackage().getName() );
         _sc = sc;
     }
 
-    @Override
     public Response run() {
         return Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "Entity run." ) ).build();
     }
 
-    @Override
     public Response step() {
 
         Response response = null;
@@ -51,7 +49,7 @@ public class CoordinatorSlaveProxy implements ControlInterface {
             try {
 
                 // todo: known bug: doesn't seem to be able to deserialise tStamps, but i want to change their format anyway
-                tStamps = capi.controlStepGet();
+                tStamps = capi.controlCommandCommandGet( ControlCommand.STEP );
                 serverTimeStamps.put( _sc.basePath(), tStamps );
             }
             catch ( io.agi.ef.clientapi.ApiException e ) {
@@ -67,9 +65,29 @@ public class CoordinatorSlaveProxy implements ControlInterface {
         return response;
     }
 
-    @Override
     public Response stop() {
         return Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "Entity stopped." ) ).build();
     }
 
+    @Override
+    public Response command( String command ) {
+
+        Response response = null;
+        if ( command.equalsIgnoreCase( ControlCommand.RUN ) ) {
+            response = run();
+        }
+        else if ( command.equalsIgnoreCase( ControlCommand.STEP ) ) {
+            response = step();
+        }
+        else if ( command.equalsIgnoreCase( ControlCommand.STOP ) ) {
+            response = stop();
+        }
+
+        return response;
+    }
+
+    @Override
+    public Response status( String state ) {
+        return null;
+    }
 }

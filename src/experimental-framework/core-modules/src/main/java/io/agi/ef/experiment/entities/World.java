@@ -16,17 +16,12 @@ import java.util.logging.Logger;
  */
 public class World extends AbstractEntity {
 
-    private static final Logger _logger = Logger.getLogger( World.class.getName() );
     private HashSet< Actuator > _actuators = new HashSet<>( );
 
     public World( String name ) throws Exception {
         super( name );
     }
 
-    @Override
-    protected Logger getLogger() {
-        return _logger;
-    }
 
     public void addActuator( Actuator actuator ) {
         _actuators.add( actuator );
@@ -46,12 +41,10 @@ public class World extends AbstractEntity {
         return _actuators;
     }
 
-    @Override
     public Response run() {
         return null;
     }
 
-    @Override
     public Response step() {
         _logger.log( Level.FINER, "World stepped, time: {0}", getTime() );
         incTime();
@@ -59,7 +52,6 @@ public class World extends AbstractEntity {
         return null;
     }
 
-    @Override
     public Response stop() {
         return null;
     }
@@ -70,4 +62,5 @@ public class World extends AbstractEntity {
 
         // handle event
     }
+
 }

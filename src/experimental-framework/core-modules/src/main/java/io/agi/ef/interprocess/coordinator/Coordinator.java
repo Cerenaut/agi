@@ -1,8 +1,10 @@
-package io.agi.interprocess.coordinator;
+package io.agi.ef.interprocess.coordinator;
 
-import io.agi.interprocess.ConnectionManager;
-import io.agi.interprocess.apiInterfaces.ControlInterface;
+import io.agi.ef.interprocess.ConnectionManager;
+import io.agi.ef.interprocess.apiInterfaces.ControlInterface;
 import org.eclipse.jetty.server.Server;
+
+import java.util.logging.Logger;
 
 /**
  *
@@ -13,7 +15,13 @@ import org.eclipse.jetty.server.Server;
  */
 public abstract class Coordinator implements ControlInterface {
 
+    protected Logger _logger = null;
     protected ConnectionManager _cm = null;
+
+    public Coordinator () {
+        _logger = Logger.getLogger( this.getClass().getPackage().getName() );
+        _cm = new ConnectionManager();
+    }
 
     /**
      * Run the Master-Coordinator server.
@@ -29,10 +37,6 @@ public abstract class Coordinator implements ControlInterface {
                 e.printStackTrace();
             }
         }
-    }
-
-    Coordinator() {
-        _cm = new ConnectionManager();
     }
 
     protected void startServer() throws Exception {

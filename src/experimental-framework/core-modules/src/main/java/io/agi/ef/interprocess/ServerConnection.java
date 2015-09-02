@@ -1,4 +1,4 @@
-package io.agi.interprocess;
+package io.agi.ef.interprocess;
 
 import io.agi.ef.clientapi.ApiClient;
 
@@ -25,7 +25,7 @@ public class ServerConnection {
     }
 
     public String basePath() {
-        return EndpointUtils.basePath( _host, _contextPath, _port );
+        return EndpointUtils.basePath( _host, _port, _contextPath );
     }
 
     public void setClient( ApiClient client ) {
@@ -42,7 +42,7 @@ public class ServerConnection {
 
     @Override
     public String toString() {
-        String str = "[id:" + _id + "), host:(" + _host + "), contextPath:(" + _contextPath + "), listenerPort:(" + _port + "), clientApi:(" + _client + ")";
+        String str = "[id:" + "(" + _id + "), host:(" + _host + "), contextPath:(" + _contextPath + "), listenerPort:(" + _port + "), clientApi:(" + _client + ")";
         return str;
     }
 }
