@@ -79,7 +79,7 @@
         <p>This page shows the components that comprise the distributed framework.</p>
         <p>In future, nodes will be added via this page.</p>
         <p>
-          <input type="button" class="btn btn-lg btn-primary" onclick="Agief.getNodes();" value="Refresh list"/>
+          <input type="button" class="btn btn-lg btn-primary" onclick="Agief.getNodes();" value="Refresh"/>
         </p>
         <table class="table">
          <thead>
@@ -102,15 +102,53 @@
 
        <div class="jumbotron">
         <h1 class="varela">Entity Browser</h1>
-        <p>The entities.</p>
-       </div>
+        <p>The system has many entities, organized into a hierarchical structure (entities have a single, specific parent).</p>
+        <p>
+          <input type="button" class="btn btn-lg btn-primary" onclick="Agief.setEntities();" value="Refresh"/>
+        </p>
+        <h2 class="varela">Entities</h1>
+        <table class="table">
+          <thead>
+           <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Parent (name)</th>
+            <th>Name</th>
+            <th>Actions</th>
+           </tr>
+          </thead>
+          <tbody id="entities-table">
+          </tbody>
+        </table>
 
+        <h2 class="varela">Create Entity</h1>
+        <p>Normally entities are programmatically generated, but you can create one manually, e.g. to provide an owner for new data.</p>
+        <table class="table">
+          <thead>
+           <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Parent (name)</th>
+            <th>Name</th>
+           </tr>
+          </thead>
+          <tbody>
+           <tr>
+            <td>New</td>
+            <td><select title='Entity Type'  class='form-control input-sm' id='entities-type' ></select></td>
+            <td><select title='Entity Parent'  class='form-control input-sm' id='entities-parent' ></select></td>
+            <td><input type='text'  class='form-control input-sm' id='entities-name' /></td>
+            <td><input type='button' class='btn btn-default' onclick='Agief.addEntity();' value='Save' /></td>
+           </tr>
+          </tbody>
+        </table>
+       </div>
       </div>
       <div class="tab-pane control optionsTab">
 
        <div class="jumbotron">
         <h1 class="varela">Control Panel</h1>
-        <p>The entities.</p>
+        <p>Not implemented yet.</p>
        </div>
 
       </div>

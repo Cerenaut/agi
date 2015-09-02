@@ -121,12 +121,14 @@ SELECT
 FROM entities e 
 INNER JOIN entity_types et ON e.id_entity_type = et.id;
 
+-- query /data directly for specific items including all fields, such as data.
+-- for meta-data, use this view instead:
 CREATE VIEW entities_data AS 
 SELECT 
   d.id as id_data,
   d.name as name_data,
-  d.size as name_size,
-  d.elements as name_elements,
+  d.size as size_data,
+  --d.elements as name_elements,
   e.id as id,
   e.name as name,
   e.id_entity_parent as id_entity_parent
