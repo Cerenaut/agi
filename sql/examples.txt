@@ -6,7 +6,12 @@ NB: When I need to HTTP POST, I use CURL.
 
 http://localhost:3000/entity_types?
 
-[{"id":1,"name":"experiment"},{"id":2,"name":"agent"},{"id":3,"name":"world"},{"id":4,"name":"sensor"},{"id":5,"name":"motor"},{"id":6,"name":"thread"}]
+[{"id":1,"name":"experiment"},
+ {"id":2,"name":"agent"},
+ {"id":3,"name":"world"},
+ {"id":4,"name":"sensor"},
+ {"id":5,"name":"motor"},
+ {"id":6,"name":"thread"} ]
 
 2. Create Experiment
 
@@ -77,4 +82,7 @@ http://localhost:3000/nodes_roles?name_role=eq.coordinator
 
 [{"id_role":1,"name_role":"coordinator","id_node_role":1,"id":1,"name":"myNode","host":"127.0.0.1","port":3001}]
 
+15. Add property
+
+curl -H "Content-Type: application/json" -X POST -d '{"key":"hello","value":"world"}' http://localhost:3000/properties
 
