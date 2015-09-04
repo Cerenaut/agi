@@ -134,7 +134,7 @@ public class CoordinatorSlave extends Coordinator implements ConnectionManagerLi
             }
         } );
 
-        return  Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "Slave sent to all entities, the command = " + command)).build();
+        return  Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "Slave sent to entity: " + entityName + ", the command: " + command ) ).build();
     }
 
     @Override
@@ -147,7 +147,7 @@ public class CoordinatorSlave extends Coordinator implements ConnectionManagerLi
             }
         } );
 
-        return  Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "Status request sent to all entities")).build();
+        return  Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "Slave sent sent request to entity: " + entityName +  ", the status for state: " + state )).build();
     }
 
 }
