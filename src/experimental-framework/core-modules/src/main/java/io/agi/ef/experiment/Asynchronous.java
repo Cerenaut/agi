@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package io.agi.ef.dave;
+package io.agi.ef.experiment;
 
 /**
  *

@@ -1,9 +1,12 @@
 package io.agi.ef.experiment.entities;
 
 
+import io.agi.ef.experiment.Asynchronous;
+import io.agi.ef.interprocess.coordinator.ControlCommand;
 import io.agi.ef.interprocess.coordinator.CoordinatorSlave;
 import io.agi.ef.interprocess.apiInterfaces.ControlInterface;
-import io.agi.ef.interprocess.coordinator.CoordinatorSlaveDelegate;
+import io.agi.ef.serverapi.api.ApiResponseMessage;
+
 
 import javax.ws.rs.core.Response;
 import java.util.logging.Logger;
@@ -13,7 +16,7 @@ import java.util.logging.Logger;
  *
  * Created by gideon on 3/08/15.
  */
-public abstract class AbstractEntity implements ControlInterface, CoordinatorSlaveDelegate {
+public abstract class AbstractEntity implements Asynchronous {
 
     protected Logger _logger = null;
     private String _name = null;
@@ -26,7 +29,7 @@ public abstract class AbstractEntity implements ControlInterface, CoordinatorSla
         _name = name;
         _slave = CoordinatorSlave.getInstance();
 
-        _slave.set_delegate( this );
+        _slave.addEntity( this );
     }
 
     public int getTime() {
@@ -41,15 +44,72 @@ public abstract class AbstractEntity implements ControlInterface, CoordinatorSla
         return _name;
     }
 
+    public void command( String command ) {
 
+        if ( command.equalsIgnoreCase( ControlCommand.START ) ) {
+            start();
+        }
+        else if ( command.equalsIgnoreCase( ControlCommand.STOP ) ) {
+            stop();
+        }
+        else if ( command.equalsIgnoreCase( ControlCommand.STEP ) ) {
+            step();
+        }
+        else if ( command.equalsIgnoreCase( ControlCommand.PAUSE ) ) {
+            pause();
+        }
+        else if ( command.equalsIgnoreCase( ControlCommand.RESUME ) ) {
+            resume();
+        }
 
-    @Override
-    public Response command( String command ) {
-        return null;
+    }
+
+    public void status( String state ) {
     }
 
     @Override
-    public Response status( String state ) {
-        return null;
+    public void start() {
     }
+
+    @Override
+    public void stop() {
+    }
+
+    @Override
+    public boolean stopping() {
+        return false;
+    }
+
+    @Override
+    public boolean running() {
+        return false;
+    }
+
+    @Override
+    public void pause() {
+    }
+
+    @Override
+    public void resume() {
+    }
+
+    @Override
+    public boolean paused() {
+        return false;
+    }
+
+    @Override
+    public void step() throws Exception {
+    }
+
+    @Override
+    public int getInterval() {
+        return 0;
+    }
+
+    @Override
+    public void setInterval( int interval ) {
+        return;
+    }
+
 }

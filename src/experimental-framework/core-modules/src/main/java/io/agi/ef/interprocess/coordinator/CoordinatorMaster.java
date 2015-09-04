@@ -10,16 +10,15 @@ import io.agi.ef.interprocess.ServerConnection;
 import io.agi.ef.serverapi.api.ApiResponseMessage;
 import io.agi.ef.serverapi.api.factories.ConnectApiServiceFactory;
 import io.agi.ef.serverapi.api.factories.ControlApiServiceFactory;
+import rx.*;
+import rx.Observable;
+import rx.functions.Action1;
 
 import javax.ws.rs.core.Response;
 import java.util.*;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-// ************************************************
-// WARNING !!!!!! :        currently assumes that slaves are at localhost on port 8081  (hardcoded below)
-// ************************************************
-
 
 /**
  *
@@ -35,27 +34,8 @@ public class CoordinatorMaster extends Coordinator implements ConnectInterface, 
     private Logger _logger = null;
     public static final String sContextPath = "coordinator";
     private final int _port;
-    private HashSet< ControlInterface > _slave = new HashSet();
+    private HashSet< ControlInterface > _slaves = new HashSet();
 
-    // todo: move to the Experiment class
-    private boolean _running = false;
-
-    private class RunExperiment implements Runnable {
-        public void run() {
-            while ( true ) {
-                if ( _running == true ) {
-                    step();
-                }
-
-                try {
-                    Thread.sleep( 200 );
-                }
-                catch ( InterruptedException e ) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
 
     public CoordinatorMaster( int port ) throws Exception {
         super();
@@ -66,10 +46,6 @@ public class CoordinatorMaster extends Coordinator implements ConnectInterface, 
         _cm.addListener( this );
 
         startServer();
-
-        // todo: move to the Experiment class
-        Thread expThread = new Thread( new RunExperiment() );
-        expThread.start();
     }
 
     protected void setServiceImplementation() {
@@ -99,9 +75,8 @@ public class CoordinatorMaster extends Coordinator implements ConnectInterface, 
     }
 
     private void addSlave( ControlInterface slave ) {
-        _slave.add( slave );
+        _slaves.add( slave );
     }
-
 
     /**
      * We are in the Master, so this has the meaning, connectSlave
@@ -117,69 +92,23 @@ public class CoordinatorMaster extends Coordinator implements ConnectInterface, 
         return response;
     }
 
-
     @Override
-    public Response command( String command ) {
+    public Response command( final String command ) {
 
-        Response response = null;
-        if ( command.equalsIgnoreCase( ControlCommand.RUN ) ) {
-            response = run();
-        }
-        else if ( command.equalsIgnoreCase( ControlCommand.STEP ) ) {
-            response = step();
-        }
-        else if ( command.equalsIgnoreCase( ControlCommand.STOP ) ) {
-            response = stop();
-        }
+        Observable.from( _slaves ).subscribe( new Action1< ControlInterface >() {
+            @Override
+            public void call( ControlInterface slave ) {
+                slave.command( command );
+            }
+        } );
 
+        Response response = Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "'command' sent to all slaves")).build();
         return response;
     }
 
     @Override
     public Response status( String state ) {
         return null;
-    }
-
-    public Response run() {
-        _running = true;
-        Response response = Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "Run Run Run")).build();
-        return response;
-    }
-
-    public Response step() {
-        Response response = null;
-        response = stepAllSlaves();
-        _logger.log( Level.FINE, "Stepped all servers, the response is: {0}", response );
-
-        return response;
-    }
-
-    public Response stop() {
-        // stop the clients
-        _running = false;
-        Response response = Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "Stop stop stop")).build();
-        return response;
-    }
-
-    /**
-     * Step all Agents, and provide the combined state.
-     * @return
-     */
-    private Response stepAllSlaves() {
-
-        Response response = null;
-
-        if ( _slave.size() != 0 ) {
-            for ( ControlInterface slave : _slave ) {
-                slave.command( ControlCommand.STEP );
-            }
-            response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "All agents stepped." ) ).build();
-        }
-        else {
-            response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "There are no connected Agents to step." ) ).build();
-        }
-
-        return response;
     }
 
 }

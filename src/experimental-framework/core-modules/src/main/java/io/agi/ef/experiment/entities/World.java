@@ -41,26 +41,18 @@ public class World extends AbstractEntity {
         return _actuators;
     }
 
-    public Response run() {
-        return null;
+    public void run() {
     }
 
-    public Response step() {
+    public void step() {
         _logger.log( Level.FINER, "World stepped, time: {0}", getTime() );
         incTime();
         stepActuators();
-        return null;
     }
 
-    public Response stop() {
-        return null;
+    public void stop() {
+
     }
 
-    @Override
-    public void receivedEvent( String eventName ) {
-        System.out.println( "Received eventName = " + eventName );
-
-        // handle event
-    }
 
 }

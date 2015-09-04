@@ -3,7 +3,7 @@ swagger: '2.0'
 info:
   title: AGI Experimental Framework
   description: An open universal framework for running AGI experiments.
-  version: "1.0.4"
+  version: "1.0.5"
 # the domain of the service
 host: localhost:8080
 # array of all schemes that your API supports
@@ -50,14 +50,19 @@ paths:
       responses:
         200:
           description: OK
-  /control/command/{command}:
+  /control/entity/{entityName}/command/{command}:
     get:
-      summary: Send command to the server.
+      summary: Send command to a specific entity..
       description: |
-        Send a control command signal to the server. It can consist of Step, Stop, Start, Pause and Resume.
+        Send a control command signal to an entity. It can consist of Step, Stop, Start, Pause and Resume.
       tags:
         - Control
       parameters:
+        - name: entityName
+          in: path
+          description: "The name of the entity to receive command."
+          required: true
+          type: string
         - name: command
           in: path
           description: "The command to send."
@@ -74,14 +79,19 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /control/status/{state}:
+  /control/entity/{entityName}/status/{state}:
     get:
-      summary: Get the status.
+      summary: Get the status for a specific entity.
       description: |
         Get the status of a particular state, Paused, Running and Stopping.
       tags:
         - Control
       parameters:
+        - name: entityName
+          in: path
+          description: "The name of the entity to receive status request."
+          required: true
+          type: string
         - name: state
           in: path
           description: "The status returns refers to this state."

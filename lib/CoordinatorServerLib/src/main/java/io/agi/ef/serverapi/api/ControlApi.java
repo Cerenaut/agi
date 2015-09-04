@@ -31,32 +31,34 @@ public class ControlApi  {
    private final ControlApiService delegate = ControlApiServiceFactory.getControlApi();
 
     @GET
-    @Path("/command/{command}")
+    @Path("/entity/{entityName}/command/{command}")
     
     
-    @io.swagger.annotations.ApiOperation(value = "Send command to the server.", notes = "Send a control command signal to the server. It can consist of Step, Stop, Start, Pause and Resume.\n", response = TStamp.class, responseContainer = "List")
+    @io.swagger.annotations.ApiOperation(value = "Send command to a specific entity..", notes = "Send a control command signal to an entity. It can consist of Step, Stop, Start, Pause and Resume.\n", response = TStamp.class, responseContainer = "List")
     @io.swagger.annotations.ApiResponses(value = { 
         @io.swagger.annotations.ApiResponse(code = 200, message = "Timestamps"),
         
         @io.swagger.annotations.ApiResponse(code = 0, message = "Unexpected error") })
 
-    public Response controlCommandCommandGet(@ApiParam(value = "The command to send.",required=true ) @PathParam("command") String command)
+    public Response controlEntityEntityNameCommandCommandGet(@ApiParam(value = "The name of the entity to receive command.",required=true ) @PathParam("entityName") String entityName,
+    @ApiParam(value = "The command to send.",required=true ) @PathParam("command") String command)
     throws NotFoundException {
-    return delegate.controlCommandCommandGet(command);
+    return delegate.controlEntityEntityNameCommandCommandGet(entityName,command);
     }
     @GET
-    @Path("/status/{state}")
+    @Path("/entity/{entityName}/status/{state}")
     
     
-    @io.swagger.annotations.ApiOperation(value = "Get the status.", notes = "Get the status of a particular state, Paused, Running and Stopping.\n", response = Boolean.class)
+    @io.swagger.annotations.ApiOperation(value = "Get the status for a specific entity.", notes = "Get the status of a particular state, Paused, Running and Stopping.\n", response = Boolean.class)
     @io.swagger.annotations.ApiResponses(value = { 
         @io.swagger.annotations.ApiResponse(code = 200, message = "status"),
         
         @io.swagger.annotations.ApiResponse(code = 0, message = "Unexpected error") })
 
-    public Response controlStatusStateGet(@ApiParam(value = "The status returns refers to this state.",required=true ) @PathParam("state") String state)
+    public Response controlEntityEntityNameStatusStateGet(@ApiParam(value = "The name of the entity to receive status request.",required=true ) @PathParam("entityName") String entityName,
+    @ApiParam(value = "The status returns refers to this state.",required=true ) @PathParam("state") String state)
     throws NotFoundException {
-    return delegate.controlStatusStateGet(state);
+    return delegate.controlEntityEntityNameStatusStateGet(entityName,state);
     }
 }
 

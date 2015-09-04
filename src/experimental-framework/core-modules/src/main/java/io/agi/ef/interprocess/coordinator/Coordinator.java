@@ -1,5 +1,6 @@
 package io.agi.ef.interprocess.coordinator;
 
+import io.agi.ef.experiment.entities.AbstractEntity;
 import io.agi.ef.interprocess.ConnectionManager;
 import io.agi.ef.interprocess.apiInterfaces.ControlInterface;
 import org.eclipse.jetty.server.Server;

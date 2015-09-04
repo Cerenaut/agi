@@ -30,11 +30,8 @@ public class CoordinatorSlaveProxy implements ControlInterface {
         _sc = sc;
     }
 
-    public Response run() {
-        return Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "Entity run." ) ).build();
-    }
-
-    public Response step() {
+    @Override
+    public Response command( String entityName, String command ) {
 
         Response response = null;
 
@@ -49,7 +46,7 @@ public class CoordinatorSlaveProxy implements ControlInterface {
             try {
 
                 // todo: known bug: doesn't seem to be able to deserialise tStamps, but i want to change their format anyway
-                tStamps = capi.controlCommandCommandGet( ControlCommand.STEP );
+                tStamps = capi.controlEntityEntityNameCommandCommandGet( entityName, command );
                 serverTimeStamps.put( _sc.basePath(), tStamps );
             }
             catch ( io.agi.ef.clientapi.ApiException e ) {
@@ -65,29 +62,8 @@ public class CoordinatorSlaveProxy implements ControlInterface {
         return response;
     }
 
-    public Response stop() {
-        return Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "Entity stopped." ) ).build();
-    }
-
     @Override
-    public Response command( String command ) {
-
-        Response response = null;
-        if ( command.equalsIgnoreCase( ControlCommand.RUN ) ) {
-            response = run();
-        }
-        else if ( command.equalsIgnoreCase( ControlCommand.STEP ) ) {
-            response = step();
-        }
-        else if ( command.equalsIgnoreCase( ControlCommand.STOP ) ) {
-            response = stop();
-        }
-
-        return response;
-    }
-
-    @Override
-    public Response status( String state ) {
+    public Response status( String entityName, String state ) {
         return null;
     }
 }

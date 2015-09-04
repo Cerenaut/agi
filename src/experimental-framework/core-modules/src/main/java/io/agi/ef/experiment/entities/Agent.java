@@ -49,7 +49,7 @@ public abstract class Agent extends AbstractEntity {
     }
 
 
-    public final Response step() {
+    public final void step() {
 
         _logger.log( Level.FINE, "Agent received step at time: {0}", getTime() );
 
@@ -59,7 +59,6 @@ public abstract class Agent extends AbstractEntity {
         setActuatorInputs();    // This is overridden by concrete Agent
         stepActuators();        // Updates the Agents 'state'     (Coord can request 'state' now)
 
-        return null;
     }
 
     /**
@@ -84,10 +83,9 @@ public abstract class Agent extends AbstractEntity {
         }
     }
 
-    public final Response stop() {
+    public final void stop() {
         // this shouldn't be implemented in derived classes
         // for reasons given for 'run()' above
-        return null;
     }
 
     public void receivedEvent( String eventName ) {

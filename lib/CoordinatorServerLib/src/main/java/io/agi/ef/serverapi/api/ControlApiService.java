@@ -20,10 +20,10 @@ import javax.ws.rs.core.Response;
 
 public abstract class ControlApiService {
   
-      public abstract Response controlCommandCommandGet(String command)
+      public abstract Response controlEntityEntityNameCommandCommandGet(String entityName,String command)
       throws NotFoundException;
   
-      public abstract Response controlStatusStateGet(String state)
+      public abstract Response controlEntityEntityNameStatusStateGet(String entityName,String state)
       throws NotFoundException;
   
 }

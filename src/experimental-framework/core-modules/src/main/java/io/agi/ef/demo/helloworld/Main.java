@@ -55,7 +55,7 @@ public class Main extends MainDemo {
         ArrayList<String> agents = new ArrayList();
         agents.add( agent.name() );
 
-        Experiment exp = new Experiment( "world1", agents );
+        Experiment exp = new Experiment( "exp1", "world1", agents );
     }
 
     @Override

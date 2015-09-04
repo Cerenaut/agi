@@ -9,9 +9,10 @@ import io.agi.ef.interprocess.ConnectionManagerListener;
 import io.agi.ef.interprocess.ServerConnection;
 import io.agi.ef.interprocess.coordinator.services.*;
 import io.agi.ef.interprocess.apiInterfaces.ConnectInterface;
+import rx.functions.Action1;
 
 import javax.ws.rs.core.Response;
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.logging.Level;
 
 /**
@@ -30,12 +31,10 @@ public class CoordinatorSlave extends Coordinator implements ConnectionManagerLi
     private static String _masterHost;
     private static int _masterPort;
     private ConnectionManager _cm = null;    // manages connections required for Master comms
-    private ServerConnection _coordinatorConnection = null;     // special connection for Master
+    private ServerConnection _coordinatorConnection = null;         // special connection for Master
+    private HashSet< AbstractEntity > _entities = new HashSet();
 
-    Collection< AbstractEntity > _entities;
-
-    public static boolean _setup = false;
-    private CoordinatorSlaveDelegate _delegate = null;
+    private static boolean _setup = false;
 
     public static void setup( String slaveHost, int slaveListenerPort, String slaveContextPath, String masterHost, int masterPort ) {
         _contextPath = slaveContextPath;
@@ -76,12 +75,9 @@ public class CoordinatorSlave extends Coordinator implements ConnectionManagerLi
                 CoordinatorMaster.sContextPath );
     }
 
-
-
-    /**
-     * We are in the Slave, so this has the meaning, connectMaster
-*/
-
+    public void addEntity( AbstractEntity abstractEntity ) {
+        _entities.add( abstractEntity );
+    }
 
     @Override
     protected void setServiceImplementation() {
@@ -102,7 +98,6 @@ public class CoordinatorSlave extends Coordinator implements ConnectionManagerLi
         return _listenerPort;
     }
 
-
     @Override
     public void connectionAccepted( ServerConnection sc ) throws ApiException {
         if ( sc.getId() == _coordinatorConnection.getId() ) {
@@ -114,25 +109,40 @@ public class CoordinatorSlave extends Coordinator implements ConnectionManagerLi
         }
     }
 
-    public void set_delegate( CoordinatorSlaveDelegate _delegate ) {
-        this._delegate = _delegate;
-    }
-
+    /**
+     * We are in the Slave, so this has the meaning, connectMaster
+     */
     @Override
     public Response connect( String host, String port, String contextPath ) {
-        return null;
+        return  Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.ERROR, "'Connect' can only be used with Master (not Slave) Coordinator(s)" ) ).build();
+    }
+
+    // TODO: In command() and status() add RXJava Filter by entityName()
+
+    @Override
+    public Response command( final String entityName, final String command ) {
+
+        rx.Observable.from( _entities ).subscribe( new Action1< AbstractEntity >() {
+            @Override
+            public void call( AbstractEntity entity ) {
+                entity.command( command );
+            }
+        } );
+
+        return  Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "Slave sent to all entities, the command = " + command)).build();
     }
 
     @Override
-    public Response command( String command ) {
+    public Response status( final String entityName, final String state ) {
 
-        _delegate.receivedEvent( command );
+        rx.Observable.from( _entities ).subscribe( new Action1< AbstractEntity >() {
+            @Override
+            public void call( AbstractEntity entity ) {
+                entity.status( state );
+            }
+        } );
 
-        return  Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "command = " + command)).build();
+        return  Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "Status request sent to all entities")).build();
     }
 
-    @Override
-    public Response status( String state ) {
-        return null;
-    }
 }

@@ -7,7 +7,7 @@ import javax.ws.rs.core.Response;
  */
 public interface ControlInterface {
 
-    Response command( String command );
+    Response command( String entityName, String command );
 
-    Response status( String state );
+    Response status( String entityName, String state );
 }

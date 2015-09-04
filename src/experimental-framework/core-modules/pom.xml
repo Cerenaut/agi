@@ -130,21 +130,21 @@
         <dependency>
             <groupId>io.agi.core</groupId>
             <artifactId>io-agi-core</artifactId>
-            <version>1.0.0</version>
+            <version>${agi_core.version}</version>
         </dependency>
 
         <!--swagger generated server-->
         <dependency>
             <groupId>io.agi.ef</groupId>
             <artifactId>api-server</artifactId>
-            <version>1.0.4</version>
+            <version>${agief-server.version}</version>
         </dependency>
 
         <!--swagger generated client-->
         <dependency>
             <groupId>io.agi.ef</groupId>
             <artifactId>api-client</artifactId>
-            <version>1.0.4</version>
+            <version>${agief-client.version}</version>
         </dependency>
 
     </dependencies>
@@ -168,6 +168,9 @@
         <junit-version>4.8.1</junit-version>
         <servlet-api-version>2.5</servlet-api-version>
         <jettyVersion>9.2.11.v20150529</jettyVersion>
+        <agief-server.version>1.0.5</agief-server.version>
+        <agief-client.version>1.0.5</agief-client.version>
+        <agi_core.version>1.0.0</agi_core.version>
     </properties>
 
 </project>

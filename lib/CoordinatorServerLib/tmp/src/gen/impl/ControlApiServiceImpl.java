@@ -24,20 +24,20 @@ public class ControlApiServiceImpl extends ControlApiService {
   	public ControlApiInterface _serviceDelegate = null;
 
       @Override
-      public Response controlCommandCommandGet(String command)
+      public Response controlEntityEntityNameCommandCommandGet(String entityName,String command)
       throws NotFoundException {
       
-      return _serviceDelegate.controlCommandCommandGet(String command)
+      return _serviceDelegate.controlEntityEntityNameCommandCommandGet(String entityName,String command)
   }
   
 
   	public ControlApiInterface _serviceDelegate = null;
 
       @Override
-      public Response controlStatusStateGet(String state)
+      public Response controlEntityEntityNameStatusStateGet(String entityName,String state)
       throws NotFoundException {
       
-      return _serviceDelegate.controlStatusStateGet(String state)
+      return _serviceDelegate.controlEntityEntityNameStatusStateGet(String entityName,String state)
   }
   
 }
