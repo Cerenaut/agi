@@ -56,7 +56,7 @@ public interface Asynchronous {
      * asynchronous running.
      * @return 
      */
-    public void step();
+    public void step() throws Exception;
     
     /**
      * Rate control. This interface allows the thread to be run at a specified

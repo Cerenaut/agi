@@ -122,10 +122,15 @@ public class CoordinatorSlave extends Coordinator implements ConnectionManagerLi
     @Override
     public Response command( final String entityName, final String command ) {
 
-        rx.Observable.from( _entities ).subscribe( new Action1< AbstractEntity >() {
+        rx.Observable.from( _entities ).subscribe( new Action1<AbstractEntity>() {
             @Override
             public void call( AbstractEntity entity ) {
-                entity.command( command );
+                try {
+                    entity.command( command );
+                }
+                catch ( Exception e ) {
+                    e.printStackTrace();
+                }
             }
         } );
 

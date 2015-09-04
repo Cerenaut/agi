@@ -26,14 +26,12 @@ public class HelloWorld extends World {
         addActuator( _light );
     }
 
-    public Response step() {
+    public void step() {
         super.step();
 
         System.out.println( "-------------------------------" );
         System.out.println( "HelloWorld: time: " + getTime() );
         System.out.println( "HelloWorld: light brightness: " + _light.getBrightness() );
-
-        return null;
     }
 
 }

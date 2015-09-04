@@ -93,12 +93,12 @@ public class CoordinatorMaster extends Coordinator implements ConnectInterface, 
     }
 
     @Override
-    public Response command( final String command ) {
+    public Response command( final String entityName, final String command ) {
 
         Observable.from( _slaves ).subscribe( new Action1< ControlInterface >() {
             @Override
             public void call( ControlInterface slave ) {
-                slave.command( command );
+                slave.command( entityName, command );
             }
         } );
 
@@ -107,8 +107,17 @@ public class CoordinatorMaster extends Coordinator implements ConnectInterface, 
     }
 
     @Override
-    public Response status( String state ) {
-        return null;
+    public Response status( final String entityName, final String state ) {
+
+        Observable.from( _slaves ).subscribe( new Action1<ControlInterface>() {
+            @Override
+            public void call( ControlInterface slave ) {
+                slave.status( entityName, state );
+            }
+        } );
+
+        Response response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "Status request sent to all slaves" ) ).build();
+        return response;
     }
 
 }

@@ -44,7 +44,7 @@ public abstract class AbstractEntity implements Asynchronous {
         return _name;
     }
 
-    public void command( String command ) {
+    public void command( String command ) throws Exception {
 
         if ( command.equalsIgnoreCase( ControlCommand.START ) ) {
             start();
