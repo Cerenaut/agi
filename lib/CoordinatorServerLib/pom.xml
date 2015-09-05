@@ -4,7 +4,7 @@
   <artifactId>api-server</artifactId>
   <packaging>jar</packaging>
   <name>api-server</name>
-  <version>1.0.3</version>
+  <version>1.0.6</version>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
     <plugins>

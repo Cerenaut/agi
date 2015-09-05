@@ -3,9 +3,9 @@ swagger: '2.0'
 info:
   title: AGI Experimental Framework
   description: An open universal framework for running AGI experiments.
-  version: "1.0.2"
+  version: "1.0.6"
 # the domain of the service
-host: agi.io
+host: localhost:8080
 # array of all schemes that your API supports
 schemes:
   - http
@@ -14,121 +14,92 @@ basePath: /
 produces:
   - application/json
 paths:
-  /connect/agent/{contextPath}:
+  /connect/host/{host}/port/{port}/contextPath/{contextPath}:
     get:
-      summary: Connect to Agent
+      summary: Connect to server
       description: |
-        Send request to connect this Agent server as specified url base path.
+        Send request to connect to server at specified address.
       tags:
         - Connect
       parameters:
-        - name: contextPath
+        - name: host
           in: path
-          description: "ID of agent to connect to"
+          description: "ip address of machine running the server"
           required: true
           type: string
+        - name: port
+          in: path
+          description: "port of server"
+          required: true
+          type: string
+        - name: contextPath
+          in: path
+          description: "the context path of the server"
+          required: true
+          type: string  
       responses:
         200:
           description: OK
-  /connect/world/{contextPath}:
+  /control/entity/{entityName}/command/{command}:
     get:
-      summary: Connect to World
+      summary: Send command to a specific entity..
       description: |
-        Send request to connect this World server as specified url base path.
+        Send a control command signal to an entity. It can consist of Step, Stop, Start, Pause and Resume.
       tags:
-        - Connect
+        - Control
       parameters:
-        - name: contextPath
+        - name: entityName
           in: path
-          description: "ID of agent to connect to"
+          description: "The name of the entity to receive command."
+          required: true
+          type: string
+        - name: command
+          in: path
+          description: "The command to send."
           required: true
           type: string
       responses:
         200:
-          description: OK          
-  /control/step:
-    get:
-      summary: Step the server
-      description: |
-        The Step endpoint steps the World and Agents.
-      tags:
-        - Control
-      responses:
-        200:
-          description: Timestamps
+          description: Timestamp
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/TStamp'
+            $ref: '#/definitions/TStamp'
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /control/stop:
+  /control/entity/{entityName}/status/{state}:
     get:
-      summary: Stop the server
+      summary: Get the status for a specific entity.
       description: |
-        The Stop endpoint stops the World and Agents.
+        Get the status of a particular state, Paused, Running and Stopping.
       tags:
         - Control
+      parameters:
+        - name: entityName
+          in: path
+          description: "The name of the entity to receive status request."
+          required: true
+          type: string
+        - name: state
+          in: path
+          description: "The status returns refers to this state."
+          required: true
+          type: string
       responses:
         200:
-          description: Timestamps
+          description: status
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/TStamp'
+            type: boolean
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /control/run:
-    get:
-      summary: Run continuously
-      description: |
-        The Run endpoint starts the server to run freely.
-      tags:
-        - Control
-      responses:
-        200:
-          description: Timestamps
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/TStamp'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'       
-  /data/state:
-    get:
-      summary: Get the State of the system.
-      description: |
-        The State endpoint returns a model that describes the current state.
-      tags:
-        - Data
-      responses:
-        200:
-          description: States
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/State'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'            
 definitions:
   TStamp:
     properties:
       time_id:
         type: number
         description: Timestamp of the current step of the server.
-  State:
-    properties:
-      state_id:
-        type: number
-        description: The state.        
   Error:
     properties:
       code:

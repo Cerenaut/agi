@@ -29,28 +29,18 @@ public class ConnectApi  {
    private final ConnectApiService delegate = ConnectApiServiceFactory.getConnectApi();
 
     @GET
-    @Path("/agent/{contextPath}")
+    @Path("/host/{host}/port/{port}/contextPath/{contextPath}")
     
     
-    @io.swagger.annotations.ApiOperation(value = "Connect to Agent", notes = "Send request to connect this Agent server as specified url base path.\n", response = Void.class)
+    @io.swagger.annotations.ApiOperation(value = "Connect to server", notes = "Send request to connect to server at specified address.\n", response = Void.class)
     @io.swagger.annotations.ApiResponses(value = { 
         @io.swagger.annotations.ApiResponse(code = 200, message = "OK") })
 
-    public Response connectAgentContextPathGet(@ApiParam(value = "ID of agent to connect to",required=true ) @PathParam("contextPath") String contextPath)
+    public Response connectHostHostPortPortContextPathContextPathGet(@ApiParam(value = "ip address of machine running the server",required=true ) @PathParam("host") String host,
+    @ApiParam(value = "port of server",required=true ) @PathParam("port") String port,
+    @ApiParam(value = "the context path of the server",required=true ) @PathParam("contextPath") String contextPath)
     throws NotFoundException {
-    return delegate.connectAgentContextPathGet(contextPath);
-    }
-    @GET
-    @Path("/world/{contextPath}")
-    
-    
-    @io.swagger.annotations.ApiOperation(value = "Connect to World", notes = "Send request to connect this World server as specified url base path.\n", response = Void.class)
-    @io.swagger.annotations.ApiResponses(value = { 
-        @io.swagger.annotations.ApiResponse(code = 200, message = "OK") })
-
-    public Response connectWorldContextPathGet(@ApiParam(value = "ID of agent to connect to",required=true ) @PathParam("contextPath") String contextPath)
-    throws NotFoundException {
-    return delegate.connectWorldContextPathGet(contextPath);
+    return delegate.connectHostHostPortPortContextPathContextPathGet(host,port,contextPath);
     }
 }
 

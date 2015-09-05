@@ -22,20 +22,10 @@ public class ConnectApiServiceImpl extends ConnectApiService {
   	public ConnectApiInterface _serviceDelegate = null;
 
       @Override
-      public Response connectAgentContextPathGet(String contextPath)
+      public Response connectHostHostPortPortContextPathContextPathGet(String host,String port,String contextPath)
       throws NotFoundException {
       
-      return _serviceDelegate.connectAgentContextPathGet(String contextPath)
-  }
-  
-
-  	public ConnectApiInterface _serviceDelegate = null;
-
-      @Override
-      public Response connectWorldContextPathGet(String contextPath)
-      throws NotFoundException {
-      
-      return _serviceDelegate.connectWorldContextPathGet(String contextPath)
+      return _serviceDelegate.connectHostHostPortPortContextPathContextPathGet(String host,String port,String contextPath)
   }
   
 }
