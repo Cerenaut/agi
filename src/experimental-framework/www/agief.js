@@ -69,13 +69,49 @@ var Agief = {
     response.forEach( function( value, index ) {
       entities = entities + "<option value='"+ value.id + "' >" + value.name + "</option>";
 
-      entityRows = entityRows + "<tr><td>" + value.id + "</td><td>" + value.id_entity_type + "</td><td>" + value.id_entity_parent + "</td><td>" + value.name + "</td><td><a href='entity.html?id="+ value.id +"'>View</a></td></tr>";
+      entityRows = entityRows + "<tr><td>" + value.id + "</td><td>" + value.id_entity_type + "</td><td>" + value.id_entity_parent + "</td><td>" + value.name + "</td><td><a href='entity.html?id="+ value.id +"' target='new'>View</a></td></tr>";
     } );
 
     entities = entities + "<option value='null' >None</option>";
 
     $( "#entities-parent" ).html( entities );
     $( "#entities-table" ).html( entityRows );
+
+
+    // build a d3 js graph of the entities:
+    //var g = new AgiGraph( "entities-graph", 500, 500 ); 
+/*var links = [
+  {source: "Microsoft", target: "Amazon", type: "licensing"},
+  {source: "Microsoft", target: "HTC", type: "licensing"},
+  {source: "Samsung", target: "Apple", type: "suit"},
+  {source: "Motorola", target: "Apple", type: "suit"},
+  {source: "Nokia", target: "Apple", type: "resolved"},
+  {source: "HTC", target: "Apple", type: "suit"},
+  {source: "Kodak", target: "Apple", type: "suit"},
+  {source: "Microsoft", target: "Barnes & Noble", type: "suit"},
+  {source: "Microsoft", target: "Foxconn", type: "suit"},
+  {source: "Oracle", target: "Google", type: "suit"},
+  {source: "Apple", target: "HTC", type: "suit"},
+  {source: "Microsoft", target: "Inventec", type: "suit"},
+  {source: "Samsung", target: "Kodak", type: "resolved"},
+  {source: "LG", target: "Kodak", type: "resolved"},
+  {source: "RIM", target: "Kodak", type: "suit"},
+  {source: "Sony", target: "LG", type: "suit"},
+  {source: "Kodak", target: "LG", type: "resolved"},
+  {source: "Apple", target: "Nokia", type: "resolved"},
+  {source: "Qualcomm", target: "Nokia", type: "resolved"},
+  {source: "Apple", target: "Motorola", type: "suit"},
+  {source: "Microsoft", target: "Motorola", type: "suit"},
+  {source: "Motorola", target: "Microsoft", type: "suit"},
+  {source: "Huawei", target: "ZTE", type: "suit"},
+  {source: "Ericsson", target: "ZTE", type: "suit"},
+  {source: "Kodak", target: "Samsung", type: "resolved"},
+  {source: "Apple", target: "Samsung", type: "suit"},
+  {source: "Kodak", target: "RIM", type: "suit"},
+  {source: "Nokia", target: "Qualcomm", type: "suit"}
+];*/
+
+    new AgiGraph( "#entities-graph", links );
   },
 
   onGetProperties : function( response ) {

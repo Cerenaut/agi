@@ -12,6 +12,7 @@
     <!-- Optional theme -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
 
+    <link rel="stylesheet" href="graph.css">
     <link rel="stylesheet" href="agief.css">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -106,7 +107,10 @@
         <p>
           <input type="button" class="btn btn-lg btn-primary" onclick="Agief.setEntities();" value="Refresh"/>
         </p>
-        <h2 class="varela">Entities</h1>
+        <h2 class="varela">Entity Graph</h2>
+        <div id="entities-graph">
+        </div>
+        <h2 class="varela">Entity Table</h2>
         <table class="table">
           <thead>
            <tr>
@@ -121,7 +125,7 @@
           </tbody>
         </table>
 
-        <h2 class="varela">Create Entity</h1>
+        <h2 class="varela">Create Entity</h2>
         <p>Normally entities are programmatically generated, but you can create one manually, e.g. to provide an owner for new data.</p>
         <table class="table">
           <thead>
@@ -233,6 +237,11 @@
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 
+    <!-- D3 visuals - hosted version http://d3js.org/ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+
+    <!-- Our stuff -->
+    <script src="graph.js"></script>
     <script src="agief.js"></script>
 
   </body>
