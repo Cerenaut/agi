@@ -67,7 +67,12 @@ CREATE TABLE entity_relations(
    id SERIAL PRIMARY KEY NOT NULL,
    id_entity_relation_type integer NOT NULL REFERENCES entity_relation_types( id ) ON DELETE CASCADE,
    id_entity_1 integer NOT NULL REFERENCES entities( id ) ON DELETE CASCADE,
-   id_entity_2 integer NOT NULL REFERENCES entities( id ) ON DELETE CASCADE,
+   id_entity_2 integer NOT NULL REFERENCES entities( id ) ON DELETE CASCADE
+);
+
+-- Can subscribe to particular events on data, e.g. changed, read, write or something.
+CREATE TABLE data_relation_types(
+   id SERIAL PRIMARY KEY NOT NULL,
    name text NOT NULL UNIQUE
 );
 
@@ -77,6 +82,14 @@ CREATE TABLE data(
    name text NOT NULL UNIQUE,
    size text NOT NULL,
    elements text NOT NULL
+);
+
+-- mapping entity dependencies to data.
+CREATE TABLE entity_data_relations(
+   id SERIAL PRIMARY KEY NOT NULL,
+   id_data_relation_type integer NOT NULL REFERENCES data_relation_types( id ) ON DELETE CASCADE,
+   id_entity integer NOT NULL REFERENCES entities( id ) ON DELETE CASCADE,
+   id_data integer NOT NULL REFERENCES data( id ) ON DELETE CASCADE
 );
 
 -- Create views as joins
@@ -157,6 +170,17 @@ INSERT INTO entity_types ( name ) VALUES ( 'world' );
 INSERT INTO entity_types ( name ) VALUES ( 'sensor' );
 INSERT INTO entity_types ( name ) VALUES ( 'motor' );
 INSERT INTO entity_types ( name ) VALUES ( 'thread' );
+
+-- these are the initial events (list can be expanded) of events we can subscribe to:
+-- they're all prefixed 'thread' because these are all thread-related events
+INSERT INTO entity_relation_types ( name ) VALUES ( 'thread-reset' );
+INSERT INTO entity_relation_types ( name ) VALUES ( 'thread-step' );
+INSERT INTO entity_relation_types ( name ) VALUES ( 'thread-stop' );
+INSERT INTO entity_relation_types ( name ) VALUES ( 'thread-pause' );
+INSERT INTO entity_relation_types ( name ) VALUES ( 'thread-resume' );
+
+-- add subscription to this event to be notified on data changed
+INSERT INTO data_relation_types ( name ) VALUES ( 'changed' );
 
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO agiu;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO agiu;
