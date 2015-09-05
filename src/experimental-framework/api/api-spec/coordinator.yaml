@@ -3,7 +3,7 @@ swagger: '2.0'
 info:
   title: AGI Experimental Framework
   description: An open universal framework for running AGI experiments.
-  version: "1.0.5"
+  version: "1.0.6"
 # the domain of the service
 host: localhost:8080
 # array of all schemes that your API supports
@@ -14,16 +14,6 @@ basePath: /
 produces:
   - application/json
 paths:
-  /test:
-    get:
-      summary: test call
-      description: |
-        this is a test call to test server is running
-      tags:
-        - Test
-      responses:
-        200:
-          description: OK
   /connect/host/{host}/port/{port}/contextPath/{contextPath}:
     get:
       summary: Connect to server
@@ -70,11 +60,9 @@ paths:
           type: string
       responses:
         200:
-          description: Timestamps
+          description: Timestamp
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/TStamp'
+            $ref: '#/definitions/TStamp'
         default:
           description: Unexpected error
           schema:

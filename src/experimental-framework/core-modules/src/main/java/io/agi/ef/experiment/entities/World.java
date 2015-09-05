@@ -41,9 +41,6 @@ public class World extends AbstractEntity {
         return _actuators;
     }
 
-    public void run() {
-    }
-
     public void step() {
         _logger.log( Level.FINER, "World stepped, time: {0}", getTime() );
         incTime();

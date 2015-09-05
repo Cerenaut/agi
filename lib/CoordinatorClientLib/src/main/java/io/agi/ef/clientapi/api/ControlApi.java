@@ -45,9 +45,9 @@ public class ControlApi {
    * Send a control command signal to an entity. It can consist of Step, Stop, Start, Pause and Resume.\n
    * @param entityName The name of the entity to receive command.
    * @param command The command to send.
-   * @return List<TStamp>
+   * @return TStamp
    */
-  public List<TStamp> controlEntityEntityNameCommandCommandGet (String entityName, String command) throws ApiException {
+  public TStamp controlEntityEntityNameCommandCommandGet (String entityName, String command) throws ApiException {
     Object postBody = null;
     
     // verify the required parameter 'entityName' is set
@@ -100,7 +100,7 @@ public class ControlApi {
       String[] authNames = new String[] {  };
       String response = apiClient.invokeAPI(path, "GET", queryParams, postBody, headerParams, formParams, accept, contentType, authNames);
       if(response != null){
-        return (List<TStamp>) apiClient.deserialize(response, "array", TStamp.class);
+        return (TStamp) apiClient.deserialize(response, "", TStamp.class);
       }
       else {
         return null;

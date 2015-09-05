@@ -1,6 +1,5 @@
 package io.agi.ef.interprocess.coordinator;
 
-import io.agi.ef.experiment.entities.AbstractEntity;
 import io.agi.ef.interprocess.ConnectionManager;
 import io.agi.ef.interprocess.apiInterfaces.ControlInterface;
 import org.eclipse.jetty.server.Server;
@@ -10,7 +9,8 @@ import java.util.logging.Logger;
 /**
  *
  * Abstract base class of Master and Slave Coordinator.
- * Collects the common interface to any part of the system.
+ * Collects together a common Coordinator interface to any part of the system,
+ * as well as implementing the common Server functionality.
  *
  * Created by gideon on 29/08/15.
  */

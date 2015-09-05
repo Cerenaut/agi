@@ -96,12 +96,12 @@ public class Experiment extends AbstractEntity {
 
         System.out.println( "Experiment: Step all entities in this experiment." );
 
-//        CoordinatorSlave coordinator = CoordinatorSlave.getInstance();
-//
-//        coordinator.command( _world, ControlCommand.STEP );
-//        for ( String agent : _agents ) {
-//            coordinator.command( agent, ControlCommand.STEP );
-//        }
+        CoordinatorSlave coordinator = CoordinatorSlave.getInstance();
+
+        coordinator.commandBack( _world, ControlCommand.STEP );
+        for ( String agent : _agents ) {
+            coordinator.commandBack( agent, ControlCommand.STEP );
+        }
     }
 
     @Override

@@ -34,9 +34,9 @@ public class ControlApi  {
     @Path("/entity/{entityName}/command/{command}")
     
     
-    @io.swagger.annotations.ApiOperation(value = "Send command to a specific entity..", notes = "Send a control command signal to an entity. It can consist of Step, Stop, Start, Pause and Resume.\n", response = TStamp.class, responseContainer = "List")
+    @io.swagger.annotations.ApiOperation(value = "Send command to a specific entity..", notes = "Send a control command signal to an entity. It can consist of Step, Stop, Start, Pause and Resume.\n", response = TStamp.class)
     @io.swagger.annotations.ApiResponses(value = { 
-        @io.swagger.annotations.ApiResponse(code = 200, message = "Timestamps"),
+        @io.swagger.annotations.ApiResponse(code = 200, message = "Timestamp"),
         
         @io.swagger.annotations.ApiResponse(code = 0, message = "Unexpected error") })
 

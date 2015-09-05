@@ -3,6 +3,7 @@ package io.agi.ef.interprocess;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
 import io.agi.ef.clientapi.*;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -82,9 +83,6 @@ public class ConnectionManager {
             }
         }
 
-        // TODO:
-        // TODO: Overidding BasePath (it is already set in the client) with a Full Path (now it is a full path, not base path)
-
         private void connectToServer( ServerConnection sc ) throws ApiException {
 
             String basePath = sc.basePath();
@@ -163,10 +161,14 @@ public class ConnectionManager {
 
         boolean serveStaticFiles = true;
         if ( serveStaticFiles ) {
+
+            String pwdPath = System.getProperty( "user.dir" );
+            pwdPath = pwdPath + "/html/";
+
             // Use a DefaultServlet to serve static files. Alternate Holder technique, prepare then add.
             ServletHolder def = new ServletHolder( "default", DefaultServlet.class );     // DefaultServlet should be named 'default'
-            def.setInitParameter( "resourceBase", "./http/" );
-            def.setInitParameter( "dirAllowed", "false" );
+            def.setInitParameter( "resourceBase", pwdPath );
+            def.setInitParameter( "dirAllowed", "true" );
             context.addServlet( def, "/" );
         }
 

@@ -39,7 +39,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="io-agi" target="1.7" />
+      <module name="io-agi" target="1.8" />
       <module name="io-agi-agief-coordinator" target="1.7" />
       <module name="io-agi-agief-core-modules" target="1.7" />
     </bytecodeTargetLevel>

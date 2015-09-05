@@ -16,7 +16,10 @@ import java.util.HashSet;
 import java.util.logging.Level;
 
 /**
- * CoordinatorSlave provides an interface to the CoordinatorMaster.
+ *
+ * CoordinatorSlave is the Singleton local instance of the Coordinator, used by Entities.
+ * It is a local Client/Server with the CoordinatorMaster, and is used to interact with the CoordinatorMaster.
+ *
  * It provides for being a client of the Master, as well as launching a server of its own
  * and establishing a connection with the Master by requesting for the Master to be a client of it.
  *
@@ -104,7 +107,7 @@ public class CoordinatorSlave extends Coordinator implements ConnectionManagerLi
             _logger.log( Level.FINE, "Connection to server accepted, now send request to connect to this (node) running Server.." );
             io.agi.ef.clientapi.api.ConnectApi capi = new io.agi.ef.clientapi.api.ConnectApi( sc.getClientApi() );
 
-            String port = "" + _listenerPort;
+            String port = Integer.toString(  _listenerPort );
             capi.connectHostHostPortPortContextPathContextPathGet( _host, port, _contextPath );
         }
     }
@@ -117,22 +120,15 @@ public class CoordinatorSlave extends Coordinator implements ConnectionManagerLi
         return  Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.ERROR, "'Connect' can only be used with Master (not Slave) Coordinator(s)" ) ).build();
     }
 
-    // TODO: In command() and status() add RXJava Filter by entityName()
-
     @Override
     public Response command( final String entityName, final String command ) {
 
-        rx.Observable.from( _entities ).subscribe( new Action1<AbstractEntity>() {
-            @Override
-            public void call( AbstractEntity entity ) {
-                try {
-                    entity.command( command );
-                }
-                catch ( Exception e ) {
-                    e.printStackTrace();
-                }
-            }
-        } );
+        _logger.log( Level.FINE, "**CONTROL/COMMAND: Received command request for entity: ( " + entityName + ", " + command + ")." );
+        _logger.log( Level.FINE, "\tDistribute to appropriate entities.");
+
+        rx.Observable.from( _entities )
+                .filter( entity -> entity.name().equalsIgnoreCase( entityName ) )
+                .subscribe( entity -> entity.command( command ) );
 
         return  Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "Slave sent to entity: " + entityName + ", the command: " + command ) ).build();
     }
@@ -140,14 +136,20 @@ public class CoordinatorSlave extends Coordinator implements ConnectionManagerLi
     @Override
     public Response status( final String entityName, final String state ) {
 
-        rx.Observable.from( _entities ).subscribe( new Action1< AbstractEntity >() {
-            @Override
-            public void call( AbstractEntity entity ) {
-                entity.status( state );
-            }
-        } );
+        _logger.log( Level.FINE, "**CONTROL/STATUS: Received command request for entity: ( " + entityName + ", " + state + ")." );
+        _logger.log( Level.FINE, "\tDistribute to appropriate entities.");
+
+        rx.Observable.from( _entities )
+                .filter( entity -> entity.name().equalsIgnoreCase( entityName ) )
+                .subscribe( entity -> entity.status( state ) );
 
         return  Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "Slave sent sent request to entity: " + entityName +  ", the status for state: " + state )).build();
+    }
+
+    public void commandBack( final String entityName, final String command ) throws ApiException {
+        _logger.log( Level.FINE, "Send command for entity back to Master: ( " + entityName + ", " + command + ")." );
+        io.agi.ef.clientapi.api.ControlApi capi = new io.agi.ef.clientapi.api.ControlApi( _coordinatorConnection.getClientApi() );
+        capi.controlEntityEntityNameCommandCommandGet( entityName, command );
     }
 
 }

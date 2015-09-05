@@ -44,7 +44,7 @@ public abstract class AbstractEntity implements Asynchronous {
         return _name;
     }
 
-    public void command( String command ) throws Exception {
+    public void command( String command ) {
 
         if ( command.equalsIgnoreCase( ControlCommand.START ) ) {
             start();
@@ -53,7 +53,12 @@ public abstract class AbstractEntity implements Asynchronous {
             stop();
         }
         else if ( command.equalsIgnoreCase( ControlCommand.STEP ) ) {
-            step();
+            try {
+                step();
+            }
+            catch ( Exception e ) {
+                e.printStackTrace();
+            }
         }
         else if ( command.equalsIgnoreCase( ControlCommand.PAUSE ) ) {
             pause();

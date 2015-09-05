@@ -88,11 +88,4 @@ public abstract class Agent extends AbstractEntity {
         // for reasons given for 'run()' above
     }
 
-    public void receivedEvent( String eventName ) {
-        System.out.println( "Received eventName = " + eventName );
-
-        // handle event
-
-    }
-
 }

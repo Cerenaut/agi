@@ -34,20 +34,15 @@ public class CoordinatorSlaveProxy implements ControlInterface {
     public Response command( String entityName, String command ) {
 
         Response response = null;
+        TStamp tstamp = null;
 
         if ( _sc.getClientApi() == null ) {
             response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "The server connection is invalid." ) ).build();
         }
         else {
-            HashMap<String, List<TStamp>> serverTimeStamps = new HashMap<>();
-            List<io.agi.ef.clientapi.model.TStamp> tStamps;
-
             io.agi.ef.clientapi.api.ControlApi capi = new io.agi.ef.clientapi.api.ControlApi( _sc.getClientApi() );
             try {
-
-                // todo: known bug: doesn't seem to be able to deserialise tStamps, but i want to change their format anyway
-                tStamps = capi.controlEntityEntityNameCommandCommandGet( entityName, command );
-                serverTimeStamps.put( _sc.basePath(), tStamps );
+                tstamp = capi.controlEntityEntityNameCommandCommandGet( entityName, command );
             }
             catch ( io.agi.ef.clientapi.ApiException e ) {
                 e.printStackTrace();
@@ -56,7 +51,7 @@ public class CoordinatorSlaveProxy implements ControlInterface {
             catch ( Exception e ) {
                 e.printStackTrace();
             }
-            response = Response.ok().entity( serverTimeStamps ).build();
+            response = Response.ok().entity( tstamp ).build();
         }
 
         return response;
@@ -64,6 +59,28 @@ public class CoordinatorSlaveProxy implements ControlInterface {
 
     @Override
     public Response status( String entityName, String state ) {
-        return null;
+
+        Response response = null;
+        boolean ret = false;
+
+        if ( _sc.getClientApi() == null ) {
+            response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "The server connection is invalid." ) ).build();
+        }
+        else {
+            io.agi.ef.clientapi.api.ControlApi capi = new io.agi.ef.clientapi.api.ControlApi( _sc.getClientApi() );
+            try {
+                ret = capi.controlEntityEntityNameStatusStateGet( entityName, state );
+            }
+            catch ( io.agi.ef.clientapi.ApiException e ) {
+                e.printStackTrace();
+            }
+            // todo: this catches a connection refused exception, but should be tidied up
+            catch ( Exception e ) {
+                e.printStackTrace();
+            }
+            response = Response.ok().entity( ret ).build();
+        }
+
+        return response;
     }
 }

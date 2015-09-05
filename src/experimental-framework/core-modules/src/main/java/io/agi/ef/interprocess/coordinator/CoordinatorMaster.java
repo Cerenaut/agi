@@ -10,22 +10,21 @@ import io.agi.ef.interprocess.ServerConnection;
 import io.agi.ef.serverapi.api.ApiResponseMessage;
 import io.agi.ef.serverapi.api.factories.ConnectApiServiceFactory;
 import io.agi.ef.serverapi.api.factories.ControlApiServiceFactory;
-import rx.*;
+
 import rx.Observable;
 import rx.functions.Action1;
 
 import javax.ws.rs.core.Response;
 import java.util.*;
-import java.util.logging.ConsoleHandler;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * This is one of the main modules of the AGIEF.
- * It is the heart of Interprocess communication.
- *
- * todo: to copy material from the writeup
+ * This is one of the main modules of the AGIEF. It is the heart of Interprocess communication.
+ * Provide the distributed interprocess communication, for state and control.
+ * The CoordinatorMaster is only accessible via http, it communicates with Slaves,
+ * that each have local interaction with Entities.
  *
  * Created by gideon on 30/07/15.
  */
@@ -41,7 +40,6 @@ public class CoordinatorMaster extends Coordinator implements ConnectInterface, 
         super();
 
         _logger = Logger.getLogger( this.getClass().getPackage().getName() );
-
         _port = port;
         _cm.addListener( this );
 
@@ -95,19 +93,26 @@ public class CoordinatorMaster extends Coordinator implements ConnectInterface, 
     @Override
     public Response command( final String entityName, final String command ) {
 
-        Observable.from( _slaves ).subscribe( new Action1< ControlInterface >() {
+        _logger.log( Level.FINE, "**CONTROL/COMMAND: Received command request for entity: (" + entityName + ", " + command + ")." );
+        _logger.log( Level.FINE, "Distribute to all slaves.");
+
+        Observable.from( _slaves ).subscribe( new Action1<ControlInterface>() {
             @Override
             public void call( ControlInterface slave ) {
                 slave.command( entityName, command );
             }
         } );
 
+        // todo: it is expecting a timestamp, so modify code above to identify one - but still thinking about design
         Response response = Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "'command' sent to all slaves")).build();
         return response;
     }
 
     @Override
     public Response status( final String entityName, final String state ) {
+
+        _logger.log( Level.FINE, "**CONTROL/STATUS: Received status request for entity: (" + entityName + ", " + state + ")." );
+        _logger.log( Level.FINE, "Distribute to all slaves.");
 
         Observable.from( _slaves ).subscribe( new Action1<ControlInterface>() {
             @Override
@@ -116,6 +121,7 @@ public class CoordinatorMaster extends Coordinator implements ConnectInterface, 
             }
         } );
 
+        // todo: it is expecting one boolean, so modify code above to identify one - but still thinking about design
         Response response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "Status request sent to all slaves" ) ).build();
         return response;
     }
