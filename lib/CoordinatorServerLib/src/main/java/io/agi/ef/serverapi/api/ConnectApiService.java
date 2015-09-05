@@ -18,10 +18,7 @@ import javax.ws.rs.core.Response;
 
 public abstract class ConnectApiService {
   
-      public abstract Response connectAgentContextPathGet(String contextPath)
-      throws NotFoundException;
-  
-      public abstract Response connectWorldContextPathGet(String contextPath)
+      public abstract Response connectHostHostPortPortContextPathContextPathGet(String host,String port,String contextPath)
       throws NotFoundException;
   
 }

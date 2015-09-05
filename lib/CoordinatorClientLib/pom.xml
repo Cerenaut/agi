@@ -5,7 +5,7 @@
   <artifactId>api-client</artifactId>
   <packaging>jar</packaging>
   <name>api-client</name>
-  <version>1.0.3</version>
+  <version>1.0.6</version>
   <scm>
     <connection>scm:git:git@github.com:swagger-api/swagger-mustache.git</connection>
     <developerConnection>scm:git:git@github.com:swagger-api/swagger-codegen.git</developerConnection>

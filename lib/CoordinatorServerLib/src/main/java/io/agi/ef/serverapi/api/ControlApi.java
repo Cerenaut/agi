@@ -31,46 +31,34 @@ public class ControlApi  {
    private final ControlApiService delegate = ControlApiServiceFactory.getControlApi();
 
     @GET
-    @Path("/run")
+    @Path("/entity/{entityName}/command/{command}")
     
     
-    @io.swagger.annotations.ApiOperation(value = "Run continuously", notes = "The Run endpoint starts the server to run freely.\n", response = TStamp.class, responseContainer = "List")
+    @io.swagger.annotations.ApiOperation(value = "Send command to a specific entity..", notes = "Send a control command signal to an entity. It can consist of Step, Stop, Start, Pause and Resume.\n", response = TStamp.class)
     @io.swagger.annotations.ApiResponses(value = { 
-        @io.swagger.annotations.ApiResponse(code = 200, message = "Timestamps"),
+        @io.swagger.annotations.ApiResponse(code = 200, message = "Timestamp"),
         
         @io.swagger.annotations.ApiResponse(code = 0, message = "Unexpected error") })
 
-    public Response controlRunGet()
+    public Response controlEntityEntityNameCommandCommandGet(@ApiParam(value = "The name of the entity to receive command.",required=true ) @PathParam("entityName") String entityName,
+    @ApiParam(value = "The command to send.",required=true ) @PathParam("command") String command)
     throws NotFoundException {
-    return delegate.controlRunGet();
+    return delegate.controlEntityEntityNameCommandCommandGet(entityName,command);
     }
     @GET
-    @Path("/step")
+    @Path("/entity/{entityName}/status/{state}")
     
     
-    @io.swagger.annotations.ApiOperation(value = "Step the server", notes = "The Step endpoint steps the World and Agents.\n", response = TStamp.class, responseContainer = "List")
+    @io.swagger.annotations.ApiOperation(value = "Get the status for a specific entity.", notes = "Get the status of a particular state, Paused, Running and Stopping.\n", response = Boolean.class)
     @io.swagger.annotations.ApiResponses(value = { 
-        @io.swagger.annotations.ApiResponse(code = 200, message = "Timestamps"),
+        @io.swagger.annotations.ApiResponse(code = 200, message = "status"),
         
         @io.swagger.annotations.ApiResponse(code = 0, message = "Unexpected error") })
 
-    public Response controlStepGet()
+    public Response controlEntityEntityNameStatusStateGet(@ApiParam(value = "The name of the entity to receive status request.",required=true ) @PathParam("entityName") String entityName,
+    @ApiParam(value = "The status returns refers to this state.",required=true ) @PathParam("state") String state)
     throws NotFoundException {
-    return delegate.controlStepGet();
-    }
-    @GET
-    @Path("/stop")
-    
-    
-    @io.swagger.annotations.ApiOperation(value = "Stop the server", notes = "The Stop endpoint stops the World and Agents.\n", response = TStamp.class, responseContainer = "List")
-    @io.swagger.annotations.ApiResponses(value = { 
-        @io.swagger.annotations.ApiResponse(code = 200, message = "Timestamps"),
-        
-        @io.swagger.annotations.ApiResponse(code = 0, message = "Unexpected error") })
-
-    public Response controlStopGet()
-    throws NotFoundException {
-    return delegate.controlStopGet();
+    return delegate.controlEntityEntityNameStatusStateGet(entityName,state);
     }
 }
 
