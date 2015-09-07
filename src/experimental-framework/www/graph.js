@@ -1,5 +1,5 @@
 // based on http://bl.ocks.org/mbostock/1153292
-function AgiGraph( elementId, links ) {
+function AgiGraph( elementId, nodes, links ) {
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   // Variables
@@ -78,18 +78,18 @@ function transform(d) {
   {source: "Nokia", target: "Qualcomm", type: "suit"}
 ];*/
 
-  this.setup = function( elementId, links ) {
+  this.setup = function( elementId, nodes, links ) {
     self.elementId = elementId;
-    self.nodes = {};
+    self.nodes = nodes;//{};
 
     var width = screen.height * 0.7;
     var height = screen.height * 0.5;
 
     // Compute the distinct nodes from the links.
-    links.forEach(function(link) {
-      link.source = self.nodes[link.source] || (self.nodes[link.source] = {name: link.source});
-      link.target = self.nodes[link.target] || (self.nodes[link.target] = {name: link.target});
-    });
+    //links.forEach(function(link) {
+    //  link.source = self.nodes[link.source] || (self.nodes[link.source] = {name: link.source});
+    //  link.target = self.nodes[link.target] || (self.nodes[link.target] = {name: link.target});
+    //});
 
     self.force = d3.layout.force()
       .nodes( d3.values( self.nodes ) )
@@ -144,6 +144,6 @@ function transform(d) {
 
   };
 
-  self.setup( elementId, links );
+  self.setup( elementId, nodes, links );
 }
 

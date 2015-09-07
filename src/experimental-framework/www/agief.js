@@ -66,16 +66,36 @@ var Agief = {
     var entities = "";
     var entityRows = "";
 
+    var nodes = {};
+    var links = [];
+
     response.forEach( function( value, index ) {
       entities = entities + "<option value='"+ value.id + "' >" + value.name + "</option>";
 
       entityRows = entityRows + "<tr><td>" + value.id + "</td><td>" + value.id_entity_type + "</td><td>" + value.id_entity_parent + "</td><td>" + value.name + "</td><td><a href='entity.html?id="+ value.id +"' target='new'>View</a></td></tr>";
+
+//      nodes[ value.id ] = { name: value.name };
     } );
 
     entities = entities + "<option value='null' >None</option>";
 
     $( "#entities-parent" ).html( entities );
     $( "#entities-table" ).html( entityRows );
+
+var links = [
+  {source: "myExperiment", target: "myWorld", type: "licensing"} ];
+/*    response.forEach( function( value, index ) {
+      if( value.id_entity_parent ) {
+        var link = { source: value.id, target: value.id_entity_parent, type: "parent" };
+        links.push( link );
+      }
+    } );*/
+
+    // Compute the distinct nodes from the links.
+    links.forEach(function(link) {
+      link.source = self.nodes[link.source] || (self.nodes[link.source] = {name: link.source});
+      link.target = self.nodes[link.target] || (self.nodes[link.target] = {name: link.target});
+    });
 
 
     // build a d3 js graph of the entities:
@@ -111,7 +131,7 @@ var Agief = {
   {source: "Nokia", target: "Qualcomm", type: "suit"}
 ];*/
 
-    new AgiGraph( "#entities-graph", links );
+    new AgiGraph( "#entities-graph", nodes, links );
   },
 
   onGetProperties : function( response ) {
