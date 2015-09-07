@@ -43,7 +43,7 @@ public abstract class MainDemo {
             runWorldOnly();
         }
         else if( mode.equalsIgnoreCase( ARG_MODE_ALL ) ) {
-            runAllLocally();
+            runAll();
         }
     }
 
@@ -59,7 +59,7 @@ public abstract class MainDemo {
     public abstract void runAgentOnly() throws Exception;
     public abstract void runWorldOnly() throws Exception;
     public abstract void runCoordinatorOnly() throws Exception;
-    public abstract void runAllLocally() throws Exception;
+    public abstract void runAll() throws Exception;
 }
 
 

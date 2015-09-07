@@ -71,7 +71,7 @@ public class Main extends MainDemo {
     }
 
     @Override
-    public void runAllLocally() throws Exception {
+    public void runAll() throws Exception {
         runCoordinatorOnly();
         runWorldOnly();
         runAgentOnly();
