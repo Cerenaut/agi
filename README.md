@@ -44,10 +44,11 @@ This section explains how to install the system and get the modules talking to e
 	*	**Server**
 	* 	_cd lib/CoordinatorServerLib_
 	*	_mvn install_
-* Build the modules, listed below. They can all be built using the Maven command **mvn package**. Additionally, each is an IntelliJ project:
-	*	Agent (located at **/Agent**)
-	*	World (located at **/World**)
-	* 	Coordinator (located at **/Coordinator**)
+* Install the Core library
+    * 	_cd src/core
+    *	_mvn install_
+* Build the Experimental Framework project (core-modules). It can be built using the Maven command **mvn package** (!!!! NOT YET). Additionally, each is an IntelliJ project:
+	* 	Coordinator (located at **/experimental-framework/core-modules**)
 * Run the Coordinator. It is an embedded Jetty web server, so will launch a server that will be listening on a port (hard coded to 9999 now).
 	*	You can test it out by going to **http://localhost:9999** and trying any of the calls documented in the API Documentation, which can be viewed by opening **/APIDocumentation/index.html**.
 * Run the Agent, it will communicate with the Coordinator by making one simple call **/control/run**, and will log the output to the console. Verify that it has done so, it should be an array of integers (timestamps).
