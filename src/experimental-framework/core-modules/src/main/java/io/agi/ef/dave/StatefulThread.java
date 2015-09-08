@@ -7,7 +7,7 @@
 package io.agi.ef.dave;
 
 import io.agi.core.data.Data;
-import io.agi.core.orm.CallbackThread;
+import io.agi.ef.dave.orm.CallbackThread;
 import io.agi.core.orm.ObjectMap;
 import java.util.Collection;
 import java.util.HashSet;

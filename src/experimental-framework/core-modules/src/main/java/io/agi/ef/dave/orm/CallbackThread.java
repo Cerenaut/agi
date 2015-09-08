@@ -4,9 +4,11 @@
  * and open the template in the editor.
  */
 
-package io.agi.core.orm;
+package io.agi.ef.dave.orm;
 
-import io.agi.core.ef.Asynchronous;
+import io.agi.core.orm.Callback;
+import io.agi.core.orm.CallbackCollection;
+import io.agi.ef.experiment.Asynchronous;
 
 /**
  * An easy way to write threads by attaching callbacks. Has functionality to 

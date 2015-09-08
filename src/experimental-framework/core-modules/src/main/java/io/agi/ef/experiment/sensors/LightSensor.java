@@ -28,7 +28,7 @@ public class LightSensor extends Sensor {
     public void update( ) {
 
         /*
-            get state for relevant key in the world
+            Get state for relevant key in the world
          */
 
         String val = "5";

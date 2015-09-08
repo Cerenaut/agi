@@ -4,11 +4,9 @@
  * and open the template in the editor.
  */
 
-package io.agi.core.demo;
+package io.agi.ef.dave.demo;
 
 import io.agi.core.data.Data;
-import io.agi.core.ef.AbstractWorld;
-import io.agi.core.ef.Experiment;
 
 /**
  * An inert world that has a single scalar state.
