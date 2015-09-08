@@ -12,11 +12,12 @@ import java.util.logging.Logger;
 
 /**
  *
- * This is used by the Master as a proxy to the Master slave, also referred to as CoordinatorProxy.
- * The class used by remote nodes to access the Master functionality.
+ * This is used by the Master as a proxy to the CoordinatorSlave, also referred to as CoordinatorProxy.
+ * In other words, it is a local representation of the Slave.
+ * e.g. The Master tells it to step, and it passes the step on to the slave node.
  *
- * It is essentially used as a local representation of the remote CoordinatorProxy.
- * e.g. The Master tells it to step, and it passes the step on to the remote Master
+ * It allows for future implementation of other types of proxies that may communicate over other channels.
+ * It will just need to comply with the ControlInterface interface.
  *
  * Created by gideon on 3/08/15.
  */
