@@ -4,17 +4,16 @@
  * and open the template in the editor.
  */
 
-package io.agi.core.demo;
+package io.agi.ef.dave.demo;
 
 import io.agi.core.data.Data;
 import io.agi.core.opt.GradientDescentOptimizer;
 import io.agi.core.opt.NewtonOptimizer;
 import io.agi.core.opt.Optimizer;
 import io.agi.core.opt.OptimizerFn;
-import static io.agi.core.demo.ScalarWorld.KEY_STATE;
-import io.agi.core.ef.AbstractAgent;
-import io.agi.core.ef.Experiment;
-import io.agi.core.ef.World;
+import io.agi.ef.dave.Experiment;
+import io.agi.ef.dave.World;
+import io.agi.ef.dave.demo.AbstractAgent;
 
 /**
  *

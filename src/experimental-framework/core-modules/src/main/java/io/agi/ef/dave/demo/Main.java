@@ -4,12 +4,13 @@
  * and open the template in the editor.
  */
 
-package io.agi.core.demo;
+package io.agi.ef.dave.demo;
+
 
 import io.agi.core.orm.AbstractFactory;
-import io.agi.core.ef.Agent;
-import io.agi.core.ef.FactoryExperiment;
-import io.agi.core.ef.World;
+import io.agi.ef.dave.Agent;
+import io.agi.ef.dave.FactoryExperiment;
+import io.agi.ef.dave.World;
 
 /**
  *
