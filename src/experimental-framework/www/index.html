@@ -72,7 +72,7 @@
            <tr>
             <td><input type='text'  class='form-control input-sm' id='database-host' value='localhost' /></td>
             <td><input type='text'  class='form-control input-sm' id='database-port' value='8080' /></td>
-            <td><input type='button' class='btn btn-primary' onclick='Agief.setDatabase();' value='Apply' /></td>
+            <td><input type='button' class='btn btn-primary' onclick='Agiui.setDatabase();' value='Apply' /></td>
            </tr>
          </tbody>
         </table>
@@ -80,7 +80,7 @@
         <p>This page shows the components that comprise the distributed framework.</p>
         <p>In future, nodes will be added via this page.</p>
         <p>
-          <input type="button" class="btn btn-lg btn-primary" onclick="Agief.getNodes();" value="Refresh"/>
+          <input type="button" class="btn btn-lg btn-primary" onclick="Agiui.getNodes();" value="Refresh"/>
         </p>
         <table class="table">
          <thead>
@@ -105,7 +105,7 @@
         <h1 class="varela">Entity Browser</h1>
         <p>The system has many entities, organized into a hierarchical structure (entities have a single, specific parent).</p>
         <p>
-          <input type="button" class="btn btn-lg btn-primary" onclick="Agief.setEntities();" value="Refresh"/>
+          <input type="button" class="btn btn-lg btn-primary" onclick="Agiui.setEntities();" value="Refresh"/>
         </p>
         <h2 class="varela">Entity Graph</h2>
         <div id="entities-graph">
@@ -142,7 +142,7 @@
             <td><select title='Entity Type'  class='form-control input-sm' id='entities-type' ></select></td>
             <td><select title='Entity Parent'  class='form-control input-sm' id='entities-parent' ></select></td>
             <td><input type='text'  class='form-control input-sm' id='entities-name' /></td>
-            <td><input type='button' class='btn btn-default' onclick='Agief.addEntity();' value='Save' /></td>
+            <td><input type='button' class='btn btn-default' onclick='Agiui.addEntity();' value='Save' /></td>
            </tr>
           </tbody>
         </table>
@@ -152,7 +152,39 @@
 
        <div class="jumbotron">
         <h1 class="varela">Control Panel</h1>
-        <p>Not implemented yet.</p>
+        <p>Control and coordination is provided by a dedicated service, currently located at:</p>
+        <table class="table">
+         <thead>
+           <tr>
+            <th>Host</th>
+            <th>Port</th>
+           </tr>
+         </thead>
+         <tbody>
+           <tr>
+            <td id='control-coordinator-host'>Unknown</td>
+            <td id='control-coordinator-port'>Unknown</td>
+           </tr>
+         </tbody>
+        </table>
+        <h2 class="varela">Entity Actions</h2>
+        <p>Ask specific entities to perform an action.</p>
+        <table class="table">
+         <thead>
+           <tr>
+            <th>Entity</th>
+            <th>Action</th>
+           </tr>
+         </thead>
+         <tbody>
+           <tr>
+            <td><input type='text'  class='form-control input-sm' id='control-entity-name' value='exp1' /></td>
+            <td><input type='text'  class='form-control input-sm' id='control-entity-action' value='start' /></td>
+            <td><input type='button' class='btn btn-primary' onclick='Agiui.doEntityAction();' value='Apply' /></td>
+           </tr>
+         </tbody>
+        </table>
+        <p id='control-entity-response' style="display:none;"></p>
        </div>
 
       </div>
@@ -162,7 +194,7 @@
         <h1 class="varela">System Properties</h1>
         <p>This is a denormalized key-value dictionary containing all system properties. Many are programmatically generated.</p>
         <p>
-         <input type="button" class="btn btn-lg btn-primary" onclick="Agief.getProperties();" value="Refresh"/>
+         <input type="button" class="btn btn-lg btn-primary" onclick="Agiui.getProperties();" value="Refresh"/>
         </p>
         <table class="table">
           <thead>
@@ -180,7 +212,7 @@
             <td>New</td>
             <td><input type='text'  class='form-control input-sm' id='properties-name' /></td>
             <td><input type='text'  class='form-control input-sm' id='properties-value' /></td>
-            <td><input type='button' class='btn btn-default' onclick='Agief.setProperty( null );' value='Save' /></td>
+            <td><input type='button' class='btn btn-default' onclick='Agiui.setProperty( null );' value='Save' /></td>
            </tr>
           </tbody>
         </table>
@@ -204,7 +236,7 @@
            <tr>
             <td><input type='text'  class='form-control input-sm' id='database-host' value='localhost' /></td>
             <td><input type='text'  class='form-control input-sm' id='database-port' value='8080' /></td>
-            <td><input type='button' class='btn btn-primary' onclick='Agief.setDatabase();' value='Apply' /></td>
+            <td><input type='button' class='btn btn-primary' onclick='Agiui.setDatabase();' value='Apply' /></td>
            </tr>
          </tbody>
         </table>
@@ -220,7 +252,7 @@
            <tr>
             <td><input type='text'  class='form-control input-sm' id='database-host' value='localhost' /></td>
             <td><input type='text'  class='form-control input-sm' id='database-port' value='8080' /></td>
-            <td><input type='button' class='btn btn-primary' onclick='Agief.setDatabase();' value='Apply' /></td>
+            <td><input type='button' class='btn btn-primary' onclick='Agiui.setDatabase();' value='Apply' /></td>
            </tr>
          </tbody>
         </table>

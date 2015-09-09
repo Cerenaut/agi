@@ -1,10 +1,59 @@
 
+var Agief = {
+  protocol : "http",
+  host : "localhost",
+  port : "3000",
+
+  controlCallback : function( json ) {
+    //var s = JSON.stringify( json );
+    //console.log( "Coordinator response to command: " + s );
+
+    var status = "Code "+json.status;
+    if( json.status == 200 ) {
+      status = "OK";
+    }
+
+    var result = "Status: "+status+"<br>Message: \""+json.responseJSON.message + "\"";
+
+    $( "#control-entity-response" ).html( result );
+    $( "#control-entity-response" ).attr( "style", "block" );
+  },
+
+  entityAction : function( entityName, entityAction ) {
+    var suffix = "coordinator/control/entity/" + entityName + "/command/" + entityAction;
+    var verb = "GET";
+    Agief.control( suffix, Agief.controlCallback, verb );
+  },
+
+  control : function( suffix, callback, verb ) {
+    // example http://localhost:8080/coordinator/control/entity/exp1/command/bob
+    var url = Agief.protocol + "://" + Agief.host + ":" + Agief.port + "/" + suffix;
+    // console.log( "POST: "+ s );
+    // TODO add error handling, success callbacks
+    $.ajax( url, {
+        type: verb,
+        complete: function( json ) {
+          callback( json );
+        }
+    } );
+  },
+
+  setup : function( host, port ) {
+    Agief.host = host;
+    Agief.port = port;
+
+    $( "#control-coordinator-host" ).html( host );
+    $( "#control-coordinator-port" ).html( port );
+  }
+
+};
+
 var Agidb = {
 
   // TODO set host/port properly somehow
   protocol : "http",
   host : "localhost",
-  port : "3001",
+  port : "3000",
 
   getJson : function( table, callback ) {
     var url = Agidb.protocol + "://" + Agidb.host + ":" + Agidb.port + "/" + table;
@@ -50,7 +99,7 @@ var Agidb = {
 
 };
 
-var Agief = {
+var Agiui = {
 
   onGetEntityTypes : function( response ) {
     var types = "";
@@ -93,8 +142,8 @@ var links = [
 
     // Compute the distinct nodes from the links.
     links.forEach(function(link) {
-      link.source = self.nodes[link.source] || (self.nodes[link.source] = {name: link.source});
-      link.target = self.nodes[link.target] || (self.nodes[link.target] = {name: link.target});
+      link.source = nodes[link.source] || (nodes[link.source] = {name: link.source});
+      link.target = nodes[link.target] || (nodes[link.target] = {name: link.target});
     });
 
 
@@ -153,8 +202,8 @@ var links = [
       nodes = nodes + "<td><input type='text' class='form-control input-sm' id='properties-value-"+value.id+"' value='"+value.value+"' /></td>";
 
       nodes = nodes + "<td>";
-      nodes = nodes + "<input type='button' class='btn btn-default' onclick='Agief.setProperty( "+value.id+" );' value='Save' /> ";
-      nodes = nodes + "<input type='button' class='btn' onclick='Agief.delProperty( "+value.id+" );' value='Delete' />";
+      nodes = nodes + "<input type='button' class='btn btn-default' onclick='Agiui.setProperty( "+value.id+" );' value='Save' /> ";
+      nodes = nodes + "<input type='button' class='btn' onclick='Agiui.delProperty( "+value.id+" );' value='Delete' />";
       nodes = nodes + "</td>";
 
       nodes = nodes + "</tr>";
@@ -204,12 +253,12 @@ var links = [
 
   getNodes : function() {
     console.log( "refresh" );
-    Agidb.getJson( "nodes", Agief.onGetNodes );
+    Agidb.getJson( "nodes", Agiui.onGetNodes );
   },
 
   delProperty : function( id ) {
       data = {};
-      Agidb.deleteJson( "properties?id=eq." + id, data, Agief.getProperties );
+      Agidb.deleteJson( "properties?id=eq." + id, data, Agiui.getProperties );
   },
 
   setProperty : function( id ) {
@@ -217,19 +266,19 @@ var links = [
     if( id != null ) {
       var valueValue = $( "#properties-value-"+id ).val();
       var data = { "value": valueValue };
-      Agidb.patchJson( "properties?id=eq." + id, data, Agief.getProperties );
+      Agidb.patchJson( "properties?id=eq." + id, data, Agiui.getProperties );
     }
     else {
       var  nameValue = $( "#properties-name" ).val();
       var valueValue = $( "#properties-value" ).val();
       var data = { "name": nameValue, "value": valueValue };
-      Agidb.postJson( "properties", data, Agief.getProperties );
+      Agidb.postJson( "properties", data, Agiui.getProperties );
     } 
   },
 
   getProperties : function() {
     //console.log( "refresh properties" );
-    Agidb.getJson( "properties", Agief.onGetProperties );
+    Agidb.getJson( "properties", Agiui.onGetProperties );
   },
 
   addEntity : function() {
@@ -243,31 +292,52 @@ var links = [
       data.id_entity_parent = parentValue;
     }
 
-    Agidb.postJson( "entities", data, Agief.setEntities );
+    Agidb.postJson( "entities", data, Agiui.setEntities );
   },
 
   setEntityTypes : function() {
-    Agidb.getJson( "entity_types", Agief.onGetEntityTypes );
+    Agidb.getJson( "entity_types", Agiui.onGetEntityTypes );
   },
 
   setEntities : function() {
-    Agidb.getJson( "entities", Agief.onGetEntities );
+    Agidb.getJson( "entities", Agiui.onGetEntities );
   },
 
   setDatabase : function() {
     var hostValue = $( "#database-host" ).val();
     var portValue = $( "#database-port" ).val();
     Agidb.setup( hostValue, portValue );
-    Agief.setEntityTypes();
-    Agief.setEntities();
+    Agiui.setEntityTypes();
+    Agiui.setEntities();
+  },
+
+  doEntityAction : function() {
+    var entityName = $( "#control-entity-name" ).val();
+    var entityAction = $( "#control-entity-action" ).val();
+    Agief.entityAction( entityName, entityAction );
+  },
+
+  setCoordinator : function() {
+    // TODO: Should query from DB, but coordinator doesn't populate yet.
+    Agief.setup( "localhost", "8080" );
+  },
+
+  setDatabase : function() {
+    var hostValue = $( "#database-host" ).val();
+    var portValue = $( "#database-port" ).val();
+    Agidb.setup( hostValue, portValue );
+    Agiui.setEntityTypes();
+    Agiui.setEntities();
+    Agiui.setCoordinator();
   },
 
   onReady : function() {
-    Agief.setDatabase();
+    Agiui.setDatabase();
   }
 
 };
 
 $( document ).ready(function() {
-  Agief.onReady();
+  Agiui.onReady();
 });
+
