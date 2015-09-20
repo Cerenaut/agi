@@ -1,9 +1,11 @@
 package io.agi.ef.demo.helloworld;
 
-import io.agi.ef.experiment.actuators.LightActuator;
-import io.agi.ef.experiment.entities.World;
+import io.agi.core.data.Data;
+import io.agi.ef.Persistence;
+import io.agi.ef.entities.experiment.Motor;
+import io.agi.ef.entities.experiment.World;
 
-import javax.ws.rs.core.Response;
+import java.util.HashSet;
 
 /**
  *
@@ -14,24 +16,34 @@ import javax.ws.rs.core.Response;
  */
 public class HelloWorld extends World {
 
-    private LightActuator _light = null;
+    public static final String LIGHT_SOURCE_NAME = "light-source";
 
-    public HelloWorld( String name ) throws Exception {
-        super( name );
-        setup();
+    public HelloWorld() {
     }
 
-    private void setup() {
-        _light = new LightActuator( 0, 10 );
-        addActuator( _light );
+    public void configure(String config) {
+
+        // Automatically adds a LightMotor to the World
+        String lightSourceConfig = "{ max: 10 }";
+        Persistence.addEntityType(LightSource.ENTITY_TYPE);
+        LightSource ls = new LightSource();
+        ls.setup( LIGHT_SOURCE_NAME, LightSource.ENTITY_TYPE, getName(), lightSourceConfig );
+
+//        _light = new LightMotor( 0, 10 );
+//        addActuator( _light );
     }
 
-    public void step() {
-        super.step();
+    @Override
+    public void doStep( HashSet< String > dirtyData ) {
+        super.doStep(dirtyData);
+
+        int step = getPropertyAsInt( PROPERTY_STEP );
+        Data d = GetData( LIGHT_SOURCE_NAME, LightSource.DATA_OUTPUT);
+        float brightness = d._values[ 0 ];
 
         System.out.println( "-------------------------------" );
-        System.out.println( "HelloWorld: time: " + getTime() );
-        System.out.println( "HelloWorld: light brightness: " + _light.getBrightness() );
+        System.out.println( "HelloWorld: time: " + step );
+        System.out.println( "HelloWorld: light brightness: " + brightness );
     }
 
 }

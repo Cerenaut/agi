@@ -32,7 +32,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>io.agi.ef.demo.helloworld.Main</mainClass>
+                            <mainClass>io.agi.ef.demo.helloworld.HelloMain</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -49,6 +49,12 @@
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.1</version>
+        </dependency>
+
         <dependency>
             <groupId>io.reactivex</groupId>
             <artifactId>rxjava</artifactId>

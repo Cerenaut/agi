@@ -1,10 +1,12 @@
 package io.agi.ef.demo.helloworld;
 
-import io.agi.ef.experiment.entities.Agent;
-import io.agi.ef.experiment.actuators.MotorActuator;
-import io.agi.ef.experiment.sensors.LightSensor;
+import io.agi.core.data.Data;
+import io.agi.ef.Persistence;
+import io.agi.ef.entities.experiment.Agent;
+import io.agi.ef.entities.experiment.Motor;
+import io.agi.ef.entities.experiment.Sensor;
 
-import javax.ws.rs.core.Response;
+import java.util.HashSet;
 
 /**
  *
@@ -18,34 +20,66 @@ import javax.ws.rs.core.Response;
  */
 public class HelloAgent extends Agent {
 
-    private MotorActuator _motor = null;
-    private LightSensor _lightSensor = null;
+    public static final String LIGHT_SENSOR_NAME = "light-sensor";
+    public static final String SIMPLE_MOTOR_NAME = "simple-motor";
+//    private SimpleMotor _motor = null;
+//    private LightSensor _lightSensor = null;
 
-    public HelloAgent( String name ) throws Exception {
-        super( name );
-        setup();
+    public HelloAgent() {
     }
 
-    void setup() {
-        _lightSensor = new LightSensor( 1.0f );
-        addSensor( _lightSensor );
+    public void configure(String config) {
 
-        _motor = new MotorActuator( 1.0f );
-        addActuator( _motor );
+        // Automatically adds two entities for sensor and actuator:
+        Persistence.addEntityType(SimpleMotor.ENTITY_TYPE);
+        Persistence.addEntityType(LightSensor.ENTITY_TYPE);
+
+        LightSensor ls = new LightSensor();
+        SimpleMotor sm = new SimpleMotor();
+
+        ls.setup( LIGHT_SENSOR_NAME, LightSensor.ENTITY_TYPE, getName(), null );
+        sm.setup( SIMPLE_MOTOR_NAME, SimpleMotor.ENTITY_TYPE, getName(), null );
+
+//        _lightSensor = new LightSensor( 1.0f );
+//        addSensor( _lightSensor );
+//
+//        _motor = new SimpleMotor( 1.0f );
+//        addActuator( _motor );
     }
 
+    /**
+     * Agent makes the motor input proportional to the sensor brightness.
+     * @param dirtyData
+     */
     @Override
-    public void stepBody() {
+    public void doStep( HashSet< String > dirtyData ) {
+        super.doStep(dirtyData);
 
+        setMotorInputs();
+
+        Data d1 = GetData(LIGHT_SENSOR_NAME, Sensor.DATA_SENSED);
+        float brightness = d1._values[ 0 ];
+
+        Data d2 = GetData(SIMPLE_MOTOR_NAME, Motor.DATA_OUTPUT);
+        float power = d2._values[ 0 ];
+
+        int step = getPropertyAsInt( PROPERTY_STEP );
         System.out.println( "-------------------------------" );
-        System.out.println( "HelloAgent: time: " + getTime() );
-        System.out.println( "HelloAgent: light brightness sensed: " + _lightSensor.getBrightness() );
-        System.out.println( "HelloAgent: motor power set to: " + _motor.getPower() );
+        System.out.println( "HelloAgent: time: " + step );
+        System.out.println( "HelloAgent: light brightness sensed: " + brightness );//_lightSensor.getBrightness() );
+        System.out.println( "HelloAgent: motor power produced: " + power );//_motor.getPower() );
     }
 
-    protected void setActuatorInputs() {
-        float brightness = _lightSensor.getBrightness();
-        _motor.setInput( brightness );
+    protected void setMotorInputs() {
+//        float brightness = _lightSensor.getBrightness();
+//        _motor.setInput( brightness );
+
+        Data d1 = GetData(LIGHT_SENSOR_NAME, Sensor.DATA_SENSED);
+        float brightness = d1._values[ 0 ];
+
+        Data d2 = GetData(SIMPLE_MOTOR_NAME, Motor.DATA_INPUT);
+        d2._values[ 0 ] = brightness;
+        SetData( SIMPLE_MOTOR_NAME, Motor.DATA_INPUT, d2 );
     }
 
 }

@@ -1,7 +1,7 @@
 package io.agi.ef.interprocess.coordinator;
 
 import io.agi.ef.clientapi.ApiException;
-import io.agi.ef.experiment.entities.AbstractEntity;
+import io.agi.ef.entities.experiment.old_entities.AbstractEntity;
 import io.agi.ef.serverapi.api.ApiResponseMessage;
 import io.agi.ef.serverapi.api.factories.ControlApiServiceFactory;
 import io.agi.ef.interprocess.ConnectionManager;
@@ -9,7 +9,6 @@ import io.agi.ef.interprocess.ConnectionManagerListener;
 import io.agi.ef.interprocess.ServerConnection;
 import io.agi.ef.interprocess.coordinator.services.*;
 import io.agi.ef.interprocess.apiInterfaces.ConnectInterface;
-import rx.functions.Action1;
 
 import javax.ws.rs.core.Response;
 import java.util.HashSet;
@@ -124,7 +123,7 @@ public class CoordinatorSlave extends Coordinator implements ConnectionManagerLi
     public Response command( final String entityName, final String command ) {
 
         _logger.log( Level.FINE, "**CONTROL/COMMAND: Received command request for entity: ( " + entityName + ", " + command + ")." );
-        _logger.log( Level.FINE, "\tDistribute to appropriate entities.");
+        _logger.log( Level.FINE, "\tDistribute to appropriate old_entities.");
 
         rx.Observable.from( _entities )
                 .filter( entity -> entity.name().equalsIgnoreCase( entityName ) )
@@ -137,7 +136,7 @@ public class CoordinatorSlave extends Coordinator implements ConnectionManagerLi
     public Response status( final String entityName, final String state ) {
 
         _logger.log( Level.FINE, "**CONTROL/STATUS: Received command request for entity: ( " + entityName + ", " + state + ")." );
-        _logger.log( Level.FINE, "\tDistribute to appropriate entities.");
+        _logger.log( Level.FINE, "\tDistribute to appropriate old_entities.");
 
         rx.Observable.from( _entities )
                 .filter( entity -> entity.name().equalsIgnoreCase( entityName ) )

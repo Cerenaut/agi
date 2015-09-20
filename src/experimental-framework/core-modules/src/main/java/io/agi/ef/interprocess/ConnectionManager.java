@@ -2,8 +2,8 @@ package io.agi.ef.interprocess;
 
 import com.sun.jersey.spi.container.servlet.ServletContainer;
 import io.agi.ef.clientapi.*;
+import io.agi.ef.http.EndpointUtil;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -134,7 +134,7 @@ public class ConnectionManager {
         _logger.log( Level.FINE, "Setup server at contextpath: {0}, listenerPort: {1}. Basepath = {2}",
                 new Object[]{   contextPath,
                                 port,
-                                EndpointUtils.basePath( "localhost", port, contextPath )} );
+                                EndpointUtil.getBasePath("localhost", port, contextPath)} );
 
         // setup server with jetty and jersey
         ServletHolder sh = new ServletHolder( ServletContainer.class );

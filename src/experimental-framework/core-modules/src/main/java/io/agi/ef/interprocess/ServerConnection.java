@@ -1,6 +1,7 @@
 package io.agi.ef.interprocess;
 
 import io.agi.ef.clientapi.ApiClient;
+import io.agi.ef.http.EndpointUtil;
 
 /**
  * Data structure to encapsulate information about a connection, as a client, to an AGIEF experiment server.
@@ -25,7 +26,7 @@ public class ServerConnection {
     }
 
     public String basePath() {
-        return EndpointUtils.basePath( _host, _port, _contextPath );
+        return EndpointUtil.getBasePath(_host, _port, _contextPath);
     }
 
     public void setClient( ApiClient client ) {

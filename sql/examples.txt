@@ -1,6 +1,7 @@
 NB: When I need to HTTP POST, I use CURL.
     When I need HTTP GET, I use the Browser.
 
+curl -H "Content-Type: application/json" -X OPTIONS http://localhost:3000/entities
 
 1. Get Entity Types
 
