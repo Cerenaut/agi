@@ -137,8 +137,8 @@ SELECT
   etp.name as parent_type_name
 FROM entities e 
 INNER JOIN entity_types et ON e.id_entity_type = et.id
-INNER JOIN entities ep ON e.id_entity_parent = ep.id
-INNER JOIN entity_types etp ON ep.id_entity_type = etp.id;
+LEFT JOIN entities ep ON e.id_entity_parent = ep.id
+LEFT JOIN entity_types etp ON ep.id_entity_type = etp.id;
 
 CREATE VIEW entities_types AS 
 SELECT 

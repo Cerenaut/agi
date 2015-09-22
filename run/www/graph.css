@@ -8,8 +8,13 @@
   fill: green;
 }
 
-.link.licensing {
-  stroke: green;
+.marker.all {
+  stroke: red;
+  fill: #dd0000;
+}
+
+.link.parent {
+  stroke: red;
 }
 
 .link.resolved {
@@ -23,7 +28,7 @@ circle {
 }
 
 text {
-  font: 10px sans-serif;
+  font: 18px sans-serif;
   pointer-events: none;
   text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
 }
