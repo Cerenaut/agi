@@ -9,9 +9,21 @@
 -- After running this, run postgREST HTTP service like so:
 -- ./postgrest-0.2.10.0 --db-host localhost  --db-port 5432 --db-name agidb  --db-user agiu --db-pass password --db-pool 200  --anonymous agiu --port 3000 --v1schema public
 
-DROP database agidb;
+DROP database IF EXISTS agidb;
 
-CREATE USER agiu WITH PASSWORD 'password';
+DO
+$body$
+BEGIN
+   IF NOT EXISTS (
+      SELECT *
+      FROM   pg_catalog.pg_user
+      WHERE  usename = 'agiu') THEN
+         CREATE ROLE agiu LOGIN PASSWORD 'password';
+   END IF;
+END
+$body$;
+
+
 CREATE database agidb OWNER agiu;
 
 \connect agidb;

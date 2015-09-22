@@ -1,0 +1,8 @@
+
+Artficial General Intelligence Experimental Framework (AGIEF)
+===============================================================================
+
+Installation Instructions - see Wiki @ https://github.com/ProjectAGI/agi/wiki
+
+
+
