@@ -1,7 +1,7 @@
-# The API spec of AGIEF in YAML
+# The API spec of AGIEF Coordinator services in YAML
 swagger: '2.0'
 info:
-  title: AGI Experimental Framework
+  title: AGI Experimental Framework Coordination Service
   description: An open universal framework for running AGI experiments.
   version: "1.0.0"
 # the domain of the service
