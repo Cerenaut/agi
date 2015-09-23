@@ -7,6 +7,7 @@ import io.agi.core.data.FloatArray2;
 import io.agi.ef.http.EndpointUtil;
 import io.agi.ef.http.RequestUtil;
 import io.agi.ef.http.node.Node;
+import io.agi.ef.interprocess.coordinator.Coordinator;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -122,7 +123,7 @@ public class Persistence {
             boolean b = addTableRow( Persistence.TABLE_DATA, dataName, jo );
 
             if( b ) {
-                Node.getInstance().postDataEvent( dataName, Entity.EVENT_CHANGED ); // easier to listen for just one
+                Coordinator.getInstance().postDataEvent( dataName, Entity.EVENT_CHANGED ); // easier to listen for just one
             }
             return b;
         }
@@ -143,7 +144,7 @@ public class Persistence {
 
             updateTableRow(TABLE_DATA, name, jo);
 
-            Node.getInstance().postDataEvent( name, Entity.EVENT_CHANGED );
+            Coordinator.getInstance().postDataEvent( name, Entity.EVENT_CHANGED );
 
             return true;
         }

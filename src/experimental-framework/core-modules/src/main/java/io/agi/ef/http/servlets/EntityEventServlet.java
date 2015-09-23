@@ -2,6 +2,7 @@ package io.agi.ef.http.servlets;
 
 import io.agi.ef.http.node.Node;
 import io.agi.ef.http.ServletUtil;
+import io.agi.ef.interprocess.coordinator.Coordinator;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -52,8 +53,8 @@ public class EntityEventServlet extends HttpServlet {
         String entity = parameters.get(EntityEventServlet.PARAMETER_NAME);
         String action = parameters.get(EntityEventServlet.PARAMETER_ACTION);
 
-        Node n = Node.getInstance();
-        n.onEntityEvent(entity, action);
+        Coordinator c = Coordinator.getInstance();
+        c.onEntityEvent(entity, action);
 
         ServletUtil.createResponse( response, HttpServletResponse.SC_OK );
     }

@@ -6,6 +6,7 @@ import io.agi.ef.Persistence;
 import io.agi.ef.entities.Clock;
 import io.agi.ef.entities.experiment.*;
 import io.agi.ef.entities.Relay;
+import io.agi.ef.interprocess.coordinator.Coordinator;
 
 /**
  * Created by dave on 12/09/15.
@@ -40,23 +41,18 @@ public class NodeMain {
 
         // Create core objects
         String nodeHost = Node.getLocalHostAddress();
-        new Persistence( _dataHost, _dataPort );
+        new Persistence( _dataHost, _dataPort ); //  - must do this before creating coordinator or Node
         new Node( _nodeName, nodeHost, _nodePort );
 
-        // add entity factory
+        // add entity factory - must do this before creating coordinator
         new EntityFactory();
         addEntityFactories();
 
         // if coordinator, add relay entity
-        if( _coordinator ) {
-            Relay r = new Relay(); // can create entities like this, or via factory.
-            r.setup();
+        Coordinator c = new Coordinator();
+        c.setup( _master ); // allow derivation
 
-            // note in the DB which node is the coordinator.
-            Persistence.addProperty( Node.PROPERTY_COORDINATOR_NODE, _nodeName );
-        }
-
-        // add predefined old_entities
+        // add predefined entities (defined in code)
         addEntities();
 
         // Run the completed Node
@@ -78,7 +74,7 @@ public class NodeMain {
     String _nodeName = "myNode";
     int _nodePort = 8081;
     String _staticFiles = null;//"/home/dave/workspace/agi.io/agi/run/www";
-    boolean _coordinator = false;
+    boolean _master = false;
 
     public NodeMain() {
     }
@@ -97,7 +93,7 @@ public class NodeMain {
         if( args.length == 6 ) {
             if( args[ 5 ].equalsIgnoreCase( "COORDINATOR" ) ) {
                 System.out.println( "Node will be coordinator.");
-                _coordinator = true;
+                _master = true;
             }
             else {
                 help();

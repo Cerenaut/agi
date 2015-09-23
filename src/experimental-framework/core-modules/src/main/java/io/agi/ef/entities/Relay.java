@@ -5,6 +5,7 @@ import io.agi.ef.http.node.Node;
 import io.agi.ef.Persistence;
 import io.agi.ef.http.servlets.DataEventServlet;
 import io.agi.ef.http.servlets.EntityEventServlet;
+import io.agi.ef.interprocess.coordinator.Coordinator;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,6 +36,7 @@ public class Relay extends Entity {
         HashSet< String > nodes = Persistence.getNodes();
 
         // 3. Broadcast event to each node.
+        Coordinator c = Coordinator.getInstance();
         Node n = Node.getInstance();
 
         for( String nodeName : nodes ) {
@@ -43,7 +45,7 @@ public class Relay extends Entity {
                 continue; // prevent endless loop
             }
 
-            n.postDataEvent(nodeName, data, action);
+            c.postDataEvent(nodeName, data, action);
         }
     }
 
@@ -59,6 +61,7 @@ public class Relay extends Entity {
 
         // 3. Broadcast event to each node.
         Node n = Node.getInstance();
+        Coordinator c = Coordinator.getInstance();
 
         for( String nodeName : nodes ) {
 
@@ -66,7 +69,7 @@ public class Relay extends Entity {
                 continue; // prevent endless loop
             }
 
-            n.postEntityEvent(nodeName, entity, action);
+            c.postEntityEvent(nodeName, entity, action);
         }
     }
 

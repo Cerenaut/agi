@@ -15,14 +15,16 @@ public class ControlApiServiceImpl extends ControlApiService {
         public Response controlEntityEntityNameCommandCommandGet( String entityName, String command )
                 throws NotFoundException {
 
-            return _serviceDelegate.command( entityName, command );
+//            return _serviceDelegate.command( entityName, command );
+                return null;
         }
 
         @Override
         public Response controlEntityEntityNameStatusStateGet( String entityName,  String state )
                 throws NotFoundException {
 
-            return _serviceDelegate.status( entityName, state );
+//            return _serviceDelegate.status( entityName, state );
+                return null;
         }
 
 }

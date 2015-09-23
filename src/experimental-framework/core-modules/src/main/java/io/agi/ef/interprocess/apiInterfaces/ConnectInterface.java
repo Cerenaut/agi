@@ -7,5 +7,6 @@ import javax.ws.rs.core.Response;
  */
 public interface ConnectInterface {
 
-    Response connect( String host, String port, String contextPath );
+// deprecated because connections aren't persistent and set of Nodes is persisted to database.
+//    Response connect( String host, String port, String contextPath );
 }

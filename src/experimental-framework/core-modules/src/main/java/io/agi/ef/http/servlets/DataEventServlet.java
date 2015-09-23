@@ -2,6 +2,7 @@ package io.agi.ef.http.servlets;
 
 import io.agi.ef.http.ServletUtil;
 import io.agi.ef.http.node.Node;
+import io.agi.ef.interprocess.coordinator.Coordinator;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -52,8 +53,8 @@ public class DataEventServlet extends HttpServlet {
         String entity = parameters.get(DataEventServlet.PARAMETER_NAME);
         String action = parameters.get(DataEventServlet.PARAMETER_ACTION);
 
-        Node n = Node.getInstance();
-        n.onDataEvent(entity, action);
+        Coordinator c = Coordinator.getInstance();
+        c.onDataEvent(entity, action);
 
         ServletUtil.createResponse( response, HttpServletResponse.SC_OK );
     }

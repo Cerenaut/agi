@@ -11,15 +11,15 @@ import io.agi.ef.interprocess.apiInterfaces.ConnectInterface;
 import javax.ws.rs.core.Response;
 
 
-public class ConnectApiServiceImpl extends ConnectApiService {
+public abstract class ConnectApiServiceImpl extends ConnectApiService {
 
-    public ConnectInterface _serviceDelegate = null;
-
-    @Override
-    public Response connectHostHostPortPortContextPathContextPathGet(String host, String port, String contextPath)
-            throws NotFoundException {
-
-        return _serviceDelegate.connect( host, port, contextPath );
-    }
+//    public ConnectInterface _serviceDelegate = null;
+//
+//    @Override
+//    public Response connectHostHostPortPortContextPathContextPathGet(String host, String port, String contextPath)
+//            throws NotFoundException {
+//
+//        return _serviceDelegate.connect( host, port, contextPath );
+//    }
 
 }

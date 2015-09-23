@@ -2,6 +2,7 @@ package io.agi.ef.http.servlets;
 
 import io.agi.ef.EntityFactory;
 import io.agi.ef.http.ServletUtil;
+import io.agi.ef.interprocess.coordinator.Coordinator;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -61,7 +62,8 @@ public class CreateServlet extends HttpServlet {
         String parentEntityName = parameters.get(CreateServlet.PARAMETER_PARENT);
         String entityConfig = parameters.get(CreateServlet.PARAMETER_CONFIG);
 
-        EntityFactory.create( entityName, entityType, parentEntityName, entityConfig );
+        Coordinator c = Coordinator.getInstance();
+        c.onCreateEvent(entityName, entityType, parentEntityName, entityConfig);
 
         ServletUtil.createResponse(response, HttpServletResponse.SC_OK);
     }

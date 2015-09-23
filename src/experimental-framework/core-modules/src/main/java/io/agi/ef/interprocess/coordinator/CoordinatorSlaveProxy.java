@@ -21,7 +21,7 @@ import java.util.logging.Logger;
  *
  * Created by gideon on 3/08/15.
  */
-public class CoordinatorSlaveProxy implements ControlInterface {
+public abstract class CoordinatorSlaveProxy implements ControlInterface {
 
     private Logger _logger = null;
     ServerConnection _sc = null;
@@ -31,7 +31,7 @@ public class CoordinatorSlaveProxy implements ControlInterface {
         _sc = sc;
     }
 
-    @Override
+// renamed to entity event, and implemented in Entity class or Coordinator base class.
     public Response command( String entityName, String command ) {
 
         Response response = null;
@@ -58,30 +58,31 @@ public class CoordinatorSlaveProxy implements ControlInterface {
         return response;
     }
 
-    @Override
-    public Response status( String entityName, String state ) {
-
-        Response response = null;
-        boolean ret = false;
-
-        if ( _sc.getClientApi() == null ) {
-            response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "The server connection is invalid." ) ).build();
-        }
-        else {
-            io.agi.ef.clientapi.api.ControlApi capi = new io.agi.ef.clientapi.api.ControlApi( _sc.getClientApi() );
-            try {
-                ret = capi.controlEntityEntityNameStatusStateGet( entityName, state );
-            }
-            catch ( io.agi.ef.clientapi.ApiException e ) {
-                e.printStackTrace();
-            }
-            // todo: this catches a connection refused exception, but should be tidied up
-            catch ( Exception e ) {
-                e.printStackTrace();
-            }
-            response = Response.ok().entity( ret ).build();
-        }
-
-        return response;
-    }
+// Deprecated API call
+//    @Override
+//    public Response status( String entityName, String state ) {
+//
+//        Response response = null;
+//        boolean ret = false;
+//
+//        if ( _sc.getClientApi() == null ) {
+//            response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "The server connection is invalid." ) ).build();
+//        }
+//        else {
+//            io.agi.ef.clientapi.api.ControlApi capi = new io.agi.ef.clientapi.api.ControlApi( _sc.getClientApi() );
+//            try {
+//                ret = capi.controlEntityEntityNameStatusStateGet( entityName, state );
+//            }
+//            catch ( io.agi.ef.clientapi.ApiException e ) {
+//                e.printStackTrace();
+//            }
+//            // todo: this catches a connection refused exception, but should be tidied up
+//            catch ( Exception e ) {
+//                e.printStackTrace();
+//            }
+//            response = Response.ok().entity( ret ).build();
+//        }
+//
+//        return response;
+//    }
 }

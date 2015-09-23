@@ -5,6 +5,7 @@ import io.agi.core.Keys;
 import io.agi.core.ObjectMap;
 import io.agi.core.data.Data;
 import io.agi.ef.http.node.Node;
+import io.agi.ef.interprocess.coordinator.Coordinator;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -90,8 +91,8 @@ public class Entity extends CallbackThread {
      * @param action
      */
     public void postEvent( String entity, String action ) {
-        Node n = Node.getInstance();
-        n.postEntityEvent(entity, action);
+        Coordinator c = Coordinator.getInstance();
+        c.postEntityEvent(entity, action);
     }
 
     /**
@@ -209,8 +210,8 @@ public class Entity extends CallbackThread {
 
         String parentEntityName = getName();
 
-        Node n = Node.getInstance();
-        n.postCreateEvent( nodeName, entityName, entityType, parentEntityName, entityConfig );
+        Coordinator c = Coordinator.getInstance();
+        c.postCreateEvent( nodeName, entityName, entityType, parentEntityName, entityConfig );
     }
 
     /**

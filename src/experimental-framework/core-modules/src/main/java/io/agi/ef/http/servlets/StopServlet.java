@@ -2,6 +2,7 @@ package io.agi.ef.http.servlets;
 
 import io.agi.ef.http.node.NodeServer;
 import io.agi.ef.http.ServletUtil;
+import io.agi.ef.interprocess.coordinator.Coordinator;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -33,7 +34,8 @@ public class StopServlet extends HttpServlet {
 
         ServletUtil.createResponse( response, HttpServletResponse.SC_OK );
 
-        NodeServer.stop();
+        Coordinator c = Coordinator.getInstance();
+        c.onStopEvent();
     }
 }
 

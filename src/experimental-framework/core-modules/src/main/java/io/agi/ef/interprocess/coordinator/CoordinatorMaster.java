@@ -32,18 +32,18 @@ public class CoordinatorMaster extends Coordinator implements ConnectInterface, 
 
     private Logger _logger = null;
     public static final String sContextPath = "coordinator";
-    private final int _port;
+//    private final int _port; // moved to NodeServer
     private HashSet< ControlInterface > _slaves = new HashSet();
 
 
     public CoordinatorMaster( int port ) throws Exception {
         super();
 
-        _logger = Logger.getLogger( this.getClass().getPackage().getName() );
-        _port = port;
-        _cm.addListener( this );
-
-        startServer();
+        _logger = Logger.getLogger( this.getClass().getPackage().getName() ); // moved to NodeServer
+//        _port = port; // moved to NodeServer
+//        _cm.addListener( this );
+//
+//        startServer();
     }
 
     protected void setServiceImplementation() {
@@ -53,22 +53,24 @@ public class CoordinatorMaster extends Coordinator implements ConnectInterface, 
         controlApiService._serviceDelegate = this;
         ControlApiServiceFactory.setService( controlApiService );
 
-        ConnectApiServiceImpl connectApiService = new ConnectApiServiceImpl();
-        connectApiService._serviceDelegate = this;
+        ConnectApiServiceImpl connectApiService = null; //new ConnectApiServiceImpl();
+//        connectApiService._serviceDelegate = this;
         ConnectApiServiceFactory.setService( connectApiService );
     }
 
-    protected String contextPath() {
-        return CoordinatorMaster.sContextPath;
-    }
-
-    protected int listenerPort() {
-        return _port;
-    }
+// Moved to NodeServer
+//    protected String contextPath() {
+//        return CoordinatorMaster.sContextPath;
+//    }
+//
+// Moved to NodeServer
+//    protected int listenerPort() {
+//        return _port;
+//    }
 
     @Override
     public void connectionAccepted( ServerConnection sc ) throws ApiException {
-        CoordinatorSlaveProxy slaveProxy = new CoordinatorSlaveProxy( sc );
+        CoordinatorSlaveProxy slaveProxy = null;//new CoordinatorSlaveProxy( sc );
         addSlave( slaveProxy );
     }
 
@@ -76,54 +78,57 @@ public class CoordinatorMaster extends Coordinator implements ConnectInterface, 
         _slaves.add( slave );
     }
 
-    /**
-     * We are in the Master, so this has the meaning, connectSlave
-     */
-    @Override
-    public Response connect( String host, String port, String contextPath ) {
-        Response response = null;
+// Connect API deprecated - Nodes persist themselves to the database
+//    /**
+//     * We are in the Master, so this has the meaning, connectSlave
+//     */
+//    public Response connect( String host, String port, String contextPath ) {
+//        Response response = null;
+//
+//        int portInt = Integer.valueOf( port );
+//
+////        _cm.registerServer( host, portInt, contextPath );
+//        response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "connect to agent: " + contextPath + "." ) ).build();
+//        return response;
+//    }
 
-        int portInt = Integer.valueOf( port );
-
-        _cm.registerServer( host, portInt, contextPath );
-        response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "connect to agent: " + contextPath + "." ) ).build();
-        return response;
-    }
-
-    @Override
+// Renamed to entity/name,action event
+// Can't have object representation of subscribers, so not sure if reactive can be used.
     public Response command( final String entityName, final String command ) {
 
         _logger.log( Level.FINE, "**CONTROL/COMMAND: Received command request for entity: (" + entityName + ", " + command + ")." );
         _logger.log( Level.FINE, "Distribute to all slaves.");
 
-        Observable.from( _slaves ).subscribe( new Action1<ControlInterface>() {
-            @Override
-            public void call( ControlInterface slave ) {
-                slave.command( entityName, command );
-            }
-        } );
+//        Observable.from( _slaves ).subscribe( new Action1<ControlInterface>() {
+//            @Override
+//            public void call( ControlInterface slave ) {
+//                slave.command( entityName, command );
+//            }
+//        } );
 
         // todo: it is expecting a timestamp, so modify code above to identify one - but still thinking about design
         Response response = Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "'command' sent to all slaves")).build();
-        return response;
+//        return response;
+        return null;
     }
 
-    @Override
-    public Response status( final String entityName, final String state ) {
-
-        _logger.log( Level.FINE, "**CONTROL/STATUS: Received status request for entity: (" + entityName + ", " + state + ")." );
-        _logger.log( Level.FINE, "Distribute to all slaves.");
-
-        Observable.from( _slaves ).subscribe( new Action1<ControlInterface>() {
-            @Override
-            public void call( ControlInterface slave ) {
-                slave.status( entityName, state );
-            }
-        } );
-
-        // todo: it is expecting one boolean, so modify code above to identify one - but still thinking about design
-        Response response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "Status request sent to all slaves" ) ).build();
-        return response;
-    }
+// Deprecated API call
+//    public Response status( final String entityName, final String state ) {
+//
+//        _logger.log( Level.FINE, "**CONTROL/STATUS: Received status request for entity: (" + entityName + ", " + state + ")." );
+//        _logger.log( Level.FINE, "Distribute to all slaves.");
+//
+////        Observable.from( _slaves ).subscribe( new Action1<ControlInterface>() {
+////            @Override
+////            public void call( ControlInterface slave ) {
+////                slave.status( entityName, state );
+////            }
+////        } );
+//
+//        // todo: it is expecting one boolean, so modify code above to identify one - but still thinking about design
+//        Response response = Response.ok().entity( new ApiResponseMessage( ApiResponseMessage.OK, "Status request sent to all slaves" ) ).build();
+////        return response;
+//        return null;
+//    }
 
 }

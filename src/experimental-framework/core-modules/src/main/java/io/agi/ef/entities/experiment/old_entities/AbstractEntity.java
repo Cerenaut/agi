@@ -23,7 +23,7 @@ public abstract class AbstractEntity implements Asynchronous {
         _logger = Logger.getLogger( this.getClass().getPackage().getName() );
 
         _name = name;
-        _slave = CoordinatorSlave.getInstance();
+        _slave = null;//CoordinatorSlave.getInstance();
 
         _slave.addEntity( this );
     }
