@@ -55,6 +55,6 @@ public interface ControlInterface {
      * @param parentEntityName
      * @param entityConfig
      */
-    public void onCreateEvent( String entityName, String entityType, String parentEntityName, String entityConfig );
+    public Entity onCreateEvent( String entityName, String entityType, String parentEntityName, String entityConfig );
 
 }

@@ -71,8 +71,8 @@ public class Coordinator implements ControlInterface {
      * @param parentEntityName
      * @param entityConfig
      */
-    public void onCreateEvent( String entityName, String entityType, String parentEntityName, String entityConfig ) {
-        EntityFactory.create(entityName, entityType, parentEntityName, entityConfig);
+    public Entity onCreateEvent( String entityName, String entityType, String parentEntityName, String entityConfig ) {
+        return EntityFactory.create(entityName, entityType, parentEntityName, entityConfig);
     }
 
     /**

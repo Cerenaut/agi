@@ -94,6 +94,109 @@ var Agiui = {
     new AgiGraph( "#entities-graph", nodes, links );
   },
 
+  // a single Data object to show
+  onGetData : function( response ) {
+
+  var data = response[ 0 ];
+  var dataSize = data.size;
+  var elements = data.elements;
+
+  $( "#data-plot" ).html( "" );
+
+  var w = 940,
+      h = 300,
+      pad = 20,
+      left_pad = 100;
+
+  var svg = d3.select("#data-plot")
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h);
+
+  var x = d3.scale.linear().domain([0, 20]).range([left_pad, w-pad]),
+      y = d3.scale.linear().domain([0, 20]).range([pad, h-pad*2]);
+
+  var xAxis = d3.svg.axis().scale(x).orient("bottom"),
+      yAxis = d3.svg.axis().scale(y).orient("left");
+
+  svg.append("g")
+      .attr("class", "axis")
+      .attr("transform", "translate(0, "+(h-pad)+")")
+      .call(xAxis);
+ 
+  svg.append("g")
+      .attr("class", "axis")
+      .attr("transform", "translate("+(left_pad-pad)+", 0)")
+      .call(yAxis);
+
+  svg.append("text")
+      .attr("class", "loading")
+      .text("Loading ...")
+      .attr("x", function () { return w/2; })
+    .  attr("y", function () { return h/2-5; });
+
+// http://swizec.com/blog/quick-scatterplot-tutorial-for-d3-js/swizec/5337
+/*d3.json( elements, function (elements) {
+
+//    var max_r = d3.max(elements.map(
+//                       function (d) { return d[2]; })),
+    var max_r = d3.max(elements),
+        r = d3.scale.linear()
+//            .domain([0, d3.max(punchcard_data, function (d) { return d[2]; })])
+            .domain([0, d3.max(elements)])
+            .range([0, 1]);*/
+
+//d3.
+//});
+//http://stackoverflow.com/questions/15764698/loading-d3-js-data-from-a-simple-json-string
+//http://alignedleft.com/tutorials/d3/binding-data/
+
+svg.selectAll(".loading").remove();
+ 
+    svg.selectAll("circle")
+        .data(elements)
+        .enter()
+        .append("circle")
+        .attr("class", "circle")
+        .attr("cx", function (d) { return x(d); })
+        .attr("cy", function (d) { return y(d[0]); })
+//        .attr("cx", function (d) { return x(d[1]); })
+//        .attr("cy", function (d) { return y(d[0]); })
+        .transition()
+        .duration(800)
+        .attr("r", function (d) { return d * 20; });
+
+  },
+
+  onGetEntitiesData : function( response ) {
+    //var o = JSON.parse( response );
+    //console.log( "success: " + JSON.stringify( response ) );
+    var nodes = "";
+
+    response.forEach( function( value, index ) {
+      nodes = nodes + "<tr>";
+
+      nodes = nodes + "<td>";
+      nodes = nodes + value.name_data + " (" + value.id_data + ")";
+      nodes = nodes + "</td>";
+
+      nodes = nodes + "<td>";
+      nodes = nodes + value.name + " (" + value.id + ")";
+      nodes = nodes + "</td>";
+
+      nodes = nodes + "<td><input type='text' class='form-control input-sm' id='data-value-"+value.id_data+"' value='"+value.size_data+"' /></td>";
+
+      nodes = nodes + "<td>";
+      nodes = nodes + "<input type='button' class='btn btn-default' onclick='Agiui.getData( "+value.id_data+" );' value='Show' /> ";
+      nodes = nodes + "</td>";
+
+      nodes = nodes + "</tr>";
+
+    } );
+
+    $( "#data-table" ).html( nodes );
+  },
+
   onGetProperties : function( response ) {
     //var o = JSON.parse( response );
     //console.log( "success: " + JSON.stringify( response ) );
@@ -196,19 +299,14 @@ var Agiui = {
     Agidb.getJson( "properties", Agiui.onGetProperties );
   },
 
-  addEntity : function() {
-    var   typeValue = $( "#entities-type"   ).val();
-    var parentValue = $( "#entities-parent" ).val();
-    var   nameValue = $( "#entities-name"   ).val();
+  getEntitiesData : function() {
+    //console.log( "refresh properties" );
+    Agidb.getJson( "entities_data", Agiui.onGetEntitiesData );
+  },
 
-    var data = { "name": nameValue, "id_entity_type": typeValue };
-
-    if( parentValue != "null" ) {
-      data.id_entity_parent = parentValue;
-    }
-
-    // Request a create action on the code.
-    //Agidb.postJson( "entities", data, Agiui.setEntities );
+  getData : function( id ) {
+    //console.log( "refresh properties" );
+    Agidb.getJson( "data?id=eq."+id, Agiui.onGetData );
   },
 
   setEntityTypes : function() {
@@ -227,10 +325,35 @@ var Agiui = {
     Agiui.setEntities();
   },
 
+  addEntity : function() {
+//    var   typeValue = $( "#entities-type"   ).text();  this retrieves the ID from the select
+//    var parentValue = $( "#entities-parent" ).text();
+    var   nameValue = $( "#entities-name"   ).val(); // this retrieves the name from the select
+    var   configValue = $( "#entities-config"   ).val();
+
+    var eType = document.getElementById( "entities-type" );
+    var typeValue = eType.options[eType.selectedIndex].text;
+    var eParent = document.getElementById( "entities-parent" );
+    var parentValue = eParent.options[eParent.selectedIndex].text;
+    //var data = { "name": nameValue, "id_entity_type": typeValue };
+    //
+    // if( parentValue != "null" ) {
+    //   data.id_entity_parent = parentValue;
+    // }
+    //
+    // Request a create action on the code.
+    //Agidb.postJson( "entities", data, Agiui.setEntities );
+    Agief.entityCreate( nameValue, typeValue, parentValue, configValue, "create-entity-response" );
+  },
+
   doEntityAction : function() {
     var entityName = $( "#control-entity-name" ).val();
     var entityAction = $( "#control-entity-action" ).val();
-    Agief.entityAction( entityName, entityAction );
+    Agief.entityAction( entityName, entityAction, "control-entity-response" );
+  },
+  doEntity : function( entityAction ) {
+    var entityName = $( "#control-entity-name" ).val();
+    Agief.entityAction( entityName, entityAction, "control-entity-response" );
   },
 
   setDatabase : function() {

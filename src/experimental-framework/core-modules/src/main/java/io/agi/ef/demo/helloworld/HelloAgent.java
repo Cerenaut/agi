@@ -40,6 +40,11 @@ public class HelloAgent extends Agent {
         ls.setup( LIGHT_SENSOR_NAME, LightSensor.ENTITY_TYPE, getName(), null );
         sm.setup( SIMPLE_MOTOR_NAME, SimpleMotor.ENTITY_TYPE, getName(), null );
 
+        // Add a big datastructure to test the data viewer.
+        Data d = new Data( 20,20 );
+        d.setRandomNormal();
+        addData("random", d); // fixed size
+
 //        _lightSensor = new LightSensor( 1.0f );
 //        addSensor( _lightSensor );
 //

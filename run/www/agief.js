@@ -8,7 +8,7 @@ var Agief = {
   host : null,
   port : null,
 
-  controlCallback : function( json ) {
+  controlCallback : function( json, idResult ) {
     //var s = JSON.stringify( json );
     //console.log( "Coordinator response to command: " + s );
 
@@ -17,21 +17,33 @@ var Agief = {
       status = "OK";
     }
 
-    var result = "Status: "+status+"<br>Message: \""+json.responseJSON.message + "\"";
+    var result = "Status: "+status+"<br>Message: \""+json.responseText + "\"";
 
-    $( "#control-entity-response" ).html( result );
-    $( "#control-entity-response" ).attr( "style", "block" );
+    $( "#"+ idResult ).html( result );
+    $( "#"+ idResult ).css( "display", "block" );
   },
 
-  entityAction : function( entityName, entityAction ) {
+  entityCreate : function( entityName, entityType, entityParentName, entityConfig, idResult ) {
+//    var suffix = "coordinator/control/entity/" + entityName + "/command/" + entityAction;
+    // e.g. http://localhost:8081/api/entity?name=exp&action=step
+    var suffix = "api/create" 
+               + "?name=" + entityName 
+               + "&type=" + entityType
+               + "&parent=" + entityParentName
+               + "&config=" + entityConfig;
+    var verb = "POST";
+    Agief.control( suffix, Agief.controlCallback, verb, idResult );
+  },
+
+  entityAction : function( entityName, entityAction, idResult ) {
 //    var suffix = "coordinator/control/entity/" + entityName + "/command/" + entityAction;
     // e.g. http://localhost:8081/api/entity?name=exp&action=step
     var suffix = "api/entity?name=" + entityName + "&action=" + entityAction;
     var verb = "POST";
-    Agief.control( suffix, Agief.controlCallback, verb );
+    Agief.control( suffix, Agief.controlCallback, verb, idResult );
   },
 
-  control : function( suffix, callback, verb ) {
+  control : function( suffix, callback, verb, idResult ) {
     // example http://localhost:8080/coordinator/control/entity/exp1/command/bob
     var url = Agief.protocol + "://" + Agief.host + ":" + Agief.port + "/" + suffix;
     // console.log( "POST: "+ s );
@@ -39,7 +51,10 @@ var Agief = {
     $.ajax( url, {
         type: verb,
         complete: function( json ) {
-          callback( json );
+          callback( json, idResult );
+        },
+        error: function( json ) {
+          callback( json, idResult );
         }
     } );
   },

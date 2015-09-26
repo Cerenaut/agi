@@ -133,6 +133,8 @@
             <th>Type</th>
             <th>Parent (name)</th>
             <th>Name</th>
+            <th>Config</th>
+            <th></th>
            </tr>
           </thead>
           <tbody>
@@ -141,7 +143,11 @@
             <td><select title='Entity Type'  class='form-control input-sm' id='entities-type' ></select></td>
             <td><select title='Entity Parent'  class='form-control input-sm' id='entities-parent' ></select></td>
             <td><input type='text'  class='form-control input-sm' id='entities-name' /></td>
+            <td><input type='text'  class='form-control input-sm' id='entities-config' /></td>
             <td><input type='button' class='btn btn-default' onclick='Agiui.addEntity();' value='Save' /></td>
+           </tr>
+           <tr>
+            <td colspan="5"><p id='create-entity-response' style="display:none;"></p></td>
            </tr>
           </tbody>
         </table>
@@ -182,14 +188,13 @@
             <td><input type='button' class='btn btn-primary' onclick='Agiui.doEntityAction();' value='Apply' /></td>
            </tr>
            <tr>
-            <td><p>Actions supported by all entities:</p></td>
-            <td colspan="2">
-             <div class='btn btn-primary' onclick='' ><span class="glyphicon glyphicon-fast-backward" aria-hidden="true"></span></div>
-             <div class='btn btn-primary' onclick='' ><span class="glyphicon glyphicon-stop" aria-hidden="true"></span></div>
-             <div class='btn btn-primary' onclick='' ><span class="glyphicon glyphicon-play" aria-hidden="true"></span></div>
-             <div class='btn btn-primary' onclick='' ><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></div>
-             <div class='btn btn-primary' onclick='' ><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></div>
-             <div class='btn btn-primary' onclick='' ><span class="glyphicon glyphicon-star" aria-hidden="true"></span></div>
+            <td colspan="3" style="border:none;text-align:center">
+             <div class='btn btn-primary' onclick="Agiui.doEntity( 'start' );" ><span class="glyphicon glyphicon-star"  data-toggle="tooltip" data-placement="below" title="Start"></span></div>
+             <div class='btn btn-primary' onclick="Agiui.doEntity( 'reset' );" ><span class="glyphicon glyphicon-fast-backward" data-toggle="tooltip" data-placement="below" title="Reset"></span></div>
+             <div class='btn btn-primary' onclick="Agiui.doEntity( 'stop' );" ><span class="glyphicon glyphicon-stop"  data-toggle="tooltip" data-placement="below" title="Stop"></span></div>
+             <div class='btn btn-primary' onclick="Agiui.doEntity( 'resume' );" ><span class="glyphicon glyphicon-play"  data-toggle="tooltip" data-placement="below" title="Resume"></span></div>
+             <div class='btn btn-primary' onclick="Agiui.doEntity( 'pause' );" ><span class="glyphicon glyphicon-pause"  data-toggle="tooltip" data-placement="below" title="Pause"></span></div>
+             <div class='btn btn-primary' onclick="Agiui.doEntity( 'step' );" ><span class="glyphicon glyphicon-step-forward"  data-toggle="tooltip" data-placement="below" title="Step once"></span></div>
             </td>
            </tr>
          </tbody>
@@ -234,40 +239,25 @@
        <div class="jumbotron">
         <h1 class="varela">Data Browser</h1>
         <h2 class="varela">Select data</h2>
-        <p>This interface needs to know where the database is to explore the system.</p>
+        <p>A basic interface for 1-D or 2-D visualization of N-dimensional Data structures.</p>
+        <p>
+         <input type="button" class="btn btn-lg btn-primary" onclick="Agiui.getEntitiesData();" value="Refresh"/>
+        </p>
         <table class="table">
-         <thead>
+          <thead>
            <tr>
-            <th>Data Name</th>
+            <th>Key (ID)</th>
+            <th>Entity (ID)</th>
+            <th>Size</th>
             <th>Actions</th>
            </tr>
-         </thead>
-         <tbody>
-           <tr>
-            <td><input type='text'  class='form-control input-sm' id='database-host' value='localhost' /></td>
-            <td><input type='text'  class='form-control input-sm' id='database-port' value='3000' /></td>
-            <td><input type='button' class='btn btn-primary' onclick='Agiui.setDatabase();' value='Apply' /></td>
-           </tr>
-         </tbody>
+          </thead>
+          <tbody id="data-table">
+          </tbody>
         </table>
-        <h2 class="varela">List data</h2>
-        <table class="table">
-         <thead>
-           <tr>
-            <th>Data Name</th>
-            <th>Actions</th>
-           </tr>
-         </thead>
-         <tbody>
-           <tr>
-            <td><input type='text'  class='form-control input-sm' id='database-host' value='localhost' /></td>
-            <td><input type='text'  class='form-control input-sm' id='database-port' value='8080' /></td>
-            <td><input type='button' class='btn btn-primary' onclick='Agiui.setDatabase();' value='Apply' /></td>
-           </tr>
-         </tbody>
-        </table>
-
        </div>
+
+       <div id="data-plot"></div>
 
       </div><!-- tab-pane -->
      </div><!-- tab-content -->

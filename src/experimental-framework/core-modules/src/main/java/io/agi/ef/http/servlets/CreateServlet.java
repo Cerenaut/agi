@@ -1,5 +1,6 @@
 package io.agi.ef.http.servlets;
 
+import io.agi.ef.Entity;
 import io.agi.ef.EntityFactory;
 import io.agi.ef.http.ServletUtil;
 import io.agi.ef.interprocess.coordinator.Coordinator;
@@ -63,8 +64,13 @@ public class CreateServlet extends HttpServlet {
         String entityConfig = parameters.get(CreateServlet.PARAMETER_CONFIG);
 
         Coordinator c = Coordinator.getInstance();
-        c.onCreateEvent(entityName, entityType, parentEntityName, entityConfig);
+        Entity e = c.onCreateEvent(entityName, entityType, parentEntityName, entityConfig);
 
-        ServletUtil.createResponse(response, HttpServletResponse.SC_OK);
+        if( e != null ) {
+            ServletUtil.createResponse(response, HttpServletResponse.SC_OK);
+        }
+        else {
+            ServletUtil.createResponse(response, HttpServletResponse.SC_BAD_REQUEST );
+        }
     }
 }
