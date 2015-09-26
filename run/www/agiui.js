@@ -98,42 +98,109 @@ var Agiui = {
   onGetData : function( response ) {
 
   var data = response[ 0 ];
-  var dataSize = data.size;
-  var elements = data.elements;
+/*  var dataSize = data.size;
+  var o = JSON.parse( data.elements );
+  var elements = o.elements;*/
 
+  var d = new AgiData( data );
+  var e = d.getElements();
+  var l = d.getLength();
+
+  var wAxes = 50;
+  var wElement = 500;
+  var wData = 20;
+  var hData = 20;
+
+  // Plots are always square, until I allow other shapes.
+  var hElement = wElement;
+  var wPlot = wElement - ( wAxes * 2 );
+  var hPlot = wPlot; // same, both are missing an amount for an axis
+
+//  var marginPlot = 20;
+  var wCell = wPlot / wData;
+
+  // offset plot providing space for axes
+  var xPlot = wAxes;
+  var yPlot = wAxes;
+ 
   $( "#data-plot" ).html( "" );
 
-  var w = 940,
+/*  var w = 940,
       h = 300,
       pad = 20,
-      left_pad = 100;
+      left_pad = 100;*/
+
+function make_x_axis() {        
+    return d3.svg.axis()
+        .scale(x)
+         .orient("top")
+         .ticks(5)
+}
+
+function make_y_axis() {        
+    return d3.svg.axis()
+        .scale(y)
+        .orient("left")
+        .ticks(5)
+}
 
   var svg = d3.select("#data-plot")
             .append("svg")
-            .attr("width", w)
-            .attr("height", h);
+            .attr("width", wElement)
+            .attr("height", hElement);
 
-  var x = d3.scale.linear().domain([0, 20]).range([left_pad, w-pad]),
-      y = d3.scale.linear().domain([0, 20]).range([pad, h-pad*2]);
+  // Domain and Range of a d3 scale explained:
+  // https://www.dashingd3js.com/d3js-scales
+  var x = d3.scale.linear()
+                  .domain( [0, wData] )
+                  .range( [0, wPlot] ),      // the space available
+      y = d3.scale.linear()
+                  .domain( [0, hData] )
+                  .range( [0, hPlot] );
+//  var x = d3.scale.linear().domain( [0, wElements] ).range( [ xPlot, wPlot ] ),
+//      y = d3.scale.linear().domain( [0, hElements] ).range( [ yPlot, hPlot ] );
 
-  var xAxis = d3.svg.axis().scale(x).orient("bottom"),
+  var xAxis = d3.svg.axis().scale(x).orient("top"),
       yAxis = d3.svg.axis().scale(y).orient("left");
+
+  // origin coordinates for these axes
+  var xAxis_x = wAxes;
+  var xAxis_y = wAxes;
+  var yAxis_x = wAxes;
+  var yAxis_y = wAxes;
+
+svg.append("g")         
+        .attr("class", "grid")
+      .attr("transform", "translate("+xAxis_x+", "+xAxis_y+")")
+        .call(make_x_axis()
+            .tickSize(-hPlot, 0, 0)
+            .tickFormat("")
+        )
+
+    svg.append("g")         
+        .attr("class", "grid")
+      .attr("transform", "translate("+yAxis_x+", "+yAxis_y+")")
+        .call(make_y_axis()
+            .tickSize(-wPlot, 0, 0)
+            .tickFormat("")
+        )
+
 
   svg.append("g")
       .attr("class", "axis")
-      .attr("transform", "translate(0, "+(h-pad)+")")
+      .attr("transform", "translate("+xAxis_x+", "+xAxis_y+")")
       .call(xAxis);
  
   svg.append("g")
       .attr("class", "axis")
-      .attr("transform", "translate("+(left_pad-pad)+", 0)")
+      .attr("transform", "translate("+yAxis_x+", "+yAxis_y+")")
       .call(yAxis);
 
   svg.append("text")
       .attr("class", "loading")
       .text("Loading ...")
-      .attr("x", function () { return w/2; })
-    .  attr("y", function () { return h/2-5; });
+      .attr("x", function () { return wElement/2; })
+    .  attr("y", function () { return hElement/2; });
 
 // http://swizec.com/blog/quick-scatterplot-tutorial-for-d3-js/swizec/5337
 /*d3.json( elements, function (elements) {
@@ -154,18 +221,48 @@ var Agiui = {
 svg.selectAll(".loading").remove();
  
     svg.selectAll("circle")
-        .data(elements)
+        .data(e)
         .enter()
         .append("circle")
         .attr("class", "circle")
-        .attr("cx", function (d) { return x(d); })
-        .attr("cy", function (d) { return y(d[0]); })
-//        .attr("cx", function (d) { return x(d[1]); })
-//        .attr("cy", function (d) { return y(d[0]); })
+//        .attr("cx", function (d,i) { return ( i % 20 ) * wCell; })
+//        .attr("cy", function (d,i) { return ( i / 20 ) * wCell; })
+        .attr("cx", function ( d, i ) { 
+             xe = i % wData;
+             return xPlot + xe * wCell; 
+        })
+        .attr("cy", function ( d, i ) { 
+             ye = Math.floor( i / wData );
+             return yPlot + ye * wCell; 
+        })
+        .attr("title", function ( d, i ) { 
+             xe = i % wData;
+             ye = Math.floor( i / wData );
+             return xe + "," + ye;
+        })
+        .attr("data-content", function ( d, i ) { 
+//             xe = i % wData;
+//             ye = Math.floor( i / wData );
+             return e[ i ];
+        })
         .transition()
         .duration(800)
-        .attr("r", function (d) { return d * 20; });
+        .attr("r", function (d,i) { return d * wCell * 0.5; });
 
+// title: compulsary if you want a non-empty tooltip
+//d3.selectAll('.circle').attr('title','This is my tooltip title');
+ 
+// content: popovers only. 
+//d3.selectAll('.circle').attr('data-content','This is some content');
+ 
+// set the options – read more on the Bootstrap page linked to above
+$('svg .circle').popover({
+   'trigger':'hover'
+   ,'container': 'body'
+   ,'placement': 'top'
+   ,'white-space': 'nowrap'
+   ,'html':'true'
+});
   },
 
   onGetEntitiesData : function( response ) {

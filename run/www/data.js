@@ -1,11 +1,35 @@
 
-var AgiData = {
+// Object prototype: http://stackoverflow.com/questions/10014552/javascript-prototypes-with-callbacks-and-this
 
-  port : "3000",
+function AgiData( data ) {
 
-  setup : function( host, port ) {
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  // Variables
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+  //this.data = data;
+  this.size = null;
+  this.elements = null;
+
+  this.setup( data );
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Methods
+///////////////////////////////////////////////////////////////////////////////////////////////////
+AgiData.prototype = {
+
+  getElements : function() {
+    return this.elements.elements;
+  },
+  getLength : function() {
+    return this.elements.length;
+  },
+
+  setup : function( data ) {
+    this.size = JSON.parse( data.size );
+    this.elements = JSON.parse( data.elements );
   }
 
-};
-
+}
 
