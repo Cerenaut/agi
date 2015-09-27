@@ -100,7 +100,7 @@ var Agiui = {
     var data = response[ 0 ];
     var d = new AgiData( data );
 
-    var idElement = "data-plot"
+    var idElement = "data-plot"; // where to plot the data.
     var wCell = 50; // how big each element is rendered
     var wAxes = 100; // how much space is reserved for axes' labels
     

@@ -41,7 +41,8 @@ public class HelloAgent extends Agent {
         sm.setup( SIMPLE_MOTOR_NAME, SimpleMotor.ENTITY_TYPE, getName(), null );
 
         // Add a big datastructure to test the data viewer.
-        Data d = new Data( 20,15 );
+        //Data d = new Data( 20,15 );
+        Data d = new Data( 286 ); // impossible to render as 2D, will need padding
         d.setRandomNormal();
         d.setRandom();
         addData("random", d); // fixed size

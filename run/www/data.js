@@ -61,7 +61,9 @@ AgiData.prototype = {
       square = Math.floor( square );
       w = square;
       h = square;
-      if( ( w * h ) < volume ) w = w +1;
+      while( ( w * h ) < volume ) {
+        w = w +1;
+      }
     }    
     return {w:w,h:h};
   },
