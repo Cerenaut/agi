@@ -41,8 +41,9 @@ public class HelloAgent extends Agent {
         sm.setup( SIMPLE_MOTOR_NAME, SimpleMotor.ENTITY_TYPE, getName(), null );
 
         // Add a big datastructure to test the data viewer.
-        Data d = new Data( 20,20 );
+        Data d = new Data( 20,15 );
         d.setRandomNormal();
+        d.setRandom();
         addData("random", d); // fixed size
 
 //        _lightSensor = new LightSensor( 1.0f );
