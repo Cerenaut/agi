@@ -8,12 +8,18 @@ import io.agi.ef.http.EndpointUtil;
 import io.agi.ef.http.RequestUtil;
 import io.agi.ef.http.node.Node;
 import io.agi.ef.interprocess.coordinator.Coordinator;
+import io.agi.ef.persistenceClientApi.ApiException;
+import io.agi.ef.persistenceClientApi.api.DataApi;
+import io.agi.ef.persistenceClientApi.model.NodeModel;
+import io.agi.ef.persistenceClientApi.model.NodeQueryModel;
+import io.agi.ef.persistenceClientApi.model.NodeRow;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * Not necessarily a database.. the Persistence layer is intended to be an abstraction of whatever distributed filesystem
@@ -343,17 +349,52 @@ public class Persistence {
         }
     }
 
-    public static HashSet<String> getNodes() {
+    public static HashSet<String> getNodes_old() {
         JSONArray ja = Persistence.getTableJson(Persistence.TABLE_NODES);
         return Persistence.getObjectValues( ja, Node.NAME );
     }
 
-    public static JSONObject getNode( String nodeName ) {
+    public static JSONObject getNode_old( String nodeName ) {
         String query = getQueryWhere(Persistence.TABLE_NODES, FIELD_NAME, nodeName);
         return getObject(query);
     }
 
+    public static List< NodeModel > getNodes() throws ApiException {
+        DataApi dataApi = new DataApi(  );
+        return dataApi.nodesGet( null, null, null, null );
+    }
+
+    /**
+     * Return the first node matching this nodeName
+     */
+    public static NodeModel getNode( String nodeName ) throws ApiException {
+
+        List< NodeModel > nodes = new DataApi().nodesGet( null, nodeName, null, null );
+        return (nodes != null) ? nodes.get( 0 ) : null;
+    }
+
+
     public static boolean addNode(
+            String name,
+            String host,
+            int port )
+    {
+        NodeModel node = new NodeModel();
+        node.setName( name );
+        node.setHost( host );
+        node.setPort( port );
+
+        DataApi dataApi = new DataApi();
+        try {
+            dataApi.nodesPost( node );
+            return true;
+        }
+        catch ( ApiException e ) {
+            return false;
+        }
+    }
+
+    public static boolean addNode_old(
             String name,
             String host,
             int port ) {
@@ -396,7 +437,7 @@ public class Persistence {
         String body = jo.toString();
         String result = RequestUtil.postSync(request, body);
         if( ( result != null ) && ( result.trim().length() > 0 ) ) {
-            System.out.println("Persistance::addTableRow() returned: " + result);
+            System.out.println("Persistence::addTableRow() returned: " + result);
         }
         return true;
     }
@@ -411,7 +452,7 @@ public class Persistence {
         String body = values.toString();
         String result = RequestUtil.patchSync(request,body);
         if( ( result != null ) && ( result.trim().length() > 0 ) ) {
-            System.out.println("Persistance::updateTableRow() returned: " + result);
+            System.out.println("Persistence::updateTableRow() returned: " + result);
         }
     }
 
@@ -421,7 +462,7 @@ public class Persistence {
         String request = getBaseUrl() + query;
         String result = RequestUtil.deleteSync(request);
         if( ( result != null ) && ( result.trim().length() > 0 ) ) {
-            System.out.println("Persistance::removeTableRow() returned: " + result);
+            System.out.println("Persistence::removeTableRow() returned: " + result);
         }
     }
 

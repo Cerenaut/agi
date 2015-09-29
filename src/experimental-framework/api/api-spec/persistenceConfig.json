@@ -1,0 +1,9 @@
+{
+    "modelPackage": "io.agi.ef.persistenceClientApi.model",
+    "apiPackage": "io.agi.ef.persistenceClientApi.api",
+    "invokerPackage": "io.agi.ef.persistenceClientApi",
+    "groupId": "io.agi.ef",
+    "artifactId": "api-persistence-client",
+    "artifactVersion": "1.0.6",
+    "sourceFolder": "src/main/java"
+}

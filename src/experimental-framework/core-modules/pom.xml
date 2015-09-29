@@ -153,6 +153,13 @@
             <version>${agief-client.version}</version>
         </dependency>
 
+        <!--swagger generated client-->
+        <dependency>
+            <groupId>io.agi.ef</groupId>
+            <artifactId>api-persistence-client</artifactId>
+            <version>${agief-persistence-client.version}</version>
+        </dependency>
+
     </dependencies>
 
     <repositories>
@@ -176,6 +183,7 @@
         <jettyVersion>9.2.11.v20150529</jettyVersion>
         <agief-server.version>1.0.6</agief-server.version>
         <agief-client.version>1.0.6</agief-client.version>
+        <agief-persistence-client.version>1.0.6</agief-persistence-client.version>
         <agi_core.version>1.0.0</agi_core.version>
     </properties>
 

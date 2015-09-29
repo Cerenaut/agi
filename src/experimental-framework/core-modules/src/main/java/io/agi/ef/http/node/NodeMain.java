@@ -70,8 +70,8 @@ public class NodeMain {
 
     // Members
     String _dataHost = "localhost";
-    int _dataPort = 3000;
-    String _nodeName = "myNode";
+    int _dataPort = 8080;
+    String _nodeName = "scotch";
     int _nodePort = 8081;
     String _staticFiles = null;//"/home/dave/workspace/agi.io/agi/run/www";
     boolean _master = false;
@@ -92,7 +92,7 @@ public class NodeMain {
         // are we to run coordinator?
         if( args.length == 6 ) {
             if( args[ 5 ].equalsIgnoreCase( "COORDINATOR" ) ) {
-                System.out.println( "Node will be coordinator.");
+                System.out.println( "Node will be coordinator." );
                 _master = true;
             }
             else {
