@@ -70,7 +70,7 @@ public class NodeMain {
 
     // Members
     String _dataHost = "localhost";
-    int _dataPort = 8080;
+    int _dataPort = 3000;
     String _nodeName = "scotch";
     int _nodePort = 8081;
     String _staticFiles = null;//"/home/dave/workspace/agi.io/agi/run/www";

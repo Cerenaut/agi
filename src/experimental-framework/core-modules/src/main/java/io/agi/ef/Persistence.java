@@ -9,10 +9,9 @@ import io.agi.ef.http.RequestUtil;
 import io.agi.ef.http.node.Node;
 import io.agi.ef.interprocess.coordinator.Coordinator;
 import io.agi.ef.persistenceClientApi.ApiException;
+import io.agi.ef.persistenceClientApi.Configuration;
 import io.agi.ef.persistenceClientApi.api.DataApi;
 import io.agi.ef.persistenceClientApi.model.NodeModel;
-import io.agi.ef.persistenceClientApi.model.NodeQueryModel;
-import io.agi.ef.persistenceClientApi.model.NodeRow;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,6 +19,8 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Not necessarily a database.. the Persistence layer is intended to be an abstraction of whatever distributed filesystem
@@ -34,6 +35,8 @@ import java.util.List;
  * Created by dave on 11/09/15.
  */
 public class Persistence {
+
+    protected static Logger _logger = Logger.getLogger( Persistence.class.getClass().getPackage().getName() );
 
     public static final String KEY_PERSISTENCE = "persistence";
 
@@ -78,6 +81,13 @@ public class Persistence {
         _host = host;
         _port = port;
         ObjectMap.Put( KEY_PERSISTENCE, this );
+
+        setupApiClient();
+    }
+
+    void setupApiClient() {
+        String basePath = getBaseUrl();
+        Configuration.getDefaultApiClient().setBasePath( basePath );
     }
 
     /**
@@ -385,11 +395,13 @@ public class Persistence {
         node.setPort( port );
 
         DataApi dataApi = new DataApi();
+
         try {
             dataApi.nodesPost( node );
             return true;
         }
         catch ( ApiException e ) {
+            _logger.log( Level.WARNING, e.toString() );
             return false;
         }
     }

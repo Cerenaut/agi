@@ -38,7 +38,11 @@ public class EndpointUtil {
      * @return
      */
     public static String getBasePath(String protocol, String host, int port, String contextPath) {
-        return protocol + "://" + host + ":" + port + "/" + contextPath;
+        String path = protocol + "://" + host + ":" + port;
+        if ( !contextPath.isEmpty() && contextPath != null ) {
+            path += "/" + contextPath;
+        }
+        return path;
     }
 
 }
