@@ -31,8 +31,8 @@ public class HelloAgent extends Agent {
     public void configure(String config) {
 
         // Automatically adds two entities for sensor and actuator:
-        Persistence.addEntityType(SimpleMotor.ENTITY_TYPE);
-        Persistence.addEntityType(LightSensor.ENTITY_TYPE);
+        Persistence.getInstance().addEntityType( SimpleMotor.ENTITY_TYPE );
+        Persistence.getInstance().addEntityType( LightSensor.ENTITY_TYPE );
 
         LightSensor ls = new LightSensor();
         SimpleMotor sm = new SimpleMotor();

@@ -21,13 +21,8 @@ paths:
           description: OK
   /nodes:
     get:
-      summary: Retrieves the contents of a table or view.
-      description: >
-        Returns the content of a table or view as a JSON Array of rows. Each row
-        is a JSON Object. An arbitrary number of column arguments may be
-        specified, where field is the name of a column in the table or view. The
-        value of the column arguments should be an operator and a value, as
-        defined in github.com/begriffs/postgrest/wiki/Routing
+      summary: Retrieves the Nodes matching the search criteria. 
+      description:
       tags:
         - Data
       parameters:
@@ -53,31 +48,22 @@ paths:
           type: integer          
       responses:
         '200':
-          description: successful operation
+          description: Successful operation.
           schema:
             type: array
             items:
               $ref: '#/definitions/nodeModel'
         '400':
-          description: Invalid status value
+          description: Bad Operation
     post:
-      summary: Creates a new row in the specified table.
-      description: >
-        Appends a new row to the specified table. The body of the request should
-        contain a JSON representation of the columns of the new row. See
-        github.com/begriffs/postgrest/wiki/Routing
+      summary: Creates a new Node entry.
+      description:
       tags:
         - Data
       parameters:
-        - name: table
-          in: path
-          description: Name of the table that will have an additional row.
-          required: true
-          type: string
-      parameters:
         - in: body
           name: body
-          description: json object that describes the new row fields and values
+          description: The Node to add to DB.
           required: true
           schema:
             $ref: '#/definitions/nodeModel'
@@ -86,6 +72,49 @@ paths:
           description: Created
         '400':
           description: Bad Operation
+  /entity_types:
+    get:
+      summary: Retrieves the Entity Type matching the search criteria. 
+      description:
+      tags:
+        - Data
+      parameters:
+        - name: id
+          in: query
+          description: id of record
+          required: false
+          type: integer
+        - name: name
+          in: query
+          description: name of Entity Type
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/entityType'
+        '400':
+          description: Bad Operation
+    post:
+      summary: Creates a new Entity Type.
+      description:
+      tags:
+        - Data
+      parameters:
+        - in: body
+          name: body
+          description: The Entity Type to add to DB.
+          required: true
+          schema:
+            $ref: '#/definitions/entityType'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Operation       
 definitions:
   nodeModel:
     type: object
@@ -95,4 +124,9 @@ definitions:
       host:
         type: string
       port:
-        type: integer        
+        type: integer
+  entityType:
+    type: object
+    properties:
+      name:
+        type: string

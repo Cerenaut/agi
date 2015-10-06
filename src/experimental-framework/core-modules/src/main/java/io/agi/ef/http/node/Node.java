@@ -44,7 +44,7 @@ public class Node {
 
         _name = name;
 
-        Persistence.addNode( name, host, port );
+        Persistence.getInstance().addNode( name, host, port );
 
         ObjectMap.Put( KEY_NODE, this );
     }

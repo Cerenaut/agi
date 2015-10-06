@@ -25,7 +25,7 @@ public class HelloWorld extends World {
 
         // Automatically adds a LightMotor to the World
         String lightSourceConfig = "{ max: 10 }";
-        Persistence.addEntityType(LightSource.ENTITY_TYPE);
+        Persistence.getInstance().addEntityType( LightSource.ENTITY_TYPE );
         LightSource ls = new LightSource();
         ls.setup( LIGHT_SOURCE_NAME, LightSource.ENTITY_TYPE, getName(), lightSourceConfig );
 

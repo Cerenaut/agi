@@ -37,12 +37,8 @@ public class Relay extends Entity {
 
         // 2. Query database for all the nodes.
         List< NodeModel > nodes = null;
-        try {
-            nodes = Persistence.getNodes();
-        }
-        catch ( ApiException e ) {
-            e.printStackTrace();
-        }
+
+        nodes = Persistence.getInstance().getNodes();
 
         // 3. Broadcast event to each node.
         Coordinator c = Coordinator.getInstance();
@@ -69,12 +65,7 @@ public class Relay extends Entity {
 
         // 2. Query database for all the nodes.
         List< NodeModel > nodes = null;
-        try {
-            nodes = Persistence.getNodes();
-        }
-        catch ( ApiException e ) {
-            e.printStackTrace();
-        }
+        nodes = Persistence.getInstance().getNodes();
 
         // 3. Broadcast event to each node.
         Node n = Node.getInstance();

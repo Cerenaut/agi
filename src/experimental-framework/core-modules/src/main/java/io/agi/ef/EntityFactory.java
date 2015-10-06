@@ -31,7 +31,7 @@ public class EntityFactory {
         ef._factories.put( entityType, af );
 
         // Tell the system this type is available.
-        boolean b = Persistence.addEntityType( entityType );
+        boolean b = Persistence.getInstance().addEntityType( entityType );
         return b;
     }
 
