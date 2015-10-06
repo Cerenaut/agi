@@ -44,6 +44,9 @@ This section explains how to install the system and get the modules talking to e
 	*	**Server**
 	* 	_cd lib/CoordinatorServerLib_
 	*	_mvn install_
+	*	**Persistence**
+	* 	_cd lib/PersistenceLib_
+	*	_mvn install_	
 * Install the Core library
     * 	_cd src/core
     *	_mvn install_
@@ -74,6 +77,7 @@ If you want to get further into the implementation details, knowledge of the fol
 * Re-generate client and server using Swagger, in particular the [swagger-codegen](https://github.com/swagger-api/swagger-codegen) project. You will need to use the modified template 'Mustache' file(s) with Swagger. Copy them from **/resources** to the appropriate folder in the swagger-codegen source code project before building Swagger again (with the command **mvn package**)):
 	* **/bin/genClient.sh**
 	* **/bin/genServer.sh**
+	* **/bin/genPersistence.sh**
 * *NOTE: You need to set the paths correctly in the scripts, which will be improved in later versions*
 * These scripts will generate code, adjust folder structure where necessary, build the libs and install to local Maven repository.
 * Then modify the server and client projects accordingly (see below).
