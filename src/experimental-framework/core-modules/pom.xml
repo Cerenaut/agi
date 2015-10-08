@@ -97,12 +97,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.9.1</artifactId>
-            <version>${scala-test-version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit-version}</version>
@@ -177,7 +171,6 @@
         <swagger-core-version>1.5.0</swagger-core-version>
         <jersey-version>1.13</jersey-version>
         <slf4j-version>1.6.3</slf4j-version>
-        <scala-test-version>1.6.1</scala-test-version>
         <junit-version>4.8.1</junit-version>
         <servlet-api-version>2.5</servlet-api-version>
         <jettyVersion>9.2.11.v20150529</jettyVersion>

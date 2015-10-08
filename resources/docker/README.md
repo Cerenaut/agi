@@ -26,28 +26,22 @@ $ cd <path_to>/agi
 $ docker build -t agi/dev resources/docker/
 ```
 
-### Configuration
-Depending on the dashing project, there may be some configuration necessary before the container can be run. For the current example, two folders are required:
-
-#### Swagger Codegen
-Clone the swagger code base and set environment variable for the folder.
-NOTE: you need to replace the modified mustache file with the new one in /agi/resources folder.
-
-#### AGI Codebase
-Clone the AGI code base and set environment variable for the folder.
-
+Note: this creates a container with the name **agi/dev** with the docker file at **resources/docker**
 
 ### Start the container
-The container has all pre requisites set up to run any dashing project. Which one is up to the mapped folder and how to start is up to the start.sh script. More about them later.
+The container has all pre requisites set up to run AGIEF. 
+The codebase is in the mapped folder and it should be built and run with **Maven** according to the instructions. 
+
 ```sh
-$ docker run -i -d -p 3030:3030 -v $AGI_PROJECT_DIR:/root/dev/agi $SWAGGER_CODEGEN_DIR:/root/dev/swagger-codegen agi/dev
+$ docker run -i -d -p 3030:3030 -v $AGI_PROJECT_DIR:/root/dev/agi -v $SWAGGER_CODEGEN_DIR:/root/dev/swagger-codegen agi/dev
 ```
 
 OR if you prefer to start docker in the foreground logged into the container.
 ```sh
-$ docker run -i -d -p 3030:3030 -v $AGI_PROJECT_DIR:/root/dev/agi $SWAGGER_CODEGEN_DIR:/root/dev/swagger-codegen agi/dev bash
+$ docker run -i -d -p 3030:3030 -v $AGI_PROJECT_DIR:/root/dev/agi -v $SWAGGER_CODEGEN_DIR:/root/dev/swagger-codegen -e AGI_PROJECT_DIR=/root/dev/agi -e JAVA_HOME=/usr/bin/java agi/dev bash
 ```
 
+Note: This runs the container we just created, called **agi/dev**, maps the docker container port 3030 to localhost:3030, maps the volumes specified after ‘-v’ so that those folders are available inside the container.
 
 ### Stop the container
 Stopping a running container is possible via the docker api. If only one instance of this container is running this command will stop it:
