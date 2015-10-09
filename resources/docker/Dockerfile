@@ -6,7 +6,7 @@ FROM ubuntu:14.10
 MAINTAINER Gideon Kowadlo <gideon@agi.io>
 
 RUN apt-get update && apt-get install -y \
-git maven openjdk-8-jdk
+git maven openjdk-8-jdk postgresql postgresql-contrib
 
 # Install dependencies
 WORKDIR /tmp

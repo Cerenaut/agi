@@ -6,7 +6,7 @@ CONFIG_FILE="$AGI_HOME/src/experimental-framework/api/api-spec/persistenceConfig
 
 mkdir -p $AGI_HOME/lib
 
-cmd="java -jar $SWAGGER_CODEGEN_DIR/modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate \
+cmd="java -jar $SWAGGER_HOME/modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate \
   -i $SPEC_FILE \
   -c $CONFIG_FILE \
   -l java \

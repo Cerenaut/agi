@@ -1,12 +1,12 @@
 #!/bin/sh
 
-TGT_DIR="$AGI_PROJECT_DIR/lib/CoordinatorServerLib"
-SPEC_FILE="$AGI_PROJECT_DIR/src/experimental-framework/api/api-spec/coordinator.yaml"
-CONFIG_FILE="$AGI_PROJECT_DIR/src/experimental-framework/api/api-spec/serverConfig.json"
+TGT_DIR="$AGI_HOME/lib/CoordinatorServerLib"
+SPEC_FILE="$AGI_HOME/src/experimental-framework/api/api-spec/coordinator.yaml"
+CONFIG_FILE="$AGI_HOME/src/experimental-framework/api/api-spec/serverConfig.json"
 
-mkdir -p $AGI_PROJECT_DIR/lib
+mkdir -p $AGI_HOME/lib
 
-cmd="java -jar $SWAGGER_CODEGEN_DIR/modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate \
+cmd="java -jar $SWAGGER_HOME/modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate \
   -i $SPEC_FILE \
   -c $CONFIG_FILE \
   -l jaxrs \
