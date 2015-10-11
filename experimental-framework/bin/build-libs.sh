@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "------- build all the library dependencies of the experimental-framework -------"
-cd $AGI_HOME/core
+cd $AGI_HOME/algorithms/code/core
 mvn clean install
 
 cd $AGI_HOME/experimental-framework/lib/CoordinatorClientLib
