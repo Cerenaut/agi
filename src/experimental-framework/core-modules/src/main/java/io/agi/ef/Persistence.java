@@ -8,12 +8,21 @@ import io.agi.ef.http.EndpointUtil;
 import io.agi.ef.http.RequestUtil;
 import io.agi.ef.http.node.Node;
 import io.agi.ef.interprocess.coordinator.Coordinator;
+import io.agi.ef.persistenceClientApi.ApiException;
+import io.agi.ef.persistenceClientApi.Configuration;
+import io.agi.ef.persistenceClientApi.api.DataApi;
+import io.agi.ef.persistenceClientApi.model.EntityType;
+import io.agi.ef.persistenceClientApi.model.NodeModel;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Not necessarily a database.. the Persistence layer is intended to be an abstraction of whatever distributed filesystem
@@ -28,6 +37,8 @@ import java.util.HashSet;
  * Created by dave on 11/09/15.
  */
 public class Persistence {
+
+    protected static Logger _logger = Logger.getLogger( Persistence.class.getClass().getPackage().getName() );
 
     public static final String KEY_PERSISTENCE = "persistence";
 
@@ -58,10 +69,12 @@ public class Persistence {
     public static final String FIELD_ELEMENTS = "elements";
     public static final String FIELD_VALUE = "value";
 
-
     // Variables
     protected String _host;
     protected int _port = -1;
+
+    // HTTP API access objects
+    protected DataApi _dataApi = null;
 
     /**
      * The Persistence service is always identified by its host and port.
@@ -72,6 +85,15 @@ public class Persistence {
         _host = host;
         _port = port;
         ObjectMap.Put( KEY_PERSISTENCE, this );
+
+        setupApiClient();
+    }
+
+    void setupApiClient() {
+        String basePath = getBaseUrl();
+        Configuration.getDefaultApiClient().setBasePath( basePath );
+
+        _dataApi = new DataApi();
     }
 
     /**
@@ -259,14 +281,28 @@ public class Persistence {
         }
     }
 
-    public static boolean addEntityType( String name ) {
+//    public static boolean addEntityType( String name ) {
+//        try {
+//            JSONObject jo = new JSONObject();
+//            jo.put( FIELD_NAME, name);
+//            return addTableRow( Persistence.TABLE_ENTITY_TYPES, name, jo );
+//        }
+//        catch( Exception e ) {
+//            //e.printStackTrace();
+//            return false;
+//        }
+//    }
+
+    public boolean addEntityType( String name ) {
+        EntityType entityType = new EntityType();
+        entityType.setName( name );
+
         try {
-            JSONObject jo = new JSONObject();
-            jo.put( FIELD_NAME, name);
-            return addTableRow( Persistence.TABLE_ENTITY_TYPES, name, jo );
+            _dataApi.entityTypesPost( entityType );
+            return true;
         }
-        catch( Exception e ) {
-            //e.printStackTrace();
+        catch ( ApiException e ) {
+            e.printStackTrace();
             return false;
         }
     }
@@ -343,33 +379,81 @@ public class Persistence {
         }
     }
 
-    public static HashSet<String> getNodes() {
-        JSONArray ja = Persistence.getTableJson(Persistence.TABLE_NODES);
-        return Persistence.getObjectValues( ja, Node.NAME );
-    }
+//    public static HashSet<String> getNodes() {
+//        JSONArray ja = Persistence.getTableJson(Persistence.TABLE_NODES);
+//        return Persistence.getObjectValues( ja, Node.NAME );
+//    }
 
-    public static JSONObject getNode( String nodeName ) {
+    public static JSONObject getNode_old( String nodeName ) {
         String query = getQueryWhere(Persistence.TABLE_NODES, FIELD_NAME, nodeName);
         return getObject(query);
     }
 
-    public static boolean addNode(
+    public List< NodeModel > getNodes() {
+        try {
+            return _dataApi.nodesGet( null, null, null, null );
+        }
+        catch ( ApiException e ) {
+            e.printStackTrace();
+        }
+
+        return new ArrayList< NodeModel >();
+    }
+
+    /**
+     * Return the first node matching this nodeName
+     */
+    public NodeModel getNode( String nodeName ) {
+
+        List< NodeModel > nodes = null;
+        try {
+            nodes = _dataApi.nodesGet( null, nodeName, null, null );
+        }
+        catch ( ApiException e ) {
+            e.printStackTrace();
+        }
+
+        return (nodes != null) ? nodes.get( 0 ) : null;
+    }
+
+
+    public boolean addNode(
             String name,
             String host,
-            int port ) {
+            int port )
+    {
+        NodeModel node = new NodeModel();
+        node.setName( name );
+        node.setHost( host );
+        node.setPort( port );
+
         try {
-            JSONObject jo = new JSONObject();
-
-            jo.put(Node.NAME, name);
-            jo.put(Node.HOST, host);
-            jo.put(Node.PORT, port);
-
-            return addTableRow( Persistence.TABLE_NODES, name, jo );
+            _dataApi.nodesPost( node );
+            return true;
         }
-        catch( JSONException e ) {
+        catch ( ApiException e ) {
+            e.printStackTrace();
             return false;
         }
     }
+
+//    public static boolean addNode(
+//            String name,
+//            String host,
+//            int port ) {
+//        try {
+//            JSONObject jo = new JSONObject();
+//
+//            jo.put(Node.NAME, name);
+//            jo.put(Node.HOST, host);
+//            jo.put(Node.PORT, port);
+//
+//            return addTableRow( Persistence.TABLE_NODES, name, jo );
+//        }
+//        catch( JSONException e ) {
+//            return false;
+//        }
+//    }
 
     public static void removeNode( String nodeName ) {
         removeTableRow(Persistence.TABLE_NODES, nodeName);
@@ -396,7 +480,7 @@ public class Persistence {
         String body = jo.toString();
         String result = RequestUtil.postSync(request, body);
         if( ( result != null ) && ( result.trim().length() > 0 ) ) {
-            System.out.println("Persistance::addTableRow() returned: " + result);
+            System.out.println("Persistence::addTableRow() returned: " + result);
         }
         return true;
     }
@@ -411,7 +495,7 @@ public class Persistence {
         String body = values.toString();
         String result = RequestUtil.patchSync(request,body);
         if( ( result != null ) && ( result.trim().length() > 0 ) ) {
-            System.out.println("Persistance::updateTableRow() returned: " + result);
+            System.out.println("Persistence::updateTableRow() returned: " + result);
         }
     }
 
@@ -421,7 +505,7 @@ public class Persistence {
         String request = getBaseUrl() + query;
         String result = RequestUtil.deleteSync(request);
         if( ( result != null ) && ( result.trim().length() > 0 ) ) {
-            System.out.println("Persistance::removeTableRow() returned: " + result);
+            System.out.println("Persistence::removeTableRow() returned: " + result);
         }
     }
 

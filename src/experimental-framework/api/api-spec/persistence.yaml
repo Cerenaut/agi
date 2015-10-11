@@ -1,108 +1,132 @@
-# The API spec of AGIEF Persistence services in YAML
 swagger: '2.0'
 info:
   title: AGI Experimental Framework Persistence Service
-  description: The persistence service is implements by the PostgREST program. See https://github.com/begriffs/postgrest/wiki/Routing
-  version: "1.0.0"
-# the domain of the service
-host: agi.io
-# array of all schemes that your API supports
+  description: 'The persistence service is implements by the PostgREST program. See https://github.com/begriffs/postgrest/wiki/Routing'
+  version: 1.0.0
+host: localhost:8080
 schemes:
-  - https
-# will be prefixed to all paths
-basePath: /v1
+  - http
+basePath: /
 produces:
   - application/json
 paths:
   /:
     get:
       summary: Retrieves a list of tables and views
-      description: |
-        The list of accessible tables and views is returned. 
+      description: "The list of accessible tables and views is returned. \n"
       tags:
         - Meta
       responses:
-        200:
+        '200':
           description: OK
-
-  /{table_or_view}:
+  /nodes:
     get:
-      summary: Retrieves the contents of a table or view. 
-      description: |
-        Returns the content of a table or view as a JSON Array of rows. Each row is a JSON Object. An arbitrary number of column arguments may be specified, where field is the name of a column in the table or view. The value of the column arguments should be an operator and a value, as defined in github.com/begriffs/postgrest/wiki/Routing
+      summary: Retrieves the Nodes matching the search criteria. 
+      description:
       tags:
         - Data
       parameters:
-        - name: table_or_view
-          in: path
-          description: "Name of the table or view to query."
-          required: true
-          type: string
-        - name: column
+        - name: id
           in: query
-          description: "Column or field to use for filtering."
+          description: id of record
+          required: false
+          type: integer
+        - name: name
+          in: query
+          description: name of node
           required: false
           type: string
+        - name: host
+          in: query
+          description: name of host
+          required: false
+          type: string
+        - name: port
+          in: query
+          description: port number
+          required: false
+          type: integer          
       responses:
-        200:
-          description: OK
-
-  /{table}:
+        '200':
+          description: Successful operation.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/nodeModel'
+        '400':
+          description: Bad Operation
     post:
-      summary: Creates a new row in the specified table.
-      description: |
-        Appends a new row to the specified table. The body of the request should contain a JSON representation of the columns of the new row. See github.com/begriffs/postgrest/wiki/Routing
+      summary: Creates a new Node entry.
+      description:
       tags:
         - Data
       parameters:
-        - name: table
-          in: path
-          description: "Name of the table that will have an additional row."
+        - in: body
+          name: body
+          description: The Node to add to DB.
           required: true
-          type: string
+          schema:
+            $ref: '#/definitions/nodeModel'
       responses:
-        200:
-          description: OK
-
-    patch:
-      summary: Modifies rows in the specified table.
-      description: |
-        Modifies rows in the specified table. The body of the request should contain a JSON representation of the modified columns of the rows. Use a number of column parameters to filter the rows affected (typically reduced to 1 e.g. by using a primary key). See github.com/begriffs/postgrest/wiki/Routing
+        '201':
+          description: Created
+        '400':
+          description: Bad Operation
+  /entity_types:
+    get:
+      summary: Retrieves the Entity Type matching the search criteria. 
+      description:
       tags:
         - Data
       parameters:
-        - name: table
-          in: path
-          description: "Name of the table whose rows are modified."
-          required: true
-          type: string
-        - name: column
+        - name: id
           in: query
-          description: "Column or field to use for filtering."
+          description: id of record
+          required: false
+          type: integer
+        - name: name
+          in: query
+          description: name of Entity Type
           required: false
           type: string
       responses:
-        200:
-          description: OK
-
-    delete:
-      summary: Deletes rows in the specified table.
-      description: |
-        Deletes rows in the specified table. Use a number of column parameters to filter the rows affected (typically reduced to 1 e.g. by using a primary key). See github.com/begriffs/postgrest/wiki/Routing
+        '200':
+          description: Successful operation.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/entityType'
+        '400':
+          description: Bad Operation
+    post:
+      summary: Creates a new Entity Type.
+      description:
       tags:
         - Data
       parameters:
-        - name: table
-          in: path
-          description: "Name of the table whose rows are modified."
+        - in: body
+          name: body
+          description: The Entity Type to add to DB.
           required: true
-          type: string
-        - name: column
-          in: query
-          description: "Column or field to use for filtering."
-          required: false
-          type: string
+          schema:
+            $ref: '#/definitions/entityType'
       responses:
-        200:
-          description: OK
-
+        '201':
+          description: Created
+        '400':
+          description: Bad Operation       
+definitions:
+  nodeModel:
+    type: object
+    properties:
+      name:
+        type: string
+      host:
+        type: string
+      port:
+        type: integer
+  entityType:
+    type: object
+    properties:
+      name:
+        type: string

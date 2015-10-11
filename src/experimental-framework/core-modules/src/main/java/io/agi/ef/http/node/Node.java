@@ -17,7 +17,7 @@ import java.util.HashSet;
 /**
  * The wrapper object for all the parts of the distributed system running within the current OS process.
  * Each process is a Node. The system comprises many Nodes.
- *
+ * <p>
  * Created by dave on 11/09/15.
  */
 public class Node {
@@ -44,13 +44,13 @@ public class Node {
 
         _name = name;
 
-        Persistence.addNode(name, host, port);
+        Persistence.getInstance().addNode( name, host, port );
 
         ObjectMap.Put( KEY_NODE, this );
     }
 
     public static Node getInstance() {
-        return (Node)ObjectMap.Get( KEY_NODE );
+        return ( Node ) ObjectMap.Get( KEY_NODE );
     }
 
     public void stop() {
@@ -58,18 +58,19 @@ public class Node {
     }
 
     public synchronized void delete() {
-        Persistence.removeNode(_name);
+        Persistence.removeNode( _name );
     }
 
     /**
      * Discovers its own IP address.
+     *
      * @return
      */
     public static String getLocalHostAddress() {
         try {
             return InetAddress.getLocalHost().getHostAddress();
         }
-        catch( Exception e ) {
+        catch ( Exception e ) {
             e.printStackTrace();
             return null;
         }
@@ -77,6 +78,7 @@ public class Node {
 
     /**
      * The immutable unique name of the Node.
+     *
      * @return
      */
     public synchronized String getName() {
@@ -85,6 +87,7 @@ public class Node {
 
     /**
      * The Node name should not be changed after instantiation.
+     *
      * @param name
      */
     public synchronized void setName( String name ) {
@@ -93,42 +96,46 @@ public class Node {
 
     /**
      * Returns true if the specified name matches the name of this Node.
+     *
      * @param name
      * @return
      */
     public synchronized boolean isSelf( String name ) {
-        if( _name == null ) {
+        if ( _name == null ) {
             return false;
         }
-        return _name.equals(name);
+        return _name.equals( name );
     }
 
     /**
      * Convenience method.
+     *
      * @param jo
      * @return
      */
     public static String getBaseUrl( JSONObject jo ) {
-        return EndpointUtil.getBasePath(getHost(jo), getPort(jo));
+        return EndpointUtil.getBasePath( getHost( jo ), getPort( jo ) );
     }
 
     /**
      * Interpreting the JSON notation of this Node.
+     *
      * @param jo
      * @return
      */
     public static String getHost( JSONObject jo ) {
         try {
-            String host = jo.getString(HOST);
+            String host = jo.getString( HOST );
             return host;
         }
-        catch( Exception e ) {
+        catch ( Exception e ) {
             return null;
         }
     }
 
     /**
      * Interpreting the JSON notation of this Node.
+     *
      * @param jo
      * @return
      */
@@ -137,7 +144,7 @@ public class Node {
             int port = jo.getInt( PORT );
             return port;
         }
-        catch( Exception e ) {
+        catch ( Exception e ) {
             return -1;
         }
     }

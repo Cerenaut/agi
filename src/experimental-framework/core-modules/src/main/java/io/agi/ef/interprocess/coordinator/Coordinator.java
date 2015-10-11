@@ -5,15 +5,16 @@ import io.agi.ef.Entity;
 import io.agi.ef.EntityFactory;
 import io.agi.ef.Persistence;
 import io.agi.ef.entities.Relay;
+import io.agi.ef.http.EndpointUtil;
 import io.agi.ef.http.RequestUtil;
 import io.agi.ef.http.node.Node;
 import io.agi.ef.http.node.NodeServer;
 import io.agi.ef.http.servlets.CreateServlet;
 import io.agi.ef.http.servlets.DataEventServlet;
 import io.agi.ef.http.servlets.EntityEventServlet;
-import io.agi.ef.interprocess.ConnectionManager;
 import io.agi.ef.interprocess.apiInterfaces.ControlInterface;
-import org.eclipse.jetty.server.Server;
+import io.agi.ef.persistenceClientApi.ApiException;
+import io.agi.ef.persistenceClientApi.model.NodeModel;
 import org.json.JSONObject;
 
 import java.util.HashSet;
@@ -49,7 +50,7 @@ public class Coordinator implements ControlInterface {
         ObjectMap.Put(KEY_COORDINATOR, this);
 
         // note in the DB which node is the coordinator (ie this node)
-        Persistence.addProperty(Node.PROPERTY_COORDINATOR_NODE, Node.getInstance().getName());
+        Persistence.addProperty( Node.PROPERTY_COORDINATOR_NODE, Node.getInstance().getName() );
 
         if( master ) {
             Relay r = new Relay(); // can create entities like this, or via factory.
@@ -151,7 +152,7 @@ public class Coordinator implements ControlInterface {
      */
     public void postDataEvent(String nodeName, String data, String action) {
 
-        JSONObject jo = Persistence.getNode( nodeName );
+        JSONObject jo = Persistence.getNode_old( nodeName );
         String baseUrl = Node.getBaseUrl(jo);
 
         String request = baseUrl + NodeServer.SERVLET_CONTEXT_PATHSPEC + "/" + DataEventServlet.PATHSPEC + "?"+DataEventServlet.PARAMETER_NAME+"=" + data + "&"+DataEventServlet.PARAMETER_ACTION+"=" +action;
@@ -182,7 +183,7 @@ public class Coordinator implements ControlInterface {
      */
     public void postEntityEvent(String nodeName, String entity, String action) {
 
-        JSONObject jo = Persistence.getNode( nodeName );
+        JSONObject jo = Persistence.getNode_old( nodeName );
         String baseUrl = Node.getBaseUrl(jo);
 
         String request = baseUrl + NodeServer.SERVLET_CONTEXT_PATHSPEC + "/" + EntityEventServlet.PATHSPEC + "?"+EntityEventServlet.PARAMETER_NAME+"=" + entity + "&"+EntityEventServlet.PARAMETER_ACTION+"=" +action;
@@ -201,10 +202,13 @@ public class Coordinator implements ControlInterface {
      * @param parentEntityName
      * @param entityConfig
      */
-    public void postCreateEvent( String nodeName, String entityName, String entityType, String parentEntityName, String entityConfig ) {
+    public void postCreateEvent( String nodeName, String entityName, String entityType, String parentEntityName, String entityConfig ) throws ApiException {
 
-        JSONObject jo = Persistence.getNode( nodeName );
-        String baseUrl = Node.getBaseUrl( jo );
+//        JSONObject jo = Persistence.getNode( nodeName );
+//        String baseUrl = Node.getBaseUrl( jo );
+
+        NodeModel node = Persistence.getInstance().getNode( nodeName );
+        String baseUrl = EndpointUtil.getBasePath( node.getHost(), node.getPort() );
 
         String request = baseUrl + NodeServer.SERVLET_CONTEXT_PATHSPEC + "/" + CreateServlet.PATHSPEC
                 + "?"+CreateServlet.PARAMETER_NAME+"=" + entityName

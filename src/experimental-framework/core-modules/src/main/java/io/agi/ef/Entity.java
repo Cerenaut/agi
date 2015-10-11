@@ -6,6 +6,7 @@ import io.agi.core.ObjectMap;
 import io.agi.core.data.Data;
 import io.agi.ef.http.node.Node;
 import io.agi.ef.interprocess.coordinator.Coordinator;
+import io.agi.ef.persistenceClientApi.ApiException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -211,7 +212,12 @@ public class Entity extends CallbackThread {
         String parentEntityName = getName();
 
         Coordinator c = Coordinator.getInstance();
-        c.postCreateEvent( nodeName, entityName, entityType, parentEntityName, entityConfig );
+        try {
+            c.postCreateEvent( nodeName, entityName, entityType, parentEntityName, entityConfig );
+        }
+        catch ( ApiException e ) {
+            e.printStackTrace();
+        }
     }
 
     /**

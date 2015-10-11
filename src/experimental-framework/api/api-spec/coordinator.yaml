@@ -1,119 +1,105 @@
-# The API spec of AGIEF Coordinator services in YAML
+# The API spec of AGIEF in YAML
 swagger: '2.0'
 info:
-  title: AGI Experimental Framework Coordination Service
+  title: AGI Experimental Framework
   description: An open universal framework for running AGI experiments.
-  version: "1.0.0"
+  version: "1.0.6"
 # the domain of the service
-host: agi.io
+host: localhost:8080
 # array of all schemes that your API supports
 schemes:
-  - https
+  - http
 # will be prefixed to all paths
-basePath: /v1
+basePath: /
 produces:
   - application/json
 paths:
-  /api/entity:
+  /connect/host/{host}/port/{port}/contextPath/{contextPath}:
     get:
-      summary: Notify the system of an entity/action event. 
+      summary: Connect to server
       description: |
-        This can be used to trigger an action by an entity, or to notify the system that an entity has completed and action, which in turn may cause further events. For example, event/experiment1/step will cause the experiment to step and emit event/experiment1/stepped. This in turn will be noticed by other entities (such as Agents), who will step themselves.
+        Send request to connect to server at specified address.
       tags:
-        - Event
+        - Connect
       parameters:
-        - name: entity
-          in: query
-          description: "Name of the entity affected."
+        - name: host
+          in: path
+          description: "ip address of machine running the server"
           required: true
           type: string
-        - name: action
-          in: query
-          description: "Action affecting the entity."
+        - name: port
+          in: path
+          description: "port of server"
           required: true
           type: string
+        - name: contextPath
+          in: path
+          description: "the context path of the server"
+          required: true
+          type: string  
       responses:
         200:
           description: OK
-
-  /api/data:
+  /control/entity/{entityName}/command/{command}:
     get:
-      summary: Notify the system of a data event. 
+      summary: Send command to a specific entity..
       description: |
-        These events allow Entities to wait on modifications to input data. These events are automatically fired when data is modified by the Java API, but may need to be called when data is changed from other APIs.
-      tags:
-        - Event
-      parameters:
-        - name: entity
-          in: query
-          description: "Name of the data affected."
-          required: true
-          type: string
-        - name: action
-          in: query
-          description: "Action affecting the data."
-          required: true
-          type: string
-      responses:
-        200:
-          description: OK
-
-  /api/create:
-    get:
-      summary: Notify the system of a data event. 
-      description: |
-        Dynamically creates an entity of the specified type, using the factories registered within the Java code.
-      tags:
-        - Event
-      parameters:
-        - name: name
-          in: query
-          description: "Name of the entity to be created."
-          required: true
-          type: string
-        - name: type
-          in: query
-          description: "Type of the entity to be created."
-          required: true
-          type: string
-        - name: parent
-          in: query
-          description: "Name of the parent entity of the entity to be created."
-          required: true
-          type: string
-        - name: config
-          in: query
-          description: "A JSON object as a string that describes the configuration of the entity to be created, such as parameter overrides."
-          required: true
-          type: string
-      responses:
-        200:
-          description: OK
-          
-  /api/stop:
-    get:
-      summary: Stop the Node
-      description: |
-        The Stop endpoint (gracefully) stops the Node that receives the request. Note this can also be sent to non-coordinator Nodes.
+        Send a control command signal to an entity. It can consist of Step, Stop, Start, Pause and Resume.
       tags:
         - Control
+      parameters:
+        - name: entityName
+          in: path
+          description: "The name of the entity to receive command."
+          required: true
+          type: string
+        - name: command
+          in: path
+          description: "The command to send."
+          required: true
+          type: string
       responses:
         200:
           description: Timestamp
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Timestamp'
+            $ref: '#/definitions/TStamp'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /control/entity/{entityName}/status/{state}:
+    get:
+      summary: Get the status for a specific entity.
+      description: |
+        Get the status of a particular state, Paused, Running and Stopping.
+      tags:
+        - Control
+      parameters:
+        - name: entityName
+          in: path
+          description: "The name of the entity to receive status request."
+          required: true
+          type: string
+        - name: state
+          in: path
+          description: "The status returns refers to this state."
+          required: true
+          type: string
+      responses:
+        200:
+          description: status
+          schema:
+            type: boolean
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
 definitions:
-  Timestamp:
+  TStamp:
     properties:
-      product_id:
+      time_id:
         type: number
-        description: Timestamp of the current step of the coordinator.
+        description: Timestamp of the current step of the server.
   Error:
     properties:
       code:

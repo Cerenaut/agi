@@ -6,9 +6,12 @@ import io.agi.ef.Persistence;
 import io.agi.ef.http.servlets.DataEventServlet;
 import io.agi.ef.http.servlets.EntityEventServlet;
 import io.agi.ef.interprocess.coordinator.Coordinator;
+import io.agi.ef.persistenceClientApi.ApiException;
+import io.agi.ef.persistenceClientApi.model.NodeModel;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * This is a special Entity, part of the Coordinator service[s]. On receipt of events, it broadcasts them to all nodes.
@@ -33,13 +36,17 @@ public class Relay extends Entity {
         parameters.put( DataEventServlet.PARAMETER_ACTION, action );
 
         // 2. Query database for all the nodes.
-        HashSet< String > nodes = Persistence.getNodes();
+        List< NodeModel > nodes = null;
+
+        nodes = Persistence.getInstance().getNodes();
 
         // 3. Broadcast event to each node.
         Coordinator c = Coordinator.getInstance();
         Node n = Node.getInstance();
 
-        for( String nodeName : nodes ) {
+        for( NodeModel node : nodes ) {
+
+            String nodeName = node.getName();
 
             if ( n.isSelf( nodeName ) ) {
                 continue; // prevent endless loop
@@ -57,13 +64,16 @@ public class Relay extends Entity {
         parameters.put( EntityEventServlet.PARAMETER_ACTION, action );
 
         // 2. Query database for all the nodes.
-        HashSet< String > nodes = Persistence.getNodes();
+        List< NodeModel > nodes = null;
+        nodes = Persistence.getInstance().getNodes();
 
         // 3. Broadcast event to each node.
         Node n = Node.getInstance();
         Coordinator c = Coordinator.getInstance();
 
-        for( String nodeName : nodes ) {
+        for( NodeModel node : nodes ) {
+
+            String nodeName = node.getName();
 
             if ( n.isSelf( nodeName ) ) {
                 continue; // prevent endless loop
