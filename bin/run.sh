@@ -7,11 +7,11 @@ if [ "$1" == "-h" -o "$1" == "--help" ]; then
 fi
 
 # run postgrest db api
-$AGI_HOME/bin/db_api.sh ${1:-8080} ${2:-localhost} ${3:-password} ${4:-5432} &
+$AGI_HOME/bin/db/db_api.sh ${1:-8080} ${2:-localhost} ${3:-password} ${4:-5432} &
 
 # run coordinator
 $JAVA_HOME/bin/java -Dfile.encoding=UTF-8  \
 -cp \
-/Users/gideon/.m2/repository/com/sun/jersey/jersey-core/1.18/jersey-core-1.18.jar:\
+$AGI_HOME/lib/com.sun.jersey/jersey.core/1.18/jersey-core-1.18.jar:\
 $AGI_HOME/src/experimental-framework/core-modules/target/io-agi-agief-core-modules-1.1.0-jar-with-dependencies.jar \
-io.agi.ef.http.node.NodeMain ${2:-localhost} ${1:-8080} ${5:-coodNode} ${6:-8081} null COORDINATOR
+io.agi.ef.http.node.NodeMain ${2:-localhost} ${1:-8080} ${5:-coodNode} ${6:-8081} server.properties COORDINATOR
