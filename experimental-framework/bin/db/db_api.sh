@@ -10,5 +10,4 @@ if [ "$1" == "-h" -o "$1" == "--help" ]; then
   exit 0
 fi
 
-#./postgrest-0.2.10.0 --db-host ${2:localhost}  --db-port 5432 --db-name agidb  --db-user agiu --db-pass password --db-pool 200 --anonymous agiu --port 8080 --v1schema public
-$AGI_HOME/experimental-framework/bin/db/postgrest-0.2.10.0 --db-host ${2:-localhost}  --db-port ${4:-5432} --db-name agidb  --db-user agiu --db-pass ${3:-password} --db-pool 200 --anonymous agiu --port ${1:-8080} --v1schema public
+$POSTGREST_BIN --db-host ${2:-localhost}  --db-port ${4:-5432} --db-name agidb  --db-user agiu --db-pass ${3:-password} --db-pool 200 --anonymous agiu --port ${1:-8080} --v1schema public

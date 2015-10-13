@@ -1,6 +1,7 @@
 #!/bin/bash
 
 echo "------- Set env variables and path -------"
+echo "** variable.sh must be in the current folder **"
 source variables.sh
 
 echo "------- Build and install libs -------"
