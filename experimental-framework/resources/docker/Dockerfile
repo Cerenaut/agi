@@ -1,21 +1,19 @@
-# Dockerfile for dashing 
-# http://shopify.github.io/dashing/#overview
+# Dockerfile for AGI Experimental Framework
+# Container for deployment of the framework
+# http://agi.io
 
-FROM ubuntu:14.10
+FROM ubuntu:15.04
 
 MAINTAINER Gideon Kowadlo <gideon@agi.io>
 
 RUN apt-get update && apt-get install -y \
 git \
 maven \
-openjdk-8-jdk \
 postgresql postgresql-contrib
+# openjdk-8-jdk
 
 # Setup environment (build and install libs)
-WORKDIR /root/dev/agi/bin
-RUN setup.sh
+# WORKDIR /root/dev/agi/experimental-framework/bin
+# RUN setup.sh
 
-# Starting directory
-WORKDIR /root/dev/agi/
-
-CMD ["run.sh"]
+# CMD ["run.sh"]

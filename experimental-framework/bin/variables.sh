@@ -13,7 +13,7 @@ export AGI_HOME=~/dev/agi
 # export POSTGRESQL_HOME=
 
 # POSTGREST
-export POSTGREST_HOME=$AGI_HOME/experimental-framework/bin/db/postgres/linux/postgrest-0.2.11.1
+export POSTGREST_BIN=$AGI_HOME/experimental-framework/bin/db/postgrest/linux/postgrest-0.2.11.1
 
 # MAVEN (if used apt-get and using the system version, there is no need to set this explicitly)
 # export MAVEN_HOME=/usr/bin

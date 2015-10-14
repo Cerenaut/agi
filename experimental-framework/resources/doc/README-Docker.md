@@ -33,12 +33,12 @@ The container has all pre requisites set up to run AGIEF.
 The codebase is in the mapped folder and it should be built and run with **Maven** according to the instructions. 
 
 ```sh
-$ docker run -i -d -p 8081:8081 -v $AGI_HOME:/root/dev/agi -v $SWAGGER_HOME:/root/dev/swagger-codegen
+$ docker run -i -d -p 8081:8081 -v $AGI_HOME:/root/dev/agi -v $SWAGGER_HOME:/root/dev/swagger-codegen agi/dev 
 ```
 
 OR if you prefer to start docker in the foreground logged into the container.
 ```sh
-$ docker run -i -d -p 8081:8081 -v $AGI_HOME:/root/dev/agi -v $SWAGGER_HOME:/root/dev/swagger-codegen bash
+$ docker run -i -d -p 8081:8081 -v $AGI_HOME:/root/dev/agi -v $SWAGGER_HOME:/root/dev/swagger-codegen agi/dev bash
 ```
 
 Note: This runs the container we just created, called **agi/dev**, maps the docker container port 3030 to localhost:3030, maps the volumes specified after ‘-v’ so that those folders are available inside the container.
