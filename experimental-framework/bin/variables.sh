@@ -7,24 +7,26 @@
 
 
 # ----------------------------------------
+# AGI Home 
+# ---------------------------------------
+export AGI_HOME=~/Development/AI/ProAGI/agi
+
+
+# ----------------------------------------
 # Dependencies
 # ---------------------------------------
 
 # Swagger
 export SWAGGER_HOME=~/Development/Tools/swagger-codegen
 
-# AGI
-export AGI_HOME=~/Development/AI/ProAGI/agi
-
-
-# POSTGRESQL (if used apt-get and using the system version, there is no need to set this explicitly)
-#export POSTGRESQL_HOME=
+# POSTGRESQL
+export POSTGRESQL_BIN=/Applications/Server.app/Contents/ServerRoot/usr/bin/psql
 
 # POSTGREST
-export POSTGREST_BIN=$AGI_HOME/experimental-framework/bin/db/postgrest/linux/postgrest-0.2.11.1
+export POSTGREST_BIN=$AGI_HOME/experimental-framework/bin/node_db/postgrest/osx/postgrest-0.2.11.1
 
-# MAVEN (if used apt-get and using the system version, there is no need to set this explicitly)
-# export MAVEN_HOME=/usr/bin
+# MAVEN
+export MAVEN_BIN=/usr/local/bin/mvn
 
 # Java
 export JAVA_HOME=`/usr/libexec/java_home -v 1.8`

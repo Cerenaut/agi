@@ -2,14 +2,16 @@
 # Container for deployment of the framework
 # http://agi.io
 
-FROM ubuntu:15.04
+FROM debian:jessie 
 
 MAINTAINER Gideon Kowadlo <gideon@agi.io>
 
 RUN apt-get update && apt-get install -y \
 git \
 maven \
-openjdk-8-jdk
+&& add-apt-repository ppa:openjdk-r/ppa \
+&& apt-get update \
+&& apt-get install openjdk-8-jdk
 
 # Setup environment (build and install libs)
 WORKDIR /root/dev/agi/experimental-framework/bin

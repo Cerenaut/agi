@@ -22,14 +22,14 @@ export AGI_HOME=~/dev/agi
 # Swagger
 export SWAGGER_HOME=~/dev/swagger-codegen
 
-# POSTGRESQL (if used apt-get and using the system version, there is no need to set this explicitly)
-# export POSTGRESQL_HOME=
+# POSTGRESQL
+export POSTGRESQL_BIN=/usr/bin/psql
 
 # POSTGREST
 export POSTGREST_BIN=$AGI_HOME/experimental-framework/bin/node_db/postgrest/linux/postgrest-0.2.11.1
 
-# MAVEN (if used apt-get and using the system version, there is no need to set this explicitly)
-# export MAVEN_HOME=/usr/bin
+# MAVEN
+export MAVEN_BIN=/usr/share/maven/bin/mvn
 
 # Java
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64

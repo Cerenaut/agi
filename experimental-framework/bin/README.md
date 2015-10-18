@@ -11,8 +11,3 @@ If you want to run the system in docker containers, you must launch a Postgres c
 
 The system has been set up so that
 * It is possible to setup and run db and dbapi on a separate machine
-
-
-To Do
-* Use MAVEN_HOME and POSTGRESQL_HOME throughout scripts, instead of assuming system version is available
-* Modify run.sh so that it passes the coordinator port variable as an integer (not a string)

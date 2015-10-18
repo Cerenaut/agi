@@ -37,8 +37,16 @@
         <processorPath useClasspath="true" />
         <module name="io-agi" />
       </profile>
+      <profile default="false" name="Annotation profile for core-modules" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="core-modules" />
+      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="core-modules" target="1.8" />
       <module name="io-agi" target="1.8" />
       <module name="io-agi-agief-coordinator" target="1.7" />
       <module name="io-agi-agief-core-modules" target="1.7" />
