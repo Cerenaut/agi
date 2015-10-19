@@ -32,9 +32,6 @@ Note: this creates a container with the name **agi/dev** with the docker file at
 The container has all pre requisites set up to run AGIEF. 
 The codebase is in the mapped folder and it should be built and run with **Maven** according to the instructions. 
 
-```sh
-$ docker run --name AGI_Node -i -d -p 8081:8081 -v $AGI_HOME:/root/dev/agi -v $SWAGGER_HOME:/root/dev/swagger-codegen agi/dev 
-```
 
 OR if you prefer to start docker in the foreground logged into the container.
 ```sh
