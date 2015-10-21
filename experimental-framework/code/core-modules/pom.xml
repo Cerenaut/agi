@@ -11,6 +11,8 @@
 
     <build>
 
+        <sourceDirectory>src</sourceDirectory>
+
         <plugins>
 
             <!-- Set a compiler level -->

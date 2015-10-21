@@ -9,7 +9,7 @@
     <version>1.0.0</version>
 
     <build>
-
+        <sourceDirectory>src</sourceDirectory>
         <plugins>
 
             <!-- Set a compiler level -->
