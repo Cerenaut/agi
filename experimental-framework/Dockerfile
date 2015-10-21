@@ -2,19 +2,24 @@
 # Container for deployment of the framework
 # http://agi.io
 
-FROM debian:jessie 
+FROM ubuntu:15.04
 
 MAINTAINER Gideon Kowadlo <gideon@agi.io>
 
 RUN apt-get update && apt-get install -y \
-git \
-maven \
-&& add-apt-repository ppa:openjdk-r/ppa \
-&& apt-get update \
-&& apt-get install openjdk-8-jdk
+maven \ 
+openjdk-8-jdk \
+postgresql postgresql-contrib
 
-# Setup environment (build and install libs)
-WORKDIR /root/dev/agi/experimental-framework/bin
-RUN source variables-docker.sh
+# Install dependencies - setup environment (build and install libs)
+WORKDIR /tmp
+ADD bin bin
+Add lib lib
+RUN /bin/bash -c "source bin/variables-docker.sh"
 
-CMD ["./node_coordinator/setup.sh"]
+WORKDIR bin/node_coordinator
+RUN /bin/bash -c "./setup.sh"
+
+# set up a coordinator node
+# WORKDIR /root/dev/agi/experimental-framework/bin
+# CMD ["bin/node_coordinator/run.sh", "coordinator"]
