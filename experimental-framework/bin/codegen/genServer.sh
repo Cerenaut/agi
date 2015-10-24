@@ -1,5 +1,10 @@
 #!/bin/bash
 
+variables_file=${VARIABLES_FILE:-"variables.sh"}
+echo "Using variables file = \"$variables_file\""
+source $(dirname $0)/../$variables_file
+
+
 TGT_DIR="$AGI_HOME/experimental-framework/lib/CoordinatorServerLib"
 SPEC_FILE="$AGI_HOME/experimental-framework/api/api-spec/coordinator.yaml"
 CONFIG_FILE="$AGI_HOME/experimental-framework/api/api-spec/serverConfig.json"
