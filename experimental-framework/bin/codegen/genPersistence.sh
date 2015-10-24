@@ -1,5 +1,9 @@
 #!/bin/bash
 
+variables_file=${VARIABLES_FILE:-"variables.sh"}
+echo "Using variables file = \"$variables_file\""
+source $(dirname $0)/../$variables_file
+
 
 TGT_DIR="$AGI_HOME/experimental-framework/lib/PersistenceClientLib"
 SPEC_FILE="$AGI_HOME/experimental-framework/api/api-spec/persistence.yaml"

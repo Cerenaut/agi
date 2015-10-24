@@ -9,7 +9,7 @@
 # ----------------------------------------
 # AGI Home 
 # ---------------------------------------
-export AGI_HOME=~/Development/AI/ProAGI/agi
+export AGI_HOME=~/Development/AI/ProAGI/agi-clean
 
 
 # ----------------------------------------
@@ -42,10 +42,10 @@ export PATH=${JAVA_HOME}/bin:${PATH}
 # ----------------------------------------
 # Set parameters for other scripts
 # ----------------------------------------
-export API_HOST=localhost				# the host of the postgrest api
-export API_PORT=8080					# the port of the postgrest api
+export DATABASE_API_HOST=localhost		# the host of the postgrest api
+export DATABASE_API_PORT=8080			# the port of the postgrest api
 export DATABASE_HOST=localhost 			# the host of the postgresql db
 export DATABASE_PASSWORD=password		# password of the agiu user of the postresql db
 export DATABASE_PORT=5432				# the port of the postgresql db
-export COORD_NODE_NAME=CoordNode 		# the label given to the coordinator node
-export COORD_NODE_PORT=8081				# the port of the coordinator node
+export COMPUTE_NODE_NAME=CoordNode 		# the label given to the coordinator node
+export COMPUTE_NODE_PORT=8081			# the port of the coordinator node
