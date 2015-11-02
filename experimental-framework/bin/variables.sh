@@ -9,7 +9,7 @@
 # ----------------------------------------
 # AGI Home 
 # ---------------------------------------
-export AGI_HOME=~/Development/AI/ProAGI/agi-clean
+export AGI_HOME=~/Development/AI/ProAGI/agi
 
 
 # ----------------------------------------

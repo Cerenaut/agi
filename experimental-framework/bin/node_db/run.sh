@@ -21,4 +21,7 @@ database_username="agiu"
 
 
 # run postgrest db api
-$POSTGREST_BIN --db-host $database_host  --db-port $database_api_port  --db-name $database_name  --db-user $database_username  --db-pass $database_password  --db-pool 200  --anonymous $database_username  --port $database_api_port  --v1schema public
+cmd="$POSTGREST_BIN --db-host $database_host  --db-port $database_port  --db-name $database_name  --db-user $database_username  --db-pass $database_password  --db-pool 200  --anonymous $database_username  --port $database_api_port  --v1schema public"
+echo "---- Running: ----"
+echo $cmd;
+eval $cmd;
