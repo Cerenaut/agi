@@ -3,23 +3,15 @@ package io.agi.ef.persistenceClientApi.api;
 import io.agi.ef.persistenceClientApi.ApiException;
 import io.agi.ef.persistenceClientApi.ApiClient;
 import io.agi.ef.persistenceClientApi.Configuration;
-
-import io.agi.ef.persistenceClientApi.model.*;
-
-import java.util.*;
+import io.agi.ef.persistenceClientApi.Pair;
+import io.agi.ef.persistenceClientApi.TypeRef;
 
 import io.agi.ef.persistenceClientApi.model.EntityType;
 import io.agi.ef.persistenceClientApi.model.NodeModel;
 
-import com.sun.jersey.multipart.FormDataMultiPart;
-import com.sun.jersey.multipart.file.FileDataBodyPart;
+import java.util.*;
 
-import javax.ws.rs.core.MediaType;
-
-import java.io.File;
-import java.util.Map;
-import java.util.HashMap;
-
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2015-11-02T17:23:34.998+11:00")
 public class DataApi {
   private ApiClient apiClient;
 
@@ -41,34 +33,36 @@ public class DataApi {
 
   
   /**
+   * Retrieves Entity Type.
    * Retrieves the Entity Type matching the search criteria.
-   * 
    * @param id id of record
    * @param name name of Entity Type
    * @return List<EntityType>
    */
   public List<EntityType> entityTypesGet (Integer id, String name) throws ApiException {
     Object postBody = null;
+    byte[] postBinaryBody = null;
     
-
     // create path and map variables
     String path = "/entity_types".replaceAll("\\{format\\}","json");
 
     // query params
-    Map<String, String> queryParams = new HashMap<String, String>();
+    List<Pair> queryParams = new ArrayList<Pair>();
     Map<String, String> headerParams = new HashMap<String, String>();
-    Map<String, String> formParams = new HashMap<String, String>();
+    Map<String, Object> formParams = new HashMap<String, Object>();
 
-    if (id != null)
-      queryParams.put("id", apiClient.parameterToString(id));
-    if (name != null)
-      queryParams.put("name", apiClient.parameterToString(name));
+    
+    queryParams.addAll(apiClient.parameterToPairs("", "id", id));
+    
+    queryParams.addAll(apiClient.parameterToPairs("", "name", name));
+    
+
     
 
     
 
     final String[] accepts = {
-      
+      "application/json"
     };
     final String accept = apiClient.selectHeaderAccept(accepts);
 
@@ -77,60 +71,51 @@ public class DataApi {
     };
     final String contentType = apiClient.selectHeaderContentType(contentTypes);
 
-    if(contentType.startsWith("multipart/form-data")) {
-      boolean hasFields = false;
-      FormDataMultiPart mp = new FormDataMultiPart();
-      
-      if(hasFields)
-        postBody = mp;
-    }
-    else {
-      
-    }
+    String[] authNames = new String[] {  };
 
-    try {
-      String[] authNames = new String[] {  };
-      String response = apiClient.invokeAPI(path, "GET", queryParams, postBody, headerParams, formParams, accept, contentType, authNames);
-      if(response != null){
-        return (List<EntityType>) apiClient.deserialize(response, "array", EntityType.class);
-      }
-      else {
-        return null;
-      }
-    } catch (ApiException ex) {
-      throw ex;
-    }
+    
+
+    
+    
+    TypeRef returnType = new TypeRef<List<EntityType>>() {};
+    return apiClient.invokeAPI(path, "GET", queryParams, postBody, postBinaryBody, headerParams, formParams, accept, contentType, authNames, returnType);
+    
+    
+
+
   }
   
   /**
+   * Create new Entity Type.
    * Creates a new Entity Type.
-   * 
    * @param body The Entity Type to add to DB.
    * @return void
    */
   public void entityTypesPost (EntityType body) throws ApiException {
     Object postBody = body;
+    byte[] postBinaryBody = null;
     
-    // verify the required parameter 'body' is set
-    if (body == null) {
-       throw new ApiException(400, "Missing the required parameter 'body' when calling entityTypesPost");
-    }
-    
-
+     // verify the required parameter 'body' is set
+     if (body == null) {
+        throw new ApiException(400, "Missing the required parameter 'body' when calling entityTypesPost");
+     }
+     
     // create path and map variables
     String path = "/entity_types".replaceAll("\\{format\\}","json");
 
     // query params
-    Map<String, String> queryParams = new HashMap<String, String>();
+    List<Pair> queryParams = new ArrayList<Pair>();
     Map<String, String> headerParams = new HashMap<String, String>();
-    Map<String, String> formParams = new HashMap<String, String>();
+    Map<String, Object> formParams = new HashMap<String, Object>();
+
+    
 
     
 
     
 
     final String[] accepts = {
-      
+      "application/json"
     };
     final String accept = apiClient.selectHeaderAccept(accepts);
 
@@ -139,34 +124,22 @@ public class DataApi {
     };
     final String contentType = apiClient.selectHeaderContentType(contentTypes);
 
-    if(contentType.startsWith("multipart/form-data")) {
-      boolean hasFields = false;
-      FormDataMultiPart mp = new FormDataMultiPart();
-      
-      if(hasFields)
-        postBody = mp;
-    }
-    else {
-      
-    }
+    String[] authNames = new String[] {  };
 
-    try {
-      String[] authNames = new String[] {  };
-      String response = apiClient.invokeAPI(path, "POST", queryParams, postBody, headerParams, formParams, accept, contentType, authNames);
-      if(response != null){
-        return ;
-      }
-      else {
-        return ;
-      }
-    } catch (ApiException ex) {
-      throw ex;
-    }
+    
+
+    
+    
+    apiClient.invokeAPI(path, "POST", queryParams, postBody, postBinaryBody, headerParams, formParams, accept, contentType, authNames, null);
+    
+    
+
+
   }
   
   /**
+   * Retrieve Nodes.
    * Retrieves the Nodes matching the search criteria.
-   * 
    * @param id id of record
    * @param name name of node
    * @param host name of host
@@ -175,30 +148,32 @@ public class DataApi {
    */
   public List<NodeModel> nodesGet (Integer id, String name, String host, Integer port) throws ApiException {
     Object postBody = null;
+    byte[] postBinaryBody = null;
     
-
     // create path and map variables
     String path = "/nodes".replaceAll("\\{format\\}","json");
 
     // query params
-    Map<String, String> queryParams = new HashMap<String, String>();
+    List<Pair> queryParams = new ArrayList<Pair>();
     Map<String, String> headerParams = new HashMap<String, String>();
-    Map<String, String> formParams = new HashMap<String, String>();
+    Map<String, Object> formParams = new HashMap<String, Object>();
 
-    if (id != null)
-      queryParams.put("id", apiClient.parameterToString(id));
-    if (name != null)
-      queryParams.put("name", apiClient.parameterToString(name));
-    if (host != null)
-      queryParams.put("host", apiClient.parameterToString(host));
-    if (port != null)
-      queryParams.put("port", apiClient.parameterToString(port));
+    
+    queryParams.addAll(apiClient.parameterToPairs("", "id", id));
+    
+    queryParams.addAll(apiClient.parameterToPairs("", "name", name));
+    
+    queryParams.addAll(apiClient.parameterToPairs("", "host", host));
+    
+    queryParams.addAll(apiClient.parameterToPairs("", "port", port));
+    
+
     
 
     
 
     final String[] accepts = {
-      
+      "application/json"
     };
     final String accept = apiClient.selectHeaderAccept(accepts);
 
@@ -207,60 +182,51 @@ public class DataApi {
     };
     final String contentType = apiClient.selectHeaderContentType(contentTypes);
 
-    if(contentType.startsWith("multipart/form-data")) {
-      boolean hasFields = false;
-      FormDataMultiPart mp = new FormDataMultiPart();
-      
-      if(hasFields)
-        postBody = mp;
-    }
-    else {
-      
-    }
+    String[] authNames = new String[] {  };
 
-    try {
-      String[] authNames = new String[] {  };
-      String response = apiClient.invokeAPI(path, "GET", queryParams, postBody, headerParams, formParams, accept, contentType, authNames);
-      if(response != null){
-        return (List<NodeModel>) apiClient.deserialize(response, "array", NodeModel.class);
-      }
-      else {
-        return null;
-      }
-    } catch (ApiException ex) {
-      throw ex;
-    }
+    
+
+    
+    
+    TypeRef returnType = new TypeRef<List<NodeModel>>() {};
+    return apiClient.invokeAPI(path, "GET", queryParams, postBody, postBinaryBody, headerParams, formParams, accept, contentType, authNames, returnType);
+    
+    
+
+
   }
   
   /**
    * Creates a new Node entry.
-   * 
+   * Creates a new Node entry.
    * @param body The Node to add to DB.
    * @return void
    */
   public void nodesPost (NodeModel body) throws ApiException {
     Object postBody = body;
+    byte[] postBinaryBody = null;
     
-    // verify the required parameter 'body' is set
-    if (body == null) {
-       throw new ApiException(400, "Missing the required parameter 'body' when calling nodesPost");
-    }
-    
-
+     // verify the required parameter 'body' is set
+     if (body == null) {
+        throw new ApiException(400, "Missing the required parameter 'body' when calling nodesPost");
+     }
+     
     // create path and map variables
     String path = "/nodes".replaceAll("\\{format\\}","json");
 
     // query params
-    Map<String, String> queryParams = new HashMap<String, String>();
+    List<Pair> queryParams = new ArrayList<Pair>();
     Map<String, String> headerParams = new HashMap<String, String>();
-    Map<String, String> formParams = new HashMap<String, String>();
+    Map<String, Object> formParams = new HashMap<String, Object>();
+
+    
 
     
 
     
 
     final String[] accepts = {
-      
+      "application/json"
     };
     final String accept = apiClient.selectHeaderAccept(accepts);
 
@@ -269,29 +235,17 @@ public class DataApi {
     };
     final String contentType = apiClient.selectHeaderContentType(contentTypes);
 
-    if(contentType.startsWith("multipart/form-data")) {
-      boolean hasFields = false;
-      FormDataMultiPart mp = new FormDataMultiPart();
-      
-      if(hasFields)
-        postBody = mp;
-    }
-    else {
-      
-    }
+    String[] authNames = new String[] {  };
 
-    try {
-      String[] authNames = new String[] {  };
-      String response = apiClient.invokeAPI(path, "POST", queryParams, postBody, headerParams, formParams, accept, contentType, authNames);
-      if(response != null){
-        return ;
-      }
-      else {
-        return ;
-      }
-    } catch (ApiException ex) {
-      throw ex;
-    }
+    
+
+    
+    
+    apiClient.invokeAPI(path, "POST", queryParams, postBody, postBinaryBody, headerParams, formParams, accept, contentType, authNames, null);
+    
+    
+
+
   }
   
 }

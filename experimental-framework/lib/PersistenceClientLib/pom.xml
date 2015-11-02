@@ -14,6 +14,7 @@
   <prerequisites>
     <maven>2.2.0</maven>
   </prerequisites>
+
   <build>
     <plugins>
       <plugin>
@@ -120,6 +121,8 @@
       <artifactId>swagger-annotations</artifactId>
       <version>${swagger-annotations-version}</version>
     </dependency>
+
+    <!-- HTTP client: jersey-client -->
     <dependency>
       <groupId>com.sun.jersey</groupId>
       <artifactId>jersey-client</artifactId>
@@ -130,6 +133,8 @@
       <artifactId>jersey-multipart</artifactId>
       <version>${jersey-version}</version>
     </dependency>
+
+    <!-- JSON processing: jackson -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
@@ -149,7 +154,7 @@
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-joda</artifactId>
       <version>2.1.5</version>
-    </dependency>   
+    </dependency>
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
@@ -166,7 +171,7 @@
   </dependencies>
   <properties>
     <jdk.version>1.8</jdk.version>
-    <swagger-annotations-version>1.5.0</swagger-annotations-version>
+    <swagger-annotations-version>1.5.4</swagger-annotations-version>
     <jersey-version>1.18</jersey-version>
     <jackson-version>2.4.2</jackson-version>
     <jodatime-version>2.3</jodatime-version>

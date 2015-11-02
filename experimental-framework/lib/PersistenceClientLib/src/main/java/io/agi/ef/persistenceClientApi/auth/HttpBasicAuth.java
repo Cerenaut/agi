@@ -1,10 +1,14 @@
 package io.agi.ef.persistenceClientApi.auth;
 
+import io.agi.ef.persistenceClientApi.Pair;
+
 import java.util.Map;
+import java.util.List;
 
 import java.io.UnsupportedEncodingException;
 import javax.xml.bind.DatatypeConverter;
 
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2015-11-02T17:23:34.998+11:00")
 public class HttpBasicAuth implements Authentication {
   private String username;
   private String password;
@@ -26,7 +30,7 @@ public class HttpBasicAuth implements Authentication {
   }
 
   @Override
-  public void applyToParams(Map<String, String> queryParams, Map<String, String> headerParams) {
+  public void applyToParams(List<Pair> queryParams, Map<String, String> headerParams) {
     String str = (username == null ? "" : username) + ":" + (password == null ? "" : password);
     try {
       headerParams.put("Authorization", "Basic " + DatatypeConverter.printBase64Binary(str.getBytes("UTF-8")));
