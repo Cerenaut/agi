@@ -21,8 +21,8 @@ paths:
           description: OK
   /nodes:
     get:
-      summary: Retrieves the Nodes matching the search criteria. 
-      description:
+      summary: Retrieve Nodes. 
+      description: Retrieves the Nodes matching the search criteria. 
       tags:
         - Data
       parameters:
@@ -57,7 +57,7 @@ paths:
           description: Bad Operation
     post:
       summary: Creates a new Node entry.
-      description:
+      description: Creates a new Node entry.
       tags:
         - Data
       parameters:
@@ -74,8 +74,8 @@ paths:
           description: Bad Operation
   /entity_types:
     get:
-      summary: Retrieves the Entity Type matching the search criteria. 
-      description:
+      summary: Retrieves Entity Type. 
+      description: Retrieves the Entity Type matching the search criteria. 
       tags:
         - Data
       parameters:
@@ -99,8 +99,8 @@ paths:
         '400':
           description: Bad Operation
     post:
-      summary: Creates a new Entity Type.
-      description:
+      summary: Create new Entity Type.
+      description: Creates a new Entity Type.
       tags:
         - Data
       parameters:
