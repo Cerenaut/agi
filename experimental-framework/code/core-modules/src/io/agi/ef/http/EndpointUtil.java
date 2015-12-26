@@ -42,6 +42,7 @@ public class EndpointUtil {
         if ( !contextPath.isEmpty() && contextPath != null ) {
             path += "/" + contextPath;
         }
+        path += "/";
         return path;
     }
 

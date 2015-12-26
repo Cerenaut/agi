@@ -7,6 +7,11 @@ import io.agi.ef.entities.Clock;
 import io.agi.ef.entities.experiment.*;
 import io.agi.ef.entities.Relay;
 import io.agi.ef.interprocess.coordinator.Coordinator;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
+import static org.apache.log4j.Level.WARN;
 
 /**
  * Created by dave on 12/09/15.
@@ -38,6 +43,15 @@ public class NodeMain {
     }
 
     public void run() {
+
+        // Configure logging
+        BasicConfigurator.configure();
+        Logger l = Logger.getRootLogger();
+
+        // Now set its level. Normally you do not need to set the
+        // level of a logger programmatically. This is usually done
+        // in configuration files.
+        l.setLevel( WARN );
 
         // Create core objects
         String nodeHost = Node.getLocalHostAddress();

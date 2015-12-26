@@ -503,6 +503,8 @@ public class Persistence {
         //String query = table + "?name=eq."+name;
         String query = getQueryWhere(table, FIELD_NAME, name);
         String request = getBaseUrl() + query;
+        //System.out.println("Persistence::removeTableRow() request: " + request);
+
         String result = RequestUtil.deleteSync(request);
         if( ( result != null ) && ( result.trim().length() > 0 ) ) {
             System.out.println("Persistence::removeTableRow() returned: " + result);
