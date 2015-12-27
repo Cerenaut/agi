@@ -1,6 +1,6 @@
 package io.agi.ef.http.node;
 
-import io.agi.core.PropertiesUtil;
+import io.agi.core.util.PropertiesUtil;
 import io.agi.ef.EntityFactory;
 import io.agi.ef.Persistence;
 import io.agi.ef.entities.Clock;
@@ -8,7 +8,6 @@ import io.agi.ef.entities.experiment.*;
 import io.agi.ef.entities.Relay;
 import io.agi.ef.interprocess.coordinator.Coordinator;
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import static org.apache.log4j.Level.WARN;

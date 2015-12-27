@@ -1,15 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package io.agi.core.orm;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- *
+ * Calls a set of callbacks when called.
  * @author davidjr
  */
 public class CallbackCollection implements Callback {

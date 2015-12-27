@@ -1,6 +1,6 @@
 package io.agi.ef;
 
-import io.agi.core.ObjectMap;
+import io.agi.core.orm.ObjectMap;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.data.FloatArray2;

@@ -1,18 +1,6 @@
 package io.agi.ef.interprocess.apiInterfaces;
 
-import io.agi.core.ObjectMap;
 import io.agi.ef.Entity;
-import io.agi.ef.Persistence;
-import io.agi.ef.entities.Relay;
-import io.agi.ef.http.RequestUtil;
-import io.agi.ef.http.node.Node;
-import io.agi.ef.http.node.NodeServer;
-import io.agi.ef.http.servlets.DataEventServlet;
-import io.agi.ef.http.servlets.EntityEventServlet;
-import org.json.JSONObject;
-
-import javax.ws.rs.core.Response;
-import java.util.HashSet;
 
 /**
  * Created by gideon on 30/07/15.

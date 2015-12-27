@@ -1,6 +1,6 @@
 package io.agi.ef.http.node;
 
-import io.agi.core.ObjectMap;
+import io.agi.core.orm.ObjectMap;
 import io.agi.ef.http.servlets.CreateServlet;
 import io.agi.ef.http.servlets.DataEventServlet;
 import io.agi.ef.http.servlets.EntityEventServlet;
