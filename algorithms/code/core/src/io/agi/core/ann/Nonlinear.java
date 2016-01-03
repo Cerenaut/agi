@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package io.agi.core.nn;
+package io.agi.core.ann;
 
 /**
  * Nonlinear activation functions for neural networks.

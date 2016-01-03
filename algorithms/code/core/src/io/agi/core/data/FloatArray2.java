@@ -1176,7 +1176,7 @@ public class FloatArray2 {
 
             double value = _values[ offset ];
 
-            value = Math.exp( value );
+            value = Math.exp(value);
             
             _values[ offset ] = (float)value;
 
@@ -1191,7 +1191,7 @@ public class FloatArray2 {
 
             double value = _values[ offset ];
 
-            value = Math.log( value );
+            value = Math.log(value);
 
             _values[ offset ] = (float)value;
 
@@ -1206,7 +1206,7 @@ public class FloatArray2 {
 
             double value = _values[ offset ];
 
-            value = Math.pow( value, power );
+            value = Math.pow(value, power);
 
             _values[ offset ] = (float)value;
 
@@ -1337,7 +1337,7 @@ public class FloatArray2 {
             float r1 =   _values[ offset ];
             float r2 = v._values[ offset ];
    
-            _values[ offset ] = Math.max( r1, r2 );
+            _values[ offset ] = Math.max(r1, r2);
             ++offset;
         }
     }
@@ -1347,7 +1347,7 @@ public class FloatArray2 {
         int offset = 0;
 
         while( offset < _values.length ) {
-            _values[ offset ] = Math.min( v1._values[ offset ], v2._values[ offset ] );
+            _values[ offset ] = Math.min(v1._values[offset], v2._values[offset]);
             ++offset;
         }
     }
@@ -1357,7 +1357,7 @@ public class FloatArray2 {
         int offset = 0;
 
         while( offset < _values.length ) {
-            _values[ offset ] = Math.max( v1._values[ offset ], v2._values[ offset ] );
+            _values[ offset ] = Math.max(v1._values[offset], v2._values[offset]);
             ++offset;
         }
     }
@@ -1503,7 +1503,73 @@ public class FloatArray2 {
         }
     }
 
-    
+    ////////////////////////////////////////////////////////////////////////////
+    // Min and Max location
+    ////////////////////////////////////////////////////////////////////////////
+    public float minValue() {
+
+        float min = Float.MAX_VALUE;
+
+        int offset = 0;
+
+        while( offset < _values.length ) {
+            min = Math.min( min, _values[ offset ] );
+            ++offset;
+        }
+
+        return min;
+    }
+
+    public float maxValue() {
+
+        float max = Float.MIN_VALUE;
+
+        int offset = 0;
+
+        while( offset < _values.length ) {
+            max = Math.max(max, _values[offset]);
+            ++offset;
+        }
+
+        return max;
+    }
+
+    public int minValueIndex() {
+
+        float min = Float.MAX_VALUE;
+        int index = 0;
+        int offset = 0;
+
+        while( offset < _values.length ) {
+            float value = _values[offset];
+            if( min <= value ) {
+                min = value;
+                index = offset;
+            }
+            ++offset;
+        }
+
+        return index;
+    }
+
+    public int maxValueIndex() {
+
+        float max = Float.MIN_VALUE;
+        int index = 0;
+        int offset = 0;
+
+        while( offset < _values.length ) {
+            float value = _values[ offset ];
+            if( max >= value ) {
+                max = value;
+                index = offset;
+            }
+            ++offset;
+        }
+
+        return index;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Sorting and Ranking
     ////////////////////////////////////////////////////////////////////////////
