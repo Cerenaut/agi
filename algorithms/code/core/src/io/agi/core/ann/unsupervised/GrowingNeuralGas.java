@@ -1,11 +1,11 @@
-package io.agi.core.unsupervised;
+package io.agi.core.ann.unsupervised;
 
 import io.agi.core.data.Data;
-import io.agi.core.data.FloatArray2;
 import io.agi.core.data.Ranking;
 import io.agi.core.math.RandomInstance;
 import io.agi.core.math.Unit;
 import io.agi.core.orm.AbstractPair;
+import io.agi.core.orm.ObjectMap;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,8 +40,8 @@ public class GrowingNeuralGas extends CompetitiveLearning {
     int _bestCellA = 0;
     int _bestCellB = 0;
 
-    public GrowingNeuralGas() {
-
+    public GrowingNeuralGas( String name, ObjectMap om ) {
+        super( name, om );
     }
 
     public void setup( GrowingNeuralGasConfig c ) {

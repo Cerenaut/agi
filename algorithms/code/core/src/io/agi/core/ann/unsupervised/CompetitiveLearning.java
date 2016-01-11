@@ -1,7 +1,9 @@
-package io.agi.core.unsupervised;
+package io.agi.core.ann.unsupervised;
 
 import io.agi.core.data.FloatArray2;
 import io.agi.core.data.Ranking;
+import io.agi.core.orm.NamedObject;
+import io.agi.core.orm.ObjectMap;
 
 import java.util.ArrayList;
 import java.util.TreeMap;
@@ -10,7 +12,11 @@ import java.util.TreeMap;
  * Utilities for functions shared by many Competitive Learning methods.
  * Created by dave on 29/12/15.
  */
-public class CompetitiveLearning {
+public class CompetitiveLearning extends NamedObject {
+
+    public CompetitiveLearning( String name, ObjectMap om ) {
+        super( name, om );
+    }
 
     public ArrayList< Integer > createCellList(
             CompetitiveLearningConfig c,

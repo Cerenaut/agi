@@ -16,6 +16,9 @@ public class ObjectMap {
 
     protected static ObjectMap _instance;
 
+    public ObjectMap() {
+    }
+
     public static ObjectMap GetInstance() {
         if( _instance == null ) {
             _instance = new ObjectMap();
@@ -27,16 +30,37 @@ public class ObjectMap {
         ObjectMap od = GetInstance();
         return od.remove(key);
     }
-    
+    public Object remove( String key ) {
+        Object o = _hm.remove(key);
+        return o;
+    }
+
     public static Object Get( String key ) {
         ObjectMap od = GetInstance();
         return od.get(key);
     }
 
+    public Object get( String key ) {
+        Object o = _hm.get(key);
+        return o;
+    }
+
+    public static void Put( String key, Object o ) {
+        ObjectMap od = GetInstance();
+        od.put( key, o );
+    }
+
+    public void put( String key, Object o ) {
+        _hm.put( key, o );
+    }
+
     public static String GetString( String key ) {
         ObjectMap od = GetInstance();
+        return od.getString( key );
+    }
+    public String getString( String key ) {
         try {
-            Object o = od.get( key );
+            Object o = get(key);
             String s = (String) o;
             return s;
         }
@@ -47,8 +71,11 @@ public class ObjectMap {
 
     public static Integer GetInteger( String key ) {
         ObjectMap od = GetInstance();
+        return od.getInteger(key);
+    }
+    public Integer getInteger( String key ) {
         try {
-            Object o = Get(key);
+            Object o = get(key);
             if( o == null ) {
                 return null;
             }
@@ -67,8 +94,11 @@ public class ObjectMap {
 
     public static Long GetLong( String key ) {
         ObjectMap od = GetInstance();
+        return od.getLong( key );
+    }
+    public Long getLong( String key ) {
         try {
-            Object o = Get( key );
+            Object o = get(key);
             if( o == null ) {
                 return null;
             }
@@ -90,8 +120,11 @@ public class ObjectMap {
 
     public static Boolean GetBoolean( String key ) {
         ObjectMap od = GetInstance();
+        return od.getBoolean( key );
+    }
+    public Boolean getBoolean( String key ) {
         try {
-            Object o = Get( key );
+            Object o = get(key);
             if( o == null ) {
                 return null;
             }
@@ -110,8 +143,11 @@ public class ObjectMap {
 
     public static Float GetFloat( String key ) {
         ObjectMap od = GetInstance();
+        return od.getFloat( key );
+    }
+    public Float getFloat( String key ) {
         try {
-            Object o = Get( key );
+            Object o = get( key );
             if( o == null ) {
                 return null;
             }
@@ -130,8 +166,11 @@ public class ObjectMap {
 
     public static Double GetDouble( String key ) {
         ObjectMap od = GetInstance();
+        return od.getDouble( key );
+    }
+    public Double getDouble( String key ) {
         try {
-            Object o = Get( key );
+            Object o = get( key );
             if( o == null ) {
                 return null;
             }
@@ -151,26 +190,4 @@ public class ObjectMap {
         }
     }
 
-    public static void Put( String key, Object o ) {
-        ObjectMap od = GetInstance();
-        od.put( key, o );
-    }
-
-    public ObjectMap() {
-    }
-
-    public Object get( String key ) {
-        Object o = _hm.get( key );
-        return o;
-    }
-
-    public void put( String key, Object o ) {
-        _hm.put( key, o );
-    }
-
-    public Object remove( String key ) {
-        Object o = _hm.remove( key );
-        return o;
-    }
-    
 }

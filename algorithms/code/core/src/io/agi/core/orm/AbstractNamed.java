@@ -13,28 +13,28 @@ package io.agi.core.orm;
  * 
  * @author dave
  */
-public class AbstractNamed< T > {
+public class AbstractNamed< T > extends NamedObject {
     
     protected String _name;
     public T _named;
 
-    public AbstractNamed( String name ) {
-        _name  = name;
+    public AbstractNamed( String name, ObjectMap om ) {
+        super( name, om );
         _named = null;
     }
 
-    public AbstractNamed( String name, T named ) {
-        _name  = name;
+    public AbstractNamed( String name, T named, ObjectMap om ) {
+        super( name, om );
         _named = named;
     }
 
-    public String getName() {
-        return _name;
-    }
-
-    public void setName( String name ) {
-        _name = name;
-    }
+//    public String getName() {
+//        return _name;
+//    }
+//
+//    public void setName( String name ) {
+//        _name = name;
+//    }
     
     @Override public int hashCode() {
         return _name.hashCode();

@@ -1,8 +1,8 @@
-package io.agi.core.unsupervised;
+package io.agi.core.ann.unsupervised;
 
 import io.agi.core.data.Data;
 import io.agi.core.data.FloatArray2;
-import io.agi.core.math.RandomInstance;
+import io.agi.core.orm.ObjectMap;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -14,7 +14,7 @@ import java.util.TreeMap;
  *
  * Created by dave on 29/12/15.
  */
-public class DynamicSelfOrganizingMap {
+public class DynamicSelfOrganizingMap extends CompetitiveLearning {
 
     public DynamicSelfOrganizingMapConfig _c;
     public Data _inputValues;
@@ -23,8 +23,8 @@ public class DynamicSelfOrganizingMap {
     public Data _cellActivity;
     public Data _cellMask;
 
-    public DynamicSelfOrganizingMap() {
-
+    public DynamicSelfOrganizingMap( String name, ObjectMap om ) {
+        super( name, om );
     }
 
     public void setup( DynamicSelfOrganizingMapConfig c ) {

@@ -1286,6 +1286,11 @@ public class FloatArray2 {
         }
     }
 
+    /**
+     * Hadamard product or Schur product
+     *
+     * @param v
+     */
     public void mul( FloatArray2 v ) {
 
         int offset = 0;
@@ -1306,6 +1311,12 @@ public class FloatArray2 {
         }
     }
 
+    /**
+     * Hadamard product or Schur product
+     *
+     * @param v1
+     * @param v2
+     */
     public void mul( FloatArray2 v1, FloatArray2 v2 ) {
 
         int offset = 0;

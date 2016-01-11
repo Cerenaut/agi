@@ -1,0 +1,19 @@
+package io.agi.core.ann.unsupervised;
+
+import io.agi.core.orm.UnitTest;
+
+/**
+ * Created by dave on 11/01/16.
+ */
+public class DynamicSelfOrganizingMapTest implements UnitTest {
+
+    public int main( String[] args ) {
+        DynamicSelfOrganizingMapTest ffnt = new DynamicSelfOrganizingMapTest();
+        return ffnt.test( args );
+    }
+
+    public int test( String[] args ) {
+        return 0;
+    }
+
+}

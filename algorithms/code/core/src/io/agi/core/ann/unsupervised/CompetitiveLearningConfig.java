@@ -1,5 +1,6 @@
-package io.agi.core.unsupervised;
+package io.agi.core.ann.unsupervised;
 
+import io.agi.core.ann.NetworkConfig;
 import io.agi.core.data.Data2d;
 import io.agi.core.orm.ObjectMap;
 
@@ -7,9 +8,9 @@ import io.agi.core.orm.ObjectMap;
  * Parameters are stored as an ObjectMap but this provides an interface to access them.
  * Created by dave on 29/12/15.
  */
-public class CompetitiveLearningConfig {
+public class CompetitiveLearningConfig extends NetworkConfig {
 
-    public ObjectMap _om;
+//    public ObjectMap _om;
     public String _keyInputs = "i";
     public String _keyWidthCells = "w";
     public String _keyHeightCells = "h";
@@ -17,57 +18,57 @@ public class CompetitiveLearningConfig {
     public CompetitiveLearningConfig() {
     }
 
-    public void setup( ObjectMap om, int inputs, int w, int h ) {
-        _om = om;
+    public void setup( ObjectMap om, String name, int inputs, int w, int h ) {
+        super.setup(om, name);
         setNbrInputs( inputs );
         setWidthCells( w );
         setHeightCells( h );
     }
 
     public void setNbrInputs( int inputs ) {
-        _om.put( _keyInputs, inputs );
+        _om.put( getKey( _keyInputs ), inputs );
     }
 
     public void setWidthCells( int w ) {
-        _om.put( _keyWidthCells, w );
+        _om.put( getKey( _keyWidthCells ), w );
     }
 
     public void setHeightCells( int h ) {
-        _om.put( _keyHeightCells, h );
+        _om.put( getKey( _keyHeightCells ), h );
     }
 
     public int getNbrInputs() {
-        Integer i = _om.GetInteger( _keyInputs );
+        Integer i = _om.getInteger( getKey( _keyInputs ) );
         return i.intValue();
     }
 
     public int getWidthCells() {
-        Integer w = _om.GetInteger( _keyWidthCells );
+        Integer w = _om.getInteger( getKey( _keyWidthCells ) );
         return w.intValue();
     }
 
     public int getHeightCells() {
-        Integer h = _om.GetInteger( _keyHeightCells );
+        Integer h = _om.getInteger( getKey( _keyHeightCells ) );
         return h.intValue();
     }
 
     public int getNbrCells() {
-        Integer w = _om.GetInteger( _keyWidthCells );
-        Integer h = _om.GetInteger( _keyHeightCells );
+        Integer w = _om.getInteger( getKey( _keyWidthCells ) );
+        Integer h = _om.getInteger( getKey( _keyHeightCells ) );
         return w * h;
     }
 
     public int getCell( int cellX, int cellY ) {
-        Integer w = _om.GetInteger( _keyWidthCells );
+        Integer w = _om.getInteger( getKey( _keyWidthCells ) );
         return Data2d.getOffset( w, cellX, cellY );
     }
 
     public int getCellX( CompetitiveLearningConfig c, int cell ) {
-        Integer w = _om.GetInteger( _keyWidthCells );
+        Integer w = _om.getInteger( getKey( _keyWidthCells ) );
         return Data2d.getX( w, cell);
     }
     public int getCellY( CompetitiveLearningConfig c, int cell ) {
-        Integer w = _om.GetInteger( _keyWidthCells );
+        Integer w = _om.getInteger( getKey( _keyWidthCells ) );
         return Data2d.getY( w, cell );
     }
 

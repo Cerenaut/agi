@@ -1,14 +1,11 @@
 package io.agi.core.alg;
 
-import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
 import io.agi.core.data.Ranking;
 import io.agi.core.math.Geometry;
-import io.agi.core.unsupervised.GrowingNeuralGasConfig;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 
 /**

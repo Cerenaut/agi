@@ -3,10 +3,11 @@ package io.agi.core.alg;
 import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
 import io.agi.core.math.RandomInstance;
+import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
-import io.agi.core.unsupervised.DynamicSelfOrganizingMap;
-import io.agi.core.unsupervised.DynamicSelfOrganizingMapConfig;
-import io.agi.core.unsupervised.GrowingNeuralGasConfig;
+import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMap;
+import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMapConfig;
+import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -18,9 +19,12 @@ import java.util.HashSet;
  *
  * Created by dave on 27/12/15.
  */
-public class Region {
+public class Region extends NamedObject {
 
     public static final int RECEPTIVE_FIELD_DIMENSIONS = 3;
+
+    public static final String SUFFIX_HIERARCHY_MODULE = "hierarchy-module";
+    public static final String SUFFIX_COLUMN_MODULE = "column-module";
 
     public String _keyReceptiveFieldsTrainingSamples = "receptive-fields-training-samples";
     public String _keyColumnInputs = "column-inputs";
@@ -45,12 +49,11 @@ public class Region {
     public ColumnFactory _cf;
     public HashMap< Integer, ColumnData > _columnData = new HashMap< Integer, ColumnData >();
 
-    public Region() {
-
+    public Region( String name, ObjectMap om ) {
+        super( name, om );
     }
 
     public void setup(
-            ObjectMap om,
             ColumnFactory cf,
 
             // Column Sizing
@@ -101,20 +104,23 @@ public class Region {
         _columnDepth = new Data( internalWidthColumns, internalHeightColumns );
 
         // Create the module that will learn column receptive fields
+        String dsomName = getKey( SUFFIX_HIERARCHY_MODULE );
+
         int surfaceDimensions = RECEPTIVE_FIELD_DIMENSIONS; // x, y, z . We might do a x1, y1, x2, y2, z also
         DynamicSelfOrganizingMapConfig dsomc = new DynamicSelfOrganizingMapConfig();
-        dsomc.setup( om, surfaceDimensions, internalWidthColumns, internalHeightColumns, receptiveFieldsElasticity, receptiveFieldsLearningRate );
+        dsomc.setup( _om, dsomName, surfaceDimensions, internalWidthColumns, internalHeightColumns, receptiveFieldsElasticity, receptiveFieldsLearningRate );
 
-        _dsom = new DynamicSelfOrganizingMap();
+        _dsom = new DynamicSelfOrganizingMap( dsomName, _om );
         _dsom.setup( dsomc );
 
         _dsom._c._om.put(_keyReceptiveFieldsTrainingSamples, receptiveFieldsTrainingSamples);
         _dsom._c._om.put(_keyColumnInputs, columnInputs);
 
         // Create the module that will learn column state and do prediction
+        String gngName = getKey( SUFFIX_COLUMN_MODULE );
         GrowingNeuralGasConfig gngc = new GrowingNeuralGasConfig();
         gngc.setup(
-                om, surfaceSizeCells, _columnWidth, _columnHeight,
+                _om, gngName, surfaceSizeCells, _columnWidth, _columnHeight,
                 columnLearningRate, columnLearningRateNeighbours, columnNoiseMagnitude,
                 columnEdgeMaxAge, columnStressLearningRate, columnStressThreshold, columnGrowthInterval );
 

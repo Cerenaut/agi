@@ -1,4 +1,4 @@
-package io.agi.core.unsupervised;
+package io.agi.core.ann.unsupervised;
 
 import io.agi.core.orm.ObjectMap;
 
@@ -20,6 +20,7 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
 
     public void setup(
             ObjectMap om,
+            String name,
             int inputs,
             int w,
             int h,
@@ -30,49 +31,49 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
             float stressLearningRate,
             float stressThreshold,
             int growthInterval ) {
-        super.setup( om, inputs, w, h );
+        super.setup( om, name, inputs, w, h );
 
-        om.put(_keyLearningRate, learningRate);
-        om.put( _keyLearningRateNeighbours, learningRateNeighbours );
-        om.put( _keyNoiseMagnitude, noiseMagnitude );
-        om.put( _keyEdgeMaxAge, (float)edgeMaxAge );
-        om.put( _keyStressLearningRate, stressLearningRate );
-        om.put( _keyStressThreshold, stressThreshold );
-        om.put( _keyGrowthInterval, (float)growthInterval );
+        om.put( getKey( _keyLearningRate ), learningRate);
+        om.put( getKey( _keyLearningRateNeighbours ), learningRateNeighbours );
+        om.put( getKey( _keyNoiseMagnitude ), noiseMagnitude );
+        om.put( getKey( _keyEdgeMaxAge ), (float)edgeMaxAge );
+        om.put( getKey( _keyStressLearningRate ), stressLearningRate );
+        om.put( getKey( _keyStressThreshold ), stressThreshold );
+        om.put( getKey( _keyGrowthInterval ), (float)growthInterval );
     }
 
     public float getLearningRate() {
-        Float r = _om.GetFloat(_keyLearningRate );
+        Float r = _om.getFloat( getKey( _keyLearningRate ) );
         return r.floatValue();
     }
 
     public float getLearningRateNeighbours() {
-        Float r = _om.GetFloat(_keyLearningRateNeighbours );
+        Float r = _om.getFloat( getKey( _keyLearningRateNeighbours ) );
         return r.floatValue();
     }
 
     public float getNoiseMagnitude() {
-        Float r = _om.GetFloat(_keyNoiseMagnitude );
+        Float r = _om.getFloat( getKey( _keyNoiseMagnitude ) );
         return r.floatValue();
     }
 
     public int getEdgeMaxAge() {
-        Float r = _om.GetFloat(_keyEdgeMaxAge );
+        Float r = _om.getFloat( getKey( _keyEdgeMaxAge ) );
         return (int)r.floatValue();
     }
 
     public float getStressLearningRate() {
-        Float r = _om.GetFloat( _keyStressLearningRate );
+        Float r = _om.getFloat( getKey( _keyStressLearningRate ) );
         return r.floatValue();
     }
 
     public float getStressThreshold() {
-        Float r = _om.GetFloat(_keyStressThreshold );
+        Float r = _om.getFloat( getKey( _keyStressThreshold ) );
         return r.floatValue();
     }
 
     public int getGrowthInterval() {
-        Float r = _om.GetFloat(_keyGrowthInterval );
+        Float r = _om.getFloat( getKey( _keyGrowthInterval ) );
         return (int)r.floatValue();
     }
 }

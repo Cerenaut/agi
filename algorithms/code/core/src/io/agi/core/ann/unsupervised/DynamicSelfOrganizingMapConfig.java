@@ -1,4 +1,4 @@
-package io.agi.core.unsupervised;
+package io.agi.core.ann.unsupervised;
 
 import io.agi.core.orm.ObjectMap;
 
@@ -15,32 +15,32 @@ public class DynamicSelfOrganizingMapConfig extends CompetitiveLearningConfig {
     public DynamicSelfOrganizingMapConfig() {
     }
 
-    public void setup( ObjectMap om, int inputs, int w, int h, float elasticity, float learningRate ) {
-        super.setup( om, inputs, w, h );
+    public void setup( ObjectMap om, String name, int inputs, int w, int h, float elasticity, float learningRate ) {
+        super.setup( om, name, inputs, w, h );
 
-        om.put( _keyElasticity, elasticity );
-        om.put( _keyLearningRate, learningRate );
-        om.put( _keyScaleUnit, false );
-        om.put( _keyScaleFactor, 1.0f );
+        om.put( getKey( _keyElasticity ), elasticity );
+        om.put( getKey( _keyLearningRate ), learningRate );
+        om.put( getKey( _keyScaleUnit ), false );
+        om.put( getKey( _keyScaleFactor ), 1.0f );
     }
 
     public boolean getScaleUnit() {
-        Boolean b = _om.GetBoolean(_keyScaleUnit);
+        Boolean b = _om.getBoolean(getKey( _keyScaleUnit) );
         return b;
     }
 
     public float getScaleFactor() {
-        Float r = _om.GetFloat(_keyScaleFactor);
+        Float r = _om.getFloat(getKey( _keyScaleFactor) );
         return r.floatValue();
     }
 
     public float getElasticity() {
-        Float r = _om.GetFloat(_keyElasticity );
+        Float r = _om.getFloat(getKey( _keyElasticity ) );
         return r.floatValue();
     }
 
     public float getLearningRate() {
-        Float r = _om.GetFloat(_keyLearningRate );
+        Float r = _om.getFloat(getKey( _keyLearningRate ) );
         return r.floatValue();
     }
 }
