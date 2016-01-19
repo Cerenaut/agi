@@ -17,15 +17,42 @@ public class FeedForwardNetworkTest implements UnitTest {
         ffnt.test( args );
     }
 
-    public enum Logic{ AND, OR, XOR };
+    public int test( String[] args ) {
 
+        Logic l = Logic.XOR;
+//        Logic l = Logic.AND;
+
+        int epochs = 2000;
+        int batch = 100;
+        int hidden = 3;
+        float meanErrorThreshold = 0.01f;
+        float learningRate = 0.0f; // quadratic
+        String lossFunction = null;
+
+        if( args.length > 0 ) {
+            lossFunction = args[ 0 ];
+        }
+
+        if( lossFunction.equals( LossFunction.QUADRATIC ) ) {
+            learningRate = 0.5f; // quadratic
+        }
+        else if( lossFunction.equals( LossFunction.CROSS_ENTROPY ) ) {
+            learningRate = 0.1f; // cross entropy
+        }
+
+        setup( l, epochs, batch, hidden, learningRate, meanErrorThreshold, lossFunction );
+
+        return epochs();
+    }
+
+    public enum Logic{ AND, OR, XOR };
     public Logic _l;
     public int _epochs;
     public int _batch;
     public float _meanErrorThreshold;
     public FeedForwardNetwork _ffn;
 
-    public void setup( Logic l, int epochs, int batch, float learningRate, float meanErrorThreshold ) {
+    public void setup( Logic l, int epochs, int batch, int hidden, float learningRate, float meanErrorThreshold, String lossFunction ) {
 
         _l = l;
         _epochs = epochs;
@@ -33,31 +60,36 @@ public class FeedForwardNetworkTest implements UnitTest {
         _meanErrorThreshold = meanErrorThreshold;
 
         int inputs = 2;
-        int hidden = 3;
         int outputs = 1;
-//        int layers = 1;
+
         int layers = 2;
+        if( hidden == 0 ) {
+            layers = 1;
+        }
 
         String name = "feed-forward-network";
-        String lossFunction = LossFunction.QUADRATIC;
-//        String lossFunction = LossFunction.CROSS_ENTROPY;
         String activationFunction = ActivationFunctionFactory.LOG_SIGMOID;
 
         ObjectMap om = new ObjectMap();
         FeedForwardNetworkConfig ffnc = new FeedForwardNetworkConfig();
-        ffnc.setup(om, name, lossFunction, inputs, outputs, layers);
-
+        ffnc.setup( om, name, lossFunction, inputs, outputs, layers);
         ActivationFunctionFactory aff = new ActivationFunctionFactory();
-//        LossFunctionFactory lff = new LossFunctionFactory();
 
         _ffn = new FeedForwardNetwork( name, om );
-        _ffn.setup(ffnc, aff );//, lff);
+        _ffn.setup( ffnc, aff );
 
-// Single layer test:
-//        _ffn.setupLayer(0, inputs, outputs, learningRate, activationFunction);
-// Twin layer test:
-        _ffn.setupLayer( 0, inputs, hidden, learningRate, activationFunction );
-        _ffn.setupLayer( 1, hidden, outputs, learningRate, activationFunction );
+        if( layers == 1 ) {
+            // Single layer test:
+            _ffn.setupLayer(0, inputs, outputs, learningRate, activationFunction);
+        }
+        else if( layers ==2 ) {
+            // Twin layer test:
+            _ffn.setupLayer(0, inputs, hidden, learningRate, activationFunction);
+            _ffn.setupLayer(1, hidden, outputs, learningRate, activationFunction);
+        }
+        else {
+            System.err.println( "Bad configuration - layers > 2." );
+        }
     }
 
     public static float ideal( float x1, float x2, Logic l ) {
@@ -88,21 +120,6 @@ public class FeedForwardNetworkTest implements UnitTest {
         }
 
         return 0.0f;
-    }
-
-    public int test( String[] args ) {
-
-        Logic l = Logic.XOR;
-//        Logic l = Logic.AND;
-        int epochs = 2000;
-        int batch = 100;
-//        float learningRate = 0.1f; // cross entropy
-        float learningRate = 0.5f; // quadratic
-        float meanErrorThreshold = 0.01f;
-
-        setup( l, epochs, batch, learningRate, meanErrorThreshold );
-
-        return epochs();
     }
 
     public int epochs() {

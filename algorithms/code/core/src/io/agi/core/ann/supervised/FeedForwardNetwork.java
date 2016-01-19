@@ -18,30 +18,25 @@ public class FeedForwardNetwork extends NamedObject {
 
     public FeedForwardNetworkConfig _c;
     public ActivationFunctionFactory _aff;
-//    public LossFunctionFactory _lff;
 
     // Data within layers
     public ArrayList< NetworkLayer > _layers = new ArrayList< NetworkLayer >();
 
     // Data that is not part of every layer:
     public Data _ideals; // output size.
-//    public Data _losses; // output size.
 
     public FeedForwardNetwork( String name, ObjectMap om ) {
         super( name, om );
     }
 
-    public void setup( FeedForwardNetworkConfig c, ActivationFunctionFactory aff ) {//, LossFunctionFactory lff ) {
+    public void setup( FeedForwardNetworkConfig c, ActivationFunctionFactory aff ) {
         _c = c;
         _aff = aff;
-//        _lff = lff;
 
-//        int inputs = _c.getNbrInputs();
         int outputs = _c.getNbrOutputs();
         int layers = _c.getNbrLayers();
 
         _ideals = new Data( outputs );
-//        _losses = new Data( outputs );
 
         for( int l = 0; l < layers; ++l ) {
             String layerName = getLayerName( l );
@@ -61,7 +56,7 @@ public class FeedForwardNetwork extends NamedObject {
      */
     public void setupLayer( int layer, int inputs, int cells, float learningRate, String activationFunction ) {
 
-        String layerName = getLayerName( layer );
+        String layerName = getLayerName(layer);
 
         NetworkLayerConfig nlc = new NetworkLayerConfig();
 
@@ -71,13 +66,19 @@ public class FeedForwardNetwork extends NamedObject {
         nl.setup( nlc, _aff );
     }
 
+    /**
+     * Systematically constructs a unique String to identify the layer.
+     * @param layer
+     * @return
+     */
     public String getLayerName( int layer ) {
-        String layerName = getKey( Keys.concatenate( getKey( LAYER ), String.valueOf( layer ) ) );
+        String layerName = getKey(Keys.concatenate(getKey(LAYER), String.valueOf(layer)));
         return layerName;
     }
 
     /**
-     * Returns the data input to the first layer
+     * Returns the data input to the first layer.
+     * Use this function to modify the input data returned.
      * @return
      */
     public Data getInput() {
@@ -90,7 +91,7 @@ public class FeedForwardNetwork extends NamedObject {
     }
 
     /**
-     * Returns the output from the final layer
+     * Returns the output from the final layer.
      * @return
      */
     public Data getOutput() {
@@ -104,6 +105,7 @@ public class FeedForwardNetwork extends NamedObject {
 
     /**
      * Returns the data structure that defines the ideal (correct) output.
+     * Use this function to modify the data returned.
      * This will be used for training.
      * @return
      */
@@ -111,12 +113,9 @@ public class FeedForwardNetwork extends NamedObject {
         return _ideals;
     }
 
-//    public LossFunction getLossFunction() {
-//        String function = _c.getLossFunction();
-//        LossFunction lf = _lff.create( function );
-//        return lf;
-//    }
-
+    /**
+     * Run the network in a forward direction, producing an output
+     */
     public void feedForward() {
         int layers = _layers.size();
 
@@ -133,6 +132,9 @@ public class FeedForwardNetwork extends NamedObject {
         }
     }
 
+    /**
+     * Run the network backwards, training it using the ideal output.
+     */
     public void feedBackward() {
         int layers = _layers.size();
 
@@ -143,19 +145,12 @@ public class FeedForwardNetwork extends NamedObject {
             ActivationFunction af = nl.getActivationFunction();
 
             if( layer == L ) {
-// Quadratic
-//                LossFunction lf = getLossFunction();
-//                BackPropagation.losses( nl._outputs, _ideals, _losses, lf );
-//                BackPropagation.externalErrorGradient( _losses, nl._weightedSums, nl._errors, nl.getActivationFunction() );
-// Cross-Entropy
-//                BackPropagation.externalErrorGradient(_losses, _ideals, nl._outputs, nl._errors );//, lf );
-// Generic:
                 String lossFunction = _c.getLossFunction();
-                BackPropagation.externalErrorGradient( nl._weightedSums, nl._outputs, _ideals, nl._errors, af, lossFunction );
+                BackPropagation.externalErrorGradient( nl._weightedSums, nl._outputs, _ideals, nl._errorGradients, af, lossFunction );
             }
             else { // layer < L
                 NetworkLayer nl2 = _layers.get(layer + 1);
-                BackPropagation.internalErrorGradient( nl2._weights, nl2._errors, nl._errors, nl._weightedSums, af );
+                BackPropagation.internalErrorGradient( nl._weightedSums, nl._errorGradients, nl2._weights, nl2._errorGradients, af );
             }
 
             nl.train(); // using the error gradients, d

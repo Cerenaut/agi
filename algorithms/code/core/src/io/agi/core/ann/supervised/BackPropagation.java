@@ -3,6 +3,10 @@ package io.agi.core.ann.supervised;
 import io.agi.core.data.FloatArray2;
 
 /**
+ * This class puts all the math associated with the backpropagation algorithm in one place.
+ * It is a collection of static methods called by other objects.
+ *
+ * Math based on:
  * http://neuralnetworksanddeeplearning.com/chap2.html
  *
  * w^l_{jk} = weight from neuron k in layer l-1 to neuron j in layer l
@@ -22,63 +26,7 @@ import io.agi.core.data.FloatArray2;
  * http://neuralnetworksanddeeplearning.com/chap2.html
  * Created by dave on 3/01/16.
  */
-public class BackPropagation {
-
-    public BackPropagation() {
-
-    }
-
-    public static void feedForward(
-            FloatArray2 weights,
-            FloatArray2 inputs,
-            FloatArray2 biases,
-            FloatArray2 weightedSums,
-            ActivationFunction cf,
-            FloatArray2 outputs ) {
-        weightedSum( weights, inputs, biases, weightedSums );
-        activate( weightedSums, cf, outputs );
-    }
-
-    public static void activate( FloatArray2 weightedSums, ActivationFunction cf, FloatArray2 outputs ) {
-        int J = weightedSums.getSize();
-
-        assert( outputs.getSize() == J );
-
-        for( int j = 0; j < J; ++j ) {
-
-            float z = weightedSums._values[ j ];
-            double a = cf.f( z );
-
-            outputs._values[ j ] = (float)a;
-        }
-    }
-
-    public static void weightedSum( FloatArray2 weights, FloatArray2 inputs, FloatArray2 biases, FloatArray2 outputs ) {
-        int K = inputs.getSize();
-        int J = biases.getSize();
-
-        assert( outputs.getSize() == J );
-        assert( weights.getSize() == (J*K) );
-
-        for( int j = 0; j < J; ++j ) {
-
-            float sum = 0.f;
-
-            for( int k = 0; k < K; ++k ) {
-                int offset = j * K + k; // K = inputs, storage is all inputs adjacent
-                float i = inputs._values[ k ];
-                float w = weights._values[ offset ];
-                float product = i * w;
-                sum += product;
-            }
-
-            float b = biases._values[ j ];
-
-            sum += b;
-
-            outputs._values[ j ] = sum;
-        }
-    }
+public abstract class BackPropagation {
 
 //    /**
 //     * The result of applying the loss or cost function.
@@ -112,11 +60,11 @@ public class BackPropagation {
 
         if( lossFunction.equals( LossFunction.QUADRATIC ) ) {
 //                BackPropagation.losses( nl._outputs, _ideals, _losses, lf );
-//                BackPropagation.externalErrorGradient( _losses, nl._weightedSums, nl._errors, nl.getActivationFunction() );
+//                BackPropagation.externalErrorGradient( _losses, nl._weightedSums, nl._errorGradients, nl.getActivationFunction() );
             externalErrorGradientQuadratic( weightedSums, outputs, ideals, errors, af );
         }
         else if( lossFunction.equals( LossFunction.CROSS_ENTROPY ) ) {
-//                BackPropagation.externalErrorGradient(_losses, _ideals, nl._outputs, nl._errors );//, lf );
+//                BackPropagation.externalErrorGradient(_losses, _ideals, nl._outputs, nl._errorGradients );//, lf );
             externalErrorGradientCrossEntropy( outputs, ideals, errors );
         }
     }
@@ -195,11 +143,11 @@ public class BackPropagation {
     }
 
     public static void internalErrorGradient(
+            FloatArray2 weightedSumsLayer1,
+            FloatArray2 errorsLayer1,
             FloatArray2 weightsLayer2,
             FloatArray2 errorsLayer2,
-            FloatArray2 errorsLayer1,
-            FloatArray2 weightedSumsLayer1,
-            ActivationFunction afLayer1) {
+            ActivationFunction afLayer1 ) {
 
         int K = errorsLayer1.getSize(); // layer inputs ie neurons in layer l-1
         int J = errorsLayer2.getSize(); // layer outputs ie neurons in this layer l
@@ -222,6 +170,7 @@ public class BackPropagation {
             float d = (float)afLayer1.df( z );
             errorsLayer1._values[k] = sum * d;
         }
+    }
 
 // Equations from:
 //
@@ -320,7 +269,5 @@ public class BackPropagation {
 //     * @param errors
 //     * @param af
 //     */
-
-    }
 
 }
