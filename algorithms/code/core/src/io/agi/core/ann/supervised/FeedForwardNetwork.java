@@ -1,7 +1,6 @@
 package io.agi.core.ann.supervised;
 
 import io.agi.core.data.Data;
-import io.agi.core.data.FloatArray2;
 import io.agi.core.orm.Keys;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
@@ -19,30 +18,30 @@ public class FeedForwardNetwork extends NamedObject {
 
     public FeedForwardNetworkConfig _c;
     public ActivationFunctionFactory _aff;
-    public LossFunctionFactory _lff;
+//    public LossFunctionFactory _lff;
 
     // Data within layers
     public ArrayList< NetworkLayer > _layers = new ArrayList< NetworkLayer >();
 
     // Data that is not part of every layer:
     public Data _ideals; // output size.
-    public Data _losses; // output size.
+//    public Data _losses; // output size.
 
     public FeedForwardNetwork( String name, ObjectMap om ) {
         super( name, om );
     }
 
-    public void setup( FeedForwardNetworkConfig c, ActivationFunctionFactory aff, LossFunctionFactory lff ) {
+    public void setup( FeedForwardNetworkConfig c, ActivationFunctionFactory aff ) {//, LossFunctionFactory lff ) {
         _c = c;
         _aff = aff;
-        _lff = lff;
+//        _lff = lff;
 
 //        int inputs = _c.getNbrInputs();
         int outputs = _c.getNbrOutputs();
         int layers = _c.getNbrLayers();
 
         _ideals = new Data( outputs );
-        _losses = new Data( outputs );
+//        _losses = new Data( outputs );
 
         for( int l = 0; l < layers; ++l ) {
             String layerName = getLayerName( l );
@@ -112,11 +111,11 @@ public class FeedForwardNetwork extends NamedObject {
         return _ideals;
     }
 
-    public LossFunction getLossFunction() {
-        String function = _c.getLossFunction();
-        LossFunction lf = _lff.create( function );
-        return lf;
-    }
+//    public LossFunction getLossFunction() {
+//        String function = _c.getLossFunction();
+//        LossFunction lf = _lff.create( function );
+//        return lf;
+//    }
 
     public void feedForward() {
         int layers = _layers.size();
@@ -141,20 +140,25 @@ public class FeedForwardNetwork extends NamedObject {
         for( int layer = L; layer >= 0; --layer ) {
 
             NetworkLayer nl = _layers.get( layer );
+            ActivationFunction af = nl.getActivationFunction();
 
             if( layer == L ) {
-                LossFunction lf = getLossFunction();
-                BackPropagation.losses( nl._outputs, _ideals, _losses, lf );
-                BackPropagation.outputErrors( _losses, nl._weightedSums, nl._errors, nl.getActivationFunction() );
+// Quadratic
+//                LossFunction lf = getLossFunction();
+//                BackPropagation.losses( nl._outputs, _ideals, _losses, lf );
+//                BackPropagation.externalErrorGradient( _losses, nl._weightedSums, nl._errors, nl.getActivationFunction() );
+// Cross-Entropy
+//                BackPropagation.externalErrorGradient(_losses, _ideals, nl._outputs, nl._errors );//, lf );
+// Generic:
+                String lossFunction = _c.getLossFunction();
+                BackPropagation.externalErrorGradient( nl._weightedSums, nl._outputs, _ideals, nl._errors, af, lossFunction );
             }
             else { // layer < L
-                NetworkLayer nl2 = _layers.get( layer +1 );
-
-                ActivationFunction af = nl.getActivationFunction();
-                BackPropagation.internalErrors( nl2._weights, nl2._errors, nl._errors, nl._weightedSums, af );
+                NetworkLayer nl2 = _layers.get(layer + 1);
+                BackPropagation.internalErrorGradient( nl2._weights, nl2._errors, nl._errors, nl._weightedSums, af );
             }
 
-            nl.train();
+            nl.train(); // using the error gradients, d
         }
     }
 

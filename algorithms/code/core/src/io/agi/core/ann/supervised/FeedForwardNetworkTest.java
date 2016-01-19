@@ -38,8 +38,9 @@ public class FeedForwardNetworkTest implements UnitTest {
 //        int layers = 1;
         int layers = 2;
 
-        String name = "ffn";
-        String lossFunction = LossFunctionFactory.QUADRATIC;
+        String name = "feed-forward-network";
+        String lossFunction = LossFunction.QUADRATIC;
+//        String lossFunction = LossFunction.CROSS_ENTROPY;
         String activationFunction = ActivationFunctionFactory.LOG_SIGMOID;
 
         ObjectMap om = new ObjectMap();
@@ -47,10 +48,10 @@ public class FeedForwardNetworkTest implements UnitTest {
         ffnc.setup(om, name, lossFunction, inputs, outputs, layers);
 
         ActivationFunctionFactory aff = new ActivationFunctionFactory();
-        LossFunctionFactory lff = new LossFunctionFactory();
+//        LossFunctionFactory lff = new LossFunctionFactory();
 
         _ffn = new FeedForwardNetwork( name, om );
-        _ffn.setup(ffnc, aff, lff);
+        _ffn.setup(ffnc, aff );//, lff);
 
 // Single layer test:
 //        _ffn.setupLayer(0, inputs, outputs, learningRate, activationFunction);
@@ -95,7 +96,8 @@ public class FeedForwardNetworkTest implements UnitTest {
 //        Logic l = Logic.AND;
         int epochs = 2000;
         int batch = 100;
-        float learningRate = 0.5f;
+//        float learningRate = 0.1f; // cross entropy
+        float learningRate = 0.5f; // quadratic
         float meanErrorThreshold = 0.01f;
 
         setup( l, epochs, batch, learningRate, meanErrorThreshold );
