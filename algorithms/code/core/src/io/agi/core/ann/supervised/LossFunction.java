@@ -11,6 +11,7 @@ public abstract class LossFunction {
 
     public static final String QUADRATIC = "quadratic";
     public static final String CROSS_ENTROPY = "cross-entropy";
+    public static final String LOG_LIKELIHOOD = "log-likelihood";
 
     public static float quadratic( float output, float ideal ) {
         // per-sample x, where x is a vector, cost C_x = 0.5 * ||y-a^L||^2
@@ -30,4 +31,20 @@ public abstract class LossFunction {
         return (float)C;
     }
 
+    /**
+     * Since this only makes sense for classification among distributions,
+     * Need to output the -log likelihood of the ideal class output.
+     * Note the cost is the same for every output.
+     *
+     * See:
+     * http://neuralnetworksanddeeplearning.com/chap3.html
+     * http://stats.stackexchange.com/questions/154879/a-list-of-cost-functions-used-in-neural-networks-alongside-applications
+     *
+     * @param outputIdealClass
+     * @return
+     */
+    public static float logLikelihood( float outputIdealClass ) {
+        double C = - Math.log( outputIdealClass );
+        return (float)C;
+    }
 }

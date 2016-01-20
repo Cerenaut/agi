@@ -1,5 +1,7 @@
 package io.agi.core.ann.supervised;
 
+import io.agi.core.data.FloatArray2;
+
 /**
  * Activation functions that implement the nonlinearities in a feed-forward neural network.
  * For back-propagation purposes, each also has a derivative function.
@@ -23,10 +25,31 @@ public abstract class ActivationFunction {
 
     /**
      * Returns a nonlinear scalar function of r.
+     * @param weightedSums
+     * @param outputs
+     * @return
+     */
+    public void f( FloatArray2 weightedSums, FloatArray2 outputs ) {
+        int J = weightedSums.getSize();
+
+        assert( outputs.getSize() == J );
+
+        for( int j = 0; j < J; ++j ) {
+
+            float z = weightedSums._values[ j ];
+            double a = f(z);
+
+            outputs._values[ j ] = (float)a;
+        }
+    }
+
+    /**
+     * Computes the activation for a single neuron based on weighted sum only. Convenience function.
+     *
      * @param r
      * @return
      */
-    public abstract double f( double r );
+    public double f( double r ) { return 0.0; };
 
     /**
      * Returns the derivative of r.
@@ -34,8 +57,6 @@ public abstract class ActivationFunction {
      * @return
      */
     public abstract double df( double r );
-
-    // TODO add softmax (prob dist) and cross entropy (fast learning when wrong)
 
     public static ActivationFunction createLogisticSigmoid() {
         return new ActivationFunction() {
@@ -57,6 +78,39 @@ public abstract class ActivationFunction {
                 return ActivationFunction.tanhDerivative(r);
             }
         };
+    }
+
+    public static ActivationFunction createSoftmax() {
+        return new ActivationFunction() {
+            public void f( FloatArray2 weightedSums, FloatArray2 outputs ) {
+                softmax( weightedSums, outputs );
+            }
+            public double df( double r ) {
+                return ActivationFunction.softmaxDerivative(r);
+            }
+        };
+    }
+
+    public static void softmax( FloatArray2 weightedSums, FloatArray2 outputs ) {
+        int J = weightedSums.getSize();
+
+        assert( outputs.getSize() == J );
+
+        double sum = Double.MIN_VALUE; // ensure avoid /0 error
+
+        for( int j = 0; j < J; ++j ) {
+
+            float z = weightedSums._values[ j ];
+            double e_z = Math.exp( z );
+            outputs._values[ j ] = (float)e_z;
+            sum += e_z;
+        }
+
+        for( int j = 0; j < J; ++j ) {
+            float e_z = outputs._values[j];
+            double a = e_z / sum;
+            outputs._values[j] = (float) a;
+        }
     }
 
     public static double logisticSigmoid( double x ) {
@@ -81,4 +135,8 @@ public abstract class ActivationFunction {
         return d;
     }
 
+    public static double softmaxDerivative( double x ) {
+        double d = 0.0;//Math.log( x ); // is this correct?
+        return d;
+    }
 }

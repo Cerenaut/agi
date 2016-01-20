@@ -13,6 +13,6 @@ public interface UnitTest {
      * @param args
      * @return
      */
-    int test( String[] args );
+    void test( String[] args );
 
 }

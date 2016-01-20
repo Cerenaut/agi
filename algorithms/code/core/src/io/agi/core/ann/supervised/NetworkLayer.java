@@ -105,21 +105,11 @@ public class NetworkLayer extends NamedObject {
      * Apply the activation function to the weighted sums
      *
      * @param weightedSums
-     * @param cf
+     * @param af
      * @param outputs
      */
-    public static void Activate( FloatArray2 weightedSums, ActivationFunction cf, FloatArray2 outputs ) {
-        int J = weightedSums.getSize();
-
-        assert( outputs.getSize() == J );
-
-        for( int j = 0; j < J; ++j ) {
-
-            float z = weightedSums._values[ j ];
-            double a = cf.f( z );
-
-            outputs._values[ j ] = (float)a;
-        }
+    public static void Activate( FloatArray2 weightedSums, ActivationFunction af, FloatArray2 outputs ) {
+        af.f( weightedSums, outputs );
     }
 
     /**

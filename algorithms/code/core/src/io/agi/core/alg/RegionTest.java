@@ -7,13 +7,12 @@ import io.agi.core.orm.UnitTest;
  */
 public class RegionTest implements UnitTest {
 
-    public int main( String[] args ) {
+    public static void main( String[] args ) {
         RegionTest ffnt = new RegionTest();
-        return ffnt.test( args );
+        ffnt.test( args );
     }
 
-    public int test( String[] args ) {
-        return 0;
+    public void test( String[] args ) {
     }
 
 }

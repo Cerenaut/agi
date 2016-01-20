@@ -17,7 +17,7 @@ public class FeedForwardNetworkTest implements UnitTest {
         ffnt.test( args );
     }
 
-    public int test( String[] args ) {
+    public void test( String[] args ) {
 
         Logic l = Logic.XOR;
 //        Logic l = Logic.AND;
@@ -39,10 +39,13 @@ public class FeedForwardNetworkTest implements UnitTest {
         else if( lossFunction.equals( LossFunction.CROSS_ENTROPY ) ) {
             learningRate = 0.1f; // cross entropy
         }
+        else if( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
+            learningRate = 0.1f;
+        }
 
         setup( l, epochs, batch, hidden, learningRate, meanErrorThreshold, lossFunction );
 
-        return epochs();
+        epochs();
     }
 
     public enum Logic{ AND, OR, XOR };
@@ -67,6 +70,10 @@ public class FeedForwardNetworkTest implements UnitTest {
             layers = 1;
         }
 
+        if( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
+            outputs = 2; // outcome A or B.
+        }
+
         String name = "feed-forward-network";
         String activationFunction = ActivationFunctionFactory.LOG_SIGMOID;
 
@@ -82,13 +89,19 @@ public class FeedForwardNetworkTest implements UnitTest {
             // Single layer test:
             _ffn.setupLayer(0, inputs, outputs, learningRate, activationFunction);
         }
-        else if( layers ==2 ) {
+        else if( layers == 2 ) {
             // Twin layer test:
-            _ffn.setupLayer(0, inputs, hidden, learningRate, activationFunction);
-            _ffn.setupLayer(1, hidden, outputs, learningRate, activationFunction);
+            _ffn.setupLayer( 0, inputs, hidden, learningRate, activationFunction );
+
+            if( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
+                _ffn.setupLayer( 1, hidden, outputs, learningRate, ActivationFunctionFactory.SOFTMAX );
+            }
+            else {
+                _ffn.setupLayer( 1, hidden, outputs, learningRate, activationFunction );
+            }
         }
         else {
-            System.err.println( "Bad configuration - layers > 2." );
+            System.err.println("Bad configuration - layers > 2.");
         }
     }
 
@@ -171,13 +184,29 @@ public class FeedForwardNetworkTest implements UnitTest {
 
         input._values[ 0 ] = x1;
         input._values[ 1 ] = x2;
-        ideal._values[ 0 ] = idealValue;
+
+        if( ideal.getSize() == 1 ) {
+            ideal._values[0] = idealValue;
+        }
+        else {
+            assert( ideal.getSize() == 2 );
+            if( idealValue == 0.f ) {
+                ideal._values[ 0 ] = 1.f;
+                ideal._values[ 1 ] = 0.f;
+            }
+            else {
+                ideal._values[ 0 ] = 0.f;
+                ideal._values[ 1 ] = 1.f;
+            }
+        }
 
         _ffn.feedForward();
         _ffn.feedBackward();
 
-        float outputValue = output._values[ 0 ];
-        float errorValue = Math.abs( idealValue - outputValue );
+//        float outputValue = output._values[ 0 ];
+//        float errorValue = Math.abs( idealValue - outputValue );
+
+        float errorValue = output.sumAbsDiff( ideal );
 
 //        System.out.println( "Input: " +x1+ "," +x2+ " Ideal: " + idealValue + " Output: " + outputValue + " Error: " + errorValue );
 

@@ -59,13 +59,13 @@ public abstract class BackPropagation {
             String lossFunction ) {
 
         if( lossFunction.equals( LossFunction.QUADRATIC ) ) {
-//                BackPropagation.losses( nl._outputs, _ideals, _losses, lf );
-//                BackPropagation.externalErrorGradient( _losses, nl._weightedSums, nl._errorGradients, nl.getActivationFunction() );
             externalErrorGradientQuadratic( weightedSums, outputs, ideals, errors, af );
         }
         else if( lossFunction.equals( LossFunction.CROSS_ENTROPY ) ) {
-//                BackPropagation.externalErrorGradient(_losses, _ideals, nl._outputs, nl._errorGradients );//, lf );
-            externalErrorGradientCrossEntropy( outputs, ideals, errors );
+            externalErrorGradientDifference(outputs, ideals, errors);
+        }
+        else if( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
+            externalErrorGradientDifference( outputs, ideals, errors );
         }
     }
 
@@ -82,16 +82,14 @@ public abstract class BackPropagation {
         for( int j = 0; j < J; ++j ) {
             float output = outputs._values[ j ];
             float ideal  = ideals._values[ j ];
-//            float loss = lf.loss( output, ideal );
             float loss = LossFunction.quadratic( output, ideal );
-//            float partial = losses._values[ j ]; // i.e. partial derivative of loss fn with respect to the activation of j
             float z = weightedSums._values[ j ];
             float d = (float)af.df( z );
             errors._values[ j ] = loss * d;
         }
     }
 
-    public static void externalErrorGradientCrossEntropy(
+    public static void externalErrorGradientDifference(
             FloatArray2 outputs,
             FloatArray2 ideals,
             FloatArray2 errors) {
