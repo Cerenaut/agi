@@ -7,7 +7,7 @@ import io.agi.core.orm.ObjectMap;
  */
 public class DynamicSelfOrganizingMapConfig extends CompetitiveLearningConfig {
 
-    public String _keyElasticity = "i";
+    public String _keyElasticity = "elasticity";
     public String _keyLearningRate = "learning-rate";
     public String _keyScaleUnit = "scale-unit";
     public String _keyScaleFactor = "scale-factor";
@@ -15,11 +15,11 @@ public class DynamicSelfOrganizingMapConfig extends CompetitiveLearningConfig {
     public DynamicSelfOrganizingMapConfig() {
     }
 
-    public void setup( ObjectMap om, String name, int inputs, int w, int h, float elasticity, float learningRate ) {
-        super.setup( om, name, inputs, w, h );
+    public void setup( ObjectMap om, String name, int inputs, int w, int h, float learningRate, float elasticity ) {
+        super.setup(om, name, inputs, w, h);
 
-        om.put( getKey( _keyElasticity ), elasticity );
         om.put( getKey( _keyLearningRate ), learningRate );
+        om.put( getKey( _keyElasticity ), elasticity );
         om.put( getKey( _keyScaleUnit ), false );
         om.put( getKey( _keyScaleFactor ), 1.0f );
     }

@@ -17,19 +17,20 @@ public class GrowingNeuralGasTest implements UnitTest, Callback {
         t.test( args );
     }
 
-    public static final String ALGORITHM = "competitive-learning";
+    public static final String GNG = "gng";
 
     public void test( String[] args ) {
 
+        // Test parameters
         int epochs = 100;
         int batch = 100;
         int randomSeed = 1;
         int inputs = 2; // x and y.
         int widthCells = 10;
         int heightCells = 10;
-
         float meanErrorThreshold = 0.01f;
 
+        // Algorithm specific parameters
         float noiseMagnitude = 0.0f; //0.f;//0.005f;
         float learningRate = 0.02f;
         float learningRateNeighbours = 0.01f;
@@ -43,22 +44,17 @@ public class GrowingNeuralGasTest implements UnitTest, Callback {
         GrowingNeuralGasConfig gngc = new GrowingNeuralGasConfig();
 
         gngc.setup(
-                om, ALGORITHM, inputs, widthCells, heightCells, learningRate, learningRateNeighbours, noiseMagnitude, edgeMaxAge, stressLearningRate, stressThreshold, growthInterval );
+                om, GNG, inputs, widthCells, heightCells, learningRate, learningRateNeighbours, noiseMagnitude, edgeMaxAge, stressLearningRate, stressThreshold, growthInterval );
 
-        GrowingNeuralGas cl = new GrowingNeuralGas( ALGORITHM, om );
+        GrowingNeuralGas cl = new GrowingNeuralGas( GNG, om );
         cl.setup(gngc);
-
-//        CallbackCollection cc = new CallbackCollection();
-//
-//        cc.add( this );
-//        cc.add( cl );
 
         run( epochs, batch, meanErrorThreshold );
     }
 
     public GrowingNeuralGas getAlgorithm() {
         ObjectMap om = ObjectMap.GetInstance();
-        GrowingNeuralGas gng = (GrowingNeuralGas)om.get( ALGORITHM );
+        GrowingNeuralGas gng = (GrowingNeuralGas)om.get( GNG );
         return gng;
     }
 
