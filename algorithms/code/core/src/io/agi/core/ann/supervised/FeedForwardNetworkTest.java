@@ -27,6 +27,7 @@ public class FeedForwardNetworkTest implements UnitTest {
         int hidden = 3;
         float meanErrorThreshold = 0.01f;
         float learningRate = 0.0f; // quadratic
+        float regularization = 0.0f;
         String lossFunction = null;
 
         if( args.length > 0 ) {
@@ -35,6 +36,7 @@ public class FeedForwardNetworkTest implements UnitTest {
 
         if( lossFunction.equals( LossFunction.QUADRATIC ) ) {
             learningRate = 0.5f; // quadratic
+//            learningRate = 0.1f; // quadratic
         }
         else if( lossFunction.equals( LossFunction.CROSS_ENTROPY ) ) {
             learningRate = 0.1f; // cross entropy
@@ -43,7 +45,7 @@ public class FeedForwardNetworkTest implements UnitTest {
             learningRate = 0.1f;
         }
 
-        setup( l, epochs, batch, hidden, learningRate, meanErrorThreshold, lossFunction );
+        setup( l, epochs, batch, hidden, learningRate, meanErrorThreshold, regularization, lossFunction );
 
         epochs();
     }
@@ -55,7 +57,7 @@ public class FeedForwardNetworkTest implements UnitTest {
     public float _meanErrorThreshold;
     public FeedForwardNetwork _ffn;
 
-    public void setup( Logic l, int epochs, int batch, int hidden, float learningRate, float meanErrorThreshold, String lossFunction ) {
+    public void setup( Logic l, int epochs, int batch, int hidden, float learningRate, float meanErrorThreshold, float regularization, String lossFunction ) {
 
         _l = l;
         _epochs = epochs;
@@ -76,10 +78,11 @@ public class FeedForwardNetworkTest implements UnitTest {
 
         String name = "feed-forward-network";
         String activationFunction = ActivationFunctionFactory.LOG_SIGMOID;
+        float l2R = regularization;//0.0001f;
 
         ObjectMap om = new ObjectMap();
         FeedForwardNetworkConfig ffnc = new FeedForwardNetworkConfig();
-        ffnc.setup( om, name, lossFunction, inputs, outputs, layers);
+        ffnc.setup( om, name, lossFunction, inputs, outputs, layers, l2R );
         ActivationFunctionFactory aff = new ActivationFunctionFactory();
 
         _ffn = new FeedForwardNetwork( name, om );
@@ -208,7 +211,7 @@ public class FeedForwardNetworkTest implements UnitTest {
 
         float errorValue = output.sumAbsDiff( ideal );
 
-//        System.out.println( "Input: " +x1+ "," +x2+ " Ideal: " + idealValue + " Output: " + outputValue + " Error: " + errorValue );
+//        System.out.println( "Input: " +x1+ "," +x2+ " Ideal: " + idealValue + " Error: " + errorValue );
 
         return errorValue;
     }

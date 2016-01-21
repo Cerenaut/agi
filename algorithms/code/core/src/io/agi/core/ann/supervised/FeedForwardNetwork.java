@@ -62,7 +62,7 @@ public class FeedForwardNetwork extends NamedObject {
 
         nlc.setup(_om, layerName, inputs, cells, learningRate, activationFunction );
 
-        NetworkLayer nl = _layers.get( layer );
+        NetworkLayer nl = _layers.get(layer);
         nl.setup( nlc, _aff );
     }
 
@@ -113,6 +113,19 @@ public class FeedForwardNetwork extends NamedObject {
         return _ideals;
     }
 
+    public float getWeightsSquared() {
+        int L = _layers.size();
+
+        float sumSq = 0.f;
+
+        for( int layer = 0; layer < L; ++layer ) {
+            NetworkLayer nl = _layers.get( layer );
+            sumSq += nl.getWeightsSquared();
+        }
+
+        return sumSq;
+    }
+
     /**
      * Run the network in a forward direction, producing an output
      */
@@ -136,24 +149,30 @@ public class FeedForwardNetwork extends NamedObject {
      * Run the network backwards, training it using the ideal output.
      */
     public void feedBackward() {
-        int layers = _layers.size();
 
+        float l2R = _c.getL2Regularization();
+        float sumSqWeights = 0.f;
+        if( l2R > 0.f ) {
+            sumSqWeights = getWeightsSquared();
+        }
+
+        int layers = _layers.size();
         int L = layers -1;
+
         for( int layer = L; layer >= 0; --layer ) {
 
             NetworkLayer nl = _layers.get( layer );
             ActivationFunction af = nl.getActivationFunction();
-
             if( layer == L ) {
                 String lossFunction = _c.getLossFunction();
-                BackPropagation.externalErrorGradient( nl._weightedSums, nl._outputs, _ideals, nl._errorGradients, af, lossFunction );
+                BackPropagation.externalErrorGradient( nl._weightedSums, nl._outputs, _ideals, nl._errorGradients, af, lossFunction, l2R, sumSqWeights );
             }
             else { // layer < L
                 NetworkLayer nl2 = _layers.get(layer + 1);
-                BackPropagation.internalErrorGradient( nl._weightedSums, nl._errorGradients, nl2._weights, nl2._errorGradients, af );
+                BackPropagation.internalErrorGradient(nl._weightedSums, nl._errorGradients, nl2._weights, nl2._errorGradients, af, l2R );
             }
 
-            nl.train(); // using the error gradients, d
+            nl.train( l2R ); // using the error gradients, d
         }
     }
 

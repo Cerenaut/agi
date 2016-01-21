@@ -46,6 +46,19 @@ public class NetworkLayer extends NamedObject {
         _errorGradients = new Data( cells );
     }
 
+    public float getWeightsSquared() {
+        int W = _weights.getSize();
+
+        float sumSq = 0.f;
+
+        for( int w = 0; w < W; ++w ) {
+            float weight = _weights._values[ w ];
+            sumSq += (w * w);
+        }
+
+        return sumSq;
+    }
+
     /**
      * Dynamically create the activation function assigned to this layer, using the factory.
      *
@@ -115,8 +128,8 @@ public class NetworkLayer extends NamedObject {
     /**
      * Train the layer's weights given the error gradients.
      */
-    public void train() {
+    public void train( float l2R ) {
         float learningRate = _c.getLearningRate();
-        BackPropagation.train( _inputs, _weights, _biases, _errorGradients, learningRate );
+        BackPropagation.train( _inputs, _weights, _biases, _errorGradients, learningRate, l2R );
     }
 }

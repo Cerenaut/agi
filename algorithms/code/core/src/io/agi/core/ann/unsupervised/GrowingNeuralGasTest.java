@@ -30,6 +30,20 @@ public class GrowingNeuralGasTest implements UnitTest {
 
         RandomInstance.setSeed(randomSeed); // make the tests repeatable
 
+//    public void setup(
+//            ObjectMap om,
+//            String name,
+//            int inputs,
+//            int w,
+//            int h,
+//            float learningRate,
+//            float learningRateNeighbours,
+//            float noiseMagnitude,
+//            int edgeMaxAge,
+//            float stressLearningRate,
+//            float stressThreshold,
+//            int growthInterval ) {
+
 /*        GrowingNeuralGasConfig gngc = new GrowingNeuralGasConfig(
                 widthCells, heightCells, inputs, inputMin, inputMax, noiseMagnitude, learningRate, learningRateNeighbours, stressThreshold, stressLearningRate, edgeMaxAge );
         GrowingNeuralGas cl = new GrowingNeuralGas();

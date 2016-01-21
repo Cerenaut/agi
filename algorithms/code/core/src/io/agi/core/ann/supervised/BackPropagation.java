@@ -56,16 +56,20 @@ public abstract class BackPropagation {
 //            FloatArray2 losses,
             FloatArray2 errors,
             ActivationFunction af,
-            String lossFunction ) {
+            String lossFunction,
+            float l2R,
+            float sumSqWeights ) {
+
+        l2R = 0.5f * l2R * sumSqWeights; // http://cs231n.github.io/neural-networks-2/ and http://neuralnetworksanddeeplearning.com/chap3.html
 
         if( lossFunction.equals( LossFunction.QUADRATIC ) ) {
-            externalErrorGradientQuadratic( weightedSums, outputs, ideals, errors, af );
+            externalErrorGradientQuadratic( weightedSums, outputs, ideals, errors, af, l2R );
         }
         else if( lossFunction.equals( LossFunction.CROSS_ENTROPY ) ) {
-            externalErrorGradientDifference(outputs, ideals, errors);
+            externalErrorGradientDifference(outputs, ideals, errors, l2R );
         }
         else if( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
-            externalErrorGradientDifference( outputs, ideals, errors );
+            externalErrorGradientDifference( outputs, ideals, errors, l2R );
         }
     }
 
@@ -74,7 +78,8 @@ public abstract class BackPropagation {
             FloatArray2 outputs,
             FloatArray2 ideals,
             FloatArray2 errors,
-            ActivationFunction af ) {
+            ActivationFunction af,
+            float l2R ) {
         int J = weightedSums.getSize();
         assert( errors.getSize() == J );
 
@@ -83,6 +88,7 @@ public abstract class BackPropagation {
             float output = outputs._values[ j ];
             float ideal  = ideals._values[ j ];
             float loss = LossFunction.quadratic( output, ideal );
+            loss += l2R;
             float z = weightedSums._values[ j ];
             float d = (float)af.df( z );
             errors._values[ j ] = loss * d;
@@ -92,14 +98,15 @@ public abstract class BackPropagation {
     public static void externalErrorGradientDifference(
             FloatArray2 outputs,
             FloatArray2 ideals,
-            FloatArray2 errors) {
+            FloatArray2 errors,
+            float l2R ) {
         int J = ideals.getSize();
         assert( outputs.getSize() == J );
 
         for( int j = 0; j < J; ++j ) {
             float y = ideals._values[ j ];
             float a = outputs._values[ j ];
-            errors._values[ j ] = ( a - y );
+            errors._values[ j ] = ( a - y ) + l2R;
         }
     }
 
@@ -108,7 +115,8 @@ public abstract class BackPropagation {
             FloatArray2 weights, // w
             FloatArray2 biases, // b
             FloatArray2 errorGradient, // d
-            float learningRate ) {
+            float learningRate,
+            float l2R ) {
         int K = inputs.getSize(); // layer inputs ie neurons in layer l-1
         int J = errorGradient.getSize(); // layer outputs ie neurons in this layer l
 
@@ -133,7 +141,7 @@ public abstract class BackPropagation {
                 float gradient = d * a;
 
                 float wOld = weights._values[ offset ];
-                float wNew = wOld - learningRate * gradient;
+                float wNew = wOld - learningRate * gradient;// + ( l2R * wOld );
 
                 weights._values[ offset ] = wNew;
             }
@@ -145,7 +153,8 @@ public abstract class BackPropagation {
             FloatArray2 errorsLayer1,
             FloatArray2 weightsLayer2,
             FloatArray2 errorsLayer2,
-            ActivationFunction afLayer1 ) {
+            ActivationFunction afLayer1,
+            float l2R ) {
 
         int K = errorsLayer1.getSize(); // layer inputs ie neurons in layer l-1
         int J = errorsLayer2.getSize(); // layer outputs ie neurons in this layer l
@@ -159,7 +168,7 @@ public abstract class BackPropagation {
                 int offset = j * K + k; // K = inputs, storage is all inputs adjacent
                 float w = weightsLayer2._values[ offset ];
                 float d = errorsLayer2._values[j]; // d_j i.e. partial derivative of loss fn with respect to the activation of j
-                float product = d * w;
+                float product = d * w + (l2R * w);
                 sum += product;
             }
 
