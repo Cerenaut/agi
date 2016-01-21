@@ -47,6 +47,10 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
         return _inputValues;
     }
 
+    public void call() {
+        update();
+    }
+
     public void update() {
         CompetitiveLearning.sumSqError(_c, _inputValues, _cellWeights, _cellErrors);
 

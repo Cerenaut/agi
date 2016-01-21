@@ -16,6 +16,7 @@ public class NamedObject {
     public NamedObject( String name, ObjectMap om ) {
         _name  = name;
         _om = om;
+        om.put( _name, this );
     }
 
     public String getName() {

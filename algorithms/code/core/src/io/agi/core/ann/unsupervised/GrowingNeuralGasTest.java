@@ -1,73 +1,65 @@
 package io.agi.core.ann.unsupervised;
 
+import io.agi.core.data.Data;
 import io.agi.core.math.RandomInstance;
+import io.agi.core.orm.Callback;
+import io.agi.core.orm.CallbackCollection;
+import io.agi.core.orm.ObjectMap;
 import io.agi.core.orm.UnitTest;
 
 /**
  * Created by dave on 11/01/16.
  */
-public class GrowingNeuralGasTest implements UnitTest {
+public class GrowingNeuralGasTest implements UnitTest, Callback {
 
     public static void main( String[] args ) {
-        GrowingNeuralGasTest ffnt = new GrowingNeuralGasTest();
-        ffnt.test( args );
+        GrowingNeuralGasTest t = new GrowingNeuralGasTest();
+        t.test( args );
     }
+
+    public static final String ALGORITHM = "competitive-learning";
 
     public void test( String[] args ) {
 
+        int epochs = 100;
+        int batch = 100;
         int randomSeed = 1;
-        float inputMin = 0.f;
-        float inputMax = 1.f;
-        float noiseMagnitude = 0.005f; //0.f;//0.005f;
-        float learningRate = 0.02f;
-        float learningRateNeighbours = 0.01f;
-        float stressThreshold = 0.03f;
-        float stressLearningRate = 0.1f;
-        int edgeMaxAge = 400;
         int inputs = 2; // x and y.
         int widthCells = 10;
         int heightCells = 10;
 
+        float meanErrorThreshold = 0.01f;
+
+        float noiseMagnitude = 0.0f; //0.f;//0.005f;
+        float learningRate = 0.02f;
+        float learningRateNeighbours = 0.01f;
+        int edgeMaxAge = 400;
+        float stressLearningRate = 0.1f;
+        float stressThreshold = 0.03f;
+        int growthInterval = 5;
+
         RandomInstance.setSeed(randomSeed); // make the tests repeatable
+        ObjectMap om = ObjectMap.GetInstance();
+        GrowingNeuralGasConfig gngc = new GrowingNeuralGasConfig();
 
-//    public void setup(
-//            ObjectMap om,
-//            String name,
-//            int inputs,
-//            int w,
-//            int h,
-//            float learningRate,
-//            float learningRateNeighbours,
-//            float noiseMagnitude,
-//            int edgeMaxAge,
-//            float stressLearningRate,
-//            float stressThreshold,
-//            int growthInterval ) {
+        gngc.setup(
+                om, ALGORITHM, inputs, widthCells, heightCells, learningRate, learningRateNeighbours, noiseMagnitude, edgeMaxAge, stressLearningRate, stressThreshold, growthInterval );
 
-/*        GrowingNeuralGasConfig gngc = new GrowingNeuralGasConfig(
-                widthCells, heightCells, inputs, inputMin, inputMax, noiseMagnitude, learningRate, learningRateNeighbours, stressThreshold, stressLearningRate, edgeMaxAge );
-        GrowingNeuralGas cl = new GrowingNeuralGas();
-        cl.setup( gngc );
+        GrowingNeuralGas cl = new GrowingNeuralGas( ALGORITHM, om );
+        cl.setup(gngc);
 
-        CompetitiveLearningDemo cld = new CompetitiveLearningDemo();
-        cld.run( args, cl );
+//        CallbackCollection cc = new CallbackCollection();
+//
+//        cc.add( this );
+//        cc.add( cl );
 
-        // Functional callbacks:
-        CallbackCollection cc = new CallbackCollection();
-        cc.add( this );
-        cc.add( _cl );
-        cc.add( pc );
-
-        // Set up the paint thread to do all the work
-        pt.iterate( cc );
-*/
+        run( epochs, batch, meanErrorThreshold );
     }
 
-    public void call() {
-        float x = getDiscreteRandom();
-        float y = getDiscreteRandom();
-//        _cl._inputValues._values[ 0 ] = x;
-//        _cl._inputValues._values[ 1 ] = y;
+    public GrowingNeuralGas getAlgorithm() {
+        ObjectMap om = ObjectMap.GetInstance();
+        GrowingNeuralGas gng = (GrowingNeuralGas)om.get( ALGORITHM );
+        return gng;
     }
 
     public float getDiscreteRandom() {
@@ -78,6 +70,81 @@ public class GrowingNeuralGasTest implements UnitTest {
         x /= gridSize;
         x += ((1.f / ( gridSize )) * 0.5f );
         return x;
+    }
+
+    public void call() {
+        // 1. generate input data
+        float x = getDiscreteRandom();
+        float y = getDiscreteRandom();
+
+        // 2. update algorithm
+        GrowingNeuralGas cl = getAlgorithm();
+        cl._inputValues._values[ 0 ] = x;
+        cl._inputValues._values[ 1 ] = y;
+        cl.call();
+    }
+
+    public int run( int epochs, int batch, float meanErrorThreshold ) {
+
+        // perform tests in batches until the mean error for a batch is below threshold.
+        // Otherwise, fail test.
+        for( int epoch = 0; epoch < epochs; ++epoch ) {
+
+            float sumError = 0.f;
+
+            for( int test = 0; test < batch; ++test ) {
+                float error = step();
+                sumError += error;
+            }
+
+            float meanError = 0.f;
+
+            if( sumError > 0.f ) {
+                meanError = sumError / (float)batch;
+            }
+
+            System.out.println( "Epoch: " +epoch+ " Mean error: " + meanError );
+
+            if( meanError < meanErrorThreshold ) {
+                System.out.println( "Success: Error below threshold for epoch." );
+                return 0;
+            }
+        }
+
+        System.out.println( "Failure: Error did not go below threshold for any epoch." );
+        return -1;
+    }
+
+    public float step() {
+
+        call();
+
+        GrowingNeuralGas cl = getAlgorithm();
+
+        Data input = cl.getInput();
+        Data weights = cl._cellWeights;
+
+        int inputs = input.getSize();
+        int bestCell = cl.getBestCell();
+
+        float sumError = 0.f;
+
+        for( int i = 0; i < inputs; ++i ) {
+            int offset = bestCell * inputs + i;
+            float x = input._values[ i ];
+            float w = weights._values[ offset ];
+            float d = Math.abs( x - w );
+            sumError += d;
+        }
+
+        float errorValue = sumError / (float)inputs;
+
+        float x = input._values[ 0 ];
+        float y = input._values[ 1 ];
+
+//        System.out.println( "Input: " +x+ "," +y+ " Error: " + errorValue );
+
+        return errorValue;
     }
 
 }

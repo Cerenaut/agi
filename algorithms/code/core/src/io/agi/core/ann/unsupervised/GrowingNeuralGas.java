@@ -67,6 +67,10 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         _ageSinceGrowth = new Data( 1 );
     }
 
+    public void call() {
+        update();
+    }
+
     public void update() {
 
         // given current cell mask local, ensure that there are at least 2 cells locally.
@@ -134,6 +138,8 @@ public class GrowingNeuralGas extends CompetitiveLearning {
 
         _bestCellA = bestCellA;
         _bestCellB = bestCellB;
+
+        System.out.println( "best: " + _bestCellA + " population: " + _cellMask.sum() + " age since growth: " + _ageSinceGrowth._values[ 0 ] );
     }
 
     public int getBestCell() {
@@ -348,7 +354,9 @@ public class GrowingNeuralGas extends CompetitiveLearning {
 
         ArrayList< Integer > sparseUnitInput = getSparseUnitInput();
         HashSet< Integer > hs = new HashSet< Integer >();
-        hs.addAll( sparseUnitInput );
+        if( sparseUnitInput != null ) {
+            hs.addAll(sparseUnitInput);
+        }
 
         float learningRate = _c.getLearningRate();
         float learningRateNeighbours = _c.getLearningRateNeighbours();
