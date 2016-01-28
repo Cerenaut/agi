@@ -3,6 +3,7 @@ package io.agi.core.alg;
 import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
 import io.agi.core.math.RandomInstance;
+import io.agi.core.orm.Callback;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMap;
@@ -19,7 +20,7 @@ import java.util.HashSet;
  *
  * Created by dave on 27/12/15.
  */
-public class Region extends NamedObject {
+public class Region extends NamedObject implements Callback {
 
     public static final int RECEPTIVE_FIELD_DIMENSIONS = 3;
 
@@ -84,11 +85,11 @@ public class Region extends NamedObject {
         //the surface must be rectangular
         //you must add the input as a number of extra column rows.
         //this means the input has a fixed shape.
-        int _columnWidth = columnWidth;
-        int _columnHeight = columnHeight;
+        _columnWidth = columnWidth;
+        _columnHeight = columnHeight;
 
-        int surfaceWidthColumns = _columnWidth * ( internalWidthColumns );
-        int surfaceHeightColumns = _columnHeight * ( internalHeightColumns + externalHeightColumns );
+        int surfaceWidthColumns = ( internalWidthColumns );
+        int surfaceHeightColumns = ( internalHeightColumns + externalHeightColumns );
 
         int surfaceWidth = _columnWidth * surfaceWidthColumns;
         int surfaceHeight = _columnHeight * surfaceHeightColumns;
@@ -99,7 +100,13 @@ public class Region extends NamedObject {
 
         _externalInput = new Data( externalWidth, externalHeight );
         _surfaceInput = new Data( surfaceWidth, surfaceHeight );
-//        _surfaceDepth = new Data( surfaceWidth, surfaceHeight );
+
+        _surfaceActivityNew = new Data( surfaceWidth, surfaceHeight );
+        _surfaceActivityOld = new Data( surfaceWidth, surfaceHeight );
+        _surfacePredictionNew = new Data( surfaceWidth, surfaceHeight );
+        _surfacePredictionOld = new Data( surfaceWidth, surfaceHeight );
+        _surfacePredictionFP = new Data( surfaceWidth, surfaceHeight );
+        _surfacePredictionFN = new Data( surfaceWidth, surfaceHeight );
 
         _columnDepth = new Data( internalWidthColumns, internalHeightColumns );
 
@@ -133,6 +140,23 @@ public class Region extends NamedObject {
             cd.setup( gngc );
             _columnData.put( c, cd );
         }
+    }
+
+    public static int GetSurfaceArea( int internalWidthColumns, int internalHeightColumns, int externalHeightColumns, int columnWidth, int columnHeight ) {
+        Point surfaceSize = Region.GetSurfaceSize( internalWidthColumns, internalHeightColumns, externalHeightColumns, columnWidth, columnHeight );
+        int surfaceWidth  = surfaceSize.x;
+        int surfaceHeight = surfaceSize.y;
+        int surfaceArea = surfaceWidth * surfaceHeight;
+        return surfaceArea;
+    }
+
+    public static Point GetSurfaceSize( int internalWidthColumns, int internalHeightColumns, int externalHeightColumns, int columnWidth, int columnHeight ) {
+        int surfaceWidthColumns = ( internalWidthColumns );
+        int surfaceHeightColumns = ( internalHeightColumns + externalHeightColumns );
+
+        int surfaceWidth = columnWidth * surfaceWidthColumns;
+        int surfaceHeight = columnHeight * surfaceHeightColumns;
+        return new Point( surfaceWidth, surfaceHeight );
     }
 
     public Point getSurfaceSizeColumns() {
@@ -215,6 +239,9 @@ public class Region extends NamedObject {
         return _dsom._c._om;
     }
 
+    public void call() {
+        update();
+    }
     public void update() {
 
         copyExternalInput(); // .. into the surface
@@ -233,11 +260,11 @@ public class Region extends NamedObject {
 
     public void copyInternalInput() {
         // copy internally generated output as an input.
-        Point sizeSurface = getSurfaceSizeCells();
+        Point p = Data2d.getSize(_externalInput);
         Point sizeColumnsSurface = getColumnsSurfaceSize();
 
         // w, h, from, from xy, to, to xy
-        Data2d.copy( sizeColumnsSurface.x, sizeColumnsSurface.y, _surfacePredictionFN, 0, sizeSurface.y, _surfaceInput, 0, sizeSurface.y ); // note
+        Data2d.copy( sizeColumnsSurface.x, sizeColumnsSurface.y, _surfacePredictionFN, 0, p.y, _surfaceInput, 0, p.y ); // note
     }
 
     public ColumnData getColumnData( int column ) {
@@ -263,7 +290,7 @@ public class Region extends NamedObject {
             return; // can't train
         }
 
-        Integer[] activeInput = (Integer[])hs.toArray();
+        Object[] activeInput = hs.toArray();
 
 //        Point p = getSizeColumns();
         Data inputValues = _dsom.getInput();
@@ -277,7 +304,7 @@ public class Region extends NamedObject {
 
             int sample = RandomInstance.randomInt(nbrActiveInput);
 
-            int offset = activeInput[ sample ];
+            Integer offset = (Integer)activeInput[ sample ];
 
             Point p = Data2d.getXY( _surfaceInput._d, offset );
 

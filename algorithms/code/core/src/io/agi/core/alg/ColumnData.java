@@ -8,14 +8,13 @@ import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
  */
 public class ColumnData {
 
-//    public Data _inputValues;
     GrowingNeuralGas _gng;
 
     public ColumnData() {
 
     }
 
-    public void setup(GrowingNeuralGasConfig c) {
+    public void setup( GrowingNeuralGasConfig c ) {
         _gng = new GrowingNeuralGas( c._name, c._om );
         _gng.setup( c );
     }

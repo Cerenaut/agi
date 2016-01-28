@@ -32,7 +32,7 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
 
         int inputs = c.getNbrInputs();
         int w = c.getWidthCells();
-        int h = c.getWidthCells();
+        int h = c.getHeightCells();
 
         _inputValues = new Data( inputs );
         _cellWeights = new Data( w, h, inputs );

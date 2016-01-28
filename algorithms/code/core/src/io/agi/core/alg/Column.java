@@ -208,6 +208,7 @@ public class Column {
         //
         // have a column-sized predictor and copy the weights and inputs to it.
         // Options: Hebbian learning, MLP
+
         return null;
     }
 /*
