@@ -1,0 +1,125 @@
+# The API spec of AGIEF Coordinator services in YAML
+swagger: '2.0'
+info:
+  title: AGI Experimental Framework Coordination Service
+  description: An open universal framework for running AGI experiments.
+  version: "1.0.0"
+# the domain of the service
+host: agi.io
+# array of all schemes that your API supports
+schemes:
+  - https
+# will be prefixed to all paths
+basePath: /v1
+produces:
+  - application/json
+paths:
+  /api/entity:
+    get:
+      summary: Notify the system of an entity/action event. 
+      description: |
+        This can be used to trigger an action by an entity, or to notify the system that an entity has completed and action, which in turn may cause further events. For example, event/experiment1/step will cause the experiment to step and emit event/experiment1/stepped. This in turn will be noticed by other entities (such as Agents), who will step themselves.
+      tags:
+        - Event
+      parameters:
+        - name: entity
+          in: query
+          description: "Name of the entity affected."
+          required: true
+          type: string
+        - name: action
+          in: query
+          description: "Action affecting the entity."
+          required: true
+          type: string
+      responses:
+        200:
+          description: OK
+
+  /api/data:
+    get:
+      summary: Notify the system of a data event. 
+      description: |
+        These events allow Entities to wait on modifications to input data. These events are automatically fired when data is modified by the Java API, but may need to be called when data is changed from other APIs.
+      tags:
+        - Event
+      parameters:
+        - name: entity
+          in: query
+          description: "Name of the data affected."
+          required: true
+          type: string
+        - name: action
+          in: query
+          description: "Action affecting the data."
+          required: true
+          type: string
+      responses:
+        200:
+          description: OK
+
+  /api/create:
+    get:
+      summary: Notify the system of a data event. 
+      description: |
+        Dynamically creates an entity of the specified type, using the factories registered within the Java code.
+      tags:
+        - Event
+      parameters:
+        - name: name
+          in: query
+          description: "Name of the entity to be created."
+          required: true
+          type: string
+        - name: type
+          in: query
+          description: "Type of the entity to be created."
+          required: true
+          type: string
+        - name: parent
+          in: query
+          description: "Name of the parent entity of the entity to be created."
+          required: true
+          type: string
+        - name: config
+          in: query
+          description: "A JSON object as a string that describes the configuration of the entity to be created, such as parameter overrides."
+          required: true
+          type: string
+      responses:
+        200:
+          description: OK
+          
+  /api/stop:
+    get:
+      summary: Stop the Node
+      description: |
+        The Stop endpoint (gracefully) stops the Node that receives the request. Note this can also be sent to non-coordinator Nodes.
+      tags:
+        - Control
+      responses:
+        200:
+          description: Timestamp
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Timestamp'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+  Timestamp:
+    properties:
+      product_id:
+        type: number
+        description: Timestamp of the current step of the coordinator.
+  Error:
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string
