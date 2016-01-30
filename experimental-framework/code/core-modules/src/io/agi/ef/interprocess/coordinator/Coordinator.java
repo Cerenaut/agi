@@ -1,6 +1,6 @@
 package io.agi.ef.interprocess.coordinator;
 
-import io.agi.core.ObjectMap;
+import io.agi.core.orm.ObjectMap;
 import io.agi.ef.Entity;
 import io.agi.ef.EntityFactory;
 import io.agi.ef.Persistence;

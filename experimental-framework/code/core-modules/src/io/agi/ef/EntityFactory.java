@@ -1,7 +1,7 @@
 package io.agi.ef;
 
-import io.agi.core.AbstractFactory;
-import io.agi.core.ObjectMap;
+import io.agi.core.orm.AbstractFactory;
+import io.agi.core.orm.ObjectMap;
 
 import java.util.HashMap;
 

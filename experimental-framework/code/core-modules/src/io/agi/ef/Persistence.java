@@ -1,6 +1,6 @@
 package io.agi.ef;
 
-import io.agi.core.ObjectMap;
+import io.agi.core.orm.ObjectMap;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.data.FloatArray2;
@@ -503,6 +503,8 @@ public class Persistence {
         //String query = table + "?name=eq."+name;
         String query = getQueryWhere(table, FIELD_NAME, name);
         String request = getBaseUrl() + query;
+        //System.out.println("Persistence::removeTableRow() request: " + request);
+
         String result = RequestUtil.deleteSync(request);
         if( ( result != null ) && ( result.trim().length() > 0 ) ) {
             System.out.println("Persistence::removeTableRow() returned: " + result);

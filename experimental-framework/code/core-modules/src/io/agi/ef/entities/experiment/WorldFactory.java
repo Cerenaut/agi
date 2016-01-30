@@ -1,6 +1,6 @@
 package io.agi.ef.entities.experiment;
 
-import io.agi.core.AbstractFactory;
+import io.agi.core.orm.AbstractFactory;
 import io.agi.ef.Entity;
 
 /**

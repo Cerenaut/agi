@@ -6,7 +6,7 @@
 package io.agi.core.orm;
 
 /**
- * Useful for making up factories on the fly..
+ * Defer creating a factory type or avoid boilerplate factory types where not needed.
  * 
  * @author dave
  */

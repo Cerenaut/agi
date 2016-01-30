@@ -16,7 +16,27 @@ import java.awt.Point;
  * @author dave
  */
 public class Data2d {
-    
+
+    public static void copy( int w, int h, Data d1, int x1, int y1, Data d2, int x2, int y2 ) {
+
+        Point p1 = Data2d.getSize( d1 );
+        Point p2 = Data2d.getSize( d2 );
+
+        for( int y = 0; y < h; ++y ) {
+            for( int x = 0; x < w; ++x ) {
+                int xa = x1 + x;
+                int ya = y1 + y;
+                int xb = x2 + x;
+                int yb = y2 + y;
+
+                Integer na = getOffset( d1._d, xa, ya );
+                Integer nb = getOffset( d2._d, xb, yb );
+
+                float value = d1._values[ na ];
+                d2._values[ nb ] = value;
+            }
+        }
+    }
     /**
      * A function to determine a nice shape and size for a given FloatArray2, for
      * easy painting.

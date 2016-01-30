@@ -25,10 +25,10 @@ import java.util.TreeMap;
  */
 public class Ranking {
     
-    TreeMap< Float, ArrayList< Integer > > _ranking;
+    public TreeMap< Float, ArrayList< Integer > > _ranking;
 
     public Ranking() {
-
+        _ranking = new TreeMap< Float, ArrayList< Integer > >();
     }
 
     public Ranking( FloatArray2 v ) {

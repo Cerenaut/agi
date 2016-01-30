@@ -1,17 +1,33 @@
-package io.agi.core;
+package io.agi.core.async;
 
 /**
+ * This interface represents an asynchronous thread of execution. We assume that a thread object is a relatively heavy
+ * object, i.e. we should minimize creation and deletion. Therefore, we distinguish between start/stop events (heavy) and
+ * pause/resume (lightweight). The concept of "reseting" the thread to a known state is assumed to be external to this
+ * interface. i.e. no guarantees are given and no interface is provided.
+ *
+ * The thread has 2 properties:
+ * - running
+ * - paused
+ *
+ * The thread is running from start until stopped.
+ * The thread can be paused and resumed at any time, though it only has effect while running.
+ *
+ * In addition, execution is assumed to be iterative, with step() called each iteration.
+ *
  * Created by dave on 12/09/15.
  */
 public interface Asynchronous {
 
     /**
      * Starts the thread.
+     * Sets running to true.
      */
     public void start();
 
     /**
      * Requests a graceful, permanent termination of the thread.
+     * Sets running to false.
      */
     public void stop();
 
@@ -28,17 +44,18 @@ public interface Asynchronous {
     public boolean running();
 
     /**
-     * Temporarily pauses the thread.
+     * Sets paused to true. No effect if not running.
      */
     public void pause();
 
     /**
-     * Resumes the thread if running and paused
+     * Sets paused to false. No effect if not running.
+     * Will not start if not started.
      */
-    public void resume(); // redundant with start()?
+    public void resume();
 
     /**
-     * Returns true if the thread is temporarily paused while running.
+     * Returns true if the thread is paused.
      * @return
      */
     public boolean paused();

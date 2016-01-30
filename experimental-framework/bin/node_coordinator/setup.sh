@@ -6,7 +6,7 @@ source $(dirname $0)/../$variables_file
 
 
 echo "------- Build and install libs -------"
-../bin/node_coordinator/build-libs.sh
+./build-libs.sh
 
 echo "------- Build the experimental framework -------"
 cd $AGI_HOME/experimental-framework/code/core-modules

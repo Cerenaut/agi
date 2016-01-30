@@ -1,7 +1,15 @@
-package io.agi.core;
+package io.agi.core.async;
+
+import io.agi.core.orm.Callback;
+import io.agi.core.orm.CallbackCollection;
 
 /**
- * Created by dave on 12/09/15.
+ * A Java Thread with hooks to define all the actions via Callbacks.
+ * This means your implementing class doesn't need to know whether it is running in a real thread, or simply being
+ * iterated. In addition, you can add diagnostic and debug hooks dynamically to all thread events. For example, getting
+ * data out for visualization.
+ *
+ * Created by dave on 27/12/15.
  */
 public abstract class CallbackThread implements Runnable, Asynchronous {
 
@@ -103,7 +111,8 @@ public abstract class CallbackThread implements Runnable, Asynchronous {
     /**
      * Tries to stop, and blocks until the thread has finished.
      *
-     * @param sleep
+     * @param sleepInterval
+     * @param timeout
      */
     public void stopWait( int sleepInterval, Long timeout ) {
         stop();
