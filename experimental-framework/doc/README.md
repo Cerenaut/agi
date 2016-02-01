@@ -25,7 +25,7 @@ Following steps to get started:
 
 * Pull the repository
 * Open **variables.sh** and set the values to be correct for your environment
-* Run **setup.sh** . This needs to be run once in a given shell, until variables or system settings change. It will setup the database, necessary environment variables, install the dependent libs and compile the core modules.
+* Run **setup.sh**. This needs to be run once in a given shell, until variables or system settings change. It will setup the database, necessary environment variables, install the dependent libs and compile the core modules.
 
 
 ## Launching a node
@@ -44,6 +44,8 @@ See the demo HelloWorld for a template that you can add to and modify.
 
 ## Modify the framework
 
+See **README-modify-framework.md** for more detailed information
+
 Installation of the following popular tool(s) is required and some background knowledge recommended:
 - [Swagger](http://swagger.io/)  Version 2.1.5
 
@@ -51,16 +53,13 @@ If you want to get further into the implementation details, knowledge of the fol
 - [Jetty](http://www.eclipse.org/jetty/)
 - [Jersey](https://jersey.java.net/)
 
-* Modify the spec (**/ApiSpec/spec.yaml**) as desired according to Swagger spec. The easiest way to do this is to go to the online [Swagger Editor](http://editor.swagger.io/#/), paste the yaml contents in, and see the documentation change dynamically. _More information in README-modify-framework.md_.
-* Re-generate the relevant library using the provided scripts in **bin/db/codegen** :
+* Modify the spec (**/ApiSpec/spec.yaml**) as desired according to Swagger spec. The easiest way to do this is to go to the online [Swagger Editor](http://editor.swagger.io/#/), paste the yaml contents in, and see the documentation change dynamically. 
+* Re-generate the relevant library using the provided scripts in **bin/codegen/** :
 	* **genClient.sh**
 	* **genServer.sh**
 	* **genPersistence.sh**
 
-* They use the [swagger-codegen](https://github.com/swagger-api/swagger-codegen) project. You will need to use the modified template 'Mustache' file(s) with Swagger for use with AGIEF. Copy them from **/resources/swagger-mustache** to the appropriate folder in the swagger-codegen source code project before building Swagger again. 
-	* Use the script **copyMustache.sh** provided in **/bin/codegen**.
-
-GOTCHA: You must copy the modified mustache files as described above, BEFORE you build the swagger-codgen project. If you make any further changes to any mustache files, you must re-compile the project before the changes take effect.
+* They use the [swagger-codegen](https://github.com/swagger-api/swagger-codegen) project. You need to download and build it first using the script **bin/codegen/setup.sh**.
 
 Modify Coordinator Server:
 
