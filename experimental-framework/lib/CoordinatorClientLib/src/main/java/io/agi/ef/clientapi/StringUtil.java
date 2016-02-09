@@ -1,5 +1,6 @@
 package io.agi.ef.clientapi;
 
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-02-01T23:41:55.036+11:00")
 public class StringUtil {
   /**
    * Check if the given array contains the given value (with case-insensitive comparison).
