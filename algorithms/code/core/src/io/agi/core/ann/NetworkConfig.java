@@ -26,6 +26,11 @@ public class NetworkConfig {
         _name = name;
     }
 
+    public void copyFrom( NetworkConfig nc, String name ) {
+        _om = nc._om;
+        _name = name;
+    }
+
     public String getKey( String suffix ) {
         return Keys.concatenate(_name, suffix);
     }

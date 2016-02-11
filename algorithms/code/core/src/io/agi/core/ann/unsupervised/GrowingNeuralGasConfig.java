@@ -1,5 +1,6 @@
 package io.agi.core.ann.unsupervised;
 
+import io.agi.core.ann.NetworkConfig;
 import io.agi.core.orm.ObjectMap;
 
 /**
@@ -31,15 +32,51 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
             float stressLearningRate,
             float stressThreshold,
             int growthInterval ) {
-        super.setup( om, name, inputs, w, h );
+        super.setup(om, name, inputs, w, h);
 
-        om.put( getKey( _keyLearningRate ), learningRate);
-        om.put( getKey( _keyLearningRateNeighbours ), learningRateNeighbours );
-        om.put( getKey( _keyNoiseMagnitude ), noiseMagnitude );
-        om.put( getKey( _keyEdgeMaxAge ), (float)edgeMaxAge );
-        om.put( getKey( _keyStressLearningRate ), stressLearningRate );
-        om.put( getKey( _keyStressThreshold ), stressThreshold );
-        om.put( getKey( _keyGrowthInterval ), (float)growthInterval );
+        setLearningRate(learningRate);
+        setLearningRateNeighbours(learningRateNeighbours);
+        setNoiseMagnitude(noiseMagnitude);
+        setEdgeMaxAge(edgeMaxAge);
+        setStressLearningRate(stressLearningRate);
+        setStressThreshold(stressThreshold);
+        setGrowthInterval(growthInterval);
+    }
+
+    public void copyFrom( NetworkConfig nc, String name ) {
+        super.copyFrom(nc, name);
+
+        GrowingNeuralGasConfig c = (GrowingNeuralGasConfig)nc;
+
+        setLearningRate( c.getLearningRate() );
+        setLearningRateNeighbours( c.getLearningRateNeighbours() );
+        setNoiseMagnitude( c.getNoiseMagnitude() );
+        setEdgeMaxAge( c.getEdgeMaxAge() );
+        setStressLearningRate( c.getStressLearningRate() );
+        setStressThreshold( c.getStressThreshold() );
+        setGrowthInterval( c.getGrowthInterval() );
+    }
+
+    public void setLearningRate( float r ) {
+        _om.put(getKey(_keyLearningRate), r);
+    }
+    public void setLearningRateNeighbours( float r ) {
+        _om.put(getKey(_keyLearningRateNeighbours), r);
+    }
+    public void setNoiseMagnitude( float r ) {
+        _om.put( getKey( _keyNoiseMagnitude ), r );
+    }
+    public void setEdgeMaxAge( int n ) {
+        _om.put(getKey(_keyEdgeMaxAge), n);
+    }
+    public void setStressLearningRate( float r ) {
+        _om.put(getKey(_keyStressLearningRate), r);
+    }
+    public void setStressThreshold( float r ) {
+        _om.put(getKey(_keyStressThreshold), r);
+    }
+    public void setGrowthInterval( int n ) {
+        _om.put(getKey(_keyGrowthInterval), n);
     }
 
     public float getLearningRate() {
@@ -58,8 +95,8 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
     }
 
     public int getEdgeMaxAge() {
-        Float r = _om.getFloat( getKey( _keyEdgeMaxAge ) );
-        return (int)r.floatValue();
+        Integer n = _om.getInteger(getKey(_keyEdgeMaxAge));
+        return n.intValue();
     }
 
     public float getStressLearningRate() {
@@ -73,7 +110,7 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
     }
 
     public int getGrowthInterval() {
-        Float r = _om.getFloat( getKey( _keyGrowthInterval ) );
-        return (int)r.floatValue();
+        Integer n = _om.getInteger( getKey( _keyGrowthInterval ) );
+        return n.intValue();
     }
 }

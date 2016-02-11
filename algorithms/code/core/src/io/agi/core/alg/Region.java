@@ -8,7 +8,6 @@ import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMap;
 import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMapConfig;
-import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -24,11 +23,9 @@ public class Region extends NamedObject implements Callback {
 
     public static final int RECEPTIVE_FIELD_DIMENSIONS = 3;
 
-    public static final String SUFFIX_HIERARCHY_MODULE = "hierarchy-module";
-    public static final String SUFFIX_COLUMN_MODULE = "column-module";
-
-    public String _keyReceptiveFieldsTrainingSamples = "receptive-fields-training-samples";
-    public String _keyColumnInputs = "column-inputs";
+    public static final String SUFFIX_ORGANIZER = "organizer";
+    public static final String SUFFIX_CLASSIFIER = "classifier";
+    public static final String SUFFIX_PREDICTOR = "predictor";
 
     public Data _externalInput; // cell space.
     public Data _surfaceInput; // must be 2d, w * h
@@ -41,36 +38,42 @@ public class Region extends NamedObject implements Callback {
 
     public Data _columnDepth; // z position of every input in the surface.
 
-    HashMap< Integer, ArrayList< Integer > > _depthColumns; // key: depth. Values: Columns at this depth
+    public HashMap< Integer, ArrayList< Integer > > _depthColumns; // key: depth. Values: Columns at this depth
 
-    public int _columnWidth;
-    public int _columnHeight;
+    public HashSet< Integer > _ffInputActive = new HashSet< Integer >();
+    public HashSet< Integer > _fbInputActive = new HashSet< Integer >();
 
+//    public int _columnWidth;
+//    public int _columnHeight;
+
+    public RegionConfig _rc;
     public DynamicSelfOrganizingMap _dsom;
-    public ColumnFactory _cf;
-    public HashMap< Integer, ColumnData > _columnData = new HashMap< Integer, ColumnData >();
+    public RegionFactory _rf;
+    public HashMap< Integer, Column > _columns = new HashMap< Integer, Column >();
 
     public Region( String name, ObjectMap om ) {
         super( name, om );
     }
 
     public void setup(
-            ColumnFactory cf,
-
+            RegionConfig rc,
+            RegionFactory rf
+/*
             // Column Sizing
-            int columnWidth,
-            int columnHeight,
-            int columnInputs,
-
-            // Region sizing
-            int externalHeightColumns,
-            int internalWidthColumns,
-            int internalHeightColumns,
+//            int columnWidth,
+//            int columnHeight,
+//            int columnInputs,
+//
+//            // Region sizing
+//            int externalHeightColumns,
+//            int internalWidthColumns,
+//            int internalHeightColumns,
 
             // Hierarchy training
             int receptiveFieldsTrainingSamples,
             float receptiveFieldsElasticity,
             float receptiveFieldsLearningRate,
+            float inputMaskLearningRate,
 
             // Column training
             float columnLearningRate,
@@ -79,135 +82,180 @@ public class Region extends NamedObject implements Callback {
             int columnEdgeMaxAge,
             float columnStressLearningRate,
             float columnStressThreshold,
-            int columnGrowthInterval ) {
+            int columnGrowthInterval ) {*/
+    ) {
 
-        _cf = cf;
+        _rc = rc;
+        _rf = rf;
         //the surface must be rectangular
         //you must add the input as a number of extra column rows.
         //this means the input has a fixed shape.
-        _columnWidth = columnWidth;
-        _columnHeight = columnHeight;
+//        _columnWidth = columnWidth;
+//        _columnHeight = columnHeight;
+//
+//        int surfaceWidthColumns = ( internalWidthColumns );
+//        int surfaceHeightColumns = ( internalHeightColumns + externalHeightColumns );
+//
+//        int surfaceWidth = _columnWidth * surfaceWidthColumns;
+//        int surfaceHeight = _columnHeight * surfaceHeightColumns;
+//        int surfaceSizeCells = surfaceWidth * surfaceHeight;
+//
+//        int externalWidth = surfaceWidth;
+//        int externalHeight = _columnHeight * ( externalHeightColumns );
+        Point externalSizeCells = _rc.getExternalSizeCells();
+        Point internalSizeColumns = _rc.getInternalSizeColumns();
+        Point externalSizeColumns = _rc.getExternalSizeColumns();
+        Point surfaceSizeCells = _rc.getSurfaceSizeCells();
+        Point surfaceSizeColumns = _rc.getSurfaceSizeColumns();
 
-        int surfaceWidthColumns = ( internalWidthColumns );
-        int surfaceHeightColumns = ( internalHeightColumns + externalHeightColumns );
+        int internalWidthColumns = internalSizeColumns.x;
+        int internalHeightColumns = internalSizeColumns.y;
 
-        int surfaceWidth = _columnWidth * surfaceWidthColumns;
-        int surfaceHeight = _columnHeight * surfaceHeightColumns;
-        int surfaceSizeCells = surfaceWidth * surfaceHeight;
+        int externalWidthCells = externalSizeCells.x;
+        int externalHeightCells = externalSizeCells.y;
 
-        int externalWidth = surfaceWidth;
-        int externalHeight = _columnHeight * ( externalHeightColumns );
+        int surfaceWidthCells = surfaceSizeCells.x;
+        int surfaceHeightCells = surfaceSizeCells.y;
 
-        _externalInput = new Data( externalWidth, externalHeight );
-        _surfaceInput = new Data( surfaceWidth, surfaceHeight );
+        int surfaceWidthColumns = surfaceSizeColumns.x;
+        int surfaceHeightColumns = surfaceSizeColumns.y;
 
-        _surfaceActivityNew = new Data( surfaceWidth, surfaceHeight );
-        _surfaceActivityOld = new Data( surfaceWidth, surfaceHeight );
-        _surfacePredictionNew = new Data( surfaceWidth, surfaceHeight );
-        _surfacePredictionOld = new Data( surfaceWidth, surfaceHeight );
-        _surfacePredictionFP = new Data( surfaceWidth, surfaceHeight );
-        _surfacePredictionFN = new Data( surfaceWidth, surfaceHeight );
-
-        _columnDepth = new Data( internalWidthColumns, internalHeightColumns );
+        _externalInput = new Data( externalWidthCells, externalHeightCells );
+        _columnDepth = new Data( surfaceWidthColumns, surfaceHeightColumns );
+        _surfaceInput = new Data( surfaceWidthCells, surfaceHeightCells );
+        _surfaceActivityNew = new Data( surfaceWidthCells, surfaceHeightCells );
+        _surfaceActivityOld = new Data( surfaceWidthCells, surfaceHeightCells );
+        _surfacePredictionNew = new Data( surfaceWidthCells, surfaceHeightCells );
+        _surfacePredictionOld = new Data( surfaceWidthCells, surfaceHeightCells );
+        _surfacePredictionFP = new Data( surfaceWidthCells, surfaceHeightCells );
+        _surfacePredictionFN = new Data( surfaceWidthCells, surfaceHeightCells );
 
         // Create the module that will learn column receptive fields
-        String dsomName = getKey( SUFFIX_HIERARCHY_MODULE );
-
+        String dsomName = getKey(SUFFIX_ORGANIZER);
         int surfaceDimensions = RECEPTIVE_FIELD_DIMENSIONS; // x, y, z . We might do a x1, y1, x2, y2, z also
+        float receptiveFieldsElasticity = rc.getReceptiveFieldsElasticity();
+        float receptiveFieldsLearningRate = rc.getReceptiveFieldsLearningRate();
+
+        // only model receptive fields for internal columns
         DynamicSelfOrganizingMapConfig dsomc = new DynamicSelfOrganizingMapConfig();
         dsomc.setup( _om, dsomName, surfaceDimensions, internalWidthColumns, internalHeightColumns, receptiveFieldsElasticity, receptiveFieldsLearningRate );
 
         _dsom = new DynamicSelfOrganizingMap( dsomName, _om );
         _dsom.setup( dsomc );
 
-        _dsom._c._om.put(_keyReceptiveFieldsTrainingSamples, receptiveFieldsTrainingSamples);
-        _dsom._c._om.put(_keyColumnInputs, columnInputs);
+        // only create internal columns
+//        for( int y = 0; y < internalHeightColumns; ++y ) {
+//            for (int x = 0; x < internalWidthColumns; ++x) {
+        for( int y = 0; y < surfaceHeightColumns; ++y ) {
+            for (int x = 0; x < surfaceWidthColumns; ++x) {
 
-        // Create the module that will learn column state and do prediction
-        String gngName = getKey( SUFFIX_COLUMN_MODULE );
-        GrowingNeuralGasConfig gngc = new GrowingNeuralGasConfig();
-        gngc.setup(
-                _om, gngName, surfaceSizeCells, _columnWidth, _columnHeight,
-                columnLearningRate, columnLearningRateNeighbours, columnNoiseMagnitude,
-                columnEdgeMaxAge, columnStressLearningRate, columnStressThreshold, columnGrowthInterval );
+                if( _rc.isExternalColumn( x, y ) ) {
+                    continue;
+                }
 
-        int columns = internalWidthColumns * internalHeightColumns;
-
-        Column column = _cf.create();//new Column();
-
-        for( int c = 0; c < columns; ++c ) {
-            ColumnData cd = column.createColumnData();
-            cd.setup( gngc );
-            _columnData.put( c, cd );
+                Column c = _rf.createColumn( this, x, y );
+                int offset = getColumnOffset( x, y );
+                _columns.put( offset, c );
+            }
         }
     }
 
-    public static int GetSurfaceArea( int internalWidthColumns, int internalHeightColumns, int externalHeightColumns, int columnWidth, int columnHeight ) {
-        Point surfaceSize = Region.GetSurfaceSize( internalWidthColumns, internalHeightColumns, externalHeightColumns, columnWidth, columnHeight );
-        int surfaceWidth  = surfaceSize.x;
-        int surfaceHeight = surfaceSize.y;
-        int surfaceArea = surfaceWidth * surfaceHeight;
-        return surfaceArea;
-    }
-
-    public static Point GetSurfaceSize( int internalWidthColumns, int internalHeightColumns, int externalHeightColumns, int columnWidth, int columnHeight ) {
-        int surfaceWidthColumns = ( internalWidthColumns );
-        int surfaceHeightColumns = ( internalHeightColumns + externalHeightColumns );
-
-        int surfaceWidth = columnWidth * surfaceWidthColumns;
-        int surfaceHeight = columnHeight * surfaceHeightColumns;
-        return new Point( surfaceWidth, surfaceHeight );
-    }
-
-    public Point getSurfaceSizeColumns() {
-        Point p = Data2d.getSizeExplicit( _surfaceInput ); // the entire surface @ cellular size
-        p.x = p.x / _columnWidth;
-        p.y = p.y / _columnHeight;
-        return p;
-    }
-
-    public Point getRegionSizeColumns() {
-        Point p = Data2d.getSizeExplicit( _dsom._cellActivity ); // the entire surface @ cellular size
-        return p;
-    }
-
-    public Point getColumnSizeCells() {
-        return new Point( _columnWidth, _columnHeight );
-    }
-
-    public Point getSurfaceSizeCells() {
-        return Data2d.getSizeExplicit( _surfaceInput ); // the entire surface @ cellular size
-    }
+//    public static Point GetSurfaceSize( int internalWidthColumns, int internalHeightColumns, int externalHeightColumns, int columnWidth, int columnHeight ) {
+//        int surfaceWidthColumns = ( internalWidthColumns );
+//        int surfaceHeightColumns = ( internalHeightColumns + externalHeightColumns );
+//
+//        int surfaceWidth = columnWidth * surfaceWidthColumns;
+//        int surfaceHeight = columnHeight * surfaceHeightColumns;
+//        return new Point( surfaceWidth, surfaceHeight );
+//    }
+//
+//    public int getSurfaceAreaColumns() {
+//        Point p = getSurfaceSizeColumns();
+//        return p.x * p.y;
+//    }
+//
+//    public Point getSurfaceSizeColumns() {
+//        Point p = Data2d.getSizeExplicit(_surfaceInput); // the entire surface @ cellular size
+//        p.x = p.x / _columnWidth;
+//        p.y = p.y / _columnHeight;
+//        return p;
+//    }
+//
+//    public Point getRegionSizeColumns() {
+//        Point p = Data2d.getSizeExplicit(_dsom._cellActivity); // the entire surface @ cellular size
+//        return p;
+//    }
+//
+//    public int getColumnAreaCells() {
+//        Point p = getColumnSizeCells();
+//        return p.x * p.y;
+//    }
+//
+//    public Point getColumnSizeCells() {
+//        return new Point( _columnWidth, _columnHeight );
+//    }
+//
+//    public Point getSurfaceSizeCells() {
+//        return Data2d.getSizeExplicit( _surfaceInput ); // the entire surface @ cellular size
+//    }
 
     public Point getColumnSurfaceOrigin( int xColumn, int yColumn ) {
-        int xSurface = xColumn * _columnWidth;
-        int ySurface = yColumn * _columnHeight;
+        Point columnSizeCells = _rc.getColumnSizeCells();
 
-        Point externalInputSize = Data2d.getSize(_externalInput);
+        int xSurface = xColumn * columnSizeCells.x;//_columnWidth;
+        int ySurface = yColumn * columnSizeCells.y;//_columnHeight;
 
-        ySurface += externalInputSize.y; // the active columns are offset by this much
+//        Point externalInputSize = Data2d.getSize(_externalInput);
+//
+//        ySurface += externalInputSize.y; // the active columns are offset by this much
 
         return new Point( xSurface, ySurface );
     }
+//
+//    public Point getColumnsSurfaceSize() {
+//        Point sizeColumns = _rc.getSurfaceSizeColumns();
+//        Point columnSizeCells = _rc.getColumnSizeCells();
+//
+//        int xColumnsSurface = sizeColumns.x * columnSizeCells.x;//_columnWidth;
+//        int yColumnsSurface = sizeColumns.y * columnSizeCells.y;//_columnHeight;
+//
+//        return new Point( xColumnsSurface, yColumnsSurface );
+//    }
 
-    public Point getColumnsSurfaceSize() {
-        Point sizeColumns = getRegionSizeColumns();
-
-        int xColumnsSurface = sizeColumns.x * _columnWidth;
-        int yColumnsSurface = sizeColumns.y * _columnHeight;
-
-        return new Point( xColumnsSurface, yColumnsSurface );
+    /**
+     * Returns the column coordinate for any given surface cell coordinate.
+     * @param offsetSurface
+     * @return
+     */
+    public Point getSurfaceColumnGivenSurfaceOffset( int offsetSurface ) {
+        Point surfaceSize = _rc.getSurfaceSizeCells();
+        int xSurface = offsetSurface % surfaceSize.x;
+        int ySurface = offsetSurface / surfaceSize.x;
+        return getSurfaceColumnGivenSurfaceCell(xSurface, ySurface );
     }
 
-    public Point getColumnGivenSurface( int xSurface, int ySurface ) {
+    public Point getSurfaceColumnGivenSurfaceCell( int xSurface, int ySurface ) {
+        Point columnSizeCells = _rc.getColumnSizeCells();
+
+        int xColumn = xSurface / columnSizeCells.x;
+        int yColumn = ySurface / columnSizeCells.y;
+        return new Point( xColumn, yColumn );
+    }
+
+    public Point getInternalColumnGivenSurfaceCell( int xSurface, int ySurface ) {
         Point externalInputSize = Data2d.getSize(_externalInput);
 
         if( ySurface < externalInputSize.y ) { // is it an internal input? ie from a column?
             return null;
         }
 
-        int xColumn = xSurface / _columnWidth;
-        int yColumn = ySurface / _columnHeight;
+        Point columnSizeCells = _rc.getColumnSizeCells();
+
+        //xSurface -= externalInputSize.x;
+        ySurface -= externalInputSize.y;
+
+        int xColumn = xSurface / columnSizeCells.x;
+        int yColumn = ySurface / columnSizeCells.y;
         return new Point( xColumn, yColumn );
     }
 
@@ -217,38 +265,121 @@ public class Region extends NamedObject implements Callback {
     }
 
     public int getSurfaceDepth( int xSurface, int ySurface ) {
-        Point xyColumn = getColumnGivenSurface(xSurface, ySurface);
+        Point xyInternalColumn = getInternalColumnGivenSurfaceCell(xSurface, ySurface);
 
-        if( xyColumn == null ) {
+        if( xyInternalColumn == null ) {
             return 0;
         }
 
-        Point columnsSize = getRegionSizeColumns();
-        int c = xyColumn.y * columnsSize.x + xyColumn.x;
+        Point columnsSize = _rc.getInternalSizeColumns();
+        int c = xyInternalColumn.y * columnsSize.x + xyInternalColumn.x;
 
+if( c < 0 ) {
+    int g = 0;
+    g++;
+}
         int z = (int)_columnDepth._values[ c ]; // at least 1
 
         return z;
     }
 
+//    public float getDepth() {
+//        int columnOffset = Data2d.getOffset(_r._columnDepth._d, _x, _y);
+//        float z = _r._columnDepth._values[ columnOffset ];
+//        return z;
+//    }
+
     public Data getExternalInput() {
         return _externalInput;
     }
 
-    public ObjectMap getObjectMap() {
-        return _dsom._c._om;
+//    public boolean isSurfaceExternal( int xSurface, int ySurface ) {
+//        Point xyExternal = _rc.getExternalSizeCells();
+//        if( ySurface < xyExternal.y ) {
+//            return true;
+//        }
+//
+//        return false;
+//    }
+//
+//    public boolean isColumnExternal( int xColumn, int yColumn ) {
+//        Point xyExternal = _rc.getExternalSizeColumns();
+//        if( yColumn < xyExternal.y ) {
+//            return true;
+//        }
+//
+//        return false;
+//    }
+
+    public int getColumnOffset( int x, int y ) {
+        Point p = _rc.getSurfaceSizeColumns();
+        int offset = y * p.x + x;
+        return offset;
     }
+
+    public Point getColumnGivenColumnOffset( int offset ) {
+        Point sizeColumns = _rc.getSurfaceSizeColumns();
+
+        int xColumn = offset % sizeColumns.x;
+        int yColumn = offset / sizeColumns.x;
+        return new Point( xColumn, yColumn );
+    }
+
+    public Column getColumn( int c ) {
+        return _columns.get( c );
+    }
+
+    public Column getColumn( int x, int y ) {
+        int offset = getColumnOffset( x, y );
+        return _columns.get( offset );
+    }
+
+    public ArrayList< Integer > getColumnSurfaceCells( int xColumn, int yColumn ) {
+        Point columnSizeCells = _rc.getColumnSizeCells();
+        Point surfaceSizeCells = _rc.getSurfaceSizeCells();
+//        Point externalSizeColumns = _rc.getExternalSizeColumns();//Data2d.getSize(_externalInput);
+
+        int xRect =   xColumn                           * columnSizeCells.x;
+//        int yRect = ( yColumn + externalSizeColumns.y ) * columnSizeCells.y;
+        int yRect = ( yColumn  ) * columnSizeCells.y;
+        int wRect = columnSizeCells.x;
+        int hRect = columnSizeCells.y;
+
+        ArrayList< Integer > indices = Data2d.getIndicesInRect( xRect, yRect, wRect, hRect, surfaceSizeCells.x, surfaceSizeCells.y );
+
+        return indices;
+    }
+
+//    public HashSet< Integer > getColumnSurfaceCells( int xColumn, int yColumn ) {
+//        HashSet< Integer > columnSurfaceCells = new HashSet< Integer >();
+//
+//        Point pSurfaceSize = getSurfaceSizeCells();
+//        Point pColumnOrigin = getColumnSurfaceOrigin( xColumn, yColumn );
+//        Point pColumnSize = getColumnSizeCells();
+//
+//        for( int y = 0; y < pColumnSize.y; ++y ) {
+//            for (int x = 0; x < pColumnSize.x; ++x) {
+//                int xCell = pColumnOrigin.x + x;
+//                int yCell = pColumnOrigin.y + y;
+//
+//                int offset = yCell * pSurfaceSize.x + xCell;
+//                columnSurfaceCells.add( offset );
+//            }
+//        }
+//
+//        return columnSurfaceCells;
+//    }
 
     public void call() {
         update();
     }
-    public void update() {
 
+    public void update() {
         copyExternalInput(); // .. into the surface
         copyInternalInput(); // .. into the surface
-
         updateColumnDepths();
         updateColumnReceptiveFields();
+        updateHierarchy();
         updateColumnState();
     }
 
@@ -261,25 +392,21 @@ public class Region extends NamedObject implements Callback {
     public void copyInternalInput() {
         // copy internally generated output as an input.
         Point p = Data2d.getSize(_externalInput);
-        Point sizeColumnsSurface = getColumnsSurfaceSize();
+        Point sizeColumnsSurface = _rc.getInternalSizeCells(); //getColumnsSurfaceSize();
 
         // w, h, from, from xy, to, to xy
         Data2d.copy( sizeColumnsSurface.x, sizeColumnsSurface.y, _surfacePredictionFN, 0, p.y, _surfaceInput, 0, p.y ); // note
     }
 
-    public ColumnData getColumnData( int column ) {
-        return _columnData.get( column );
-    }
-
-    public int getColumnInputs() {
-        int inputs = _dsom._c._om.GetInteger(_keyColumnInputs);
-        return inputs;
-    }
-
-    public int getReceptiveFieldTrainingSamples() {
-        int samples = _dsom._c._om.GetInteger(_keyReceptiveFieldsTrainingSamples);
-        return samples;
-    }
+//    public int getColumnInputs() {
+//        int inputs = _dsom._c._om.GetInteger(_keyColumnInputs);
+//        return inputs;
+//    }
+//
+//    public int getReceptiveFieldTrainingSamples() {
+//        int samples = _dsom._c._om.GetInteger(_keyReceptiveFieldsTrainingSamples);
+//        return samples;
+//    }
 
     public void updateColumnReceptiveFields() {
         // train the DSOM
@@ -298,7 +425,7 @@ public class Region extends NamedObject implements Callback {
 //        Point columnsSize = getSizeColumns();
 
         // randomly
-        int samples = getReceptiveFieldTrainingSamples();
+        int samples = _rc.getReceptiveFieldsTrainingSamples();
 
         for( int s = 0; s < samples; ++s ) {
 
@@ -323,13 +450,26 @@ public class Region extends NamedObject implements Callback {
     public void updateColumnDepths() {
         _depthColumns = new HashMap< Integer, ArrayList< Integer > >();
 
-        Point p = getRegionSizeColumns();
+        Point internalSizeColumns = _rc.getInternalSizeColumns();
+        Point externalSizeColumns = _rc.getExternalSizeColumns();
+        Point surfaceSizeColumns = _rc.getSurfaceSizeColumns();
+        int surfaceWidthColumns = surfaceSizeColumns.x;
+        int surfaceHeightColumns = surfaceSizeColumns.y;
 
-        for( int y = 0; y < p.y; ++y ) {
-            for (int x = 0; x < p.x; ++x) {
+        for( int y = 0; y < surfaceHeightColumns; ++y ) {
+            for (int x = 0; x < surfaceWidthColumns; ++x) {
 
-                int c = y * p.x + x;
-                int offset = c * RECEPTIVE_FIELD_DIMENSIONS +2; // ie z
+                if( _rc.isExternalColumn( x, y ) ) {
+                    continue;
+                }
+
+                Point pInternal = _rc.getInternalColumnGivenSurfaceColumn( x, y );
+                int xInternal = pInternal.x;
+                int yInternal = pInternal.y;
+
+                int c = getColumnOffset( x, y ); //y * p.x + x;
+                int cInternal = _rc.getInternalColumnOffset( xInternal, yInternal );//* internalSizeColumns.x + xInternal;
+                int offset = cInternal * RECEPTIVE_FIELD_DIMENSIONS +2; // ie z
 
                 //note: weights tend towards target value which is 0,1,2 etc.
                 //so 0.99 will be 0 but it is closer to 1.
@@ -354,6 +494,56 @@ public class Region extends NamedObject implements Callback {
         }
     }
 
+    public void updateHierarchy() {
+
+        // Find these useful sets of cells ONCE
+        _ffInputActive = _surfaceInput.indicesMoreThan( 0.f ); // find all the active bits.
+        _fbInputActive = _surfaceActivityNew.indicesMoreThan( 0.f ); // find all the active bits.
+//        int nbrActiveInput = _ffInputActive.size();
+//
+//        if( nbrActiveInput == 0 ) {
+//            return; // can't train
+//        }
+
+        // create transient column object to encapsulate the logic.
+        // But we dont want cost of many data structures, or copying data.
+//        Column c = _rf.create();//new Column();
+
+        // hierarchy structure is determined in the forward direction
+        Point surfaceSizeColumns = _rc.getSurfaceSizeColumns();
+        int surfaceWidthColumns = surfaceSizeColumns.x;
+        int surfaceHeightColumns = surfaceSizeColumns.y;
+
+        for( int y = 0; y < surfaceHeightColumns; ++y ) {
+            for (int x = 0; x < surfaceWidthColumns; ++x) {
+
+                if( _rc.isExternalColumn( x, y ) ) {
+                    continue;
+                }
+
+                Column c = getColumn(x, y);
+
+                // update the actual column
+                c.updateForwardInput( _ffInputActive );
+            }
+        }
+
+        // ... but feedback inputs are also determined by the hierarchy, and must be updated
+        for( int y = 0; y < surfaceHeightColumns; ++y ) {
+            for (int x = 0; x < surfaceWidthColumns; ++x) {
+
+                if( _rc.isExternalColumn( x, y ) ) {
+                    continue;
+                }
+
+                Column c = getColumn(x, y);
+
+                // update the actual column
+                c.updateFeedbackInput();
+            }
+        }
+    }
+
     public void updateColumnState() {
 
         HashSet< Integer > hs = _surfaceInput.indicesMoreThan( 0.f ); // find all the active bits.
@@ -365,16 +555,21 @@ public class Region extends NamedObject implements Callback {
 
         // create transient column object to encapsulate the logic.
         // But we dont want cost of many data structures, or copying data.
-        Column c = _cf.create();//new Column();
+        Point surfaceSizeColumns = _rc.getSurfaceSizeColumns();
+        int surfaceWidthColumns = surfaceSizeColumns.x;
+        int surfaceHeightColumns = surfaceSizeColumns.y;
 
-        Point p = getRegionSizeColumns();
+        for( int y = 0; y < surfaceHeightColumns; ++y ) {
+            for (int x = 0; x < surfaceWidthColumns; ++x) {
 
-        for( int y = 0; y < p.y; ++y ) {
-            for( int x = 0; x < p.x; ++x ) {
-                c.setup( this, x, y );
+                if( _rc.isExternalColumn( x, y ) ) {
+                    continue;
+                }
+
+                Column c = getColumn( x, y );
 
                 // update the actual column
-                c.update( hs );
+                c.update( _ffInputActive );
             }
         }
     }

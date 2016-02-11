@@ -78,11 +78,12 @@ public class FeedForwardNetworkTest implements UnitTest {
 
         String name = "feed-forward-network";
         String activationFunction = ActivationFunctionFactory.LOG_SIGMOID;
+        String layerSizes = String.valueOf( hidden );
         float l2R = regularization;//0.0001f;
 
         ObjectMap om = new ObjectMap();
         FeedForwardNetworkConfig ffnc = new FeedForwardNetworkConfig();
-        ffnc.setup( om, name, lossFunction, inputs, outputs, layers, l2R );
+        ffnc.setup( om, name, lossFunction, activationFunction, inputs, outputs, layers, layerSizes, l2R, learningRate );
         ActivationFunctionFactory aff = new ActivationFunctionFactory();
 
         _ffn = new FeedForwardNetwork( name, om );

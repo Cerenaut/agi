@@ -1,5 +1,6 @@
 package io.agi.core.ann.unsupervised;
 
+import io.agi.core.ann.NetworkConfig;
 import io.agi.core.orm.ObjectMap;
 
 /**
@@ -18,10 +19,37 @@ public class DynamicSelfOrganizingMapConfig extends CompetitiveLearningConfig {
     public void setup( ObjectMap om, String name, int inputs, int w, int h, float learningRate, float elasticity ) {
         super.setup(om, name, inputs, w, h);
 
-        om.put( getKey( _keyLearningRate ), learningRate );
-        om.put( getKey( _keyElasticity ), elasticity );
-        om.put( getKey( _keyScaleUnit ), false );
-        om.put( getKey( _keyScaleFactor ), 1.0f );
+        setLearningRate(learningRate);
+        setElasticity(elasticity);
+        setScaleUnit(false);
+        setScaleFactor(1.0f);
+    }
+
+    public void copyFrom(NetworkConfig nc, String name ) {
+        super.copyFrom(nc, name);
+
+        DynamicSelfOrganizingMapConfig c = (DynamicSelfOrganizingMapConfig)nc;
+
+        setLearningRate(c.getLearningRate());
+        setElasticity(c.getElasticity());
+        setScaleUnit(c.getScaleUnit());
+        setScaleFactor(c.getScaleFactor());
+    }
+
+    public void setLearningRate( float r ) {
+        _om.put(getKey(_keyLearningRate), r);
+    }
+
+    public void setElasticity( float r ) {
+        _om.put(getKey(_keyElasticity), r);
+    }
+
+    public void setScaleUnit( boolean b ) {
+        _om.put(getKey(_keyScaleUnit), b);
+    }
+
+    public void setScaleFactor( float r ) {
+        _om.put(getKey(_keyScaleFactor), r);
     }
 
     public boolean getScaleUnit() {

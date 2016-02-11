@@ -1,8 +1,19 @@
 package io.agi.core.alg;
 
+import io.agi.core.ann.supervised.ActivationFunctionFactory;
+import io.agi.core.ann.supervised.FeedForwardNetwork;
+import io.agi.core.ann.supervised.FeedForwardNetworkConfig;
+import io.agi.core.ann.unsupervised.CompetitiveLearningConfig;
+import io.agi.core.ann.unsupervised.GrowingNeuralGas;
+import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
+import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
 import io.agi.core.data.Ranking;
 import io.agi.core.math.Geometry;
+import io.agi.core.math.Unit;
+import io.agi.core.orm.Keys;
+import io.agi.core.orm.NamedObject;
+import io.agi.core.orm.ObjectMap;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -11,36 +22,53 @@ import java.util.HashSet;
 /**
  * Created by dave on 28/12/15.
  */
-public class Column {
+public class Column extends NamedObject {
 
-    Region _r;
-    int _x = 0;
-    int _y = 0;
+//    public String _keyInputColumnsLearningRate = "input-columns-learning-rate";
+//    public String _keyInputColumnsFrequencyThreshold = "input-columns-frequency-threshold";
 
-    public ColumnData createColumnData() {
-        return new ColumnData();
+    public Region _r;
+    public int _x = 0;
+    public int _y = 0;
+    public GrowingNeuralGas _gng;
+    public FeedForwardNetwork _ffn;
+
+    public Data _inputColumnFrequency;
+    public Data _inputColumnMask;
+
+    // transient: redefined every update, used for efficiency only
+    public HashSet< Integer > _ffActiveInputCells = new HashSet< Integer >();  // active cells that are within RF
+    public HashSet< Integer > _ffInputColumns = new HashSet< Integer >();  // columns that are usually having cells within RF
+    public HashSet< Integer > _fbInputColumns = new HashSet< Integer >();  // columns that are usually having cells within RF
+    public HashSet< Integer > _fbInputCells = new HashSet< Integer >();  // cells within cols defined by hierarchy rules, given ff input cols.
+    public HashSet< Integer > _fbActiveInputCells = new HashSet<Integer>();
+
+    public static String getName( String parentName, int x, int y ) {
+        String suffix = String.valueOf( x ) + "," + String.valueOf( y );
+        String name = Keys.concatenate(parentName, suffix);
+        return name;
     }
 
-    public float getDepth() {
-        int columnOffset = Data2d.getOffset( _r._columnDepth._d, _x, _y );
-
-        float z = _r._columnDepth._values[ columnOffset ];
-        return z;
+    public Column( String name, ObjectMap om ) {
+        super( name, om );
     }
 
-    public int getColumn() {
-        Point p = _r.getRegionSizeColumns();
-        int c = _y * p.x + _x;
-        return c;
+    public int getColumnOffset() {
+        return _r.getColumnOffset( _x, _y );
     }
 
     public float[] getReceptiveField() {
         float[] rf = new float[ Region.RECEPTIVE_FIELD_DIMENSIONS ];
 
         //Point p = _r.getRegionSizeColumns();
+        Point pInternal = _r._rc.getInternalColumnGivenSurfaceColumn( _x, _y );
+        int xInternal = pInternal.x;
+        int yInternal = pInternal.y;
 
-        int c = getColumn();//_y * p.x + _x;
-        int offset = c * Region.RECEPTIVE_FIELD_DIMENSIONS;
+        //int c = getColumnOffset( x, y ); //y * p.x + x;
+        int cInternal = _r._rc.getInternalColumnOffset(xInternal, yInternal);//* internalSizeColumns.x + xInternal;
+
+        int offset = cInternal * Region.RECEPTIVE_FIELD_DIMENSIONS;
 
         rf[ 0 ] = _r._dsom._cellWeights._values[ offset +0 ];
         rf[ 1 ] = _r._dsom._cellWeights._values[ offset +1 ];
@@ -49,62 +77,224 @@ public class Column {
         return rf;
     }
 
-    public void setup( Region r, int xColumn, int yColumn ) {
+    public void setup(
+            Region r,
+            int xColumn,
+            int yColumn ) {
         _r = r;
         _x = xColumn;
         _y = yColumn;
+
+//        setInputColumnsLearningRate(inputColumnsLearningRate);
+//        setInputColumnsFrequencyThreshold(inputColumnsFrequencyThreshold );
+
+        Point p = r._rc.getSurfaceSizeColumns();
+        _inputColumnFrequency = new Data( p.x, p.y );
+        _inputColumnMask = new Data( p.x, p.y );
+
+        _gng = r._rf.createClassifier( r, _x, _y );
+        _ffn = r._rf.createPredictor(r, _x, _y);
+//        _gng = new GrowingNeuralGas( classifierConfig._name, classifierConfig._om );
+//        _gng.setup( classifierConfig );
+
+//        _ffn = new FeedForwardNetwork( predictorConfig._name, predictorConfig._om );
+//        _ffn.setup( predictorConfig, predictorFactory);
     }
 
-    public void update( HashSet< Integer > activeInput ) {
+    public String getClassifierName() {
+        return Keys.concatenate( getName(), "classifier" );
+    }
+    public String getPredictorName() {
+        return Keys.concatenate( getName(), "predictor" );
+    }
+
+//    public void setInputColumnsLearningRate( float learningRate ) {
+//        _om.put(getKey(_keyInputColumnsLearningRate), learningRate);
+//    }
+//
+//    public Float getInputColumnsLearningRate() {
+//        return (Float)_om.get(getKey(_keyInputColumnsLearningRate) );
+//    }
+//
+//    public void setInputColumnsFrequencyThreshold( float frequencyThreshold ) {
+//        _om.put(getKey(_keyInputColumnsLearningRate), frequencyThreshold );
+//    }
+//
+//    public Float getInputColumnsFrequencyThreshold() {
+//        return (Float)_om.get(getKey(_keyInputColumnsFrequencyThreshold) );
+//    }
+
+    public void updateForwardInput( HashSet< Integer > surfaceActiveInput ) {
         // find the closest N active input to col.
         // Do this with ranking.
-        Ranking r = new Ranking();
+        int columnInputs = _r._rc.getColumnInputs();
+        int columnOffset = Data2d.getOffset(_r._columnDepth._d, _x, _y);
 
-        int columnInputs = _r.getColumnInputs();
-        int columnOffset = Data2d.getOffset( _r._columnDepth._d, _x, _y );
-
-        float z_c = _r._columnDepth._values[ columnOffset ];
-        float z_t = z_c -1; // i.e. a col with z_c=1 would have a z_t of 0
+        float z_c = _r._columnDepth._values[columnOffset];
+        float z_t = z_c - 1; // i.e. a col with z_c=1 would have a z_t of 0
 
         float[] rf = getReceptiveField();
 
-        for( Integer i : activeInput ) {
-            float z_i = _r.getSurfaceDepth( i );
+        Ranking r = new Ranking();
 
-            if( z_i != z_t ) {
+        for (Integer i : surfaceActiveInput) {
+            float z_i = _r.getSurfaceDepth(i);
+
+            if (z_i != z_t) {
                 continue; // can't use this as an input for this col.
             }
 
-            Point p = Data2d.getXY( _r._surfaceInput._d, i);
+            Point p = Data2d.getXY(_r._surfaceInput._d, i);
 
-            float rf_x = rf[ 0 ];
-            float rf_y = rf[ 1 ];
+            float rf_x = rf[0];
+            float rf_y = rf[1];
 //            float rf_z = rf[ 2 ];
 
-            float d = Geometry.distanceEuclidean2d( (float)p.getX(), (float)p.getY(), rf_x, rf_y );
-            Ranking.add( r._ranking, d, i ); // add input i with quality d (distance) to r.
+            float d = Geometry.distanceEuclidean2d((float) p.getX(), (float) p.getY(), rf_x, rf_y);
+            Ranking.add(r._ranking, d, i); // add input i with quality d (distance) to r.
         }
 
         boolean max = false; // ie min
         int maxRank = columnInputs;
         //Ranking.truncate( r._ranking, _inputsPerColumn, max );
-        ArrayList< Integer > columnActiveInput = Ranking.getBestValues( r._ranking, max, maxRank ); // ok now we got the current set of inputs for the column
+        ArrayList<Integer> columnActiveInput = Ranking.getBestValues(r._ranking, max, maxRank); // ok now we got the current set of inputs for the column
+
+        _ffActiveInputCells.clear();
+        _ffActiveInputCells.addAll(columnActiveInput);
+
+        // now update the mask, and the mask active input:
+        updateForwardInputColumns();
 
         // We now have a list of the inputs at the right Z for the Column and close to it's RF X,Y
-        updateWithColumnInputs(columnActiveInput);
+//        updateWithColumnInputs(columnActiveInput);
     }
 
-    public void updateWithColumnInputs( ArrayList< Integer > activeInput ) {
+    public void updateForwardInputColumns() {
 
-        HashSet<Integer> activeCells = findActiveCells(activeInput);
-        HashSet<Integer> predictedCells = findPredictedCells( activeCells ); // update the prediction.
+        // 1. update the frequency of all inputs to this column
+        float learningRate = _r._rc.getInputColumnsFrequencyLearningRate();
+        float threshold = _r._rc.getInputColumnsFrequencyThreshold();
 
-        updateWithCells( activeCells, predictedCells );
+        Ranking r = new Ranking();
+
+        Point sizeColumns = _r._rc.getSurfaceSizeColumns();
+        int columns = sizeColumns.x * sizeColumns.y;
+        Data d = new Data( columns );
+
+        for( Integer i : _ffActiveInputCells) {
+            Point c_xy = _r.getSurfaceColumnGivenSurfaceOffset( i ); // surface, ie not an internal col
+            int column = _r.getColumnOffset( c_xy.x, c_xy.y ); // surface, not internal
+            d._values[ column ] = 1.f; // this column provided input
+        }
+
+        _ffInputColumns.clear();
+
+        for( int c = 0; c < columns; ++c ) {
+            float x = d._values[ c ];
+            float w1 = _inputColumnFrequency._values[ c ];
+            float w2 = Unit.lerp( x, w1, learningRate );
+            _inputColumnFrequency._values[ c ] = w2;
+
+            float t = 0.f;
+            if( w2 >= threshold ) {
+                t = 1.f;
+                _ffInputColumns.add( c ); // surface
+            }
+
+            _inputColumnMask._values[ c ]  = t;
+        }
+
+        // 2. update the mask   <-- what is the point of the mask? ans: it defines the hierarchy.
+        // Since the GNG weights take time to learn, there's no harm in training them on non-mask items.
+        // find the N closest cols *ON AVERAGE OVER TIME*.
+//        int columnInputs = _r.getColumnInputs() * _r.getColumnAreaCells();
     }
 
-    public void updateWithCells( HashSet< Integer > activeCells, HashSet< Integer > predictedCells ) {
-        Point surfaceSizeCells = _r.getSurfaceSizeCells();
-        Point columnSizeCells = _r.getColumnSizeCells();
+    public boolean hasInputColumn( int c ) {
+        return _ffInputColumns.contains( c );
+    }
+
+    public void updateFeedbackInput() {
+
+        // Use a series of rules to find the cells that can be used as feedback input.
+        _fbInputColumns.clear();
+        _fbInputCells.clear();
+
+        // 1. Find all columns C that have us within their ff inputmask.
+        // 2. All the cells in C are the fb input mask for this column.
+        // [EDIT: We could define it more widely.. e.g. the siblings of this column]
+        int offsetThis = getColumnOffset();
+        Point sizeColumns = _r._rc.getSurfaceSizeColumns();
+        int columns = sizeColumns.x * sizeColumns.y;
+
+        for( int offsetThat = 0; offsetThat < columns; ++offsetThat ) {
+            Column that = _r.getColumn( offsetThat );
+            if( that == null ) {
+                continue; // external column
+            }
+
+            if( that.hasInputColumn( offsetThis ) ) {
+                Point xyColumnThat = _r.getColumnGivenColumnOffset(offsetThat);
+                addFeedbackInputColumn(xyColumnThat.x, xyColumnThat.y );
+            }
+        }
+
+        // Add our own cells
+        addFeedbackInputColumn( _x, _y ); // note: This is included in
+    }
+
+    public void addFeedbackInputColumn( int xColumn, int yColumn ) {
+        int column = getColumnOffset();
+        _fbInputColumns.add( column );
+        ArrayList< Integer > cells = _r.getColumnSurfaceCells(xColumn, yColumn);
+        _fbInputCells.addAll(cells);
+    }
+
+    public HashSet< Integer > findActiveCells( HashSet< Integer > allActiveCells, ArrayList< Integer > validCells ) {
+        // now find the active cells of the input cells.
+        HashSet< Integer > activeCells = new HashSet< Integer >();
+
+        for( Integer validCell : validCells ) {
+            if( allActiveCells.contains( validCell ) ) {
+                activeCells.add( validCell );
+            }
+        }
+
+        return activeCells;
+    }
+
+    public void update( HashSet< Integer > surfaceActiveInput ) {
+
+        // classify the input
+        ArrayList< Integer > localCells = _r.getColumnSurfaceCells(_x, _y); // all cells in col.
+
+        HashSet< Integer > oldActiveLocalCells = findActiveCells( surfaceActiveInput, localCells );
+        HashSet< Integer > newActiveLocalCells = findMatchingCells(_ffActiveInputCells);
+
+        boolean activeLocalCellsChanged = !oldActiveLocalCells.equals( newActiveLocalCells );
+
+        if( activeLocalCellsChanged ) {
+            trainPrediction(newActiveLocalCells); // needs: FF to generate prediction, or everything serialized from last time
+        }
+
+        _fbActiveInputCells = findActiveCells( surfaceActiveInput, new ArrayList< Integer >( _fbInputCells ) );
+        _fbActiveInputCells.addAll( newActiveLocalCells );
+
+        HashSet<Integer> predictedLocalCells = findPredictedCells( _fbActiveInputCells ); // update the prediction.
+
+//        if( activeLocalCellsChanged ) {
+//            /*
+//             * Takes:
+//             * - OldPrediction
+//             * - NewPrediction
+//             */
+        updateSurface( newActiveLocalCells, predictedLocalCells, activeLocalCellsChanged ); // Needs: New prediction, New active local cells.
+//        }
+    }
+
+    public void updateSurface( HashSet< Integer > activeCells, HashSet< Integer > predictedCells, boolean activeLocalCellsChanged ) {
+        Point surfaceSizeCells = _r._rc.getSurfaceSizeCells();
+        Point columnSizeCells = _r._rc.getColumnSizeCells();
         Point surfaceOriginCells = _r.getColumnSurfaceOrigin(_x, _y);
 
         for( int y = 0; y < columnSizeCells.y; ++y ) {
@@ -144,6 +334,11 @@ public class Column {
                 // for stability should I hold the errors?
                 // FP error holds until next prediction. (i.e. til P 0 --> 1)
                 // FN error holds while cell is active until ends.
+                if( !activeLocalCellsChanged ) {
+                    continue;
+                }
+
+                // update regional output
                 float errorFP = _r._surfacePredictionFP._values[ cellSurfaceOffset ];
                 float errorFN = _r._surfacePredictionFN._values[ cellSurfaceOffset ];
 
@@ -182,24 +377,26 @@ public class Column {
         }
     }
 
-    public HashSet< Integer > findActiveCells( ArrayList< Integer > activeInput ) {
+    public HashSet< Integer > findMatchingCells( HashSet< Integer > activeInput ) {
 
-        int column = getColumn();
-        ColumnData cd = _r.getColumnData( column );
+//        int column = getColumn();
+//        ColumnData cd = _r.getColumnData( column );
 
         // have a column-sized GNG and copy the weights into it
-        cd._gng.setSparseUnitInput( activeInput );
-        cd._gng.update(); // trains with this sparse input.
+        ArrayList< Integer > al = new ArrayList< Integer >();
+        al.addAll( activeInput );
+        _gng.setSparseUnitInput(al);
+        _gng.update(); // trains with this sparse input.
 
-        int bestCell = cd._gng.getBestCell();
+        int bestCell = _gng.getBestCell();
 
         HashSet< Integer > hs = new HashSet< Integer >();
-        hs.add( bestCell );
+        hs.add(bestCell);
 
         return hs;
     }
 
-    public HashSet< Integer > findPredictedCells( HashSet< Integer > activeCells ) {
+    public HashSet< Integer > findPredictedCells( HashSet< Integer > fbActiveInputCells ) {
 
         // We get a stream of activeCells. This should be used for training as well as input.
         // The stream may not change each step.
@@ -208,155 +405,69 @@ public class Column {
         //
         // have a column-sized predictor and copy the weights and inputs to it.
         // Options: Hebbian learning, MLP
+        //
+        // Note that the prediction input doesn't affect the output, except that it may improve prediction. It doesnt
+        // change the winning cell. So we can in fact use any cell to predict without consequences, except that prediction
+        // improves or worsens and we have too many inputs.
+        // So one way to do it would be to provide all cells at level +1 ... +N to predict. Or all cells with reciprocal relations.
+        // That will scale well...
+        Data input = _ffn.getInput();
 
-        return null;
+        input.set(0.f);
+
+        for( Integer i : fbActiveInputCells ) {
+            input._values[ i ] = 1.f;
+        }
+
+        _ffn.feedForward(); // generate a prediction
+
+        Data output = _ffn.getOutput();
+
+        float max = 0.f;
+        int maxOffset = 0;
+
+        int columnArea = output.getSize();
+
+        for( int i = 0; i < columnArea; ++i ) {
+
+            float value = output._values[ i ];
+
+            if( value >= max ) {
+                max = value;
+                maxOffset = i;
+            }
+        }
+
+        // convert column to surface. TODO make this a method, it's really complex
+        Point columnSize = _r._rc.getColumnSizeCells();
+        Point surfaceSize = _r._rc.getSurfaceSizeCells();
+
+        int yColumn = maxOffset / columnSize.x;
+        int xColumn = maxOffset % columnSize.x;
+
+//        Point columnOrigin = _r.getInternalColumnSurfaceOrigin( _x, _y );
+        Point columnOrigin = _r.getColumnSurfaceOrigin( _x, _y );
+
+        int xSurface = columnOrigin.x + xColumn;
+        int ySurface = columnOrigin.y + yColumn;
+
+        int surfaceOffset = ySurface * surfaceSize.x + xSurface;
+
+        HashSet< Integer > activeOutput = new HashSet< Integer >();
+        activeOutput.add( surfaceOffset );
+        return activeOutput;
     }
-/*
-    float _x = 0;
-    float _y = 0;
 
-// so each dendrite has a short list of weights above background level
-// the cell can become active using different subsets of these, which may or may not overlap
-// The cells must compete to
-// Cells should learn to use a greater number of bits simultaneously
-//
-//inputs is constant but RF size varies constantly
-//so the total number of inputs is variable and unknowable
-//we can assume it is some function of inputs per step
-//
-//Say we have
-//
-//Inputs 1 2 3 4 5 6 7 8 9
-//t1     1 1 1
-//t2           1 1 1
-//t3                 1 1 1
-//t4       1 1 1 1
-//
-//    http://www.demogng.de/
-//Cells are either synapsed or not, for overlap purposes.
-//But we could have continuous overlap...
-//    https://en.wikipedia.org/wiki/Neural_gas
-//
-//HTM is like Hard Competitive Learning http://www.demogng.de/JavaPaper/node9.html#SECTION00500000000000000000
-//If there are insufficient cells, then each cell will represent a number of input.
-//
-//Boosting is because we dont have a neighbourhood function. Need a way to bring cells back.
-//Neural gas adapts all cells without a topology
-//            Based on a ranking
-//
-//So GNG it is, for online ness.
-//Or DSOM
-//    http://www.labri.fr/perso/nrougier/coding/article/article.html
-//But DSOM applies a topology, which is too restrictive and of no benefit
-//
-//The difference between overlap and distance is that missing bits arent counted
-//So say we get each col to do winner take all.
-//But each col only looks at a subset of the bits
+    public void trainPrediction( HashSet< Integer > activeLocalCells ) {
+        Data ideal = _ffn.getIdeal();
 
-    int _columnSizeCells = 6; // eg 6x6 = 36 cells
-    int _inputsPerColumn = 16; // each time, not total
-    int _inputsPerCell = 20; // upper bound
-    float _overlapThreshold = 0.5f;
-    float _learningRate = 0.1f;
-    float _weightMin = 0.1f;
+        ideal.set(0.f);
 
-    // computed data
-    Data _inputDendriteOverlap; // cells x 1
-    Data _inputDendriteOverlapBoosted; // cells x 1
-    Data _inputDendriteFrequency; // cells x 1
-    Data _inputDendriteIndices; // cells x _inputsPerCell
-    Data _inputDendriteWeights; // cells x _inputsPerCell
-    Data _inputDendriteActivity; // cells x 1
-    Data _cellActivity; // cells x 1
-    Data _cellOutput; // cells x 1
-    Data _cellPrediction; // cells x 1
-
-    public void update( float rfx, float rfy, float rfz, HashMap< Integer, Data > zMaskedInputValues ) {
-
-        // Get the relevant input for this column. This is precomputed to save work as there are many cols at each z.
-        int z = (int)rfz;
-        Data maskedInputValues = zMaskedInputValues.get( z );
-        HashSet< Integer > activeInput = maskedInputValues.indicesMoreThan( 0.f ); // find all the active input bits.
-
-        // find the closest N active input to col.
-        // Do this with ranking.
-        Ranking r = new Ranking();
-
-        for( Integer i : activeInput ) {
-            Point p = Data2d.getXY( maskedInputValues._d, i );
-            float d = Geometry.distanceEuclidean2d( (float)p.getX(), (float)p.getY(), rfx, rfy );
-            Ranking.add( r._ranking, d, i ); // add input i with quality d (distance) to r.
+        for( Integer i : activeLocalCells ) {
+            ideal._values[ i ] = 1.f;
         }
 
-        boolean max = false; // ie min
-        int maxRank = _inputsPerColumn;
-        //Ranking.truncate( r._ranking, _inputsPerColumn, max );
-        ArrayList< Integer > columnActiveInput = Ranking.getBestValues( r._ranking, max, maxRank );
-
-        // ok now calculate the overlap of each cell with the active input
-        int cells = _columnSizeCells * _columnSizeCells;
-
-        Dendrite d = new Dendrite( _inputDendriteIndices, _inputDendriteWeights ); // temporary object to encapsulate the data.
-
-        for( int c = 0; c < cells; ++c ) {
-            float overlap = d.findOverlap(c, columnActiveInput);
-            _inputDendriteOverlap._values[ c ] = overlap;
-            float f = _inputDendriteFrequency._values[ c ];
-            float boosted = getBoostedOverlap(overlap, f);
-            _inputDendriteOverlapBoosted._values[ c ] = boosted;
-
-            float activity = 0.f;
-diff combos of cells
-            if( boosted > _overlapThreshold ) {
-                activity = 1.f;
-            }
-
-            _inputDendriteActivity._values[ c ] = activity;
-
-            float cellActivity = activity; // if input dendrite is active, cell is active. Regardless of context.
-
-            // compute output based on whether cell was predicted before becoming active
-            float cellOutput = 0.f;
-            float cellPredicted = _cellPrediction._values[ c ];
-            if( cellPredicted == 0.f && cellActivity == 1.f ) {
-                cellOutput = 1.f; // false-negative error (active but not predicted)
-            }
-
-            _cellActivity._values[ c ] = cellActivity;
-            _cellOutput  ._values[ c ] = cellOutput;
-
-            // training and update:
-            // frequency
-            // dendrite weights
-
-
-        }
-    }*/
-
-/*C5: input is from C2/3
-prediction is from many
-prediction starts first.
-then can be inhibited (doesnt affect learning)
-when disinhibited, and input active, and predicted, it becomes active.
-
-C6: Watches patterns of C5 and C6 lower activity.    */
-
-//    public float getBoostedOverlap( float overlap, float frequency ) {
-//
-//    }
-        // try to make the column have no external references. i.e. it is self contained and doesnt know about the complexities of the meta-algorithm
-
-        // So: Growing neural gas. Winner take all.
-
-        // Plus predictive coding. This builds our hierarchy.
-
-/*        What about subjective and executive?
-
-        subj:
-                in particular objective context, output is lower C6. (exec)
-
-        exec:
-                observe pattern of output from subjective, replay it.
-*/
+        _ffn.feedBackward(); // train based on a transition
+    }
 
 }

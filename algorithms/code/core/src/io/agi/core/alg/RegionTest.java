@@ -1,19 +1,18 @@
 package io.agi.core.alg;
 
-import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMapConfig;
+import io.agi.core.ann.supervised.ActivationFunctionFactory;
+import io.agi.core.ann.supervised.FeedForwardNetworkConfig;
+import io.agi.core.ann.supervised.LossFunction;
+import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
 import io.agi.core.data.Data;
 import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.orm.UnitTest;
 
-import java.awt.*;
-
 /**
  * Created by dave on 11/01/16.
  */
 public class RegionTest implements UnitTest {
-
-    public static final String REGION = "region";
 
     public static void main( String[] args ) {
         RegionTest ffnt = new RegionTest();
@@ -21,23 +20,27 @@ public class RegionTest implements UnitTest {
     }
 
     public void test( String[] args ) {
+
         // Test parameters
         int randomSeed = 1;
         int inputWidth = 10;
         int inputHeight = 10;
-        int columns = 50;
+        int regionSizeColumns = 50;
 
         // Algorithm specific parameters
         // Column Sizing
-        int columnWidth  = 6;
-        int columnHeight = 6;
+        int columnWidthCells  = 6;
+        int columnHeightCells = 6;
 
         // Hierarchy training
         int receptiveFieldsTrainingSamples = 10;
         float receptiveFieldsElasticity = 1.0f;
         float receptiveFieldsLearningRate = 0.01f;
+        float inputColumnsFrequencyLearningRate = 0.01f;
+        float inputColumnsFrequencyThreshold = 0.5f;
 
         // Column training
+        int columnInputs = 10;
         float columnLearningRate = 0.02f;
         float columnLearningRateNeighbours = 0.01f;
         float columnNoiseMagnitude = 0.0f;
@@ -46,25 +49,52 @@ public class RegionTest implements UnitTest {
         float columnStressThreshold = 0.1f;
         int columnGrowthInterval = 100;
 
-        RegionConfig rc = new RegionConfig( inputWidth, inputHeight, columnWidth, columnHeight, columns );
+        // Predictor
+        String predictorLossFunction = LossFunction.CROSS_ENTROPY;
+        String predictorActivationFunction = ActivationFunctionFactory.LOG_SIGMOID;
+        String predictorLayerSizes = String.valueOf( 36 ); // 6 * 6 * 1.something
+        float predictorLearningRate = 0.1f;
+        float predictorRegularization = 0.0f;
 
-//        Point surfaceSize = Region.GetSurfaceSize( internalWidthColumns, internalHeightColumns, externalHeightColumns, columnWidth, columnHeight );
-            int surfaceArea = Region.GetSurfaceArea( rc._internalWidthColumns, rc._internalHeightColumns, rc._externalHeightColumns, columnWidth, columnHeight );
-        int columnInputs = surfaceArea;
-
-        // Algorithm setup
+        // Build the algorithm
         RandomInstance.setSeed(randomSeed); // make the tests repeatable
         ObjectMap om = ObjectMap.GetInstance();
-        ColumnFactory cf = new ColumnFactory();
+        RegionFactory rf = new RegionFactory();
 
-        Region r = new Region( REGION, om );
-        r.setup(
-            cf,
-            columnWidth, columnHeight, columnInputs,
-            rc._externalHeightColumns, rc._internalWidthColumns, rc._internalHeightColumns,
+        RegionConfig rc = new RegionConfig();
+        String regionName = "region";
+
+        rc.setup(
+            om, "region", // temp name
+            inputWidth, inputHeight,
+            columnInputs, columnWidthCells, columnHeightCells,
+            regionSizeColumns,
             receptiveFieldsTrainingSamples, receptiveFieldsElasticity, receptiveFieldsLearningRate,
-            columnLearningRate, columnLearningRateNeighbours, columnNoiseMagnitude, columnEdgeMaxAge, columnStressLearningRate, columnStressThreshold, columnGrowthInterval
-        );
+            inputColumnsFrequencyLearningRate, inputColumnsFrequencyThreshold );
+
+        int surfaceAreaCells = rc.getSurfaceAreaCells();
+        int columnAreaCells = rc.getColumnAreaCells();
+
+        GrowingNeuralGasConfig gngc = new GrowingNeuralGasConfig();
+        gngc.setup(
+            om, "gng", // temp name
+            surfaceAreaCells, columnWidthCells, columnHeightCells,
+            columnLearningRate, columnLearningRateNeighbours, columnNoiseMagnitude,
+            columnEdgeMaxAge, columnStressLearningRate, columnStressThreshold, columnGrowthInterval );
+
+        FeedForwardNetworkConfig ffnc = new FeedForwardNetworkConfig();
+        int predictorInputs = surfaceAreaCells;
+        int predictorOutputs = columnAreaCells;
+        int predictorLayers = 2;
+        ffnc.setup(
+            om, "ffn",
+            predictorLossFunction, predictorActivationFunction,
+            predictorInputs, predictorOutputs,
+            predictorLayers, predictorLayerSizes,
+            predictorRegularization, predictorLearningRate );
+
+        rf.setup( rc, gngc, ffnc );
+        Region r = rf.createRegion( regionName );
 
         // Run
         while( true ) {
@@ -72,6 +102,8 @@ public class RegionTest implements UnitTest {
             d.setRandom();
             d.thresholdLessThan( 0.5f, 1.f, 0.f );
             r.update();
+
+            System.out.print( "." );
         }
     }
 

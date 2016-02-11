@@ -7,6 +7,7 @@
 package io.agi.core.data;
 
 import java.awt.Point;
+import java.util.ArrayList;
 
 /**
  * Functions for viewing and restructuring N-dimensional FloatArray2s as paintable
@@ -16,6 +17,32 @@ import java.awt.Point;
  * @author dave
  */
 public class Data2d {
+
+    /**
+     *
+     * @param xRect
+     * @param yRect
+     * @param wRect
+     * @param hRect
+     * @param dataWidth
+     * @param dataHeight
+     * @return
+     */
+    public static ArrayList< Integer > getIndicesInRect( int xRect, int yRect, int wRect, int hRect, int dataWidth, int dataHeight ) {
+        ArrayList< Integer > indices = new ArrayList< Integer >();
+
+        for( int y = 0; y < hRect; ++y ) {
+            for (int x = 0; x < wRect; ++x) {
+
+                int index = (yRect +y) * dataWidth
+                          + (xRect +x);
+
+                indices.add( index );
+            }
+        }
+
+        return indices;
+    }
 
     public static void copy( int w, int h, Data d1, int x1, int y1, Data d2, int x2, int y2 ) {
 

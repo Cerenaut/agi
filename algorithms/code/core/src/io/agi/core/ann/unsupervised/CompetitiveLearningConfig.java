@@ -25,6 +25,16 @@ public class CompetitiveLearningConfig extends NetworkConfig {
         setHeightCells( h );
     }
 
+    public void copyFrom( NetworkConfig nc, String name ) {
+        super.copyFrom(nc, name);
+
+        CompetitiveLearningConfig c = (CompetitiveLearningConfig)nc;
+
+        setNbrInputs(c.getNbrInputs());
+        setWidthCells(c.getWidthCells());
+        setHeightCells(c.getHeightCells());
+    }
+
     public void setNbrInputs( int inputs ) {
         _om.put( getKey( _keyInputs ), inputs );
     }

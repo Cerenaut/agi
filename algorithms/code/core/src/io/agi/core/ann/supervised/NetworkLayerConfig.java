@@ -27,6 +27,17 @@ public class NetworkLayerConfig extends NetworkConfig {
         setActivationFunction(activationFunction);
     }
 
+    public void copyFrom( NetworkConfig nc, String name ) {
+        super.copyFrom(nc, name);
+
+        NetworkLayerConfig c = (NetworkLayerConfig)nc;
+
+        setInputs( c.getInputs() );
+        setCells( c.getCells() );
+        setLearningRate( c.getLearningRate() );
+        setActivationFunction( c.getActivationFunction() );
+    }
+
     public int getInputs() {
         Integer i = _om.getInteger( getKey( _keyInputs ) );
         return i.intValue();

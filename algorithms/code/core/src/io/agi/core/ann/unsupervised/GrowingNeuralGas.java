@@ -139,7 +139,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         _bestCellA = bestCellA;
         _bestCellB = bestCellB;
 
-        System.out.println( "best: " + _bestCellA + " population: " + _cellMask.sum() + " age since growth: " + _ageSinceGrowth._values[ 0 ] );
+        //System.out.println( "best: " + _bestCellA + " population: " + _cellMask.sum() + " age since growth: " + _ageSinceGrowth._values[ 0 ] );
     }
 
     public int getBestCell() {
