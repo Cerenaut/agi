@@ -15,14 +15,16 @@ import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JaxRSServerCodegen", date = "2016-02-01T23:41:44.379+11:00")
 public class ConnectApiServiceImpl extends ConnectApiService {
   
 
   	public ConnectApiInterface _serviceDelegate = null;
 
       @Override
-      public Response connectHostHostPortPortContextPathContextPathGet(String host,String port,String contextPath)
+      public Response connectHostHostPortPortContextPathContextPathGet(String host,String port,String contextPath,SecurityContext securityContext)
       throws NotFoundException {
       
       return _serviceDelegate.connectHostHostPortPortContextPathContextPathGet(String host,String port,String contextPath)

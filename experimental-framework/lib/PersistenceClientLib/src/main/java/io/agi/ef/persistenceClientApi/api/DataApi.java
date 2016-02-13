@@ -1,17 +1,18 @@
 package io.agi.ef.persistenceClientApi.api;
 
+import com.sun.jersey.api.client.GenericType;
+
 import io.agi.ef.persistenceClientApi.ApiException;
 import io.agi.ef.persistenceClientApi.ApiClient;
 import io.agi.ef.persistenceClientApi.Configuration;
 import io.agi.ef.persistenceClientApi.Pair;
-import io.agi.ef.persistenceClientApi.TypeRef;
 
 import io.agi.ef.persistenceClientApi.model.EntityType;
 import io.agi.ef.persistenceClientApi.model.NodeModel;
 
 import java.util.*;
 
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2015-11-02T17:23:34.998+11:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-02-01T23:42:05.223+11:00")
 public class DataApi {
   private ApiClient apiClient;
 
@@ -39,9 +40,8 @@ public class DataApi {
    * @param name name of Entity Type
    * @return List<EntityType>
    */
-  public List<EntityType> entityTypesGet (Integer id, String name) throws ApiException {
+  public List<EntityType> entityTypesGet(Integer id, String name) throws ApiException {
     Object postBody = null;
-    byte[] postBinaryBody = null;
     
     // create path and map variables
     String path = "/entity_types".replaceAll("\\{format\\}","json");
@@ -74,15 +74,9 @@ public class DataApi {
     String[] authNames = new String[] {  };
 
     
-
+    GenericType<List<EntityType>> returnType = new GenericType<List<EntityType>>() {};
+    return apiClient.invokeAPI(path, "GET", queryParams, postBody, headerParams, formParams, accept, contentType, authNames, returnType);
     
-    
-    TypeRef returnType = new TypeRef<List<EntityType>>() {};
-    return apiClient.invokeAPI(path, "GET", queryParams, postBody, postBinaryBody, headerParams, formParams, accept, contentType, authNames, returnType);
-    
-    
-
-
   }
   
   /**
@@ -91,9 +85,8 @@ public class DataApi {
    * @param body The Entity Type to add to DB.
    * @return void
    */
-  public void entityTypesPost (EntityType body) throws ApiException {
+  public void entityTypesPost(EntityType body) throws ApiException {
     Object postBody = body;
-    byte[] postBinaryBody = null;
     
      // verify the required parameter 'body' is set
      if (body == null) {
@@ -127,14 +120,8 @@ public class DataApi {
     String[] authNames = new String[] {  };
 
     
-
+    apiClient.invokeAPI(path, "POST", queryParams, postBody, headerParams, formParams, accept, contentType, authNames, null);
     
-    
-    apiClient.invokeAPI(path, "POST", queryParams, postBody, postBinaryBody, headerParams, formParams, accept, contentType, authNames, null);
-    
-    
-
-
   }
   
   /**
@@ -146,9 +133,8 @@ public class DataApi {
    * @param port port number
    * @return List<NodeModel>
    */
-  public List<NodeModel> nodesGet (Integer id, String name, String host, Integer port) throws ApiException {
+  public List<NodeModel> nodesGet(Integer id, String name, String host, Integer port) throws ApiException {
     Object postBody = null;
-    byte[] postBinaryBody = null;
     
     // create path and map variables
     String path = "/nodes".replaceAll("\\{format\\}","json");
@@ -185,15 +171,9 @@ public class DataApi {
     String[] authNames = new String[] {  };
 
     
-
+    GenericType<List<NodeModel>> returnType = new GenericType<List<NodeModel>>() {};
+    return apiClient.invokeAPI(path, "GET", queryParams, postBody, headerParams, formParams, accept, contentType, authNames, returnType);
     
-    
-    TypeRef returnType = new TypeRef<List<NodeModel>>() {};
-    return apiClient.invokeAPI(path, "GET", queryParams, postBody, postBinaryBody, headerParams, formParams, accept, contentType, authNames, returnType);
-    
-    
-
-
   }
   
   /**
@@ -202,9 +182,8 @@ public class DataApi {
    * @param body The Node to add to DB.
    * @return void
    */
-  public void nodesPost (NodeModel body) throws ApiException {
+  public void nodesPost(NodeModel body) throws ApiException {
     Object postBody = body;
-    byte[] postBinaryBody = null;
     
      // verify the required parameter 'body' is set
      if (body == null) {
@@ -238,14 +217,8 @@ public class DataApi {
     String[] authNames = new String[] {  };
 
     
-
+    apiClient.invokeAPI(path, "POST", queryParams, postBody, headerParams, formParams, accept, contentType, authNames, null);
     
-    
-    apiClient.invokeAPI(path, "POST", queryParams, postBody, postBinaryBody, headerParams, formParams, accept, contentType, authNames, null);
-    
-    
-
-
   }
   
 }

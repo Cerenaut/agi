@@ -1,15 +1,16 @@
 package io.agi.ef.persistenceClientApi.api;
 
+import com.sun.jersey.api.client.GenericType;
+
 import io.agi.ef.persistenceClientApi.ApiException;
 import io.agi.ef.persistenceClientApi.ApiClient;
 import io.agi.ef.persistenceClientApi.Configuration;
 import io.agi.ef.persistenceClientApi.Pair;
-import io.agi.ef.persistenceClientApi.TypeRef;
 
 
 import java.util.*;
 
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2015-11-02T17:23:34.998+11:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-02-01T23:42:05.223+11:00")
 public class MetaApi {
   private ApiClient apiClient;
 
@@ -35,9 +36,8 @@ public class MetaApi {
    * The list of accessible tables and views is returned.
    * @return void
    */
-  public void rootGet () throws ApiException {
+  public void rootGet() throws ApiException {
     Object postBody = null;
-    byte[] postBinaryBody = null;
     
     // create path and map variables
     String path = "/".replaceAll("\\{format\\}","json");
@@ -66,14 +66,8 @@ public class MetaApi {
     String[] authNames = new String[] {  };
 
     
-
+    apiClient.invokeAPI(path, "GET", queryParams, postBody, headerParams, formParams, accept, contentType, authNames, null);
     
-    
-    apiClient.invokeAPI(path, "GET", queryParams, postBody, postBinaryBody, headerParams, formParams, accept, contentType, authNames, null);
-    
-    
-
-
   }
   
 }

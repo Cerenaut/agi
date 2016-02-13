@@ -1,10 +1,15 @@
 package io.agi.ef.clientapi.auth;
 
+import io.agi.ef.clientapi.Pair;
+
+import com.migcomponents.migbase64.Base64;
+
 import java.util.Map;
+import java.util.List;
 
 import java.io.UnsupportedEncodingException;
-import javax.xml.bind.DatatypeConverter;
 
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-02-01T23:41:55.036+11:00")
 public class HttpBasicAuth implements Authentication {
   private String username;
   private String password;
@@ -26,10 +31,13 @@ public class HttpBasicAuth implements Authentication {
   }
 
   @Override
-  public void applyToParams(Map<String, String> queryParams, Map<String, String> headerParams) {
+  public void applyToParams(List<Pair> queryParams, Map<String, String> headerParams) {
+    if (username == null && password == null) {
+      return;
+    }
     String str = (username == null ? "" : username) + ":" + (password == null ? "" : password);
     try {
-      headerParams.put("Authorization", "Basic " + DatatypeConverter.printBase64Binary(str.getBytes("UTF-8")));
+      headerParams.put("Authorization", "Basic " + Base64.encodeToString(str.getBytes("UTF-8"), false));
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException(e);
     }

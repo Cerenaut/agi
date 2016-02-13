@@ -91,6 +91,10 @@ public class Persistence {
 
     void setupApiClient() {
         String basePath = getBaseUrl();
+
+        if ( basePath.endsWith( "/" ) ) {
+            basePath = basePath.substring( 0, basePath.length() - 1 );
+        }
         Configuration.getDefaultApiClient().setBasePath( basePath );
 
         _dataApi = new DataApi();
@@ -433,6 +437,7 @@ public class Persistence {
         }
         catch ( ApiException e ) {
             e.printStackTrace();
+            System.out.println( e.getResponseBody() );
             return false;
         }
     }

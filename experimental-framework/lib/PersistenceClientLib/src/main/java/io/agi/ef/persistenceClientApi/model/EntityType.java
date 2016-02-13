@@ -1,15 +1,16 @@
 package io.agi.ef.persistenceClientApi.model;
 
-import io.agi.ef.persistenceClientApi.StringUtil;
-
-
-
-import io.swagger.annotations.*;
+import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 
-@ApiModel(description = "")
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2015-11-02T17:23:34.998+11:00")
+
+
+
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-02-01T23:42:05.223+11:00")
 public class EntityType   {
   
   private String name = null;
@@ -17,6 +18,7 @@ public class EntityType   {
   
   /**
    **/
+  
   @ApiModelProperty(value = "")
   @JsonProperty("name")
   public String getName() {
@@ -29,12 +31,41 @@ public class EntityType   {
   
 
   @Override
-  public String toString()  {
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    EntityType entityType = (EntityType) o;
+    return Objects.equals(name, entityType.name);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name);
+  }
+
+  @Override
+  public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class EntityType {\n");
     
-    sb.append("    name: ").append(StringUtil.toIndentedString(name)).append("\n");
+    sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("}");
     return sb.toString();
   }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(Object o) {
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
 }
+

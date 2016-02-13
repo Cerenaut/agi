@@ -1,12 +1,17 @@
 package io.agi.ef.clientapi.model;
 
-
-import io.swagger.annotations.*;
+import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 
-@ApiModel(description = "")
-public class Error  {
+
+
+
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-02-01T23:41:55.036+11:00")
+public class Error   {
   
   private Integer code = null;
   private String message = null;
@@ -15,6 +20,7 @@ public class Error  {
   
   /**
    **/
+  
   @ApiModelProperty(value = "")
   @JsonProperty("code")
   public Integer getCode() {
@@ -27,6 +33,7 @@ public class Error  {
   
   /**
    **/
+  
   @ApiModelProperty(value = "")
   @JsonProperty("message")
   public String getMessage() {
@@ -39,6 +46,7 @@ public class Error  {
   
   /**
    **/
+  
   @ApiModelProperty(value = "")
   @JsonProperty("fields")
   public String getFields() {
@@ -51,14 +59,45 @@ public class Error  {
   
 
   @Override
-  public String toString()  {
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Error error = (Error) o;
+    return Objects.equals(code, error.code) &&
+        Objects.equals(message, error.message) &&
+        Objects.equals(fields, error.fields);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(code, message, fields);
+  }
+
+  @Override
+  public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class Error {\n");
     
-    sb.append("  code: ").append(code).append("\n");
-    sb.append("  message: ").append(message).append("\n");
-    sb.append("  fields: ").append(fields).append("\n");
-    sb.append("}\n");
+    sb.append("    code: ").append(toIndentedString(code)).append("\n");
+    sb.append("    message: ").append(toIndentedString(message)).append("\n");
+    sb.append("    fields: ").append(toIndentedString(fields)).append("\n");
+    sb.append("}");
     return sb.toString();
   }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(Object o) {
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
 }
+

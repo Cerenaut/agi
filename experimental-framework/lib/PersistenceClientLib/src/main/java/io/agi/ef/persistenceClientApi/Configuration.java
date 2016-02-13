@@ -1,6 +1,6 @@
 package io.agi.ef.persistenceClientApi;
 
-@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2015-11-02T17:23:34.998+11:00")
+@javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2016-02-01T23:42:05.223+11:00")
 public class Configuration {
   private static ApiClient defaultApiClient = new ApiClient();
 

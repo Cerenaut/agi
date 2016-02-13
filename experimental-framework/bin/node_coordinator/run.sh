@@ -16,7 +16,7 @@ database_api_port=${2:-$DATABASE_API_PORT}
 compute_node_name=${3:-$COMPUTE_NODE_NAME} 
 compute_node_port=${4:-$COMPUTE_NODE_PORT}
 
-main_class="io.agi.ef.http.node.NodeMain"
+main_class="io.agi.ef.demo.helloworld.HelloMain" # io.agi.ef.http.node.NodeMain"
 properties_file="$AGI_HOME/experimental-framework/run/server.properties"
 node_type="coordinator"		# if 'coordinator', then the coordinator will be set to 'master' mode
 
