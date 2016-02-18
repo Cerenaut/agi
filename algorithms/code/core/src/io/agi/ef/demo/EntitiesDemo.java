@@ -2,6 +2,8 @@ package io.agi.ef.demo;
 
 import io.agi.ef.*;
 import io.agi.ef.monolithic.MonolithicCoordination;
+import io.agi.ef.serialization.JsonEntity;
+import io.agi.ef.serialization.JsonNode;
 import io.agi.ef.sql.JdbcPersistence;
 
 /**
@@ -27,10 +29,16 @@ public class EntitiesDemo implements EntityFactory {
 
             p.setup( JdbcPersistence.DRIVER_POSTGRESQL, user, password, url );
 
-p.setPropertyInt( "dave", 5 );
+p.setPropertyInt("dave", 5);
 
 Integer z = p.getPropertyInt( "dave" );
-System.err.println( "dave =" + z);
+System.err.println("dave =" + z);
+p.removeNode("x");
+            JsonEntity je = new JsonEntity("e-key", "e-type", "e-node", "e-parent" );
+            JsonNode jn = new JsonNode("n-key", "n-host", 1111 );
+            p.setEntity( je );
+            p.setNode( jn );
+
             String nodeName = "demoNode";
             String nodeHost = "localhost";
             int nodePort = 8080;

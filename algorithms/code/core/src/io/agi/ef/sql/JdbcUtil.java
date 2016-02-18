@@ -7,6 +7,13 @@ import java.sql.*;
  */
 public class JdbcUtil {
 
+    /**
+     * Execute an INSERT or UPDATE statement, that doesn't return any data.
+     * @param dbUrl
+     * @param user
+     * @param password
+     * @param sql
+     */
     public static void Execute( String dbUrl, String user, String password, String sql ) {
         Connection c = null;
         Statement s = null;
@@ -44,6 +51,15 @@ public class JdbcUtil {
         }
     }
 
+    /**
+     * Execute a SQL query that returns data.
+     * 
+     * @param dbUrl
+     * @param user
+     * @param password
+     * @param sql
+     * @param cb
+     */
     public static void ExecuteQuery( String dbUrl, String user, String password, String sql, ResultSetCallback cb ) {
         Connection c = null;
         Statement s = null;

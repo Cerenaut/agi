@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
+ * A Generic but perhaps less efficient way to store and later browser data returned from SQL query.
  *
  * Created by dave on 18/02/16.
  */
