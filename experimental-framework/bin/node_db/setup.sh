@@ -16,7 +16,7 @@ database_host=${1:-$DATABASE_HOST}
 database_port=${2:-$DATABASE_PORT}
 
 # create agidb in database_host
-$POSTGRESQL_BIN -h $database_host -p $database_port -U postgres -f $AGI_HOME/experimental-framework/resources/sql/agidb.sql
+$POSTGRESQL_BIN -h $database_host -p $database_port -U postgres -f $AGI_HOME/experimental-framework/resources/sql/agidb2.sql
 
 
 
