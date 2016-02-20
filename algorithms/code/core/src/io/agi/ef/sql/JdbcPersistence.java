@@ -26,14 +26,10 @@ public class JdbcPersistence extends StringPersistence {
 
     protected String _user;
     protected String _password;
-    protected String _url;
+    protected String _url; // e.g. jdbc:postgresql://localhost:5432/agidb"; // https://jdbc.postgresql.org/documentation/80/connect.html
 
     public JdbcPersistence() {
-//        this(DEFAULT_DRIVER);
     }
-//    public JdbcPersistence(String driver) throws ClassNotFoundException {
-//        Class.forName(driver);
-//    }
 
     public void setup( String driver, String user, String password, String url ) throws ClassNotFoundException {
         Class.forName(driver);
@@ -51,7 +47,7 @@ public class JdbcPersistence extends StringPersistence {
         rsm._fields.add("port");
         executeQuery(sql, rsm);
         ArrayList< JsonNode > nodes = new ArrayList< JsonNode >();
-        for( int i = 0; i > rsm._rows.size(); ++i ) {
+        for( int i = 0; i < rsm._rows.size(); ++i ) {
             String key = rsm.getRowValue( i, "key" );
             String host = rsm.getRowValue(i, "host");
             String port = rsm.getRowValue(i, "port");
@@ -73,6 +69,9 @@ public class JdbcPersistence extends StringPersistence {
         rsm._fields.add( "host" );
         rsm._fields.add( "port" );
         executeQuery(sql, rsm);
+        if( rsm._rows.isEmpty() ) {
+            return null;
+        }
         String host = rsm.getRowValue( 0, "host" );
         String port = rsm.getRowValue( 0, "port" );
         JsonNode jn = new JsonNode( nodeName, host, Integer.valueOf( port ) );
@@ -93,7 +92,7 @@ public class JdbcPersistence extends StringPersistence {
         rsm._fields.add("parent");
         executeQuery(sql, rsm);
         ArrayList< JsonEntity > nodes = new ArrayList< JsonEntity >();
-        for( int i = 0; i > rsm._rows.size(); ++i ) {
+        for( int i = 0; i < rsm._rows.size(); ++i ) {
             String key = rsm.getRowValue( i, "key" );
             String type = rsm.getRowValue(i, "type");
             String node = rsm.getRowValue(i, "node");
@@ -114,12 +113,15 @@ public class JdbcPersistence extends StringPersistence {
         execute( sql2 );
     }
     public JsonEntity getEntity( String key ) {
-        String sql = "SELECT key, value FROM entities where key = " + key;
+        String sql = "SELECT type, node, parent FROM entities where key = '" + key+"'";
         ResultSetMap rsm = new ResultSetMap();
         rsm._fields.add( "type" );
         rsm._fields.add( "node" );
         rsm._fields.add( "parent" );
         executeQuery(sql, rsm);
+        if( rsm._rows.isEmpty() ) {
+            return null;
+        }
         String type = rsm.getRowValue( 0, "type" );
         String node = rsm.getRowValue( 0, "node" );
         String parent = rsm.getRowValue( 0, "parent" );
@@ -160,8 +162,12 @@ public class JdbcPersistence extends StringPersistence {
         ResultSetMap rsm = new ResultSetMap();
         rsm._fields.add("value");
         executeQuery(sql, rsm );
+        if( rsm._rows.isEmpty() ) {
+            return null;
+        }
         return rsm.getRowValue( 0, "value" );
     }
+
     public void setPropertyString(String key, String value) {
         // https://www.sitepoint.com/community/t/how-to-use-on-duplicate-key-update-in-postgresql-with-php/200335/4
         String sql1 = "UPDATE properties SET value = " + value + " WHERE key = '" + key + "'";
