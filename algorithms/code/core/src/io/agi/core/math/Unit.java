@@ -86,13 +86,13 @@ public class Unit {
      * Linear interpolate function
      * 
      * @param x Old value
-     * @param x1 One value
+     * @param xt One value
      * @param alpha Weight of old value
      * @return  New value
      */
-    public static double lerp( double x, double x1, double alpha ) {
+    public static double lerp( double x, double xt, double alpha ) {
         double beta = 1.0 - alpha;
-        x = alpha * x + beta * x1;
+        x = alpha * x + beta * xt;
         return x;
     }
 
@@ -100,13 +100,13 @@ public class Unit {
      * Linear interpolate function
      * 
      * @param x Old value
-     * @param x1 One value
+     * @param xt One value
      * @param alpha Weight of old value
      * @return  New value
      */
-    public static float lerp( float x, float x1, float alpha ) {
+    public static float lerp( float x, float xt, float alpha ) {
         float beta = 1.0f - alpha;
-        x = alpha * x + beta * x1;
+        x = alpha * x + beta * xt;
         return x;
     }
 

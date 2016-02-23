@@ -20,25 +20,60 @@ public class Data extends FloatArray2 {
 
     public DataSize _d = null;
 
+    /**
+     * Creates a 1-dimensional vector.
+     * @param size
+     */
     public Data( int size ) {
         super( size );
         _d = DataSize.create( size );
     }
 
+    /**
+     * Creates a 2-dimensional matrix or 32 bit float greyscale image.
+     * @param width
+     * @param height
+     */
     public Data ( int width, int height ) {
         DataSize d = DataSize.create( width, height );
         setSize( d );
     }
 
+    /**
+     * Creates a 3D matrix (tensor)
+     *
+     * @param width
+     * @param height
+     * @param depth
+     */
     public Data ( int width, int height, int depth ) {
         DataSize d = DataSize.create( width, height, depth );
         setSize( d );
     }
-    
+
+    /**
+     * Creates a new data structure with the specified dimensions.
+     * @param d
+     */
     public Data( DataSize d ) {
         setSize( d );
     }
 
+    /**
+     * Wraps the existing objects in a new Data object.
+     * The elements and sizes are not copied.
+     * @param d
+     * @param fa
+     */
+    public Data( DataSize d, FloatArray2 fa ) {
+        _d = d;
+        _values = fa._values;
+    }
+
+    /**
+     * Creates a Data as a deep copy of the parameter.
+     * @param d
+     */
     public Data( Data d ) {
         _d = new DataSize( d._d );
         copy( d );

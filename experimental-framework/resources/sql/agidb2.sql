@@ -55,8 +55,9 @@ CREATE TABLE data(
    id SERIAL PRIMARY KEY NOT NULL,
 --   entity text,
    key text NOT NULL UNIQUE,
-   sizes text NOT NULL,
-   elements text NOT NULL
+   ref_key text,
+   sizes text,
+   elements text
 );
 
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO agiu;

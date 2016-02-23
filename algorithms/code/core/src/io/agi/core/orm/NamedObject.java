@@ -28,7 +28,11 @@ public class NamedObject {
     }
 
     public String getKey( String suffix ) {
-        return Keys.concatenate( _name, suffix );
+        return GetKey( _name, suffix );
+    }
+
+    public static String GetKey( String name, String suffix ) {
+        return Keys.concatenate( name, suffix );
     }
 
     public ObjectMap getObjectMap() {

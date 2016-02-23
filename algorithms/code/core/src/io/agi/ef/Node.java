@@ -1,6 +1,9 @@
 package io.agi.ef;
 
+import io.agi.core.orm.NamedObject;
+import io.agi.core.orm.ObjectMap;
 import io.agi.ef.serialization.JsonEntity;
+import io.agi.ef.serialization.JsonNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,9 +11,9 @@ import java.util.HashMap;
 /**
  * Created by dave on 14/02/16.
  */
-public class Node {
+public class Node extends NamedObject {
 
-    protected String _name;
+//    protected String _name;
     protected String _host;
     protected int _port;
     protected EntityFactory _ef;
@@ -19,8 +22,8 @@ public class Node {
 
     protected HashMap< String, ArrayList< EntityListener > > _entityListeners = new HashMap< String, ArrayList< EntityListener >>();
 
-    public Node() {
-
+    public Node( String name, ObjectMap om ) {
+        super( name, om );
     }
 
     /**
@@ -30,25 +33,25 @@ public class Node {
      * @param p
      */
     public void setup(
-        String name,
+//        String name,
         String host,
         int port,
         EntityFactory ef,
         Coordination c,
         Persistence p ) {
 
-        _name = name;
+//        _name = name;
         _host = host;
         _port = port;
 
         _ef = ef;
         _c = c;
         _p = p;
+
+        JsonNode jn = new JsonNode( _name, _host, _port );
+        _p.setNode( jn );
     }
 
-    public String getName() {
-        return _name;
-    }
     public String getHost() {
         return _host;
     }
@@ -114,13 +117,18 @@ public class Node {
         JsonEntity je = _p.getEntity(entityName);
         //String nodeName = _p.getNodeName(entityName);
 
+        if( je == null ) {
+            return; // bad entity
+        }
+
+
         if( !je._node.equals( getName() ) ) {
             return;
         }
 
         //String entityType = _p.getEntityType( entityName );
 
-        Entity e = _ef.create( entityName, je._type );
+        Entity e = _ef.create( _om, entityName, je._type );
 
         forkUpdate(e); // returns immediately
     }

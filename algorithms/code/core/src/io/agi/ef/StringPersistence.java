@@ -10,65 +10,85 @@ public abstract class StringPersistence implements Persistence {
 //    public abstract String getDataString(String key );
 //    public abstract String setDataString(String key, String value);
 
-    public Float getPropertyFloat(String key) {
+    public Float getPropertyFloat(String key, Float defaultValue ) {
         try {
-            String s = getPropertyString(key);
+            String defaultString = null;
+            if( defaultValue != null ) {
+                defaultString = String.valueOf( defaultValue );
+            }
+            String s = getPropertyString(key, defaultString );
             return Float.valueOf( s );
         }
         catch( Exception e ) {
-            return null;
+            return defaultValue;
         }
     }
     public void setPropertyFloat(String key, float value) {
         setPropertyString( key, String.valueOf( value ) );
     }
 
-    public Double getPropertyDouble(String key) {
+    public Double getPropertyDouble(String key, Double defaultValue) {
         try {
-            String s = getPropertyString(key);
+            String defaultString = null;
+            if( defaultValue != null ) {
+                defaultString = String.valueOf( defaultValue );
+            }
+            String s = getPropertyString(key, defaultString);
             return Double.valueOf( s );
         }
         catch( Exception e ) {
-            return null;
+            return defaultValue;
         }
     }
     public void setPropertyDouble(String key, double value) {
         setPropertyString( key, String.valueOf( value ) );
     }
 
-    public Long getPropertyLong(String key) {
+    public Long getPropertyLong(String key, Long defaultValue) {
         try {
-            String s = getPropertyString(key);
+            String defaultString = null;
+            if( defaultValue != null ) {
+                defaultString = String.valueOf( defaultValue );
+            }
+            String s = getPropertyString(key, defaultString );
             return Long.valueOf( s );
         }
         catch( Exception e ) {
-            return null;
+            return defaultValue;
         }
     }
     public void setPropertyLong(String key, long value) {
         setPropertyString( key, String.valueOf( value ) );
     }
 
-    public Integer getPropertyInt(String key) {
+    public Integer getPropertyInt(String key, Integer defaultValue) {
         try {
-            String s = getPropertyString(key);
+            String defaultString = null;
+            if( defaultValue != null ) {
+                defaultString = String.valueOf( defaultValue );
+            }
+            String s = getPropertyString(key, defaultString);
             return Integer.valueOf( s );
         }
         catch( Exception e ) {
-            return null;
+            return defaultValue;
         }
     }
     public void setPropertyInt(String key, int value) {
         setPropertyString( key, String.valueOf( value ) );
     }
 
-    public Boolean getPropertyBoolean(String key ) {
+    public Boolean getPropertyBoolean(String key, Boolean defaultValue ) {
         try {
-            String s = getPropertyString(key);
+            String defaultString = null;
+            if( defaultValue != null ) {
+                defaultString = String.valueOf( defaultValue );
+            }
+            String s = getPropertyString(key, defaultString);
             return Boolean.valueOf( s );
         }
         catch( Exception e ) {
-            return null;
+            return defaultValue;
         }
     }
 

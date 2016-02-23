@@ -102,9 +102,25 @@ public class JdbcPersistence extends StringPersistence {
         }
         return nodes;
     }
+
     public Collection< String > getChildEntities( String parent ) {
-        return null;
+        // SELECT
+        String sql = "SELECT key, parent FROM entities where parent = '" + parent+ "'";
+        ResultSetMap rsm = new ResultSetMap();
+        rsm._fields.add( "key" );
+        rsm._fields.add( "parent" );
+        executeQuery(sql, rsm);
+
+        ArrayList< String > children = new ArrayList< String >();
+
+        for( int i = 0; i < rsm._rows.size(); ++i ) {
+            String key = rsm.getRowValue(i, "key");
+            children.add( key );
+        }
+
+        return children;
     }
+
     public void setEntity( JsonEntity e ) {
         // https://www.sitepoint.com/community/t/how-to-use-on-duplicate-key-update-in-postgresql-with-php/200335/4
         String sql1 = "UPDATE entities SET type = '" + e._type + "', node = '" + e._node + "', parent = '" + e._parent + "' WHERE key = '" + e._key + "'";
@@ -137,19 +153,22 @@ public class JdbcPersistence extends StringPersistence {
 //    public Collection< String > getDataKeys() {
 //    }
     public void setData( JsonData jd ) {
-        String sql1 = "UPDATE data SET sizes = '" + jd._sizes + "' WHERE key = '" + jd._key +"'";
+        String sql1 = "UPDATE data SET ref_key = '" + jd._refKey + "', sizes = '" + jd._sizes + "', elements = '" + jd._elements + "' WHERE key = '" + jd._key +"'";
         execute( sql1 );
-        String sql2 = "INSERT INTO data (key, sizes, elements) SELECT '"+jd._key+"', '"+jd._sizes+"', '"+jd._elements+"' WHERE NOT EXISTS (SELECT key from data WHERE key = "+jd._key+"')";
+        String sql2 = "INSERT INTO data (key, ref_key, sizes, elements) SELECT '"+jd._key+"', null, '"+jd._sizes+"', '"+jd._elements+"' WHERE NOT EXISTS (SELECT key from data WHERE key = '"+jd._key+"' )";
         execute( sql2 );
     }
     public JsonData getData( String key ) {
-        String sql = "SELECT key, value FROM properties where key = '" + key + "'";
+        String sql = "SELECT ref_key, sizes, elements FROM data where key = '" + key + "'";
         ResultSetMap rsm = new ResultSetMap();
-        rsm._fields.add( "value" );
+        rsm._fields.add( "ref_key" );
+        rsm._fields.add( "sizes" );
+        rsm._fields.add( "elements" );
         executeQuery(sql, rsm);
+        String refKey = rsm.getRowValue( 0, "ref_key" );
         String sizes = rsm.getRowValue( 0, "sizes" );
         String elements = rsm.getRowValue( 0, "elements" );
-        JsonData jd = new JsonData( key, sizes, elements );
+        JsonData jd = new JsonData( key, refKey, sizes, elements );
         return jd;
     }
     public void removeData(String key) {
@@ -157,13 +176,13 @@ public class JdbcPersistence extends StringPersistence {
         execute(sql );
     }
 
-    public String getPropertyString(String key) {
+    public String getPropertyString(String key, String defaultValue ) {
         String sql = "SELECT key, value FROM properties where key = '" + key +"'";
         ResultSetMap rsm = new ResultSetMap();
         rsm._fields.add("value");
         executeQuery(sql, rsm );
         if( rsm._rows.isEmpty() ) {
-            return null;
+            return defaultValue;
         }
         return rsm.getRowValue( 0, "value" );
     }

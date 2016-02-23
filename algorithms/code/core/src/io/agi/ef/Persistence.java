@@ -41,22 +41,22 @@ public interface Persistence {
     void removeData(String key);
 
     // Properties
-    Float getPropertyFloat(String key);
+    Float getPropertyFloat(String key, Float defaultValue);
     void setPropertyFloat(String key, float value);
 
-    Double getPropertyDouble(String key);
+    Double getPropertyDouble(String key, Double defaultValue);
     void setPropertyDouble(String key, double value);
 
-    Long getPropertyLong(String key);
+    Long getPropertyLong(String key, Long defaultValue);
     void setPropertyLong(String key, long value);
 
-    Integer getPropertyInt(String key);
+    Integer getPropertyInt(String key, Integer defaultValue );
     void setPropertyInt(String key, int value);
 
-    Boolean getPropertyBoolean(String key);
+    Boolean getPropertyBoolean(String key, Boolean defaultValue);
     void setPropertyBoolean(String key, boolean value);
 
-    String getPropertyString(String key);
+    String getPropertyString(String key, String defaultValue);
     void setPropertyString(String key, String value);
 
     // Data
