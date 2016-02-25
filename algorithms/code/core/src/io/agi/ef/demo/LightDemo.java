@@ -31,7 +31,7 @@ public class LightDemo {
             // Node
             String nodeName = "demoNode";
             String nodeHost = "localhost";
-            int nodePort = 8080;
+            int nodePort = 8491;
 
             ObjectMap om = ObjectMap.GetInstance();
             JdbcPersistence p = new JdbcPersistence();

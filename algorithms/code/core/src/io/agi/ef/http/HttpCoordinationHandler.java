@@ -2,6 +2,7 @@ package io.agi.ef.http;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,6 +67,9 @@ public class HttpCoordinationHandler implements HttpHandler {
             e.printStackTrace();
         }
 
+        ArrayList< String > list = new ArrayList< String >();
+        list.add( "*" );
+        t.getResponseHeaders().put( "Access-Control-Allow-Origin", list );
         t.sendResponseHeaders( status, response.length() );
         OutputStream os = t.getResponseBody();
         os.write(response.getBytes());
