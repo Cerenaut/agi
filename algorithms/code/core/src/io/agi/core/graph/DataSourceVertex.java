@@ -30,7 +30,7 @@ public abstract class DataSourceVertex {
     protected String _name;
     protected String _type;
     
-    public HashMap< String, DataSource > _sources = new HashMap< String, DataSource >(); // local copies of concatenated vectors from other 
+    public HashMap< String, DataSource > _sources = new HashMap< String, DataSource >(); // local copies of concatenated vectors from other
     protected HashMap< String, Data > _vectors = new HashMap< String, Data >();
     
     public DataSourceVertex() {

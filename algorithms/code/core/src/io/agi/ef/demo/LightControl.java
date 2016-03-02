@@ -37,15 +37,6 @@ public class LightControl extends Entity {
         float pChange = getPropertyFloat(CHANGE_PROBABILITY, 0.05f );
 
         Data output = getDataDefaultSize( CONTROL_OUTPUT, DataSize.create(1) );
-//        Data output = _data.get( getKey( CONTROL_OUTPUT ) );
-//
-//        if( output == null ) {
-//            output = new Data( 1 );
-//        }
-//        else {
-//            DataSize ds = DataSize.create(1);
-//            output.setSize(ds);
-//        }
 
         float oldOutputValue = output._values[ 0 ];
         float newOutputValue = oldOutputValue;
@@ -53,6 +44,7 @@ public class LightControl extends Entity {
         float r = (float)RandomInstance.random();
 
         if( r < pChange ) {
+            System.out.println( "changing output" );
             if( newOutputValue < 0.5f ) {
                 newOutputValue = 1.f;
             }
@@ -63,7 +55,7 @@ public class LightControl extends Entity {
 
         output._values[ 0 ] = newOutputValue;
 
-        _data.put( getKey( CONTROL_OUTPUT), output );
+        _data.put( getKey( CONTROL_OUTPUT ), output );
     }
 
 }

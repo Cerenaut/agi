@@ -50,9 +50,21 @@ var Agief = {
     Agief.doAjax( suffix, Agief.updateCallback, verb, "result" );
   },
 
+  onParameter : function( key, value ) {
+    if( key == "entity" ) {
+      $("#entity").val( value ); 
+    }
+  },
+
   setup : function() {
+    AgiParams.extract( Agief.onParameter );
+    AgiLoop.setup( Agief.update );
   }
 
 };
+
+$( document ).ready( function() {
+  Agief.setup();
+} );
 
 

@@ -47,11 +47,13 @@ public class JsonData {
         try {
             HashSet< String > refKeys = new HashSet< String >();
 
-            String[] splitKeys = _refKey.split(",");
+            if( _refKey != null ) {
+                String[] splitKeys = _refKey.split(",");
 
-            for (int i = 0; i < splitKeys.length; ++i) {
-                String key = splitKeys[i];
-                refKeys.add( key );
+                for (int i = 0; i < splitKeys.length; ++i) {
+                    String key = splitKeys[i];
+                    refKeys.add(key);
+                }
             }
 
             return refKeys;

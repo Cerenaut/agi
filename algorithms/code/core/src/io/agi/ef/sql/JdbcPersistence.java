@@ -166,6 +166,9 @@ public class JdbcPersistence extends StringPersistence {
         rsm._fields.add( "elements" );
         executeQuery(sql, rsm);
         String refKey = rsm.getRowValue( 0, "ref_key" );
+        if( refKey.equals( "null" ) ) {
+            refKey = null;
+        }
         String sizes = rsm.getRowValue( 0, "sizes" );
         String elements = rsm.getRowValue( 0, "elements" );
         JsonData jd = new JsonData( key, refKey, sizes, elements );

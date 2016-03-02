@@ -14,7 +14,7 @@ import java.util.ArrayList;
  * A source describes how to get and collate (concatenate, specifically) a set
  * of vectors from vertices in the hierarchy. 
  *
- * The source wraps this data by adding it as a named vector in the local 
+ * The source wraps this data by adding it as a named vector in the local
  * vertex, to which it has a reference.
  * 
  * @author dave

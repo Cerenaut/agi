@@ -17,6 +17,7 @@ public class LightSource extends Entity {
     public static final String ENTITY_TYPE = "light-source";
     public static final String CONTROL_INPUT = "control-input";
     public static final String LIGHT_OUTPUT = "light-output";
+    public static final String RANDOM_OUTPUT = "random-output";
     public static final String LEARNING_RATE = "learning-rate";
 
     public LightSource( String entityName, ObjectMap om, String type, String parent, Node n ) {
@@ -29,11 +30,12 @@ public class LightSource extends Entity {
 
     public void getOutputKeys( Collection< String > keys ) {
         keys.add( LIGHT_OUTPUT );
+        keys.add( RANDOM_OUTPUT );
     }
 
     protected void doUpdateSelf() {
 
-        float learningRate = getPropertyFloat( LEARNING_RATE, 0.1f );
+        float learningRate = getPropertyFloat(LEARNING_RATE, 0.1f);
 
         Data input = _data.get(getKey(CONTROL_INPUT));
 
@@ -53,6 +55,10 @@ public class LightSource extends Entity {
         }
 
         _data.put( getKey( LIGHT_OUTPUT), output );
+
+        Data random = new Data( 10 );
+        random.setRandomNormal();
+        _data.put( getKey( RANDOM_OUTPUT), random );
     }
 
     protected float getLight( float input, float oldOutput, float learningRate ) {

@@ -227,7 +227,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
             JsonData jd = p.getData(inputKey);
 
             HashSet< String > refKeys = jd.getRefKeys();
-            if( refKeys != null ) {
+            if( !refKeys.isEmpty() ) {
                 // create an output matrix which is a composite of all the referenced inputs.
                 HashMap< String, Data > allRefs = new HashMap< String, Data >();
 
@@ -321,7 +321,8 @@ public abstract class Entity extends NamedObject implements EntityListener {
     }
 
     public Data getDataDefaultSize( String keySuffix, DataSize defaultSize ) {
-        Data d = _data.get( getKey( keySuffix ) );
+        String key = getKey( keySuffix );
+        Data d = _data.get( key );
 
         if( d == null ) {
             d = new Data( defaultSize );
