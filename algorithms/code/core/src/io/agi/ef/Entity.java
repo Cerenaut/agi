@@ -2,13 +2,9 @@ package io.agi.ef;
 
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
-import io.agi.core.orm.Keys;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
-import io.agi.ef.demo.LightControl;
-import io.agi.ef.demo.LightSource;
 import io.agi.ef.serialization.JsonData;
-import io.agi.ef.serialization.JsonEntity;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,14 +16,11 @@ import java.util.HashSet;
  */
 public abstract class Entity extends NamedObject implements EntityListener {
 
-//    public static final String SUFFIX_COMBINED = "combined";
+    public static final String SUFFIX_AGE = "age";
 
-//    protected String _name;
     protected String _type;
     protected String _parent;
     protected Node _n;
-
-//    protected ObjectMap _om = new ObjectMap(); // for data
 
     protected HashSet< String > _childrenWaiting = new HashSet< String >();
 
@@ -40,10 +33,6 @@ public abstract class Entity extends NamedObject implements EntityListener {
         _parent = parent;
         _n = n;
     }
-
-//    public String getName() {
-//        return _name;
-//    }
 
     public String getParent() {
         return _parent;
@@ -154,28 +143,38 @@ public abstract class Entity extends NamedObject implements EntityListener {
         p.setPropertyString(key, value );
     }
 
+    // if I cant issue another update to children until this has completed...
+    // then children can't get out of sync
+
     public void update() {
+
+        String entityName = getName();
+        if( !_n.lock(entityName) ) {
+            return;
+        }
+
         updateSelf();
 
         Persistence p = _n.getPersistence();
-//        Collection< JsonEntity > children = p.getChildEntities( _name );
-        Collection< String > childNames = p.getChildEntities( _name );
+        //        Collection< JsonEntity > children = p.getChildEntities( _name );
+        Collection<String> childNames = p.getChildEntities(_name);
 
-        synchronized( _childrenWaiting ) {
-            _childrenWaiting.addAll( childNames );
-        }
+        synchronized (_childrenWaiting) {
+            _childrenWaiting.addAll(childNames);
 
-        // add self as listener for these children
-        for( String childName : childNames ) {
-            _n.addEntityListener( childName, this );
+            // add self as listener for these children
+            for (String childName : childNames) {
+                _n.addEntityListener(childName, this);
+            }
         }
 
         // update all the children
-        for( String childName : childNames ) {
+        for (String childName : childNames) {
             _n.requestUpdate(childName); // schedule an update, may have already occurred
             // update to child may occur any time after this, because only 1 parent so waiting for me to call the update.
         }
 
+        System.err.println("Thread " + Thread.currentThread().hashCode() + " terminating, was running: " + entityName);
         // this thread terminates now... but object persists until all children have updated.
         // now wait:
         //wait();
@@ -183,20 +182,30 @@ public abstract class Entity extends NamedObject implements EntityListener {
 //
 //        // notify:
 //        _n.notifyUpdated( _name );
+        if( childNames.isEmpty() ) {
+            _n.notifyUpdated(getName()); // this entity, the parent, is now complete
+        }
     }
 
     public void onEntityUpdated( String entityName ) {
         synchronized( _childrenWaiting ) {
             _childrenWaiting.remove( entityName );
 
+            System.err.print("Entity " + entityName + " notified about: " + entityName + " waiting for " );
+            for( String child : _childrenWaiting ) {
+                System.err.print( child + ", " );
+            }
+            System.err.println();
+
             if( _childrenWaiting.isEmpty() ) {
-                _n.isUpdated( _name ); // this entity, the parent, is now complete
+                _n.notifyUpdated(getName()); // this entity, the parent, is now complete
             }
             // else: wait for other children
         }
     }
 
     protected void updateSelf() {
+
         // 1. get inputs
         // get all the inputs and put them in the object map.
         Collection< String > inputKeys = new ArrayList< String >();
@@ -216,6 +225,14 @@ public abstract class Entity extends NamedObject implements EntityListener {
         // write all the outputs back to the persistence system
 //        setData(inputKeys);
         setData(outputKeys);
+
+
+        // update age:
+        int age = getPropertyInt(SUFFIX_AGE, 0);
+        ++age;
+        setPropertyInt( SUFFIX_AGE, age );
+
+        System.err.println( "Update: " + getName() + " age: " + age );
     }
 
     public void getData( Collection< String > keys ) {

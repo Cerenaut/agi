@@ -7,6 +7,7 @@ import io.agi.ef.serialization.JsonNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.Semaphore;
 
 /**
  * Created by dave on 14/02/16.
@@ -23,7 +24,7 @@ public class Node extends NamedObject {
     protected HashMap< String, ArrayList< EntityListener > > _entityListeners = new HashMap< String, ArrayList< EntityListener >>();
 
     public Node( String name, ObjectMap om ) {
-        super( name, om );
+        super(name, om);
     }
 
     /**
@@ -49,7 +50,7 @@ public class Node extends NamedObject {
         _p = p;
 
         JsonNode jn = new JsonNode( _name, _host, _port );
-        _p.setNode( jn );
+        _p.setNode(jn);
     }
 
     public String getHost() {
@@ -79,10 +80,11 @@ public class Node extends NamedObject {
      * A callback that is called when an Entity has been updated, including all its children.
      * @param entityName
      */
-    public void isUpdated( String entityName ) {
+    public void notifyUpdated(String entityName) {
 //        int count = _p.getEntityAge(entityName);
 //        count += 1;
 //        _p.setEntityAge(entityName, count);
+        unlock(entityName);
 
         // broadcast to any distributed listeners:
         _c.notifyUpdated(entityName);
@@ -145,6 +147,45 @@ public class Node extends NamedObject {
         } );
         t.start();
     }
+
+    public boolean lock( String entityName ) {
+        Semaphore s = getLock( entityName );
+
+        System.err.println( "Thread "+ Thread.currentThread().hashCode() + " waiting for " + entityName );
+        try {
+            s.acquire();
+        }
+        catch( InterruptedException ie ) {
+            System.err.println("Thread " + Thread.currentThread().hashCode() + " cant get lock for " + entityName);
+            return false;
+        }
+
+        System.err.println("Thread " + Thread.currentThread().hashCode() + " has lock for " + entityName);
+
+        return true;
+    }
+
+    public Semaphore getLock( String entityName ) {
+        synchronized(_entityNameSemaphores) {
+            Semaphore l = _entityNameSemaphores.get( entityName );
+            if( l ==  null ) {
+                l = new Semaphore( 1 ); // binary
+                _entityNameSemaphores.put(entityName, l);
+            }
+
+            return l;
+        }
+    }
+
+    public void unlock( String entityName ) {
+        Semaphore l = getLock( entityName );
+
+        System.err.println("Thread " + Thread.currentThread().hashCode() + " about to unlock " + entityName);
+
+        l.release();
+    }
+
+    public HashMap< String, Semaphore > _entityNameSemaphores = new HashMap< String, Semaphore >();
 
     /**
      * Adds a listener to the specified Entity.
