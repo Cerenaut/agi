@@ -20,7 +20,7 @@ var Loop = {
   },
 
   pause : function() {
-    console.log( "pausing..." );
+    console.log( "Loop pausing..." );
     clearInterval( Loop.updater );
     Loop.updater = null;
     Loop.updating = false;
@@ -32,7 +32,7 @@ var Loop = {
       return; // don't add multiple timers
     }
 
-    console.log( "resuming..." );
+    console.log( "Loop resuming..." );
     var updateInterval = $("#interval").val();
     Loop.updater = setInterval( Loop.update, updateInterval );
     Loop.updating = true;
@@ -40,7 +40,7 @@ var Loop = {
   },
 
   update : function() {
-    console.log( "updating..." );
+    //console.log( "loop update..." );
     Loop.callback();
   },
 

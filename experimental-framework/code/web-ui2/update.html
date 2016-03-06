@@ -32,7 +32,8 @@
        <input type="number" id="interval" style="display:inline;width:5em;" class="" placeholder="Update interval" value="500"/><br>
        <br>
        <input type="button" id="pause" class="btn btn-sm btn-danger" style="" onclick="Loop.togglePause();" value="Resume"/>
-       <input type="button" id="update" class="btn btn-sm btn-danger" style="" onclick="Loop.update();" value="Update"/>
+       <input type="button" id="update" class="btn btn-sm btn-danger" style="" onclick="Entities.update();" value="Update"/>
+       <p id="age" style="color:#555555">-</p>
        <p id="result" style="color:#555555">-</p>
       </div><!-- /.row -->
      </div><!-- /.row -->
@@ -48,6 +49,7 @@
 <!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>-->
 
     <!-- Our stuff -->
+    <script src="postgrest.js"></script>
     <script src="parameters.js"></script>
     <script src="loop.js"></script>
     <script src="entities.js"></script>

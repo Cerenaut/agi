@@ -5,6 +5,8 @@ var Entities = {
   host : "localhost",
   port : "8491",
 
+  entityAge : null,
+
   doAjax : function( suffix, callback, verb, idResult ) {
     // example http://localhost:8080/coordinator/control/entity/exp1/command/bob
     var url = Entities.protocol + "://" + Entities.host + ":" + Entities.port + "/" + suffix;
@@ -40,6 +42,43 @@ var Entities = {
     $( "#result" ).html( result );
   },
 
+  onGetEntityAge : function( response ) {
+    if( response.length == 0 ) {
+      Entities.entityAge = null;
+      return;
+    }
+
+    var property = response[ 0 ];
+    var age = property.value;
+
+    $( "#age" ).html( "Age: " + age );
+    //console.log( "OLD age: " + Entities.entityAge + " NEW age: " + age );
+
+    if( Entities.entityAge == null ) {
+      Entities.entityAge = age;
+      Entities.update();
+    }
+    else if( Entities.entityAge != age ) {
+      Entities.entityAge = age;
+      Entities.update();
+    }
+    else {
+      //console.log( "Not updating, same age as before." );
+    }
+  },
+
+  doGetEntityAge : function( entityName, callback ) {
+    // find the age of the entity
+    Postgrest.getJson( "properties?key=eq."+entityName+"-age", callback );
+  },
+
+  onInterval : function() {
+
+    // check if entity is ready to update yet.
+    var key = $( "#entity" ).val();
+    Entities.doGetEntityAge( key, Entities.onGetEntityAge );
+  },
+
   update : function() {
     // localhost:8080/update?entity=mySwitch&event=update
     var entity = $( "#entity" ).val();
@@ -58,7 +97,7 @@ var Entities = {
 
   setup : function() {
     Parameters.extract( Entities.onParameter );
-    Loop.setup( Entities.update );
+    Loop.setup( Entities.onInterval );
   }
 
 };
