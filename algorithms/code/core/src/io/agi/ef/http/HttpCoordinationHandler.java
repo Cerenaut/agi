@@ -52,11 +52,11 @@ public class HttpCoordinationHandler implements HttpHandler {
             if (entityName != null) {
                 if (eventValue != null) {
                     if (eventValue.equalsIgnoreCase(VALUE_UPDATE)) {
-                        _c.externalRequestUpdate(entityName, originValue);
+                        _c.doUpdateExternal(entityName, originValue);
                         status = 200;
                         response = "Updating entity: '" + entityName + "'";
                     } else if (eventValue.equalsIgnoreCase(VALUE_UPDATED)) {
-                        _c.externalNotifyUpdated(entityName, originValue);
+                        _c.onUpdatedExternal(entityName, originValue);
                         status = 200;
                         response = "Entity update noted: '" + entityName + "'";
                     }

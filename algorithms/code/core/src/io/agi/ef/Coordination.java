@@ -5,8 +5,8 @@ package io.agi.ef;
  */
 public interface Coordination {
 
-    void requestUpdate(String entityName);
+    void doUpdate(String entityName);
 
-    void notifyUpdated(String entityName);
+    void onUpdated(String entityName);
 
 }

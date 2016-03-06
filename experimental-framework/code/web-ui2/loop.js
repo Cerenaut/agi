@@ -1,51 +1,51 @@
 
 // Demo URL: file:///home/dave/workspace/agi.io/agi/experimental-framework/code/web-ui2/vector-bar.html?data=myLight-random-output&data=mySwitch-light-output&data=myLight-light-output&interval=303
-var AgiLoop = {
+var Loop = {
 
   callback : null,
   updating : false,
   updater : null,
 
   togglePause : function() {
-    if( AgiLoop.isUpdating() ) {
-      AgiLoop.pause();      
+    if( Loop.isUpdating() ) {
+      Loop.pause();      
     } 
     else {
-      AgiLoop.resume();      
+      Loop.resume();      
     }
   },
 
   isUpdating : function() {
-    return AgiLoop.updating;
+    return Loop.updating;
   },
 
   pause : function() {
     console.log( "pausing..." );
-    clearInterval( AgiLoop.updater );
-    AgiLoop.updater = null;
-    AgiLoop.updating = false;
+    clearInterval( Loop.updater );
+    Loop.updater = null;
+    Loop.updating = false;
     $("#pause").val( "Resume" );
   },
 
   resume : function() {
-    if( AgiLoop.updating == true ) {
+    if( Loop.updating == true ) {
       return; // don't add multiple timers
     }
 
     console.log( "resuming..." );
     var updateInterval = $("#interval").val();
-    AgiLoop.updater = setInterval( AgiLoop.update, updateInterval );
-    AgiLoop.updating = true;
+    Loop.updater = setInterval( Loop.update, updateInterval );
+    Loop.updating = true;
     $("#pause").val( "Pause" );
   },
 
   update : function() {
     console.log( "updating..." );
-    AgiLoop.callback();
+    Loop.callback();
   },
 
   setup : function( callback ) {
-    AgiLoop.callback = callback;
+    Loop.callback = callback;
   }
 
 };

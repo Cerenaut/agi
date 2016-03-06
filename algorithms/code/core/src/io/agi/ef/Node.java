@@ -87,7 +87,7 @@ public class Node extends NamedObject {
         unlock(entityName);
 
         // broadcast to any distributed listeners:
-        _c.notifyUpdated(entityName);
+        _c.onUpdated(entityName);
     }
 
     /**
@@ -107,7 +107,7 @@ public class Node extends NamedObject {
     public void requestUpdate(String entityName) {
         // TODO: this should broadcast to the wider system the update request, in case it is handled by another Node
         //doUpdate(entityName); // monolithic only variant
-        _c.requestUpdate(entityName);
+        _c.doUpdate(entityName);
     }
 
     /**

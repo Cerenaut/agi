@@ -51,18 +51,58 @@ public class HttpCoordination implements Coordination {
     }
 
     /**
+     * This is an internally generated request for a distributed update.
+     * @param entityName
+     */
+    public void doUpdate(String entityName) {
+        _n.doUpdate(entityName);
+        doUpdateBroadcast(entityName);
+    }
+
+    /**
+     * Broadcasts an update request to all Nodes.
+     * @param entityName
+     */
+    public void doUpdateBroadcast(String entityName) {
+        String query = getQuery( entityName, HttpCoordinationHandler.VALUE_UPDATE, _n.getName() );
+        broadcast(query);
+    }
+
+    /**
      * This is an externally generated request for an update to an entity somewhere in the distributed system
      * @param entityName
      * @param origin
      */
-    public void externalRequestUpdate( String entityName, String origin ) {
+    public void doUpdateExternal(String entityName, String origin) {
         if( origin != null ) {
             if( origin.equals( _n.getName() ) ) {
                 return; // ignore self events
             }
         }
+        else { // origin is null, i.e. was generated outside the network
+            // append origin=this/here and broadcast to rest of network
+            doUpdateBroadcast( entityName );
+        }
 
         _n.doUpdate(entityName);
+    }
+
+    /**
+     * This is an internally generated request for a distributed updated notification.
+     * @param entityName
+     */
+    public void onUpdated(String entityName) {
+        _n.onUpdated(entityName);
+        onUpdatedBroadcast(entityName);
+    }
+
+    /**
+     * Sends a local update notification to all nodes.
+     * @param entityName
+     */
+    public void onUpdatedBroadcast(String entityName) {
+        String query = getQuery( entityName, HttpCoordinationHandler.VALUE_UPDATED, _n.getName() );
+        broadcast(query);
     }
 
     /**
@@ -70,44 +110,27 @@ public class HttpCoordination implements Coordination {
      * @param entityName
      * @param origin
      */
-    public void externalNotifyUpdated( String entityName, String origin ) {
+    public void onUpdatedExternal(String entityName, String origin) {
         if( origin != null ) {
             if( origin.equals( _n.getName() ) ) {
                 return; // ignore self events
             }
+        }
+        else { // origin is null, i.e. was generated outside the network
+            // append origin=this/here and broadcast to rest of network
+            onUpdatedBroadcast(entityName);
         }
 
         _n.onUpdated(entityName);
     }
 
     /**
-     * This is an internally generated request for a distributed update.
+     * Generates the HTTP messages the HTTP layer understands.
      * @param entityName
+     * @param event
+     * @param origin
+     * @return
      */
-    public void requestUpdate(String entityName) {
-        _n.doUpdate(entityName);
-        broadcastUpdate(entityName);
-    }
-
-    /**
-     * This is an internally generated request for a distributed updated notification.
-     * @param entityName
-     */
-    public void notifyUpdated(String entityName) {
-        _n.onUpdated(entityName);
-        broadcastUpdated(entityName);
-    }
-
-    public void broadcastUpdate( String entityName ) {
-        String query = getQuery( entityName, HttpCoordinationHandler.VALUE_UPDATE, _n.getName() );
-        broadcast( query );
-    }
-
-    public void broadcastUpdated( String entityName ) {
-        String query = getQuery( entityName, HttpCoordinationHandler.VALUE_UPDATED, _n.getName() );
-        broadcast( query );
-    }
-
     public String getQuery( String entityName, String event, String origin ) {
         String query = HttpCoordinationHandler.CONTEXT
                 + "?" + HttpCoordinationHandler.PARAMETER_ENTITY + "=" + entityName
@@ -116,6 +139,10 @@ public class HttpCoordination implements Coordination {
         return query;
     }
 
+    /**
+     * Actually broadcasts the HTTP messages to all Nodes.
+     * @param query
+     */
     public void broadcast( String query ) {
         Collection< JsonNode > nodes = _n.getPersistence().getNodes();
 
@@ -128,6 +155,11 @@ public class HttpCoordination implements Coordination {
         }
     }
 
+    /**
+     * Sends a HTTP request to the specified Node.
+     * @param query
+     * @param jn
+     */
     public void send( String query, JsonNode jn ) {
         String url = "http://" + jn._host + ":" + jn._port + query;
         System.out.println( "Sending: " + url );

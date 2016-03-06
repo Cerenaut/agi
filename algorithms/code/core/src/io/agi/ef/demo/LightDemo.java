@@ -37,6 +37,8 @@ public class LightDemo {
             JdbcPersistence p = new JdbcPersistence();
             p.setup( JdbcPersistence.DRIVER_POSTGRESQL, user, password, url );
 
+
+
             // Define some entities
             String lightSourceName = "myLight";
             String lightControlName = "mySwitch";
@@ -48,6 +50,8 @@ public class LightDemo {
 
             // Connect the entities
             Entity.SetInputReference( p, lightSourceName, LightSource.CONTROL_INPUT, lightControlName, LightControl.CONTROL_OUTPUT );
+
+
 
             // Build the framework
 //            MonolithicCoordination c = new MonolithicCoordination();

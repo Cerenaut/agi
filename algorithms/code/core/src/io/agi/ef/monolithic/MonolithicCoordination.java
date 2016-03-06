@@ -18,11 +18,11 @@ public class MonolithicCoordination implements Coordination {
         _n = n;
     }
 
-    public void requestUpdate(String entityName) {
+    public void doUpdate(String entityName) {
         _n.doUpdate(entityName);
     }
 
-    public void notifyUpdated(String entityName) {
+    public void onUpdated(String entityName) {
         _n.onUpdated( entityName );
     }
 }

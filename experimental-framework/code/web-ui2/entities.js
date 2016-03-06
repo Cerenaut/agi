@@ -1,5 +1,5 @@
 
-var Agief = {
+var Entities = {
 
   protocol : "http",
   host : "localhost",
@@ -7,7 +7,7 @@ var Agief = {
 
   doAjax : function( suffix, callback, verb, idResult ) {
     // example http://localhost:8080/coordinator/control/entity/exp1/command/bob
-    var url = Agief.protocol + "://" + Agief.host + ":" + Agief.port + "/" + suffix;
+    var url = Entities.protocol + "://" + Entities.host + ":" + Entities.port + "/" + suffix;
     // console.log( "POST: "+ s );
     // TODO add error handling, success callbacks
     $.ajax( url, {
@@ -22,8 +22,8 @@ var Agief = {
   },
 
   configure : function() {
-    Agief.host = $( "#host" ).val();
-    Agief.port = $( "#port" ).val();
+    Entities.host = $( "#host" ).val();
+    Entities.port = $( "#port" ).val();
   },
 
   updateCallback : function( json, idResult ) {
@@ -47,7 +47,7 @@ var Agief = {
                + "?entity=" + entity 
                + "&event=" + "update";
     var verb = "POST";
-    Agief.doAjax( suffix, Agief.updateCallback, verb, "result" );
+    Entities.doAjax( suffix, Entities.updateCallback, verb, "result" );
   },
 
   onParameter : function( key, value ) {
@@ -57,14 +57,14 @@ var Agief = {
   },
 
   setup : function() {
-    AgiParams.extract( Agief.onParameter );
-    AgiLoop.setup( Agief.update );
+    Parameters.extract( Entities.onParameter );
+    Loop.setup( Entities.update );
   }
 
 };
 
 $( document ).ready( function() {
-  Agief.setup();
+  Entities.setup();
 } );
 
 

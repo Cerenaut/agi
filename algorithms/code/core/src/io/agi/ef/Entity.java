@@ -175,13 +175,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
         }
 
         System.err.println("Thread " + Thread.currentThread().hashCode() + " terminating, was running: " + entityName);
-        // this thread terminates now... but object persists until all children have updated.
-        // now wait:
-        //wait();
-//        _n.wait( childNames, _name );
-//
-//        // notify:
-//        _n.notifyUpdated( _name );
+
         if( childNames.isEmpty() ) {
             _n.notifyUpdated(getName()); // this entity, the parent, is now complete
         }

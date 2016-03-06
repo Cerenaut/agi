@@ -1,5 +1,5 @@
 
-var Agidb = {
+var Postgrest = {
 
   protocol : "http",
   host : "localhost",
@@ -7,7 +7,7 @@ var Agidb = {
 
   // this is an asynchronous function, the default
   getJson : function( table, callback ) {
-    var url = Agidb.protocol + "://" + Agidb.host + ":" + Agidb.port + "/" + table;
+    var url = Postgrest.protocol + "://" + Postgrest.host + ":" + Postgrest.port + "/" + table;
  
     $.ajax( url, {
         type: "GET",
@@ -18,19 +18,19 @@ var Agidb = {
   },
 
   postJson : function( table, json, callback ) {
-    Agidb.setJson( table, json, callback, "POST" );
+    Postgrest.setJson( table, json, callback, "POST" );
   },
 
   patchJson : function( table, json, callback ) {
-    Agidb.setJson( table, json, callback, "PATCH" );
+    Postgrest.setJson( table, json, callback, "PATCH" );
   },
 
   deleteJson : function( table, json, callback ) {
-    Agidb.setJson( table, json, callback, "DELETE" );
+    Postgrest.setJson( table, json, callback, "DELETE" );
   },
 
   setJson : function( table, json, callback, verb ) {
-    var url = Agidb.protocol + "://" + Agidb.host + ":" + Agidb.port + "/" + table;
+    var url = Postgrest.protocol + "://" + Postgrest.host + ":" + Postgrest.port + "/" + table;
     var s = JSON.stringify( json );
     // console.log( "POST: "+ s );
     // TODO add error handling, success callbacks
@@ -44,8 +44,8 @@ var Agidb = {
   },
 
   setup : function( host, port ) {
-    if( host ) Agidb.host = host;
-    if( port ) Agidb.port = port;
+    if( host ) Postgrest.host = host;
+    if( port ) Postgrest.port = port;
   }
 
 };

@@ -1,12 +1,12 @@
 
 // Demo URL: file:///home/dave/workspace/agi.io/agi/experimental-framework/code/web-ui2/vector-bar.html?data=myLight-random-output&data=mySwitch-light-output&data=myLight-light-output&interval=303
-var AgiParams = {
+var Parameters = {
 
   extract : function( parameterCallback ) {
 
     // http://stackoverflow.com/questions/6944744/javascript-get-portion-of-url-path
     var params = window.location.search.split( "&" );
-    console.log( "params = " + params );
+    //console.log( "params = " + params );
 
     // remove ? prefix, if present
     if( params.length > 0 ) {
@@ -19,7 +19,7 @@ var AgiParams = {
         var index = param.indexOf( "=" );
         var key = param.slice( 0, index );
         var value = param.slice( index+1 );
-        console.log( "param: "+key+","+value );
+        console.log( "Parameter: "+key+","+value );
         parameterCallback( key, value );
       }
     }
