@@ -6,11 +6,11 @@ import io.agi.ef.Node;
 /**
  * Created by dave on 16/02/16.
  */
-public class MonolithicCoordination implements Coordination {
+public class SingleProcessCoordination implements Coordination {
 
     public Node _n;
 
-    public MonolithicCoordination() {
+    public SingleProcessCoordination() {
 
     }
 

@@ -12,9 +12,12 @@ import java.util.concurrent.Semaphore;
 /**
  * Created by dave on 14/02/16.
  */
-public class Node extends NamedObject {
+public class Node {
 
-//    protected String _name;
+    public static final String KEY_NODE = "node";
+
+    protected ObjectMap _om;
+    protected String _name;
     protected String _host;
     protected int _port;
     protected EntityFactory _ef;
@@ -23,8 +26,7 @@ public class Node extends NamedObject {
 
     protected HashMap< String, ArrayList< EntityListener > > _entityListeners = new HashMap< String, ArrayList< EntityListener >>();
 
-    public Node( String name, ObjectMap om ) {
-        super(name, om);
+    public Node() {
     }
 
     /**
@@ -34,14 +36,18 @@ public class Node extends NamedObject {
      * @param p
      */
     public void setup(
-//        String name,
+        ObjectMap om,
+        String name,
         String host,
         int port,
         EntityFactory ef,
         Coordination c,
         Persistence p ) {
 
-//        _name = name;
+        _om = om;
+        _om.put( KEY_NODE, this );
+
+        _name = name;
         _host = host;
         _port = port;
 
@@ -53,6 +59,9 @@ public class Node extends NamedObject {
         _p.setNode(jn);
     }
 
+    public String getName() {
+        return _name;
+    }
     public String getHost() {
         return _host;
     }
