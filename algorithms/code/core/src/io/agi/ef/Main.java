@@ -1,10 +1,15 @@
 package io.agi.ef;
 
 import io.agi.core.orm.ObjectMap;
+import io.agi.core.util.FileUtil;
 import io.agi.core.util.PropertiesUtil;
+import io.agi.ef.demo.LightControl;
 import io.agi.ef.http.HttpCoordination;
 import io.agi.ef.monolithic.SingleProcessCoordination;
+import io.agi.ef.serialization.JsonEntity;
 import io.agi.ef.sql.JdbcPersistence;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Created by dave on 6/03/16.
@@ -86,6 +91,64 @@ public class Main {
         catch ( ClassNotFoundException e ) {
             e.printStackTrace();
             System.exit(-1);
+        }
+    }
+
+    public void loadEntities( String file ) {
+        try {
+            String contents = FileUtil.readFile( file );
+            JSONArray ja = new JSONArray( contents );
+
+            for( int i = 0; i < ja.length(); ++i ) {
+                JSONObject jo = ja.getJSONObject(i);
+
+                String entityName = jo.getString("name");
+                String entityType = jo.getString("type");
+                String nodeName = jo.getString( "node" );
+                String parentName = null;
+
+                if( jo.has( "parent" ) ) {
+                    parentName = jo.getString( "parent" ); // it's ok if this is null.
+                }
+
+                String thisNodeName = _n.getName();
+
+                if( !nodeName.equals( thisNodeName ) ) {
+                    System.out.println( "Ignoring Entity "+ entityName + " that is hosted at Node "+ nodeName );
+                    continue; // only create Entities that are assigned to this Node.
+                }
+
+                System.out.println( "Creating Entity "+ entityName + " that is hosted at Node "+ thisNodeName );
+                JsonEntity je = new JsonEntity( entityName, entityType, thisNodeName, parentName );
+
+                _p.setEntity( je );
+            }
+        }
+        catch( Exception e ) {
+            e.printStackTrace();
+            System.exit( -1 );
+        }
+    }
+
+    public void loadReferences( String file ) {
+        try {
+            String contents = FileUtil.readFile( file );
+            JSONArray ja = new JSONArray( contents );
+
+            for( int i = 0; i < ja.length(); ++i ) {
+                JSONObject jo = ja.getJSONObject(i);
+
+                String dataKey = jo.getString("dataKey");
+                String refKeys = jo.getString( "refKeys" );
+
+                System.out.println( "Creating data input reference for data: " + dataKey + " with input data keys: " + refKeys );
+                
+                Entity.SetInputReference( _p, dataKey, refKeys );
+            }
+        }
+        catch( Exception e ) {
+            e.printStackTrace();
+            System.exit( -1 );
         }
     }
 

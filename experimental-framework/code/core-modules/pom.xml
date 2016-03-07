@@ -214,7 +214,7 @@
         <jersey-version>1.18</jersey-version>
         <slf4j-version>1.6.3</slf4j-version>
         <junit-version>4.8.1</junit-version>
-        <servlet-api-version>2.5</servlet-api-version>
+        <servlet-api-version>3.0-alpha-1</servlet-api-version>
         <jackson-version>2.4.2</jackson-version>
         <jodatime-version>2.3</jodatime-version>
         <httpclient.version>4.5.1</httpclient.version>

@@ -57,15 +57,22 @@ public abstract class Entity extends NamedObject implements EntityListener {
             String inputSuffix,
             String referenceEntity,
             String referenceSuffix ) {
-        String inputKey = NamedObject.GetKey( inputEntity, inputSuffix );
-        String   refKey = NamedObject.GetKey( referenceEntity, referenceSuffix );
-        JsonData jd = p.getData( inputKey );
+        String inputKey = NamedObject.GetKey(inputEntity, inputSuffix);
+        String refKey = NamedObject.GetKey(referenceEntity, referenceSuffix);
+        SetInputReference( p, inputKey, refKey );
+    }
+
+    public static void SetInputReference(
+            Persistence p,
+            String dataKey,
+            String refKeys ) {
+        JsonData jd = p.getData( dataKey );
 
         if( jd == null ) {
-            jd = new JsonData( inputKey, refKey );
+            jd = new JsonData( dataKey, refKeys );
         }
 
-        jd._refKey = refKey;
+        jd._refKey = refKeys;
         p.setData( jd );
     }
 
