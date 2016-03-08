@@ -1,0 +1,16 @@
+[ 
+
+  {
+    "name" : "mySwitch",
+    "type" : "light-control",
+    "node" : "myNode"
+  },
+
+  { 
+    "name" : "myLight",
+    "type" : "light-source",
+    "node" : "myNode2",
+    "parent" : "mySwitch"
+  }
+
+]

@@ -113,13 +113,13 @@ public class Main {
 
                 String thisNodeName = _n.getName();
 
-                if( !nodeName.equals( thisNodeName ) ) {
-                    System.out.println( "Ignoring Entity "+ entityName + " that is hosted at Node "+ nodeName );
-                    continue; // only create Entities that are assigned to this Node.
-                }
+//                if( !nodeName.equals( thisNodeName ) ) {
+//                    System.out.println( "Ignoring Entity "+ entityName + " that is hosted at Node "+ nodeName );
+//                    continue; // only create Entities that are assigned to this Node.
+//                }
 
-                System.out.println( "Creating Entity "+ entityName + " that is hosted at Node "+ thisNodeName );
-                JsonEntity je = new JsonEntity( entityName, entityType, thisNodeName, parentName );
+                System.out.println( "Creating Entity "+ entityName + " that is hosted at Node "+ nodeName );
+                JsonEntity je = new JsonEntity( entityName, entityType, nodeName, parentName );
 
                 _p.setEntity( je );
             }
@@ -142,7 +142,7 @@ public class Main {
                 String refKeys = jo.getString( "refKeys" );
 
                 System.out.println( "Creating data input reference for data: " + dataKey + " with input data keys: " + refKeys );
-                
+
                 Entity.SetInputReference( _p, dataKey, refKeys );
             }
         }

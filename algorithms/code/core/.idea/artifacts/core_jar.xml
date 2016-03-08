@@ -1,0 +1,12 @@
+<component name="ArtifactManager">
+  <artifact name="core:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/core_jar</output-path>
+    <root id="root">
+      <element id="archive" name="core.jar">
+        <element id="module-output" name="core" />
+      </element>
+      <element id="library" level="project" name="postgresql:postgresql:9.2-1002.jdbc4" />
+      <element id="library" level="project" name="org.json:org.json:2.0" />
+    </root>
+  </artifact>
+</component>

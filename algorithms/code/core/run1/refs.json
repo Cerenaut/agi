@@ -1,0 +1,8 @@
+[ 
+
+  {
+    "dataKey" : "myLight-control-input",
+    "refKeys" : "mySwitch-light-output"
+  }
+
+]
