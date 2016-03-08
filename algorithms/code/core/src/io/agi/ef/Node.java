@@ -1,9 +1,8 @@
 package io.agi.ef;
 
-import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
-import io.agi.ef.serialization.JsonEntity;
-import io.agi.ef.serialization.JsonNode;
+import io.agi.ef.serialization.ModelEntity;
+import io.agi.ef.serialization.ModelNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,7 +54,7 @@ public class Node {
         _c = c;
         _p = p;
 
-        JsonNode jn = new JsonNode( _name, _host, _port );
+        ModelNode jn = new ModelNode( _name, _host, _port );
         _p.setNode(jn);
     }
 
@@ -125,7 +124,7 @@ public class Node {
      */
     public void doUpdate(String entityName) {
 
-        JsonEntity je = _p.getEntity(entityName);
+        ModelEntity je = _p.getEntity(entityName);
         //String nodeName = _p.getNodeName(entityName);
 
         if( je == null ) {

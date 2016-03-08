@@ -1,9 +1,8 @@
 package io.agi.ef;
 
-import io.agi.core.data.Data;
-import io.agi.ef.serialization.JsonData;
-import io.agi.ef.serialization.JsonEntity;
-import io.agi.ef.serialization.JsonNode;
+import io.agi.ef.serialization.ModelData;
+import io.agi.ef.serialization.ModelEntity;
+import io.agi.ef.serialization.ModelNode;
 
 import java.util.Collection;
 
@@ -22,22 +21,22 @@ public interface Persistence {
 //    Collection<String> getNodes();
 
     // Nodes
-    Collection< JsonNode > getNodes(); // list all
-    void setNode( JsonNode e );
-    JsonNode getNode( String nodeName );
+    Collection<ModelNode> getNodes(); // list all
+    void setNode( ModelNode e );
+    ModelNode getNode( String nodeName );
     void removeNode(String nodeName);
 
     // Entities
-    Collection< JsonEntity > getEntities(); // list all
+    Collection<ModelEntity> getEntities(); // list all
     Collection< String > getChildEntities( String parent );
-    void setEntity( JsonEntity e );
-    JsonEntity getEntity( String key );
+    void setEntity( ModelEntity e );
+    ModelEntity getEntity( String key );
     void removeEntity(String key);
 
     // Data
 //    Collection< String > getDataKeys();
-    void setData( JsonData e );
-    JsonData getData( String key );
+    void setData( ModelData e );
+    ModelData getData( String key );
     void removeData(String key);
 
     // Properties

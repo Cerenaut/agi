@@ -1,11 +1,7 @@
 package io.agi.core.alg;
 
-import io.agi.core.ann.supervised.ActivationFunctionFactory;
 import io.agi.core.ann.supervised.FeedForwardNetwork;
-import io.agi.core.ann.supervised.FeedForwardNetworkConfig;
-import io.agi.core.ann.unsupervised.CompetitiveLearningConfig;
 import io.agi.core.ann.unsupervised.GrowingNeuralGas;
-import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
 import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
 import io.agi.core.data.Ranking;
@@ -128,7 +124,7 @@ public class Column extends NamedObject {
         // find the closest N active input to col.
         // Do this with ranking.
         int columnInputs = _r._rc.getColumnInputs();
-        int columnOffset = Data2d.getOffset(_r._columnDepth._d, _x, _y);
+        int columnOffset = Data2d.getOffset(_r._columnDepth._dataSize, _x, _y);
 
         float z_c = _r._columnDepth._values[columnOffset];
         float z_t = z_c - 1; // i.e. a col with z_c=1 would have a z_t of 0
@@ -144,7 +140,7 @@ public class Column extends NamedObject {
                 continue; // can't use this as an input for this col.
             }
 
-            Point p = Data2d.getXY(_r._surfaceInput._d, i);
+            Point p = Data2d.getXY(_r._surfaceInput._dataSize, i);
 
             float rf_x = rf[0];
             float rf_y = rf[1];

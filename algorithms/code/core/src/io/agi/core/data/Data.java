@@ -18,7 +18,7 @@ import java.util.Collection;
  */
 public class Data extends FloatArray2 {
 
-    public DataSize _d = null;
+    public DataSize _dataSize = null;
 
     /**
      * Creates a 1-dimensional vector.
@@ -26,7 +26,7 @@ public class Data extends FloatArray2 {
      */
     public Data( int size ) {
         super( size );
-        _d = DataSize.create( size );
+        _dataSize = DataSize.create( size );
     }
 
     /**
@@ -66,7 +66,7 @@ public class Data extends FloatArray2 {
      * @param fa
      */
     public Data( DataSize d, FloatArray2 fa ) {
-        _d = d;
+        _dataSize = d;
         _values = fa._values;
     }
 
@@ -75,13 +75,13 @@ public class Data extends FloatArray2 {
      * @param d
      */
     public Data( Data d ) {
-        _d = new DataSize( d._d );
+        _dataSize = new DataSize( d._dataSize );
         copy( d );
     }
 
     public void setSize( DataSize d ) {
-        _d = d;
-        int size = _d.getVolume();
+        _dataSize = d;
+        int size = _dataSize.getVolume();
         setSize( size );
     }
 
@@ -99,18 +99,18 @@ public class Data extends FloatArray2 {
     }
     
     public Coordinate2 begin() {
-        return new Coordinate2( _d );
+        return new Coordinate2( _dataSize );
     }
 
     public Coordinate2 end() {
-        Coordinate2 c = new Coordinate2( _d );
+        Coordinate2 c = new Coordinate2( _dataSize );
                    c.setMax();
         return c;
     }
 
     public Data translate( Coordinate2 translations ) {
 
-        Data v = new Data( _d );
+        Data v = new Data( _dataSize );
 
         Coordinate2 c1 = begin();
 
@@ -131,7 +131,7 @@ public class Data extends FloatArray2 {
     }
 
     public Collection< Coordinate2 > maxN( int n ) {
-        Data v = new Data( _d );
+        Data v = new Data( _dataSize );
 
         float min = Float.MIN_VALUE;
 
@@ -149,7 +149,7 @@ public class Data extends FloatArray2 {
     }
 
     public Collection< Coordinate2 > minN( int n ) {
-        Data v = new Data( _d );
+        Data v = new Data( _dataSize );
 
         float max = Float.MAX_VALUE;
 
@@ -275,7 +275,7 @@ public class Data extends FloatArray2 {
         // included range (ie the first excluded coordinate).
         // excluded should be 12400
         Coordinate2 excluded = new Coordinate2( included );
-        Coordinate2 offset   = new Coordinate2( _d );
+        Coordinate2 offset   = new Coordinate2( _dataSize );
                    offset._indices[ dimensionsExcluded -1 ] = 1;
 
         excluded.add( offset );
@@ -298,7 +298,7 @@ public class Data extends FloatArray2 {
     public void mulSubVolume( int dimensionsExcluded, Coordinate2 included, float value ) {
 
         Coordinate2 excluded = new Coordinate2( included );
-        Coordinate2 offset   = new Coordinate2( _d );
+        Coordinate2 offset   = new Coordinate2( _dataSize );
                    offset._indices[ dimensionsExcluded -1 ] = 1;
 
         excluded.add( offset );
@@ -333,7 +333,7 @@ public class Data extends FloatArray2 {
     
     public int getVolumeExcluding( String invariantDimension ) {
         int volume = getSize();
-        int size = _d.getSize( invariantDimension );
+        int size = _dataSize.getSize( invariantDimension );
 
         if( size == 0 ) {
             return volume;

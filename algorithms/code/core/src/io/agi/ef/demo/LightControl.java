@@ -3,7 +3,6 @@ package io.agi.ef.demo;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.math.RandomInstance;
-import io.agi.core.math.Unit;
 import io.agi.core.orm.ObjectMap;
 import io.agi.ef.Entity;
 import io.agi.ef.Node;
@@ -36,7 +35,7 @@ public class LightControl extends Entity {
         //http://localhost:8080/update?entity=mySwitch&event=update
         float pChange = getPropertyFloat(CHANGE_PROBABILITY, 0.05f );
 
-        Data output = getDataDefaultSize( CONTROL_OUTPUT, DataSize.create(1) );
+        Data output = getData( CONTROL_OUTPUT, DataSize.create(1) );
 
         float oldOutputValue = output._values[ 0 ];
         float newOutputValue = oldOutputValue;
@@ -55,7 +54,7 @@ public class LightControl extends Entity {
 
         output._values[ 0 ] = newOutputValue;
 
-        _data.put( getKey( CONTROL_OUTPUT ), output );
+        setData( CONTROL_OUTPUT, output );
     }
 
 }

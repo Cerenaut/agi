@@ -25,6 +25,19 @@
         </plugins>
     </build>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20160212</version>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>9.2-1002-jdbc4</version>
+        </dependency>
+    </dependencies>
+
     <repositories>
         <repository>
             <id>sonatype-snapshots</id>

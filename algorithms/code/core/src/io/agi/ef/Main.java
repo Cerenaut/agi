@@ -3,10 +3,9 @@ package io.agi.ef;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.util.FileUtil;
 import io.agi.core.util.PropertiesUtil;
-import io.agi.ef.demo.LightControl;
 import io.agi.ef.http.HttpCoordination;
 import io.agi.ef.monolithic.SingleProcessCoordination;
-import io.agi.ef.serialization.JsonEntity;
+import io.agi.ef.serialization.ModelEntity;
 import io.agi.ef.sql.JdbcPersistence;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -119,7 +118,7 @@ public class Main {
 //                }
 
                 System.out.println( "Creating Entity "+ entityName + " that is hosted at Node "+ nodeName );
-                JsonEntity je = new JsonEntity( entityName, entityType, nodeName, parentName );
+                ModelEntity je = new ModelEntity( entityName, entityType, nodeName, parentName );
 
                 _p.setEntity( je );
             }

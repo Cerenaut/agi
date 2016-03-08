@@ -1,15 +1,12 @@
 package io.agi.ef.sql;
 
 import io.agi.ef.StringPersistence;
-import io.agi.ef.serialization.JsonData;
-import io.agi.ef.serialization.JsonEntity;
-import io.agi.ef.serialization.JsonNode;
+import io.agi.ef.serialization.ModelData;
+import io.agi.ef.serialization.ModelEntity;
+import io.agi.ef.serialization.ModelNode;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 
 /**
  * Created by dave on 16/02/16.
@@ -39,31 +36,31 @@ public class JdbcPersistence extends StringPersistence {
     }
 
     // Nodes
-    public Collection< JsonNode > getNodes() {
+    public Collection<ModelNode> getNodes() {
         String sql = "SELECT key, host, port FROM nodes";
         ResultSetMap rsm = new ResultSetMap();
         rsm._fields.add( "key" );
         rsm._fields.add( "host" );
         rsm._fields.add("port");
         executeQuery(sql, rsm);
-        ArrayList< JsonNode > nodes = new ArrayList< JsonNode >();
+        ArrayList<ModelNode> nodes = new ArrayList<ModelNode>();
         for( int i = 0; i < rsm._rows.size(); ++i ) {
             String key = rsm.getRowValue( i, "key" );
             String host = rsm.getRowValue(i, "host");
             String port = rsm.getRowValue(i, "port");
-            JsonNode jn = new JsonNode(key, host, Integer.valueOf(port));
+            ModelNode jn = new ModelNode(key, host, Integer.valueOf(port));
             nodes.add( jn );
         }
         return nodes;
     }
-    public void setNode( JsonNode e ) {
+    public void setNode( ModelNode e ) {
         // https://www.sitepoint.com/community/t/how-to-use-on-duplicate-key-update-in-postgresql-with-php/200335/4
         String sql1 = "UPDATE nodes SET host = '" + e._host + "', port = '" + e._port + "' WHERE key = '" + e._key + "'";
         execute(sql1 );
         String sql2 = "INSERT INTO nodes (key, host,port) SELECT '"+e._key+"', '"+e._host+"', '"+e._port+"' WHERE NOT EXISTS (SELECT key from nodes WHERE key = '"+e._key+"')";
         execute( sql2 );
     }
-    public JsonNode getNode( String nodeName ) {
+    public ModelNode getNode( String nodeName ) {
         String sql = "SELECT key, host, port FROM nodes where key = '" + nodeName + "'";
         ResultSetMap rsm = new ResultSetMap();
         rsm._fields.add( "host" );
@@ -74,7 +71,7 @@ public class JdbcPersistence extends StringPersistence {
         }
         String host = rsm.getRowValue( 0, "host" );
         String port = rsm.getRowValue( 0, "port" );
-        JsonNode jn = new JsonNode( nodeName, host, Integer.valueOf( port ) );
+        ModelNode jn = new ModelNode( nodeName, host, Integer.valueOf( port ) );
         return jn;
     }
     public void removeNode(String nodeName) {
@@ -83,7 +80,7 @@ public class JdbcPersistence extends StringPersistence {
     }
 
     // Entities
-    public Collection<JsonEntity> getEntities() {
+    public Collection<ModelEntity> getEntities() {
         String sql = "SELECT key, host, port FROM nodes";
         ResultSetMap rsm = new ResultSetMap();
         rsm._fields.add( "key" );
@@ -91,13 +88,13 @@ public class JdbcPersistence extends StringPersistence {
         rsm._fields.add("node");
         rsm._fields.add("parent");
         executeQuery(sql, rsm);
-        ArrayList< JsonEntity > nodes = new ArrayList< JsonEntity >();
+        ArrayList<ModelEntity> nodes = new ArrayList<ModelEntity>();
         for( int i = 0; i < rsm._rows.size(); ++i ) {
             String key = rsm.getRowValue( i, "key" );
             String type = rsm.getRowValue(i, "type");
             String node = rsm.getRowValue(i, "node");
             String parent = rsm.getRowValue(i, "parent");
-            JsonEntity je = new JsonEntity(key, type, node, parent );
+            ModelEntity je = new ModelEntity(key, type, node, parent );
             nodes.add( je );
         }
         return nodes;
@@ -121,14 +118,14 @@ public class JdbcPersistence extends StringPersistence {
         return children;
     }
 
-    public void setEntity( JsonEntity e ) {
+    public void setEntity( ModelEntity e ) {
         // https://www.sitepoint.com/community/t/how-to-use-on-duplicate-key-update-in-postgresql-with-php/200335/4
         String sql1 = "UPDATE entities SET type = '" + e._type + "', node = '" + e._node + "', parent = '" + e._parent + "' WHERE key = '" + e._key + "'";
         execute(sql1 );
         String sql2 = "INSERT INTO entities (key, type, node,parent) SELECT '"+e._key+"', '"+e._type+"', '"+e._node+"', '"+e._parent+"' WHERE NOT EXISTS (SELECT key from entities WHERE key = '"+e._key+"')";
         execute( sql2 );
     }
-    public JsonEntity getEntity( String key ) {
+    public ModelEntity getEntity( String key ) {
         String sql = "SELECT type, node, parent FROM entities where key = '" + key+"'";
         ResultSetMap rsm = new ResultSetMap();
         rsm._fields.add( "type" );
@@ -141,7 +138,7 @@ public class JdbcPersistence extends StringPersistence {
         String type = rsm.getRowValue( 0, "type" );
         String node = rsm.getRowValue( 0, "node" );
         String parent = rsm.getRowValue( 0, "parent" );
-        JsonEntity je = new JsonEntity( key, type, node, parent );
+        ModelEntity je = new ModelEntity( key, type, node, parent );
         return je;
     }
     public void removeEntity(String key) {
@@ -152,13 +149,13 @@ public class JdbcPersistence extends StringPersistence {
     // Data
 //    public Collection< String > getDataKeys() {
 //    }
-    public void setData( JsonData jd ) {
+    public void setData( ModelData jd ) {
         String sql1 = "UPDATE data SET ref_key = '" + jd._refKey + "', sizes = '" + jd._sizes + "', elements = '" + jd._elements + "' WHERE key = '" + jd._key +"'";
         execute( sql1 );
         String sql2 = "INSERT INTO data (key, ref_key, sizes, elements) SELECT '"+jd._key+"', null, '"+jd._sizes+"', '"+jd._elements+"' WHERE NOT EXISTS (SELECT key from data WHERE key = '"+jd._key+"' )";
         execute( sql2 );
     }
-    public JsonData getData( String key ) {
+    public ModelData getData( String key ) {
         String sql = "SELECT ref_key, sizes, elements FROM data where key = '" + key + "'";
         ResultSetMap rsm = new ResultSetMap();
         rsm._fields.add( "ref_key" );
@@ -176,7 +173,7 @@ public class JdbcPersistence extends StringPersistence {
         }
         String sizes = rsm.getRowValue( 0, "sizes" );
         String elements = rsm.getRowValue( 0, "elements" );
-        JsonData jd = new JsonData( key, refKey, sizes, elements );
+        ModelData jd = new ModelData( key, refKey, sizes, elements );
         return jd;
     }
     public void removeData(String key) {

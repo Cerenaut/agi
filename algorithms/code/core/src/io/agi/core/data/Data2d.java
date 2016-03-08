@@ -56,8 +56,8 @@ public class Data2d {
                 int xb = x2 + x;
                 int yb = y2 + y;
 
-                Integer na = getOffset( d1._d, xa, ya );
-                Integer nb = getOffset( d2._d, xb, yb );
+                Integer na = getOffset( d1._dataSize, xa, ya );
+                Integer nb = getOffset( d2._dataSize, xb, yb );
 
                 float value = d1._values[ na ];
                 d2._values[ nb ] = value;
@@ -75,7 +75,7 @@ public class Data2d {
         if( d == null ) {
             return null;
         }
-        return getSize( d._d );
+        return getSize( d._dataSize );
     }
 
     public static Point getSize( FloatArray2 fa ) {
@@ -110,7 +110,7 @@ public class Data2d {
         if( d == null ) {
             return null;
         }
-        return getSizeExplicit( d._d );
+        return getSizeExplicit( d._dataSize );
     }
     
     public static Point getSizeExplicit( DataSize d ) {

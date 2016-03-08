@@ -75,10 +75,10 @@ public class Convolution2d {
                         // for each channel
                         for( int i = 0 ; i < channels ; ++i ) {
 
-//                            if ( (soffset+i) >= src._d._values.length ) {
+//                            if ( (soffset+i) >= src._dataSize._values.length ) {
 //                                System.out.println("oh oh");
 //                            }
-//                            if ( (moffset+i) >= mask._d._values.length ) {
+//                            if ( (moffset+i) >= mask._dataSize._values.length ) {
 //                                System.out.println("oh oh");
 //                            }
 

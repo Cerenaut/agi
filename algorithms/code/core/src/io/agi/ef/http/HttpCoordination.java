@@ -3,7 +3,7 @@ package io.agi.ef.http;
 import com.sun.net.httpserver.HttpServer;
 import io.agi.ef.Coordination;
 import io.agi.ef.Node;
-import io.agi.ef.serialization.JsonNode;
+import io.agi.ef.serialization.ModelNode;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -144,9 +144,9 @@ public class HttpCoordination implements Coordination {
      * @param query
      */
     public void broadcast( String query ) {
-        Collection< JsonNode > nodes = _n.getPersistence().getNodes();
+        Collection<ModelNode> nodes = _n.getPersistence().getNodes();
 
-        for( JsonNode jn : nodes ) {
+        for( ModelNode jn : nodes ) {
             if( jn._key.equals( _n.getName() ) ) {
 //                continue; // don't send to self
             }
@@ -160,7 +160,7 @@ public class HttpCoordination implements Coordination {
      * @param query
      * @param jn
      */
-    public void send( String query, JsonNode jn ) {
+    public void send( String query, ModelNode jn ) {
         String url = "http://" + jn._host + ":" + jn._port + query;
         System.out.println( "Sending: " + url );
 

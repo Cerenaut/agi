@@ -31,15 +31,15 @@ public class ImageData {
     }
     
     public int getWidth() {
-        return _d._d.getSize( DataSize.DIMENSION_X );
+        return _d._dataSize.getSize( DataSize.DIMENSION_X );
     }
 
     public int getHeight() {
-        return _d._d.getSize( DataSize.DIMENSION_Y );
+        return _d._dataSize.getSize( DataSize.DIMENSION_Y );
     }
 
     public int getChannels()  {
-        Integer n = _d._d.getSize( DataSize.DIMENSION_Z );
+        Integer n = _d._dataSize.getSize( DataSize.DIMENSION_Z );
         if( n != null ) {
             return n;
         }

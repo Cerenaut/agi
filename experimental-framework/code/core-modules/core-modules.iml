@@ -56,7 +56,7 @@
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.datatype:jackson-datatype-joda:2.1.5" level="project" />
     <orderEntry type="library" name="Maven: joda-time:joda-time:2.3" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.8.1" level="project" />
-    <orderEntry type="library" name="Maven: javax.servlet:servlet-api:2.5" level="project" />
+    <orderEntry type="library" name="Maven: javax.servlet:servlet-api:3.0-alpha-1" level="project" />
     <orderEntry type="library" name="Maven: org.eclipse.jetty:jetty-server:9.2.11.v20150529" level="project" />
     <orderEntry type="library" name="Maven: javax.servlet:javax.servlet-api:3.1.0" level="project" />
     <orderEntry type="library" name="Maven: org.eclipse.jetty:jetty-http:9.2.11.v20150529" level="project" />
@@ -69,10 +69,10 @@
     <orderEntry type="library" name="Maven: io.agi.core:io-agi-core:1.0.0" level="project" />
     <orderEntry type="library" name="Maven: io.agi.ef:api-server:1.0.6" level="project" />
     <orderEntry type="library" name="Maven: io.agi.ef:api-client:1.0.6" level="project" />
-    <orderEntry type="library" name="Maven: io.agi.ef:api-persistence-client:1.0.6" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.4.2" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.4.2" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.4.2" level="project" />
     <orderEntry type="library" name="Maven: com.brsanthu:migbase64:2.2" level="project" />
+    <orderEntry type="library" name="Maven: io.agi.ef:api-persistence-client:1.0.6" level="project" />
   </component>
 </module>

@@ -3,9 +3,7 @@ package io.agi.ef.serialization;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.data.FloatArray2;
-import io.agi.ef.Entity;
-import io.agi.ef.Persistence;
-import java.io.FileReader;
+
 import java.util.HashSet;
 
 /**
@@ -13,30 +11,30 @@ import java.util.HashSet;
  *
  * Created by dave on 16/02/16.
  */
-public class JsonData {
+public class ModelData {
 
     public String _key;
     public String _refKey;
     public String _sizes;
     public String _elements;
 
-    public JsonData( String key, Data d ) {
+    public ModelData( String key, Data d ) {
         _key = key;
         _refKey = null;
         if( d != null ) {
-            _sizes = DataSizeToString(d._d); //d._d.toString();
+            _sizes = DataSizeToString(d._dataSize ); //d._dataSize.toString();
             _elements = FloatArrayToString(d);//d._values.toString();
         }
     }
 
-    public JsonData( String key, String refKey ) {
+    public ModelData( String key, String refKey ) {
         _key = key;
         _refKey = refKey;
         _sizes = null;
         _elements = null;
     }
 
-    public JsonData( String key, String refKey, String sizes, String elements ) {
+    public ModelData( String key, String refKey, String sizes, String elements ) {
         _key = key;
         _refKey = refKey;
         _sizes = sizes;
@@ -76,7 +74,7 @@ public class JsonData {
      */
     public void setData( Data d ) {
         try {
-            _sizes = DataSizeToString( d._d );
+            _sizes = DataSizeToString( d._dataSize );
             _elements = FloatArrayToString( d );
         }
         catch( Exception e ) {

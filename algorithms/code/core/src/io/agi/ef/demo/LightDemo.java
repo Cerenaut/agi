@@ -1,13 +1,6 @@
 package io.agi.ef.demo;
 
-import io.agi.core.orm.Keys;
-import io.agi.core.orm.NamedObject;
-import io.agi.core.orm.ObjectMap;
 import io.agi.ef.*;
-import io.agi.ef.http.HttpCoordination;
-import io.agi.ef.serialization.JsonData;
-import io.agi.ef.serialization.JsonEntity;
-import io.agi.ef.sql.JdbcPersistence;
 
 /**
  * Created by dave on 18/02/16.

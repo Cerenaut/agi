@@ -4,7 +4,7 @@ import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
-import io.agi.ef.serialization.JsonData;
+import io.agi.ef.serialization.ModelData;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,9 +22,9 @@ public abstract class Entity extends NamedObject implements EntityListener {
     protected String _parent;
     protected Node _n;
 
-    protected HashSet< String > _childrenWaiting = new HashSet< String >();
+    protected HashSet<String> _childrenWaiting = new HashSet<String>();
 
-    protected HashMap< String, Data > _data = new HashMap< String, Data >();
+    private HashMap<String, Data> _data = new HashMap<String, Data>();
 
     public Entity( String name, ObjectMap om, String type, String parent, Node n ) {
         super( name, om );
@@ -57,8 +57,8 @@ public abstract class Entity extends NamedObject implements EntityListener {
             String inputSuffix,
             String referenceEntity,
             String referenceSuffix ) {
-        String inputKey = NamedObject.GetKey(inputEntity, inputSuffix);
-        String refKey = NamedObject.GetKey(referenceEntity, referenceSuffix);
+        String inputKey = NamedObject.GetKey( inputEntity, inputSuffix );
+        String refKey = NamedObject.GetKey( referenceEntity, referenceSuffix );
         SetInputReference( p, inputKey, refKey );
     }
 
@@ -66,10 +66,10 @@ public abstract class Entity extends NamedObject implements EntityListener {
             Persistence p,
             String dataKey,
             String refKeys ) {
-        JsonData jd = p.getData( dataKey );
+        ModelData jd = p.getData( dataKey );
 
-        if( jd == null ) {
-            jd = new JsonData( dataKey, refKeys );
+        if ( jd == null ) {
+            jd = new ModelData( dataKey, refKeys );
         }
 
         jd._refKey = refKeys;
@@ -80,8 +80,9 @@ public abstract class Entity extends NamedObject implements EntityListener {
         return _n;
     }
 
-    public abstract void getInputKeys( Collection< String > keys );
-    public abstract void getOutputKeys( Collection< String > keys );
+    public abstract void getInputKeys( Collection<String> keys );
+
+    public abstract void getOutputKeys( Collection<String> keys );
 
     // Properties
     public Float getPropertyFloat( String suffix, Float defaultValue ) {
@@ -89,65 +90,71 @@ public abstract class Entity extends NamedObject implements EntityListener {
         Persistence p = _n.getPersistence();
         return p.getPropertyFloat( key, defaultValue );
     }
-    public void setPropertyFloat(String suffix, float value) {
+
+    public void setPropertyFloat( String suffix, float value ) {
         String key = getKey( suffix );
         Persistence p = _n.getPersistence();
         p.setPropertyFloat( key, value );
     }
 
-    public Double getPropertyDouble(String suffix, Double defaultValue) {
+    public Double getPropertyDouble( String suffix, Double defaultValue ) {
         String key = getKey( suffix );
         Persistence p = _n.getPersistence();
-        return p.getPropertyDouble(key, defaultValue);
-    }
-    public void setPropertyDouble(String suffix, double value) {
-        String key = getKey( suffix );
-        Persistence p = _n.getPersistence();
-        p.setPropertyDouble(key, value );
+        return p.getPropertyDouble( key, defaultValue );
     }
 
-    public Long getPropertyLong(String suffix, Long defaultValue) {
+    public void setPropertyDouble( String suffix, double value ) {
+        String key = getKey( suffix );
+        Persistence p = _n.getPersistence();
+        p.setPropertyDouble( key, value );
+    }
+
+    public Long getPropertyLong( String suffix, Long defaultValue ) {
         String key = getKey( suffix );
         Persistence p = _n.getPersistence();
         return p.getPropertyLong( key, defaultValue );
     }
-    public void setPropertyLong(String suffix, long value) {
+
+    public void setPropertyLong( String suffix, long value ) {
         String key = getKey( suffix );
         Persistence p = _n.getPersistence();
-        p.setPropertyLong(key, value );
+        p.setPropertyLong( key, value );
     }
 
-    public Integer getPropertyInt(String suffix, Integer defaultValue) {
+    public Integer getPropertyInt( String suffix, Integer defaultValue ) {
         String key = getKey( suffix );
         Persistence p = _n.getPersistence();
         return p.getPropertyInt( key, defaultValue );
     }
-    public void setPropertyInt(String suffix, int value) {
+
+    public void setPropertyInt( String suffix, int value ) {
         String key = getKey( suffix );
         Persistence p = _n.getPersistence();
-        p.setPropertyInt(key, value );
+        p.setPropertyInt( key, value );
     }
 
-    public Boolean getPropertyBoolean(String suffix, Boolean defaultValue) {
+    public Boolean getPropertyBoolean( String suffix, Boolean defaultValue ) {
         String key = getKey( suffix );
         Persistence p = _n.getPersistence();
         return p.getPropertyBoolean( key, defaultValue );
     }
-    public void setPropertyBoolean(String suffix, boolean value) {
+
+    public void setPropertyBoolean( String suffix, boolean value ) {
         String key = getKey( suffix );
         Persistence p = _n.getPersistence();
-        p.setPropertyBoolean(key, value );
+        p.setPropertyBoolean( key, value );
     }
 
-    public String getPropertyString(String suffix, String defaultValue) {
+    public String getPropertyString( String suffix, String defaultValue ) {
         String key = getKey( suffix );
         Persistence p = _n.getPersistence();
         return p.getPropertyString( key, defaultValue );
     }
-    public void setPropertyString(String suffix, String value) {
+
+    public void setPropertyString( String suffix, String value ) {
         String key = getKey( suffix );
         Persistence p = _n.getPersistence();
-        p.setPropertyString(key, value );
+        p.setPropertyString( key, value );
     }
 
     // if I cant issue another update to children until this has completed...
@@ -156,7 +163,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
     public void update() {
 
         String entityName = getName();
-        if( !_n.lock(entityName) ) {
+        if ( !_n.lock( entityName ) ) {
             return;
         }
 
@@ -164,42 +171,43 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         Persistence p = _n.getPersistence();
         //        Collection< JsonEntity > children = p.getChildEntities( _name );
-        Collection<String> childNames = p.getChildEntities(_name);
+        Collection<String> childNames = p.getChildEntities( _name );
 
-        synchronized (_childrenWaiting) {
-            _childrenWaiting.addAll(childNames);
+        if ( childNames.isEmpty() ) {
+            _n.notifyUpdated( getName() ); // this entity, the parent, is now complete
+            return;
+        }
+
+        synchronized ( _childrenWaiting ) {
+            _childrenWaiting.addAll( childNames );
 
             // add self as listener for these children
-            for (String childName : childNames) {
-                _n.addEntityListener(childName, this);
+            for ( String childName : childNames ) {
+                _n.addEntityListener( childName, this );
             }
         }
 
         // update all the children
-        for (String childName : childNames) {
-            _n.requestUpdate(childName); // schedule an update, may have already occurred
+        for ( String childName : childNames ) {
+            _n.requestUpdate( childName ); // schedule an update, may have already occurred
             // update to child may occur any time after this, because only 1 parent so waiting for me to call the update.
         }
 
-        System.err.println("Thread " + Thread.currentThread().hashCode() + " terminating, was running: " + entityName);
-
-        if( childNames.isEmpty() ) {
-            _n.notifyUpdated(getName()); // this entity, the parent, is now complete
-        }
+        System.err.println( "Thread " + Thread.currentThread().hashCode() + " terminating, was running: " + entityName );
     }
 
     public void onEntityUpdated( String entityName ) {
-        synchronized( _childrenWaiting ) {
+        synchronized ( _childrenWaiting ) {
             _childrenWaiting.remove( entityName );
 
-            System.err.print("Entity " + entityName + " notified about: " + entityName + " waiting for " );
-            for( String child : _childrenWaiting ) {
+            System.err.print( "Entity " + entityName + " notified about: " + entityName + " waiting for " );
+            for ( String child : _childrenWaiting ) {
                 System.err.print( child + ", " );
             }
             System.err.println();
 
-            if( _childrenWaiting.isEmpty() ) {
-                _n.notifyUpdated(getName()); // this entity, the parent, is now complete
+            if ( _childrenWaiting.isEmpty() ) {
+                _n.notifyUpdated( getName() ); // this entity, the parent, is now complete
             }
             // else: wait for other children
         }
@@ -209,15 +217,15 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         // 1. get inputs
         // get all the inputs and put them in the object map.
-        Collection< String > inputKeys = new ArrayList< String >();
+        Collection<String> inputKeys = new ArrayList<String>();
         getInputKeys( inputKeys );
-        getData(inputKeys);
+        getData( inputKeys );
 
         // 2. get outputs
         // get all the outputs and put them in the object map.
-        Collection< String > outputKeys = new ArrayList< String >();
-        getOutputKeys(outputKeys);
-        getData(outputKeys);
+        Collection<String> outputKeys = new ArrayList<String>();
+        getOutputKeys( outputKeys );
+        getData( outputKeys );
 
         // 3. doUpdateSelf()
         doUpdateSelf();
@@ -225,32 +233,36 @@ public abstract class Entity extends NamedObject implements EntityListener {
         // 4. set outputs
         // write all the outputs back to the persistence system
 //        setData(inputKeys);
-        setData(outputKeys);
+        setData( outputKeys );
 
 
         // update age:
-        int age = getPropertyInt(SUFFIX_AGE, 0);
+        int age = getPropertyInt( SUFFIX_AGE, 0 );
         ++age;
         setPropertyInt( SUFFIX_AGE, age );
 
         System.err.println( "Update: " + getName() + " age: " + age );
     }
 
-    public void getData( Collection< String > keys ) {
+    public Data getData( String keySuffix ) {
+        return _data.get( getKey( keySuffix ) );
+    }
+
+    public void getData( Collection<String> keys ) {
         Persistence p = _n.getPersistence();
 
-        for( String keySuffix : keys ) {
-            String inputKey = getKey(keySuffix);
+        for ( String keySuffix : keys ) {
+            String inputKey = getKey( keySuffix );
 
-            JsonData jd = p.getData(inputKey);
+            ModelData jd = p.getData( inputKey );
 
-            HashSet< String > refKeys = jd.getRefKeys();
-            if( !refKeys.isEmpty() ) {
+            HashSet<String> refKeys = jd.getRefKeys();
+            if ( !refKeys.isEmpty() ) {
                 // create an output matrix which is a composite of all the referenced inputs.
-                HashMap< String, Data > allRefs = new HashMap< String, Data >();
+                HashMap<String, Data> allRefs = new HashMap<String, Data>();
 
-                for( String refKey : refKeys ) {
-                    JsonData refJson = p.getData( refKey );
+                for ( String refKey : refKeys ) {
+                    ModelData refJson = p.getData( refKey );
                     Data refData = refJson.getData();
                     allRefs.put( refKey, refData );
                 }
@@ -272,6 +284,10 @@ public abstract class Entity extends NamedObject implements EntityListener {
         }
     }
 
+    public void setData( String keySuffix, Data output ) {
+        _data.put( getKey( keySuffix ), output );
+    }
+
     /**
      * Default implementation: If a single reference, copy its shape.
      * Otherwise, creates a 1-D vector containing all input bits.
@@ -281,19 +297,19 @@ public abstract class Entity extends NamedObject implements EntityListener {
      * @param allRefs
      * @return
      */
-    protected Data getCombinedData( String inputKeySuffix, HashMap< String, Data > allRefs ) {
+    protected Data getCombinedData( String inputKeySuffix, HashMap<String, Data> allRefs ) {
 
         // case 1: No input.
         int nbrRefs = allRefs.size();
-        if( nbrRefs == 0 ) {
+        if ( nbrRefs == 0 ) {
             return null;
         }
 
         // case 2: Single input
-        if( nbrRefs == 1 ) {
+        if ( nbrRefs == 1 ) {
             String refKey = allRefs.keySet().iterator().next();
             Data refData = allRefs.get( refKey );
-            if( refData == null ) {
+            if ( refData == null ) {
                 return null;
             }
             Data d = new Data( refData );
@@ -303,9 +319,9 @@ public abstract class Entity extends NamedObject implements EntityListener {
         // case 3: Multiple inputs (combine as vector)
         int sumVolume = 0;
 
-        for( String refKey : allRefs.keySet() ) {
+        for ( String refKey : allRefs.keySet() ) {
             Data refData = allRefs.get( refKey );
-            if( refData == null ) {
+            if ( refData == null ) {
                 return null;
             }
             int volume = refData.getSize();
@@ -316,8 +332,8 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         int offset = 0;
 
-        for( String refKey : allRefs.keySet() ) {
-            Data refData = allRefs.get(refKey);
+        for ( String refKey : allRefs.keySet() ) {
+            Data refData = allRefs.get( refKey );
             int volume = refData.getSize();
 
             d.copyRange( refData, offset, 0, volume );
@@ -328,21 +344,28 @@ public abstract class Entity extends NamedObject implements EntityListener {
         return d;
     }
 
-    public void setData( Collection< String > keys ) {
+    public void setData( Collection<String> keys ) {
         Persistence p = _n.getPersistence();
 
-        for( String keySuffix : keys ) {
-            String inputKey = getKey(keySuffix);
-            Data d = _data.get(inputKey);
-            p.setData( new JsonData( inputKey, d ) );
+        for ( String keySuffix : keys ) {
+            String inputKey = getKey( keySuffix );
+            Data d = _data.get( inputKey );
+            p.setData( new ModelData( inputKey, d ) );
         }
     }
 
-    public Data getDataDefaultSize( String keySuffix, DataSize defaultSize ) {
+    /**
+     * Get the data if it exists, and create it if it doesn't.
+     *
+     * @param keySuffix   the key of the data
+     * @param defaultSize create data of this size, if the data does not exist
+     * @return data
+     */
+    public Data getData( String keySuffix, DataSize defaultSize ) {
         String key = getKey( keySuffix );
         Data d = _data.get( key );
 
-        if( d == null ) {
+        if ( d == null ) {
             d = new Data( defaultSize );
         }
         else {

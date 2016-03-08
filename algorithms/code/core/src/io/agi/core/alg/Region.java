@@ -260,7 +260,7 @@ public class Region extends NamedObject implements Callback {
     }
 
     public int getSurfaceDepth( int offset ) {
-        Point xySurface = Data2d.getXY( _surfaceInput._d, offset );
+        Point xySurface = Data2d.getXY( _surfaceInput._dataSize, offset );
         return getSurfaceDepth(xySurface.x, xySurface.y);
     }
 
@@ -284,7 +284,7 @@ if( c < 0 ) {
     }
 
 //    public float getDepth() {
-//        int columnOffset = Data2d.getOffset(_r._columnDepth._d, _x, _y);
+//        int columnOffset = Data2d.getOffset(_r._columnDepth._dataSize, _x, _y);
 //        float z = _r._columnDepth._values[ columnOffset ];
 //        return z;
 //    }
@@ -433,7 +433,7 @@ if( c < 0 ) {
 
             Integer offset = (Integer)activeInput[ sample ];
 
-            Point p = Data2d.getXY( _surfaceInput._d, offset );
+            Point p = Data2d.getXY( _surfaceInput._dataSize, offset );
 
             float x_i = p.x;
             float y_i = p.y;
