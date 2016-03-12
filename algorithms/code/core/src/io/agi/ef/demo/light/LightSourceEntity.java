@@ -1,4 +1,4 @@
-package io.agi.ef.demo;
+package io.agi.ef.demo.light;
 
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
@@ -12,7 +12,7 @@ import java.util.Collection;
 /**
  * Created by dave on 20/02/16.
  */
-public class LightSource extends Entity {
+public class LightSourceEntity extends Entity {
 
     public static final String ENTITY_TYPE = "light-source";
     public static final String CONTROL_INPUT = "control-input";
@@ -21,8 +21,8 @@ public class LightSource extends Entity {
     public static final String MATRIX_OUTPUT = "matrix-output";
     public static final String LEARNING_RATE = "learning-rate";
 
-    public LightSource( String entityName, ObjectMap om, String type, String parent, Node n ) {
-        super( entityName, om, type, parent, n );
+    public LightSourceEntity(String entityName, ObjectMap om, String type, Node n) {
+        super( entityName, om, type, n );
     }
 
     public void getInputKeys( Collection<String> keys ) {
@@ -39,13 +39,13 @@ public class LightSource extends Entity {
 
         float learningRate = getPropertyFloat( LEARNING_RATE, 0.1f );
 
-        Data input = getData( CONTROL_INPUT );
+        Data input = getData(CONTROL_INPUT);
 
         if ( input == null ) {
             return;
         }
 
-        Data output = getData( LIGHT_OUTPUT, new DataSize( input._dataSize ) );
+        Data output = getData(LIGHT_OUTPUT, new DataSize(input._dataSize));
 
         int elements = input._dataSize.getVolume();
 
@@ -56,15 +56,15 @@ public class LightSource extends Entity {
             output._values[ i ] = newOutputValue;
         }
 
-        setData( LIGHT_OUTPUT, output );
+        setData(LIGHT_OUTPUT, output);
 
         Data random = new Data( 10 );
         random.setRandomNormal();
-        setData( RANDOM_OUTPUT, random );
+        setData(RANDOM_OUTPUT, random);
 
         Data matrix = new Data( 20, 20 );
         matrix.setRandom();
-        setData( MATRIX_OUTPUT, matrix );
+        setData(MATRIX_OUTPUT, matrix);
     }
 
     protected float getLight( float input, float oldOutput, float learningRate ) {

@@ -34,13 +34,16 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
         int w = c.getWidthCells();
         int h = c.getHeightCells();
 
-        _inputValues = new Data( inputs );
-        _cellWeights = new Data( w, h, inputs );
-        _cellWeights.setRandom();
-        _cellErrors = new Data( w, h );
-        _cellActivity = new Data( w, h );
-        _cellMask = new Data( w, h );
+        _inputValues = new Data(inputs);
+        _cellWeights = new Data(w, h, inputs);
+        _cellErrors = new Data(w, h);
+        _cellActivity = new Data(w, h);
+        _cellMask = new Data(w, h);
+    }
+
+    public void reset() {
         _cellMask.set( 1.f );
+        _cellWeights.setRandom();
     }
 
     public Data getInput() {

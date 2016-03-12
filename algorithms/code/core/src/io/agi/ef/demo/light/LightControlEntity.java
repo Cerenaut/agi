@@ -1,4 +1,4 @@
-package io.agi.ef.demo;
+package io.agi.ef.demo.light;
 
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
@@ -12,14 +12,14 @@ import java.util.Collection;
 /**
  * Created by dave on 20/02/16.
  */
-public class LightControl extends Entity {
+public class LightControlEntity extends Entity {
 
     public static final String ENTITY_TYPE = "light-control";
     public static final String CONTROL_OUTPUT = "light-output";
     public static final String CHANGE_PROBABILITY = "change-probability";
 
-    public LightControl( String entityName, ObjectMap om, String type, String parent, Node n ) {
-        super( entityName, om, type, parent, n );
+    public LightControlEntity(String entityName, ObjectMap om, String type, Node n) {
+        super( entityName, om, type, n );
     }
 
     public void getInputKeys( Collection< String > keys ) {

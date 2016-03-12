@@ -80,7 +80,7 @@ public class Data extends FloatArray2 {
     }
 
     public void setSize( DataSize d ) {
-        _dataSize = d;
+        _dataSize = new DataSize( d );
         int size = _dataSize.getVolume();
         setSize( size );
     }

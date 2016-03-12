@@ -136,9 +136,8 @@ public class Node {
             return;
         }
 
-        //String entityType = _p.getEntityType( entityName );
-
         Entity e = _ef.create( _om, entityName, je._type );
+        e.setParent( je._parent );
 
         forkUpdate(e); // returns immediately
     }

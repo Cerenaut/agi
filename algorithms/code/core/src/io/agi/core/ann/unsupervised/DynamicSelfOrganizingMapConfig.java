@@ -8,10 +8,15 @@ import io.agi.core.orm.ObjectMap;
  */
 public class DynamicSelfOrganizingMapConfig extends CompetitiveLearningConfig {
 
-    public String _keyElasticity = "elasticity";
-    public String _keyLearningRate = "learning-rate";
-    public String _keyScaleUnit = "scale-unit";
-    public String _keyScaleFactor = "scale-factor";
+    public static final String ELASTICITY = "elasticity";
+    public static final String LEARNING_RATE = "learning-rate";
+    public static final String SCALE_UNIT = "scale-unit";
+    public static final String SCALE_FACTOR = "scale-factor";
+
+    public String _keyElasticity = ELASTICITY;
+    public String _keyLearningRate = LEARNING_RATE;
+    public String _keyScaleUnit = SCALE_UNIT;
+    public String _keyScaleFactor = SCALE_FACTOR;
 
     public DynamicSelfOrganizingMapConfig() {
     }

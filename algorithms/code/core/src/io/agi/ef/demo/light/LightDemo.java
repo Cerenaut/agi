@@ -1,4 +1,4 @@
-package io.agi.ef.demo;
+package io.agi.ef.demo.light;
 
 import io.agi.ef.*;
 

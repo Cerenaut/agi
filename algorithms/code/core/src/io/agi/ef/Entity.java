@@ -2,14 +2,12 @@ package io.agi.ef;
 
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
+import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 import io.agi.ef.serialization.ModelData;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * Created by dave on 14/02/16.
@@ -17,6 +15,7 @@ import java.util.HashSet;
 public abstract class Entity extends NamedObject implements EntityListener {
 
     public static final String SUFFIX_AGE = "age";
+    public static final String SUFFIX_RESET = "reset"; /// used as a flag to indicate the entity should reset itself on next update.
 
     protected String _type;
     protected String _parent;
@@ -26,12 +25,16 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
     private HashMap<String, Data> _data = new HashMap<String, Data>();
 
-    public Entity( String name, ObjectMap om, String type, String parent, Node n ) {
+    public Entity( String name, ObjectMap om, String type, Node n ) {
         super( name, om );
 //        _name = name;
         _type = type;
-        _parent = parent;
+//        _parent = parent;
         _n = n;
+    }
+
+    public void setParent( String parent ) {
+        _parent = parent;
     }
 
     public String getParent() {
@@ -66,14 +69,22 @@ public abstract class Entity extends NamedObject implements EntityListener {
             Persistence p,
             String dataKey,
             String refKeys ) {
-        ModelData jd = p.getData( dataKey );
+        ModelData jd = p.getData(dataKey);
 
         if ( jd == null ) {
             jd = new ModelData( dataKey, refKeys );
         }
 
         jd._refKey = refKeys;
-        p.setData( jd );
+        p.setData(jd);
+    }
+
+    /**
+     * Returns a random number generator that is distributed and persisted.
+     * @return
+     */
+    public Random getRandom() {
+        return RandomInstance.getInstance(); // TODO use a distributed, persisted random source
     }
 
     public Node getNode() {
@@ -348,8 +359,8 @@ public abstract class Entity extends NamedObject implements EntityListener {
         Persistence p = _n.getPersistence();
 
         for ( String keySuffix : keys ) {
-            String inputKey = getKey( keySuffix );
-            Data d = _data.get( inputKey );
+            String inputKey = getKey(keySuffix);
+            Data d = _data.get(inputKey);
             p.setData( new ModelData( inputKey, d ) );
         }
     }
@@ -362,13 +373,35 @@ public abstract class Entity extends NamedObject implements EntityListener {
      * @return data
      */
     public Data getData( String keySuffix, DataSize defaultSize ) {
-        String key = getKey( keySuffix );
+        String key = getKey(keySuffix);
         Data d = _data.get( key );
 
         if ( d == null ) {
             d = new Data( defaultSize );
         }
         else {
+            d.setSize( defaultSize );
+        }
+
+        return d;
+    }
+
+    /**
+     * Gets the specified data structure. If null, or if it does not have the same dimensions as the specified size,
+     * then it will be resized. The old values are not copied on resize.
+     *
+     * @param keySuffix
+     * @param defaultSize
+     * @return
+     */
+    public Data getDataLazyResize( String keySuffix, DataSize defaultSize ) {
+        String key = getKey( keySuffix );
+        Data d = _data.get( key );
+
+        if ( d == null ) {
+            d = new Data( defaultSize );
+        }
+        else if( !d._dataSize.isSameAs( defaultSize ) ){
             d.setSize( defaultSize );
         }
 

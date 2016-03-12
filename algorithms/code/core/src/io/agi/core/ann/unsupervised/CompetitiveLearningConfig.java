@@ -10,10 +10,13 @@ import io.agi.core.orm.ObjectMap;
  */
 public class CompetitiveLearningConfig extends NetworkConfig {
 
-//    public ObjectMap _om;
-    public String _keyInputs = "i";
-    public String _keyWidthCells = "w";
-    public String _keyHeightCells = "h";
+    public static final String INPUTS = "inputs";
+    public static final String WIDTH_CELLS = "width-cells";
+    public static final String HEIGHT_CELLS = "height-cells";
+
+    public String _keyInputs = INPUTS;
+    public String _keyWidthCells = WIDTH_CELLS;
+    public String _keyHeightCells = HEIGHT_CELLS;
 
     public CompetitiveLearningConfig() {
     }
