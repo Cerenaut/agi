@@ -68,7 +68,7 @@ public class Data2d {
      * A function to determine a nice shape and size for a given FloatArray2, for
      * easy painting.
      * 
-     * @param fa
+     * @param d
      * @return Nice width and height
      */
     public static Point getSize( Data d ) {
