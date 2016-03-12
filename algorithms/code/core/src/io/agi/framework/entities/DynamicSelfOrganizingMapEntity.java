@@ -87,6 +87,7 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
 
         if( reset ) {
             dsom.reset();
+            setPropertyBoolean( SUFFIX_RESET, false ); // turn off
         }
 
         dsom.update();

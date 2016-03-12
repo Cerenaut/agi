@@ -6,11 +6,7 @@
 
 package io.agi.core.data;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The dimensions of a data object, an N dimensional rectangle (or hyperrectangle).
@@ -102,16 +98,40 @@ public class DataSize {
     }
 
     public boolean isSameAs( DataSize d ) {
-        if( _sizes.length != d._sizes.length ) return false;
+        try {
+            if (_sizes.length != d._sizes.length) return false;
 
-        int i = 0;
-        
-        while( i < _sizes.length ) {
-            if( _sizes[ i ] != d._sizes[ i ] ) return false;
-            ++i;
+            int i = 0;
+
+            while( i < _sizes.length ) {
+                if( _sizes[i] != d._sizes[i] ) {
+                    return false;
+                }
+
+                ++i;
+            }
+
+            Set< String > keys = _labels.keySet();
+            if( !keys.equals( d._labels.keySet() ) ) {
+                return false;
+            }
+
+            Collection< Integer > valuesThis =   _labels.values();
+            Collection< Integer > valuesThat = d._labels.values();
+
+            for( String key : keys ) {
+                Integer valueThis =   _labels.get( key );
+                Integer valueThat = d._labels.get( key );
+
+                if( !valueThis.equals( valueThat ) ) {
+                    return false;
+                }
+            }
+            return true;
         }
-        
-        return true;
+        catch( Exception e ) {
+            return false;
+        }
     }
 
     public int getVolume() {

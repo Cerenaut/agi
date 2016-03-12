@@ -129,7 +129,7 @@ public class ModelData {
                 labels = labels + ","; // add comma for preceding item
             }
             sizes = sizes + String.valueOf( size );
-            labels = labels + "\"" + String.valueOf( label ) + "\"";
+            labels = labels + "\"" + label + "\"";
         }
         String result = s1 + sizes + s2 + labels + s3;
         return result;
@@ -146,7 +146,8 @@ public class ModelData {
 
             for( int i = 0; i < splitSizes.length; ++ i ) {
                 String sizeString = splitSizes[ i ];
-                String labelValue = splitSizes[ i ];
+                String labelValue = splitLabels[ i ];
+                labelValue = labelValue.replace( "\"", "" );
                 Integer sizeValue = Integer.valueOf( sizeString );
                 ds.set( i, sizeValue, labelValue );
             }

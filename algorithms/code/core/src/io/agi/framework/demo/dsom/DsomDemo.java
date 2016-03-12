@@ -60,8 +60,10 @@ public class DsomDemo {
 
         // Set a property:
         int elements = 2; // 2D
-        String elementsKey = Keys.concatenate( randomVectorName, RandomVectorEntity.ELEMENTS );
+        String elementsKey = Keys.concatenate(randomVectorName, RandomVectorEntity.ELEMENTS);
         p.setPropertyInt(elementsKey, elements );
 
+        String resetKey = Keys.concatenate( classifierName, Entity.SUFFIX_RESET );
+        p.setPropertyBoolean( resetKey, true );
     }
 }
