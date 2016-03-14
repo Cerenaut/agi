@@ -21,7 +21,7 @@ public class BufferedImageSourceFactory {
 
         // configuration = path to a directory holding image files
         if( type.equalsIgnoreCase( TYPE_IMAGE_FILES ) ) {
-            BufferedImageSource bis = new FileBufferedImageSource( configuration );     // a directory, in this case
+            BufferedImageSource bis = new BufferedImageSourceImageFile( configuration );     // a directory, in this case
             return bis;
         }
 

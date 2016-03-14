@@ -55,13 +55,13 @@ public class ImageSensorEntity extends Entity {
 
     public void doUpdateSelf() {
 
-        String filesPath = getPropertyString( SOURCE_FILES_PATH, "/Users/gideon/Development/AI/ProAGI/test-images" );
+        String filesPath = getPropertyString( SOURCE_FILES_PATH, "/Users/gideon/Google Drive/Project AGI/Experimental Framework/Experiments/Tests/Images/photos" );
         String bufferedImageSourceType = getPropertyString( SOURCE_TYPE, BufferedImageSourceFactory.TYPE_IMAGE_FILES );
 
         BufferedImageSource bufferedImageSource = BufferedImageSourceFactory.create( bufferedImageSourceType, filesPath );
 
-        int resolutionX = getPropertyInt( RESOLUTION_X, 4 );
-        int resolutionY = getPropertyInt( RESOLUTION_Y, 4 );
+        int resolutionX = getPropertyInt( RESOLUTION_X, 80 );
+        int resolutionY = getPropertyInt( RESOLUTION_Y, 106 );
         boolean greyscale = getPropertyBoolean( GREYSCALE, true );
 
         ImageScreenScraper imageScreenScraper = new ImageScreenScraper();

@@ -12,14 +12,14 @@ import java.util.Collections;
 /**
  * Created by gideon on 1/10/14.
  */
-public class FileBufferedImageSource extends BufferedImageSource {
+public class BufferedImageSourceImageFile extends BufferedImageSource {
 
     private ArrayList<String> _fileNames = new ArrayList<String>();
     private String _folderName = null;
     private BufferedImage _image = null;
     private int _idx = 0;
 
-    public FileBufferedImageSource( String folderName ) {
+    public BufferedImageSourceImageFile( String folderName ) {
 
         _folderName = folderName;
 
@@ -59,7 +59,7 @@ public class FileBufferedImageSource extends BufferedImageSource {
     public BufferedImage getImage() {
 
         if (        _image == null
-                &&  _idx < _fileNames.size() ) {
+                &&  (_idx >= 0  && _idx < _fileNames.size()) ) {
 
             String fullFileName = _folderName + "/" + _fileNames.get( _idx );
 

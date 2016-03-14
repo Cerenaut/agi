@@ -1,5 +1,6 @@
 package io.agi.framework.demo.light;
 
+import io.agi.core.util.images.MNIST.IdxReader;
 import io.agi.framework.*;
 
 /**
