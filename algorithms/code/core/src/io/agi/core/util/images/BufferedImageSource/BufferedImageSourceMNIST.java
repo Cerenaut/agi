@@ -1,16 +1,11 @@
 package io.agi.core.util.images.BufferedImageSource;
 
 import io.agi.core.orm.AbstractPair;
-import io.agi.core.util.images.MNIST.DigitImage;
-import io.agi.core.util.images.MNIST.DigitImageLoadingService;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
+
 
 /**
  *
