@@ -21,6 +21,8 @@ public class BufferedImageSourceMNIST extends BufferedImageSource {
     private int _numberOfPixels = 0;
     private int _idx = 0;
 
+    private String _labelFilePath = null;
+    private String _imageFilePath = null;
     private FileInputStream _inImage = null;
     private FileInputStream _inLabel = null;
 
@@ -28,10 +30,17 @@ public class BufferedImageSourceMNIST extends BufferedImageSource {
     private String _label;
 
     public BufferedImageSourceMNIST( String labelFilePath, String imageFilePath ) {
-        
+
+        _labelFilePath = labelFilePath;
+        _imageFilePath = imageFilePath;
+
+        setup( );
+    }
+
+    private void setup( ) {
         try {
-            _inImage = new FileInputStream( imageFilePath );
-            _inLabel = new FileInputStream( labelFilePath );
+            _inLabel = new FileInputStream( _labelFilePath );
+            _inImage = new FileInputStream( _imageFilePath );
 
             int magicNumberImages = (_inImage.read() << 24 ) | (_inImage.read() << 16 ) | (_inImage.read() << 8 ) | (_inImage.read() );
             _numberOfImages = (_inImage.read() << 24 ) | (_inImage.read() << 16 ) | (_inImage.read() << 8 ) | (_inImage.read() );
@@ -47,10 +56,13 @@ public class BufferedImageSourceMNIST extends BufferedImageSource {
             e.printStackTrace();
         }
     }
-    
-    
+
     @Override
     public BufferedImage getImage() {
+
+        if ( _image != null ) {
+            return _image;
+        }
 
         try {
             _image = new BufferedImage( _numberOfColumns, _numberOfRows, BufferedImage.TYPE_INT_ARGB );
@@ -97,17 +109,37 @@ public class BufferedImageSourceMNIST extends BufferedImageSource {
 
         if ( _idx >= _numberOfImages ) { // wrap around
             _idx = 0;
-
-            _image = null;      // clear 'cached' copy
         }
 
+        _image = null;      // clear 'cached' copy
         return _idx;
     }
 
+
+    /**
+     * THIS IS INEFFICIENT. It re-sets-up the file streams and seeks from the start each time.
+     * It is a quick implementation as the class is not currently used for anything but pre-processing.
+     */
     @Override
-    public boolean jumpToImage( int index ) {
+    public boolean seek( int index ) {
+
+        setup();
+        return skip( index );
+    }
+
+
+    public boolean skip( int index ) {
         if ( index >= 0 && index < _numberOfImages ) {
             _idx = index;
+
+            long numBytes = _idx * _numberOfPixels;
+            try {
+                _inImage.skip( numBytes );
+                _inLabel.skip( _idx );
+            }
+            catch ( IOException e ) {
+                e.printStackTrace();
+            }
 
             _image = null;      // clear 'cached' copy
 

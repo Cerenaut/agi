@@ -32,7 +32,7 @@ public abstract class BufferedImageSource {
      * Jump the source to the image specified by index for buffer.
      * @return false if the index is out of range
      */
-    public abstract boolean jumpToImage( int index );
+    public abstract boolean seek( int index );
 
     /**
      * Return the current buffer size. This may not be a constant depending on the implementation.

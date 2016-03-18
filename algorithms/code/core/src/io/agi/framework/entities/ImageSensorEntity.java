@@ -69,11 +69,11 @@ public class ImageSensorEntity extends Entity {
 
         int index = getPropertyInt( BUFFERED_IMAGE_INDEX, 0 );
 
-        boolean inRange = bufferedImageSource.jumpToImage( index );
+        boolean inRange = bufferedImageSource.seek( index );
         if ( !inRange ) {
             index = 0;          // try to reset to beginning (may still be out of range)
 
-            System.out.println( "ERROR: Could not get an image to scrape. Error with BufferedImageSource.jumpToImage() in ImageSensorEntity" );
+            System.out.println( "ERROR: Could not get an image to scrape. Error with BufferedImageSource.seek() in ImageSensorEntity" );
         }
         else {
             imageScreenScraper.scrape();

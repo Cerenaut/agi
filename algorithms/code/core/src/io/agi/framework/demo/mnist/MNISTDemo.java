@@ -6,6 +6,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.util.HashMap;
 
 /**
@@ -15,18 +16,39 @@ public class MNISTDemo {
 
     public static void main( String[] args ) {
 
-        BufferedImageSourceMNIST imagesMNIST = new BufferedImageSourceMNIST(
-                "/Users/gideon/Google Drive/Project AGI/Experimental Framework/Experiments/Tests/Images/MNIST/train-labels-idx1-ubyte",
-                "/Users/gideon/Google Drive/Project AGI/Experimental Framework/Experiments/Tests/Images/MNIST/train-images-idx3-ubyte");
+//        preprocess( "/Users/gideon/Google Drive/Project AGI/Experimental Framework/Experiments/Tests/Images/MNIST/train-labels-idx1-ubyte",
+//                    "/Users/gideon/Google Drive/Project AGI/Experimental Framework/Experiments/Tests/Images/MNIST/train-images-idx3-ubyte",
+//                    "/Users/gideon/Development/AI/ProAGI/mnist_output/",
+//                    10 );
 
-        String outputPath = "/Users/gideon/Development/AI/ProAGI/mnist_output/";
+        Integer max = new Integer( args[ 3 ] );
+        preprocess( args [ 0 ], args[ 1 ], args[ 2 ], max );
+
+    }
+
+    /**
+     *
+     * @param labelFile
+     * @param imageFile
+     * @param outputPath
+     * @param maxNumImages if < 0 or > number of images, then go through all images
+     */
+    private static void preprocess( String labelFile, String imageFile, String outputPath, int maxNumImages ) {
+
+        BufferedImageSourceMNIST imagesMNIST = new BufferedImageSourceMNIST( labelFile, imageFile );
+
+        if  ( ( maxNumImages < 0 ) ||
+              ( maxNumImages >= imagesMNIST.bufferSize() ) ) {
+            maxNumImages = imagesMNIST.bufferSize();
+        }
 
         HashMap< String, Integer > labelCount = new HashMap<>(  );
-        for ( int i=0 ; i < 10 /*imagesMNIST.bufferSize()*/ ; i++ ) {
-            imagesMNIST.nextImage();
+        for ( int i=0 ; i < maxNumImages ; i++ ) {
 
             BufferedImage image = imagesMNIST.getImage();
             String label = imagesMNIST.getLabel();
+
+            imagesMNIST.nextImage();
 
             Integer count = 0;
             if ( labelCount.containsKey( label ) ) {
@@ -43,6 +65,5 @@ public class MNISTDemo {
                 e.printStackTrace();
             }
         }
-
     }
 }

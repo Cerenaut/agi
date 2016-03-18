@@ -106,7 +106,7 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
      * @param index
      */
     @Override
-    public boolean jumpToImage( int index ) {
+    public boolean seek( int index ) {
 
         if ( index >= 0 && index < _fileNames.size() ) {
             _idx = index;
