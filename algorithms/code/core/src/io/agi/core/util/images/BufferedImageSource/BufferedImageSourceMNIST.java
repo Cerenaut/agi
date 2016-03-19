@@ -57,6 +57,15 @@ public class BufferedImageSourceMNIST extends BufferedImageSource {
         }
     }
 
+    /**
+     *
+     * NOTE: This advances the image stream, so DOES advance to the next image.
+     * This breaks the API of the interface.
+     *
+     * Needs fixing if this is to be used for anything other than pre-processing.
+     *
+     * @return
+     */
     @Override
     public BufferedImage getImage() {
 

@@ -54,7 +54,20 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
     }
 
     /**
-     * Return the current image. If it is not set, then read it in.
+     * For this class, return file name.
+     * @return
+     */
+    public String getImageName() {
+        String fullFileName = "undefined";
+        if (_idx >= 0  && _idx < _fileNames.size()) {
+            fullFileName = _folderName + "/" + _fileNames.get( _idx );
+        }
+        return fullFileName;
+    }
+
+    /**
+     * Return the current image. If it is not set, then cache it.
+     * If it could not get an image for this index, return null.
      */
     public BufferedImage getImage() {
 
@@ -75,10 +88,17 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
     }
 
     public AbstractPair<Integer, Integer> getImageSize() {
+
+        // iterate through images till successfully get an image
+        BufferedImage image = null;
+        int idx = 0;
+        do {
+            image = getImage();
+            idx = nextImage();
+        } while ( image == null && idx != 0 );
+
         int w = 0;
         int h = 0;
-        getImage();
-
         if ( _image != null ) {
             w = _image.getWidth();
             h = _image.getHeight();

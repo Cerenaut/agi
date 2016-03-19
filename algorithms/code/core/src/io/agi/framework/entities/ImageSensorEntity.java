@@ -43,10 +43,15 @@ public class ImageSensorEntity extends Entity {
     public ImageSensorEntity( String entityName, ObjectMap om, String type, Node n) {
         super( entityName, om, type, n );
 
-        // create db entries for the properties that we will use later
-        setPropertyString( SOURCE_FILES_PATH, "./" );
-        setPropertyString( SOURCE_TYPE, BufferedImageSourceFactory.TYPE_IMAGE_FILES );
-        setPropertyInt( BUFFERED_IMAGE_INDEX, 0 );
+        // create db entries for the properties that we will use later, if they do not exist
+
+        String sourceFilesPath  = getPropertyString( SOURCE_FILES_PATH, "./" );
+        String sourceType       = getPropertyString( SOURCE_TYPE, BufferedImageSourceFactory.TYPE_IMAGE_FILES );
+        int bufferedImageIndex  = getPropertyInt( BUFFERED_IMAGE_INDEX, 0 );
+
+        setPropertyString( SOURCE_FILES_PATH, sourceFilesPath);
+        setPropertyString( SOURCE_TYPE, sourceType );
+        setPropertyInt( BUFFERED_IMAGE_INDEX, bufferedImageIndex );
     }
 
     @Override

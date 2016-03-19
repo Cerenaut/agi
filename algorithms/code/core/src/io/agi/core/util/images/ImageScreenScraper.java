@@ -92,9 +92,7 @@ public class ImageScreenScraper implements Callback {
         BufferedImage biTgt = null;
 
         if ( bi == null ) {
-
-            System.out.println( "ERROR: ImageScreenScraper.scrape() - could not get next image." );
-
+            System.out.println( "ERROR: ImageScreenScraper.scrape() - could not scrape image with name: " + _bis.getImageName() );
             return;
         }
 

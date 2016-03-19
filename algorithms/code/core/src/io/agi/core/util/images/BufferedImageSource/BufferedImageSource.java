@@ -11,9 +11,8 @@ import java.awt.image.BufferedImage;
 public abstract class BufferedImageSource {
 
     /**
-     * Return nextImage bufferedImage.
-     * Return null if couldn't get an getImage.
-     * @return
+     * Return the current image. If it is not set, then cache it.
+     * If it could not get an image for this index, return null.
      */
     public abstract BufferedImage getImage();
 
@@ -22,7 +21,9 @@ public abstract class BufferedImageSource {
      * @return 
      */
     public abstract AbstractPair< Integer, Integer > getImageSize();
-  
+
+    public String getImageName() { return "undefined"; }
+
     /**
      * Advance the source to nextImage image
      */
