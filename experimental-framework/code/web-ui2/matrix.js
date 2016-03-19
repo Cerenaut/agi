@@ -61,11 +61,11 @@ var Matrix = {
 
     series[ 0 ] = {
             name: key,
-            borderWidth: 1,
+            borderWidth: 0,
             animation: false,
             data: values,
             dataLabels: {
-                enabled: true,
+                enabled: false,
                 color: '#000000'
             }
     }

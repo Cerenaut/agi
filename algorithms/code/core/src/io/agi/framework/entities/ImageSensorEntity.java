@@ -42,11 +42,15 @@ public class ImageSensorEntity extends Entity {
 
     public ImageSensorEntity( String entityName, ObjectMap om, String type, Node n) {
         super( entityName, om, type, n );
+
+        // create db entries for the properties that we will use later
+        setPropertyString( SOURCE_FILES_PATH, "./" );
+        setPropertyString( SOURCE_TYPE, BufferedImageSourceFactory.TYPE_IMAGE_FILES );
+        setPropertyInt( BUFFERED_IMAGE_INDEX, 0 );
     }
 
     @Override
-    public void getInputKeys( Collection<String> keys ) {
-    }
+    public void getInputKeys( Collection<String> keys ) {}
 
     @Override
     public void getOutputKeys( Collection<String> keys ) {
@@ -55,13 +59,13 @@ public class ImageSensorEntity extends Entity {
 
     public void doUpdateSelf() {
 
-        String filesPath = getPropertyString( SOURCE_FILES_PATH, "/Users/gideon/Google Drive/Project AGI/Experimental Framework/Experiments/Tests/Images/photos" );
+        String filesPath = getPropertyString( SOURCE_FILES_PATH, "./" );
         String bufferedImageSourceType = getPropertyString( SOURCE_TYPE, BufferedImageSourceFactory.TYPE_IMAGE_FILES );
 
         BufferedImageSource bufferedImageSource = BufferedImageSourceFactory.create( bufferedImageSourceType, filesPath );
 
-        int resolutionX = getPropertyInt( RESOLUTION_X, 80 );
-        int resolutionY = getPropertyInt( RESOLUTION_Y, 106 );
+        int resolutionX = getPropertyInt( RESOLUTION_X, 28 );
+        int resolutionY = getPropertyInt( RESOLUTION_Y, 28 );
         boolean greyscale = getPropertyBoolean( GREYSCALE, true );
 
         ImageScreenScraper imageScreenScraper = new ImageScreenScraper();

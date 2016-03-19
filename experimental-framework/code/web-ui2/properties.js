@@ -8,7 +8,32 @@ var Properties = {
 
   save : function() {
 
-    $( ".new-value" ).each(  );
+    $( ".new-value" ).each( function( index ) {
+                                var key = this.id;
+                                var val = this.value;
+
+                                console.log( index + ": " + key + " = " + val );
+
+                                if ( val ) {
+                                    var postJson = { "key":key, "value":val };
+
+                                    // replace property
+                                    Postgrest.deleteJson( "properties?key=eq." + key, function( response ) {
+                                            Postgrest.postJson( "properties", postJson, Properties.onPostData );
+                                        });
+                                }
+                            });
+  },
+
+  copy : function( fid, value ) {
+
+    console.log( fid, value ); // , text_field_name, value );
+
+    $( "#"+fid).val( value );
+  },
+
+  onPostData : function( response ) {
+    console.log( "Post response = " + response );
   },
 
   onGetData : function( response ) {
@@ -25,6 +50,7 @@ var Properties = {
       html = html + "</td><td>";
       html = html + property.value;
       html = html + "</td><td><input type='text' id='"+property.key+"' style='display:inline;' class='new-value' placeholder='New value' value=''/>";
+      html = html + "</td><td><input type='button' id=copy-'"+property.key+"' class='btn btn-sm btn-success' style='' onclick='Properties.copy( \"" + property.key + "\", \"" + property.value + "\" );' value='Copy value'/>";
       html = html + "</td></tr>";
     }
 
@@ -55,5 +81,3 @@ $( document ).ready( function() {
   Properties.setup();
   Properties.refresh(); // once
 } );
-
-

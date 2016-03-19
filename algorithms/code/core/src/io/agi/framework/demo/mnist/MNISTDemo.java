@@ -1,6 +1,9 @@
 package io.agi.framework.demo.mnist;
 
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceMNIST;
+import io.agi.framework.Main;
+import io.agi.framework.Node;
+import io.agi.framework.entities.CommonEntityFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -16,15 +19,38 @@ public class MNISTDemo {
 
     public static void main( String[] args ) {
 
-//        preprocess( "/Users/gideon/Google Drive/Project AGI/Experimental Framework/Experiments/Tests/Images/MNIST/train-labels-idx1-ubyte",
-//                    "/Users/gideon/Google Drive/Project AGI/Experimental Framework/Experiments/Tests/Images/MNIST/train-images-idx3-ubyte",
-//                    "/Users/gideon/Development/AI/ProAGI/mnist_output/",
-//                    10 );
+        boolean preprocess = false;
+        if ( preprocess ) {
+            Integer max = new Integer( args[ 3 ] );
+            preprocess( args[ 0 ], args[ 1 ], args[ 2 ], max );
+            return;
+        }
 
-        Integer max = new Integer( args[ 3 ] );
-        preprocess( args [ 0 ], args[ 1 ], args[ 2 ], max );
+        // Create a Node
+        Main m = new Main();
+        m.setup( args[ 0 ], null, new CommonEntityFactory() );
+
+        // Create custom entities and references
+        if ( args.length > 1 ) {
+            m.loadEntities( args[ 1 ] );
+        }
+
+        if ( args.length > 2 ) {
+            m.loadReferences( args[ 2 ] );
+        }
+
+        // Programmatic hook to create entities and references..
+        createEntities( m._n );
+
+        // Start the system
+        m.run();
 
     }
+
+
+    public static void createEntities( Node n ) {
+    }
+
 
     /**
      *
