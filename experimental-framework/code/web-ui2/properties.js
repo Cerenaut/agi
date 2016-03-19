@@ -50,7 +50,7 @@ var Properties = {
       html = html + "</td><td>";
       html = html + property.value;
       html = html + "</td><td><input type='text' id='"+property.key+"' style='display:inline;' class='new-value' placeholder='New value' value=''/>";
-      html = html + "</td><td><input type='button' id=copy-'"+property.key+"' class='btn btn-sm btn-success' style='' onclick='Properties.copy( \"" + property.key + "\", \"" + property.value + "\" );' value='Copy value'/>";
+      html = html + "</td><td><input type='button' id=copy-'"+property.key+"' class='btn btn-xs btn-default' style='' onclick='Properties.copy( \"" + property.key + "\", \"" + property.value + "\" );' value='Copy value'/>";
       html = html + "</td></tr>";
     }
 
