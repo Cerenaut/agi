@@ -30,7 +30,7 @@ public class RegionConfig extends NetworkConfig {
     }
 
     /**
-     * Use this constructor to create an object that will describe the configuration of the region, given the parameters
+     * Use this constructor to Create an object that will describe the configuration of the region, given the parameters
      * provided. You specify the constraints - input size - and the resources available per column. You also specify the
      * total computational resource available (the number of columns).
      *

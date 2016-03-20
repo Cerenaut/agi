@@ -4,21 +4,24 @@ var Vector = {
 
   update : function() {
     var key = $( "#data" ).val();
-    Postgrest.getJson( "data?key=in."+key+"&order=key.asc", Vector.onGetData );
+    //Postgrest.getJson( "data?key=in."+key+"&order=key.asc", Vector.onGetData );
+    Framework.getData( key, Vector.onGetData );
   },
 
-  onGetData : function( response ) {
-    if( response.length == 0 ) {
+  onGetData : function( json ) {
+    if( json.status != 200 ) {
       return;
     }
 
+    var datas = JSON.parse( json.responseText );
+
     var series = [];
-    series.length = response.length;
+    series.length = datas.length;
     var maxElements = 1;
 
-    for( var d = 0; d < response.length; ++d ) {
-      var data = response[ d ]; // TODO generalize to multiple responses.
-      var dataElements = JSON.parse( data.elements );
+    for( var d = 0; d < datas.length; ++d ) {
+      var data = datas[ d ]; // TODO generalize to multiple responses.
+      var dataElements = data.elements;
       var elements = dataElements.elements.length;
       maxElements = Math.max( elements, maxElements );
     }
@@ -29,10 +32,10 @@ var Vector = {
       categories[ i ] = i;
     }
 
-    for( var d = 0; d < response.length; ++d ) {
-      var data = response[ d ]; // TODO generalize to multiple responses.
-      var dataElements = JSON.parse( data.elements );
-      var dataSizes = JSON.parse( data.sizes );
+    for( var d = 0; d < datas.length; ++d ) {
+      var data = datas[ d ]; // TODO generalize to multiple responses.
+      var dataElements = data.elements;
+      var dataSizes = data.sizes;
       var elements = dataElements.elements.length;
 
       var key = data.key;
@@ -128,7 +131,7 @@ var Vector = {
 
   setup : function() {
     Parameters.extract( Vector.onParameter );
-    Postgrest.setup();
+    Framework.setup();
     Loop.setup( Vector.update );
   }
 

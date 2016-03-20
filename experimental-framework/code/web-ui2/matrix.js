@@ -4,22 +4,24 @@ var Matrix = {
 
   update : function() {
     var key = $( "#data" ).val();
-    Postgrest.getJson( "data?key=eq."+key, Matrix.onGetData );
+    Framework.getData( key, Matrix.onGetData );
   },
 
-  onGetData : function( response ) {
-    if( response.length == 0 ) {
+  onGetData : function( json ) {
+    if( json.status != 200 ) {
       return;
     }
+
+    var datas = JSON.parse( json.responseText );
+    var data = datas[ 0 ];
 
     var matrices = 1;
     var series = [];
     series.length = matrices;
 
-    var data = response[ 0 ];
     var key = data.key;
-    var dataElements = JSON.parse( data.elements );
-    var dataSizes = JSON.parse( data.sizes );
+    var dataElements = data.elements;
+    var dataSizes = data.sizes;
     var elements = dataElements.elements.length;
 
     var w = 0; 
@@ -61,11 +63,11 @@ var Matrix = {
 
     series[ 0 ] = {
             name: key,
-            borderWidth: 1,
+            borderWidth: 0,
             animation: false,
             data: values,
             dataLabels: {
-                enabled: true,
+                enabled: false,
                 color: '#000000'
             }
     }
@@ -74,7 +76,7 @@ var Matrix = {
         chart: {
             type: 'heatmap',
             marginTop: 40,
-            marginBottom: 80,
+            marginBottom: 40,
             plotBorderWidth: 1
         },
         colorAxis: {
@@ -104,7 +106,7 @@ var Matrix = {
         },
         tooltip: {
             formatter: function () {
-                return '<b>(' + this.series.xAxis.categories[this.point.x] + ',' + this.series.yAxis.categories[this.point.y] + ')</b> =' +
+                return '<b>( x' + this.series.xAxis.categories[this.point.x] + ', y' + this.series.yAxis.categories[this.point.y] + ' )</b> = ' +
                     this.point.value;
             }
         },
@@ -136,7 +138,7 @@ var Matrix = {
 
   setup : function() {
     Parameters.extract( Matrix.onParameter );
-    Postgrest.setup();
+    Framework.setup();
     Loop.setup( Matrix.update );
   }
 

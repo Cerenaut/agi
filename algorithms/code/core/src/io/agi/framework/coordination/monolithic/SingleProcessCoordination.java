@@ -1,6 +1,6 @@
-package io.agi.framework.monolithic;
+package io.agi.framework.coordination.monolithic;
 
-import io.agi.framework.Coordination;
+import io.agi.framework.coordination.Coordination;
 import io.agi.framework.Node;
 
 /**

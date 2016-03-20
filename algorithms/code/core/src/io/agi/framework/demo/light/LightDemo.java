@@ -25,7 +25,7 @@ public class LightDemo {
             m.loadReferences( args[ 2 ] );
         }
 
-        // Programmatic hook to create entities and references..
+        // Programmatic hook to Create entities and references..
         createEntities( m._n );
 
         // Start the system

@@ -1,4 +1,4 @@
-package io.agi.framework;
+package io.agi.framework.persistence;
 
 /**
  * Makes it easier to write a persistence library because

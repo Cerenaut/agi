@@ -3,10 +3,13 @@ package io.agi.framework;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.util.FileUtil;
 import io.agi.core.util.PropertiesUtil;
-import io.agi.framework.http.HttpCoordination;
-import io.agi.framework.monolithic.SingleProcessCoordination;
+import io.agi.framework.coordination.Coordination;
+import io.agi.framework.coordination.http.HttpCoordination;
+import io.agi.framework.coordination.monolithic.SingleProcessCoordination;
+import io.agi.framework.persistence.Persistence;
+import io.agi.framework.persistence.couchbase.CouchbasePersistence;
 import io.agi.framework.serialization.ModelEntity;
-import io.agi.framework.sql.JdbcPersistence;
+import io.agi.framework.persistence.jdbc.JdbcPersistence;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -15,16 +18,12 @@ import org.json.JSONObject;
  */
 public class Main {
 
-    public static final String PROPERTY_DATABASE_USER = "database-user";
-    public static final String PROPERTY_DATABASE_PASSWORD = "database-password";
-    public static final String PROPERTY_DATABASE_URL = "database-url";
-    public static final String PROPERTY_DATABASE_DRIVER_CLASS = "database-driver-class";
-
     public static final String PROPERTY_NODE_NAME = "node-name";
     public static final String PROPERTY_NODE_HOST = "node-host";
     public static final String PROPERTY_NODE_PORT = "node-port";
 
-    public static final String PROPERTY_DISTRIBUTED = "distributed";
+    public static final String PROPERTY_PERSISTENCE_TYPE = "persistence-type";
+    public static final String PROPERTY_COORDINATION_TYPE = "coordination-type";
 
     public String _databaseUser;
     public String _databasePassword;
@@ -34,8 +33,6 @@ public class Main {
     public String _nodeName;
     public String _nodeHost;
     public int _nodePort = 0;
-
-    public boolean _distributed = false;
 
     public EntityFactory _ef;
     public ObjectMap _om;
@@ -56,41 +53,48 @@ public class Main {
 
         _om = om;
 
-        _databaseUser = PropertiesUtil.get(propertiesFile, PROPERTY_DATABASE_USER, "agiu");
-        _databasePassword = PropertiesUtil.get(propertiesFile, PROPERTY_DATABASE_PASSWORD, "password");
-        _databaseUrl = PropertiesUtil.get(propertiesFile, PROPERTY_DATABASE_URL, "jdbc:postgresql://localhost:5432/agidb");
-        _databaseDriverClass = PropertiesUtil.get(propertiesFile, PROPERTY_DATABASE_DRIVER_CLASS, JdbcPersistence.DRIVER_POSTGRESQL );
+        // Create persistence & Node now so you can Create entities in code that are hosted and persisted on the Node.
+        _p = createPersistence(propertiesFile);
+        _c = createCoordination(propertiesFile);
 
         _nodeName = PropertiesUtil.get(propertiesFile, PROPERTY_NODE_NAME, "node-1");
         _nodeHost = PropertiesUtil.get(propertiesFile, PROPERTY_NODE_HOST, "localhost");
         _nodePort = Integer.valueOf(PropertiesUtil.get(propertiesFile, PROPERTY_NODE_PORT, "8491"));
 
-        _distributed = Boolean.valueOf( PropertiesUtil.get(propertiesFile, PROPERTY_DISTRIBUTED, "true" ) );
+        // The persistent description of this Node
+        Node n = new Node();
+        n.setup( _om, _nodeName, _nodeHost, _nodePort, ef, _c, _p );
+        _n = n;
 
-        // Create persistence & Node now so you can create entities in code that are hosted and persisted on the Node.
-        try {
-            JdbcPersistence p = new JdbcPersistence();
-            p.setup(_databaseDriverClass, _databaseUser, _databasePassword, _databaseUrl);
-            _p = p;
+        ef.setNode(n);
+    }
 
-            if( _distributed ) {
-                _c = new HttpCoordination();
-            }
-            else {
-                _c = new SingleProcessCoordination();
-            }
-
-            // The persistent description of this Node
-            Node n = new Node();
-            n.setup( _om, _nodeName, _nodeHost, _nodePort, ef, _c, _p );
-            _n = n;
-
-            ef.setNode(n);
+    public Coordination createCoordination( String propertiesFile ) {
+        String type = PropertiesUtil.get(propertiesFile, PROPERTY_COORDINATION_TYPE, "http" );
+        Coordination c = null;
+        if( type.equals( "http" ) ) {
+            System.out.println( "Distributed coordination." );
+            c = new HttpCoordination();
         }
-        catch ( ClassNotFoundException e ) {
-            e.printStackTrace();
-            System.exit(-1);
+        else {
+            System.out.println( "Monolithic coordination." );
+            c = new SingleProcessCoordination();
         }
+        return c;
+    }
+
+    public Persistence createPersistence( String propertiesFile) {
+        String type = PropertiesUtil.get(propertiesFile, PROPERTY_PERSISTENCE_TYPE, "couchbase" );
+        Persistence p = null;
+        if( type.equals( "couchbase" ) ) {
+            System.out.println( "Using Couchbase for persistence." );
+            p = CouchbasePersistence.Create(propertiesFile);
+        }
+        else {
+            System.out.println( "Using JDBC (SQL) for persistence." );
+            p = JdbcPersistence.Create( propertiesFile );
+        }
+        return p;
     }
 
     public void loadEntities( String file ) {
@@ -114,7 +118,7 @@ public class Main {
 
 //                if( !nodeName.equals( thisNodeName ) ) {
 //                    System.out.println( "Ignoring Entity "+ entityName + " that is hosted at Node "+ nodeName );
-//                    continue; // only create Entities that are assigned to this Node.
+//                    continue; // only Create Entities that are assigned to this Node.
 //                }
 
                 System.out.println( "Creating Entity "+ entityName + " that is hosted at Node "+ nodeName );
@@ -153,7 +157,7 @@ public class Main {
 
     public void run() {
         try {
-            if( _distributed ) {
+            if( _c instanceof HttpCoordination ) {
                 HttpCoordination c = (HttpCoordination)_c;
                 c.setNode(_n);
                 c.start();

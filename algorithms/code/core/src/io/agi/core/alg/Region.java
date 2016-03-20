@@ -143,7 +143,7 @@ public class Region extends NamedObject implements Callback {
         _dsom = new DynamicSelfOrganizingMap( dsomName, _om );
         _dsom.setup( dsomc );
 
-        // only create internal columns
+        // only Create internal columns
 //        for( int y = 0; y < internalHeightColumns; ++y ) {
 //            for (int x = 0; x < internalWidthColumns; ++x) {
         for( int y = 0; y < surfaceHeightColumns; ++y ) {
@@ -505,9 +505,9 @@ if( c < 0 ) {
 //            return; // can't train
 //        }
 
-        // create transient column object to encapsulate the logic.
+        // Create transient column object to encapsulate the logic.
         // But we dont want cost of many data structures, or copying data.
-//        Column c = _rf.create();//new Column();
+//        Column c = _rf.Create();//new Column();
 
         // hierarchy structure is determined in the forward direction
         Point surfaceSizeColumns = _rc.getSurfaceSizeColumns();
@@ -553,7 +553,7 @@ if( c < 0 ) {
             return; // can't train
         }
 
-        // create transient column object to encapsulate the logic.
+        // Create transient column object to encapsulate the logic.
         // But we dont want cost of many data structures, or copying data.
         Point surfaceSizeColumns = _rc.getSurfaceSizeColumns();
         int surfaceWidthColumns = surfaceSizeColumns.x;

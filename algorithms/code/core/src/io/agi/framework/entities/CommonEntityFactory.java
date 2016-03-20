@@ -28,6 +28,10 @@ public class CommonEntityFactory implements EntityFactory {
             return new RandomVectorEntity( entityName, om, RandomVectorEntity.ENTITY_TYPE, _n );
         }
 
+        if( entityType.equals( DiscreteRandomEntity.ENTITY_TYPE ) ) {
+            return new DiscreteRandomEntity( entityName, om, DiscreteRandomEntity.ENTITY_TYPE, _n );
+        }
+
         if( entityType.equals( DynamicSelfOrganizingMapEntity.ENTITY_TYPE ) ) {
             return new DynamicSelfOrganizingMapEntity( entityName, om, DynamicSelfOrganizingMapEntity.ENTITY_TYPE, _n );
         }

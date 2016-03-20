@@ -4,8 +4,9 @@ import io.agi.core.orm.Keys;
 import io.agi.framework.Entity;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
-import io.agi.framework.Persistence;
+import io.agi.framework.persistence.Persistence;
 import io.agi.framework.entities.CommonEntityFactory;
+import io.agi.framework.entities.DiscreteRandomEntity;
 import io.agi.framework.entities.DynamicSelfOrganizingMapEntity;
 import io.agi.framework.entities.RandomVectorEntity;
 import io.agi.framework.serialization.ModelEntity;
@@ -35,7 +36,7 @@ public class DsomDemo {
             m.loadReferences( args[ 2 ] );
         }
 
-        // Programmatic hook to create entities and references..
+        // Programmatic hook to Create entities and references..
         createEntities( m._n );
 
         // Start the system
@@ -48,7 +49,7 @@ public class DsomDemo {
         String randomVectorName = "model";
         String classifierName = "classifier";
 
-        ModelEntity model = new ModelEntity( randomVectorName, RandomVectorEntity.ENTITY_TYPE, n.getName(), null );
+        ModelEntity model = new ModelEntity( randomVectorName, DiscreteRandomEntity.ENTITY_TYPE, n.getName(), null );
         ModelEntity classifier = new ModelEntity( classifierName, DynamicSelfOrganizingMapEntity.ENTITY_TYPE, n.getName(), randomVectorName ); // linked, so we only need to update the problem
 
         Persistence p = n.getPersistence();

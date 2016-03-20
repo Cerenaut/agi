@@ -1,4 +1,4 @@
-package io.agi.framework;
+package io.agi.framework.coordination;
 
 /**
  * Created by dave on 16/02/16.

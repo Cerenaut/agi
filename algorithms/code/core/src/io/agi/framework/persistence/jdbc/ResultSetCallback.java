@@ -1,4 +1,4 @@
-package io.agi.framework.sql;
+package io.agi.framework.persistence.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

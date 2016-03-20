@@ -6,6 +6,8 @@ import io.agi.core.orm.Callback;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.orm.UnitTest;
 
+import java.util.Random;
+
 /**
  * Created by dave on 11/01/16.
  */
@@ -25,8 +27,8 @@ public class DynamicSelfOrganizingMapTest implements UnitTest {
         int batch = 100;
         int randomSeed = 1;
         int inputs = 2; // x and y.
-        int widthCells = 10;
-        int heightCells = 10;
+        int widthCells = 6;
+        int heightCells = 6;
         float meanErrorThreshold = 0.01f;
 
         // Algorithm specific parameters
@@ -41,6 +43,7 @@ public class DynamicSelfOrganizingMapTest implements UnitTest {
 
         DynamicSelfOrganizingMap cl = new DynamicSelfOrganizingMap( DSOM, om );
         cl.setup( clc );
+        cl.reset();
 
         run( epochs, batch, meanErrorThreshold );
     }
@@ -52,8 +55,12 @@ public class DynamicSelfOrganizingMapTest implements UnitTest {
     }
 
     public float getDiscreteRandom() {
+        return getDiscreteRandom( RandomInstance.getInstance() );
+    }
+
+    public float getDiscreteRandom( Random r ) {
         float gridSize = 6.f;
-        float x = (float)RandomInstance.random() * ( gridSize - 0.f );
+        float x = (float)r.nextFloat() * ( gridSize - 0.f );
         int nx = (int)x;
         x = (float)nx;
         x /= gridSize;

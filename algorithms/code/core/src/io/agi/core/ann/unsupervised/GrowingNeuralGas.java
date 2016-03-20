@@ -122,7 +122,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         // train winner A and its neighbours towards the input
         trainCells( bestCellA );
 
-        // create new cells where the space is poorly represented (the cells are stressed)
+        // Create new cells where the space is poorly represented (the cells are stressed)
         int ageSinceGrowth = (int)_ageSinceGrowth._values[ 0 ];
 
         if( ageSinceGrowth >= _c.getGrowthInterval() ) {
@@ -320,7 +320,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         _cellMask._values[ freeCell ] = 1.f;
 //        cellMaskLocal._values[ freeCell ] = 1.f;
 
-        // create edges: worst, free; worst2, free;
+        // Create edges: worst, free; worst2, free;
         // remove edges: worst, worst2
         int offsetWW2 = getEdgeOffset( worstCell, worstCell2 );
         int offsetWF  = getEdgeOffset(worstCell, freeCell);
@@ -331,8 +331,8 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         _edgesAges._values[ offsetW2F ] = 0.f; // this one was just used
 
         _edges   ._values[ offsetWW2 ] = 0.f; // remove the edge
-        _edges   ._values[ offsetWF  ] = 1.f; // create the edge
-        _edges   ._values[ offsetW2F ] = 1.f; // create the edge
+        _edges   ._values[ offsetWF  ] = 1.f; // Create the edge
+        _edges   ._values[ offsetW2F ] = 1.f; // Create the edge
 
         // reset stress of all cells.
         // Note, this means I mustn't add any new cells until the new stresses
@@ -437,7 +437,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         int offset = getEdgeOffset( bestCellA, bestCellB );
 //        edgeAges.add( 1.f ); only increment ages of neighbours of bestCellA
         _edgesAges._values[ offset ] = 0.f; // this one was just used
-        _edges    ._values[ offset ] = 1.f; // create the edge
+        _edges    ._values[ offset ] = 1.f; // Create the edge
 
         // now go and prune
         for( int cell1 = 0; cell1 < cells; ++cell1 ) {

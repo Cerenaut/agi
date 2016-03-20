@@ -1,6 +1,8 @@
 package io.agi.framework;
 
 import io.agi.core.orm.ObjectMap;
+import io.agi.framework.coordination.Coordination;
+import io.agi.framework.persistence.Persistence;
 import io.agi.framework.serialization.ModelEntity;
 import io.agi.framework.serialization.ModelNode;
 
@@ -123,7 +125,6 @@ public class Node {
      * @param entityName
      */
     public void doUpdate(String entityName) {
-
         ModelEntity je = _p.getEntity(entityName);
         //String nodeName = _p.getNodeName(entityName);
 
@@ -137,7 +138,7 @@ public class Node {
         }
 
         Entity e = _ef.create( _om, entityName, je._type );
-        e.setParent( je._parent );
+        e.setParent(je._parent);
 
         forkUpdate(e); // returns immediately
     }
@@ -158,16 +159,16 @@ public class Node {
     public boolean lock( String entityName ) {
         Semaphore s = getLock( entityName );
 
-        System.err.println( "Thread "+ Thread.currentThread().hashCode() + " waiting for " + entityName );
+        //System.err.println( "Thread "+ Thread.currentThread().hashCode() + " waiting for " + entityName );
         try {
             s.acquire();
         }
         catch( InterruptedException ie ) {
-            System.err.println("Thread " + Thread.currentThread().hashCode() + " cant get lock for " + entityName);
+            //System.err.println("Thread " + Thread.currentThread().hashCode() + " cant get lock for " + entityName);
             return false;
         }
 
-        System.err.println("Thread " + Thread.currentThread().hashCode() + " has lock for " + entityName);
+        //System.err.println("Thread " + Thread.currentThread().hashCode() + " has lock for " + entityName);
 
         return true;
     }
@@ -187,7 +188,7 @@ public class Node {
     public void unlock( String entityName ) {
         Semaphore l = getLock( entityName );
 
-        System.err.println("Thread " + Thread.currentThread().hashCode() + " about to unlock " + entityName);
+        //System.err.println("Thread " + Thread.currentThread().hashCode() + " about to unlock " + entityName);
 
         l.release();
     }
@@ -208,6 +209,19 @@ public class Node {
                 _entityListeners.put( entity, al );
             }
             al.add( listener );
+        }
+    }
+
+    public void removeEntityListener( String entity, EntityListener el ) {
+        synchronized( _entityListeners ) {
+            ArrayList< EntityListener > al = _entityListeners.get( entity );
+            if( al != null ) {
+                for( EntityListener el2 : al ) {
+                    if( el2.equals( el ) ) {
+                        al.remove( el );
+                    }
+                }
+            }
         }
     }
 

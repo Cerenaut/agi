@@ -1,4 +1,4 @@
-package io.agi.framework.http;
+package io.agi.framework.coordination.http;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -37,9 +37,9 @@ public class HttpCoordinationHandler implements HttpHandler {
 
         try {
             String query = t.getRequestURI().getQuery();
-            System.err.println("Request: " + HttpCoordinationHandler.CONTEXT + " " + query);
+            //System.err.println("Request: " + HttpCoordinationHandler.CONTEXT + " " + query);
 
-            Map<String, String> m = GetQueryParams(query);
+            Map<String, String> m = HttpUtil.GetQueryParams(query);
 
             String entityName = m.get(PARAMETER_ENTITY).trim();
             String eventValue = m.get(PARAMETER_EVENT).trim();
@@ -54,11 +54,11 @@ public class HttpCoordinationHandler implements HttpHandler {
                     if (eventValue.equalsIgnoreCase(VALUE_UPDATE)) {
                         _c.doUpdateExternal(entityName, originValue);
                         status = 200;
-                        response = "Updating entity: '" + entityName + "'";
+                        response = GetResponse( entityName, VALUE_UPDATE, originValue );
                     } else if (eventValue.equalsIgnoreCase(VALUE_UPDATED)) {
                         _c.onUpdatedExternal(entityName, originValue);
                         status = 200;
-                        response = "Entity update noted: '" + entityName + "'";
+                        response = GetResponse( entityName, VALUE_UPDATED, originValue );
                     }
                 }
             }
@@ -67,30 +67,18 @@ public class HttpCoordinationHandler implements HttpHandler {
             e.printStackTrace();
         }
 
-        ArrayList< String > list = new ArrayList< String >();
-        list.add( "*" );
-        t.getResponseHeaders().put( "Access-Control-Allow-Origin", list );
-        t.sendResponseHeaders( status, response.length() );
-        OutputStream os = t.getResponseBody();
-        os.write(response.getBytes());
-        os.close();
+        HttpUtil.SendResponse( t, status, response );
+//        ArrayList< String > list = new ArrayList< String >();
+//        list.add( "*" );
+//        t.getResponseHeaders().put( "Access-Control-Allow-Origin", list );
+//        t.sendResponseHeaders( status, response.length() );
+//        OutputStream os = t.getResponseBody();
+//        os.write(response.getBytes());
+//        os.close();
     }
 
-    public static Map<String, String> GetQueryParams( String query ) {
-
-        Map<String, String> result = new HashMap<String, String>();
-
-        for( String param : query.split( "&" ) ) {
-
-            String pair[] = param.split( "=" );
-
-            if( pair.length > 1 ) {
-                result.put( pair[0], pair[1] );
-            }
-            else{
-                result.put( pair[0], "" );
-            }
-        }
-        return result;
+    protected static String GetResponse( String entity, String event, String origin ) {
+        String response = "{ \"entity\" : \"" + entity + "\", \"event\" : \"" + event + "\", \"origin\" : \"" + origin + "\" }";
+        return response;
     }
 }

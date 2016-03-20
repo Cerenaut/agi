@@ -1,6 +1,7 @@
-package io.agi.framework.sql;
+package io.agi.framework.persistence.jdbc;
 
-import io.agi.framework.StringPersistence;
+import io.agi.core.util.PropertiesUtil;
+import io.agi.framework.persistence.StringPersistence;
 import io.agi.framework.serialization.ModelData;
 import io.agi.framework.serialization.ModelEntity;
 import io.agi.framework.serialization.ModelNode;
@@ -17,6 +18,10 @@ public class JdbcPersistence extends StringPersistence {
 //           --< Data
 //    Entity --- name, type, children, node
 //               Could be JSON string for entities: { name: xxx, type: yyy } etc
+    public static final String PROPERTY_DATABASE_USER = "database-user";
+    public static final String PROPERTY_DATABASE_PASSWORD = "database-password";
+    public static final String PROPERTY_DATABASE_URL = "database-url";
+    public static final String PROPERTY_DATABASE_DRIVER_CLASS = "database-driver-class";
 
     public static final String DRIVER_MYSQL = "com.mysql.jdbc.Driver";
     public static final String DRIVER_POSTGRESQL = "org.postgresql.Driver";
@@ -26,6 +31,25 @@ public class JdbcPersistence extends StringPersistence {
     protected String _url; // e.g. jdbc:postgresql://localhost:5432/agidb"; // https://jdbc.postgresql.org/documentation/80/connect.html
 
     public JdbcPersistence() {
+    }
+
+    public static JdbcPersistence Create( String propertiesFile ) {
+        String databaseUser = PropertiesUtil.get(propertiesFile, JdbcPersistence.PROPERTY_DATABASE_USER, "agiu");
+        String databasePassword = PropertiesUtil.get(propertiesFile, JdbcPersistence.PROPERTY_DATABASE_PASSWORD, "password");
+        String databaseUrl = PropertiesUtil.get(propertiesFile, JdbcPersistence.PROPERTY_DATABASE_URL, "jdbc:postgresql://localhost:5432/agidb");
+        String databaseDriverClass = PropertiesUtil.get(propertiesFile, JdbcPersistence.PROPERTY_DATABASE_DRIVER_CLASS, JdbcPersistence.DRIVER_POSTGRESQL );
+
+        JdbcPersistence p = new JdbcPersistence();
+
+        try {
+            p.setup(databaseDriverClass, databaseUser, databasePassword, databaseUrl);
+        }
+        catch( ClassNotFoundException e ) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return p;
     }
 
     public void setup( String driver, String user, String password, String url ) throws ClassNotFoundException {
@@ -143,17 +167,20 @@ public class JdbcPersistence extends StringPersistence {
     }
     public void removeEntity(String key) {
         String sql = "DELETE FROM entities WHERE key = '" + key +"'";
-        execute(sql );
+        execute(sql);
     }
 
     // Data
 //    public Collection< String > getDataKeys() {
 //    }
     public void setData( ModelData jd ) {
+        System.err.println("setData T: " + System.currentTimeMillis() + " @1 ");
         String sql1 = "UPDATE data SET ref_key = '" + jd._refKey + "', sizes = '" + jd._sizes + "', elements = '" + jd._elements + "' WHERE key = '" + jd._key +"'";
         execute( sql1 );
+        System.err.println("setData T: " + System.currentTimeMillis() + " @2 ");
         String sql2 = "INSERT INTO data (key, ref_key, sizes, elements) SELECT '"+jd._key+"', null, '"+jd._sizes+"', '"+jd._elements+"' WHERE NOT EXISTS (SELECT key from data WHERE key = '"+jd._key+"' )";
         execute( sql2 );
+        System.err.println("setData T: " + System.currentTimeMillis() + " @3 ");
     }
     public ModelData getData( String key ) {
         String sql = "SELECT ref_key, sizes, elements FROM data where key = '" + key + "'";
@@ -163,7 +190,10 @@ public class JdbcPersistence extends StringPersistence {
         rsm._fields.add( "elements" );
         executeQuery(sql, rsm);
         String refKey = null;
-        if( !rsm._rows.isEmpty() ) {
+        if( rsm._rows.isEmpty() ) {
+            return null;
+        }
+        else {
             refKey = rsm.getRowValue( 0, "ref_key" );
             if( refKey != null ) {
                 if( refKey.equals( "null" ) ) {
@@ -171,6 +201,7 @@ public class JdbcPersistence extends StringPersistence {
                 }
             }
         }
+
         String sizes = rsm.getRowValue( 0, "sizes" );
         String elements = rsm.getRowValue( 0, "elements" );
         ModelData jd = new ModelData( key, refKey, sizes, elements );

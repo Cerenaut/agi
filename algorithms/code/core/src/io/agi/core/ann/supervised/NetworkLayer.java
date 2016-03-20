@@ -60,7 +60,7 @@ public class NetworkLayer extends NamedObject {
     }
 
     /**
-     * Dynamically create the activation function assigned to this layer, using the factory.
+     * Dynamically Create the activation function assigned to this layer, using the factory.
      *
      * @return
      */

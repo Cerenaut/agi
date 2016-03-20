@@ -1,4 +1,4 @@
-package io.agi.framework;
+package io.agi.framework.persistence;
 
 import io.agi.framework.serialization.ModelData;
 import io.agi.framework.serialization.ModelEntity;

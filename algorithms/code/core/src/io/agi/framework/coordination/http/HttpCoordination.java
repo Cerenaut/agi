@@ -1,7 +1,7 @@
-package io.agi.framework.http;
+package io.agi.framework.coordination.http;
 
 import com.sun.net.httpserver.HttpServer;
-import io.agi.framework.Coordination;
+import io.agi.framework.coordination.Coordination;
 import io.agi.framework.Node;
 import io.agi.framework.serialization.ModelNode;
 
@@ -38,10 +38,24 @@ public class HttpCoordination implements Coordination {
         int nodePort = _n.getPort();
         //String handlerClassName = HttpCoordinationHandler.class.getName();
         HttpCoordinationHandler h = new HttpCoordinationHandler( this );
-        _s = HttpCoordinationServer.create( this, nodePort, HttpCoordinationHandler.CONTEXT, h );
+        _s = HttpUtil.Create(this, nodePort, HttpCoordinationHandler.CONTEXT, h);
+
+        addHandlers();
+
         _s.start();
     }
 
+    public void addHandlers() {
+        HttpPropertiesHandler ph = new HttpPropertiesHandler( _n.getPersistence() );
+        HttpDataHandler dh = new HttpDataHandler( _n.getPersistence() );
+        HttpNodesHandler nh = new HttpNodesHandler( _n.getPersistence() );
+        HttpEntitiesHandler eh = new HttpEntitiesHandler( _n.getPersistence() );
+
+        HttpUtil.AddHandler( _s, HttpPropertiesHandler.CONTEXT, ph );
+        HttpUtil.AddHandler( _s, HttpDataHandler.CONTEXT, dh );
+        HttpUtil.AddHandler( _s, HttpNodesHandler.CONTEXT, nh );
+        HttpUtil.AddHandler( _s, HttpEntitiesHandler.CONTEXT, eh );
+    }
     /**
      * Shutdown services
      */
@@ -162,7 +176,7 @@ public class HttpCoordination implements Coordination {
      */
     public void send( String query, ModelNode jn ) {
         String url = "http://" + jn._host + ":" + jn._port + query;
-        System.out.println( "Sending: " + url );
+        //System.out.println( "Sending: " + url );
 
         // http://stackoverflow.com/questions/3142915/how-do-you-create-an-asynchronous-http-request-in-java
         class Response {

@@ -5,6 +5,7 @@ import io.agi.core.data.DataSize;
 import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
+import io.agi.framework.persistence.Persistence;
 import io.agi.framework.serialization.ModelData;
 
 import java.util.*;
@@ -173,19 +174,25 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
     public void update() {
 
+        beforeUpdate();
+
         String entityName = getName();
+
         if ( !_n.lock( entityName ) ) {
             return;
         }
 
+        System.err.println("START T: " + System.currentTimeMillis() + " Entity: " + entityName + " A ");
         updateSelf();
+        System.err.println("START T: " + System.currentTimeMillis() + " Entity: " + entityName + " Z ");
 
         Persistence p = _n.getPersistence();
         //        Collection< JsonEntity > children = p.getChildEntities( _name );
         Collection<String> childNames = p.getChildEntities( _name );
 
         if ( childNames.isEmpty() ) {
-            _n.notifyUpdated( getName() ); // this entity, the parent, is now complete
+            afterUpdate();
+//            _n.notifyUpdated( getName() ); // this entity, the parent, is now complete
             return;
         }
 
@@ -203,22 +210,34 @@ public abstract class Entity extends NamedObject implements EntityListener {
             _n.requestUpdate( childName ); // schedule an update, may have already occurred
             // update to child may occur any time after this, because only 1 parent so waiting for me to call the update.
         }
+    }
 
-        System.err.println( "Thread " + Thread.currentThread().hashCode() + " terminating, was running: " + entityName );
+    protected void beforeUpdate() {
+        String entityName = getName();
+        int age = getPropertyInt( SUFFIX_AGE, 1 );
+        System.err.println("START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName);
+    }
+
+    protected void afterUpdate() {
+        String entityName = getName();
+        int age = getPropertyInt( SUFFIX_AGE, 1 );
+        System.err.println( "END   T: "+System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity updated: " + entityName );
+
+        _n.notifyUpdated( entityName ); // this entity, the parent, is now complete
     }
 
     public void onEntityUpdated( String entityName ) {
         synchronized ( _childrenWaiting ) {
             _childrenWaiting.remove( entityName );
 
-            System.err.print( "Entity " + entityName + " notified about: " + entityName + " waiting for " );
-            for ( String child : _childrenWaiting ) {
-                System.err.print( child + ", " );
-            }
-            System.err.println();
+            //System.err.print( "Entity " + entityName + " notified about: " + entityName + " waiting for " );
+            //for ( String child : _childrenWaiting ) {
+            //    System.err.print( child + ", " );
+            //}
+            //System.err.println();
 
             if ( _childrenWaiting.isEmpty() ) {
-                _n.notifyUpdated( getName() ); // this entity, the parent, is now complete
+                afterUpdate();
             }
             // else: wait for other children
         }
@@ -228,31 +247,36 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         // 1. get inputs
         // get all the inputs and put them in the object map.
+        System.err.println("START T: " + System.currentTimeMillis() + " Entity: " + getName() + " 1 ");
         Collection<String> inputKeys = new ArrayList<String>();
         getInputKeys( inputKeys );
         getData( inputKeys );
 
         // 2. get outputs
         // get all the outputs and put them in the object map.
+        System.err.println("START T: " + System.currentTimeMillis() + " Entity: " + getName() + " 2 ");
         Collection<String> outputKeys = new ArrayList<String>();
         getOutputKeys( outputKeys );
         getData( outputKeys );
 
         // 3. doUpdateSelf()
+        System.err.println("START T: " + System.currentTimeMillis() + " Entity: " + getName() + " 3 ");
         doUpdateSelf();
 
         // 4. set outputs
         // write all the outputs back to the persistence system
 //        setData(inputKeys);
+        System.err.println("START T: " + System.currentTimeMillis() + " Entity: " + getName() + " 4 ");
         setData( outputKeys );
 
 
         // update age:
+        System.err.println("START T: " + System.currentTimeMillis() + " Entity: " + getName() + " 5 ");
         int age = getPropertyInt( SUFFIX_AGE, 0 );
         ++age;
-        setPropertyInt( SUFFIX_AGE, age );
+        setPropertyInt(SUFFIX_AGE, age);
 
-        System.err.println( "Update: " + getName() + " age: " + age );
+        //System.err.println( "Update: " + getName() + " age: " + age );
     }
 
     public Data getData( String keySuffix ) {
@@ -267,9 +291,13 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
             ModelData jd = p.getData( inputKey );
 
+            if( jd == null ) {
+                continue; // truthfully represent as null.
+            }
+
             HashSet<String> refKeys = jd.getRefKeys();
             if ( !refKeys.isEmpty() ) {
-                // create an output matrix which is a composite of all the referenced inputs.
+                // Create an output matrix which is a composite of all the referenced inputs.
                 HashMap<String, Data> allRefs = new HashMap<String, Data>();
 
                 for ( String refKey : refKeys ) {
@@ -366,10 +394,10 @@ public abstract class Entity extends NamedObject implements EntityListener {
     }
 
     /**
-     * Get the data if it exists, and create it if it doesn't.
+     * Get the data if it exists, and Create it if it doesn't.
      *
      * @param keySuffix   the key of the data
-     * @param defaultSize create data of this size, if the data does not exist
+     * @param defaultSize Create data of this size, if the data does not exist
      * @return data
      */
     public Data getData( String keySuffix, DataSize defaultSize ) {
