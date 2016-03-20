@@ -2,7 +2,9 @@ package io.agi.framework.coordination.http;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import io.agi.core.orm.AbstractPair;
 import io.agi.framework.persistence.Persistence;
+import io.agi.framework.serialization.ModelData;
 import io.agi.framework.serialization.ModelEntity;
 import io.agi.framework.serialization.ModelNode;
 
@@ -37,13 +39,14 @@ public class HttpEntitiesHandler implements HttpHandler {
 
             String method = t.getRequestMethod();
 
-            Map<String, String> parameters = HttpUtil.GetQueryParams(query);
+            ArrayList<AbstractPair< String, String>> parameters = HttpUtil.GetDuplicateQueryParams(query);
 
             Collection<ModelEntity> results = null;
 
-            for( String key : parameters.keySet() ) {
+            for( AbstractPair< String, String > ap : parameters ) {
+                String key = ap._first;
+                String value = ap._second;
                 if( key.equalsIgnoreCase( PARAMETER_NAME ) ) {
-                    String value = parameters.get(key);
                     ModelEntity m = _p.getEntity( value );
 
                     if( results == null ) {

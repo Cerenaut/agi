@@ -3,6 +3,7 @@ package io.agi.framework.coordination.http;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import io.agi.core.orm.AbstractPair;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -51,6 +52,28 @@ public class HttpUtil {
             }
             else{
                 result.put( pair[0], "" );
+            }
+        }
+        return result;
+    }
+
+    public static ArrayList<AbstractPair< String, String >> GetDuplicateQueryParams( String query ) {
+
+        ArrayList< AbstractPair< String, String > > result = new ArrayList< AbstractPair< String, String > >();
+
+        if( query == null ) {
+            return result;
+        }
+
+        for( String param : query.split( "&" ) ) {
+
+            String pair[] = param.split( "=" );
+
+            if( pair.length > 1 ) {
+                result.add(new AbstractPair<String, String>( pair[0], pair[1] ) );
+            }
+            else{
+                result.add(new AbstractPair<String, String>( pair[0], "" ) );
             }
         }
         return result;

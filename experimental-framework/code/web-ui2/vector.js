@@ -3,9 +3,18 @@
 var Vector = {
 
   update : function() {
-    var key = $( "#data" ).val();
+    var keys = $( "#data" ).val();
+    var keyList = keys.split( "," );
+    var suffix = "";
+    for( var i = 0; i < keyList.length; ++i ) {
+      key = keyList[ i ]; 
+      if( i > 0 ) {
+        suffix = suffix + "&";
+      }
+      suffix = suffix + "name=" + key;
+    }
     //Postgrest.getJson( "data?key=in."+key+"&order=key.asc", Vector.onGetData );
-    Framework.getData( key, Vector.onGetData );
+    Framework.getData( suffix, Vector.onGetData );
   },
 
   onGetData : function( json ) {

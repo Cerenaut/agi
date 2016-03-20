@@ -6,7 +6,8 @@ var Matrix = {
 
   update : function() {
     var key = $( "#data" ).val();
-    Framework.getData( key, Matrix.onGetData );
+    var suffix = "name="+key;
+    Framework.getData( suffix, Matrix.onGetData );
   },
 
   toggleLabels : function() {

@@ -30,7 +30,7 @@ var Framework = {
 
   getData : function( key, callback ) {
     //Postgrest.getJson( "properties?key=eq."+entityName+"-age", callback );
-    var suffix = Framework.contextData + "?name=" + key;
+    var suffix = Framework.contextData + "?" + key;
     Framework.doAjaxJson( suffix, callback, "GET" );
   },
 
