@@ -30,6 +30,11 @@ public class LightControlEntity extends Entity {
         keys.add( CONTROL_OUTPUT );
     }
 
+    @Override
+    public void getPropertyKeys( Collection<String> keys ) {
+
+    }
+
     protected void doUpdateSelf() {
 
         //http://localhost:8080/update?entity=mySwitch&event=update

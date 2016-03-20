@@ -58,8 +58,4 @@ public interface Persistence {
     String getPropertyString(String key, String defaultValue);
     void setPropertyString(String key, String value);
 
-    // Data
- //   Data getData(String key);
- //   void setData(String key, Data value);
-
 }

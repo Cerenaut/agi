@@ -33,6 +33,11 @@ public class RandomVectorEntity extends Entity {
         keys.add( OUTPUT );
     }
 
+    @Override
+    public void getPropertyKeys( Collection<String> keys ) {
+
+    }
+
     protected void doUpdateSelf() {
 
         // Get all the parameters:
