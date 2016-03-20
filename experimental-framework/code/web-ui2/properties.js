@@ -3,26 +3,28 @@ var Properties = {
 
   refresh : function() {
     var search = $( "#search" ).val();
-    Postgrest.getJson( "properties?key=like.*"+search+"*&order=key.asc", Properties.onGetData );
+    //Postgrest.getJson( "properties?key=like.*"+search+"*&order=key.asc", Properties.onGetData );
+    //Postgrest.getJson( "properties?key=like.*"+search+"*&order=key.asc", Properties.onGetData );
+    Framework.getProperties( key, Vector.onGetData );
   },
 
   save : function() {
 
     $( ".new-value" ).each( function( index ) {
-                                var key = this.id;
-                                var val = this.value;
+      var key = this.id;
+      var val = this.value;
 
-                                console.log( index + ": " + key + " = " + val );
+      console.log( index + ": " + key + " = " + val );
 
-                                if ( val ) {
-                                    var postJson = { "key":key, "value":val };
+      if( val ) {
+        var postJson = { "key":key, "value":val };
 
-                                    // replace property
-                                    Postgrest.deleteJson( "properties?key=eq." + key, function( response ) {
-                                            Postgrest.postJson( "properties", postJson, Properties.onPostData );
-                                        });
-                                }
-                            });
+        // replace property
+        Postgrest.deleteJson( "properties?key=eq." + key, function( response ) {
+          Postgrest.postJson( "properties", postJson, Properties.onPostData );
+        });
+      }
+    });
   },
 
   copy : function( fid, value ) {
@@ -36,15 +38,13 @@ var Properties = {
     console.log( "Post response = " + response );
   },
 
-  onGetData : function( response ) {
-    if( response.length == 0 ) {
-      return;
-    }
+  onGetData : function( json ) {
+    var properties = JSON.parse( json.responseText );
 
     var html = "";
 
-    for( var d = 0; d < response.length; ++d ) {
-      var property = response[ d ]; // TODO generalize to multiple responses.
+    for( var d = 0; d < datas.length; ++d ) {
+      var property = properties[ d ]; // TODO generalize to multiple responses.
       html = html + "<tr><td>";
       html = html + property.key;
       html = html + "</td><td>";
@@ -71,7 +71,7 @@ var Properties = {
 
   setup : function() {
     Parameters.extract( Properties.onParameter );
-    Postgrest.setup();
+    Framework.setup();
     Loop.setup( Properties.refresh );
   }
 
