@@ -14,14 +14,14 @@ public class LightDemo {
 
         // Create a Node
         Main m = new Main();
-        m.setup( args[0], null, ef );
+        m.setup( args[ 0 ], null, ef );
 
         // Create custom entities and references
-        if( args.length > 1 ) {
-            m.loadEntities(args[1]);
+        if ( args.length > 1 ) {
+            m.loadEntities( args[ 1 ] );
         }
 
-        if( args.length > 2 ) {
+        if ( args.length > 2 ) {
             m.loadReferences( args[ 2 ] );
         }
 

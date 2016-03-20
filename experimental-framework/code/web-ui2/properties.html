@@ -31,21 +31,30 @@
   </head>
   <body style="">
 
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/modules/heatmap.js"></script>
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>
-
-    <div class="agi-div-background" style="">
+    <div class="" style="width:100vw;height:100vh;background:#000000;">
      <div id="controls" style="padding:2px;text-align:center;">
-      <input type="text" id="data" style="display:inline;" class="" placeholder="Data key" value=""/>
+      <input type="text" id="search" style="display:inline;" class="" placeholder="Search string" value=""/>
       <input type="number" id="interval" style="display:inline;width:5em;" class="" placeholder="Update interval" value="500"/>
-      <input type="button" id="pause" class="btn btn-sm btn-danger" style="" onclick="Loop.togglePause();" value="Resume"/>
-      <input type="button" id="update" class="btn btn-sm btn-danger" style="" onclick="Loop.update();" value="Update"/>
+      <input type="button" id="pause" class="btn btn-sm btn-success" style="" onclick="Loop.togglePause();" value="Auto Refresh"/>
+      <input type="button" id="update" class="btn btn-sm btn-success" style="" onclick="Loop.update();" value="Refresh"/>
+       <input type="button" id="save" class="btn btn-sm btn-danger" style="" onclick="Properties.save();" value="Save"/>
      </div>
-     <div id="matrix-properties" style="padding:2px;text-align:center;">
-      <input type="button" id="grid-labels" class="btn btn-xs btn-default" style="" onclick="Matrix.toggleLabels();" value="Toggle Labels"/>
+     <div id="container" style="min-width: 310px; max-width: 800px; height: 400px; margin: 0 auto">
+
+       <table class="table">
+         <thead>
+         <tr>
+           <th>Key</th>
+           <th>Value</th>
+           <th>New value (if populated)</th>
+           <th></th>
+         </tr>
+         </thead>
+         <tbody id="table-body">
+         </tbody>
+       </table>
+
      </div>
-     <div id="container" style="min-width: 310px; max-width: 600px; height: 600px; margin: 0 auto"></div>
     </div>
 
     <!-- Latest compiled and minified JavaScript -->
@@ -55,10 +64,10 @@
 <!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>-->
 
     <!-- Our stuff -->
-    <script src="framework.js"></script>
+    <script src="postgrest.js"></script>
     <script src="parameters.js"></script>
     <script src="loop.js"></script>
-    <script src="matrix.js"></script>
+    <script src="properties.js"></script>
 
   </body>
 </html>

@@ -36,6 +36,12 @@ public class CommonEntityFactory implements EntityFactory {
             return new DynamicSelfOrganizingMapEntity( entityName, om, DynamicSelfOrganizingMapEntity.ENTITY_TYPE, _n );
         }
 
+        if( entityType.equals( ImageSensorEntity.ENTITY_TYPE ) ) {
+            return new ImageSensorEntity( entityName, om, ImageSensorEntity.ENTITY_TYPE, _n );
+        }
+
+        System.out.println(" ERROR: CommonEntityFactory.create() - could not create an entity for " + entityName);
+
         return null;
     }
 

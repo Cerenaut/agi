@@ -17,6 +17,17 @@ var Postgrest = {
       } );
   },
 
+  deleteJson : function( table, callback ) {
+    var url = Postgrest.protocol + "://" + Postgrest.host + ":" + Postgrest.port + "/" + table;
+
+    $.ajax( url, {
+        type: "DELETE",
+        success: function( json ) {
+          callback( json );
+        }
+      } );
+  },
+
   postJson : function( table, json, callback ) {
     Postgrest.setJson( table, json, callback, "POST" );
   },
@@ -25,14 +36,10 @@ var Postgrest = {
     Postgrest.setJson( table, json, callback, "PATCH" );
   },
 
-  deleteJson : function( table, json, callback ) {
-    Postgrest.setJson( table, json, callback, "DELETE" );
-  },
-
   setJson : function( table, json, callback, verb ) {
     var url = Postgrest.protocol + "://" + Postgrest.host + ":" + Postgrest.port + "/" + table;
     var s = JSON.stringify( json );
-    // console.log( "POST: "+ s );
+    console.log( "POST: "+ s );
     // TODO add error handling, success callbacks
     $.ajax( url, {
         type: verb,

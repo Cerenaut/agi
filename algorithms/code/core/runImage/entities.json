@@ -1,0 +1,9 @@
+[ 
+
+  {
+    "name" : "mySensor",
+    "type" : "image-sensor",
+    "node" : "myNode"
+  }
+
+]

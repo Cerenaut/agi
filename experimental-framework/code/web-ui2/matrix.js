@@ -2,9 +2,16 @@
 // Demo URL: file:///home/dave/workspace/agi.io/agi/experimental-framework/code/web-ui2/vector-bar.html?data=myLight-random-output&data=mySwitch-light-output&data=myLight-light-output&interval=303
 var Matrix = {
 
+  showLabels : false,
+
   update : function() {
     var key = $( "#data" ).val();
     Framework.getData( key, Matrix.onGetData );
+  },
+
+  toggleLabels : function() {
+    Matrix.showLabels = !Matrix.showLabels;
+    Matrix.update();
   },
 
   onGetData : function( json ) {
@@ -63,12 +70,12 @@ var Matrix = {
 
     series[ 0 ] = {
             name: key,
-            borderWidth: 0,
+            borderWidth: Matrix.showLabels ? 1 : 0,
             animation: false,
             data: values,
             dataLabels: {
-                enabled: false,
-                color: '#000000'
+                enabled: Matrix.showLabels,
+                color: '#ffffff'
             }
     }
 
