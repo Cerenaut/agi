@@ -5,6 +5,9 @@ import io.agi.core.data.DataSize;
 import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
+import io.agi.framework.Persistence.Persistence;
+import io.agi.framework.Persistence.PropertyConverter;
+import io.agi.framework.Persistence.PropertyStringAccess;
 import io.agi.framework.serialization.ModelData;
 
 import java.util.*;
@@ -12,7 +15,7 @@ import java.util.*;
 /**
  * Created by dave on 14/02/16.
  */
-public abstract class Entity extends NamedObject implements EntityListener, PropertyAccessor.PropertyStringAccess {
+public abstract class Entity extends NamedObject implements EntityListener, PropertyStringAccess {
 
     public static final String SUFFIX_AGE = "age";
     public static final String SUFFIX_RESET = "reset"; /// used as a flag to indicate the entity should reset itself on next update.
@@ -26,14 +29,14 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
     private HashMap<String, Data> _data = new HashMap<String, Data>();
     private HashMap<String, String> _properties = new HashMap<String, String>();
 
-    private PropertyAccessor _propertyAccessor = null;
+    private PropertyConverter _propertyConverter = null;
 
     public Entity( String name, ObjectMap om, String type, Node n ) {
         super( name, om );
         _type = type;
         _n = n;
 
-        _propertyAccessor = new PropertyAccessor( this );
+        _propertyConverter = new PropertyConverter( this );
     }
 
     public void setParent( String parent ) {
@@ -197,9 +200,9 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
         doUpdateSelf();
 
         // update age:
-        int age = _propertyAccessor.getPropertyInt( SUFFIX_AGE, 0 );
+        int age = _propertyConverter.getPropertyInt( SUFFIX_AGE, 0 );
         ++age;
-        _propertyAccessor.setPropertyInt( SUFFIX_AGE, age );
+        _propertyConverter.setPropertyInt( SUFFIX_AGE, age );
 
         // 4. set outputs
         // write all the outputs back to the persistence system
@@ -417,43 +420,43 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
 
 
     public Float getPropertyFloat( String key, Float defaultValue ) {
-        return _propertyAccessor.getPropertyFloat( key, defaultValue );
+        return _propertyConverter.getPropertyFloat( key, defaultValue );
     }
 
     public void setPropertyFloat( String key, float value ) {
-        _propertyAccessor.setPropertyFloat( key, value );
+        _propertyConverter.setPropertyFloat( key, value );
     }
 
     public Double getPropertyDouble( String key, Double defaultValue ) {
-        return _propertyAccessor.getPropertyDouble( key, defaultValue );
+        return _propertyConverter.getPropertyDouble( key, defaultValue );
     }
 
     public void setPropertyDouble( String key, double value ) {
-        _propertyAccessor.setPropertyDouble( key, value );
+        _propertyConverter.setPropertyDouble( key, value );
     }
 
     public Long getPropertyLong( String key, Long defaultValue ) {
-        return _propertyAccessor.getPropertyLong( key, defaultValue );
+        return _propertyConverter.getPropertyLong( key, defaultValue );
     }
 
     public void setPropertyLong( String key, long value ) {
-        _propertyAccessor.setPropertyLong( key, value );
+        _propertyConverter.setPropertyLong( key, value );
     }
 
     public Integer getPropertyInt( String key, Integer defaultValue ) {
-        return _propertyAccessor.getPropertyInt( key, defaultValue );
+        return _propertyConverter.getPropertyInt( key, defaultValue );
     }
 
     public void setPropertyInt( String key, int value ) {
-        _propertyAccessor.setPropertyInt( key, value );
+        _propertyConverter.setPropertyInt( key, value );
     }
 
     public Boolean getPropertyBoolean( String key, Boolean defaultValue ) {
-        return _propertyAccessor.getPropertyBoolean( key, defaultValue );
+        return _propertyConverter.getPropertyBoolean( key, defaultValue );
     }
 
     public void setPropertyBoolean( String key, boolean value ) {
-        _propertyAccessor.setPropertyBoolean( key, value );
+        _propertyConverter.setPropertyBoolean( key, value );
     }
 
     protected void doUpdateSelf() {

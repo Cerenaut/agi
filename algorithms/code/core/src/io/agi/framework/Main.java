@@ -3,10 +3,11 @@ package io.agi.framework;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.util.FileUtil;
 import io.agi.core.util.PropertiesUtil;
+import io.agi.framework.Persistence.Persistence;
 import io.agi.framework.http.HttpCoordination;
 import io.agi.framework.monolithic.SingleProcessCoordination;
 import io.agi.framework.serialization.ModelEntity;
-import io.agi.framework.sql.JdbcPersistence;
+import io.agi.framework.Persistence.sql.JdbcPersistence;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

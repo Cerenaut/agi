@@ -1,7 +1,8 @@
-package io.agi.framework.sql;
+package io.agi.framework.Persistence.sql;
 
-import io.agi.framework.Persistence;
-import io.agi.framework.PropertyAccessor;
+import io.agi.framework.Persistence.Persistence;
+import io.agi.framework.Persistence.PropertyConverter;
+import io.agi.framework.Persistence.PropertyStringAccess;
 import io.agi.framework.serialization.ModelData;
 import io.agi.framework.serialization.ModelEntity;
 import io.agi.framework.serialization.ModelNode;
@@ -12,7 +13,7 @@ import java.util.Collection;
 /**
  * Created by dave on 16/02/16.
  */
-public class JdbcPersistence implements Persistence, PropertyAccessor.PropertyStringAccess {
+public class JdbcPersistence implements Persistence, PropertyStringAccess {
 
 //    Entity --< Properties
 //           --< Data
@@ -26,7 +27,7 @@ public class JdbcPersistence implements Persistence, PropertyAccessor.PropertySt
     protected String _password;
     protected String _url; // e.g. jdbc:postgresql://localhost:5432/agidb"; // https://jdbc.postgresql.org/documentation/80/connect.html
 
-    PropertyAccessor _propertyAccessor = null;
+    PropertyConverter _propertyConverter = null;
 
     public JdbcPersistence() {
     }
@@ -37,7 +38,7 @@ public class JdbcPersistence implements Persistence, PropertyAccessor.PropertySt
         _password = password;
         _url = url;
 
-        _propertyAccessor = new PropertyAccessor( this );
+        _propertyConverter = new PropertyConverter( this );
     }
 
     // Nodes
@@ -184,56 +185,6 @@ public class JdbcPersistence implements Persistence, PropertyAccessor.PropertySt
     public void removeData(String key) {
         String sql = "DELETE FROM data WHERE key = '" + key +"'";
         execute(sql );
-    }
-
-    @Override
-    public Float getPropertyFloat( String key, Float defaultValue ) {
-        return _propertyAccessor.getPropertyFloat( key, defaultValue );
-    }
-
-    @Override
-    public void setPropertyFloat( String key, float value ) {
-        _propertyAccessor.setPropertyFloat( key, value );
-    }
-
-    @Override
-    public Double getPropertyDouble( String key, Double defaultValue ) {
-        return _propertyAccessor.getPropertyDouble( key, defaultValue );
-    }
-
-    @Override
-    public void setPropertyDouble( String key, double value ) {
-        _propertyAccessor.setPropertyDouble( key, value );
-    }
-
-    @Override
-    public Long getPropertyLong( String key, Long defaultValue ) {
-        return _propertyAccessor.getPropertyLong( key, defaultValue );
-    }
-
-    @Override
-    public void setPropertyLong( String key, long value ) {
-        _propertyAccessor.setPropertyLong( key, value );
-    }
-
-    @Override
-    public Integer getPropertyInt( String key, Integer defaultValue ) {
-        return _propertyAccessor.getPropertyInt( key, defaultValue );
-    }
-
-    @Override
-    public void setPropertyInt( String key, int value ) {
-        _propertyAccessor.setPropertyInt( key, value );
-    }
-
-    @Override
-    public Boolean getPropertyBoolean( String key, Boolean defaultValue ) {
-        return _propertyAccessor.getPropertyBoolean( key, defaultValue );
-    }
-
-    @Override
-    public void setPropertyBoolean( String key, boolean value ) {
-        _propertyAccessor.setPropertyBoolean( key, value );
     }
 
     public String getPropertyString(String key, String defaultValue ) {

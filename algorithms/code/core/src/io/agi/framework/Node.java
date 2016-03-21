@@ -1,6 +1,7 @@
 package io.agi.framework;
 
 import io.agi.core.orm.ObjectMap;
+import io.agi.framework.Persistence.Persistence;
 import io.agi.framework.serialization.ModelEntity;
 import io.agi.framework.serialization.ModelNode;
 

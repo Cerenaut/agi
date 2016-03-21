@@ -1,10 +1,10 @@
 package io.agi.framework.demo.dsom;
 
 import io.agi.core.orm.Keys;
-import io.agi.framework.Entity;
-import io.agi.framework.Main;
-import io.agi.framework.Node;
-import io.agi.framework.Persistence;
+import io.agi.framework.*;
+import io.agi.framework.Persistence.Persistence;
+import io.agi.framework.Persistence.PropertyConverter;
+import io.agi.framework.Persistence.sql.JdbcPersistence;
 import io.agi.framework.entities.CommonEntityFactory;
 import io.agi.framework.entities.DynamicSelfOrganizingMapEntity;
 import io.agi.framework.entities.RandomVectorEntity;
@@ -55,15 +55,18 @@ public class DsomDemo {
         p.setEntity( classifier );
         p.setEntity( model );
 
+        JdbcPersistence jp = (JdbcPersistence)p;
+        PropertyConverter propertyConverter = new PropertyConverter( jp );
+
         // Connect the entities
         Entity.SetDataReference(p, classifierName, DynamicSelfOrganizingMapEntity.INPUT, randomVectorName, RandomVectorEntity.OUTPUT);
 
         // Set a property:
         int elements = 2; // 2D
         String elementsKey = Keys.concatenate(randomVectorName, RandomVectorEntity.ELEMENTS);
-        p.setPropertyInt(elementsKey, elements );
+        propertyConverter.setPropertyInt( elementsKey, elements );
 
         String resetKey = Keys.concatenate( classifierName, Entity.SUFFIX_RESET );
-        p.setPropertyBoolean( resetKey, true );
+        propertyConverter.setPropertyBoolean( resetKey, true );
     }
 }

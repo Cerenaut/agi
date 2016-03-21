@@ -1,20 +1,15 @@
-package io.agi.framework;
+package io.agi.framework.Persistence;
 
 /**
  * Makes it easier get and set Strings using other data structures, to a delegated data structure.
  *
  * Created by dave on 16/02/16.
  */
-public class PropertyAccessor {
-
-    public interface PropertyStringAccess {
-        String getPropertyString( String key, String defaultValue );
-        void setPropertyString( String key, String value );
-    }
+public class PropertyConverter {
 
     PropertyStringAccess _delegate = null;
 
-    public PropertyAccessor( PropertyStringAccess delegate ) {
+    public PropertyConverter( PropertyStringAccess delegate ) {
         _delegate = delegate;
     }
 
