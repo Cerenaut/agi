@@ -63,7 +63,7 @@ public class DiscreteRandomEntity extends Entity {
             float x = (float)n * perLevel;
             x = x * range;
             x += min;
-            System.out.println(  "random: " + x );
+            //System.out.println(  "random: " + x );
             output._values[ i ]  = x;
         }
 

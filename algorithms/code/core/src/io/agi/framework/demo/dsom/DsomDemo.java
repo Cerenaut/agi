@@ -4,11 +4,8 @@ import io.agi.core.orm.Keys;
 import io.agi.framework.Entity;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
+import io.agi.framework.entities.*;
 import io.agi.framework.persistence.Persistence;
-import io.agi.framework.entities.CommonEntityFactory;
-import io.agi.framework.entities.DiscreteRandomEntity;
-import io.agi.framework.entities.DynamicSelfOrganizingMapEntity;
-import io.agi.framework.entities.RandomVectorEntity;
 import io.agi.framework.serialization.ModelEntity;
 
 /**
@@ -46,23 +43,27 @@ public class DsomDemo {
     public static void createEntities( Node n ) {
 
         // Define some entities
-        String randomVectorName = "model";
+        String modelName = "model";
         String classifierName = "classifier";
 
-        ModelEntity model = new ModelEntity( randomVectorName, DiscreteRandomEntity.ENTITY_TYPE, n.getName(), null );
-        ModelEntity classifier = new ModelEntity( classifierName, DynamicSelfOrganizingMapEntity.ENTITY_TYPE, n.getName(), randomVectorName ); // linked, so we only need to update the problem
+        ModelEntity model = new ModelEntity( modelName, DiscreteRandomEntity.ENTITY_TYPE, n.getName(), null );
+//        ModelEntity classifier = new ModelEntity( classifierName, DynamicSelfOrganizingMapEntity.ENTITY_TYPE, n.getName(), modelName ); // linked, so we only need to update the problem
+        ModelEntity classifier = new ModelEntity( classifierName, GrowingNeuralGasEntity.ENTITY_TYPE, n.getName(), modelName ); // linked, so we only need to update the problem
 
         Persistence p = n.getPersistence();
         p.setEntity( classifier );
         p.setEntity( model );
 
         // Connect the entities
-        Entity.SetDataReference(p, classifierName, DynamicSelfOrganizingMapEntity.INPUT, randomVectorName, RandomVectorEntity.OUTPUT);
+        Entity.SetDataReference(p, classifierName, DynamicSelfOrganizingMapEntity.INPUT, modelName, RandomVectorEntity.OUTPUT);
 
         // Set a property:
         int elements = 2; // 2D
-        String elementsKey = Keys.concatenate(randomVectorName, RandomVectorEntity.ELEMENTS);
+        String elementsKey = Keys.concatenate(modelName, RandomVectorEntity.ELEMENTS);
         p.setPropertyInt(elementsKey, elements );
+
+        String ageKey = Keys.concatenate( modelName, Entity.SUFFIX_AGE );
+        p.setPropertyInt(ageKey, 0);
 
         String resetKey = Keys.concatenate( classifierName, Entity.SUFFIX_RESET );
         p.setPropertyBoolean( resetKey, true );

@@ -182,9 +182,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
             return;
         }
 
-        System.err.println("START T: " + System.currentTimeMillis() + " Entity: " + entityName + " A ");
         updateSelf();
-        System.err.println("START T: " + System.currentTimeMillis() + " Entity: " + entityName + " Z ");
 
         Persistence p = _n.getPersistence();
         //        Collection< JsonEntity > children = p.getChildEntities( _name );
@@ -247,31 +245,26 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         // 1. get inputs
         // get all the inputs and put them in the object map.
-        System.err.println("START T: " + System.currentTimeMillis() + " Entity: " + getName() + " 1 ");
         Collection<String> inputKeys = new ArrayList<String>();
         getInputKeys( inputKeys );
         getData( inputKeys );
 
         // 2. get outputs
         // get all the outputs and put them in the object map.
-        System.err.println("START T: " + System.currentTimeMillis() + " Entity: " + getName() + " 2 ");
         Collection<String> outputKeys = new ArrayList<String>();
         getOutputKeys( outputKeys );
         getData( outputKeys );
 
         // 3. doUpdateSelf()
-        System.err.println("START T: " + System.currentTimeMillis() + " Entity: " + getName() + " 3 ");
         doUpdateSelf();
 
         // 4. set outputs
         // write all the outputs back to the persistence system
 //        setData(inputKeys);
-        System.err.println("START T: " + System.currentTimeMillis() + " Entity: " + getName() + " 4 ");
         setData( outputKeys );
 
 
         // update age:
-        System.err.println("START T: " + System.currentTimeMillis() + " Entity: " + getName() + " 5 ");
         int age = getPropertyInt( SUFFIX_AGE, 0 );
         ++age;
         setPropertyInt(SUFFIX_AGE, age);

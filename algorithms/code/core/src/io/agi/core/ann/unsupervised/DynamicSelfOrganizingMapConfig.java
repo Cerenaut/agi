@@ -10,13 +10,9 @@ public class DynamicSelfOrganizingMapConfig extends CompetitiveLearningConfig {
 
     public static final String ELASTICITY = "elasticity";
     public static final String LEARNING_RATE = "learning-rate";
-    public static final String SCALE_UNIT = "scale-unit";
-    public static final String SCALE_FACTOR = "scale-factor";
 
     public String _keyElasticity = ELASTICITY;
     public String _keyLearningRate = LEARNING_RATE;
-    public String _keyScaleUnit = SCALE_UNIT;
-    public String _keyScaleFactor = SCALE_FACTOR;
 
     public DynamicSelfOrganizingMapConfig() {
     }
@@ -26,8 +22,6 @@ public class DynamicSelfOrganizingMapConfig extends CompetitiveLearningConfig {
 
         setLearningRate(learningRate);
         setElasticity(elasticity);
-        setScaleUnit(false);
-        setScaleFactor(1.0f);
     }
 
     public void copyFrom(NetworkConfig nc, String name ) {
@@ -37,8 +31,6 @@ public class DynamicSelfOrganizingMapConfig extends CompetitiveLearningConfig {
 
         setLearningRate(c.getLearningRate());
         setElasticity(c.getElasticity());
-        setScaleUnit(c.getScaleUnit());
-        setScaleFactor(c.getScaleFactor());
     }
 
     public void setLearningRate( float r ) {
@@ -47,24 +39,6 @@ public class DynamicSelfOrganizingMapConfig extends CompetitiveLearningConfig {
 
     public void setElasticity( float r ) {
         _om.put(getKey(_keyElasticity), r);
-    }
-
-    public void setScaleUnit( boolean b ) {
-        _om.put(getKey(_keyScaleUnit), b);
-    }
-
-    public void setScaleFactor( float r ) {
-        _om.put(getKey(_keyScaleFactor), r);
-    }
-
-    public boolean getScaleUnit() {
-        Boolean b = _om.getBoolean(getKey( _keyScaleUnit) );
-        return b;
-    }
-
-    public float getScaleFactor() {
-        Float r = _om.getFloat(getKey( _keyScaleFactor) );
-        return r.floatValue();
     }
 
     public float getElasticity() {

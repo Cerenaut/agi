@@ -5,7 +5,8 @@ var CompetitiveLearning = {
   update : function() {
     var key = $( "#data" ).val();
     //Postgrest.getJson( "data?key=eq."+key, CompetitiveLearning.onGetData );
-    Framework.getData( key, CompetitiveLearning.onGetData );
+    var suffix = "name="+key;
+    Framework.getData( suffix, CompetitiveLearning.onGetData );
   },
 
   onGetData : function( json ) {

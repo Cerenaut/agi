@@ -36,6 +36,10 @@ public class CommonEntityFactory implements EntityFactory {
             return new DynamicSelfOrganizingMapEntity( entityName, om, DynamicSelfOrganizingMapEntity.ENTITY_TYPE, _n );
         }
 
+        if( entityType.equals( GrowingNeuralGasEntity.ENTITY_TYPE ) ) {
+            return new GrowingNeuralGasEntity( entityName, om, GrowingNeuralGasEntity.ENTITY_TYPE, _n );
+        }
+
         if( entityType.equals( ImageSensorEntity.ENTITY_TYPE ) ) {
             return new ImageSensorEntity( entityName, om, ImageSensorEntity.ENTITY_TYPE, _n );
         }

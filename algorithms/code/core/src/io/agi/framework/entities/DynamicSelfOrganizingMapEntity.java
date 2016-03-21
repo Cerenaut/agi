@@ -56,18 +56,16 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
         int inputs = input.getSize();
 
         boolean reset = getPropertyBoolean(Entity.SUFFIX_RESET, false);
-        float learningRate = getPropertyFloat(DynamicSelfOrganizingMapConfig.LEARNING_RATE, 1.2f);
-        float elasticity   = getPropertyFloat(DynamicSelfOrganizingMapConfig.ELASTICITY, 1.f);
-        int widthCells = getPropertyInt(CompetitiveLearningConfig.WIDTH_CELLS, 5);
-        int heightCells = getPropertyInt( CompetitiveLearningConfig.HEIGHT_CELLS, 5 );
+        float learningRate = getPropertyFloat(DynamicSelfOrganizingMapConfig.LEARNING_RATE, 0.5f);
+        float elasticity   = getPropertyFloat(DynamicSelfOrganizingMapConfig.ELASTICITY, 1.0f);
+        int widthCells = getPropertyInt(CompetitiveLearningConfig.WIDTH_CELLS, 8);
+        int heightCells = getPropertyInt( CompetitiveLearningConfig.HEIGHT_CELLS, 8 );
 
         String implName = getName() + Keys.DELIMITER + IMPL_NAME; // the name of the object that implements
 
         // Create the config object:
         DynamicSelfOrganizingMapConfig dsomc = new DynamicSelfOrganizingMapConfig();
         dsomc.setup( _om, implName, inputs, widthCells, heightCells, learningRate, elasticity );
-
-        dsomc.setScaleUnit(true);
 
         // Create the implementing object itself, and copy data from persistence into it:
         DynamicSelfOrganizingMap dsom = new DynamicSelfOrganizingMap( implName, _om );

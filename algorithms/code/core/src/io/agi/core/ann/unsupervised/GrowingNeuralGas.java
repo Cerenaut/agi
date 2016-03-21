@@ -67,6 +67,10 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         _ageSinceGrowth = new Data( 1 );
     }
 
+    public void reset() {
+        _cellMask.set( 0.f ); // disable all cells
+    }
+
     public void call() {
         update();
     }
