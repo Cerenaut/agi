@@ -33,10 +33,10 @@ public class CouchbasePersistence extends StringPersistence {
     public static final String PROPERTY_BUCKET = "couchbase-bucket";
     public static final String PROPERTY_PASSWORD = "couchbase-password";
 
-    public static final String KEY_PREFIX_NODE = "Node";
-    public static final String KEY_PREFIX_DATA = "Data";
-    public static final String KEY_PREFIX_ENTITY = "Entity";
-    public static final String KEY_PREFIX_PROPERTY = "Property";
+    public static final String KEY_PREFIX_NODE = "N";
+    public static final String KEY_PREFIX_DATA = "D";
+    public static final String KEY_PREFIX_ENTITY = "E";
+    public static final String KEY_PREFIX_PROPERTY = "P";
 
     public static final String PROPERTY_DOCUMENT_TYPE = "document_type";
 
@@ -88,33 +88,33 @@ public class CouchbasePersistence extends StringPersistence {
 
             // Initialize design document
             DesignDocument designDoc = DesignDocument.create(
-                    "persistence",
-                    Arrays.asList(
-//                            DefaultView.Create("by_country",
-//                                    "function (doc, meta) { if (doc.type == 'landmark') { emit([doc.country, doc.city], null); } }"),
-//                            DefaultView.Create("by_activity",
-//                                    "function (doc, meta) { if (doc.type == 'landmark') { emit(doc.activity, null); } }",
-//                                    "_count")
-                            DefaultView.create("all_nodes",
-                                    "function (doc, meta) {" +
-                                    "  if( doc.document_type == 'Node' ) {" +
-                                    "    emit(meta.id, [doc.name, doc.host, doc.port, doc.document_type ] );" +
-                                    "  } }"),
-                            DefaultView.create("all_entities",
-                                    "function (doc, meta) {" +
-                                    "  if( doc.document_type == 'Entity' ) {" +
-                                    "    emit(meta.id, [doc.name, doc.host, doc.port, doc.document_type ] );" +
-                                    "  } }" ),
-                            DefaultView.create("child_entities",
-                                    "function (doc, meta) { " +
-                                    "  if( doc.document_type == 'Entity' && doc.parent ) {" +
-                                    "    emit(doc.parent, doc.name );" +
-                                    "  } }" ),
-                            DefaultView.create("all_docs",
-                                    "function (doc, meta) { " +
-                                            "  emit( meta.id, doc );" +
-                                            "  }" )
-                    )
+                "persistence",
+                Arrays.asList(
+                    DefaultView.create("all_nodes",
+                        "function (doc, meta) {" +
+                        "  if( doc.document_type == 'N' ) {" +
+                        "    emit(meta.id, [doc.name, doc.host, doc.port ] );" +
+                        "  } }"),
+                    DefaultView.create("all_entities",
+                        "function (doc, meta) {" +
+                        "  if( doc.document_type == 'E' ) {" +
+                        "    emit(meta.id, [doc.name, doc.host, doc.port ] );" +
+                        "  } }" ),
+                    DefaultView.create("child_entities",
+                        "function (doc, meta) { " +
+                        "  if( doc.document_type == 'E' && doc.parent ) {" +
+                        "    emit(doc.parent, doc.name );" +
+                        "  } }" ),
+                    DefaultView.create("all_properties",
+                        "function (doc, meta) {" +
+                        "  if( doc.document_type == 'P' && doc.name ) {" +
+                        "    emit( doc.name, [doc.value ] );" +
+                        "  } }" ),
+                    DefaultView.create("all_docs",
+                        "function (doc, meta) { " +
+                        "  emit( meta.id, doc );" +
+                        "  }" )
+                )
             );
 
             // Insert design document into the bucket
@@ -196,7 +196,7 @@ public class CouchbasePersistence extends StringPersistence {
                 ViewQuery
                         .from("persistence", "child_entities")
                         .key(parent)
-                        .inclusiveEnd( true )
+                        .inclusiveEnd(true)
                         .descending()
         );
         List<ViewRow> l = result.allRows();
@@ -206,6 +206,29 @@ public class CouchbasePersistence extends StringPersistence {
             models.add( key );
         }
         return models;
+    }
+
+    public Map< String, String > getProperties( String filter ) {
+        // https://forums.couchbase.com/t/wildcard-search-using-couchbase-views/3545
+        HashMap< String, String > hm = new HashMap< String, String >();
+        String filter1 = filter;
+        String filter2 = filter + "\\uefff";
+        ViewResult result = _b.query(
+                ViewQuery
+                        .from("persistence", "all_properties")
+                        .startKey(filter1)
+                        .endKey(filter2)
+                        .inclusiveEnd(true)
+        );
+        List<ViewRow> l = result.allRows();
+        for( ViewRow r : l ) {
+            JsonObject jo = r.document().content();
+            String key = jo.getString(PROPERTY_KEY);
+            String value = jo.getString(PROPERTY_PROPERTY_VALUE);
+            hm.put(key, value);
+        }
+
+        return hm;
     }
 
     // Nodes

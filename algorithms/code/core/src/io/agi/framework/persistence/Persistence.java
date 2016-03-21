@@ -5,6 +5,7 @@ import io.agi.framework.serialization.ModelEntity;
 import io.agi.framework.serialization.ModelNode;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Created by dave on 14/02/16.
@@ -38,6 +39,8 @@ public interface Persistence {
     void setData( ModelData e );
     ModelData getData( String key );
     void removeData(String key);
+
+    Map< String, String > getProperties( String filter ); // list all
 
     // Properties
     Float getPropertyFloat(String key, Float defaultValue);

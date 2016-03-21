@@ -32,3 +32,6 @@ file:///home/dave/workspace/agi.io/agi/experimental-framework/code/web-ui2/vecto
 file:///home/dave/workspace/agi.io/agi/experimental-framework/code/web-ui2/vector.html?data=classifier-output-error
 file:///home/dave/workspace/agi.io/agi/experimental-framework/code/web-ui2/update.html?entity=model
 
+file:///home/dave/workspace/agi.io/agi/experimental-framework/code/web-ui2/properties.html?search=classifier
+
+http://stackoverflow.com/questions/27784283/how-to-retrieve-a-list-of-keys-documents-in-couchbase-database-in-c-sharp

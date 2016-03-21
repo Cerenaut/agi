@@ -43,7 +43,7 @@ var Framework = {
   setProperty : function( key, value, callback ) {
     //Postgrest.getJson( "properties?key=eq."+entityName+"-age", callback );
     var suffix = Framework.contextProperties + "?" + key + "=" + value;
-    Framework.doAjaxJson( suffix, callback, "PUT" );
+    Framework.doAjaxJson( suffix, callback, "POST" );
   },
 
   doAjaxJson : function( suffix, callback, method ) {
@@ -53,7 +53,9 @@ var Framework = {
       type: method,
 //      contentType: 'application/json',
       complete: function( jqxhr ) {
-          callback( jqxhr );
+          if( callback ) {
+            callback( jqxhr );
+          }
       }
     } );
   },

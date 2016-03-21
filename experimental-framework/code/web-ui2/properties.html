@@ -37,7 +37,7 @@
       <input type="number" id="interval" style="display:inline;width:5em;" class="" placeholder="Update interval" value="500"/>
       <input type="button" id="pause" class="btn btn-sm btn-success" style="" onclick="Loop.togglePause();" value="Auto Refresh"/>
       <input type="button" id="update" class="btn btn-sm btn-success" style="" onclick="Loop.update();" value="Refresh"/>
-       <input type="button" id="save" class="btn btn-sm btn-danger" style="" onclick="Properties.save();" value="Save"/>
+      <input type="button" id="save-all" class="btn btn-sm btn-danger" style="" onclick="Properties.saveAll();" value="Save all"/>
      </div>
      <div id="container" style="min-width: 310px; max-width: 800px; height: 400px; margin: 0 auto">
 
@@ -47,9 +47,21 @@
            <th>Key</th>
            <th>Value</th>
            <th>New value (if populated)</th>
-           <th></th>
+           <th>Actions</th>
          </tr>
          </thead>
+
+         <tbody id="table-body-new">
+          <tr>
+           <td id="key-new"><input type="text" id="key-new-value" style="" class="" placeholder="New key" value=""/></td>
+           <td>-</td>
+           <td id="value-new"><input type="text" id="value-new-value" style="" class="" placeholder="New value" value=""/></td>
+           <td>
+            <input type="button" id="save-new" class="btn btn-sm btn-danger" style="" onclick="Properties.saveNew();" value="Save"/>
+           </td>
+          </tr>
+         </tbody>
+
          <tbody id="table-body">
          </tbody>
        </table>

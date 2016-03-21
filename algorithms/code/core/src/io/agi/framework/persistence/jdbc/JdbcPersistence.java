@@ -1,5 +1,6 @@
 package io.agi.framework.persistence.jdbc;
 
+import com.sun.rowset.internal.Row;
 import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.persistence.StringPersistence;
 import io.agi.framework.serialization.ModelData;
@@ -8,6 +9,8 @@ import io.agi.framework.serialization.ModelNode;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by dave on 16/02/16.
@@ -80,7 +83,7 @@ public class JdbcPersistence extends StringPersistence {
     public void setNode( ModelNode e ) {
         // https://www.sitepoint.com/community/t/how-to-use-on-duplicate-key-update-in-postgresql-with-php/200335/4
         String sql1 = "UPDATE nodes SET host = '" + e._host + "', port = '" + e._port + "' WHERE key = '" + e._key + "'";
-        execute(sql1 );
+        execute(sql1);
         String sql2 = "INSERT INTO nodes (key, host,port) SELECT '"+e._key+"', '"+e._host+"', '"+e._port+"' WHERE NOT EXISTS (SELECT key from nodes WHERE key = '"+e._key+"')";
         execute( sql2 );
     }
@@ -145,7 +148,7 @@ public class JdbcPersistence extends StringPersistence {
     public void setEntity( ModelEntity e ) {
         // https://www.sitepoint.com/community/t/how-to-use-on-duplicate-key-update-in-postgresql-with-php/200335/4
         String sql1 = "UPDATE entities SET type = '" + e._type + "', node = '" + e._node + "', parent = '" + e._parent + "' WHERE key = '" + e._key + "'";
-        execute(sql1 );
+        execute(sql1);
         String sql2 = "INSERT INTO entities (key, type, node,parent) SELECT '"+e._key+"', '"+e._type+"', '"+e._node+"', '"+e._parent+"' WHERE NOT EXISTS (SELECT key from entities WHERE key = '"+e._key+"')";
         execute( sql2 );
     }
@@ -210,6 +213,23 @@ public class JdbcPersistence extends StringPersistence {
     public void removeData(String key) {
         String sql = "DELETE FROM data WHERE key = '" + key +"'";
         execute(sql );
+    }
+
+    public Map< String, String > getProperties( String filter ) {
+        String sql = "SELECT key, value FROM properties where key like '" + filter +"'";
+        ResultSetMap rsm = new ResultSetMap();
+        rsm._fields.add("value");
+        executeQuery(sql, rsm );
+
+        HashMap< String, String > hm = new HashMap< String, String >();
+
+        for( HashMap< String, String > row : rsm._rows ) {
+            String key = row.get( "key" );
+            String value = row.get( "value" );
+            hm.put( key, value );
+        }
+
+        return hm;
     }
 
     public String getPropertyString(String key, String defaultValue ) {
