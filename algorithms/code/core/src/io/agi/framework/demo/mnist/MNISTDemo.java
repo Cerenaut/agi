@@ -35,9 +35,9 @@ public class MNISTDemo {
             m.loadEntities( args[ 1 ] );
         }
 
-        if ( args.length > 2 ) {
-            m.loadReferences( args[ 2 ] );
-        }
+//        if ( args.length > 2 ) {
+//            m.loadReferences( args[ 2 ] );
+//        }
 
         // Programmatic hook to create entities and references..
         createEntities( m._n );

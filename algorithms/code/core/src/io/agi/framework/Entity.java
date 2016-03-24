@@ -130,6 +130,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
             return;
         }
 
+System.err.println( "UPDATE STA " + getName() + " T="+System.currentTimeMillis() );
         updateSelf();
 
         Persistence p = _n.getPersistence();
@@ -360,7 +361,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
     /**
      * Get the data if it exists, and create it if it doesn't.
      *
-     * @param keySuffix   the key of the data
+     * @param keySuffix   the name of the data
      * @param defaultSize create data of this size, if the data does not exist
      * @return data
      */

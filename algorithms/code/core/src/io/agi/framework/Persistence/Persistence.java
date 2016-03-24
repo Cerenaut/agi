@@ -17,7 +17,7 @@ public interface Persistence {
 //               Could be JSON string for entities: { name: xxx, type: yyy } etc
 
 
-//    Collection<String> getChildren(String key);
+//    Collection<String> getChildren(String name);
 //    Collection<String> getNodes();
 
     // Nodes

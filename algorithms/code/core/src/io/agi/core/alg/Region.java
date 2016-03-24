@@ -38,7 +38,7 @@ public class Region extends NamedObject implements Callback {
 
     public Data _columnDepth; // z position of every input in the surface.
 
-    public HashMap< Integer, ArrayList< Integer > > _depthColumns; // key: depth. Values: Columns at this depth
+    public HashMap< Integer, ArrayList< Integer > > _depthColumns; // name: depth. Values: Columns at this depth
 
     public HashSet< Integer > _ffInputActive = new HashSet< Integer >();
     public HashSet< Integer > _fbInputActive = new HashSet< Integer >();

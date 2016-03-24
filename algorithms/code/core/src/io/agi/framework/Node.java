@@ -94,6 +94,7 @@ public class Node {
 //        count += 1;
 //        _p.setEntityAge(entityName, count);
         unlock(entityName);
+        System.err.println( "UPDATE END " + entityName + " T="+System.currentTimeMillis() );
 
         // broadcast to any distributed listeners:
         _c.onUpdated(entityName);
@@ -123,22 +124,20 @@ public class Node {
      * This method is called when the distributed system has received a request for an update of an Entity.
      * @param entityName
      */
-    public void doUpdate(String entityName) {
+    public void doUpdate( String entityName ) {
 
-        ModelEntity je = _p.getEntity(entityName);
-        //String nodeName = _p.getNodeName(entityName);
+        ModelEntity modelEntity = _p.getEntity( entityName );
 
-        if( je == null ) {
+        if( modelEntity == null ) {
             return; // bad entity
         }
 
-
-        if( !je._node.equals( getName() ) ) {
+        if( !modelEntity.node.equals( getName() ) ) {
             return;
         }
 
-        Entity e = _ef.create( _om, entityName, je._type );
-        e.setParent( je._parent );
+        Entity e = _ef.create( _om, entityName, modelEntity.type );
+        e.setParent( modelEntity.parent );
 
         forkUpdate(e); // returns immediately
     }

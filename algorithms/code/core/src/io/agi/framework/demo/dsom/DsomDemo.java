@@ -35,6 +35,10 @@ public class DsomDemo {
             m.loadReferences( args[ 2 ] );
         }
 
+        if( args.length > 3 ) {
+            m.loadProperties( args[ 3 ] );
+        }
+
         // Programmatic hook to create entities and references..
         createEntities( m._n );
 
