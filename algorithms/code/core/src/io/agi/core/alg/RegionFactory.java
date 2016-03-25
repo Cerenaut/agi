@@ -6,8 +6,6 @@ import io.agi.core.ann.supervised.FeedForwardNetworkConfig;
 import io.agi.core.ann.supervised.LossFunction;
 import io.agi.core.ann.unsupervised.GrowingNeuralGas;
 import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
-import io.agi.core.orm.AbstractFactory;
-import io.agi.core.orm.ObjectMap;
 
 /**
  * Factory for all the Region objects - Regions, Columns and internal parts (Classifier, Predictor)
@@ -47,9 +45,9 @@ public class RegionFactory {
 
     public GrowingNeuralGas createClassifier( Region r, int x, int y ) {
 
-        String name = r.getKey(Region.SUFFIX_CLASSIFIER);
+        String name = r.getKey( Region.SUFFIX_CLASSIFIER );
         GrowingNeuralGasConfig c = new GrowingNeuralGasConfig();
-        c.copyFrom(_gngc, name);
+        c.copyFrom( _gngc, name );
 
         GrowingNeuralGas gng = new GrowingNeuralGas( c._name, c._om );
         gng.setup( c );
@@ -58,7 +56,7 @@ public class RegionFactory {
 
     public FeedForwardNetwork createPredictor( Region r, int x, int y ) {
 
-        String name = r.getKey(Region.SUFFIX_PREDICTOR);
+        String name = r.getKey( Region.SUFFIX_PREDICTOR );
         FeedForwardNetworkConfig c = new FeedForwardNetworkConfig();
         c.copyFrom( _ffnc, name );
 
@@ -77,9 +75,9 @@ public class RegionFactory {
         int hidden = Integer.valueOf( layerSizes );
 
         // hardcoded for 2 layers
-        ffn.setupLayer( 0, inputs, hidden, learningRate, activationFunction);
+        ffn.setupLayer( 0, inputs, hidden, learningRate, activationFunction );
 
-        if( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
+        if ( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
             ffn.setupLayer( 1, hidden, outputs, learningRate, ActivationFunctionFactory.SOFTMAX );
         }
         else {

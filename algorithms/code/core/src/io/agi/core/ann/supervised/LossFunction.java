@@ -4,7 +4,7 @@ package io.agi.core.ann.supervised;
  * Aka Cost function or objective function.
  * Measures the error between output and ideal.
  * See http://neuralnetworksanddeeplearning.com/chap2.html
- *
+ * <p>
  * Created by dave on 4/01/16.
  */
 public abstract class LossFunction {
@@ -27,15 +27,15 @@ public abstract class LossFunction {
         // C = ideal * ln( output ) + (1-ideal) * ln( 1-output )
         double term1 = ideal * Math.log( output );
         double term2 = ( 1.0 - ideal ) * Math.log( 1.0 - output );
-        double C = - ( term1 + term2 );
-        return (float)C;
+        double C = -( term1 + term2 );
+        return ( float ) C;
     }
 
     /**
      * Since this only makes sense for classification among distributions,
      * Need to output the -log likelihood of the ideal class output.
      * Note the cost is the same for every output.
-     *
+     * <p>
      * See:
      * http://neuralnetworksanddeeplearning.com/chap3.html
      * http://stats.stackexchange.com/questions/154879/a-list-of-cost-functions-used-in-neural-networks-alongside-applications
@@ -44,7 +44,7 @@ public abstract class LossFunction {
      * @return
      */
     public static float logLikelihood( float outputIdealClass ) {
-        double C = - Math.log( outputIdealClass );
-        return (float)C;
+        double C = -Math.log( outputIdealClass );
+        return ( float ) C;
     }
 }

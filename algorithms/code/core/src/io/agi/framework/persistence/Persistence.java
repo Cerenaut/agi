@@ -22,27 +22,38 @@ public interface Persistence {
 //    Collection<String> getNodes();
 
     // Nodes
-    Collection<ModelNode> getNodes(); // list all
+    Collection< ModelNode > getNodes(); // list all
+
     void setNode( ModelNode e );
+
     ModelNode getNode( String nodeName );
-    void removeNode(String nodeName);
+
+    void removeNode( String nodeName );
 
     // Entities
-    Collection<ModelEntity> getEntities(); // list all
+    Collection< ModelEntity > getEntities(); // list all
+
     Collection< String > getChildEntities( String parent );
+
     void setEntity( ModelEntity e );
+
     ModelEntity getEntity( String key );
-    void removeEntity(String key);
+
+    void removeEntity( String key );
 
     // Data
 //    Collection< String > getDataKeys();
     void setData( ModelData e );
+
     ModelData getData( String key );
-    void removeData(String key);
+
+    void removeData( String key );
 
     // Properties
-    String getPropertyString(String key, String defaultValue);
-    void setPropertyString(String key, String value);
+    String getPropertyString( String key, String defaultValue );
+
+    void setPropertyString( String key, String value );
+
     Map< String, String > getProperties( String filter );
 
 }

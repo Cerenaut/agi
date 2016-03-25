@@ -8,12 +8,12 @@ import io.agi.core.orm.CallbackCollection;
  * This means your implementing class doesn't need to know whether it is running in a real thread, or simply being
  * iterated. In addition, you can add diagnostic and debug hooks dynamically to all thread events. For example, getting
  * data out for visualization.
- *
+ * <p>
  * Created by dave on 27/12/15.
  */
 public abstract class CallbackThread implements Runnable, Asynchronous {
 
-    public CallbackCollection _preCb  = new CallbackCollection();
+    public CallbackCollection _preCb = new CallbackCollection();
     public CallbackCollection _stepCb = new CallbackCollection();
     public CallbackCollection _postCb = new CallbackCollection();
 
@@ -34,46 +34,58 @@ public abstract class CallbackThread implements Runnable, Asynchronous {
     public synchronized void addPre( Callback c ) {
         _preCb.add( c );
     }
+
     public synchronized void addStep( Callback c ) {
         _stepCb.add( c );
     }
+
     public synchronized void addPost( Callback c ) {
         _postCb.add( c );
     }
 
-    @Override public synchronized int getInterval() {
+    @Override
+    public synchronized int getInterval() {
         return _interval;
     }
-    @Override public synchronized void setInterval( int interval ) {
+
+    @Override
+    public synchronized void setInterval( int interval ) {
         _interval = interval;
     }
 
-    @Override public void start() {
+    @Override
+    public void start() {
         Thread t = new Thread( this );
         t.start();
     }
 
-    @Override public synchronized void stop() {
+    @Override
+    public synchronized void stop() {
         _doStep = false;
     }
 
-    @Override public synchronized boolean stopping() {
+    @Override
+    public synchronized boolean stopping() {
         return !_doStep;
     }
 
-    @Override public synchronized boolean running() {
+    @Override
+    public synchronized boolean running() {
         return _running;
     }
 
-    @Override public synchronized boolean paused() {
+    @Override
+    public synchronized boolean paused() {
         return _paused;
     }
 
-    @Override public synchronized void pause() {
+    @Override
+    public synchronized void pause() {
         _paused = true;
     }
 
-    @Override public synchronized void resume() {
+    @Override
+    public synchronized void resume() {
         _paused = false;
     }
 
@@ -85,20 +97,21 @@ public abstract class CallbackThread implements Runnable, Asynchronous {
     /**
      * Implement Runnable interface. Creates a loop that iterates until thread
      * is instructed to stop.
-     *
+     * <p>
      * Callbacks are called on pre- and post- execution to allow setup and tidy
      * up.
      */
-    @Override public void run() {
+    @Override
+    public void run() {
 
-        synchronized( this ) {
+        synchronized ( this ) {
             _doStep = true; // aka start
             _running = true;
         }
 
         _preCb.call();
 
-        while( !stopping() ) {
+        while ( !stopping() ) {
             step();
         }
         // _doStep has become false
@@ -120,18 +133,18 @@ public abstract class CallbackThread implements Runnable, Asynchronous {
         long timeWait = System.currentTimeMillis();
 
         try {
-            while( running() ) {
+            while ( running() ) {
                 Thread.sleep( sleepInterval );
-                if( timeout != null ) {
+                if ( timeout != null ) {
                     long timeNow = System.currentTimeMillis();
                     long elapsed = timeNow - timeWait;
-                    if( elapsed > timeout ) {
+                    if ( elapsed > timeout ) {
                         break;
                     }
                 }
             }
         }
-        catch( InterruptedException ie ) {
+        catch ( InterruptedException ie ) {
             System.err.print( ie );
         }
     }
@@ -139,28 +152,28 @@ public abstract class CallbackThread implements Runnable, Asynchronous {
     /**
      * This method is not synchronized so you can perform fine-grained atomicity
      * in your callbacks using the same object.
-     *
+     * <p>
      * Frame rate control is implemented if the interval is set to > 0.
      */
     public void step() {
 
         long timeStep = System.currentTimeMillis();
 
-        if( !paused() ) {
+        if ( !paused() ) {
 
             onStep();
             _stepCb.call();
 
             boolean doPause = false;
 
-            synchronized( this ) {
-                if( _oneStep ) {
+            synchronized ( this ) {
+                if ( _oneStep ) {
                     _oneStep = false;
                     doPause = true;
                 }
             }
 
-            if( doPause ) {
+            if ( doPause ) {
                 pause();
             }
         }
@@ -168,8 +181,8 @@ public abstract class CallbackThread implements Runnable, Asynchronous {
         // thread rate control
         long delay = 0;
 
-        synchronized( this ) {
-            if( _interval > 0 ) {
+        synchronized ( this ) {
+            if ( _interval > 0 ) {
 
                 long timeNow = System.currentTimeMillis();
                 long elapsed = timeNow - timeStep;
@@ -178,11 +191,11 @@ public abstract class CallbackThread implements Runnable, Asynchronous {
             }
         }
 
-        if( delay > 0 ) {
+        if ( delay > 0 ) {
             try {
                 Thread.sleep( delay );
             }
-            catch( InterruptedException ie ) {
+            catch ( InterruptedException ie ) {
                 //System.err.print( ie );
             }
         }

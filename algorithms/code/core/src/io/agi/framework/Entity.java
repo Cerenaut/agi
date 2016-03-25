@@ -24,10 +24,10 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
     protected String _parent;
     protected Node _n;
 
-    protected HashSet<String> _childrenWaiting = new HashSet<String>();
+    protected HashSet< String > _childrenWaiting = new HashSet< String >();
 
-    private HashMap<String, Data> _data = new HashMap<String, Data>();
-    private HashMap<String, String> _properties = new HashMap<String, String>();
+    private HashMap< String, Data > _data = new HashMap< String, Data >();
+    private HashMap< String, String > _properties = new HashMap< String, String >();
 
     private PropertyConverter _propertyConverter = null;
 
@@ -104,7 +104,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
      *
      * @param keys
      */
-    public abstract void getInputKeys( Collection<String> keys );
+    public abstract void getInputKeys( Collection< String > keys );
 
     /**
      * Get the keys for all the data that is used as output.
@@ -112,12 +112,12 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
      *
      * @param keys
      */
-    public abstract void getOutputKeys( Collection<String> keys );
+    public abstract void getOutputKeys( Collection< String > keys );
 
     /**
      * Get the keys for all the properties (non input/output state used by the entity).
      */
-    public abstract void getPropertyKeys( Collection<String> keys );
+    public abstract void getPropertyKeys( Collection< String > keys );
 
 
     // if I cant issue another update to children until this has completed...
@@ -133,13 +133,13 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
             return;
         }
 
-        System.err.println( "UPDATE START " + getName() + " T="+System.currentTimeMillis() );
+        System.err.println( "UPDATE START " + getName() + " T=" + System.currentTimeMillis() );
 
         updateSelf();
 
         Persistence p = _n.getPersistence();
         //        Collection< JsonEntity > children = p.getChildEntities( _name );
-        Collection<String> childNames = p.getChildEntities( _name );
+        Collection< String > childNames = p.getChildEntities( _name );
 
         if ( childNames.isEmpty() ) {
             afterUpdate();
@@ -166,13 +166,13 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
     protected void beforeUpdate() {
         String entityName = getName();
         int age = getPropertyInt( SUFFIX_AGE, 1 );
-        System.err.println("START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName);
+        System.err.println( "START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName );
     }
 
     protected void afterUpdate() {
         String entityName = getName();
         int age = getPropertyInt( SUFFIX_AGE, 1 );
-        System.err.println( "END   T: "+System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity updated: " + entityName );
+        System.err.println( "END   T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity updated: " + entityName );
 
         _n.notifyUpdated( entityName ); // this entity, the parent, is now complete
     }
@@ -198,19 +198,19 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
 
         // 1. fetch inputs
         // get all the inputs and put them in the object map.
-        Collection<String> inputKeys = new ArrayList<String>();
+        Collection< String > inputKeys = new ArrayList< String >();
         getInputKeys( inputKeys );
         fetchData( inputKeys );
 
         // 2. fetch outputs
         // get all the outputs and put them in the object map.
-        Collection<String> outputKeys = new ArrayList<String>();
+        Collection< String > outputKeys = new ArrayList< String >();
         getOutputKeys( outputKeys );
         fetchData( outputKeys );
 
         // 3. fetch properties
         // get all the properties and put them in the properties map.
-        Collection<String> propertyKeys = new ArrayList<String>();
+        Collection< String > propertyKeys = new ArrayList< String >();
         getPropertyKeys( propertyKeys );
         propertyKeys.add( SUFFIX_AGE );
         fetchProperties( propertyKeys );
@@ -237,9 +237,10 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
 
     /**
      * Populate properties map with the persisted properties.
+     *
      * @param keySuffixes
      */
-    private void fetchProperties( Collection<String> keySuffixes ) {
+    private void fetchProperties( Collection< String > keySuffixes ) {
         Persistence p = _n.getPersistence();
 
         for ( String keySuffix : keySuffixes ) {
@@ -251,9 +252,10 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
 
     /**
      * Persist the properties map.
+     *
      * @param keySuffixes
      */
-    private void persistProperties( Collection<String> keySuffixes ) {
+    private void persistProperties( Collection< String > keySuffixes ) {
         Persistence p = _n.getPersistence();
         for ( String keySuffix : keySuffixes ) {
             String value = _properties.get( keySuffix );
@@ -264,9 +266,10 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
 
     /**
      * Populate object map with the persisted data.
+     *
      * @param keys
      */
-    private void fetchData( Collection<String> keys ) {
+    private void fetchData( Collection< String > keys ) {
         Persistence p = _n.getPersistence();
 
         for ( String keySuffix : keys ) {
@@ -274,14 +277,14 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
 
             ModelData jd = p.getData( inputKey );
 
-            if( jd == null ) {
+            if ( jd == null ) {
                 continue; // truthfully represent as null.
             }
 
-            HashSet<String> refKeys = jd.getRefKeys();
+            HashSet< String > refKeys = jd.getRefKeys();
             if ( !refKeys.isEmpty() ) {
                 // Create an output matrix which is a composite of all the referenced inputs.
-                HashMap<String, Data> allRefs = new HashMap<String, Data>();
+                HashMap< String, Data > allRefs = new HashMap< String, Data >();
 
                 for ( String refKey : refKeys ) {
                     ModelData refJson = p.getData( refKey );
@@ -305,8 +308,8 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
             }
         }
     }
-    
-    public void persistData( Collection<String> keys ) {
+
+    public void persistData( Collection< String > keys ) {
         Persistence p = _n.getPersistence();
 
         for ( String keySuffix : keys ) {
@@ -329,7 +332,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
      * @param allRefs
      * @return
      */
-    protected Data getCombinedData( String inputKeySuffix, HashMap<String, Data> allRefs ) {
+    protected Data getCombinedData( String inputKeySuffix, HashMap< String, Data > allRefs ) {
 
         // case 1: No input.
         int nbrRefs = allRefs.size();

@@ -18,7 +18,7 @@ public class LightControlEntity extends Entity {
     public static final String CONTROL_OUTPUT = "light-output";
     public static final String CHANGE_PROBABILITY = "change-probability";
 
-    public LightControlEntity(String entityName, ObjectMap om, String type, Node n) {
+    public LightControlEntity( String entityName, ObjectMap om, String type, Node n ) {
         super( entityName, om, type, n );
     }
 
@@ -31,25 +31,25 @@ public class LightControlEntity extends Entity {
     }
 
     @Override
-    public void getPropertyKeys( Collection<String> keys ) {
+    public void getPropertyKeys( Collection< String > keys ) {
 
     }
 
     protected void doUpdateSelf() {
 
         //http://localhost:8080/update?entity=mySwitch&event=update
-        float pChange = getPropertyFloat(CHANGE_PROBABILITY, 0.05f );
+        float pChange = getPropertyFloat( CHANGE_PROBABILITY, 0.05f );
 
-        Data output = getData( CONTROL_OUTPUT, DataSize.create(1) );
+        Data output = getData( CONTROL_OUTPUT, DataSize.create( 1 ) );
 
         float oldOutputValue = output._values[ 0 ];
         float newOutputValue = oldOutputValue;
 
-        float r = (float)RandomInstance.random();
+        float r = ( float ) RandomInstance.random();
 
-        if( r < pChange ) {
+        if ( r < pChange ) {
             System.out.println( "changing output" );
-            if( newOutputValue < 0.5f ) {
+            if ( newOutputValue < 0.5f ) {
                 newOutputValue = 1.f;
             }
             else {

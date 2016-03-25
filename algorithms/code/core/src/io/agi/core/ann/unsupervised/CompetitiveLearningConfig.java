@@ -22,20 +22,20 @@ public class CompetitiveLearningConfig extends NetworkConfig {
     }
 
     public void setup( ObjectMap om, String name, int inputs, int w, int h ) {
-        super.setup(om, name);
+        super.setup( om, name );
         setNbrInputs( inputs );
         setWidthCells( w );
         setHeightCells( h );
     }
 
     public void copyFrom( NetworkConfig nc, String name ) {
-        super.copyFrom(nc, name);
+        super.copyFrom( nc, name );
 
-        CompetitiveLearningConfig c = (CompetitiveLearningConfig)nc;
+        CompetitiveLearningConfig c = ( CompetitiveLearningConfig ) nc;
 
-        setNbrInputs(c.getNbrInputs());
-        setWidthCells(c.getWidthCells());
-        setHeightCells(c.getHeightCells());
+        setNbrInputs( c.getNbrInputs() );
+        setWidthCells( c.getWidthCells() );
+        setHeightCells( c.getHeightCells() );
     }
 
     public void setNbrInputs( int inputs ) {
@@ -78,8 +78,9 @@ public class CompetitiveLearningConfig extends NetworkConfig {
 
     public int getCellX( CompetitiveLearningConfig c, int cell ) {
         Integer w = _om.getInteger( getKey( _keyWidthCells ) );
-        return Data2d.getX( w, cell);
+        return Data2d.getX( w, cell );
     }
+
     public int getCellY( CompetitiveLearningConfig c, int cell ) {
         Integer w = _om.getInteger( getKey( _keyWidthCells ) );
         return Data2d.getY( w, cell );

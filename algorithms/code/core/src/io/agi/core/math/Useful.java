@@ -15,7 +15,7 @@ public class Useful {
      */
     public static int GetNbrGroups( int total, int groupSize ) {
         int sets = total / groupSize;
-        if( total > (groupSize * sets) ) {
+        if ( total > ( groupSize * sets ) ) {
             ++sets;
         }
         return sets;

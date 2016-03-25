@@ -5,7 +5,6 @@ import io.agi.framework.Entity;
 import io.agi.framework.entities.CommonEntityFactory;
 
 /**
- *
  * Created by dave on 20/02/16.
  */
 public class LightEntityFactory extends CommonEntityFactory {
@@ -17,14 +16,14 @@ public class LightEntityFactory extends CommonEntityFactory {
     public Entity create( ObjectMap om, String entityName, String entityType ) {
 
         Entity e = super.create( om, entityName, entityType );
-        if( e != null ) {
+        if ( e != null ) {
             return e;
         }
 
-        if( entityType.equals( LightSourceEntity.ENTITY_TYPE ) ) {
+        if ( entityType.equals( LightSourceEntity.ENTITY_TYPE ) ) {
             return new LightSourceEntity( entityName, om, LightSourceEntity.ENTITY_TYPE, _n );
         }
-        if( entityType.equals( LightControlEntity.ENTITY_TYPE ) ) {
+        if ( entityType.equals( LightControlEntity.ENTITY_TYPE ) ) {
             return new LightControlEntity( entityName, om, LightControlEntity.ENTITY_TYPE, _n );
         }
         return null;

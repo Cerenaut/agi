@@ -7,11 +7,11 @@ package io.agi.core.orm;
 
 /**
  * Call on some event
- * 
+ *
  * @author dave
  */
 public interface Callback {
 
     public void call();
-    
+
 }

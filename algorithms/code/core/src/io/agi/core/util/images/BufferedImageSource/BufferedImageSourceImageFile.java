@@ -14,7 +14,7 @@ import java.util.Collections;
  */
 public class BufferedImageSourceImageFile extends BufferedImageSource {
 
-    private ArrayList<String> _fileNames = new ArrayList<String>();
+    private ArrayList< String > _fileNames = new ArrayList< String >();
     private String _folderName = null;
     private BufferedImage _image = null;
     private int _idx = 0;
@@ -55,11 +55,12 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
 
     /**
      * For this class, return file name.
+     *
      * @return
      */
     public String getImageName() {
         String fullFileName = "undefined";
-        if (_idx >= 0  && _idx < _fileNames.size()) {
+        if ( _idx >= 0 && _idx < _fileNames.size() ) {
             fullFileName = _folderName + "/" + _fileNames.get( _idx );
         }
         return fullFileName;
@@ -71,8 +72,8 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
      */
     public BufferedImage getImage() {
 
-        if (        _image == null
-                &&  (_idx >= 0  && _idx < _fileNames.size()) ) {
+        if ( _image == null
+                && ( _idx >= 0 && _idx < _fileNames.size() ) ) {
 
             String fullFileName = _folderName + "/" + _fileNames.get( _idx );
 
@@ -87,7 +88,7 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
         return _image;
     }
 
-    public AbstractPair<Integer, Integer> getImageSize() {
+    public AbstractPair< Integer, Integer > getImageSize() {
 
         // iterate through images till successfully get an image
         BufferedImage image = null;
@@ -104,7 +105,7 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
             h = _image.getHeight();
         }
 
-        AbstractPair<Integer, Integer> ap = new AbstractPair<Integer, Integer>( w, h );
+        AbstractPair< Integer, Integer > ap = new AbstractPair< Integer, Integer >( w, h );
         return ap;
     }
 
@@ -123,6 +124,7 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
 
     /**
      * If the index is out of range, it silently does nothing.
+     *
      * @param index
      */
     @Override

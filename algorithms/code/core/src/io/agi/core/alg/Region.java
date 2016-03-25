@@ -1,13 +1,13 @@
 package io.agi.core.alg;
 
+import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMap;
+import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMapConfig;
 import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
 import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.Callback;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
-import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMap;
-import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMapConfig;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import java.util.HashSet;
 
 /**
  * This class will instantiate a hierarchical generative model.
- *
+ * <p>
  * Created by dave on 27/12/15.
  */
 public class Region extends NamedObject implements Callback {
@@ -131,7 +131,7 @@ public class Region extends NamedObject implements Callback {
         _surfacePredictionFN = new Data( surfaceWidthCells, surfaceHeightCells );
 
         // Create the module that will learn column receptive fields
-        String dsomName = getKey(SUFFIX_ORGANIZER);
+        String dsomName = getKey( SUFFIX_ORGANIZER );
         int surfaceDimensions = RECEPTIVE_FIELD_DIMENSIONS; // x, y, z . We might do a x1, y1, x2, y2, z also
         float receptiveFieldsElasticity = rc.getReceptiveFieldsElasticity();
         float receptiveFieldsLearningRate = rc.getReceptiveFieldsLearningRate();
@@ -146,10 +146,10 @@ public class Region extends NamedObject implements Callback {
         // only Create internal columns
 //        for( int y = 0; y < internalHeightColumns; ++y ) {
 //            for (int x = 0; x < internalWidthColumns; ++x) {
-        for( int y = 0; y < surfaceHeightColumns; ++y ) {
-            for (int x = 0; x < surfaceWidthColumns; ++x) {
+        for ( int y = 0; y < surfaceHeightColumns; ++y ) {
+            for ( int x = 0; x < surfaceWidthColumns; ++x ) {
 
-                if( _rc.isExternalColumn( x, y ) ) {
+                if ( _rc.isExternalColumn( x, y ) ) {
                     continue;
                 }
 
@@ -224,6 +224,7 @@ public class Region extends NamedObject implements Callback {
 
     /**
      * Returns the column coordinate for any given surface cell coordinate.
+     *
      * @param offsetSurface
      * @return
      */
@@ -231,7 +232,7 @@ public class Region extends NamedObject implements Callback {
         Point surfaceSize = _rc.getSurfaceSizeCells();
         int xSurface = offsetSurface % surfaceSize.x;
         int ySurface = offsetSurface / surfaceSize.x;
-        return getSurfaceColumnGivenSurfaceCell(xSurface, ySurface );
+        return getSurfaceColumnGivenSurfaceCell( xSurface, ySurface );
     }
 
     public Point getSurfaceColumnGivenSurfaceCell( int xSurface, int ySurface ) {
@@ -243,9 +244,9 @@ public class Region extends NamedObject implements Callback {
     }
 
     public Point getInternalColumnGivenSurfaceCell( int xSurface, int ySurface ) {
-        Point externalInputSize = Data2d.getSize(_externalInput);
+        Point externalInputSize = Data2d.getSize( _externalInput );
 
-        if( ySurface < externalInputSize.y ) { // is it an internal input? ie from a column?
+        if ( ySurface < externalInputSize.y ) { // is it an internal input? ie from a column?
             return null;
         }
 
@@ -261,24 +262,24 @@ public class Region extends NamedObject implements Callback {
 
     public int getSurfaceDepth( int offset ) {
         Point xySurface = Data2d.getXY( _surfaceInput._dataSize, offset );
-        return getSurfaceDepth(xySurface.x, xySurface.y);
+        return getSurfaceDepth( xySurface.x, xySurface.y );
     }
 
     public int getSurfaceDepth( int xSurface, int ySurface ) {
-        Point xyInternalColumn = getInternalColumnGivenSurfaceCell(xSurface, ySurface);
+        Point xyInternalColumn = getInternalColumnGivenSurfaceCell( xSurface, ySurface );
 
-        if( xyInternalColumn == null ) {
+        if ( xyInternalColumn == null ) {
             return 0;
         }
 
         Point columnsSize = _rc.getInternalSizeColumns();
         int c = xyInternalColumn.y * columnsSize.x + xyInternalColumn.x;
 
-if( c < 0 ) {
-    int g = 0;
-    g++;
-}
-        int z = (int)_columnDepth._values[ c ]; // at least 1
+        if ( c < 0 ) {
+            int g = 0;
+            g++;
+        }
+        int z = ( int ) _columnDepth._values[ c ]; // at least 1
 
         return z;
     }
@@ -339,9 +340,9 @@ if( c < 0 ) {
         Point surfaceSizeCells = _rc.getSurfaceSizeCells();
 //        Point externalSizeColumns = _rc.getExternalSizeColumns();//Data2d.getSize(_externalInput);
 
-        int xRect =   xColumn                           * columnSizeCells.x;
+        int xRect = xColumn * columnSizeCells.x;
 //        int yRect = ( yColumn + externalSizeColumns.y ) * columnSizeCells.y;
-        int yRect = ( yColumn  ) * columnSizeCells.y;
+        int yRect = ( yColumn ) * columnSizeCells.y;
         int wRect = columnSizeCells.x;
         int hRect = columnSizeCells.y;
 
@@ -385,13 +386,13 @@ if( c < 0 ) {
 
     public void copyExternalInput() {
         // copy input into columnar format.
-        Point p = Data2d.getSize(_externalInput);
-        Data2d.copy(p.x, p.y, _externalInput, 0, 0, _surfaceInput, 0, 0);
+        Point p = Data2d.getSize( _externalInput );
+        Data2d.copy( p.x, p.y, _externalInput, 0, 0, _surfaceInput, 0, 0 );
     }
 
     public void copyInternalInput() {
         // copy internally generated output as an input.
-        Point p = Data2d.getSize(_externalInput);
+        Point p = Data2d.getSize( _externalInput );
         Point sizeColumnsSurface = _rc.getInternalSizeCells(); //getColumnsSurfaceSize();
 
         // w, h, from, from xy, to, to xy
@@ -410,10 +411,10 @@ if( c < 0 ) {
 
     public void updateColumnReceptiveFields() {
         // train the DSOM
-        HashSet< Integer > hs = _surfaceInput.indicesMoreThan(0.f); // find all the active bits.
+        HashSet< Integer > hs = _surfaceInput.indicesMoreThan( 0.f ); // find all the active bits.
         int nbrActiveInput = hs.size();
 
-        if( nbrActiveInput == 0 ) {
+        if ( nbrActiveInput == 0 ) {
             return; // can't train
         }
 
@@ -427,11 +428,11 @@ if( c < 0 ) {
         // randomly
         int samples = _rc.getReceptiveFieldsTrainingSamples();
 
-        for( int s = 0; s < samples; ++s ) {
+        for ( int s = 0; s < samples; ++s ) {
 
-            int sample = RandomInstance.randomInt(nbrActiveInput);
+            int sample = RandomInstance.randomInt( nbrActiveInput );
 
-            Integer offset = (Integer)activeInput[ sample ];
+            Integer offset = ( Integer ) activeInput[ sample ];
 
             Point p = Data2d.getXY( _surfaceInput._dataSize, offset );
 
@@ -456,10 +457,10 @@ if( c < 0 ) {
         int surfaceWidthColumns = surfaceSizeColumns.x;
         int surfaceHeightColumns = surfaceSizeColumns.y;
 
-        for( int y = 0; y < surfaceHeightColumns; ++y ) {
-            for (int x = 0; x < surfaceWidthColumns; ++x) {
+        for ( int y = 0; y < surfaceHeightColumns; ++y ) {
+            for ( int x = 0; x < surfaceWidthColumns; ++x ) {
 
-                if( _rc.isExternalColumn( x, y ) ) {
+                if ( _rc.isExternalColumn( x, y ) ) {
                     continue;
                 }
 
@@ -469,7 +470,7 @@ if( c < 0 ) {
 
                 int c = getColumnOffset( x, y ); //y * p.x + x;
                 int cInternal = _rc.getInternalColumnOffset( xInternal, yInternal );//* internalSizeColumns.x + xInternal;
-                int offset = cInternal * RECEPTIVE_FIELD_DIMENSIONS +2; // ie z
+                int offset = cInternal * RECEPTIVE_FIELD_DIMENSIONS + 2; // ie z
 
                 //note: weights tend towards target value which is 0,1,2 etc.
                 //so 0.99 will be 0 but it is closer to 1.
@@ -480,9 +481,9 @@ if( c < 0 ) {
                 int z = Math.round( w ); // rounds to nearest int by adding 0.5 then floor.
                 z += 1; // so if w = 0, z of col = 1
 
-                        // add to structure:
+                // add to structure:
                 ArrayList< Integer > al = _depthColumns.get( z );
-                if( al == null ) {
+                if ( al == null ) {
                     al = new ArrayList<>();
                     _depthColumns.put( z, al );
                 }
@@ -514,14 +515,14 @@ if( c < 0 ) {
         int surfaceWidthColumns = surfaceSizeColumns.x;
         int surfaceHeightColumns = surfaceSizeColumns.y;
 
-        for( int y = 0; y < surfaceHeightColumns; ++y ) {
-            for (int x = 0; x < surfaceWidthColumns; ++x) {
+        for ( int y = 0; y < surfaceHeightColumns; ++y ) {
+            for ( int x = 0; x < surfaceWidthColumns; ++x ) {
 
-                if( _rc.isExternalColumn( x, y ) ) {
+                if ( _rc.isExternalColumn( x, y ) ) {
                     continue;
                 }
 
-                Column c = getColumn(x, y);
+                Column c = getColumn( x, y );
 
                 // update the actual column
                 c.updateForwardInput( _ffInputActive );
@@ -529,14 +530,14 @@ if( c < 0 ) {
         }
 
         // ... but feedback inputs are also determined by the hierarchy, and must be updated
-        for( int y = 0; y < surfaceHeightColumns; ++y ) {
-            for (int x = 0; x < surfaceWidthColumns; ++x) {
+        for ( int y = 0; y < surfaceHeightColumns; ++y ) {
+            for ( int x = 0; x < surfaceWidthColumns; ++x ) {
 
-                if( _rc.isExternalColumn( x, y ) ) {
+                if ( _rc.isExternalColumn( x, y ) ) {
                     continue;
                 }
 
-                Column c = getColumn(x, y);
+                Column c = getColumn( x, y );
 
                 // update the actual column
                 c.updateFeedbackInput();
@@ -549,7 +550,7 @@ if( c < 0 ) {
         HashSet< Integer > hs = _surfaceInput.indicesMoreThan( 0.f ); // find all the active bits.
         int nbrActiveInput = hs.size();
 
-        if( nbrActiveInput == 0 ) {
+        if ( nbrActiveInput == 0 ) {
             return; // can't train
         }
 
@@ -559,10 +560,10 @@ if( c < 0 ) {
         int surfaceWidthColumns = surfaceSizeColumns.x;
         int surfaceHeightColumns = surfaceSizeColumns.y;
 
-        for( int y = 0; y < surfaceHeightColumns; ++y ) {
-            for (int x = 0; x < surfaceWidthColumns; ++x) {
+        for ( int y = 0; y < surfaceHeightColumns; ++y ) {
+            for ( int x = 0; x < surfaceWidthColumns; ++x ) {
 
-                if( _rc.isExternalColumn( x, y ) ) {
+                if ( _rc.isExternalColumn( x, y ) ) {
                     continue;
                 }
 

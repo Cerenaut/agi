@@ -29,7 +29,7 @@ public class Array2d< T > {
 
     public void setSize( int w, int h ) {
         int size = w * h;
-        if( _objects.size() == size ) {
+        if ( _objects.size() == size ) {
             return;
         }
 
@@ -38,7 +38,7 @@ public class Array2d< T > {
 
         _objects = new ArrayList< T >();
 
-        for( int i = 0; i < size; ++i ) {
+        for ( int i = 0; i < size; ++i ) {
             T o = _f.create();
             _objects.add( o );
         }
@@ -50,7 +50,7 @@ public class Array2d< T > {
 
     public T get( int x, int y ) {
         int i = x * _w + _h;
-        if( i >= getSize() ) {
+        if ( i >= getSize() ) {
             return null;
         }
         return _objects.get( i );

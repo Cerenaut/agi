@@ -26,37 +26,37 @@ public class RandomVectorEntity extends Entity {
         super( entityName, om, type, n );
     }
 
-    public void getInputKeys(Collection<String> keys) {
+    public void getInputKeys( Collection< String > keys ) {
     }
 
-    public void getOutputKeys(Collection<String> keys) {
+    public void getOutputKeys( Collection< String > keys ) {
         keys.add( OUTPUT );
     }
 
     @Override
-    public void getPropertyKeys( Collection<String> keys ) {
+    public void getPropertyKeys( Collection< String > keys ) {
 
     }
 
     protected void doUpdateSelf() {
 
         // Get all the parameters:
-        float min = getPropertyFloat(MIN, 0.0f);
-        float max = getPropertyFloat(MAX, 1.0f);
-        int elements = getPropertyInt(ELEMENTS, 1);
+        float min = getPropertyFloat( MIN, 0.0f );
+        float max = getPropertyFloat( MAX, 1.0f );
+        int elements = getPropertyInt( ELEMENTS, 1 );
 
-        Data output = getDataLazyResize(OUTPUT, DataSize.create(elements));
+        Data output = getDataLazyResize( OUTPUT, DataSize.create( elements ) );
         Random r = getRandom();
 
         float range = max - min;
 
-        for( int i = 0; i < elements; ++i ) {
+        for ( int i = 0; i < elements; ++i ) {
 
             float x = r.nextFloat();
             x = x * range;
             x += min;
 
-            output._values[ i ]  = x;
+            output._values[ i ] = x;
         }
 
         //output.setRandom();

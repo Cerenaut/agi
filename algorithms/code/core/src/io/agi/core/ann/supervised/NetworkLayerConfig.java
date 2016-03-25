@@ -19,18 +19,18 @@ public class NetworkLayerConfig extends NetworkConfig {
     }
 
     public void setup( ObjectMap om, String name, int inputs, int cells, float learningRate, String activationFunction ) {
-        super.setup( om, name);
+        super.setup( om, name );
 
-        setInputs(inputs);
-        setCells(cells);
+        setInputs( inputs );
+        setCells( cells );
         setLearningRate( learningRate );
-        setActivationFunction(activationFunction);
+        setActivationFunction( activationFunction );
     }
 
     public void copyFrom( NetworkConfig nc, String name ) {
-        super.copyFrom(nc, name);
+        super.copyFrom( nc, name );
 
-        NetworkLayerConfig c = (NetworkLayerConfig)nc;
+        NetworkLayerConfig c = ( NetworkLayerConfig ) nc;
 
         setInputs( c.getInputs() );
         setCells( c.getCells() );
@@ -44,11 +44,11 @@ public class NetworkLayerConfig extends NetworkConfig {
     }
 
     public void setInputs( int inputs ) {
-        _om.put( getKey( _keyInputs ), inputs);
+        _om.put( getKey( _keyInputs ), inputs );
     }
 
     public void setCells( int cells ) {
-        _om.put( getKey( _keyCells ), cells);
+        _om.put( getKey( _keyCells ), cells );
     }
 
     public int getCells() {
@@ -65,11 +65,11 @@ public class NetworkLayerConfig extends NetworkConfig {
         return r.floatValue();
     }
 
-    public void setActivationFunction(String costFunction) {
+    public void setActivationFunction( String costFunction ) {
         _om.put( getKey( _keyActivationFunction ), costFunction );
     }
 
     public String getActivationFunction() {
-        return (String)_om.get( getKey( _keyActivationFunction ) );
+        return ( String ) _om.get( getKey( _keyActivationFunction ) );
     }
 }

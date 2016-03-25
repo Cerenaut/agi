@@ -1,16 +1,13 @@
-[ 
-
+[
   {
-    "name" : "model",
-    "type" : "random-vector",
-    "node" : "myNode"
+    "name": "model",
+    "type": "random-vector",
+    "node": "myNode"
   },
-
-  { 
-    "name" : "classifier",
-    "type" : "dsom",
-    "node" : "myNode",
-    "parent" : "model"
+  {
+    "name": "classifier",
+    "type": "dsom",
+    "node": "myNode",
+    "parent": "model"
   }
-
 ]

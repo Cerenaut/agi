@@ -8,9 +8,9 @@ import java.util.HashMap;
 public class ModelPropertySet {
 
     public String entity;
-    public HashMap< String, String > properties = new HashMap< String, String >(  );
+    public HashMap< String, String > properties = new HashMap< String, String >();
 
-    public ModelPropertySet( String entity, HashMap<String, String> properties) {
+    public ModelPropertySet( String entity, HashMap< String, String > properties ) {
         this.entity = entity;
         this.properties = new HashMap< String, String >( properties );
     }

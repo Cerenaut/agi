@@ -3,9 +3,9 @@ package io.agi.core.orm;
 /**
  * An object that is part of a hierarchy of objects, creating a systematic method for generating unique names for
  * properties and parameters. Objects can obviously be nested.
- *
+ * <p>
  * References an object map, as this is where objects can be stored by name.
- *
+ * <p>
  * Created by dave on 10/01/16.
  */
 public class NamedObject {
@@ -14,7 +14,7 @@ public class NamedObject {
     protected ObjectMap _om;
 
     public NamedObject( String name, ObjectMap om ) {
-        _name  = name;
+        _name = name;
         _om = om;
         om.put( _name, this );
     }
@@ -50,7 +50,7 @@ public class NamedObject {
 
     public void putObject( Object o, String suffix ) {
         String key = getKey( suffix );
-        _om.put(key, o);
+        _om.put( key, o );
     }
 
 }

@@ -11,7 +11,7 @@ import java.util.TreeMap;
 /**
  * Online algorithm with parameters to determine how input feature density affects cell density (elasticity).
  * See "Dynamic Self-Organising Map" by Nicolas Rougier and Yann Boniface (2010)
- *
+ * <p>
  * Created by dave on 29/12/15.
  */
 public class DynamicSelfOrganizingMap extends CompetitiveLearning {
@@ -34,11 +34,11 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
         int w = c.getWidthCells();
         int h = c.getHeightCells();
 
-        _inputValues = new Data(inputs);
-        _cellWeights = new Data(w, h, inputs);
-        _cellErrors = new Data(w, h);
-        _cellActivity = new Data(w, h);
-        _cellMask = new Data(w, h);
+        _inputValues = new Data( inputs );
+        _cellWeights = new Data( w, h, inputs );
+        _cellErrors = new Data( w, h );
+        _cellActivity = new Data( w, h );
+        _cellMask = new Data( w, h );
     }
 
     public void reset() {
@@ -55,21 +55,21 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
     }
 
     public void update() {
-        CompetitiveLearning.sumSqError(_c, _inputValues, _cellWeights, _cellErrors);
+        CompetitiveLearning.sumSqError( _c, _inputValues, _cellWeights, _cellErrors );
 
         // get the top N cells
         int maxRank = 1;
-        TreeMap< Float, ArrayList< Integer >> ranking = new TreeMap< Float, ArrayList< Integer > >();
+        TreeMap< Float, ArrayList< Integer > > ranking = new TreeMap< Float, ArrayList< Integer > >();
         CompetitiveLearning.findBestNCells( _c, _cellMask, _cellErrors, _cellActivity, maxRank, false, ranking );
 
-        if( ranking.isEmpty() ) {
+        if ( ranking.isEmpty() ) {
             return;
         }
 
         Float bestError = ranking.keySet().iterator().next();
-        int bestCell = ranking.get(bestError).get(0);
+        int bestCell = ranking.get( bestError ).get( 0 );
 
-        trainWithInput(_c, _inputValues, _cellWeights, _cellErrors, bestCell);
+        trainWithInput( _c, _inputValues, _cellWeights, _cellErrors, bestCell );
     }
 
     public static void trainWithInput(
@@ -101,21 +101,21 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
         int yw = winningCell / w;
         int xw = winningCell % w;
 
-        float xRelWinner = xw / (float)w;
-        float yRelWinner = yw / (float)h;
+        float xRelWinner = xw / ( float ) w;
+        float yRelWinner = yw / ( float ) h;
 
-        float maxSumError = (float)Math.sqrt( inputs );
+        float maxSumError = ( float ) Math.sqrt( inputs );
         float winningErrorSq = cellSumSqError._values[ winningCell ];
-        float winningNormEucNorm = (float)Math.sqrt( winningErrorSq ) / maxSumError;
+        float winningNormEucNorm = ( float ) Math.sqrt( winningErrorSq ) / maxSumError;
         float winningNormEucNormSq = winningNormEucNorm * winningNormEucNorm;
 
         // update weights to be closer to observations
         int cell = 0;
-        for( int y = 0; y < h; ++y ) { // for each som cell
-            for( int x = 0; x < w; ++x ) { // for each som cell
+        for ( int y = 0; y < h; ++y ) { // for each som cell
+            for ( int x = 0; x < w; ++x ) { // for each som cell
 
-                float xRel = x / (float)w;
-                float yRel = y / (float)h;
+                float xRel = x / ( float ) w;
+                float yRel = y / ( float ) h;
 
                 float dx = xRel - xRelWinner;
                 float dy = yRel - yRelWinner;
@@ -124,20 +124,20 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
                 float cellDistanceSq = dx * dx + dy * dy;
 
                 float sumSqError = cellSumSqError._values[ cell ];
-                float sumError = (float)Math.sqrt( sumSqError );
+                float sumError = ( float ) Math.sqrt( sumSqError );
                 float normEucNorm = sumError / maxSumError;
                 float learningRateWeight = normEucNorm * learningRate;
                 float cellDistanceWeight = getCellDistanceWeight( elasticity, cellDistanceSq, winningNormEucNormSq );
 
-                for( int i = 0; i < inputs; ++i ) { // for each input
+                for ( int i = 0; i < inputs; ++i ) { // for each input
 
                     int inputOffset = cell * inputs + i;
 
-                    float inputValue  = inputValues._values[ i ]; // error from ci to cell
-                    float weightOld   = cellWeights._values[ inputOffset ]; // error from ci to cell
+                    float inputValue = inputValues._values[ i ]; // error from ci to cell
+                    float weightOld = cellWeights._values[ inputOffset ]; // error from ci to cell
                     float weightNew = getUpdatedWeight( inputValue, weightOld, inputMin, inputMax, learningRateWeight, cellDistanceWeight );//, c._noiseMagnitude );
 
-                    cellWeights ._values[ inputOffset ] = weightNew; // error from ci to cell
+                    cellWeights._values[ inputOffset ] = weightNew; // error from ci to cell
                 }
 
                 ++cell;
@@ -154,16 +154,17 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
 
         HashSet< Integer > activeInputValues = new HashSet< Integer >();
         int inputs = c.getNbrInputs();
-        for( int i = 0; i < inputs; ++i ) { // for each input
+        for ( int i = 0; i < inputs; ++i ) { // for each input
             float inputValue = inputValues._values[ i ]; // error from ci to cell
 
-            if( inputValue > 0.f ) {
+            if ( inputValue > 0.f ) {
                 activeInputValues.add( i );
             }
         }
 
         trainWithSparseInput( c, activeInputValues, cellWeights, cellSumSqError, winningCell );
     }
+
     public static void trainWithSparseInput(
             DynamicSelfOrganizingMapConfig c,
             HashSet< Integer > activeInputValues,
@@ -183,20 +184,20 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
         int yw = winningCell / w;
         int xw = winningCell % w;
 
-        float xRelWinner = xw / (float)w;
-        float yRelWinner = yw / (float)h;
+        float xRelWinner = xw / ( float ) w;
+        float yRelWinner = yw / ( float ) h;
 
-        float maxSumError = (float)Math.sqrt( inputs );
+        float maxSumError = ( float ) Math.sqrt( inputs );
         float winningErrorSq = cellSumSqError._values[ winningCell ];
-        float winningNormEucNorm = (float)Math.sqrt( winningErrorSq ) / maxSumError;
+        float winningNormEucNorm = ( float ) Math.sqrt( winningErrorSq ) / maxSumError;
         float winningNormEucNormSq = winningNormEucNorm * winningNormEucNorm;
 
         // update weights to be closer to observations
         int cell = 0;
-        for( int y = 0; y < h; ++y ) { // for each som cell
-            for( int x = 0; x < w; ++x ) { // for each som cell
-                float xRel = x / (float)w;
-                float yRel = y / (float)h;
+        for ( int y = 0; y < h; ++y ) { // for each som cell
+            for ( int x = 0; x < w; ++x ) { // for each som cell
+                float xRel = x / ( float ) w;
+                float yRel = y / ( float ) h;
 
                 float dx = xRel - xRelWinner;
                 float dy = yRel - yRelWinner;
@@ -205,25 +206,25 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
                 float cellDistanceSq = dx * dx + dy * dy;
 
                 float errorSq = cellSumSqError._values[ cell ];
-                float error = (float)Math.sqrt( errorSq );
+                float error = ( float ) Math.sqrt( errorSq );
                 float learningRateWeight = error * learningRate;
                 float cellDistanceWeight = getCellDistanceWeight( elasticity, cellDistanceSq, winningErrorSq );
 
                 int inputOffset = cell * inputs;
 
-                for( int i = 0; i < inputs; ++i ) { // for each input
+                for ( int i = 0; i < inputs; ++i ) { // for each input
 
                     //int inputOffset = cell * c._i + i;
 
                     float inputValue = 0.f; //inputValues._values[ i ]; // error from ci to cell
-                    if( activeInputValues.contains( i ) ) {
+                    if ( activeInputValues.contains( i ) ) {
                         inputValue = 1.f;
                     }
 
                     float weightOld = cellWeights._values[ inputOffset ]; // error from ci to cell
                     float weightNew = getUpdatedWeight( inputValue, weightOld, inputMin, inputMax, learningRateWeight, cellDistanceWeight );
 
-                    cellWeights ._values[ inputOffset ] = weightNew; // error from ci to cell
+                    cellWeights._values[ inputOffset ] = weightNew; // error from ci to cell
 
                     ++inputOffset;
                 }
@@ -254,13 +255,13 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
     }
 
     public static float getCellDistanceWeight( float elasticity, float cellDistanceSq, float valueDistanceSq ) {
-        if( valueDistanceSq <= 0.f ) {
+        if ( valueDistanceSq <= 0.f ) {
             return 0.f;
         }
         float b = cellDistanceSq / valueDistanceSq;
         float a = 1.f / ( elasticity * elasticity );
         float product = a * b;
-        float result = (float)Math.exp( - product );
+        float result = ( float ) Math.exp( -product );
         //Maths.check( result );
         return result;
     }

@@ -6,7 +6,6 @@
 package io.agi.core.opt;
 
 /**
- *
  * @author davidjr
  */
 public class GradientDescentOptimizer extends Optimizer {

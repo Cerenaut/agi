@@ -7,7 +7,7 @@ import io.agi.core.orm.ObjectMap;
  * A separate object to an actual algorithm implementation to allow configuration and instantiation to be divorced.
  * Since algorithms may be composed out of several smaller networks, need a hierarchical way to generate networks within
  * networks. Hence, let's use a systematic way of naming things to avoid clashes.
- *
+ * <p>
  * Created by dave on 10/01/16.
  */
 public class NetworkConfig {
@@ -32,7 +32,7 @@ public class NetworkConfig {
     }
 
     public String getKey( String suffix ) {
-        return Keys.concatenate(_name, suffix);
+        return Keys.concatenate( _name, suffix );
     }
 
 }

@@ -33,7 +33,7 @@ public class RegionConfig extends NetworkConfig {
      * Use this constructor to Create an object that will describe the configuration of the region, given the parameters
      * provided. You specify the constraints - input size - and the resources available per column. You also specify the
      * total computational resource available (the number of columns).
-     *
+     * <p>
      * The 2D layout of these resources is computed from these constraints.
      *
      * @param inputWidth
@@ -57,37 +57,37 @@ public class RegionConfig extends NetworkConfig {
             float receptiveFieldsElasticity,
             float receptiveFieldsLearningRate,
             float inputColumnsFrequencyLearningRate,
-            float inputColumnsFrequencyThreshold) {
-        super.setup(om, name);
+            float inputColumnsFrequencyThreshold ) {
+        super.setup( om, name );
 
-        setInputWidth(inputWidth);
-        setInputHeight(inputHeight);
-        setColumnInputs(columnInputs);
-        setColumnWidthCells(columnWidthCells);
-        setColumnHeightCells(columnHeightCells);
-        setRegionAreaColumns(regionAreaColumns);
-        setReceptiveFieldsTrainingSamples(receptiveFieldsTrainingSamples);
-        setReceptiveFieldsElasticity(receptiveFieldsElasticity);
+        setInputWidth( inputWidth );
+        setInputHeight( inputHeight );
+        setColumnInputs( columnInputs );
+        setColumnWidthCells( columnWidthCells );
+        setColumnHeightCells( columnHeightCells );
+        setRegionAreaColumns( regionAreaColumns );
+        setReceptiveFieldsTrainingSamples( receptiveFieldsTrainingSamples );
+        setReceptiveFieldsElasticity( receptiveFieldsElasticity );
         setReceptiveFieldsLearningRate( receptiveFieldsLearningRate );
-        setInputColumnsFrequencyLearningRate(inputColumnsFrequencyLearningRate );
+        setInputColumnsFrequencyLearningRate( inputColumnsFrequencyLearningRate );
         setInputColumnsFrequencyThreshold( inputColumnsFrequencyThreshold );
     }
 
     public void copyFrom( NetworkConfig nc, String name ) {
-        super.copyFrom(nc, name);
+        super.copyFrom( nc, name );
 
-        RegionConfig c = (RegionConfig)nc;
+        RegionConfig c = ( RegionConfig ) nc;
 
-        setInputWidth(c.getInputWidth());
-        setInputHeight(c.getInputHeight());
-        setColumnInputs(c.getColumnInputs());
-        setColumnWidthCells(c.getColumnWidthCells());
-        setColumnHeightCells(c.getColumnHeightCells());
-        setRegionAreaColumns(c.getRegionAreaColumns());
-        setReceptiveFieldsTrainingSamples(c.getReceptiveFieldsTrainingSamples());
-        setReceptiveFieldsElasticity(c.getReceptiveFieldsElasticity());
+        setInputWidth( c.getInputWidth() );
+        setInputHeight( c.getInputHeight() );
+        setColumnInputs( c.getColumnInputs() );
+        setColumnWidthCells( c.getColumnWidthCells() );
+        setColumnHeightCells( c.getColumnHeightCells() );
+        setRegionAreaColumns( c.getRegionAreaColumns() );
+        setReceptiveFieldsTrainingSamples( c.getReceptiveFieldsTrainingSamples() );
+        setReceptiveFieldsElasticity( c.getReceptiveFieldsElasticity() );
         setReceptiveFieldsLearningRate( c.getReceptiveFieldsLearningRate() );
-        setInputColumnsFrequencyLearningRate(c.getInputColumnsFrequencyLearningRate() );
+        setInputColumnsFrequencyLearningRate( c.getInputColumnsFrequencyLearningRate() );
         setInputColumnsFrequencyThreshold( c.getInputColumnsFrequencyThreshold() );
     }
 
@@ -95,7 +95,7 @@ public class RegionConfig extends NetworkConfig {
         Point sizeColumns = getSurfaceSizeColumns();
         int columnWidthCells = getColumnWidthCells();
         int columnHeightCells = getColumnHeightCells();
-        int surfaceWidth  = sizeColumns.x * columnWidthCells;
+        int surfaceWidth = sizeColumns.x * columnWidthCells;
         int surfaceHeight = sizeColumns.y * columnHeightCells;
         return new Point( surfaceWidth, surfaceHeight );
     }
@@ -146,7 +146,7 @@ public class RegionConfig extends NetworkConfig {
 
     public boolean isExternalColumn( int xColumn, int yColumn ) {
         Point externalSizeColumns = getExternalSizeColumns();
-        if( yColumn < externalSizeColumns.y ) {
+        if ( yColumn < externalSizeColumns.y ) {
             return true;
         }
 
@@ -158,8 +158,8 @@ public class RegionConfig extends NetworkConfig {
         int columnWidth = getColumnWidthCells();
         int columns = getRegionAreaColumns();
 
-        int internalWidthColumns = Useful.GetNbrGroups(inputWidth, columnWidth);
-        int internalHeightColumns = Useful.GetNbrGroups(columns, internalWidthColumns);
+        int internalWidthColumns = Useful.GetNbrGroups( inputWidth, columnWidth );
+        int internalHeightColumns = Useful.GetNbrGroups( columns, internalWidthColumns );
 
         return new Point( internalWidthColumns, internalHeightColumns );
     }
@@ -240,6 +240,7 @@ public class RegionConfig extends NetworkConfig {
         Integer i = _om.getInteger( getKey( _keyInputHeight ) );
         return i.intValue();
     }
+
     public int getRegionAreaColumns() {
         Integer i = _om.getInteger( getKey( _keyRegionAreaColumns ) );
         return i.intValue();
@@ -261,27 +262,27 @@ public class RegionConfig extends NetworkConfig {
     }
 
     public int getReceptiveFieldsTrainingSamples() {
-        Integer i = _om.getInteger(getKey(_keyReceptiveFieldsTrainingSamples));
+        Integer i = _om.getInteger( getKey( _keyReceptiveFieldsTrainingSamples ) );
         return i.intValue();
     }
 
     public float getReceptiveFieldsElasticity() {
-        Float r = _om.getFloat(getKey(_keyReceptiveFieldsElasticity));
+        Float r = _om.getFloat( getKey( _keyReceptiveFieldsElasticity ) );
         return r.floatValue();
     }
 
     public float getReceptiveFieldsLearningRate() {
-        Float r = _om.getFloat(getKey(_keyReceptiveFieldsLearningRate));
+        Float r = _om.getFloat( getKey( _keyReceptiveFieldsLearningRate ) );
         return r.floatValue();
     }
 
     public float getInputColumnsFrequencyLearningRate() {
-        Float r = _om.getFloat(getKey(_keyInputColumnsFrequencyLearningRate));
+        Float r = _om.getFloat( getKey( _keyInputColumnsFrequencyLearningRate ) );
         return r.floatValue();
     }
 
     public float getInputColumnsFrequencyThreshold() {
-        Float r = _om.getFloat(getKey(_keyInputColumnsFrequencyThreshold ) );
+        Float r = _om.getFloat( getKey( _keyInputColumnsFrequencyThreshold ) );
         return r.floatValue();
     }
 

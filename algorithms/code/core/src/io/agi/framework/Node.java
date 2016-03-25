@@ -11,10 +11,9 @@ import java.util.HashMap;
 import java.util.concurrent.Semaphore;
 
 /**
- *
  * A container in which the program can execute.
  * The system can be distributed by having multiple nodes, potentially on different virtual or physical machines.
- *
+ * <p>
  * Created by dave on 14/02/16.
  */
 public class Node {
@@ -29,7 +28,7 @@ public class Node {
     protected Coordination _c;
     protected Persistence _p;
 
-    protected HashMap<String, ArrayList<EntityListener>> _entityListeners = new HashMap<String, ArrayList<EntityListener>>();
+    protected HashMap< String, ArrayList< EntityListener > > _entityListeners = new HashMap< String, ArrayList< EntityListener > >();
 
     public Node() {
     }
@@ -174,7 +173,7 @@ public class Node {
         try {
             s.acquire();
         }
-        catch( InterruptedException ie ) {
+        catch ( InterruptedException ie ) {
             //System.err.println("Thread " + Thread.currentThread().hashCode() + " cant get lock for " + entityName);
             return false;
         }
@@ -204,7 +203,7 @@ public class Node {
         l.release();
     }
 
-    public HashMap<String, Semaphore> _entityNameSemaphores = new HashMap<String, Semaphore>();
+    public HashMap< String, Semaphore > _entityNameSemaphores = new HashMap< String, Semaphore >();
 
     /**
      * Adds a listener to the specified Entity.
@@ -215,7 +214,7 @@ public class Node {
      */
     public void addEntityListener( String entity, EntityListener listener ) {
         synchronized ( _entityListeners ) {
-            ArrayList<EntityListener> al = _entityListeners.get( entity );
+            ArrayList< EntityListener > al = _entityListeners.get( entity );
             if ( al == null ) {
                 al = new ArrayList();
                 _entityListeners.put( entity, al );
@@ -225,11 +224,11 @@ public class Node {
     }
 
     public void removeEntityListener( String entity, EntityListener el ) {
-        synchronized( _entityListeners ) {
+        synchronized ( _entityListeners ) {
             ArrayList< EntityListener > al = _entityListeners.get( entity );
-            if( al != null ) {
-                for( EntityListener el2 : al ) {
-                    if( el2.equals( el ) ) {
+            if ( al != null ) {
+                for ( EntityListener el2 : al ) {
+                    if ( el2.equals( el ) ) {
                         al.remove( el );
                     }
                 }
@@ -244,9 +243,9 @@ public class Node {
      */
     public void callEntityListeners( String entity ) {
         synchronized ( _entityListeners ) {
-            ArrayList<EntityListener> al = _entityListeners.get( entity );
+            ArrayList< EntityListener > al = _entityListeners.get( entity );
             if ( al == null ) {
-                al = new ArrayList<EntityListener>();
+                al = new ArrayList< EntityListener >();
                 _entityListeners.put( entity, al );
             }
 

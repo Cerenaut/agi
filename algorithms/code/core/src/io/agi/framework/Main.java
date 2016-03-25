@@ -109,9 +109,9 @@ public class Main {
         try {
             String jsonEntity = FileUtil.readFile( file );
 
-            Type listType = new TypeToken<List<ModelEntity>>() {
+            Type listType = new TypeToken< List< ModelEntity > >() {
             }.getType();
-            List<ModelEntity> entities = gson.fromJson( jsonEntity, listType );
+            List< ModelEntity > entities = gson.fromJson( jsonEntity, listType );
 
             for ( ModelEntity modelEntity : entities ) {
                 System.out.println( "Creating Entity of type: " + modelEntity.type + ", that is hosted at Node: " + modelEntity.node );
@@ -129,9 +129,9 @@ public class Main {
         try {
             String jsonEntity = FileUtil.readFile( file );
 
-            Type listType = new TypeToken<List<ModelDataReference>>() {
+            Type listType = new TypeToken< List< ModelDataReference > >() {
             }.getType();
-            List<ModelDataReference> references = gson.fromJson( jsonEntity, listType );
+            List< ModelDataReference > references = gson.fromJson( jsonEntity, listType );
             for ( ModelDataReference modelDataReference : references ) {
                 System.out.println( "Creating data input reference for data: " + modelDataReference.dataKey + " with input data keys: " + modelDataReference.refKey );
                 Entity.SetDataReference( _p, modelDataReference.dataKey, modelDataReference.refKey );
@@ -148,9 +148,9 @@ public class Main {
         try {
             String jsonEntity = FileUtil.readFile( file );
 
-            Type listType = new TypeToken<List<ModelPropertySet>>() {
+            Type listType = new TypeToken< List< ModelPropertySet > >() {
             }.getType();
-            List<ModelPropertySet> modelProperties = gson.fromJson( jsonEntity, listType );
+            List< ModelPropertySet > modelProperties = gson.fromJson( jsonEntity, listType );
 
             for ( ModelPropertySet modelPropertySet : modelProperties ) {
 

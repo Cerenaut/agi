@@ -21,12 +21,12 @@ public class HttpEntitiesHandler implements HttpHandler {
 
     public Persistence _p;
 
-    public HttpEntitiesHandler(Persistence p) {
+    public HttpEntitiesHandler( Persistence p ) {
         _p = p;
     }
 
     @Override
-    public void handle(HttpExchange t ) throws IOException {
+    public void handle( HttpExchange t ) throws IOException {
         int status = 400;
         String response = "";
 
@@ -36,17 +36,17 @@ public class HttpEntitiesHandler implements HttpHandler {
 
             String method = t.getRequestMethod();
 
-            ArrayList<AbstractPair< String, String>> parameters = HttpUtil.GetDuplicateQueryParams(query);
+            ArrayList< AbstractPair< String, String > > parameters = HttpUtil.GetDuplicateQueryParams( query );
 
-            Collection<ModelEntity> results = null;
+            Collection< ModelEntity > results = null;
 
-            for( AbstractPair< String, String > ap : parameters ) {
+            for ( AbstractPair< String, String > ap : parameters ) {
                 String key = ap._first;
                 String value = ap._second;
-                if( key.equalsIgnoreCase( PARAMETER_NAME ) ) {
+                if ( key.equalsIgnoreCase( PARAMETER_NAME ) ) {
                     ModelEntity m = _p.getEntity( value );
 
-                    if( results == null ) {
+                    if ( results == null ) {
                         results = new ArrayList< ModelEntity >();
                     }
 
@@ -54,20 +54,21 @@ public class HttpEntitiesHandler implements HttpHandler {
                 }
             }
 
-            if( results == null ) {
+            if ( results == null ) {
                 results = _p.getEntities();
             }
 
             boolean first = true;
 
-            if( method.equalsIgnoreCase( "GET" ) ) {
+            if ( method.equalsIgnoreCase( "GET" ) ) {
 
                 response += "[ ";
 
-                for( ModelEntity m : results ) {
-                    if (first) {
+                for ( ModelEntity m : results ) {
+                    if ( first ) {
                         first = false;
-                    } else {
+                    }
+                    else {
                         response += ", ";
                     }
 
@@ -86,10 +87,10 @@ public class HttpEntitiesHandler implements HttpHandler {
                 status = 200;
             }
         }
-        catch( Exception e ) {
+        catch ( Exception e ) {
             e.printStackTrace();
         }
 
-        HttpUtil.SendResponse(t, status, response);
+        HttpUtil.SendResponse( t, status, response );
     }
 }

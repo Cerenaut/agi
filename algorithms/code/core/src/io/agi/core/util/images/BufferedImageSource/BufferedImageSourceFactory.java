@@ -9,10 +9,9 @@ package io.agi.core.util.images.BufferedImageSource;
 /**
  * Constructs a BufferedImageSource from two string: First, the 'type' specifying
  * what type of source should be constructed, and a second, a configuration string.
- *
  */
 public class BufferedImageSourceFactory {
-        
+
     // ImageSource Types
     public static final String TYPE_IMAGE_FILES = "images";
     public static final String TYPE_SHAPES = "shapes";
@@ -20,7 +19,7 @@ public class BufferedImageSourceFactory {
     public static BufferedImageSource create( String type, String configuration ) {
 
         // configuration = path to a directory holding image files
-        if( type.equalsIgnoreCase( TYPE_IMAGE_FILES ) ) {
+        if ( type.equalsIgnoreCase( TYPE_IMAGE_FILES ) ) {
             BufferedImageSource bis = new BufferedImageSourceImageFile( configuration );     // a directory, in this case
             return bis;
         }
@@ -36,7 +35,7 @@ public class BufferedImageSourceFactory {
 //            }
 
         return null;
-        
+
     }
-    
+
 }

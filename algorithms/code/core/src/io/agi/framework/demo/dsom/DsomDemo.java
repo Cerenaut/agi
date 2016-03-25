@@ -12,7 +12,7 @@ import io.agi.framework.persistence.models.ModelEntity;
 
 /**
  * Code to demonstrate a DSOM Entity on a simple test problem.
- *
+ * <p>
  * Created by dave on 12/03/16.
  */
 public class DsomDemo {
@@ -24,18 +24,18 @@ public class DsomDemo {
 
         // Create a Node
         Main m = new Main();
-        m.setup( args[0], null, ef );
+        m.setup( args[ 0 ], null, ef );
 
         // Create custom entities and references
-        if( args.length > 1 ) {
-            m.loadEntities(args[1]);
+        if ( args.length > 1 ) {
+            m.loadEntities( args[ 1 ] );
         }
 
-        if( args.length > 2 ) {
+        if ( args.length > 2 ) {
             m.loadReferences( args[ 2 ] );
         }
 
-        if( args.length > 3 ) {
+        if ( args.length > 3 ) {
             m.loadProperties( args[ 3 ] );
         }
 
@@ -61,13 +61,13 @@ public class DsomDemo {
         p.setEntity( model );
 
         // Connect the entities
-        Entity.SetDataReference(p, classifierName, DynamicSelfOrganizingMapEntity.INPUT, modelName, RandomVectorEntity.OUTPUT);
+        Entity.SetDataReference( p, classifierName, DynamicSelfOrganizingMapEntity.INPUT, modelName, RandomVectorEntity.OUTPUT );
 
         Persistence persistence = n.getPersistence();
 
         if ( persistence instanceof PropertyStringAccess ) {
 
-            PropertyConverter propertyConverter = new PropertyConverter( ( PropertyStringAccess )persistence );
+            PropertyConverter propertyConverter = new PropertyConverter( ( PropertyStringAccess ) persistence );
 
             // Set a property:
             int elements = 2; // 2D

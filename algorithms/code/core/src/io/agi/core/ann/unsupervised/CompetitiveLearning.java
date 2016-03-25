@@ -27,10 +27,10 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
 
         int cells = c.getNbrCells();
 
-        for (int cell = 0; cell < cells; ++cell) { // for each som cell
+        for ( int cell = 0; cell < cells; ++cell ) { // for each som cell
             float maskValue = cellMask._values[ cell ];
 
-            if( maskValue == 0.f ) {
+            if ( maskValue == 0.f ) {
                 continue;
             }
 
@@ -41,16 +41,16 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
     }
 
     public static void sumSqError(
-        CompetitiveLearningConfig c,
-        FloatArray2 inputValues,
-        FloatArray2 cellWeights,  // Size = cells * inputs
-        FloatArray2 cellSumSqError ) { // size = cells
+            CompetitiveLearningConfig c,
+            FloatArray2 inputValues,
+            FloatArray2 cellWeights,  // Size = cells * inputs
+            FloatArray2 cellSumSqError ) { // size = cells
 
         int cells = c.getNbrCells();
 
         ArrayList< Integer > cellList = new ArrayList<>();
 
-        for (int cell = 0; cell < cells; ++cell) { // for each som cell
+        for ( int cell = 0; cell < cells; ++cell ) { // for each som cell
             cellList.add( cell );
         }
 
@@ -58,23 +58,23 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
     }
 
     public static void sumSqError(
-        CompetitiveLearningConfig c,
-        ArrayList< Integer > cells,
-        FloatArray2 inputValues,
-        FloatArray2 cellWeights,  // Size = cells * inputs
-        FloatArray2 cellSumSqError ) { // size = cells
+            CompetitiveLearningConfig c,
+            ArrayList< Integer > cells,
+            FloatArray2 inputValues,
+            FloatArray2 cellWeights,  // Size = cells * inputs
+            FloatArray2 cellSumSqError ) { // size = cells
 
         int inputs = c.getNbrInputs();
 
-        for( Integer cell : cells ) {
+        for ( Integer cell : cells ) {
 
             // set all inputs to off, then recalculate based on som vector properties.
             float sumSqError = 0.f;
 
-            for( int i = 0; i < inputs; ++i ) { // for each input
+            for ( int i = 0; i < inputs; ++i ) { // for each input
 
-                float input       = inputValues         ._values[ i ]; // error from ci to cell
-                float weight      = cellWeights         ._values[ cell * inputs + i ]; // error from ci to cell
+                float input = inputValues._values[ i ]; // error from ci to cell
+                float weight = cellWeights._values[ cell * inputs + i ]; // error from ci to cell
                 float diff = input - weight;
 
                 sumSqError += ( diff * diff );
@@ -93,24 +93,24 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
 
         int inputs = c.getNbrInputs();
 
-        for( Integer cell : cells ) {
+        for ( Integer cell : cells ) {
 
             // set all inputs to off, then recalculate based on som vector properties.
             float sumSqError = 0.f;
 
             // We assume there are few inputs that are nonzero.
             // first sum all the weights and square them
-            for( int i = 0; i < inputs; ++i ) { // for each input
+            for ( int i = 0; i < inputs; ++i ) { // for each input
 
                 //float input       = inputValues         ._values[ i ]; // error from ci to cell
-                float weight      = cellWeights         ._values[ cell * inputs + i ]; // error from ci to cell
+                float weight = cellWeights._values[ cell * inputs + i ]; // error from ci to cell
                 float diff = 0 - weight;
 
                 sumSqError += ( diff * diff );
             }
 
             // now go through the active ones and replace with the correct errors:
-            for( Integer i : inputValues ) {
+            for ( Integer i : inputValues ) {
                 float input = 1.f;
                 float weight = cellWeights._values[ cell * inputs + i ]; // error from ci to cell
 
@@ -150,12 +150,12 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
 
         ranking.clear();
 
-        for( int y = 0; y < h; ++y ) { // for each som cell
-            for( int x = 0; x < w; ++x ) { // for each som cell
-                int cell = y * w +x;
+        for ( int y = 0; y < h; ++y ) { // for each som cell
+            for ( int x = 0; x < w; ++x ) { // for each som cell
+                int cell = y * w + x;
 
-                if( cellMask != null ) {
-                    if( cellMask._values[ cell ] < 1.f ) { // not a live cell
+                if ( cellMask != null ) {
+                    if ( cellMask._values[ cell ] < 1.f ) { // not a live cell
                         continue; // not a live cell
                     }
                 }
@@ -163,13 +163,13 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
                 // add each element, then prune the sorted list back down to size.
                 float value = cellValues._values[ cell ];
 
-                if( findMaxima ) {
-                    if( value <= 0.f ) {
+                if ( findMaxima ) {
+                    if ( value <= 0.f ) {
                         continue;
                     }
                 }
 
-                Ranking.add(ranking, value, cell);
+                Ranking.add( ranking, value, cell );
 
                 // prune the ranked list back down to size
                 Ranking.truncate( ranking, maxRank, findMaxima );
@@ -177,19 +177,19 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
         }
 
         // now go through and set the winning values mask for each winner:
-        for( int y = 0; y < h; ++y ) { // for each som cell
-            for( int x = 0; x < w; ++x ) { // for each som cell
-                int cell = y * w +x;
+        for ( int y = 0; y < h; ++y ) { // for each som cell
+            for ( int x = 0; x < w; ++x ) { // for each som cell
+                int cell = y * w + x;
 
-                if( cellMask != null ) {
-                    if( cellMask._values[ cell ] < 1.f ) { // not a live cell
+                if ( cellMask != null ) {
+                    if ( cellMask._values[ cell ] < 1.f ) { // not a live cell
                         continue; // not a live cell
                     }
                 }
 
                 float ranked = 0.f;
 
-                if( Ranking.containsValue( ranking, cell ) ) {
+                if ( Ranking.containsValue( ranking, cell ) ) {
                     ranked = 1.f;
                 }
 

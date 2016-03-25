@@ -12,6 +12,7 @@ import java.util.Set;
 /**
  * Has a bunch of things that are called when this is called
  * Used to run a distributed system with no ordering dependencies
+ *
  * @author dave
  */
 public class CallbackMap implements Callback {
@@ -30,10 +31,11 @@ public class CallbackMap implements Callback {
         return _vertices.get( name );
     }
 
-    @Override public void call() {
+    @Override
+    public void call() {
         Set< Entry< String, Callback > > es = _vertices.entrySet();
 
-        for( Entry< String, Callback > e : es ) {
+        for ( Entry< String, Callback > e : es ) {
             e.getValue().call();
         }
     }

@@ -6,11 +6,10 @@
 
 package io.agi.core.data;
 
-import java.awt.Point;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 /**
- *
  * @author dave
  */
 public class ImageData {
@@ -29,7 +28,7 @@ public class ImageData {
     public Data getData() {
         return _d;
     }
-    
+
     public int getWidth() {
         return _d._dataSize.getSize( DataSize.DIMENSION_X );
     }
@@ -38,9 +37,9 @@ public class ImageData {
         return _d._dataSize.getSize( DataSize.DIMENSION_Y );
     }
 
-    public int getChannels()  {
+    public int getChannels() {
         Integer n = _d._dataSize.getSize( DataSize.DIMENSION_Z );
-        if( n != null ) {
+        if ( n != null ) {
             return n;
         }
         return 1;
@@ -59,12 +58,12 @@ public class ImageData {
         int offset = getOffset( x, y, c );
         return _d._values[ offset ];
     }
-    
+
     public void set( int x, int y, int c, int value ) {
         int offset = getOffset( x, y, c );
         _d._values[ offset ] = value;
     }
-    
+
     public void setWithBufferedImage( BufferedImage bi ) {
 
         // retrieve resolution of image
@@ -77,16 +76,16 @@ public class ImageData {
 
         c.set( DataSize.DIMENSION_Z, 0 );
 
-        int channels = getChannels( );
+        int channels = getChannels();
         int elements = _d.getSize();
         int pixelMaxValue = 255;
-        float vReciprocal = 1.0f / (float)pixelMaxValue;
+        float vReciprocal = 1.0f / ( float ) pixelMaxValue;
 
-        for( int y = 0; y < vh; ++y ) {
+        for ( int y = 0; y < vh; ++y ) {
 
             c.set( DataSize.DIMENSION_Y, y );
 
-            for( int x = 0; x < vw; ++x ) {
+            for ( int x = 0; x < vw; ++x ) {
 
                 c.set( DataSize.DIMENSION_X, x );
 
@@ -99,13 +98,13 @@ public class ImageData {
                 int b = sample[ 2 ];
 
                 // scale the pixel values to normalize them
-                float bScaled = (float)b * vReciprocal;
-                float gScaled = (float)g * vReciprocal;
-                float rScaled = (float)r * vReciprocal;
+                float bScaled = ( float ) b * vReciprocal;
+                float gScaled = ( float ) g * vReciprocal;
+                float rScaled = ( float ) r * vReciprocal;
 
-                assert( (offset+2) < elements );
+                assert ( ( offset + 2 ) < elements );
 
-                if( channels == 3 ) {
+                if ( channels == 3 ) {
                     _d._values[ offset + 0 ] = rScaled;
                     _d._values[ offset + 1 ] = gScaled;
                     _d._values[ offset + 2 ] = bScaled;

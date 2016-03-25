@@ -21,12 +21,12 @@ public class HttpDataHandler implements HttpHandler {
 
     public Persistence _p;
 
-    public HttpDataHandler(Persistence p) {
+    public HttpDataHandler( Persistence p ) {
         _p = p;
     }
 
     @Override
-    public void handle(HttpExchange t ) throws IOException {
+    public void handle( HttpExchange t ) throws IOException {
         int status = 400;
         String response = "";
 
@@ -36,22 +36,22 @@ public class HttpDataHandler implements HttpHandler {
 
             String method = t.getRequestMethod();
 
-            ArrayList<AbstractPair< String, String>> parameters = HttpUtil.GetDuplicateQueryParams(query);
+            ArrayList< AbstractPair< String, String > > parameters = HttpUtil.GetDuplicateQueryParams( query );
 
-            Collection<ModelData> results = null;
+            Collection< ModelData > results = null;
 
-            for( AbstractPair< String, String > ap : parameters ) {
+            for ( AbstractPair< String, String > ap : parameters ) {
                 String key = ap._first;
                 String value = ap._second;
-                if( key.equalsIgnoreCase( PARAMETER_NAME ) ) {
-                    ModelData m = _p.getData(value);
+                if ( key.equalsIgnoreCase( PARAMETER_NAME ) ) {
+                    ModelData m = _p.getData( value );
 
-                    if( results == null ) {
+                    if ( results == null ) {
                         results = new ArrayList< ModelData >();
                     }
 
-                    if( m != null ) {
-                        results.add(m);
+                    if ( m != null ) {
+                        results.add( m );
                     }
                 }
             }
@@ -62,15 +62,16 @@ public class HttpDataHandler implements HttpHandler {
 //            }
 
             boolean first = true;
-            if( method.equalsIgnoreCase( "GET" ) ) {
+            if ( method.equalsIgnoreCase( "GET" ) ) {
 
                 response += "[ ";
 
-                if( results != null ) {
-                    for (ModelData m : results) {
-                        if (first) {
+                if ( results != null ) {
+                    for ( ModelData m : results ) {
+                        if ( first ) {
                             first = false;
-                        } else {
+                        }
+                        else {
                             response += ", ";
                         }
 
@@ -92,10 +93,10 @@ public class HttpDataHandler implements HttpHandler {
 
             status = 200;
         }
-        catch( Exception e ) {
+        catch ( Exception e ) {
             e.printStackTrace();
         }
 
-        HttpUtil.SendResponse(t, status, response);
+        HttpUtil.SendResponse( t, status, response );
     }
 }

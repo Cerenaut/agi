@@ -2,7 +2,6 @@ package io.agi.core.ann.unsupervised;
 
 import io.agi.core.data.Data;
 import io.agi.core.math.RandomInstance;
-import io.agi.core.orm.Callback;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.orm.UnitTest;
 
@@ -35,7 +34,7 @@ public class DynamicSelfOrganizingMapTest implements UnitTest {
         float learningRate = 0.25f;
         float elasticity = 1.f;
 
-        RandomInstance.setSeed(randomSeed); // make the tests repeatable
+        RandomInstance.setSeed( randomSeed ); // make the tests repeatable
         ObjectMap om = ObjectMap.GetInstance();
         DynamicSelfOrganizingMapConfig clc = new DynamicSelfOrganizingMapConfig();
 
@@ -50,7 +49,7 @@ public class DynamicSelfOrganizingMapTest implements UnitTest {
 
     public DynamicSelfOrganizingMap getAlgorithm() {
         ObjectMap om = ObjectMap.GetInstance();
-        DynamicSelfOrganizingMap cl = (DynamicSelfOrganizingMap)om.get( DSOM );
+        DynamicSelfOrganizingMap cl = ( DynamicSelfOrganizingMap ) om.get( DSOM );
         return cl;
     }
 
@@ -60,11 +59,11 @@ public class DynamicSelfOrganizingMapTest implements UnitTest {
 
     public float getDiscreteRandom( Random r ) {
         float gridSize = 6.f;
-        float x = (float)r.nextFloat() * ( gridSize - 0.f );
-        int nx = (int)x;
-        x = (float)nx;
+        float x = ( float ) r.nextFloat() * ( gridSize - 0.f );
+        int nx = ( int ) x;
+        x = ( float ) nx;
         x /= gridSize;
-        x += ((1.f / ( gridSize )) * 0.5f );
+        x += ( ( 1.f / ( gridSize ) ) * 0.5f );
         return x;
     }
 
@@ -84,24 +83,24 @@ public class DynamicSelfOrganizingMapTest implements UnitTest {
 
         // perform tests in batches until the mean error for a batch is below threshold.
         // Otherwise, fail test.
-        for( int epoch = 0; epoch < epochs; ++epoch ) {
+        for ( int epoch = 0; epoch < epochs; ++epoch ) {
 
             float sumError = 0.f;
 
-            for( int test = 0; test < batch; ++test ) {
+            for ( int test = 0; test < batch; ++test ) {
                 float error = step();
                 sumError += error;
             }
 
             float meanError = 0.f;
 
-            if( sumError > 0.f ) {
-                meanError = sumError / (float)batch;
+            if ( sumError > 0.f ) {
+                meanError = sumError / ( float ) batch;
             }
 
-            System.out.println( "Epoch: " +epoch+ " Mean error: " + meanError );
+            System.out.println( "Epoch: " + epoch + " Mean error: " + meanError );
 
-            if( meanError < meanErrorThreshold ) {
+            if ( meanError < meanErrorThreshold ) {
                 System.out.println( "Success: Error below threshold for epoch." );
                 return 0;
             }
@@ -125,7 +124,7 @@ public class DynamicSelfOrganizingMapTest implements UnitTest {
 
         float sumError = 0.f;
 
-        for( int i = 0; i < inputs; ++i ) {
+        for ( int i = 0; i < inputs; ++i ) {
             int offset = bestCell * inputs + i;
             float x = input._values[ i ];
             float w = weights._values[ offset ];
@@ -133,12 +132,12 @@ public class DynamicSelfOrganizingMapTest implements UnitTest {
             sumError += d;
         }
 
-        float errorValue = sumError / (float)inputs;
+        float errorValue = sumError / ( float ) inputs;
 
         float x = input._values[ 0 ];
         float y = input._values[ 1 ];
 
-        System.out.println( "Input: " +x+ "," +y+ " Error: " + errorValue );
+        System.out.println( "Input: " + x + "," + y + " Error: " + errorValue );
 
         return errorValue;
     }

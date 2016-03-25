@@ -12,51 +12,50 @@ import java.util.Iterator;
 
 /**
  * Basic arithmetic for circular number systems
- * 
+ *
  * @author dave
  */
 public class Circular {
 
     /**
      * circular number system difference fn.
+     *
      * @param first
      * @param second
      * @param max
-     * @return 
+     * @return
      */
     public static double absoluteDifference(
-        double first,
-        double second,
-        double max )
-    {
+            double first,
+            double second,
+            double max ) {
         double mid = max * 0.5;
         double diff;
 
-        if( first > second )
-        {
-          diff = first - second;
+        if ( first > second ) {
+            diff = first - second;
         }
-        else
-        {
-          diff = second - first;
+        else {
+            diff = second - first;
         }
 
-        if( diff > mid )
-        {
-          diff = max - diff;
+        if ( diff > mid ) {
+            diff = max - diff;
         }
 
         return diff;
-    };
-    
+    }
+
+    ;
+
     public static double mean( ArrayList< Double > values, double maxValue ) {
 
         // 1) Handle small lists of values:
         //_________________________________________________________________________
         int size = values.size();
 
-        if( size < 2 ) {
-            if( size == 0 ) {
+        if ( size < 2 ) {
+            if ( size == 0 ) {
                 return 0.0;
             }
             // else: size is 1.
@@ -68,7 +67,7 @@ public class Circular {
         // 2) Sort the values, or at least references to them!
         //_________________________________________________________________________
         ArrayList< Double > sorted = new ArrayList< Double >( values ); // different ordering, same Double objects.
-        
+
         Collections.sort( sorted );
 
 
@@ -76,13 +75,13 @@ public class Circular {
         // elements.
         //_________________________________________________________________________
         double first = 0.0;
-        double min  = 0.0;
-        double max  = 0.0;
+        double min = 0.0;
+        double max = 0.0;
         double span = 0.0;
 
         double maxSpanMin = 0.0;
         double maxSpanMax = 0.0;
-        double maxSpan    = 0.0;
+        double maxSpan = 0.0;
 
         Iterator< Double > i = sorted.iterator();
 
@@ -93,17 +92,16 @@ public class Circular {
 
         // 4) Loop thru all elements.
         //_________________________________________________________________________
-        while( i.hasNext() ) {
+        while ( i.hasNext() ) {
 
             max = i.next();
 
             span = max - min; // set will have ordered them.
 
-            if( span >= maxSpan )
-            {
+            if ( span >= maxSpan ) {
                 maxSpanMin = min;
                 maxSpanMax = max;
-                maxSpan    = span;
+                maxSpan = span;
             }
 
             min = max;
@@ -119,13 +117,12 @@ public class Circular {
 
         max = first;
 
-        span = max + (maxValue - min);
+        span = max + ( maxValue - min );
 
-        if( span >= maxSpan )
-        {
+        if ( span >= maxSpan ) {
             maxSpanMin = min;
             maxSpanMax = max;
-            maxSpan    = span;
+            maxSpan = span;
         }
 
 
@@ -136,32 +133,30 @@ public class Circular {
         //_________________________________________________________________________
         double offset = maxValue - maxSpanMax;
         double value = 0.0;
-        double sum   = 0.0;
+        double sum = 0.0;
 
         i = sorted.iterator();
 
-        while( i.hasNext() ) {
+        while ( i.hasNext() ) {
 
             value = i.next();
             value += offset;
 
-            if( value >= maxValue )
-            {
+            if ( value >= maxValue ) {
                 value -= maxValue; // wrap around
             }
 
             sum += value;
         }
 
-        sum /= (double)size;
+        sum /= ( double ) size;
         sum -= offset;
 
-        if( sum < 0.0 )
-        {
-          sum += maxValue;
+        if ( sum < 0.0 ) {
+            sum += maxValue;
         }
 
         return sum;
     }
-    
+
 }

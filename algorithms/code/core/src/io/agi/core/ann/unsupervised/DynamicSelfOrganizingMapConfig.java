@@ -18,36 +18,36 @@ public class DynamicSelfOrganizingMapConfig extends CompetitiveLearningConfig {
     }
 
     public void setup( ObjectMap om, String name, int inputs, int w, int h, float learningRate, float elasticity ) {
-        super.setup(om, name, inputs, w, h);
+        super.setup( om, name, inputs, w, h );
 
-        setLearningRate(learningRate);
-        setElasticity(elasticity);
+        setLearningRate( learningRate );
+        setElasticity( elasticity );
     }
 
-    public void copyFrom(NetworkConfig nc, String name ) {
-        super.copyFrom(nc, name);
+    public void copyFrom( NetworkConfig nc, String name ) {
+        super.copyFrom( nc, name );
 
-        DynamicSelfOrganizingMapConfig c = (DynamicSelfOrganizingMapConfig)nc;
+        DynamicSelfOrganizingMapConfig c = ( DynamicSelfOrganizingMapConfig ) nc;
 
-        setLearningRate(c.getLearningRate());
-        setElasticity(c.getElasticity());
+        setLearningRate( c.getLearningRate() );
+        setElasticity( c.getElasticity() );
     }
 
     public void setLearningRate( float r ) {
-        _om.put(getKey(_keyLearningRate), r);
+        _om.put( getKey( _keyLearningRate ), r );
     }
 
     public void setElasticity( float r ) {
-        _om.put(getKey(_keyElasticity), r);
+        _om.put( getKey( _keyElasticity ), r );
     }
 
     public float getElasticity() {
-        Float r = _om.getFloat(getKey( _keyElasticity ) );
+        Float r = _om.getFloat( getKey( _keyElasticity ) );
         return r.floatValue();
     }
 
     public float getLearningRate() {
-        Float r = _om.getFloat(getKey( _keyLearningRate ) );
+        Float r = _om.getFloat( getKey( _keyLearningRate ) );
         return r.floatValue();
     }
 }

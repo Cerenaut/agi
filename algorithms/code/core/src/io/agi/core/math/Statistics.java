@@ -7,7 +7,6 @@
 package io.agi.core.math;
 
 /**
- *
  * @author dave
  */
 public class Statistics {
@@ -15,23 +14,23 @@ public class Statistics {
     /**
      * Shannon entropy with base 10.
      * http://en.wikipedia.org/wiki/Entropy_%28information_theory%29
-     * 
+     *
      * @param values
-     * @return 
+     * @return
      */
     public static double entropyBase10( float[] values ) {
 
         double sum = 0.0;
         int offset = 0;
 
-        while( offset < values.length ) {
+        while ( offset < values.length ) {
 
             double value = values[ offset ];
             ++offset;
 
             double r = 0.0; // in the limit x*log(x) approaches 0
 
-            if( value > 0.0 ) {
+            if ( value > 0.0 ) {
                 r = value * Math.log10( value );
             }
 
@@ -44,9 +43,9 @@ public class Statistics {
     /**
      * Shannon entropy with base E.
      * http://en.wikipedia.org/wiki/Entropy_%28information_theory%29
-     * 
+     *
      * @param values
-     * @return 
+     * @return
      */
     public static double entropyBaseE( float[] values ) {
 
@@ -54,14 +53,14 @@ public class Statistics {
 
         int offset = 0;
 
-        while( offset < values.length ) {
+        while ( offset < values.length ) {
 
             double value = values[ offset ];
             ++offset;
 
             double r = 0.0; // in the limit x*log(x) approaches 0
 
-            if( value > 0.0 ) {
+            if ( value > 0.0 ) {
                 r = value * Math.log( value );
             }
 
@@ -73,9 +72,10 @@ public class Statistics {
 
     /**
      * For completeness, online mean requires only tracking count and cum
+     *
      * @param sum
      * @param samples
-     * @return 
+     * @return
      */
     public static double mean( double sum, double samples ) {
         return sum / samples;
@@ -86,31 +86,32 @@ public class Statistics {
      * at the end). This function is not very accurate if the numbers are large
      * especially if the variance is comparatively small. If you subtract the
      * first value from all samples it will be more accurate.
+     *
      * @param sum
      * @param sumOfSq
      * @param samples
-     * @return 
+     * @return
      */
     public static double variance( double sum, double sumOfSq, double samples ) {
-        if( samples <= 1.0 ) return 0.0;
+        if ( samples <= 1.0 ) return 0.0;
         double normalizer = 1.0 / samples;
         double sumSq = sum * sum;
         double variance = sumOfSq - ( normalizer * sumSq );
-               variance *= normalizer;
+        variance *= normalizer;
         return variance;
     }
-    
+
     /**
      * Gaussian function
-     * 
+     *
      * @param x
      * @param sigma
-     * @return 
+     * @return
      */
     public static double gaussian( double x, double sigma ) {
         double r1 = 1.0 / ( Math.sqrt( 2.0 * Math.PI * sigma ) );
         double r2 = 2.0 * sigma * sigma;
-        double r3 = -( (x*x) / r2 );
+        double r3 = -( ( x * x ) / r2 );
         double r4 = Math.pow( Math.E, r3 ); // exp( r3 )
         double rG = r1 * r4;
         return rG;
@@ -119,19 +120,19 @@ public class Statistics {
     /**
      * This function suggests a kernel size for a Gaussian kernal with a given
      * sigma value.
-     * 
+     * <p>
      * From "Image Processing, Analysis and Machine Vision", pp. 84:
-     *  'Pixels more distant from the center of the operator have smaller
-     *   influence, and pixels farther than 3 \sigma from the center have
-     *   neglible influence.'
-     * 
+     * 'Pixels more distant from the center of the operator have smaller
+     * influence, and pixels farther than 3 \sigma from the center have
+     * neglible influence.'
+     * <p>
      * Also, the kernel should (ideally) have odd dimension.
-     * 
+     *
      * @param rSigma
-     * @return 
+     * @return
      */
     public static int gaussianKernelSize( double rSigma ) {
-        return( 1 + 2 * ( (int)( 3.0 * rSigma ) ) );
+        return ( 1 + 2 * ( ( int ) ( 3.0 * rSigma ) ) );
     }
-    
+
 }

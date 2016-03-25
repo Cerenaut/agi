@@ -1,4 +1,7 @@
 <code_scheme name="ProjectAGICodeStyle">
+  <JavaCodeStyleSettings>
+    <option name="SPACES_WITHIN_ANGLE_BRACKETS" value="true" />
+  </JavaCodeStyleSettings>
   <XML>
     <option name="XML_LEGACY_SETTINGS_IMPORTED" value="true" />
   </XML>

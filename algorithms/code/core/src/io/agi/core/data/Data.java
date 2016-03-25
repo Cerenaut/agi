@@ -7,13 +7,14 @@
 package io.agi.core.data;
 
 import io.agi.core.math.RandomInstance;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
 /**
  * A FloatArray with an associated DataSize object that describes the array as
  * an N-dimensional Hyperrectangle.
- * 
+ *
  * @author dave
  */
 public class Data extends FloatArray2 {
@@ -22,6 +23,7 @@ public class Data extends FloatArray2 {
 
     /**
      * Creates a 1-dimensional vector.
+     *
      * @param size
      */
     public Data( int size ) {
@@ -31,10 +33,11 @@ public class Data extends FloatArray2 {
 
     /**
      * Creates a 2-dimensional matrix or 32 bit float greyscale image.
+     *
      * @param width
      * @param height
      */
-    public Data ( int width, int height ) {
+    public Data( int width, int height ) {
         DataSize d = DataSize.create( width, height );
         setSize( d );
     }
@@ -46,13 +49,14 @@ public class Data extends FloatArray2 {
      * @param height
      * @param depth
      */
-    public Data ( int width, int height, int depth ) {
+    public Data( int width, int height, int depth ) {
         DataSize d = DataSize.create( width, height, depth );
         setSize( d );
     }
 
     /**
      * Creates a new data structure with the specified dimensions.
+     *
      * @param d
      */
     public Data( DataSize d ) {
@@ -62,6 +66,7 @@ public class Data extends FloatArray2 {
     /**
      * Wraps the existing objects in a new Data object.
      * The elements and sizes are not copied.
+     *
      * @param d
      * @param fa
      */
@@ -72,6 +77,7 @@ public class Data extends FloatArray2 {
 
     /**
      * Creates a Data as a deep copy of the parameter.
+     *
      * @param d
      */
     public Data( Data d ) {
@@ -87,24 +93,24 @@ public class Data extends FloatArray2 {
 
     public float get( Coordinate2 c ) {
         int offset = c.offset();
-        if( offset < _values.length ) {
+        if ( offset < _values.length ) {
             return _values[ offset ];
         }
         return 0.f;
     }
-    
+
     public void set( Coordinate2 c, float value ) {
         int offset = c.offset();
         _values[ offset ] = value;
     }
-    
+
     public Coordinate2 begin() {
         return new Coordinate2( _dataSize );
     }
 
     public Coordinate2 end() {
         Coordinate2 c = new Coordinate2( _dataSize );
-                   c.setMax();
+        c.setMax();
         return c;
     }
 
@@ -125,7 +131,7 @@ public class Data extends FloatArray2 {
             c2.translate( translations );
 
             v.set( c2, value ); // checks for validity
-        } while( c1.next() ); // for-each( value in volume )
+        } while ( c1.next() ); // for-each( value in volume )
 
         return v;
     }
@@ -137,7 +143,7 @@ public class Data extends FloatArray2 {
 
         ArrayList< Coordinate2 > al = new ArrayList< Coordinate2 >();
 
-        while( al.size() < n ) {
+        while ( al.size() < n ) {
             Coordinate2 c = v.maxAt();
 
             al.add( c );
@@ -155,7 +161,7 @@ public class Data extends FloatArray2 {
 
         ArrayList< Coordinate2 > al = new ArrayList< Coordinate2 >();
 
-        while( al.size() < n ) {
+        while ( al.size() < n ) {
             Coordinate2 c = v.minAt();
 
             al.add( c );
@@ -176,11 +182,11 @@ public class Data extends FloatArray2 {
         do { // for-each( value in volume )
             float value = get( c );
 
-            if( value > max ) {
+            if ( value > max ) {
                 max = value;
                 cMax = new Coordinate2( c );
             }
-        } while( c.next() ); // for-each( value in volume )
+        } while ( c.next() ); // for-each( value in volume )
 
         return cMax;
     }
@@ -195,11 +201,11 @@ public class Data extends FloatArray2 {
         do { // for-each( value in volume )
             float value = get( c );
 
-            if( value < min ) {
+            if ( value < min ) {
                 min = value;
                 cMin = new Coordinate2( c );
             }
-        } while( c.next() ); // for-each( value in volume )
+        } while ( c.next() ); // for-each( value in volume )
 
         return cMin;
     }
@@ -217,11 +223,11 @@ public class Data extends FloatArray2 {
         // first sum the values, and handle the all-zero case as totally random:
 
         ArrayList< Coordinate2 > al = new ArrayList< Coordinate2 >();
-        
+
         double sum = sum();
 
-        for( int i = 0; i < samples; ++i ) {
-            if( sum <= 0.0 ) {
+        for ( int i = 0; i < samples; ++i ) {
+            if ( sum <= 0.0 ) {
                 Coordinate2 c = begin();
                 c.randomize();
                 al.add( c );
@@ -244,7 +250,7 @@ public class Data extends FloatArray2 {
         // first sum the values, and handle the all-zero case as totally random:
         Coordinate2 c = begin();
 
-        if( sum <= 0.0 ) {
+        if ( sum <= 0.0 ) {
             c.randomize();
             return c;
         }
@@ -252,16 +258,16 @@ public class Data extends FloatArray2 {
         // OK so now do a roulette selection:
         double random = RandomInstance.random() * sum;
         double accumulated = 0.0;
-        
+
         do { // for-each( value in volume )
             double value = get( c );
 
             accumulated += value;
 
-            if( accumulated >= random ) {
+            if ( accumulated >= random ) {
                 return c;
             }
-        } while( c.next() ); // for-each( value in volume )
+        } while ( c.next() ); // for-each( value in volume )
 
         return end(); // shouldn't happen!
     }
@@ -275,8 +281,8 @@ public class Data extends FloatArray2 {
         // included range (ie the first excluded coordinate).
         // excluded should be 12400
         Coordinate2 excluded = new Coordinate2( included );
-        Coordinate2 offset   = new Coordinate2( _dataSize );
-                   offset._indices[ dimensionsExcluded -1 ] = 1;
+        Coordinate2 offset = new Coordinate2( _dataSize );
+        offset._indices[ dimensionsExcluded - 1 ] = 1;
 
         excluded.add( offset );
 
@@ -287,7 +293,7 @@ public class Data extends FloatArray2 {
 
         float sum = 0.0f;
 
-        while( offset1 < offset2 ) {
+        while ( offset1 < offset2 ) {
             sum += _values[ offset1 ];
             ++offset1;
         }
@@ -298,8 +304,8 @@ public class Data extends FloatArray2 {
     public void mulSubVolume( int dimensionsExcluded, Coordinate2 included, float value ) {
 
         Coordinate2 excluded = new Coordinate2( included );
-        Coordinate2 offset   = new Coordinate2( _dataSize );
-                   offset._indices[ dimensionsExcluded -1 ] = 1;
+        Coordinate2 offset = new Coordinate2( _dataSize );
+        offset._indices[ dimensionsExcluded - 1 ] = 1;
 
         excluded.add( offset );
 
@@ -308,7 +314,7 @@ public class Data extends FloatArray2 {
         int offset1 = included.offset();
         int offset2 = excluded.offset();
 
-        while( offset1 < offset2 ) {
+        while ( offset1 < offset2 ) {
             _values[ offset1 ] *= value;
             ++offset1;
         }
@@ -322,7 +328,7 @@ public class Data extends FloatArray2 {
         // x = x * (1/sum)
         float sum = sumSubVolume( dimensionsExcluded, included );
 
-        if( sum <= 0.0f ) {
+        if ( sum <= 0.0f ) {
             return;
         }
 
@@ -330,17 +336,17 @@ public class Data extends FloatArray2 {
 
         mulSubVolume( dimensionsExcluded, included, reciprocal );
     }
-    
+
     public int getVolumeExcluding( String invariantDimension ) {
         int volume = getSize();
         int size = _dataSize.getSize( invariantDimension );
 
-        if( size == 0 ) {
+        if ( size == 0 ) {
             return volume;
         }
 
         volume /= size;
-        
+
         return volume;
     }
 

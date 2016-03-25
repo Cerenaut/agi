@@ -15,8 +15,6 @@ import io.agi.framework.persistence.models.ModelNode;
 
 import java.util.*;
 
-import static com.couchbase.client.java.query.Select.select;
-
 /**
  * Note: http://docs.couchbase.com/developer/java-2.0/querying-n1ql.html
  * Created by dave on 14/03/16.
@@ -52,9 +50,9 @@ public class CouchbasePersistence implements Persistence {
     Bucket _b;
 
     public static CouchbasePersistence Create( String propertiesFile ) {
-        String cluster = PropertiesUtil.get(propertiesFile, PROPERTY_CLUSTER, "localhost" );
-        String bucket = PropertiesUtil.get(propertiesFile, PROPERTY_BUCKET, "default" );
-        String password = PropertiesUtil.get(propertiesFile, PROPERTY_PASSWORD, "password" );
+        String cluster = PropertiesUtil.get( propertiesFile, PROPERTY_CLUSTER, "localhost" );
+        String bucket = PropertiesUtil.get( propertiesFile, PROPERTY_BUCKET, "default" );
+        String password = PropertiesUtil.get( propertiesFile, PROPERTY_PASSWORD, "password" );
 
         CouchbasePersistence p = new CouchbasePersistence();
 
@@ -71,8 +69,8 @@ public class CouchbasePersistence implements Persistence {
     public void setup( String cluster, String bucket, String password ) {
         System.setProperty( "com.couchbase.queryEnabled", "true" );
 
-        _c = CouchbaseCluster.create(cluster);
-        _b = _c.openBucket(bucket, password);
+        _c = CouchbaseCluster.create( cluster );
+        _b = _c.openBucket( bucket, password );
     }
 
     public void createViews() {
@@ -82,48 +80,48 @@ public class CouchbasePersistence implements Persistence {
 
             // Initialize design document
             DesignDocument designDoc = DesignDocument.create(
-                "persistence",
-                Arrays.asList(
-                    DefaultView.create("all_nodes",
-                        "function (doc, meta) {" +
-                        "  if( doc.document_type == 'N' ) {" +
-                        "    emit(meta.id, [doc.name, doc.host, doc.port ] );" +
-                        "  } }"),
-                    DefaultView.create("all_entities",
-                        "function (doc, meta) {" +
-                        "  if( doc.document_type == 'E' ) {" +
-                        "    emit(meta.id, [doc.name, doc.host, doc.port ] );" +
-                        "  } }" ),
-                    DefaultView.create("child_entities",
-                        "function (doc, meta) { " +
-                        "  if( doc.document_type == 'E' && doc.parent ) {" +
-                        "    emit(doc.parent, doc.name );" +
-                        "  } }" ),
-                    DefaultView.create("all_properties",
-                        "function (doc, meta) {" +
-                        "  if( doc.document_type == 'P' && doc.name ) {" +
-                        "    emit( doc.name, [doc.value ] );" +
-                        "  } }" ),
-                    DefaultView.create("all_docs",
-                        "function (doc, meta) { " +
-                        "  emit( meta.id, doc );" +
-                        "  }" )
-                )
+                    "persistence",
+                    Arrays.asList(
+                            DefaultView.create( "all_nodes",
+                                    "function (doc, meta) {" +
+                                            "  if( doc.document_type == 'N' ) {" +
+                                            "    emit(meta.id, [doc.name, doc.host, doc.port ] );" +
+                                            "  } }" ),
+                            DefaultView.create( "all_entities",
+                                    "function (doc, meta) {" +
+                                            "  if( doc.document_type == 'E' ) {" +
+                                            "    emit(meta.id, [doc.name, doc.host, doc.port ] );" +
+                                            "  } }" ),
+                            DefaultView.create( "child_entities",
+                                    "function (doc, meta) { " +
+                                            "  if( doc.document_type == 'E' && doc.parent ) {" +
+                                            "    emit(doc.parent, doc.name );" +
+                                            "  } }" ),
+                            DefaultView.create( "all_properties",
+                                    "function (doc, meta) {" +
+                                            "  if( doc.document_type == 'P' && doc.name ) {" +
+                                            "    emit( doc.name, [doc.value ] );" +
+                                            "  } }" ),
+                            DefaultView.create( "all_docs",
+                                    "function (doc, meta) { " +
+                                            "  emit( meta.id, doc );" +
+                                            "  }" )
+                    )
             );
 
             // Insert design document into the bucket
-            bucketManager.insertDesignDocument(designDoc);
+            bucketManager.insertDesignDocument( designDoc );
 
-            System.out.println("NOTE: CouchBase views created.");
+            System.out.println( "NOTE: CouchBase views created." );
         }
-        catch( com.couchbase.client.java.error.DesignDocumentAlreadyExistsException e ) {
-            System.out.println("NOTE: CouchBase views already exist.");
+        catch ( com.couchbase.client.java.error.DesignDocumentAlreadyExistsException e ) {
+            System.out.println( "NOTE: CouchBase views already exist." );
 //            e.printStackTrace();
         }
     }
 
     public void stop() {
-        if( _c != null ) {
+        if ( _c != null ) {
             _c.disconnect();
             _c = null;
         }
@@ -141,20 +139,20 @@ public class CouchbasePersistence implements Persistence {
         return prefix + ":" + suffix;
     }
 
-    public Collection<ModelNode> getNodes() {
+    public Collection< ModelNode > getNodes() {
         // http://docs.couchbase.com/admin/admin/Views/views-writing.html
         // http://docs.couchbase.com/developer/java-2.1/tutorial.html
         ArrayList< ModelNode > models = new ArrayList< ModelNode >();
         ViewResult result = _b.query(
                 ViewQuery
-                        .from("persistence", "all_nodes")
+                        .from( "persistence", "all_nodes" )
                         .descending()
         );
-        List<ViewRow> l = result.allRows();
-        for( ViewRow r : l ) {
+        List< ViewRow > l = result.allRows();
+        for ( ViewRow r : l ) {
             JsonObject jo = r.document().content();
-            String key = jo.getString(PROPERTY_KEY);
-            String host = jo.getString(PROPERTY_NODE_HOST);
+            String key = jo.getString( PROPERTY_KEY );
+            String host = jo.getString( PROPERTY_NODE_HOST );
             int port = jo.getInt( PROPERTY_NODE_PORT );
 
             ModelNode m = new ModelNode( key, host, port );
@@ -164,39 +162,39 @@ public class CouchbasePersistence implements Persistence {
         return models;
     }
 
-    public Collection<ModelEntity> getEntities() {
+    public Collection< ModelEntity > getEntities() {
         ArrayList< ModelEntity > models = new ArrayList< ModelEntity >();
         ViewResult result = _b.query(
                 ViewQuery
-                        .from("persistence", "all_entities")
+                        .from( "persistence", "all_entities" )
                         .descending()
         );
-        List<ViewRow> l = result.allRows();
-        for (ViewRow r : l) {
+        List< ViewRow > l = result.allRows();
+        for ( ViewRow r : l ) {
             JsonObject jo = r.document().content();
-            String key = jo.getString(PROPERTY_KEY);
-            String type = jo.getString(PROPERTY_ENTITY_TYPE);
-            String node = jo.getString(PROPERTY_ENTITY_NODE);
-            String parent = jo.getString(PROPERTY_ENTITY_PARENT);
+            String key = jo.getString( PROPERTY_KEY );
+            String type = jo.getString( PROPERTY_ENTITY_TYPE );
+            String node = jo.getString( PROPERTY_ENTITY_NODE );
+            String parent = jo.getString( PROPERTY_ENTITY_PARENT );
             ModelEntity m = new ModelEntity( key, type, node, parent );
             models.add( m );
         }
         return models;
     }
 
-    public Collection<String> getChildEntities(String parent) {
+    public Collection< String > getChildEntities( String parent ) {
         ArrayList< String > models = new ArrayList< String >();
         ViewResult result = _b.query(
                 ViewQuery
-                        .from("persistence", "child_entities")
-                        .key(parent)
-                        .inclusiveEnd(true)
+                        .from( "persistence", "child_entities" )
+                        .key( parent )
+                        .inclusiveEnd( true )
                         .descending()
         );
-        List<ViewRow> l = result.allRows();
-        for( ViewRow r : l ) {
+        List< ViewRow > l = result.allRows();
+        for ( ViewRow r : l ) {
             JsonObject jo = r.document().content();
-            String key = jo.getString(PROPERTY_KEY);
+            String key = jo.getString( PROPERTY_KEY );
             models.add( key );
         }
         return models;
@@ -209,17 +207,17 @@ public class CouchbasePersistence implements Persistence {
         String filter2 = filter + "\\uefff";
         ViewResult result = _b.query(
                 ViewQuery
-                        .from("persistence", "all_properties")
-                        .startKey(filter1)
-                        .endKey(filter2)
-                        .inclusiveEnd(true)
+                        .from( "persistence", "all_properties" )
+                        .startKey( filter1 )
+                        .endKey( filter2 )
+                        .inclusiveEnd( true )
         );
-        List<ViewRow> l = result.allRows();
-        for( ViewRow r : l ) {
+        List< ViewRow > l = result.allRows();
+        for ( ViewRow r : l ) {
             JsonObject jo = r.document().content();
-            String key = jo.getString(PROPERTY_KEY);
-            String value = jo.getString(PROPERTY_PROPERTY_VALUE);
-            hm.put(key, value);
+            String key = jo.getString( PROPERTY_KEY );
+            String value = jo.getString( PROPERTY_PROPERTY_VALUE );
+            hm.put( key, value );
         }
 
         return hm;
@@ -227,21 +225,22 @@ public class CouchbasePersistence implements Persistence {
 
     // Nodes
     public void setNode( ModelNode m ) {
-        String key = GetKey(KEY_PREFIX_NODE, m._key);
+        String key = GetKey( KEY_PREFIX_NODE, m._key );
         JsonObject jo = JsonObject.empty()
-            .put(PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_NODE)
-            .put(PROPERTY_KEY, m._key)
-            .put(PROPERTY_NODE_HOST, m._host)
-            .put(PROPERTY_NODE_PORT, m._port);
-        JsonDocument response = upsert(key, jo);
+                .put( PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_NODE )
+                .put( PROPERTY_KEY, m._key )
+                .put( PROPERTY_NODE_HOST, m._host )
+                .put( PROPERTY_NODE_PORT, m._port );
+        JsonDocument response = upsert( key, jo );
     }
 
-    public ModelNode getNode(String nodeKey) {
-        String key = GetKey(KEY_PREFIX_NODE, nodeKey);
-        JsonDocument loaded = _b.get(key);
-        if (loaded == null) {
+    public ModelNode getNode( String nodeKey ) {
+        String key = GetKey( KEY_PREFIX_NODE, nodeKey );
+        JsonDocument loaded = _b.get( key );
+        if ( loaded == null ) {
             return null;
-        } else {
+        }
+        else {
             String host = loaded.content().getString( PROPERTY_NODE_HOST );
             int port = loaded.content().getInt( PROPERTY_NODE_PORT );
             ModelNode jn = new ModelNode( nodeKey, host, Integer.valueOf( port ) );
@@ -249,41 +248,42 @@ public class CouchbasePersistence implements Persistence {
         }
     }
 
-    public void removeNode(String nodeName) {
-        String key = GetKey(KEY_PREFIX_NODE, nodeName);
+    public void removeNode( String nodeName ) {
+        String key = GetKey( KEY_PREFIX_NODE, nodeName );
         remove( key );
     }
 
     public void remove( String key ) {
-        _b.remove(key);
+        _b.remove( key );
     }
 
     public JsonDocument upsert( String key, JsonObject jo ) {
-        JsonDocument doc = JsonDocument.create(key, jo);
-        JsonDocument response = _b.upsert(doc);
+        JsonDocument doc = JsonDocument.create( key, jo );
+        JsonDocument response = _b.upsert( doc );
         return response;
     }
 
 
     // Entities
-    public void setEntity(ModelEntity m) {
-        String key = GetKey(KEY_PREFIX_ENTITY, m.name);
+    public void setEntity( ModelEntity m ) {
+        String key = GetKey( KEY_PREFIX_ENTITY, m.name );
         JsonObject jo = JsonObject.empty()
-                .put(PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_ENTITY)
-                .put(PROPERTY_KEY, m.name)
-                .put(PROPERTY_ENTITY_NODE, m.node)
-                .put(PROPERTY_ENTITY_PARENT, m.parent)
-                .put(PROPERTY_ENTITY_TYPE, m.type);
-        JsonDocument response = upsert(key, jo);
+                .put( PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_ENTITY )
+                .put( PROPERTY_KEY, m.name )
+                .put( PROPERTY_ENTITY_NODE, m.node )
+                .put( PROPERTY_ENTITY_PARENT, m.parent )
+                .put( PROPERTY_ENTITY_TYPE, m.type );
+        JsonDocument response = upsert( key, jo );
     }
 
-    public ModelEntity getEntity(String entityKey) {
-        String key = GetKey(KEY_PREFIX_ENTITY, entityKey);
-        JsonDocument loaded = _b.get(key);
-        if (loaded == null) {
+    public ModelEntity getEntity( String entityKey ) {
+        String key = GetKey( KEY_PREFIX_ENTITY, entityKey );
+        JsonDocument loaded = _b.get( key );
+        if ( loaded == null ) {
             return null;
-        } else {
-            String type = loaded.content().getString(PROPERTY_ENTITY_TYPE);
+        }
+        else {
+            String type = loaded.content().getString( PROPERTY_ENTITY_TYPE );
             String node = loaded.content().getString( PROPERTY_ENTITY_NODE );
             String parent = loaded.content().getString( PROPERTY_ENTITY_PARENT );
             ModelEntity m = new ModelEntity( key, type, node, parent );
@@ -291,59 +291,61 @@ public class CouchbasePersistence implements Persistence {
         }
     }
 
-    public void removeEntity(String entityKey) {
-        String key = GetKey(KEY_PREFIX_ENTITY, entityKey);
+    public void removeEntity( String entityKey ) {
+        String key = GetKey( KEY_PREFIX_ENTITY, entityKey );
         remove( key );
     }
 
     // Data
-    public void setData(ModelData m) {
-        String key = GetKey(KEY_PREFIX_DATA, m._key);
+    public void setData( ModelData m ) {
+        String key = GetKey( KEY_PREFIX_DATA, m._key );
         JsonObject jo = JsonObject.empty()
-                .put(PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_DATA)
-                .put(PROPERTY_KEY, m._key)
-                .put(PROPERTY_DATA_ELEMENTS, m._elements)
-                .put(PROPERTY_DATA_REF_KEY, m._refKey)
-                .put(PROPERTY_DATA_SIZES, m._sizes);
-        JsonDocument response = upsert(key, jo);
+                .put( PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_DATA )
+                .put( PROPERTY_KEY, m._key )
+                .put( PROPERTY_DATA_ELEMENTS, m._elements )
+                .put( PROPERTY_DATA_REF_KEY, m._refKey )
+                .put( PROPERTY_DATA_SIZES, m._sizes );
+        JsonDocument response = upsert( key, jo );
     }
 
-    public ModelData getData(String dataKey) {
-        String key = GetKey(KEY_PREFIX_DATA, dataKey);
-        JsonDocument loaded = _b.get(key);
-        if (loaded == null) {
+    public ModelData getData( String dataKey ) {
+        String key = GetKey( KEY_PREFIX_DATA, dataKey );
+        JsonDocument loaded = _b.get( key );
+        if ( loaded == null ) {
             return null;
-        } else {
+        }
+        else {
             String sizes = loaded.content().getString( PROPERTY_DATA_SIZES );
-            String elements = loaded.content().getString(PROPERTY_DATA_ELEMENTS );
-            String refKey = loaded.content().getString(PROPERTY_DATA_REF_KEY );
+            String elements = loaded.content().getString( PROPERTY_DATA_ELEMENTS );
+            String refKey = loaded.content().getString( PROPERTY_DATA_REF_KEY );
             ModelData m = new ModelData( dataKey, refKey, sizes, elements );
             return m;
         }
     }
 
-    public void removeData(String dataKey) {
-        String key = GetKey(KEY_PREFIX_DATA, dataKey);
+    public void removeData( String dataKey ) {
+        String key = GetKey( KEY_PREFIX_DATA, dataKey );
         remove( key );
     }
 
-    public String getPropertyString(String propertyKey, String defaultValue) {
-        String key = GetKey(KEY_PREFIX_PROPERTY, propertyKey);
-        JsonDocument loaded = _b.get(key);
-        if (loaded == null) {
+    public String getPropertyString( String propertyKey, String defaultValue ) {
+        String key = GetKey( KEY_PREFIX_PROPERTY, propertyKey );
+        JsonDocument loaded = _b.get( key );
+        if ( loaded == null ) {
             return null;
-        } else {
+        }
+        else {
             String value = loaded.content().getString( PROPERTY_PROPERTY_VALUE );
             return value;
         }
     }
 
-    public void setPropertyString(String propertyKey, String value) {
-        String key = GetKey(KEY_PREFIX_PROPERTY, propertyKey);
+    public void setPropertyString( String propertyKey, String value ) {
+        String key = GetKey( KEY_PREFIX_PROPERTY, propertyKey );
         JsonObject jo = JsonObject.empty()
-                .put(PROPERTY_KEY, propertyKey )
-                .put(PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_PROPERTY )
-                .put(PROPERTY_PROPERTY_VALUE, value);
-        JsonDocument response = upsert(key, jo);
+                .put( PROPERTY_KEY, propertyKey )
+                .put( PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_PROPERTY )
+                .put( PROPERTY_PROPERTY_VALUE, value );
+        JsonDocument response = upsert( key, jo );
     }
 }

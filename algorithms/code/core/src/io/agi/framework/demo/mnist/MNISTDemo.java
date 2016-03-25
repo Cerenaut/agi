@@ -9,11 +9,10 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.util.HashMap;
 
 /**
-  * Created by gideon on 14/03/2016.
+ * Created by gideon on 14/03/2016.
  */
 public class MNISTDemo {
 
@@ -35,9 +34,9 @@ public class MNISTDemo {
             m.loadEntities( args[ 1 ] );
         }
 
-//        if ( args.length > 2 ) {
-//            m.loadReferences( args[ 2 ] );
-//        }
+        if ( args.length > 2 ) {
+            m.loadReferences( args[ 2 ] );
+        }
 
         // Programmatic hook to create entities and references..
         createEntities( m._n );
@@ -53,7 +52,6 @@ public class MNISTDemo {
 
 
     /**
-     *
      * @param labelFile
      * @param imageFile
      * @param outputPath
@@ -63,13 +61,13 @@ public class MNISTDemo {
 
         BufferedImageSourceMNIST imagesMNIST = new BufferedImageSourceMNIST( labelFile, imageFile );
 
-        if  ( ( maxNumImages < 0 ) ||
-              ( maxNumImages >= imagesMNIST.bufferSize() ) ) {
+        if ( ( maxNumImages < 0 ) ||
+                ( maxNumImages >= imagesMNIST.bufferSize() ) ) {
             maxNumImages = imagesMNIST.bufferSize();
         }
 
-        HashMap< String, Integer > labelCount = new HashMap<>(  );
-        for ( int i=0 ; i < maxNumImages ; i++ ) {
+        HashMap< String, Integer > labelCount = new HashMap<>();
+        for ( int i = 0; i < maxNumImages; i++ ) {
 
             BufferedImage image = imagesMNIST.getImage();
             String label = imagesMNIST.getLabel();

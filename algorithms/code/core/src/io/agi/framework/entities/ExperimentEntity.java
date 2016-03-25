@@ -16,17 +16,17 @@ public class ExperimentEntity extends Entity {
     }
 
     @Override
-    public void getInputKeys( Collection<String> keys ) {
+    public void getInputKeys( Collection< String > keys ) {
 
     }
 
     @Override
-    public void getOutputKeys( Collection<String> keys ) {
+    public void getOutputKeys( Collection< String > keys ) {
 
     }
 
     @Override
-    public void getPropertyKeys( Collection<String> keys ) {
+    public void getPropertyKeys( Collection< String > keys ) {
 
     }
 }

@@ -6,16 +6,15 @@
 package io.agi.framework.entities;
 
 import io.agi.core.orm.ObjectMap;
+import io.agi.core.util.images.BufferedImageSource.BufferedImageSource;
+import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.core.util.images.ImageScreenScraper;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
-import io.agi.core.util.images.BufferedImageSource.BufferedImageSource;
-import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 
 import java.util.Collection;
 
 /**
- *
  * Scrapes a rectangle defined by a receptor field @param{receptorField},
  * from within a BufferedImage, which can come from a variety of sources:
  * - at a specific resolution defined by @param{resolution}
@@ -40,20 +39,21 @@ public class ImageSensorEntity extends Entity {
     private static final String BUFFERED_IMAGE_INDEX = "buffered-image-index";
 
 
-    public ImageSensorEntity( String entityName, ObjectMap om, String type, Node n) {
+    public ImageSensorEntity( String entityName, ObjectMap om, String type, Node n ) {
         super( entityName, om, type, n );
     }
 
     @Override
-    public void getInputKeys( Collection<String> keys ) {}
+    public void getInputKeys( Collection< String > keys ) {
+    }
 
     @Override
-    public void getOutputKeys( Collection<String> keys ) {
+    public void getOutputKeys( Collection< String > keys ) {
         keys.add( IMAGE_DATA );
     }
 
     @Override
-    public void getPropertyKeys( Collection<String> keys ) {
+    public void getPropertyKeys( Collection< String > keys ) {
         keys.add( SOURCE_FILES_PATH );
         keys.add( SOURCE_TYPE );
         keys.add( RESOLUTION_X );

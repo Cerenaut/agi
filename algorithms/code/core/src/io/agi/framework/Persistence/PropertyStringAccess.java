@@ -5,5 +5,6 @@ package io.agi.framework.persistence;
  */
 public interface PropertyStringAccess {
     String getPropertyString( String key, String defaultValue );
+
     void setPropertyString( String key, String value );
 }
