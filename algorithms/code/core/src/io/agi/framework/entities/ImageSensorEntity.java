@@ -12,6 +12,7 @@ import io.agi.core.util.images.ImageScreenScraper;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
 
+import java.awt.*;
 import java.util.Collection;
 
 /**
@@ -32,6 +33,10 @@ public class ImageSensorEntity extends Entity {
 
     private static final String SOURCE_FILES_PATH = "source-files-path";
     private static final String SOURCE_TYPE = "source-type";
+    private static final String RECEPTIVE_FIELD_X = "receptive-field-x";
+    private static final String RECEPTIVE_FIELD_Y = "receptive-field-y";
+    private static final String RECEPTIVE_FIELD_W = "receptive-field-w";
+    private static final String RECEPTIVE_FIELD_H = "receptive-field-h";
     private static final String RESOLUTION_X = "resolution-x";
     private static final String RESOLUTION_Y = "resolution-y";
     private static final String GREYSCALE = "greyscale";
@@ -69,12 +74,24 @@ public class ImageSensorEntity extends Entity {
 
         BufferedImageSource bufferedImageSource = BufferedImageSourceFactory.create( bufferedImageSourceType, filesPath );
 
+        int receptiveFieldX = getPropertyInt( RECEPTIVE_FIELD_X, -1 );
+        int receptiveFieldY = getPropertyInt( RECEPTIVE_FIELD_Y, -1 );
+        int receptiveFieldW = getPropertyInt( RECEPTIVE_FIELD_W, -1 );
+        int receptiveFieldH = getPropertyInt( RECEPTIVE_FIELD_H, -1 );
         int resolutionX = getPropertyInt( RESOLUTION_X, 28 );
         int resolutionY = getPropertyInt( RESOLUTION_Y, 28 );
         boolean greyscale = getPropertyBoolean( GREYSCALE, true );
 
         ImageScreenScraper imageScreenScraper = new ImageScreenScraper();
-        imageScreenScraper.setup( bufferedImageSource, resolutionX, resolutionY, greyscale );
+
+        if ( isReceptiveFieldSet( receptiveFieldX, receptiveFieldY, receptiveFieldW, receptiveFieldH ) ) {
+            Rectangle receptiveField = new Rectangle( receptiveFieldX, receptiveFieldY, receptiveFieldW, receptiveFieldH );
+            Point point = new Point( resolutionX, resolutionY );
+            imageScreenScraper.setup( bufferedImageSource, receptiveField, point, greyscale );
+        }
+        else {
+            imageScreenScraper.setup( bufferedImageSource, resolutionX, resolutionY, greyscale );
+        }
 
         int index = getPropertyInt( BUFFERED_IMAGE_INDEX, 0 );
 
@@ -91,6 +108,18 @@ public class ImageSensorEntity extends Entity {
 
         setData( IMAGE_DATA, imageScreenScraper.getData() );
         setPropertyInt( BUFFERED_IMAGE_INDEX, index );
+    }
+
+    private boolean isReceptiveFieldSet( int receptiveFieldX, int receptiveFieldY, int receptiveFieldW, int receptiveFieldH ) {
+
+        if (        receptiveFieldX >= 0
+                &&  receptiveFieldY >= 0
+                &&  receptiveFieldW >= 0
+                &&  receptiveFieldH >= 0 ) {
+            return true;
+        }
+
+        return false;
     }
 
 }

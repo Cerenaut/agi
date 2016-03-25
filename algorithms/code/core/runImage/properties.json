@@ -1,0 +1,16 @@
+[
+  {
+    "entity": "mySensor",
+    "properties": {
+      "source-type": "images",
+      "greyscale": "true",
+      "resolution-x": "40",
+      "resolution-y": "40",
+      "receptive-field-x" : "0",
+      "receptive-field-y" : "0",
+      "receptive-field-w" : "10",
+      "receptive-field-h" : "10",
+      "source-files-path": "/Users/gideon/Development/AI/ProAGI/TestData/MNIST/mnist_output"
+    }
+  }
+]

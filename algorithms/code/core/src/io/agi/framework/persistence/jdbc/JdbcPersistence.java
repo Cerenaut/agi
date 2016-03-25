@@ -228,15 +228,16 @@ public class JdbcPersistence implements Persistence, PropertyStringAccess {
     }
 
     public Map< String, String > getProperties( String filter ) {
-        String sql = "SELECT key, value FROM properties where key like '" + filter + "'";
+        String sql = "SELECT name, value FROM properties where name like '%" + filter + "%'";
         ResultSetMap rsm = new ResultSetMap();
+        rsm._fields.add( "name" );
         rsm._fields.add( "value" );
         executeQuery( sql, rsm );
 
         HashMap< String, String > hm = new HashMap< String, String >();
 
         for ( HashMap< String, String > row : rsm._rows ) {
-            String key = row.get( "key" );
+            String key = row.get( "name" );
             String value = row.get( "value" );
             hm.put( key, value );
         }
