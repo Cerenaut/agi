@@ -43,7 +43,7 @@ export PATH=${JAVA_HOME}/bin:${PATH}
 # Set parameters for other scripts
 # ----------------------------------------
 export DATABASE_API_HOST=localhost		# the host of the postgrest api
-export DATABASE_API_PORT=8080			# the port of the postgrest api
+export DATABASE_API_PORT=8492			# the port of the postgrest api
 export DATABASE_HOST=localhost 			# the host of the postgresql db
 export DATABASE_PASSWORD=password		# password of the agiu user of the postresql db
 export DATABASE_PORT=5432				# the port of the postgresql db

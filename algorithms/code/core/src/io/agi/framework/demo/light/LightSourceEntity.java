@@ -35,6 +35,11 @@ public class LightSourceEntity extends Entity {
         keys.add( MATRIX_OUTPUT );
     }
 
+    @Override
+    public void getPropertyKeys( Collection<String> keys ) {
+
+    }
+
     protected void doUpdateSelf() {
 
         float learningRate = getPropertyFloat( LEARNING_RATE, 0.1f );

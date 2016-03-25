@@ -1585,7 +1585,7 @@ public class FloatArray2 {
     // Sorting and Ranking
     ////////////////////////////////////////////////////////////////////////////
     public TreeMap< Float, ArrayList< Integer > > sort() { // produces a ranked list of model indices (1-d ordinates)
-        TreeMap< Float, ArrayList< Integer > > tm = new TreeMap< Float, ArrayList< Integer > >(); // in key order, arraylist for duplicates.
+        TreeMap< Float, ArrayList< Integer > > tm = new TreeMap< Float, ArrayList< Integer > >(); // in name order, arraylist for duplicates.
 
         int index = 0;
         int volume = _values.length;

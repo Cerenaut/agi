@@ -32,13 +32,13 @@ CREATE database agidb OWNER agiu;
 -- key-value store
 CREATE TABLE properties(
    id SERIAL PRIMARY KEY NOT NULL,
-   key text NOT NULL UNIQUE,
+   name text NOT NULL UNIQUE,
    value text NOT NULL
 );
 
 CREATE TABLE nodes(
    id SERIAL PRIMARY KEY NOT NULL,
-   key text,
+   name text,
    host text,
    port integer
 );
@@ -48,14 +48,14 @@ CREATE TABLE entities(
    type text,
    node text,
    parent text,
-   key text NOT NULL UNIQUE
+   name text NOT NULL UNIQUE
 );
 
 CREATE TABLE data(
    id SERIAL PRIMARY KEY NOT NULL,
 --   entity text,
-   key text NOT NULL UNIQUE,
-   ref_key text,
+   name text NOT NULL UNIQUE,
+   ref_name text,
    sizes text,
    elements text
 );

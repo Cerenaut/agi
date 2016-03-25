@@ -1,16 +1,16 @@
 [ 
 
   {
-    "name" : "mySwitch",
-    "type" : "light-control",
+    "name" : "model",
+    "type" : "random-vector",
     "node" : "myNode"
   },
 
   { 
-    "name" : "myLight",
-    "type" : "light-source",
+    "name" : "classifier",
+    "type" : "dsom",
     "node" : "myNode",
-    "parent" : "mySwitch"
+    "parent" : "model"
   }
 
 ]

@@ -33,7 +33,11 @@ public class DsomDemo {
             m.loadReferences( args[ 2 ] );
         }
 
-        // Programmatic hook to Create entities and references..
+        if( args.length > 3 ) {
+            m.loadProperties( args[ 3 ] );
+        }
+
+        // Programmatic hook to create entities and references..
         createEntities( m._n );
 
         // Start the system
@@ -59,13 +63,13 @@ public class DsomDemo {
 
         // Set a property:
         int elements = 2; // 2D
-        String elementsKey = Keys.concatenate(modelName, RandomVectorEntity.ELEMENTS);
-        p.setPropertyInt(elementsKey, elements );
+        String elementsKey = Keys.concatenate( randomVectorName, RandomVectorEntity.ELEMENTS );
+        propertyConverter.setPropertyInt( elementsKey, elements );
 
         String ageKey = Keys.concatenate( modelName, Entity.SUFFIX_AGE );
         p.setPropertyInt(ageKey, 0);
 
         String resetKey = Keys.concatenate( classifierName, Entity.SUFFIX_RESET );
-        p.setPropertyBoolean( resetKey, true );
+        propertyConverter.setPropertyBoolean( resetKey, true );
     }
 }

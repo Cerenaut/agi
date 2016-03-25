@@ -43,6 +43,11 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
         keys.add( OUTPUT_ACTIVE );
     }
 
+    @Override
+    public void getPropertyKeys( Collection<String> keys ) {
+
+    }
+
     protected void doUpdateSelf() {
 
         // Do nothing unless the input is

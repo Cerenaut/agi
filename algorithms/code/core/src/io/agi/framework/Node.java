@@ -11,6 +11,10 @@ import java.util.HashMap;
 import java.util.concurrent.Semaphore;
 
 /**
+ *
+ * A container in which the program can execute.
+ * The system can be distributed by having multiple nodes, potentially on different virtual or physical machines.
+ *
  * Created by dave on 14/02/16.
  */
 public class Node {
@@ -25,25 +29,22 @@ public class Node {
     protected Coordination _c;
     protected Persistence _p;
 
-    protected HashMap< String, ArrayList< EntityListener > > _entityListeners = new HashMap< String, ArrayList< EntityListener >>();
+    protected HashMap<String, ArrayList<EntityListener>> _entityListeners = new HashMap<String, ArrayList<EntityListener>>();
 
     public Node() {
     }
 
     /**
-     * Sets up the interfaces, which cannot me modified afterwards.
-     *
-     * @param c
-     * @param p
+     * Sets up the interfaces, which cannot be modified afterwards.
      */
     public void setup(
-        ObjectMap om,
-        String name,
-        String host,
-        int port,
-        EntityFactory ef,
-        Coordination c,
-        Persistence p ) {
+            ObjectMap om,
+            String name,
+            String host,
+            int port,
+            EntityFactory ef,
+            Coordination c,
+            Persistence p ) {
 
         _om = om;
         _om.put( KEY_NODE, this );
@@ -57,21 +58,24 @@ public class Node {
         _p = p;
 
         ModelNode jn = new ModelNode( _name, _host, _port );
-        _p.setNode(jn);
+        _p.setNode( jn );
     }
 
     public String getName() {
         return _name;
     }
+
     public String getHost() {
         return _host;
     }
+
     public int getPort() {
         return _port;
     }
 
     /**
      * Returns the persistence layer
+     *
      * @return
      */
     public Persistence getPersistence() {
@@ -80,6 +84,7 @@ public class Node {
 
     /**
      * Returns the coordination layer
+     *
      * @return
      */
     public Coordination getCoordination() {
@@ -88,68 +93,74 @@ public class Node {
 
     /**
      * A callback that is called when an Entity has been updated, including all its children.
+     *
      * @param entityName
      */
-    public void notifyUpdated(String entityName) {
+    public void notifyUpdated( String entityName ) {
 //        int count = _p.getEntityAge(entityName);
 //        count += 1;
 //        _p.setEntityAge(entityName, count);
-        unlock(entityName);
+        unlock( entityName );
+        System.err.println( "UPDATE END " + entityName + " T=" + System.currentTimeMillis() );
 
         // broadcast to any distributed listeners:
-        _c.onUpdated(entityName);
+        _c.onUpdated( entityName );
     }
 
     /**
      * Called by the distributed system when an entity has been updated.
+     *
      * @param entityName
      */
     public void onUpdated( String entityName ) {
-        callEntityListeners(entityName);
+        callEntityListeners( entityName );
     }
 
     /**
      * This method requests the distributed system to update the specified entity.
      * We don't know which Node hosts the Entity - it could be this, it could be another.
      * So, broadcast (or directly send) the update requet to another Node[s].
+     *
      * @param entityName
      */
-    public void requestUpdate(String entityName) {
+    public void requestUpdate( String entityName ) {
         // TODO: this should broadcast to the wider system the update request, in case it is handled by another Node
         //doUpdate(entityName); // monolithic only variant
-        _c.doUpdate(entityName);
+        _c.doUpdate( entityName );
     }
 
     /**
      * This method is called when the distributed system has received a request for an update of an Entity.
+     *
      * @param entityName
      */
-    public void doUpdate(String entityName) {
-        ModelEntity je = _p.getEntity(entityName);
-        //String nodeName = _p.getNodeName(entityName);
+    public void doUpdate( String entityName ) {
 
-        if( je == null ) {
+        ModelEntity modelEntity = _p.getEntity( entityName );
+
+        if ( modelEntity == null ) {
             return; // bad entity
         }
 
-
-        if( !je._node.equals( getName() ) ) {
+        if ( !modelEntity.node.equals( getName() ) ) {
             return;
         }
 
-        Entity e = _ef.create( _om, entityName, je._type );
-        e.setParent(je._parent);
+        Entity e = _ef.create( _om, entityName, modelEntity.type );
+        e.setParent( modelEntity.parent );
 
-        forkUpdate(e); // returns immediately
+        forkUpdate( e ); // returns immediately
     }
 
     /**
      * Creates a thread to actually do the work of updating the entity
+     *
      * @param e
      */
     protected void forkUpdate( final Entity e ) {
         Thread t = new Thread( new Runnable() {
-            @Override public void run() {
+            @Override
+            public void run() {
                 e.update();
             }
         } );
@@ -174,11 +185,11 @@ public class Node {
     }
 
     public Semaphore getLock( String entityName ) {
-        synchronized(_entityNameSemaphores) {
+        synchronized ( _entityNameSemaphores ) {
             Semaphore l = _entityNameSemaphores.get( entityName );
-            if( l ==  null ) {
+            if ( l == null ) {
                 l = new Semaphore( 1 ); // binary
-                _entityNameSemaphores.put(entityName, l);
+                _entityNameSemaphores.put( entityName, l );
             }
 
             return l;
@@ -193,18 +204,19 @@ public class Node {
         l.release();
     }
 
-    public HashMap< String, Semaphore > _entityNameSemaphores = new HashMap< String, Semaphore >();
+    public HashMap<String, Semaphore> _entityNameSemaphores = new HashMap<String, Semaphore>();
 
     /**
      * Adds a listener to the specified Entity.
      * It will persist for only one call.
+     *
      * @param entity
      * @param listener
      */
     public void addEntityListener( String entity, EntityListener listener ) {
-        synchronized( _entityListeners ) {
-            ArrayList< EntityListener > al = _entityListeners.get( entity );
-            if( al == null ) {
+        synchronized ( _entityListeners ) {
+            ArrayList<EntityListener> al = _entityListeners.get( entity );
+            if ( al == null ) {
                 al = new ArrayList();
                 _entityListeners.put( entity, al );
             }
@@ -227,17 +239,18 @@ public class Node {
 
     /**
      * Call any listeners associated with this Entity, and then remove them.
+     *
      * @param entity
      */
     public void callEntityListeners( String entity ) {
-        synchronized( _entityListeners ) {
-            ArrayList< EntityListener > al = _entityListeners.get( entity );
-            if( al == null ) {
-                al = new ArrayList< EntityListener >();
+        synchronized ( _entityListeners ) {
+            ArrayList<EntityListener> al = _entityListeners.get( entity );
+            if ( al == null ) {
+                al = new ArrayList<EntityListener>();
                 _entityListeners.put( entity, al );
             }
 
-            for( EntityListener listener : al ) {
+            for ( EntityListener listener : al ) {
                 listener.onEntityUpdated( entity );
             }
 
