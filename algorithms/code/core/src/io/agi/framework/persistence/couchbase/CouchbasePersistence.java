@@ -11,12 +11,10 @@ import com.couchbase.client.java.query.Query;
 import com.couchbase.client.java.query.QueryResult;
 import com.couchbase.client.java.view.*;
 import io.agi.core.util.PropertiesUtil;
-import io.agi.framework.persistence.StringPersistence;
-import io.agi.framework.persistence.jdbc.ResultSetMap;
+import io.agi.framework.persistence.Persistence;
 import io.agi.framework.serialization.ModelData;
 import io.agi.framework.serialization.ModelEntity;
 import io.agi.framework.serialization.ModelNode;
-import org.json.JSONObject;
 import rx.Observable;
 
 import java.util.*;
@@ -27,7 +25,7 @@ import static com.couchbase.client.java.query.Select.select;
  * Note: http://docs.couchbase.com/developer/java-2.0/querying-n1ql.html
  * Created by dave on 14/03/16.
  */
-public class CouchbasePersistence extends StringPersistence {
+public class CouchbasePersistence implements Persistence {
 
     public static final String PROPERTY_CLUSTER = "couchbase-cluster";
     public static final String PROPERTY_BUCKET = "couchbase-bucket";
@@ -273,13 +271,13 @@ public class CouchbasePersistence extends StringPersistence {
 
     // Entities
     public void setEntity(ModelEntity m) {
-        String key = GetKey(KEY_PREFIX_ENTITY, m._key);
+        String key = GetKey(KEY_PREFIX_ENTITY, m.name);
         JsonObject jo = JsonObject.empty()
                 .put(PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_ENTITY)
-                .put(PROPERTY_KEY, m._key)
-                .put(PROPERTY_ENTITY_NODE, m._node)
-                .put(PROPERTY_ENTITY_PARENT, m._parent)
-                .put(PROPERTY_ENTITY_TYPE, m._type);
+                .put(PROPERTY_KEY, m.name)
+                .put(PROPERTY_ENTITY_NODE, m.node)
+                .put(PROPERTY_ENTITY_PARENT, m.parent)
+                .put(PROPERTY_ENTITY_TYPE, m.type);
         JsonDocument response = upsert(key, jo);
     }
 

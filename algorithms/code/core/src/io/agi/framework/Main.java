@@ -6,12 +6,14 @@ import io.agi.core.orm.Keys;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.util.FileUtil;
 import io.agi.core.util.PropertiesUtil;
-import io.agi.framework.Persistence.Persistence;
-import io.agi.framework.http.HttpCoordination;
-import io.agi.framework.monolithic.SingleProcessCoordination;
+import io.agi.framework.coordination.Coordination;
+import io.agi.framework.coordination.http.HttpCoordination;
+import io.agi.framework.coordination.monolithic.SingleProcessCoordination;
+import io.agi.framework.persistence.Persistence;
+import io.agi.framework.persistence.couchbase.CouchbasePersistence;
+import io.agi.framework.persistence.jdbc.JdbcPersistence;
 import io.agi.framework.serialization.ModelDataReference;
 import io.agi.framework.serialization.ModelEntity;
-import io.agi.framework.Persistence.sql.JdbcPersistence;
 import io.agi.framework.serialization.ModelPropertySet;
 
 import java.lang.reflect.Type;
@@ -58,8 +60,8 @@ public class Main {
         _om = om;
 
         // Create persistence & Node now so you can Create entities in code that are hosted and persisted on the Node.
-        _p = createPersistence(propertiesFile);
-        _c = createCoordination(propertiesFile);
+        _p = createPersistence( propertiesFile );
+        _c = createCoordination( propertiesFile );
 
         _nodeName = PropertiesUtil.get( propertiesFile, PROPERTY_NODE_NAME, "node-1" );
         _nodeHost = PropertiesUtil.get( propertiesFile, PROPERTY_NODE_HOST, "localhost" );
@@ -70,13 +72,13 @@ public class Main {
         n.setup( _om, _nodeName, _nodeHost, _nodePort, ef, _c, _p );
         _n = n;
 
-        ef.setNode(n);
+        ef.setNode( n );
     }
 
     public Coordination createCoordination( String propertiesFile ) {
-        String type = PropertiesUtil.get(propertiesFile, PROPERTY_COORDINATION_TYPE, "http" );
+        String type = PropertiesUtil.get( propertiesFile, PROPERTY_COORDINATION_TYPE, "http" );
         Coordination c = null;
-        if( type.equals( "http" ) ) {
+        if ( type.equals( "http" ) ) {
             System.out.println( "Distributed coordination." );
             c = new HttpCoordination();
         }
@@ -87,12 +89,12 @@ public class Main {
         return c;
     }
 
-    public Persistence createPersistence( String propertiesFile) {
-        String type = PropertiesUtil.get(propertiesFile, PROPERTY_PERSISTENCE_TYPE, "couchbase" );
+    public Persistence createPersistence( String propertiesFile ) {
+        String type = PropertiesUtil.get( propertiesFile, PROPERTY_PERSISTENCE_TYPE, "couchbase" );
         Persistence p = null;
-        if( type.equals( "couchbase" ) ) {
+        if ( type.equals( "couchbase" ) ) {
             System.out.println( "Using Couchbase for persistence." );
-            p = CouchbasePersistence.Create(propertiesFile);
+            p = CouchbasePersistence.Create( propertiesFile );
         }
         else {
             System.out.println( "Using JDBC (SQL) for persistence." );
@@ -157,7 +159,7 @@ public class Main {
                 for ( String keySuffix : modelPropertySet.properties.keySet() ) {
                     String value = modelPropertySet.properties.get( keySuffix );
 
-                    System.out.println( "\tKeySuffix: " + keySuffix + ", Value: " + value);
+                    System.out.println( "\tKeySuffix: " + keySuffix + ", Value: " + value );
 
                     String key = Keys.concatenate( modelPropertySet.entity, keySuffix );
                     _p.setPropertyString( key, value );
@@ -173,9 +175,9 @@ public class Main {
 
     public void run() {
         try {
-            if( _c instanceof HttpCoordination ) {
-                HttpCoordination c = (HttpCoordination)_c;
-                c.setNode(_n);
+            if ( _c instanceof HttpCoordination ) {
+                HttpCoordination c = ( HttpCoordination ) _c;
+                c.setNode( _n );
                 c.start();
             }
         }

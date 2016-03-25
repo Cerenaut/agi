@@ -1,4 +1,4 @@
-package io.agi.framework.Persistence;
+package io.agi.framework.persistence;
 
 /**
  * Makes it easier get and set Strings using other data structures, to a delegated data structure.

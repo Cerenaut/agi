@@ -1,4 +1,4 @@
-package io.agi.framework.Persistence;
+package io.agi.framework.persistence;
 
 /**
  * Created by gideon on 21/03/2016.

@@ -1,10 +1,11 @@
-package io.agi.framework.Persistence;
+package io.agi.framework.persistence;
 
 import io.agi.framework.serialization.ModelData;
 import io.agi.framework.serialization.ModelEntity;
 import io.agi.framework.serialization.ModelNode;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Created by dave on 14/02/16.
@@ -42,5 +43,6 @@ public interface Persistence {
     // Properties
     String getPropertyString(String key, String defaultValue);
     void setPropertyString(String key, String value);
+    Map< String, String > getProperties( String filter );
 
 }

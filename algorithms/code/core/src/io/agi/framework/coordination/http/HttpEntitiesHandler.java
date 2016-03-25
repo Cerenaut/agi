@@ -76,10 +76,10 @@ public class HttpEntitiesHandler implements HttpHandler {
 
                     response += "{ ";
 
-                    response += " \"key\": \"" + m._key + "\"" + ",";
-                    response += " \"node\": \"" + m._node + "\"" + ",";
-                    response += " \"parent\": \"" + m._parent + "\"" + ",";
-                    response += " \"type\": \"" + m._type + "\"";
+                    response += " \"key\": \"" + m.name + "\"" + ",";
+                    response += " \"node\": \"" + m.node + "\"" + ",";
+                    response += " \"parent\": \"" + m.parent + "\"" + ",";
+                    response += " \"type\": \"" + m.type + "\"";
 
                     response += " }";
                 }

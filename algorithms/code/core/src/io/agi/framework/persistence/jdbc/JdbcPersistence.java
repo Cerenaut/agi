@@ -1,14 +1,20 @@
-package io.agi.framework.Persistence.sql;
+package io.agi.framework.persistence.jdbc;
 
-import io.agi.framework.Persistence.Persistence;
-import io.agi.framework.Persistence.PropertyConverter;
-import io.agi.framework.Persistence.PropertyStringAccess;
+import io.agi.core.util.PropertiesUtil;
+import io.agi.framework.persistence.Persistence;
+import io.agi.framework.persistence.PropertyConverter;
+import io.agi.framework.persistence.PropertyStringAccess;
+import io.agi.framework.persistence.jdbc.JdbcUtil;
+import io.agi.framework.persistence.jdbc.ResultSetCallback;
+import io.agi.framework.persistence.jdbc.ResultSetMap;
 import io.agi.framework.serialization.ModelData;
 import io.agi.framework.serialization.ModelEntity;
 import io.agi.framework.serialization.ModelNode;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by dave on 16/02/16.

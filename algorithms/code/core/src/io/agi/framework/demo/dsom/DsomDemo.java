@@ -6,6 +6,8 @@ import io.agi.framework.Main;
 import io.agi.framework.Node;
 import io.agi.framework.entities.*;
 import io.agi.framework.persistence.Persistence;
+import io.agi.framework.persistence.PropertyConverter;
+import io.agi.framework.persistence.PropertyStringAccess;
 import io.agi.framework.serialization.ModelEntity;
 
 /**
@@ -61,15 +63,22 @@ public class DsomDemo {
         // Connect the entities
         Entity.SetDataReference(p, classifierName, DynamicSelfOrganizingMapEntity.INPUT, modelName, RandomVectorEntity.OUTPUT);
 
-        // Set a property:
-        int elements = 2; // 2D
-        String elementsKey = Keys.concatenate( randomVectorName, RandomVectorEntity.ELEMENTS );
-        propertyConverter.setPropertyInt( elementsKey, elements );
+        Persistence persistence = n.getPersistence();
 
-        String ageKey = Keys.concatenate( modelName, Entity.SUFFIX_AGE );
-        p.setPropertyInt(ageKey, 0);
+        if ( persistence instanceof PropertyStringAccess ) {
 
-        String resetKey = Keys.concatenate( classifierName, Entity.SUFFIX_RESET );
-        propertyConverter.setPropertyBoolean( resetKey, true );
+            PropertyConverter propertyConverter = new PropertyConverter( ( PropertyStringAccess )persistence );
+
+            // Set a property:
+            int elements = 2; // 2D
+            String elementsKey = Keys.concatenate( modelName, RandomVectorEntity.ELEMENTS );
+            propertyConverter.setPropertyInt( elementsKey, elements );
+
+            String ageKey = Keys.concatenate( modelName, Entity.SUFFIX_AGE );
+            propertyConverter.setPropertyInt( ageKey, 0 );
+
+            String resetKey = Keys.concatenate( classifierName, Entity.SUFFIX_RESET );
+            propertyConverter.setPropertyBoolean( resetKey, true );
+        }
     }
 }

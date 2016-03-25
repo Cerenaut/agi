@@ -53,6 +53,11 @@ public class GrowingNeuralGasEntity extends Entity {
         keys.add( OUTPUT_AGE_SINCE_GROWTH );
     }
 
+    @Override
+    public void getPropertyKeys( Collection<String> keys ) {
+
+    }
+
     protected void doUpdateSelf() {
 
         // Do nothing unless the input is

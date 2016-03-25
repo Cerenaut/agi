@@ -5,9 +5,9 @@ import io.agi.core.data.DataSize;
 import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
-import io.agi.framework.Persistence.Persistence;
-import io.agi.framework.Persistence.PropertyConverter;
-import io.agi.framework.Persistence.PropertyStringAccess;
+import io.agi.framework.persistence.Persistence;
+import io.agi.framework.persistence.PropertyConverter;
+import io.agi.framework.persistence.PropertyStringAccess;
 import io.agi.framework.serialization.ModelData;
 
 import java.util.*;
@@ -235,8 +235,18 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
         //System.err.println( "Update: " + getName() + " age: " + age );
     }
 
-    public Data getData( String keySuffix ) {
-        return _data.get( getKey( keySuffix ) );
+    /**
+     * Populate properties map with the persisted properties.
+     * @param keySuffixes
+     */
+    private void fetchProperties( Collection<String> keySuffixes ) {
+        Persistence p = _n.getPersistence();
+
+        for ( String keySuffix : keySuffixes ) {
+            String inputKey = getKey( keySuffix );
+            String value = p.getPropertyString( inputKey, "" );
+            _properties.put( keySuffix, value );
+        }
     }
 
     /**
