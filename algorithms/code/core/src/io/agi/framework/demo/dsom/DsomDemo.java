@@ -7,6 +7,7 @@ import io.agi.framework.Persistence.PropertyConverter;
 import io.agi.framework.Persistence.sql.JdbcPersistence;
 import io.agi.framework.entities.CommonEntityFactory;
 import io.agi.framework.entities.DynamicSelfOrganizingMapEntity;
+import io.agi.framework.entities.GrowingNeuralGasEntity;
 import io.agi.framework.entities.RandomVectorEntity;
 import io.agi.framework.serialization.ModelEntity;
 
@@ -67,7 +68,7 @@ public class DsomDemo {
 
         // Set a property:
         int elements = 2; // 2D
-        String elementsKey = Keys.concatenate(randomVectorName, RandomVectorEntity.ELEMENTS);
+        String elementsKey = Keys.concatenate( randomVectorName, RandomVectorEntity.ELEMENTS );
         propertyConverter.setPropertyInt( elementsKey, elements );
 
         String resetKey = Keys.concatenate( classifierName, Entity.SUFFIX_RESET );

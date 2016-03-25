@@ -3,7 +3,6 @@ package io.agi.framework.serialization;
 import io.agi.framework.Node;
 
 /**
- * Convert a Node object to and from its JSON equivalent.
  *
  * Created by dave on 17/02/16.
  */

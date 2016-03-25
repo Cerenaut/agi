@@ -130,7 +130,8 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
             return;
         }
 
-System.err.println( "UPDATE STA " + getName() + " T="+System.currentTimeMillis() );
+        System.err.println( "UPDATE START " + getName() + " T="+System.currentTimeMillis() );
+
         updateSelf();
 
         Persistence p = _n.getPersistence();
@@ -195,6 +196,7 @@ System.err.println( "UPDATE STA " + getName() + " T="+System.currentTimeMillis()
         // get all the properties and put them in the properties map.
         Collection<String> propertyKeys = new ArrayList<String>();
         getPropertyKeys( propertyKeys );
+        propertyKeys.add( SUFFIX_AGE );
         fetchProperties( propertyKeys );
 
         // 3. doUpdateSelf()
