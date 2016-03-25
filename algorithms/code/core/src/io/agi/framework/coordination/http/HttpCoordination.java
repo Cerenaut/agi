@@ -3,7 +3,7 @@ package io.agi.framework.coordination.http;
 import com.sun.net.httpserver.HttpServer;
 import io.agi.framework.coordination.Coordination;
 import io.agi.framework.Node;
-import io.agi.framework.serialization.ModelNode;
+import io.agi.framework.persistence.models.ModelNode;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;

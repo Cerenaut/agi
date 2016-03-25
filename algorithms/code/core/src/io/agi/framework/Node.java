@@ -3,8 +3,8 @@ package io.agi.framework;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.coordination.Coordination;
 import io.agi.framework.persistence.Persistence;
-import io.agi.framework.serialization.ModelEntity;
-import io.agi.framework.serialization.ModelNode;
+import io.agi.framework.persistence.models.ModelEntity;
+import io.agi.framework.persistence.models.ModelNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;

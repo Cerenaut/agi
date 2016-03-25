@@ -1,4 +1,4 @@
-package io.agi.framework.serialization;
+package io.agi.framework.persistence.models;
 
 /**
  * Created by gideon on 23/03/2016.

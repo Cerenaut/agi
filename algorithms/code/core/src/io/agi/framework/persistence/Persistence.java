@@ -1,8 +1,8 @@
 package io.agi.framework.persistence;
 
-import io.agi.framework.serialization.ModelData;
-import io.agi.framework.serialization.ModelEntity;
-import io.agi.framework.serialization.ModelNode;
+import io.agi.framework.persistence.models.ModelData;
+import io.agi.framework.persistence.models.ModelEntity;
+import io.agi.framework.persistence.models.ModelNode;
 
 import java.util.Collection;
 import java.util.Map;

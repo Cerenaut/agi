@@ -1,4 +1,4 @@
-package io.agi.framework.serialization;
+package io.agi.framework.persistence.models;
 
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
@@ -7,7 +7,7 @@ import io.agi.core.data.FloatArray2;
 import java.util.HashSet;
 
 /**
- * Conversion to JSON for serialization.
+ * Conversion to JSON for models.
  *
  * Created by dave on 16/02/16.
  */

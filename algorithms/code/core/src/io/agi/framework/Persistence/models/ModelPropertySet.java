@@ -1,6 +1,5 @@
-package io.agi.framework.serialization;
+package io.agi.framework.persistence.models;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**

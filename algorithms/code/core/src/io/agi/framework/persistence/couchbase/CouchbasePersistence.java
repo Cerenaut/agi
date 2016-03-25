@@ -6,16 +6,12 @@ import com.couchbase.client.java.CouchbaseCluster;
 import com.couchbase.client.java.bucket.BucketManager;
 import com.couchbase.client.java.document.JsonDocument;
 import com.couchbase.client.java.document.json.JsonObject;
-import com.couchbase.client.java.query.AsyncQueryResult;
-import com.couchbase.client.java.query.Query;
-import com.couchbase.client.java.query.QueryResult;
 import com.couchbase.client.java.view.*;
 import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.persistence.Persistence;
-import io.agi.framework.serialization.ModelData;
-import io.agi.framework.serialization.ModelEntity;
-import io.agi.framework.serialization.ModelNode;
-import rx.Observable;
+import io.agi.framework.persistence.models.ModelData;
+import io.agi.framework.persistence.models.ModelEntity;
+import io.agi.framework.persistence.models.ModelNode;
 
 import java.util.*;
 

@@ -8,7 +8,7 @@ import io.agi.framework.entities.*;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.PropertyConverter;
 import io.agi.framework.persistence.PropertyStringAccess;
-import io.agi.framework.serialization.ModelEntity;
+import io.agi.framework.persistence.models.ModelEntity;
 
 /**
  * Code to demonstrate a DSOM Entity on a simple test problem.

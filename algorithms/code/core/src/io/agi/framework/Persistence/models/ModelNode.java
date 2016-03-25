@@ -1,4 +1,4 @@
-package io.agi.framework.serialization;
+package io.agi.framework.persistence.models;
 
 import io.agi.framework.Node;
 

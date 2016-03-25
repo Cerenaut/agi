@@ -8,7 +8,7 @@ import io.agi.core.orm.ObjectMap;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.PropertyConverter;
 import io.agi.framework.persistence.PropertyStringAccess;
-import io.agi.framework.serialization.ModelData;
+import io.agi.framework.persistence.models.ModelData;
 
 import java.util.*;
 

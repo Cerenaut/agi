@@ -12,9 +12,9 @@ import io.agi.framework.coordination.monolithic.SingleProcessCoordination;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.couchbase.CouchbasePersistence;
 import io.agi.framework.persistence.jdbc.JdbcPersistence;
-import io.agi.framework.serialization.ModelDataReference;
-import io.agi.framework.serialization.ModelEntity;
-import io.agi.framework.serialization.ModelPropertySet;
+import io.agi.framework.persistence.models.ModelDataReference;
+import io.agi.framework.persistence.models.ModelEntity;
+import io.agi.framework.persistence.models.ModelPropertySet;
 
 import java.lang.reflect.Type;
 import java.util.List;

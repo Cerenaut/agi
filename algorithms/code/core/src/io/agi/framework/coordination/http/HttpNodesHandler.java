@@ -3,11 +3,10 @@ package io.agi.framework.coordination.http;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.agi.framework.persistence.Persistence;
-import io.agi.framework.serialization.ModelNode;
+import io.agi.framework.persistence.models.ModelNode;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Map;
 
 /**
  * Created by dave on 17/03/16.

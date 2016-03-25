@@ -4,12 +4,9 @@ import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.PropertyConverter;
 import io.agi.framework.persistence.PropertyStringAccess;
-import io.agi.framework.persistence.jdbc.JdbcUtil;
-import io.agi.framework.persistence.jdbc.ResultSetCallback;
-import io.agi.framework.persistence.jdbc.ResultSetMap;
-import io.agi.framework.serialization.ModelData;
-import io.agi.framework.serialization.ModelEntity;
-import io.agi.framework.serialization.ModelNode;
+import io.agi.framework.persistence.models.ModelData;
+import io.agi.framework.persistence.models.ModelEntity;
+import io.agi.framework.persistence.models.ModelNode;
 
 import java.util.ArrayList;
 import java.util.Collection;
