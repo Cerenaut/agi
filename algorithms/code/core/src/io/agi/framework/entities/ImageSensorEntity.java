@@ -61,6 +61,10 @@ public class ImageSensorEntity extends Entity {
     public void getPropertyKeys( Collection< String > keys ) {
         keys.add( SOURCE_FILES_PATH );
         keys.add( SOURCE_TYPE );
+        keys.add( RECEPTIVE_FIELD_X );
+        keys.add( RECEPTIVE_FIELD_Y );
+        keys.add( RECEPTIVE_FIELD_W );
+        keys.add( RECEPTIVE_FIELD_H );
         keys.add( RESOLUTION_X );
         keys.add( RESOLUTION_Y );
         keys.add( GREYSCALE );

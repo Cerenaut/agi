@@ -3,8 +3,6 @@ var Properties = {
 
   refresh : function() {
     var searchValue = $( "#search" ).val();
-    //Postgrest.getJson( "properties?key=like.*"+search+"*&order=key.asc", Properties.onGetData );
-    //Postgrest.getJson( "properties?key=like.*"+search+"*&order=key.asc", Properties.onGetData );
     Framework.getProperty( "search=" + searchValue, Properties.onGetData );
   },
 
@@ -24,12 +22,7 @@ var Properties = {
       console.log( index + ": " + key + " = " + val );
 
       if( val ) {
-        //var postJson = { "key":key, "value":val };
-        // replace property
-        //Postgrest.deleteJson( "properties?key=eq." + key, function( response ) {
-        //  Postgrest.postJson( "properties", postJson, Properties.onPostData );
-        //});
-        Framework.setProperty( key + "=" + val );
+        Framework.setProperty( key, val, Properties.onPostData );
       }
     });
   },
@@ -38,7 +31,7 @@ var Properties = {
 
     console.log( fid, value ); // , text_field_name, value );
 
-    $( "#"+fid).val( value );
+    $( "#"+fid ).val( value );
   },
 
   onPostData : function( response ) {
@@ -56,8 +49,8 @@ var Properties = {
       html = html + property.key;
       html = html + "</td><td>";
       html = html + property.value;
-      html = html + "</td><td><input type='text' id='"+property.name+"' style='display:inline;' class='new-value' placeholder='New value' value=''/>";
-      html = html + "</td><td><input type='button' id=copy-'"+property.name+"' class='btn btn-xs btn-default' style='' onclick='Properties.copy( \"" + property.name + "\", \"" + property.value + "\" );' value='Copy value'/>";
+      html = html + "</td><td><input type='text' id='"+property.key+"' style='display:inline;' class='new-value' placeholder='New value' value=''/>";
+      html = html + "</td><td><input type='button' id=copy-'"+property.key+"' class='btn btn-xs btn-default' style='' onclick='Properties.copy( \"" + property.key + "\", \"" + property.value + "\" );' value='Copy value'/>";
       html = html + "</td></tr>";
     }
 
