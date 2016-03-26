@@ -63,11 +63,9 @@ public class DsomDemo {
         // Connect the entities
         Entity.SetDataReference( p, classifierName, DynamicSelfOrganizingMapEntity.INPUT, modelName, RandomVectorEntity.OUTPUT );
 
-        Persistence persistence = n.getPersistence();
+        if ( p instanceof PropertyStringAccess ) {
 
-        if ( persistence instanceof PropertyStringAccess ) {
-
-            PropertyConverter propertyConverter = new PropertyConverter( ( PropertyStringAccess ) persistence );
+            PropertyConverter propertyConverter = new PropertyConverter( ( PropertyStringAccess ) p );
 
             // Set a property:
             int elements = 2; // 2D

@@ -40,6 +40,7 @@ public class ImageSensorEntity extends Entity {
     private static final String RESOLUTION_X = "resolution-x";
     private static final String RESOLUTION_Y = "resolution-y";
     private static final String GREYSCALE = "greyscale";
+    private static final String CURRENT_IMAGE_LABEL = "current-image-label";
 
     private static final String BUFFERED_IMAGE_INDEX = "buffered-image-index";
 
@@ -68,6 +69,7 @@ public class ImageSensorEntity extends Entity {
         keys.add( RESOLUTION_X );
         keys.add( RESOLUTION_Y );
         keys.add( GREYSCALE );
+        keys.add( CURRENT_IMAGE_LABEL );
         keys.add( BUFFERED_IMAGE_INDEX );
     }
 
@@ -103,7 +105,7 @@ public class ImageSensorEntity extends Entity {
         if ( !inRange ) {
             index = 0;          // try to reset to beginning (may still be out of range)
 
-            System.out.println( "ERROR: Could not get an image to scrape. Error with BufferedImageSource.seek() in ImageSensorEntity" );
+            System.err.println( "ERROR: Could not get an image to scrape. Error with BufferedImageSource.seek() in ImageSensorEntity" );
         }
         else {
             imageScreenScraper.scrape();

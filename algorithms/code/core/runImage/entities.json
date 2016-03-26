@@ -3,5 +3,11 @@
     "name": "mySensor",
     "type": "image-sensor",
     "node": "myNode"
+  },
+  {
+    "name": "myEncoder",
+    "type": "encoder",
+    "node": "myNode",
+    "parent" : "mySensor"
   }
 ]

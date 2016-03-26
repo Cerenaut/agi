@@ -14,29 +14,29 @@ import java.util.HashSet;
 public class ModelData {
 
     public String _key;
-    public String _refKey;
+    public String _refKeys;
     public String _sizes;
     public String _elements;
 
     public ModelData( String key, Data d ) {
         _key = key;
-        _refKey = null;
+        _refKeys = null;
         if ( d != null ) {
             _sizes = DataSizeToString( d._dataSize ); //d._dataSize.toString();
             _elements = FloatArrayToString( d );//d._values.toString();
         }
     }
 
-    public ModelData( String key, String refKey ) {
+    public ModelData( String key, String refKeys ) {
         _key = key;
-        _refKey = refKey;
+        _refKeys = refKeys;
         _sizes = null;
         _elements = null;
     }
 
-    public ModelData( String key, String refKey, String sizes, String elements ) {
+    public ModelData( String key, String refKeys, String sizes, String elements ) {
         _key = key;
-        _refKey = refKey;
+        _refKeys = refKeys;
         _sizes = sizes;
         _elements = elements;
     }
@@ -45,8 +45,8 @@ public class ModelData {
         try {
             HashSet< String > refKeys = new HashSet< String >();
 
-            if ( _refKey != null ) {
-                String[] splitKeys = _refKey.split( "," );
+            if ( _refKeys != null ) {
+                String[] splitKeys = _refKeys.split( "," );
 
                 for ( int i = 0; i < splitKeys.length; ++i ) {
                     String key = splitKeys[ i ];
@@ -62,7 +62,7 @@ public class ModelData {
     }
 
     public boolean isReference() {
-        if ( _refKey != null ) {
+        if ( _refKeys != null ) {
             return true;
         }
         return false;
@@ -90,7 +90,7 @@ public class ModelData {
      */
     public Data getData() {
         // convert into data.
-//        if( _refKey != null ) {
+//        if( _refKeys != null ) {
 //            return null;
 //        }
 

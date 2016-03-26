@@ -59,6 +59,13 @@ public class ImageData {
         return _d._values[ offset ];
     }
 
+    /**
+     * Set all pixels to the value 'val'.
+     */
+    public void set( int val ) {
+        _d.set( val );
+    }
+
     public void set( int x, int y, int c, int value ) {
         int offset = getOffset( x, y, c );
         _d._values[ offset ] = value;
@@ -116,4 +123,96 @@ public class ImageData {
         }
     }
 
+    public static void convolve2D( ImageData mask, ImageData src, ImageData dest ) {
+    }
+
+//    public static void convolve2D( ImageData mask, ImageData src, ImageData dest ) {
+//
+//        // retrieve resolution of image
+//        int w = src.getWidth();
+//        int h = src.getHeight();
+//
+//        int mw = mask.getWidth();
+//        int mh = mask.getHeight();
+//
+//        // mask has to have odd width and height
+//        assert ( mw % 2 != 0 );
+//        assert ( mh % 2 != 0 );
+//
+//        int mwr = mw / 2;       // mask width radius
+//        int mhr = mh / 2;       // mask height radius
+//
+//        Coordinate c = src._fa.start();
+//        c.set( C, 0 );
+//
+//        int channels = src.getChannels();
+//        int elements = src._fa.volume();
+//
+//        float[] acc = new float[ channels ];     // accumulator
+//
+//        // iterate image
+//        for( int y = 0; y < h; ++y ) {
+//            c.set( Y, y );
+//            for( int x = 0; x < w; ++x ) {
+//                c.set( X, x );
+//                int offset = c.offset(); // don't want to eval the 3d coord more than necessary..
+//
+//                for( int i = 0 ; i < channels ; ++i ) {
+//                    acc[i] = 0.f;
+//                }
+//
+//                assert( (offset+2) < elements );
+//
+//                // offset for source image
+//                Coordinate sc = src._fa.start();
+//                sc.set( C, 0 );
+//
+//                // offset for mask
+//                Coordinate mc = mask._fa.start();
+//                mc.set( C, 0 );
+//
+//                // iterate mask
+//                for ( int my = 0; my < mh ; ++my ) {
+//                    for ( int mx = 0; mx < mw; ++mx ) {
+//
+//                        int yy = y - mhr + my;
+//                        int xx = x - mwr + mx;
+//                        sc.set( Y, yy );
+//                        sc.set( X, xx );
+//                        int soffset = sc.offset();
+//
+//                        if ( !sc.valid() ) {
+//                            break;
+//                        }
+//
+//                        mc.set( Y, my );
+//                        mc.set( X, mx );
+//                        int moffset = mc.offset(); // don't want to eval the 3d coord more than necessary..
+//
+//                        // for each channel
+//                        for( int i = 0 ; i < channels ; ++i ) {
+//
+//                            if ( (soffset+i) >= src._fa._values.length ) {
+//                                System.out.println("oh oh");
+//                            }
+//                            if ( (moffset+i) >= mask._fa._values.length ) {
+//                                System.out.println("oh oh");
+//                            }
+//
+//                            // accumulate at position at centre of mask
+//                            float mval = mask._fa._values[ moffset + i ];
+//                            float ival = src._fa._values[ soffset + i ];
+//                            acc[i] += mval * ival;
+//
+//                        }
+//                    }
+//                }
+//
+//                for( int i = 0 ; i < channels ; ++i ) {
+//                    dest._fa._values[ offset + i ] = acc[ i ];
+//                }
+//
+//            }
+//        }
+//      }
 }

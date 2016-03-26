@@ -5,10 +5,10 @@ package io.agi.framework.persistence.models;
  */
 public class ModelDataReference {
     public String dataKey;
-    public String refKey;
+    public String refKeys;
 
-    ModelDataReference( String dataKey, String refKey ) {
+    ModelDataReference( String dataKey, String refKeys ) {
         this.dataKey = dataKey;
-        this.refKey = refKey;
+        this.refKeys = refKeys;
     }
 }

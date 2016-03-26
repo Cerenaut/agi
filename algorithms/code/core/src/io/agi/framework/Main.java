@@ -133,8 +133,8 @@ public class Main {
             }.getType();
             List< ModelDataReference > references = gson.fromJson( jsonEntity, listType );
             for ( ModelDataReference modelDataReference : references ) {
-                System.out.println( "Creating data input reference for data: " + modelDataReference.dataKey + " with input data keys: " + modelDataReference.refKey );
-                Entity.SetDataReference( _p, modelDataReference.dataKey, modelDataReference.refKey );
+                System.out.println( "Creating data input reference for data: " + modelDataReference.dataKey + " with input data keys: " + modelDataReference.refKeys );
+                Entity.SetDataReference( _p, modelDataReference.dataKey, modelDataReference.refKeys );
             }
         }
         catch ( Exception e ) {

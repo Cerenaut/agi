@@ -12,5 +12,13 @@
       "receptive-field-h" : "28",
       "source-files-path": "/Users/gideon/Development/AI/ProAGI/TestData/MNIST/mnist_output"
     }
-  }
+  },
+  {
+    "entity": "myEncoder",
+    "properties": {
+      "encoder-type": "ScalarEncoder",
+      "bits" : "4",
+      "density" : "2"
+    }
+  }  
 ]

@@ -303,7 +303,7 @@ public class CouchbasePersistence implements Persistence {
                 .put( PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_DATA )
                 .put( PROPERTY_KEY, m._key )
                 .put( PROPERTY_DATA_ELEMENTS, m._elements )
-                .put( PROPERTY_DATA_REF_KEY, m._refKey )
+                .put( PROPERTY_DATA_REF_KEY, m._refKeys )
                 .put( PROPERTY_DATA_SIZES, m._sizes );
         JsonDocument response = upsert( key, jo );
     }

@@ -75,14 +75,14 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
             Persistence p,
             String dataKey,
             String refKeys ) {
-        ModelData jd = p.getData( dataKey );
+        ModelData modelData = p.getData( dataKey );
 
-        if ( jd == null ) {
-            jd = new ModelData( dataKey, refKeys );
+        if ( modelData == null ) {
+            modelData = new ModelData( dataKey, refKeys );
         }
 
-        jd._refKey = refKeys;
-        p.setData( jd );
+        modelData._refKeys = refKeys;
+        p.setData( modelData );
     }
 
     /**
@@ -230,7 +230,6 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
 
         // 5. persist properties
         persistProperties( propertyKeys );
-
 
         //System.err.println( "Update: " + getName() + " age: " + age );
     }

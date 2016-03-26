@@ -187,12 +187,13 @@ public class JdbcPersistence implements Persistence, PropertyStringAccess {
     // Data
 //    public Collection< String > getDataKeys() {
 //    }
-    public void setData( ModelData jd ) {
+    public void setData( ModelData modelData ) {
+        String refKeyString = ( modelData._refKeys != null ) ? "'" + modelData._refKeys + "'" : "null";
         System.err.println( "setData T: " + System.currentTimeMillis() + " @1 " );
-        String sql1 = "UPDATE data SET ref_name = '" + jd._refKey + "', sizes = '" + jd._sizes + "', elements = '" + jd._elements + "' WHERE name = '" + jd._key + "'";
+        String sql1 = "UPDATE data SET ref_name = '" + modelData._refKeys + "', sizes = '" + modelData._sizes + "', elements = '" + modelData._elements + "' WHERE name = '" + modelData._key + "'";
         execute( sql1 );
         System.err.println( "setData T: " + System.currentTimeMillis() + " @2 " );
-        String sql2 = "INSERT INTO data (name, ref_name, sizes, elements) SELECT '" + jd._key + "', null, '" + jd._sizes + "', '" + jd._elements + "' WHERE NOT EXISTS (SELECT name from data WHERE name = '" + jd._key + "' )";
+        String sql2 = "INSERT INTO data (name, ref_name, sizes, elements) SELECT '" + modelData._key + "', " + refKeyString + ", '" + modelData._sizes + "', '" + modelData._elements + "' WHERE NOT EXISTS (SELECT name from data WHERE name = '" + modelData._key + "' )";
         execute( sql2 );
         System.err.println( "setData T: " + System.currentTimeMillis() + " @3 " );
     }

@@ -7,6 +7,7 @@
 package io.agi.core.data;
 
 import io.agi.core.math.RandomInstance;
+import io.agi.core.orm.AbstractPair;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,7 +44,7 @@ public class Data extends FloatArray2 {
     }
 
     /**
-     * Creates a 3D matrix (tensor)
+     * Creates a 3D matrix
      *
      * @param width
      * @param height
@@ -83,6 +84,25 @@ public class Data extends FloatArray2 {
     public Data( Data d ) {
         _dataSize = new DataSize( d._dataSize );
         copy( d );
+    }
+
+    /**
+     * Try to make a nice square shape from the given volume.
+     * e.g. we don't have a 2-D shape with explicit w and h.
+     */
+    public static AbstractPair< Integer, Integer > getSizeSquare( int volume ) {
+
+        int w = (int)Math.sqrt( volume );
+        int h = w;
+
+        int sq = w * w;
+        if( sq < volume ) {
+            h = h +1;
+        }
+
+        AbstractPair< Integer, Integer > ap = new AbstractPair< Integer, Integer >( w, h );
+
+        return ap;
     }
 
     public void setSize( DataSize d ) {

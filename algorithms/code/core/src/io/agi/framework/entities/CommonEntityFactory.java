@@ -44,7 +44,11 @@ public class CommonEntityFactory implements EntityFactory {
             return new ImageSensorEntity( entityName, om, ImageSensorEntity.ENTITY_TYPE, _n );
         }
 
-        System.out.println( " ERROR: CommonEntityFactory.create() - could not create an entity for " + entityName );
+        if ( entityType.equals( EncoderEntity.ENTITY_TYPE ) ) {
+            return new EncoderEntity( entityName, om, EncoderEntity.ENTITY_TYPE, _n );
+        }
+
+        System.err.println( "ERROR: CommonEntityFactory.create() - could not create an entity for " + entityName );
 
         return null;
     }
