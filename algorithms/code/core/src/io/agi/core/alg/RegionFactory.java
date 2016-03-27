@@ -6,61 +6,158 @@ import io.agi.core.ann.supervised.FeedForwardNetworkConfig;
 import io.agi.core.ann.supervised.LossFunction;
 import io.agi.core.ann.unsupervised.GrowingNeuralGas;
 import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
-import io.agi.core.orm.AbstractFactory;
 import io.agi.core.orm.ObjectMap;
 
+import java.util.Random;
+
 /**
- * Factory for all the Region objects - Regions, Columns and internal parts (Classifier, Predictor)
+ * Factory for all the Region objects - Regions, Columns and internal parts (Classifier, Predictor, Organizer)
+ * Allows each component to be replaced with a derived & modified version.
+ *
  * Created by dave on 28/12/15.
  */
 public class RegionFactory {
 
     public RegionConfig _rc;
-    public GrowingNeuralGasConfig _gngc;
-    public FeedForwardNetworkConfig _ffnc;
 
     public RegionFactory() {
 
     }
 
-    public void setup( RegionConfig rc, GrowingNeuralGasConfig gngc, FeedForwardNetworkConfig ffnc ) {
+    public Region create(
+            ObjectMap om,
+            String regionName,
+            Random random,
+
+            // Feedforward input size
+            int inputWidth,
+            int inputHeight,
+
+            // Feedback input size
+            int feedbackWidthCells,
+            int feedbackHeightCells,
+
+            // Algorithm specific parameters
+            // Region size
+            int regionWidthColumns,
+            int regionHeightColumns,
+
+            // Column Sizing
+            int classifierWidthCells,
+            int classifierHeightCells,
+
+            // Organizer training
+            int receptiveFieldsTrainingSamples,
+            int receptiveFieldSize,
+            float organizerLearningRate,
+            float organizerLearningRateNeighbours,
+            float organizerNoiseMagnitude,
+            int organizerEdgeMaxAge,
+            float organizerStressLearningRate,
+            float organizerStressThreshold,
+            int organizerGrowthInterval,
+
+            // Classifier training
+            float classifierLearningRate,
+            float classifierLearningRateNeighbours,
+            float classifierNoiseMagnitude,
+            int classifierEdgeMaxAge,
+            float classifierStressLearningRate,
+            float classifierStressThreshold,
+            int classifierGrowthInterval,
+
+            // Predictor
+            float predictorHiddenLayerScaleFactor,
+            float predictorLearningRate,
+            float predictorRegularization ) {
+
+        RegionConfig rc = new RegionConfig();
+
+        // Computed or fixed parameters
+        int classifierInputs = inputWidth * inputHeight;
+        int feedbackAreaCells = feedbackWidthCells * feedbackHeightCells;
+        int regionAreaCells = regionWidthColumns * classifierWidthCells * regionHeightColumns * classifierHeightCells;
+        int predictorInputs = regionAreaCells + feedbackAreaCells;
+        int predictorOutputs = regionAreaCells;
+        int predictorLayers = Region.PREDICTOR_LAYERS;
+        int organizerInputs = Region.RECEPTIVE_FIELD_DIMENSIONS;
+        int hiddenLayerSize = (int)( (float)regionAreaCells * predictorHiddenLayerScaleFactor );
+        String predictorLayerSizes = String.valueOf( hiddenLayerSize ); // 6 * 6 * 1.something
+        String predictorLossFunction = LossFunction.CROSS_ENTROPY;
+        String predictorActivationFunction = ActivationFunctionFactory.LOG_SIGMOID;
+
+        GrowingNeuralGasConfig organizerConfig = new GrowingNeuralGasConfig();
+        organizerConfig.setup(
+                om, RegionConfig.SUFFIX_ORGANIZER, // temp name
+                organizerInputs, regionWidthColumns, regionHeightColumns,
+                organizerLearningRate, organizerLearningRateNeighbours, organizerNoiseMagnitude,
+                organizerEdgeMaxAge, organizerStressLearningRate, organizerStressThreshold, organizerGrowthInterval );
+
+        GrowingNeuralGasConfig classifierConfig = new GrowingNeuralGasConfig();
+        classifierConfig.setup(
+                om, RegionConfig.SUFFIX_CLASSIFIER, // temp name
+                classifierInputs, classifierWidthCells, classifierHeightCells,
+                classifierLearningRate, classifierLearningRateNeighbours, classifierNoiseMagnitude,
+                classifierEdgeMaxAge, classifierStressLearningRate, classifierStressThreshold, classifierGrowthInterval );
+
+        FeedForwardNetworkConfig predictorConfig = new FeedForwardNetworkConfig();
+        predictorConfig.setup(
+                om, RegionConfig.SUFFIX_PREDICTOR, // temp name
+                predictorLossFunction, predictorActivationFunction,
+                predictorInputs, predictorOutputs,
+                predictorLayers, predictorLayerSizes,
+                predictorRegularization, predictorLearningRate );
+
+        rc.setup( om, regionName, random, organizerConfig, classifierConfig, predictorConfig, inputWidth, inputHeight, feedbackAreaCells, receptiveFieldsTrainingSamples, receptiveFieldSize );
+        this.setup(rc);
+
+        Region region = this.createRegion(regionName);
+        return region;
+    }
+
+    public void setup( RegionConfig rc ) {
         _rc = rc;
-        _gngc = gngc;
-        _ffnc = ffnc;
+    }
+
+    public RegionConfig getRegionConfig() {
+        return _rc;
     }
 
     public Region createRegion( String name ) {
-        RegionConfig rc = new RegionConfig();
-        rc.copyFrom( _rc, name );
-        Region r = new Region( rc._name, rc._om );
-        r.setup( rc, this );
+        Region r = new Region( name, _rc._om );
+        r.setup( this );
         return r;
     }
 
-    public Column createColumn( Region r, int x, int y ) {//}, GrowingNeuralGasConfig gngc, FeedForwardNetworkConfig ffnc, ActivationFunctionFactory ) {
-        String parentName = r.getName();
-        String columnName = Column.getName( parentName, x, y );
-        Column c = new Column( columnName, r._rc._om );
-        c.setup( r, x, y );
-        return c;
-    }
+    public GrowingNeuralGas createOrganizer( Region r ) {
 
-    public GrowingNeuralGas createClassifier( Region r, int x, int y ) {
-
-        String name = r.getKey(Region.SUFFIX_CLASSIFIER);
+        String name = r.getKey( RegionConfig.SUFFIX_ORGANIZER );
         GrowingNeuralGasConfig c = new GrowingNeuralGasConfig();
-        c.copyFrom(_gngc, name);
+        c.copyFrom(_rc._organizerConfig, name);
 
         GrowingNeuralGas gng = new GrowingNeuralGas( c._name, c._om );
         gng.setup( c );
+
         return gng;
     }
 
-    public FeedForwardNetwork createPredictor( Region r, int x, int y ) {
+    public GrowingNeuralGas createClassifier( Region r ) {
 
-        String name = r.getKey(Region.SUFFIX_PREDICTOR);
+        String name = r.getKey( RegionConfig.SUFFIX_CLASSIFIER );
+        GrowingNeuralGasConfig c = new GrowingNeuralGasConfig();
+        c.copyFrom( _rc._classifierConfig, name);
+
+        GrowingNeuralGas gng = new GrowingNeuralGas( c._name, c._om );
+        gng.setup( c );
+
+        return gng;
+    }
+
+    public FeedForwardNetwork createPredictor( Region r ) {
+
+        String name = r.getKey( RegionConfig.SUFFIX_PREDICTOR );
         FeedForwardNetworkConfig c = new FeedForwardNetworkConfig();
-        c.copyFrom( _ffnc, name );
+        c.copyFrom( _rc._predictorConfig, name );
 
         ActivationFunctionFactory aff = new ActivationFunctionFactory();
 

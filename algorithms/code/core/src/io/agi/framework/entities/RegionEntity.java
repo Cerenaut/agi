@@ -1,9 +1,361 @@
 package io.agi.framework.entities;
 
+import io.agi.core.alg.Region;
+import io.agi.core.alg.RegionConfig;
+import io.agi.core.alg.RegionFactory;
+import io.agi.core.ann.supervised.NetworkLayer;
+import io.agi.core.ann.unsupervised.CompetitiveLearningConfig;
+import io.agi.core.ann.unsupervised.GrowingNeuralGas;
+import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
+import io.agi.core.data.Data;
+import io.agi.core.data.Data2d;
+import io.agi.core.data.DataSize;
+import io.agi.core.math.RandomInstance;
+import io.agi.core.orm.Keys;
+import io.agi.core.orm.ObjectMap;
+import io.agi.framework.Entity;
+import io.agi.framework.Node;
+
+import java.awt.*;
+import java.util.Collection;
+
 /**
- * Creates a subtree of child Entities to implement the Region.
+ * Wraps the Region concept as a single Entity.
  *
  * Created by dave on 12/03/16.
  */
-public class RegionEntity {
+public class RegionEntity extends Entity {
+
+    public static final String ENTITY_TYPE = "region";
+
+    public static final String FF_INPUT = "ff-input";
+    public static final String FB_INPUT = "fb-input";
+    public static final String FB_INPUT_OLD = "fb-input";
+
+    public static final String ACTIVITY_OLD = "activity-old";
+    public static final String ACTIVITY_NEW = "activity-new";
+    public static final String ACTIVITY = "activity";
+
+    public static final String PREDICTION_OLD = "prediction-old";
+    public static final String PREDICTION_NEW = "prediction-new";
+
+    public static final String PREDICTION_FP = "prediction-fp";
+    public static final String PREDICTION_FN = "prediction-fn";
+
+    public RegionEntity(String entityName, ObjectMap om, String type, Node n) {
+        super(entityName, om, type, n);
+    }
+
+    public void getInputKeys(Collection<String> keys) {
+        keys.add(FF_INPUT);
+        keys.add(FB_INPUT);
+    }
+
+    public void getClassifierOutputKeys(Collection<String> keys, String prefix ) {
+        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS) );
+        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ERROR) );
+        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE) );
+        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_MASK) );
+
+        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS) );
+        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES) );
+        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES) );
+        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES) );
+        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH ) );
+    }
+
+    public void getOutputKeys(Collection<String> keys ) {
+        keys.add( FB_INPUT_OLD);
+
+        keys.add(ACTIVITY_OLD);
+        keys.add(ACTIVITY_NEW);
+        keys.add(ACTIVITY);
+
+        keys.add(PREDICTION_OLD);
+        keys.add(PREDICTION_NEW);
+
+        keys.add(PREDICTION_FP);
+        keys.add(PREDICTION_FN);
+
+        // The organizer
+        getClassifierOutputKeys( keys, RegionConfig.SUFFIX_ORGANIZER );
+
+        // The classifiers
+        int organizerWidthCells  = getPropertyInt( Keys.concatenate( RegionConfig.SUFFIX_ORGANIZER, CompetitiveLearningConfig.WIDTH_CELLS  ), 10 );
+        int organizerHeightCells = getPropertyInt( Keys.concatenate( RegionConfig.SUFFIX_ORGANIZER, CompetitiveLearningConfig.HEIGHT_CELLS ), 10 );
+
+        for( int y = 0; y < organizerHeightCells; ++y ) {
+            for( int x = 0; x < organizerWidthCells; ++x ) {
+                String prefix = Keys.concatenate( RegionConfig.SUFFIX_CLASSIFIER, String.valueOf( x ), String.valueOf( y ) );
+                getClassifierOutputKeys(keys, prefix);
+            }
+        }
+
+        // Predictor
+        int predictorLayers = Region.PREDICTOR_LAYERS;
+
+        for( int l = 0; l < predictorLayers; ++l ) {
+            String prefix = Keys.concatenate( RegionConfig.SUFFIX_PREDICTOR, String.valueOf(l) );
+
+            keys.add(Keys.concatenate(prefix, NetworkLayer.INPUT) );
+            keys.add(Keys.concatenate(prefix, NetworkLayer.WEIGHTS) );
+            keys.add(Keys.concatenate(prefix, NetworkLayer.BIASES) );
+            keys.add(Keys.concatenate(prefix, NetworkLayer.WEIGHTED_SUMS) );
+            keys.add(Keys.concatenate(prefix, NetworkLayer.OUTPUTS) );
+            keys.add(Keys.concatenate(prefix, NetworkLayer.ERROR_GRADIENTS) );
+        }
+
+    }
+
+    protected void doUpdateSelf() {
+
+        // Do nothing unless the input is defined
+        Data ffInput = getData(FF_INPUT);
+        Data fbInput = getData(FB_INPUT);
+
+        if( ( ffInput == null ) || ( fbInput == null ) ) {
+            return; // can't update yet.
+        }
+
+        // Get all the parameters:
+        String regionName = getName();
+        boolean reset = getPropertyBoolean(Entity.SUFFIX_RESET, false); // manual reset
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Test parameters
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //int randomSeed = 1;
+
+        // Feedforward size
+        Point ffInputSize = Data2d.getSize( ffInput );
+        Point fbInputSize = Data2d.getSize( fbInput );
+
+        int inputWidth  = ffInputSize.x;
+        int inputHeight = ffInputSize.y;
+
+        // Feedback size
+        int feedbackWidthCells  = fbInputSize.x;
+        int feedbackHeightCells = fbInputSize.y;
+
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Algorithm specific parameters
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Region size
+        int organizerWidthCells  = getPropertyInt( Keys.concatenate( RegionConfig.SUFFIX_ORGANIZER, CompetitiveLearningConfig.WIDTH_CELLS  ), 10 );
+        int organizerHeightCells = getPropertyInt( Keys.concatenate( RegionConfig.SUFFIX_ORGANIZER, CompetitiveLearningConfig.HEIGHT_CELLS ), 10 );
+
+        // Column Sizing
+        int classifierWidthCells  = getPropertyInt( Keys.concatenate( RegionConfig.SUFFIX_CLASSIFIER, CompetitiveLearningConfig.WIDTH_CELLS  ), 6 );
+        int classifierHeightCells = getPropertyInt( Keys.concatenate( RegionConfig.SUFFIX_CLASSIFIER, CompetitiveLearningConfig.HEIGHT_CELLS ), 6 );
+
+        // Organizer training
+        int receptiveFieldsTrainingSamples = getPropertyInt( RegionConfig.RECEPTIVE_FIELDS_TRAINING_SAMPLES, 6 );
+        int receptiveFieldSize = getPropertyInt( RegionConfig.RECEPTIVE_FIELD_SIZE, 8 );
+        float organizerLearningRate = 0.02f;
+        float organizerLearningRateNeighbours = 0.01f;
+        float organizerNoiseMagnitude = 0.0f;
+        int organizerEdgeMaxAge = 500;
+        float organizerStressLearningRate = 0.01f;
+        float organizerStressThreshold = 0.1f;
+        int organizerGrowthInterval = 100;
+
+        // Classifier training
+        float classifierLearningRate = 0.02f;
+        float classifierLearningRateNeighbours = 0.01f;
+        float classifierNoiseMagnitude = 0.0f;
+        int classifierEdgeMaxAge = 500;
+        float classifierStressLearningRate = 0.01f;
+        float classifierStressThreshold = 0.1f;
+        int classifierGrowthInterval = 100;
+
+        // Predictor
+        float predictorHiddenLayerScaleFactor = 0.1f; // Note, this assumes that the input data can be easily modelled by a few causes
+        float predictorLearningRate = 0.1f;
+        float predictorRegularization = 0.0f;
+
+        // Build the algorithm
+        //RandomInstance.setSeed(randomSeed); // make the tests repeatable
+        ObjectMap om = ObjectMap.GetInstance();
+        RegionFactory rf = new RegionFactory();
+
+        Region r = rf.create(
+            om, regionName, RandomInstance.getInstance(),
+            inputWidth, inputHeight,
+            feedbackWidthCells, feedbackHeightCells,
+            organizerWidthCells, organizerHeightCells,
+            classifierWidthCells, classifierHeightCells,
+            receptiveFieldsTrainingSamples, receptiveFieldSize,
+            organizerLearningRate, organizerLearningRateNeighbours, organizerNoiseMagnitude, organizerEdgeMaxAge, organizerStressLearningRate, organizerStressThreshold, organizerGrowthInterval,
+            classifierLearningRate, classifierLearningRateNeighbours, classifierNoiseMagnitude, classifierEdgeMaxAge, classifierStressLearningRate, classifierStressThreshold, classifierGrowthInterval,
+            predictorHiddenLayerScaleFactor, predictorLearningRate, predictorRegularization );
+
+        // Load data, overwriting the default setup.
+        copyDataFromPersistence( r );
+
+        // Process
+        if(reset ) {
+            r.reset();
+            setPropertyBoolean(SUFFIX_RESET, false); // turn off
+            setPropertyInt(SUFFIX_AGE, 0); // turn off
+        }
+
+        r.update();
+
+        // Save data
+        copyDataToPersistence(r);
+    }
+
+    protected void copyDataFromPersistence( Region r ) {
+
+        // The region itself
+        r._ffInput    = getData(FF_INPUT);
+        r._fbInput    = getData(FB_INPUT);
+        r._fbInputOld = getData(FB_INPUT_OLD);
+
+        Point organizerSize = r._rc.getOrganizerSizeCells();
+        Point classifierSize = r._rc.getClassifierSizeCells();
+
+        int organizerWidthCells  = organizerSize.x;
+        int organizerHeightCells = organizerSize.y;
+        int classifierWidthCells  = classifierSize.x;
+        int classifierHeightCells = classifierSize.y;
+        int regionWidthCells  = organizerWidthCells  * classifierWidthCells;
+        int regionHeightCells = organizerHeightCells * classifierHeightCells;
+
+        DataSize dataSizeRegion = DataSize.create( regionWidthCells, regionHeightCells );
+
+        r._regionActivityOld = getDataLazyResize(ACTIVITY_OLD, dataSizeRegion);
+        r._regionActivityNew = getDataLazyResize(ACTIVITY_NEW, dataSizeRegion);
+        r._regionActivity    = getDataLazyResize(ACTIVITY, dataSizeRegion);
+
+        r._regionPredictionOld = getDataLazyResize(PREDICTION_OLD, dataSizeRegion);
+        r._regionPredictionNew = getDataLazyResize(PREDICTION_NEW, dataSizeRegion);
+
+        r._regionPredictionFP = getDataLazyResize(PREDICTION_FP, dataSizeRegion);
+        r._regionPredictionFN = getDataLazyResize(PREDICTION_FN, dataSizeRegion);
+
+        // The organizer
+        Data organizerInput = new Data( DataSize.create( Region.RECEPTIVE_FIELD_DIMENSIONS ) );
+        copyDataFromPersistence( RegionConfig.SUFFIX_ORGANIZER, r._organizer, organizerWidthCells, organizerHeightCells, organizerInput );
+
+        // The classifiers
+        Data classifierInput = r._ffInput;
+        for( int y = 0; y < organizerSize.y; ++y ) {
+            for (int x = 0; x < organizerSize.x; ++x) {
+                int regionOffset = r._rc.getOrganizerOffset(x, y);
+                GrowingNeuralGas classifier = r._classifiers.get(regionOffset);
+                String prefix = Keys.concatenate( RegionConfig.SUFFIX_CLASSIFIER, String.valueOf( x ), String.valueOf( y ) );
+                copyDataFromPersistence(prefix, classifier, classifierWidthCells, classifierHeightCells, classifierInput );
+            }
+        }
+
+        // Predictor
+        int layers = r._predictor._layers.size();
+
+        for( int l = 0; l < layers; ++l ) {
+            NetworkLayer nl = r._predictor._layers.get( l );
+            String prefix = Keys.concatenate( RegionConfig.SUFFIX_PREDICTOR, String.valueOf(l) );
+
+            nl._inputs         = getData(Keys.concatenate(prefix, NetworkLayer.INPUT), nl._inputs._dataSize );
+            nl._weights        = getData(Keys.concatenate(prefix, NetworkLayer.WEIGHTS), nl._weights._dataSize);
+            nl._biases = getData(Keys.concatenate(prefix, NetworkLayer.BIASES), nl._biases._dataSize );
+            nl._weightedSums   = getData(Keys.concatenate(prefix, NetworkLayer.WEIGHTED_SUMS), nl._weightedSums._dataSize );
+            nl._outputs        = getData(Keys.concatenate(prefix, NetworkLayer.OUTPUTS), nl._outputs._dataSize );
+            nl._errorGradients = getData(Keys.concatenate(prefix, NetworkLayer.ERROR_GRADIENTS), nl._errorGradients._dataSize );
+        }
+    }
+
+    protected void copyDataFromPersistence( String prefix, GrowingNeuralGas gng, int widthCells, int heightCells, Data input ) {
+        int areaCells = widthCells * heightCells;
+        int inputs = input.getSize();
+
+        DataSize dataSizeWeights = DataSize.create( widthCells, heightCells, inputs );
+        DataSize dataSizeCells = DataSize.create( widthCells, heightCells );
+        DataSize dataSizeEdges = DataSize.create( areaCells, areaCells );
+
+        Data weights = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), dataSizeWeights );
+        Data errors = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ), dataSizeCells ); // deep copies the size so they each own a copy
+        Data activity = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), dataSizeCells ); // deep copies the size so they each own a copy
+        Data mask = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), dataSizeCells); // deep copies the size so they each own a copy
+
+        Data cellStress = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS ), dataSizeCells);
+        Data cellAges = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES ), dataSizeCells );
+        Data edges = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), dataSizeEdges );
+        Data edgesAges = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES ), dataSizeEdges );
+        Data ageSinceGrowth = getDataLazyResize( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH ), DataSize.create(1));
+
+        gng._inputValues = input;
+        gng._cellWeights = weights;
+        gng._cellErrors = errors;
+        gng._cellActivity = activity;
+        gng._cellMask = mask;
+
+        gng._cellStress = cellStress;
+        gng._cellAges = cellAges;
+        gng._edges = edges;
+        gng._edgesAges = edgesAges;
+        gng._ageSinceGrowth = ageSinceGrowth;
+    }
+
+    protected void copyDataToPersistence( Region r ) {
+
+        // The region itself
+        setData( FF_INPUT, r._ffInput );
+        setData( FB_INPUT, r._fbInput );
+        setData( FB_INPUT_OLD, r._fbInputOld );
+
+        setData( ACTIVITY_OLD, r._regionActivityOld );
+        setData( ACTIVITY_NEW, r._regionActivityNew );
+        setData( ACTIVITY, r._regionActivity );
+
+        setData( PREDICTION_OLD, r._regionPredictionOld );
+        setData( PREDICTION_NEW, r._regionPredictionNew );
+
+        setData( PREDICTION_FP, r._regionPredictionFP );
+        setData( PREDICTION_FN, r._regionPredictionFN );
+
+        // The organizer
+        copyDataToPersistence(RegionConfig.SUFFIX_ORGANIZER, r._organizer );
+
+        // The classifiers
+        Point p = r._rc.getOrganizerSizeCells();
+
+        for( int y = 0; y < p.y; ++y ) {
+            for (int x = 0; x < p.x; ++x) {
+                int regionOffset = r._rc.getOrganizerOffset(x, y);
+                GrowingNeuralGas classifier = r._classifiers.get(regionOffset);
+                String prefix = Keys.concatenate( RegionConfig.SUFFIX_CLASSIFIER, String.valueOf( x ), String.valueOf( y ) );
+                copyDataToPersistence( prefix, classifier );
+            }
+        }
+
+        // Predictor
+        int layers = r._predictor._layers.size();
+
+        for( int l = 0; l < layers; ++l ) {
+            NetworkLayer nl = r._predictor._layers.get( l );
+            String prefix = Keys.concatenate( RegionConfig.SUFFIX_PREDICTOR, String.valueOf(l) );
+
+            setData( Keys.concatenate( prefix, NetworkLayer.INPUT ), nl._inputs );
+            setData( Keys.concatenate( prefix, NetworkLayer.WEIGHTS ), nl._weights );
+            setData( Keys.concatenate( prefix, NetworkLayer.BIASES ), nl._biases );
+            setData( Keys.concatenate( prefix, NetworkLayer.WEIGHTED_SUMS ), nl._weightedSums );
+            setData( Keys.concatenate( prefix, NetworkLayer.OUTPUTS ), nl._outputs );
+            setData( Keys.concatenate( prefix, NetworkLayer.ERROR_GRADIENTS ), nl._errorGradients );
+        }
+    }
+
+    protected void copyDataToPersistence( String prefix, GrowingNeuralGas gng ) {
+        setData( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), gng._cellWeights );
+        setData( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ), gng._cellErrors );
+        setData( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), gng._cellActivity );
+        setData( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), gng._cellMask );
+
+        setData( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS ), gng._cellStress );
+        setData( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES ), gng._cellAges );
+        setData( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), gng._edges );
+        setData( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES ), gng._edgesAges );
+        setData( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH ), gng._ageSinceGrowth );
+    }
 }

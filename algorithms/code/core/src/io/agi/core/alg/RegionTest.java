@@ -21,84 +21,77 @@ public class RegionTest implements UnitTest {
 
     public void test( String[] args ) {
 
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Test parameters
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         int randomSeed = 1;
+
+        // Feedforward size
         int inputWidth = 10;
         int inputHeight = 10;
-        int regionSizeColumns = 50;
 
+        // Feedback size
+        int feedbackWidthCells = 1;
+        int feedbackHeightCells = 1;
+
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Algorithm specific parameters
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Region size
+        int regionWidthColumns = 10;
+        int regionHeightColumns = 10;
+
         // Column Sizing
-        int columnWidthCells  = 6;
-        int columnHeightCells = 6;
+        int classifierWidthCells  = 6;
+        int classifierHeightCells = 6;
 
-        // Hierarchy training
-        int receptiveFieldsTrainingSamples = 10;
-        float receptiveFieldsElasticity = 1.0f;
-        float receptiveFieldsLearningRate = 0.01f;
-        float inputColumnsFrequencyLearningRate = 0.01f;
-        float inputColumnsFrequencyThreshold = 0.5f;
+        // Organizer training
+        int receptiveFieldsTrainingSamples = 6;
+        int receptiveFieldSize = 8;
+        float organizerLearningRate = 0.02f;
+        float organizerLearningRateNeighbours = 0.01f;
+        float organizerNoiseMagnitude = 0.0f;
+        int organizerEdgeMaxAge = 500;
+        float organizerStressLearningRate = 0.01f;
+        float organizerStressThreshold = 0.1f;
+        int organizerGrowthInterval = 100;
 
-        // Column training
-        int columnInputs = 10;
-        float columnLearningRate = 0.02f;
-        float columnLearningRateNeighbours = 0.01f;
-        float columnNoiseMagnitude = 0.0f;
-        int columnEdgeMaxAge = 500;
-        float columnStressLearningRate = 0.01f;
-        float columnStressThreshold = 0.1f;
-        int columnGrowthInterval = 100;
+        // Classifier training
+        float classifierLearningRate = 0.02f;
+        float classifierLearningRateNeighbours = 0.01f;
+        float classifierNoiseMagnitude = 0.0f;
+        int classifierEdgeMaxAge = 500;
+        float classifierStressLearningRate = 0.01f;
+        float classifierStressThreshold = 0.1f;
+        int classifierGrowthInterval = 100;
 
         // Predictor
-        String predictorLossFunction = LossFunction.CROSS_ENTROPY;
-        String predictorActivationFunction = ActivationFunctionFactory.LOG_SIGMOID;
-        String predictorLayerSizes = String.valueOf( 36 ); // 6 * 6 * 1.something
+        float predictorHiddenLayerScaleFactor = 1.0f;
         float predictorLearningRate = 0.1f;
         float predictorRegularization = 0.0f;
 
         // Build the algorithm
         RandomInstance.setSeed(randomSeed); // make the tests repeatable
         ObjectMap om = ObjectMap.GetInstance();
-        RegionFactory rf = new RegionFactory();
-
-        RegionConfig rc = new RegionConfig();
         String regionName = "region";
 
-        rc.setup(
-            om, "region", // temp name
+        RegionFactory rf = new RegionFactory();
+
+        Region r = rf.create(
+            om, regionName, RandomInstance.getInstance(),
             inputWidth, inputHeight,
-            columnInputs, columnWidthCells, columnHeightCells,
-            regionSizeColumns,
-            receptiveFieldsTrainingSamples, receptiveFieldsElasticity, receptiveFieldsLearningRate,
-            inputColumnsFrequencyLearningRate, inputColumnsFrequencyThreshold );
-
-        int surfaceAreaCells = rc.getSurfaceAreaCells();
-        int columnAreaCells = rc.getColumnAreaCells();
-
-        GrowingNeuralGasConfig gngc = new GrowingNeuralGasConfig();
-        gngc.setup(
-            om, "gng", // temp name
-            surfaceAreaCells, columnWidthCells, columnHeightCells,
-            columnLearningRate, columnLearningRateNeighbours, columnNoiseMagnitude,
-            columnEdgeMaxAge, columnStressLearningRate, columnStressThreshold, columnGrowthInterval );
-
-        FeedForwardNetworkConfig ffnc = new FeedForwardNetworkConfig();
-        int predictorInputs = surfaceAreaCells;
-        int predictorOutputs = columnAreaCells;
-        int predictorLayers = 2;
-        ffnc.setup(
-            om, "ffn",
-            predictorLossFunction, predictorActivationFunction,
-            predictorInputs, predictorOutputs,
-            predictorLayers, predictorLayerSizes,
-            predictorRegularization, predictorLearningRate );
-
-        rf.setup( rc, gngc, ffnc );
-        Region r = rf.createRegion( regionName );
+            feedbackWidthCells, feedbackHeightCells,
+            regionWidthColumns, regionHeightColumns,
+            classifierWidthCells, classifierHeightCells,
+            receptiveFieldsTrainingSamples, receptiveFieldSize,
+            organizerLearningRate, organizerLearningRateNeighbours, organizerNoiseMagnitude, organizerEdgeMaxAge, organizerStressLearningRate, organizerStressThreshold, organizerGrowthInterval,
+            classifierLearningRate, classifierLearningRateNeighbours, classifierNoiseMagnitude, classifierEdgeMaxAge, classifierStressLearningRate, classifierStressThreshold, classifierGrowthInterval,
+            predictorHiddenLayerScaleFactor, predictorLearningRate, predictorRegularization );
 
         // Run
         while( true ) {
-            Data d = r.getExternalInput();
+            Data d = r.getFfInput(); // will not use external FB input, just internal.
             d.setRandom();
             d.thresholdLessThan( 0.5f, 1.f, 0.f );
             r.update();

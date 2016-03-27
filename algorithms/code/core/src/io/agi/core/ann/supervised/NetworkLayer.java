@@ -18,6 +18,13 @@ public class NetworkLayer extends NamedObject {
     public NetworkLayerConfig _c;
     public ActivationFunctionFactory _aff;
 
+    public static final String INPUT = "input";
+    public static final String WEIGHTS = "weights";
+    public static final String BIASES = "biases";
+    public static final String WEIGHTED_SUMS = "weighted-sums";
+    public static final String OUTPUTS = "outputs";
+    public static final String ERROR_GRADIENTS = "error-gradients";
+
     public Data _inputs; // x
     public Data _weights; // w
     public Data _biases; // b
@@ -36,14 +43,22 @@ public class NetworkLayer extends NamedObject {
         int inputs = c.getInputs();
         int cells = c.getCells();
 
-        _inputs = new Data( inputs );
-        _weights = new Data( inputs, cells );
+        _inputs = new Data(inputs);
+        _weights = new Data(inputs, cells);
+        _biases = new Data(cells);
+        _weightedSums = new Data(cells);
+        _outputs = new Data(cells);
+        _errorGradients = new Data(cells);
+
+        reset();
+    }
+
+    public void reset() {
         _weights.setRandom();
-        _biases = new Data( cells );
         _biases.setRandom();
-        _weightedSums = new Data( cells );
-        _outputs = new Data( cells );
-        _errorGradients = new Data( cells );
+
+        _outputs.set( 0.f );
+        _errorGradients.set( 0.f );
     }
 
     public float getWeightsSquared() {

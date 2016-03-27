@@ -10,10 +10,10 @@ public class NetworkLayerConfig extends NetworkConfig {
 
 //    public ObjectMap _om;
 
-    public String _keyActivationFunction = "activation-function";
-    public String _keyLearningRate = "learning-rate";
-    public String _keyInputs = "i";
-    public String _keyCells = "w";
+    public static final String ACTIVATION_FUNCTION = "activation-function";
+    public static final String LEARNING_RATE = "learning-rate";
+    public static final String INPUTS = "i";
+    public static final String CELLS = "w";
 
     public NetworkLayerConfig() {
     }
@@ -39,37 +39,37 @@ public class NetworkLayerConfig extends NetworkConfig {
     }
 
     public int getInputs() {
-        Integer i = _om.getInteger( getKey( _keyInputs ) );
+        Integer i = _om.getInteger( getKey(INPUTS) );
         return i.intValue();
     }
 
     public void setInputs( int inputs ) {
-        _om.put( getKey( _keyInputs ), inputs);
+        _om.put( getKey(INPUTS), inputs);
     }
 
     public void setCells( int cells ) {
-        _om.put( getKey( _keyCells ), cells);
+        _om.put( getKey(CELLS), cells);
     }
 
     public int getCells() {
-        Integer w = _om.getInteger( getKey( _keyCells ) );
+        Integer w = _om.getInteger( getKey(CELLS) );
         return w.intValue();
     }
 
     public void setLearningRate( float learningRate ) {
-        _om.put( getKey( _keyLearningRate ), learningRate );
+        _om.put( getKey(LEARNING_RATE), learningRate );
     }
 
     public float getLearningRate() {
-        Float r = _om.getFloat( getKey( _keyLearningRate ) );
+        Float r = _om.getFloat( getKey(LEARNING_RATE) );
         return r.floatValue();
     }
 
     public void setActivationFunction(String costFunction) {
-        _om.put( getKey( _keyActivationFunction ), costFunction );
+        _om.put( getKey(ACTIVATION_FUNCTION), costFunction );
     }
 
     public String getActivationFunction() {
-        return (String)_om.get( getKey( _keyActivationFunction ) );
+        return (String)_om.get( getKey(ACTIVATION_FUNCTION) );
     }
 }

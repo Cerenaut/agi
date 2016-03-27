@@ -76,11 +76,11 @@ public class CompetitiveLearningConfig extends NetworkConfig {
         return Data2d.getOffset( w, cellX, cellY );
     }
 
-    public int getCellX( CompetitiveLearningConfig c, int cell ) {
+    public int getCellX( int cell ) {
         Integer w = _om.getInteger( getKey( _keyWidthCells ) );
         return Data2d.getX( w, cell);
     }
-    public int getCellY( CompetitiveLearningConfig c, int cell ) {
+    public int getCellY( int cell ) {
         Integer w = _om.getInteger( getKey( _keyWidthCells ) );
         return Data2d.getY( w, cell );
     }

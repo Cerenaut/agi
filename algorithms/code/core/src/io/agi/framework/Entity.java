@@ -225,10 +225,11 @@ public abstract class Entity extends NamedObject implements EntityListener {
     }
 
     public void onEntityUpdated( String entityName ) {
+        //System.err.println( "Entity: " + getName() + " being notified about: " + entityName );
         synchronized ( _childrenWaiting ) {
             _childrenWaiting.remove( entityName );
 
-            //System.err.print( "Entity " + entityName + " notified about: " + entityName + " waiting for " );
+            //System.err.print( "Entity: " + getName() + " notified about: " + entityName + ", waiting for " );
             //for ( String child : _childrenWaiting ) {
             //    System.err.print( child + ", " );
             //}
@@ -245,23 +246,28 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         // 1. get inputs
         // get all the inputs and put them in the object map.
+        //System.err.println( "E1" );
         Collection<String> inputKeys = new ArrayList<String>();
         getInputKeys( inputKeys );
-        getData( inputKeys );
+        getData(inputKeys);
+        //System.err.println("E2");
 
         // 2. get outputs
         // get all the outputs and put them in the object map.
         Collection<String> outputKeys = new ArrayList<String>();
         getOutputKeys( outputKeys );
-        getData( outputKeys );
+        getData(outputKeys);
+        //System.err.println("E3");
 
         // 3. doUpdateSelf()
         doUpdateSelf();
+        //System.err.println("E4");
 
         // 4. set outputs
         // write all the outputs back to the persistence system
 //        setData(inputKeys);
         setData( outputKeys );
+        //System.err.println("E5");
 
 
         // update age:
@@ -382,6 +388,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
         for ( String keySuffix : keys ) {
             String inputKey = getKey(keySuffix);
             Data d = _data.get(inputKey);
+            //System.err.println( "E:setData: " + inputKey + " bytes: " + d._values.length );
             p.setData( new ModelData( inputKey, d ) );
         }
     }

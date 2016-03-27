@@ -29,15 +29,15 @@ public class ImageSensorEntity extends Entity {
 
     public static final String ENTITY_TYPE = "image-sensor";
 
-    public static final String IMAGE_DATA = "image-data";
+    public static final String OUTPUT_IMAGE_DATA = "image-data";
 
-    private static final String SOURCE_FILES_PATH = "source-files-path";
-    private static final String SOURCE_TYPE = "source-type";
-    private static final String RESOLUTION_X = "resolution-x";
-    private static final String RESOLUTION_Y = "resolution-y";
-    private static final String GREYSCALE = "greyscale";
+    public static final String SOURCE_FILES_PATH = "source-files-path";
+    public static final String SOURCE_TYPE = "source-type";
+    public static final String RESOLUTION_X = "resolution-x";
+    public static final String RESOLUTION_Y = "resolution-y";
+    public static final String GREYSCALE = "greyscale";
 
-    private static final String BUFFERED_IMAGE_INDEX = "buffered-image-index";
+    public static final String BUFFERED_IMAGE_INDEX = "buffered-image-index";
 
 
     public ImageSensorEntity( String entityName, ObjectMap om, String type, Node n) {
@@ -59,7 +59,7 @@ public class ImageSensorEntity extends Entity {
 
     @Override
     public void getOutputKeys( Collection<String> keys ) {
-        keys.add( IMAGE_DATA );
+        keys.add(OUTPUT_IMAGE_DATA);
     }
 
     public void doUpdateSelf() {
@@ -89,7 +89,7 @@ public class ImageSensorEntity extends Entity {
             index = bufferedImageSource.nextImage();
         }
 
-        setData( IMAGE_DATA, imageScreenScraper.getData() );
+        setData(OUTPUT_IMAGE_DATA, imageScreenScraper.getData() );
         setPropertyInt( BUFFERED_IMAGE_INDEX, index );
     }
 

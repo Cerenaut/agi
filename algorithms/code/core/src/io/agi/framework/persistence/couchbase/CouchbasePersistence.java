@@ -76,8 +76,17 @@ public class CouchbasePersistence extends StringPersistence {
 
     public void setup( String cluster, String bucket, String password ) {
         System.setProperty( "com.couchbase.queryEnabled", "true" );
+        System.setProperty( "com.couchbase.maxRequestLifetime", "999999999" );
+        System.setProperty( "com.couchbase.queryTimeout", "999999999" );
+        System.setProperty( "com.couchbase.socketConnectTimeout", "999999999" );
+        System.setProperty( "com.couchbase.keepAliveInterval", "999999999" );
+        System.setProperty( "com.couchbase.autoreleaseAfter", "999999999" );
+        System.setProperty( "com.couchbase.kvTimeout", "999999999" );
+        System.setProperty( "com.couchbase.connectTimeout", "999999999" );
+        System.setProperty( "com.couchbase.disconnectTimeout", "999999999" );
 
         _c = CouchbaseCluster.create(cluster);
+
         _b = _c.openBucket(bucket, password);
     }
 

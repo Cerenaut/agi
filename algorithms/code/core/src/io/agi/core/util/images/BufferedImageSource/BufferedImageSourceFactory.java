@@ -15,7 +15,6 @@ public class BufferedImageSourceFactory {
         
     // ImageSource Types
     public static final String TYPE_IMAGE_FILES = "images";
-    public static final String TYPE_SHAPES = "shapes";
 
     public static BufferedImageSource create( String type, String configuration ) {
 
@@ -24,16 +23,6 @@ public class BufferedImageSourceFactory {
             BufferedImageSource bis = new BufferedImageSourceImageFile( configuration );     // a directory, in this case
             return bis;
         }
-
-// Dave: I can't init this one, it always needs a derived class to implement.                
-//                else if( type.equalsIgnoreCase( TYPE_SHAPES ) ) {
-//                    BufferedImageSource bis = new StubGeneratedVideoImageSource();
-//                }
-// Gideon: This is useful, but not implementing it here from now. Required classes are in ampf
-//            else if( imageSourceType.equalsIgnoreCase( TYPE_SHAPES ) ) {
-//                BufferedImageSource bis = MarkovChainImageSource.read( imageSourceFile );
-//                return bis;
-//            }
 
         return null;
         

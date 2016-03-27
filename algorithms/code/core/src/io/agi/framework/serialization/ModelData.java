@@ -1,9 +1,11 @@
 package io.agi.framework.serialization;
 
+import com.sun.deploy.util.StringUtils;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.data.FloatArray2;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 /**
@@ -166,14 +168,20 @@ public class ModelData {
 
         String length = String.valueOf(fa._values.length);
 
-        String elements = "";
+        ArrayList< String > values = new ArrayList< String >();
+        values.ensureCapacity( fa._values.length );
+//        String elements = "";
         for( int i = 0; i < fa._values.length; ++i ) {
-            if( i > 0 ) {
-                elements = elements + ","; // add comma for preceding item
-            }
+//            if( i > 0 ) {
+//                elements = elements + ","; // add comma for preceding item
+//            }
             float value = fa._values[ i ];
-            elements = elements + String.valueOf( value );
+            String s = String.valueOf( value );
+            values.add( i, s );
+//            elements = elements + String.valueOf( value );
         }
+
+        String elements = StringUtils.join( values, "," );
 
         String result = s1 + elements + s2 + length + s3;
         return result;
