@@ -8,11 +8,11 @@ package io.agi.core.data;
 
 /**
  * A function of a scalar.
- * 
+ *
  * @author dave
  */
 public interface ScalarFunction {
-    
+
     public float f( float r );
-    
+
 }

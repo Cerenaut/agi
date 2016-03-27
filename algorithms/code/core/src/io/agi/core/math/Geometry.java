@@ -6,19 +6,19 @@
 
 package io.agi.core.math;
 
-import java.awt.Point;
+import java.awt.*;
 
 /**
- *
  * @author dave
  */
 public class Geometry {
 
     /**
-     * Angle of vector x,y 
+     * Angle of vector x,y
+     *
      * @param x
      * @param y
-     * @return 
+     * @return
      */
     public double angle( double x, double y ) {
         double r = Math.atan2( y, x ); // range -pi : pi
@@ -27,19 +27,19 @@ public class Geometry {
 
     /**
      * Rotate the given coordinates in 2d by angle
-     * 
+     *
      * @param x
      * @param y
      * @param angle
-     * @return 
+     * @return
      */
     public Point.Double rotate( double x, double y, double angle ) { // about the origin
         double ct = Math.cos( angle );
         double st = Math.sin( angle );
         double xr = ( x * ct )
-                  - ( y * st );
+                - ( y * st );
         double yr = ( x * st )
-                  + ( y * ct );
+                + ( y * ct );
 
         Point.Double p = new Point.Double( xr, yr );
         return p;
@@ -54,7 +54,7 @@ public class Geometry {
         double radians = Constants.DEGREES_TO_RADIANS * degrees;
         return radians;
     }
-    
+
     public static double distanceEuclidean2d( double x1, double y1, double x2, double y2 ) {
         double dx = ( x1 - x2 );
         double dy = ( y1 - y2 );
@@ -65,8 +65,8 @@ public class Geometry {
     public static float distanceEuclidean2d( float x1, float y1, float x2, float y2 ) {
         float dx = ( x1 - x2 );
         float dy = ( y1 - y2 );
-        float d = (float)Math.sqrt( dx * dx + dy * dy );
+        float d = ( float ) Math.sqrt( dx * dx + dy * dy );
         return d;
     }
-    
+
 }

@@ -17,63 +17,63 @@ import java.util.Map;
  */
 public class HttpUtil {
 
-    public static void AddHandler(HttpServer server, String handlerContext, HttpHandler h ) {
-        server.createContext(handlerContext, h );
+    public static void AddHandler( HttpServer server, String handlerContext, HttpHandler h ) {
+        server.createContext( handlerContext, h );
     }
 
-    public static HttpServer Create(final HttpCoordination c, int port, String handlerContext, HttpCoordinationHandler h) {
+    public static HttpServer Create( final HttpCoordination c, int port, String handlerContext, HttpCoordinationHandler h ) {
 
         try {
-            HttpServer server = HttpServer.create( new InetSocketAddress(port), 0 );
-            AddHandler(server, handlerContext, h);
-            server.setExecutor(null); // creates a default executor
+            HttpServer server = HttpServer.create( new InetSocketAddress( port ), 0 );
+            AddHandler( server, handlerContext, h );
+            server.setExecutor( null ); // creates a default executor
             return server;
         }
-        catch( Exception e ) {
+        catch ( Exception e ) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public static Map<String, String> GetQueryParams( String query ) {
+    public static Map< String, String > GetQueryParams( String query ) {
 
-        Map<String, String> result = new HashMap<String, String>();
+        Map< String, String > result = new HashMap< String, String >();
 
-        if( query == null ) {
+        if ( query == null ) {
             return result;
         }
 
-        for( String param : query.split( "&" ) ) {
+        for ( String param : query.split( "&" ) ) {
 
             String pair[] = param.split( "=" );
 
-            if( pair.length > 1 ) {
-                result.put( pair[0], pair[1] );
+            if ( pair.length > 1 ) {
+                result.put( pair[ 0 ], pair[ 1 ] );
             }
-            else{
-                result.put( pair[0], "" );
+            else {
+                result.put( pair[ 0 ], "" );
             }
         }
         return result;
     }
 
-    public static ArrayList<AbstractPair< String, String >> GetDuplicateQueryParams( String query ) {
+    public static ArrayList< AbstractPair< String, String > > GetDuplicateQueryParams( String query ) {
 
         ArrayList< AbstractPair< String, String > > result = new ArrayList< AbstractPair< String, String > >();
 
-        if( query == null ) {
+        if ( query == null ) {
             return result;
         }
 
-        for( String param : query.split( "&" ) ) {
+        for ( String param : query.split( "&" ) ) {
 
             String pair[] = param.split( "=" );
 
-            if( pair.length > 1 ) {
-                result.add(new AbstractPair<String, String>( pair[0], pair[1] ) );
+            if ( pair.length > 1 ) {
+                result.add( new AbstractPair< String, String >( pair[ 0 ], pair[ 1 ] ) );
             }
-            else{
-                result.add(new AbstractPair<String, String>( pair[0], "" ) );
+            else {
+                result.add( new AbstractPair< String, String >( pair[ 0 ], "" ) );
             }
         }
         return result;
@@ -85,7 +85,7 @@ public class HttpUtil {
         t.getResponseHeaders().put( "Access-Control-Allow-Origin", list );
         t.sendResponseHeaders( status, response.length() );
         OutputStream os = t.getResponseBody();
-        os.write(response.getBytes());
+        os.write( response.getBytes() );
         os.close();
     }
 }

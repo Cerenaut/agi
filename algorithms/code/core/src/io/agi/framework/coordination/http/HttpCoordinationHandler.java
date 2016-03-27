@@ -1,13 +1,10 @@
 package io.agi.framework.coordination.http;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * http://stackoverflow.com/questions/3732109/simple-http-server-in-java-using-only-java-se-api
@@ -39,31 +36,32 @@ public class HttpCoordinationHandler implements HttpHandler {
             String query = t.getRequestURI().getQuery();
             //System.err.println("Request: " + HttpCoordinationHandler.CONTEXT + " " + query);
 
-            Map<String, String> m = HttpUtil.GetQueryParams(query);
+            Map< String, String > m = HttpUtil.GetQueryParams( query );
 
-            String entityName = m.get(PARAMETER_ENTITY).trim();
-            String eventValue = m.get(PARAMETER_EVENT).trim();
-            String originValue = m.get(PARAMETER_ORIGIN);
+            String entityName = m.get( PARAMETER_ENTITY ).trim();
+            String eventValue = m.get( PARAMETER_EVENT ).trim();
+            String originValue = m.get( PARAMETER_ORIGIN );
 
-            if( originValue != null ) {
+            if ( originValue != null ) {
                 originValue.trim();
             }
 
-            if (entityName != null) {
-                if (eventValue != null) {
-                    if (eventValue.equalsIgnoreCase(VALUE_UPDATE)) {
-                        _c.doUpdateExternal(entityName, originValue);
+            if ( entityName != null ) {
+                if ( eventValue != null ) {
+                    if ( eventValue.equalsIgnoreCase( VALUE_UPDATE ) ) {
+                        _c.doUpdateExternal( entityName, originValue );
                         status = 200;
                         response = GetResponse( entityName, VALUE_UPDATE, originValue );
-                    } else if (eventValue.equalsIgnoreCase(VALUE_UPDATED)) {
-                        _c.onUpdatedExternal(entityName, originValue);
+                    }
+                    else if ( eventValue.equalsIgnoreCase( VALUE_UPDATED ) ) {
+                        _c.onUpdatedExternal( entityName, originValue );
                         status = 200;
                         response = GetResponse( entityName, VALUE_UPDATED, originValue );
                     }
                 }
             }
         }
-        catch( Exception e ) {
+        catch ( Exception e ) {
             e.printStackTrace();
         }
 

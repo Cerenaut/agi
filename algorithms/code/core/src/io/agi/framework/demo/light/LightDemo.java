@@ -1,6 +1,7 @@
 package io.agi.framework.demo.light;
 
-import io.agi.framework.*;
+import io.agi.framework.Main;
+import io.agi.framework.Node;
 
 /**
  * Created by dave on 18/02/16.

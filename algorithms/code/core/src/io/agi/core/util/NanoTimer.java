@@ -6,7 +6,6 @@
 package io.agi.core.util;
 
 /**
- *
  * @author davidjr
  */
 public class NanoTimer {

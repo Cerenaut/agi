@@ -1,10 +1,8 @@
-package io.agi.framework.serialization;
+package io.agi.framework.persistence.models;
 
 import io.agi.framework.Node;
 
 /**
- * Convert a Node object to and from its JSON equivalent.
- *
  * Created by dave on 17/02/16.
  */
 public class ModelNode {

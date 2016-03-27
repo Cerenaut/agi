@@ -8,7 +8,7 @@ package io.agi.core.opt;
 import io.agi.core.orm.Callback;
 
 /**
- * Generic optimization function for 1-d. 
+ * Generic optimization function for 1-d.
  * Uses empirical derivatives rather than closed-form calculations.
  *
  * @author davidjr
@@ -37,7 +37,7 @@ public abstract class Optimizer implements Callback {
     public void apply() {
         double dfx = _t;
         int iteration = 0;
-        while( dfx >= _t ) {
+        while ( dfx >= _t ) {
             double x1 = _x;
             double fx1 = _f.f( _x );
             update();
@@ -45,7 +45,7 @@ public abstract class Optimizer implements Callback {
             double fx2 = _f.f( _x );
             dfx = Math.abs( fx2 - fx1 );
             ++iteration;
-            System.out.println( "iter="+iteration+" x1="+x1+" x2="+x2+" f(x1)="+fx1+" f(x2)="+fx2 );
+            System.out.println( "iter=" + iteration + " x1=" + x1 + " x2=" + x2 + " f(x1)=" + fx1 + " f(x2)=" + fx2 );
         }
     }
 
@@ -61,8 +61,8 @@ public abstract class Optimizer implements Callback {
 
     public double d1fx( double x, double dx ) { // return 1st derivative of function of x
 
-        double xa = x -(dx*0.5);
-        double xb = x +(dx*0.5); // ie span of dx
+        double xa = x - ( dx * 0.5 );
+        double xb = x + ( dx * 0.5 ); // ie span of dx
         double fxa = _f.f( xa );
         double fxb = _f.f( xb );
         double dfx = ( fxb - fxa ) / ( xb - xa );
@@ -72,10 +72,10 @@ public abstract class Optimizer implements Callback {
     public double d2fx( double x, double dx ) { // return 1st derivative of function of x
 
         // http://www.math.montana.edu/frankw/ccp/modeling/continuous/heatflow2/secondder.htm
-        double xa = x -(dx);
-        double xb = x +(dx); // ie span of dx
+        double xa = x - ( dx );
+        double xb = x + ( dx ); // ie span of dx
         double fxa = _f.f( xa );
-        double fx  = _f.f( x  );
+        double fx = _f.f( x );
         double fxb = _f.f( xb );
 
 //        double dxReciprocal = 1.0 / dx;

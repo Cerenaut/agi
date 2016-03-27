@@ -29,19 +29,16 @@ var Framework = {
   },
 
   getData : function( key, callback ) {
-    //Postgrest.getJson( "properties?key=eq."+entityName+"-age", callback );
     var suffix = Framework.contextData + "?" + key;
     Framework.doAjaxJson( suffix, callback, "GET" );
   },
 
   getProperty : function( key, callback ) {
-    //Postgrest.getJson( "properties?key=eq."+entityName+"-age", callback );
     var suffix = Framework.contextProperties + "?" + key;
     Framework.doAjaxJson( suffix, callback, "GET" );
   },
 
   setProperty : function( key, value, callback ) {
-    //Postgrest.getJson( "properties?key=eq."+entityName+"-age", callback );
     var suffix = Framework.contextProperties + "?" + key + "=" + value;
     Framework.doAjaxJson( suffix, callback, "POST" );
   },

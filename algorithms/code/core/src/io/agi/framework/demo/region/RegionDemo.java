@@ -7,7 +7,9 @@ import io.agi.framework.Main;
 import io.agi.framework.Node;
 import io.agi.framework.entities.*;
 import io.agi.framework.persistence.Persistence;
-import io.agi.framework.serialization.ModelEntity;
+import io.agi.framework.persistence.PropertyConverter;
+import io.agi.framework.persistence.PropertyStringAccess;
+import io.agi.framework.persistence.models.ModelEntity;
 
 /**
  * Created by dave on 26/03/16.
@@ -67,15 +69,17 @@ public class RegionDemo {
         Entity.SetDataReference(p, regionName, RegionEntity.FB_INPUT, constantMatrixName, ConstantMatrixEntity.OUTPUT );
 
         // Set properties
+        PropertyConverter propertyConverter = new PropertyConverter( (PropertyStringAccess) p );
+
         String resetKey = Keys.concatenate( regionName, Entity.SUFFIX_RESET );
-        p.setPropertyBoolean(resetKey, true); // reset on every run
+        propertyConverter.setPropertyBoolean(resetKey, true); // reset on every run
 
         // TODO shouldn't have to set this, default doesn't work for string properties
         String sourceTypeKey = Keys.concatenate( imageSourceName, ImageSensorEntity.SOURCE_TYPE );
-        p.setPropertyString( sourceTypeKey, BufferedImageSourceFactory.TYPE_IMAGE_FILES );
+        propertyConverter.setPropertyString(sourceTypeKey, BufferedImageSourceFactory.TYPE_IMAGE_FILES );
 
         String sourceGreyKey = Keys.concatenate( imageSourceName, ImageSensorEntity.GREYSCALE );
-        p.setPropertyBoolean(sourceGreyKey, true);
+        propertyConverter.setPropertyBoolean(sourceGreyKey, true);
 
         String filePathKey = Keys.concatenate( imageSourceName, ImageSensorEntity.SOURCE_FILES_PATH );
         p.setPropertyString( filePathKey, "/home/dave/workspace/agi.io/agi/algorithms/code/core/run/line" );

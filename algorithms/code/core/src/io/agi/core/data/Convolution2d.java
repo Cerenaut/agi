@@ -7,7 +7,6 @@
 package io.agi.core.data;
 
 /**
- *
  * @author dave
  */
 public class Convolution2d {
@@ -36,17 +35,17 @@ public class Convolution2d {
         float[] acc = new float[ channels ];     // accumulator
 
         // iterate image
-        for( int y = 0; y < h; ++y ) {
+        for ( int y = 0; y < h; ++y ) {
             c.set( DataSize.DIMENSION_Y, y );
-            for( int x = 0; x < w; ++x ) {
+            for ( int x = 0; x < w; ++x ) {
                 c.set( DataSize.DIMENSION_X, x );
                 int offset = c.offset(); // don't want to eval the 3d coord more than necessary..
 
-                for( int i = 0 ; i < channels ; ++i ) {
-                    acc[i] = 0.f;
+                for ( int i = 0; i < channels; ++i ) {
+                    acc[ i ] = 0.f;
                 }
 
-                assert( (offset+2) < elements );
+                assert ( ( offset + 2 ) < elements );
 
                 // offset for source image
                 Coordinate2 sc = src._d.begin();
@@ -55,7 +54,7 @@ public class Convolution2d {
                 Coordinate2 mc = mask._d.begin();
 
                 // iterate mask
-                for ( int my = 0; my < mh ; ++my ) {
+                for ( int my = 0; my < mh; ++my ) {
                     for ( int mx = 0; mx < mw; ++mx ) {
 
                         int yy = y - mhr + my;
@@ -64,7 +63,7 @@ public class Convolution2d {
                         sc.set( DataSize.DIMENSION_X, xx );
                         int soffset = sc.offset();
 
-                        if( !sc.inside() ) {
+                        if ( !sc.inside() ) {
                             break;
                         }
 
@@ -73,7 +72,7 @@ public class Convolution2d {
                         int moffset = mc.offset(); // don't want to eval the 3d coord more than necessary..
 
                         // for each channel
-                        for( int i = 0 ; i < channels ; ++i ) {
+                        for ( int i = 0; i < channels; ++i ) {
 
 //                            if ( (soffset+i) >= src._dataSize._values.length ) {
 //                                System.out.println("oh oh");
@@ -85,13 +84,13 @@ public class Convolution2d {
                             // accumulate at position at centre of mask
                             float mval = mask._d._values[ moffset + i ];
                             float ival = src._d._values[ soffset + i ];
-                            acc[i] += mval * ival;
+                            acc[ i ] += mval * ival;
 
                         }
                     }
                 }
 
-                for( int i = 0 ; i < channels ; ++i ) {
+                for ( int i = 0; i < channels; ++i ) {
                     dest._d._values[ offset + i ] = acc[ i ];
                 }
 
@@ -99,5 +98,5 @@ public class Convolution2d {
         }
 
     }
-    
+
 }

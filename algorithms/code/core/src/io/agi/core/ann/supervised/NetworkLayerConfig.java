@@ -19,18 +19,18 @@ public class NetworkLayerConfig extends NetworkConfig {
     }
 
     public void setup( ObjectMap om, String name, int inputs, int cells, float learningRate, String activationFunction ) {
-        super.setup( om, name);
+        super.setup( om, name );
 
-        setInputs(inputs);
-        setCells(cells);
+        setInputs( inputs );
+        setCells( cells );
         setLearningRate( learningRate );
-        setActivationFunction(activationFunction);
+        setActivationFunction( activationFunction );
     }
 
     public void copyFrom( NetworkConfig nc, String name ) {
-        super.copyFrom(nc, name);
+        super.copyFrom( nc, name );
 
-        NetworkLayerConfig c = (NetworkLayerConfig)nc;
+        NetworkLayerConfig c = ( NetworkLayerConfig ) nc;
 
         setInputs( c.getInputs() );
         setCells( c.getCells() );

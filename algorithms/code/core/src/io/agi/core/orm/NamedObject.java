@@ -14,7 +14,7 @@ public class NamedObject {
     protected ObjectMap _om;
 
     public NamedObject( String name, ObjectMap om ) {
-        _name  = name;
+        _name = name;
         _om = om;
         om.put( _name, this );
     }
@@ -50,7 +50,7 @@ public class NamedObject {
 
     public void putObject( Object o, String suffix ) {
         String key = getKey( suffix );
-        _om.put(key, o);
+        _om.put( key, o );
     }
 
 }

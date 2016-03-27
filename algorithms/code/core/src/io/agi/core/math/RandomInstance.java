@@ -11,8 +11,9 @@ import java.util.Random;
 /**
  * Utilities for managing a centralized random number generator that isn't shared
  * with code except your own. Global access via static interface.
- * 
+ * <p>
  * TODO: Consider http://docs.oracle.com/javase/tutorial/essential/concurrency/threadlocalrandom.html
+ *
  * @author dave
  */
 public class RandomInstance {
@@ -31,7 +32,7 @@ public class RandomInstance {
     }
 
     public static void setSeed( long seed ) {
-        if( _instance != null ) {
+        if ( _instance != null ) {
             System.err.println( "It's too late to seed the random number generator!" );
             System.exit( -1 );
         }
@@ -55,26 +56,28 @@ public class RandomInstance {
     }
 
     public static Random getInstance() {
-        if( _instance == null ) {
+        if ( _instance == null ) {
             //_instance = new Random( getRandomSeed() ); // seeded with time
             instantiate( getRandomSeed() );
         }
         return _instance;
     }
-    
+
     /**
      * Random value between 0 and n-1.
+     *
      * @param n
-     * @return 
+     * @return
      */
     public static int randomInt( int n ) {
-        double r = ((double)(n)) * RandomInstance.random();
-        return (int)r;
+        double r = ( ( double ) ( n ) ) * RandomInstance.random();
+        return ( int ) r;
     }
 
     /**
      * Random value in radians, range -pi <= n < pi
-     * @return 
+     *
+     * @return
      */
     public static double randomRadians() {
         double r = ( RandomInstance.random() * Math.PI * 2.0 ) - Math.PI; // -pi : pi
@@ -83,8 +86,8 @@ public class RandomInstance {
 
     /**
      * See randomNormal( Random, int )
-     * 
-     * @return 
+     *
+     * @return
      */
     public static double randomNormal() {
         return randomNormal( getInstance(), 12 );
@@ -93,42 +96,42 @@ public class RandomInstance {
     /**
      * Should return a value 0.0 <= n < 1.0, taken from a normal distribution
      * approximated by averaging n samples.
-     * 
+     * <p>
      * Generates Irwin Hall distribution, aka uniform sum distribution.
-     * This is an approximation of a normal distribution. 
-     * 
+     * This is an approximation of a normal distribution.
+     * <p>
      * n = 12 is *usually enough*
-     * 
+     *
      * @param o
      * @param n
-     * @return 
+     * @return
      */
     public static double randomNormal( Random o, int n ) {
 
         //int n = 12;
         double r = 0.0;
 
-        for( int i = 1; i < n; ++i ) // unroll please compiler?
+        for ( int i = 1; i < n; ++i ) // unroll please compiler?
         {
             r += o.nextDouble();
         }
 
         // truncate the interval from 0..N to 0..1
         // Mean was: n-(n/2), now: 0.5
-        r /= (double)(n -1);
+        r /= ( double ) ( n - 1 );
 
         return r;
     }
 
     /**
      * See randomNormal( Random )
-     * 
+     *
      * @param o
      * @param n
-     * @return 
+     * @return
      */
     public static double randomNormal( Random o ) {
         return randomNormal( o, Constants.RANDOM_NORMAL_SAMPLES );
     }
-    
+
 }

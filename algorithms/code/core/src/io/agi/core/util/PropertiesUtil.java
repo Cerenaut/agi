@@ -24,13 +24,13 @@ public class PropertiesUtil {
             Properties p = new Properties();
             p.load( new FileInputStream( file ) );
 
-            if( p.containsKey( key ) ) {
+            if ( p.containsKey( key ) ) {
                 String value = p.getProperty( key );
                 return value;
             }
             return defaultValue;
         }
-        catch( Exception e ) {
+        catch ( Exception e ) {
             System.err.println( "Error reading properties for Node: " );
             e.printStackTrace();
             return defaultValue;

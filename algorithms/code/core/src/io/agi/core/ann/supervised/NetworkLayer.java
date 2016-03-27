@@ -7,10 +7,10 @@ import io.agi.core.orm.ObjectMap;
 
 /**
  * This class represents a single layer of a feed-forward neural network.
- *
+ * <p>
  * Terminology from:
  * http://neuralnetworksanddeeplearning.com/chap2.html
- *
+ * <p>
  * Created by dave on 3/01/16.
  */
 public class NetworkLayer extends NamedObject {
@@ -66,9 +66,9 @@ public class NetworkLayer extends NamedObject {
 
         float sumSq = 0.f;
 
-        for( int w = 0; w < W; ++w ) {
+        for ( int w = 0; w < W; ++w ) {
             float weight = _weights._values[ w ];
-            sumSq += (w * w);
+            sumSq += ( w * w );
         }
 
         return sumSq;
@@ -97,6 +97,7 @@ public class NetworkLayer extends NamedObject {
 
     /**
      * Compute weighted sum of inputs given weights
+     *
      * @param weights
      * @param inputs
      * @param biases
@@ -106,14 +107,14 @@ public class NetworkLayer extends NamedObject {
         int K = inputs.getSize();
         int J = biases.getSize();
 
-        assert( outputs.getSize() == J );
-        assert( weights.getSize() == (J*K) );
+        assert ( outputs.getSize() == J );
+        assert ( weights.getSize() == ( J * K ) );
 
-        for( int j = 0; j < J; ++j ) {
+        for ( int j = 0; j < J; ++j ) {
 
             float sum = 0.f;
 
-            for( int k = 0; k < K; ++k ) {
+            for ( int k = 0; k < K; ++k ) {
                 int offset = j * K + k; // K = inputs, storage is all inputs adjacent
                 float i = inputs._values[ k ];
                 float w = weights._values[ offset ];

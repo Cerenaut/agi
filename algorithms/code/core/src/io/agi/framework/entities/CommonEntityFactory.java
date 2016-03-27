@@ -24,23 +24,23 @@ public class CommonEntityFactory implements EntityFactory {
 
     public Entity create( ObjectMap om, String entityName, String entityType ) {
 
-        if( entityType.equals( RandomVectorEntity.ENTITY_TYPE ) ) {
+        if ( entityType.equals( RandomVectorEntity.ENTITY_TYPE ) ) {
             return new RandomVectorEntity( entityName, om, RandomVectorEntity.ENTITY_TYPE, _n );
         }
 
-        if( entityType.equals( DiscreteRandomEntity.ENTITY_TYPE ) ) {
+        if ( entityType.equals( DiscreteRandomEntity.ENTITY_TYPE ) ) {
             return new DiscreteRandomEntity( entityName, om, DiscreteRandomEntity.ENTITY_TYPE, _n );
         }
 
-        if( entityType.equals( DynamicSelfOrganizingMapEntity.ENTITY_TYPE ) ) {
+        if ( entityType.equals( DynamicSelfOrganizingMapEntity.ENTITY_TYPE ) ) {
             return new DynamicSelfOrganizingMapEntity( entityName, om, DynamicSelfOrganizingMapEntity.ENTITY_TYPE, _n );
         }
 
-        if( entityType.equals( GrowingNeuralGasEntity.ENTITY_TYPE ) ) {
+        if ( entityType.equals( GrowingNeuralGasEntity.ENTITY_TYPE ) ) {
             return new GrowingNeuralGasEntity( entityName, om, GrowingNeuralGasEntity.ENTITY_TYPE, _n );
         }
 
-        if( entityType.equals( ImageSensorEntity.ENTITY_TYPE ) ) {
+        if ( entityType.equals( ImageSensorEntity.ENTITY_TYPE ) ) {
             return new ImageSensorEntity( entityName, om, ImageSensorEntity.ENTITY_TYPE, _n );
         }
 
@@ -52,7 +52,11 @@ public class CommonEntityFactory implements EntityFactory {
             return new ConstantMatrixEntity( entityName, om, ConstantMatrixEntity.ENTITY_TYPE, _n );
         }
 
-        System.out.println(" ERROR: CommonEntityFactory.create() - could not create an entity for " + entityName);
+        if ( entityType.equals( EncoderEntity.ENTITY_TYPE ) ) {
+            return new EncoderEntity( entityName, om, EncoderEntity.ENTITY_TYPE, _n );
+        }
+
+        System.out.println( "ERROR: CommonEntityFactory.create() - could not create an entity for " + entityName + " of type " + entityType );
 
         return null;
     }

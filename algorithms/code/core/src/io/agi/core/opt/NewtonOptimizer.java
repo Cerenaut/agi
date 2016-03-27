@@ -7,9 +7,10 @@ package io.agi.core.opt;
 
 /**
  * http://en.wikipedia.org/wiki/Newton%27s_method_in_optimization
+ *
  * @author davidjr
  */
-public class NewtonOptimizer  extends Optimizer {
+public class NewtonOptimizer extends Optimizer {
 
     public NewtonOptimizer( OptimizerFn f, double x0, double dx ) {
         super( f, x0, dx );

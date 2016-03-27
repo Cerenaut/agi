@@ -8,7 +8,6 @@ import java.io.IOException;
 
 
 /**
- *
  * Adapted from: http://stackoverflow.com/questions/17279049/reading-a-idx-file-type-in-java
  *
  * Created by gideon on 14/03/2016.
@@ -34,21 +33,21 @@ public class BufferedImageSourceMNIST extends BufferedImageSource {
         _labelFilePath = labelFilePath;
         _imageFilePath = imageFilePath;
 
-        setup( );
+        setup();
     }
 
-    private void setup( ) {
+    private void setup() {
         try {
             _inLabel = new FileInputStream( _labelFilePath );
             _inImage = new FileInputStream( _imageFilePath );
 
-            int magicNumberImages = (_inImage.read() << 24 ) | (_inImage.read() << 16 ) | (_inImage.read() << 8 ) | (_inImage.read() );
-            _numberOfImages = (_inImage.read() << 24 ) | (_inImage.read() << 16 ) | (_inImage.read() << 8 ) | (_inImage.read() );
-            _numberOfRows = (_inImage.read() << 24 ) | (_inImage.read() << 16 ) | (_inImage.read() << 8 ) | (_inImage.read() );
-            _numberOfColumns = (_inImage.read() << 24 ) | (_inImage.read() << 16 ) | (_inImage.read() << 8 ) | (_inImage.read() );
+            int magicNumberImages = ( _inImage.read() << 24 ) | ( _inImage.read() << 16 ) | ( _inImage.read() << 8 ) | ( _inImage.read() );
+            _numberOfImages = ( _inImage.read() << 24 ) | ( _inImage.read() << 16 ) | ( _inImage.read() << 8 ) | ( _inImage.read() );
+            _numberOfRows = ( _inImage.read() << 24 ) | ( _inImage.read() << 16 ) | ( _inImage.read() << 8 ) | ( _inImage.read() );
+            _numberOfColumns = ( _inImage.read() << 24 ) | ( _inImage.read() << 16 ) | ( _inImage.read() << 8 ) | ( _inImage.read() );
 
-            int magicNumberLabels = (_inLabel.read() << 24 ) | (_inLabel.read() << 16 ) | (_inLabel.read() << 8 ) | (_inLabel.read() );
-            int numberOfLabels = (_inLabel.read() << 24 ) | (_inLabel.read() << 16 ) | (_inLabel.read() << 8 ) | (_inLabel.read() );
+            int magicNumberLabels = ( _inLabel.read() << 24 ) | ( _inLabel.read() << 16 ) | ( _inLabel.read() << 8 ) | ( _inLabel.read() );
+            int numberOfLabels = ( _inLabel.read() << 24 ) | ( _inLabel.read() << 16 ) | ( _inLabel.read() << 8 ) | ( _inLabel.read() );
 
             _numberOfPixels = _numberOfRows * _numberOfColumns;
         }
@@ -58,7 +57,6 @@ public class BufferedImageSourceMNIST extends BufferedImageSource {
     }
 
     /**
-     *
      * NOTE: This advances the image stream, so DOES advance to the next image.
      * This breaks the API of the interface.
      *
@@ -98,7 +96,7 @@ public class BufferedImageSourceMNIST extends BufferedImageSource {
     }
 
     @Override
-    public AbstractPair<Integer, Integer> getImageSize() {
+    public AbstractPair< Integer, Integer > getImageSize() {
         int w = 0;
         int h = 0;
         getImage();
@@ -108,7 +106,7 @@ public class BufferedImageSourceMNIST extends BufferedImageSource {
             h = _image.getHeight();
         }
 
-        AbstractPair<Integer, Integer> ap = new AbstractPair<Integer, Integer>( w, h );
+        AbstractPair< Integer, Integer > ap = new AbstractPair< Integer, Integer >( w, h );
         return ap;
     }
 

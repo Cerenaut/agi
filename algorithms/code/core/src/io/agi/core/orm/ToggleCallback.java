@@ -8,26 +8,27 @@ package io.agi.core.orm;
 
 /**
  * A callback that can be turned on and off.
- * 
+ *
  * @author dave
  */
 public class ToggleCallback implements Callback {
-   
+
     public boolean _enabled = true;
     public Callback _c;
-    
+
     public ToggleCallback() {
-        
+
     }
 
     public ToggleCallback( boolean enabled, Callback c ) {
         _enabled = enabled;
         _c = c;
     }
-    
-    @Override public void call() {
-        if( _enabled ) {
-            if( _c != null ) {
+
+    @Override
+    public void call() {
+        if ( _enabled ) {
+            if ( _c != null ) {
                 _c.call();
             }
         }

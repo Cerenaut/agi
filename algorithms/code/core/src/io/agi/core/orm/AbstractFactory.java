@@ -7,11 +7,11 @@ package io.agi.core.orm;
 
 /**
  * Defer creating a factory type or avoid boilerplate factory types where not needed.
- * 
+ *
  * @author dave
  */
 public interface AbstractFactory< T > {
 
     public T create();
-    
+
 }

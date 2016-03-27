@@ -19,8 +19,8 @@ public class FileUtil {
      * @return
      * @throws IOException
      */
-    public static String readFile(String path) throws IOException {
-        byte[] encoded = Files.readAllBytes(Paths.get(path));
-        return new String(encoded, Charset.defaultCharset() );
+    public static String readFile( String path ) throws IOException {
+        byte[] encoded = Files.readAllBytes( Paths.get( path ) );
+        return new String( encoded, Charset.defaultCharset() );
     }
 }

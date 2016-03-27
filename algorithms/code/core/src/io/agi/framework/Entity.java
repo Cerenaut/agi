@@ -6,14 +6,16 @@ import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.persistence.Persistence;
-import io.agi.framework.serialization.ModelData;
+import io.agi.framework.persistence.PropertyConverter;
+import io.agi.framework.persistence.PropertyStringAccess;
+import io.agi.framework.persistence.models.ModelData;
 
 import java.util.*;
 
 /**
  * Created by dave on 14/02/16.
  */
-public abstract class Entity extends NamedObject implements EntityListener {
+public abstract class Entity extends NamedObject implements EntityListener, PropertyStringAccess {
 
     public static final String SUFFIX_AGE = "age";
     public static final String SUFFIX_RESET = "reset"; /// used as a flag to indicate the entity should reset itself on next update.
@@ -22,16 +24,19 @@ public abstract class Entity extends NamedObject implements EntityListener {
     protected String _parent;
     protected Node _n;
 
-    protected HashSet<String> _childrenWaiting = new HashSet<String>();
+    protected HashSet< String > _childrenWaiting = new HashSet< String >();
 
-    private HashMap<String, Data> _data = new HashMap<String, Data>();
+    private HashMap< String, Data > _data = new HashMap< String, Data >();
+    private HashMap< String, String > _properties = new HashMap< String, String >();
+
+    private PropertyConverter _propertyConverter = null;
 
     public Entity( String name, ObjectMap om, String type, Node n ) {
         super( name, om );
-//        _name = name;
         _type = type;
-//        _parent = parent;
         _n = n;
+
+        _propertyConverter = new PropertyConverter( this );
     }
 
     public void setParent( String parent ) {
@@ -60,28 +65,29 @@ public abstract class Entity extends NamedObject implements EntityListener {
             String inputEntity,
             String inputSuffix,
             String referenceEntity,
-            String referenceSuffix) {
+            String referenceSuffix ) {
         String inputKey = NamedObject.GetKey( inputEntity, inputSuffix );
         String refKey = NamedObject.GetKey( referenceEntity, referenceSuffix );
-        SetDataReference(p, inputKey, refKey);
+        SetDataReference( p, inputKey, refKey );
     }
 
     public static void SetDataReference(
             Persistence p,
             String dataKey,
-            String refKeys) {
-        ModelData jd = p.getData(dataKey);
+            String refKeys ) {
+        ModelData modelData = p.getData( dataKey );
 
-        if ( jd == null ) {
-            jd = new ModelData( dataKey, refKeys );
+        if ( modelData == null ) {
+            modelData = new ModelData( dataKey, refKeys );
         }
 
-        jd._refKey = refKeys;
-        p.setData(jd);
+        modelData._refKeys = refKeys;
+        p.setData( modelData );
     }
 
     /**
      * Returns a random number generator that is distributed and persisted.
+     *
      * @return
      */
     public Random getRandom() {
@@ -92,82 +98,27 @@ public abstract class Entity extends NamedObject implements EntityListener {
         return _n;
     }
 
-    public abstract void getInputKeys( Collection<String> keys );
+    /**
+     * Get the keys for all the data that is used as input.
+     * Prefetch it at the start of the update, never write it.
+     *
+     * @param keys
+     */
+    public abstract void getInputKeys( Collection< String > keys );
 
-    public abstract void getOutputKeys( Collection<String> keys );
+    /**
+     * Get the keys for all the data that is used as output.
+     * Old value is prefetched at the start of the update, and value is written at the end of the update.
+     *
+     * @param keys
+     */
+    public abstract void getOutputKeys( Collection< String > keys );
 
-    // Properties
-    public Float getPropertyFloat( String suffix, Float defaultValue ) {
-        String key = getKey( suffix );
-        Persistence p = _n.getPersistence();
-        return p.getPropertyFloat( key, defaultValue );
-    }
+    /**
+     * Get the keys for all the properties (non input/output state used by the entity).
+     */
+    public abstract void getPropertyKeys( Collection< String > keys );
 
-    public void setPropertyFloat( String suffix, float value ) {
-        String key = getKey( suffix );
-        Persistence p = _n.getPersistence();
-        p.setPropertyFloat( key, value );
-    }
-
-    public Double getPropertyDouble( String suffix, Double defaultValue ) {
-        String key = getKey( suffix );
-        Persistence p = _n.getPersistence();
-        return p.getPropertyDouble( key, defaultValue );
-    }
-
-    public void setPropertyDouble( String suffix, double value ) {
-        String key = getKey( suffix );
-        Persistence p = _n.getPersistence();
-        p.setPropertyDouble( key, value );
-    }
-
-    public Long getPropertyLong( String suffix, Long defaultValue ) {
-        String key = getKey( suffix );
-        Persistence p = _n.getPersistence();
-        return p.getPropertyLong( key, defaultValue );
-    }
-
-    public void setPropertyLong( String suffix, long value ) {
-        String key = getKey( suffix );
-        Persistence p = _n.getPersistence();
-        p.setPropertyLong( key, value );
-    }
-
-    public Integer getPropertyInt( String suffix, Integer defaultValue ) {
-        String key = getKey( suffix );
-        Persistence p = _n.getPersistence();
-        return p.getPropertyInt( key, defaultValue );
-    }
-
-    public void setPropertyInt( String suffix, int value ) {
-        String key = getKey( suffix );
-        Persistence p = _n.getPersistence();
-        p.setPropertyInt( key, value );
-    }
-
-    public Boolean getPropertyBoolean( String suffix, Boolean defaultValue ) {
-        String key = getKey( suffix );
-        Persistence p = _n.getPersistence();
-        return p.getPropertyBoolean( key, defaultValue );
-    }
-
-    public void setPropertyBoolean( String suffix, boolean value ) {
-        String key = getKey( suffix );
-        Persistence p = _n.getPersistence();
-        p.setPropertyBoolean( key, value );
-    }
-
-    public String getPropertyString( String suffix, String defaultValue ) {
-        String key = getKey( suffix );
-        Persistence p = _n.getPersistence();
-        return p.getPropertyString( key, defaultValue );
-    }
-
-    public void setPropertyString( String suffix, String value ) {
-        String key = getKey( suffix );
-        Persistence p = _n.getPersistence();
-        p.setPropertyString( key, value );
-    }
 
     // if I cant issue another update to children until this has completed...
     // then children can't get out of sync
@@ -186,7 +137,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         Persistence p = _n.getPersistence();
         //        Collection< JsonEntity > children = p.getChildEntities( _name );
-        Collection<String> childNames = p.getChildEntities( _name );
+        Collection< String > childNames = p.getChildEntities( _name );
 
         if ( childNames.isEmpty() ) {
             afterUpdate();
@@ -213,13 +164,13 @@ public abstract class Entity extends NamedObject implements EntityListener {
     protected void beforeUpdate() {
         String entityName = getName();
         int age = getPropertyInt( SUFFIX_AGE, 1 );
-        System.err.println("START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName);
+        System.err.println( "START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName );
     }
 
     protected void afterUpdate() {
         String entityName = getName();
-        int age = getPropertyInt( SUFFIX_AGE, 1 );
-        System.err.println( "END   T: "+System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity updated: " + entityName );
+        int age = getPropertyInt(SUFFIX_AGE, 1);
+        System.err.println( "END   T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity updated: " + entityName );
 
         _n.notifyUpdated( entityName ); // this entity, the parent, is now complete
     }
@@ -244,45 +195,79 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
     protected void updateSelf() {
 
-        // 1. get inputs
+        // 1. fetch inputs
         // get all the inputs and put them in the object map.
-        //System.err.println( "E1" );
         Collection<String> inputKeys = new ArrayList<String>();
         getInputKeys( inputKeys );
-        getData(inputKeys);
-        //System.err.println("E2");
+        fetchData( inputKeys );
 
-        // 2. get outputs
+        // 2. fetch outputs
         // get all the outputs and put them in the object map.
-        Collection<String> outputKeys = new ArrayList<String>();
+        Collection< String > outputKeys = new ArrayList< String >();
         getOutputKeys( outputKeys );
-        getData(outputKeys);
-        //System.err.println("E3");
+        fetchData( outputKeys );
+
+        // 3. fetch properties
+        // get all the properties and put them in the properties map.
+        Collection< String > propertyKeys = new ArrayList< String >();
+        getPropertyKeys(propertyKeys);
+        propertyKeys.add(SUFFIX_AGE);
+        fetchProperties(propertyKeys);
 
         // 3. doUpdateSelf()
         doUpdateSelf();
-        //System.err.println("E4");
+
+        // update age:
+        int age = _propertyConverter.getPropertyInt( SUFFIX_AGE, 0 );
+        ++age;
+        _propertyConverter.setPropertyInt( SUFFIX_AGE, age );
 
         // 4. set outputs
         // write all the outputs back to the persistence system
-//        setData(inputKeys);
-        setData( outputKeys );
-        //System.err.println("E5");
+//        persistData(inputKeys); These aren't persisted, by definition you're promising not to write them.
+        persistData( outputKeys );
 
-
-        // update age:
-        int age = getPropertyInt( SUFFIX_AGE, 0 );
-        ++age;
-        setPropertyInt(SUFFIX_AGE, age);
+        // 5. persist properties
+        persistProperties( propertyKeys );
 
         //System.err.println( "Update: " + getName() + " age: " + age );
     }
 
-    public Data getData( String keySuffix ) {
-        return _data.get( getKey( keySuffix ) );
+    /**
+     * Populate properties map with the persisted properties.
+     *
+     * @param keySuffixes
+     */
+    private void fetchProperties( Collection< String > keySuffixes ) {
+        Persistence p = _n.getPersistence();
+
+        for ( String keySuffix : keySuffixes ) {
+            String inputKey = getKey( keySuffix );
+            String value = p.getPropertyString( inputKey, "" );
+            _properties.put( keySuffix, value );
+        }
     }
 
-    public void getData( Collection<String> keys ) {
+    /**
+     * Persist the properties map.
+     *
+     * @param keySuffixes
+     */
+    private void persistProperties( Collection< String > keySuffixes ) {
+        Persistence p = _n.getPersistence();
+        for ( String keySuffix : keySuffixes ) {
+            String value = _properties.get( keySuffix );
+            String inputKey = getKey( keySuffix );
+            p.setPropertyString( inputKey, value );
+        }
+    }
+
+    /**
+     * Populate object map with the persisted data.
+     *
+     * @param keys
+     */
+    private void fetchData( Collection< String > keys ) {
         Persistence p = _n.getPersistence();
 
         for ( String keySuffix : keys ) {
@@ -290,14 +275,14 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
             ModelData jd = p.getData( inputKey );
 
-            if( jd == null ) {
+            if ( jd == null ) {
                 continue; // truthfully represent as null.
             }
 
-            HashSet<String> refKeys = jd.getRefKeys();
+            HashSet< String > refKeys = jd.getRefKeys();
             if ( !refKeys.isEmpty() ) {
                 // Create an output matrix which is a composite of all the referenced inputs.
-                HashMap<String, Data> allRefs = new HashMap<String, Data>();
+                HashMap< String, Data > allRefs = new HashMap< String, Data >();
 
                 for ( String refKey : refKeys ) {
                     ModelData refJson = p.getData( refKey );
@@ -322,8 +307,18 @@ public abstract class Entity extends NamedObject implements EntityListener {
         }
     }
 
+    public void persistData( Collection< String > keys ) {
+        Persistence p = _n.getPersistence();
+
+        for ( String keySuffix : keys ) {
+            String inputKey = getKey( keySuffix );
+            Data d = _data.get( inputKey );
+            p.setData( new ModelData( inputKey, d ) );
+        }
+    }
+
     public void setData( String keySuffix, Data output ) {
-        _data.put( getKey( keySuffix ), output );
+        _data.put(getKey(keySuffix), output );
     }
 
     /**
@@ -335,7 +330,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
      * @param allRefs
      * @return
      */
-    protected Data getCombinedData( String inputKeySuffix, HashMap<String, Data> allRefs ) {
+    protected Data getCombinedData( String inputKeySuffix, HashMap< String, Data > allRefs ) {
 
         // case 1: No input.
         int nbrRefs = allRefs.size();
@@ -382,27 +377,20 @@ public abstract class Entity extends NamedObject implements EntityListener {
         return d;
     }
 
-    public void setData( Collection<String> keys ) {
-        Persistence p = _n.getPersistence();
-
-        for ( String keySuffix : keys ) {
-            String inputKey = getKey(keySuffix);
-            Data d = _data.get(inputKey);
-            //System.err.println( "E:setData: " + inputKey + " bytes: " + d._values.length );
-            p.setData( new ModelData( inputKey, d ) );
-        }
+    public Data getData( String keySuffix ) {
+        return _data.get( getKey( keySuffix ) );
     }
 
     /**
      * Get the data if it exists, and Create it if it doesn't.
      *
-     * @param keySuffix   the key of the data
-     * @param defaultSize Create data of this size, if the data does not exist
+     * @param keySuffix   the name of the data
+     * @param defaultSize create data of this size, if the data does not exist
      * @return data
      */
     public Data getData( String keySuffix, DataSize defaultSize ) {
-        String key = getKey(keySuffix);
-        Data d = _data.get( key );
+        String key = getKey( keySuffix );
+        Data d = _data.get(key );
 
         if ( d == null ) {
             d = new Data( defaultSize );
@@ -429,14 +417,74 @@ public abstract class Entity extends NamedObject implements EntityListener {
         if ( d == null ) {
             d = new Data( defaultSize );
         }
-        else if( !d._dataSize.isSameAs( defaultSize ) ){
+        else if ( !d._dataSize.isSameAs( defaultSize ) ) {
             d.setSize( defaultSize );
         }
 
         return d;
     }
 
+    /**
+     * If value doesn't exist, set it at defaultValue, and return defaultValue.
+     */
+    public String getPropertyString( String keySuffix, String defaultValue ) {
+        String value = _properties.get(keySuffix );
+
+        if ( value != null && value.length() != 0 ) {
+            return value;
+        }
+
+        _properties.put( keySuffix, defaultValue );
+        return defaultValue;
+    }
+
+    public void setPropertyString( String keySuffix, String value ) {
+        _properties.put(keySuffix, value );
+    }
+
+
+    public Float getPropertyFloat( String key, Float defaultValue ) {
+        return _propertyConverter.getPropertyFloat( key, defaultValue );
+    }
+
+    public void setPropertyFloat( String key, float value ) {
+        _propertyConverter.setPropertyFloat( key, value );
+    }
+
+    public Double getPropertyDouble( String key, Double defaultValue ) {
+        return _propertyConverter.getPropertyDouble( key, defaultValue );
+    }
+
+    public void setPropertyDouble( String key, double value ) {
+        _propertyConverter.setPropertyDouble( key, value );
+    }
+
+    public Long getPropertyLong( String key, Long defaultValue ) {
+        return _propertyConverter.getPropertyLong( key, defaultValue );
+    }
+
+    public void setPropertyLong( String key, long value ) {
+        _propertyConverter.setPropertyLong(key, value );
+    }
+
+    public Integer getPropertyInt( String key, Integer defaultValue ) {
+        return _propertyConverter.getPropertyInt( key, defaultValue );
+    }
+
+    public void setPropertyInt( String key, int value ) {
+        _propertyConverter.setPropertyInt( key, value );
+    }
+
+    public Boolean getPropertyBoolean( String key, Boolean defaultValue ) {
+        return _propertyConverter.getPropertyBoolean( key, defaultValue );
+    }
+
+    public void setPropertyBoolean( String key, boolean value ) {
+        _propertyConverter.setPropertyBoolean( key, value );
+    }
+
     protected void doUpdateSelf() {
         // default: Nothing.
     }
+
 }

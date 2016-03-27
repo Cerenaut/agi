@@ -3,11 +3,10 @@ package io.agi.framework.coordination.http;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.agi.framework.persistence.Persistence;
-import io.agi.framework.serialization.ModelNode;
+import io.agi.framework.persistence.models.ModelNode;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Map;
 
 /**
  * Created by dave on 17/03/16.
@@ -18,12 +17,12 @@ public class HttpNodesHandler implements HttpHandler {
 
     public Persistence _p;
 
-    public HttpNodesHandler(Persistence p) {
+    public HttpNodesHandler( Persistence p ) {
         _p = p;
     }
 
     @Override
-    public void handle(HttpExchange t ) throws IOException {
+    public void handle( HttpExchange t ) throws IOException {
         int status = 400;
         String response = "";
 
@@ -36,16 +35,17 @@ public class HttpNodesHandler implements HttpHandler {
 //            Map<String, String> m = HttpUtil.GetQueryParams(query);
             boolean first = true;
 
-            if( method.equalsIgnoreCase( "GET" ) ) {
+            if ( method.equalsIgnoreCase( "GET" ) ) {
 
-                Collection<ModelNode> nodes = _p.getNodes();
+                Collection< ModelNode > nodes = _p.getNodes();
 
                 response += "[ ";
 
-                for( ModelNode m : nodes ) {
-                    if (first) {
+                for ( ModelNode m : nodes ) {
+                    if ( first ) {
                         first = false;
-                    } else {
+                    }
+                    else {
                         response += ", ";
                     }
 
@@ -63,10 +63,10 @@ public class HttpNodesHandler implements HttpHandler {
                 status = 200;
             }
         }
-        catch( Exception e ) {
+        catch ( Exception e ) {
             e.printStackTrace();
         }
 
-        HttpUtil.SendResponse(t, status, response);
+        HttpUtil.SendResponse( t, status, response );
     }
 }

@@ -1,4 +1,4 @@
-package io.agi.framework.serialization;
+package io.agi.framework.persistence.models;
 
 import com.sun.deploy.util.StringUtils;
 import io.agi.core.data.Data;
@@ -9,36 +9,36 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 /**
- * Conversion to JSON for serialization.
- *
+ * Conversion to JSON for models.
+ * <p>
  * Created by dave on 16/02/16.
  */
 public class ModelData {
 
     public String _key;
-    public String _refKey;
+    public String _refKeys;
     public String _sizes;
     public String _elements;
 
     public ModelData( String key, Data d ) {
         _key = key;
-        _refKey = null;
-        if( d != null ) {
-            _sizes = DataSizeToString(d._dataSize ); //d._dataSize.toString();
-            _elements = FloatArrayToString(d);//d._values.toString();
+        _refKeys = null;
+        if ( d != null ) {
+            _sizes = DataSizeToString( d._dataSize ); //d._dataSize.toString();
+            _elements = FloatArrayToString( d );//d._values.toString();
         }
     }
 
-    public ModelData( String key, String refKey ) {
+    public ModelData( String key, String refKeys ) {
         _key = key;
-        _refKey = refKey;
+        _refKeys = refKeys;
         _sizes = null;
         _elements = null;
     }
 
-    public ModelData( String key, String refKey, String sizes, String elements ) {
+    public ModelData( String key, String refKeys, String sizes, String elements ) {
         _key = key;
-        _refKey = refKey;
+        _refKeys = refKeys;
         _sizes = sizes;
         _elements = elements;
     }
@@ -47,24 +47,24 @@ public class ModelData {
         try {
             HashSet< String > refKeys = new HashSet< String >();
 
-            if( _refKey != null ) {
-                String[] splitKeys = _refKey.split(",");
+            if ( _refKeys != null ) {
+                String[] splitKeys = _refKeys.split( "," );
 
-                for (int i = 0; i < splitKeys.length; ++i) {
-                    String key = splitKeys[i];
-                    refKeys.add(key);
+                for ( int i = 0; i < splitKeys.length; ++i ) {
+                    String key = splitKeys[ i ];
+                    refKeys.add( key );
                 }
             }
 
             return refKeys;
         }
-        catch( Exception e ) {
+        catch ( Exception e ) {
             return null;
         }
     }
 
     public boolean isReference() {
-        if( _refKey != null ) {
+        if ( _refKeys != null ) {
             return true;
         }
         return false;
@@ -72,6 +72,7 @@ public class ModelData {
 
     /**
      * Conver the Data object to its serialized form, so it can be stored.
+     *
      * @param d
      */
     public void setData( Data d ) {
@@ -79,7 +80,7 @@ public class ModelData {
             _sizes = DataSizeToString( d._dataSize );
             _elements = FloatArrayToString( d );
         }
-        catch( Exception e ) {
+        catch ( Exception e ) {
 
         }
     }
@@ -91,23 +92,24 @@ public class ModelData {
      */
     public Data getData() {
         // convert into data.
-//        if( _refKey != null ) {
+//        if( _refKeys != null ) {
 //            return null;
 //        }
 
         try {
-            DataSize ds = StringToDataSize(_sizes);
-            FloatArray2 fa = StringToFloatArray(_elements);
-            Data d = new Data(ds, fa);
+            DataSize ds = StringToDataSize( _sizes );
+            FloatArray2 fa = StringToFloatArray( _elements );
+            Data d = new Data( ds, fa );
             return d;
         }
-        catch( Exception e ) {
+        catch ( Exception e ) {
             return null;
         }
     }
 
     /**
      * Convert a DataSize object to the serialized form.
+     *
      * @param ds
      * @return
      */
@@ -123,10 +125,10 @@ public class ModelData {
 
         String sizes = "";
         String labels = "";
-        for( int d = 0; d < ds._sizes.length; ++d ) {
+        for ( int d = 0; d < ds._sizes.length; ++d ) {
             int size = ds._sizes[ d ];
             String label = ds.getLabel( d );
-            if( d > 0 ) {
+            if ( d > 0 ) {
                 sizes = sizes + ","; // add comma for preceding item
                 labels = labels + ","; // add comma for preceding item
             }
@@ -141,12 +143,12 @@ public class ModelData {
         try {
             String sizesString = GetJsonArrayProperty( s, "sizes" );
             String labelsString = GetJsonArrayProperty( s, "labels" );
-            String[] splitSizes = sizesString.split(",");
-            String[] splitLabels = labelsString.split("," );
+            String[] splitSizes = sizesString.split( "," );
+            String[] splitLabels = labelsString.split( "," );
 
             DataSize ds = new DataSize( splitSizes.length );
 
-            for( int i = 0; i < splitSizes.length; ++ i ) {
+            for ( int i = 0; i < splitSizes.length; ++i ) {
                 String sizeString = splitSizes[ i ];
                 String labelValue = splitLabels[ i ];
                 labelValue = labelValue.replace( "\"", "" );
@@ -156,7 +158,7 @@ public class ModelData {
 
             return ds;
         }
-        catch( Exception e ) {
+        catch ( Exception e ) {
             return null;
         }
     }
@@ -166,19 +168,14 @@ public class ModelData {
         String s2 = "],\"length\":";
         String s3 = "}";
 
-        String length = String.valueOf(fa._values.length);
-
+        String length = String.valueOf( fa._values.length );
         ArrayList< String > values = new ArrayList< String >();
         values.ensureCapacity( fa._values.length );
-//        String elements = "";
+
         for( int i = 0; i < fa._values.length; ++i ) {
-//            if( i > 0 ) {
-//                elements = elements + ","; // add comma for preceding item
-//            }
             float value = fa._values[ i ];
             String s = String.valueOf( value );
             values.add( i, s );
-//            elements = elements + String.valueOf( value );
         }
 
         String elements = StringUtils.join( values, "," );
@@ -189,48 +186,48 @@ public class ModelData {
 
     public static FloatArray2 StringToFloatArray( String s ) {
         try {
-            String lengthString = GetJsonProperty(s, "length");
-            Integer length = Integer.valueOf(lengthString);
+            String lengthString = GetJsonProperty( s, "length" );
+            Integer length = Integer.valueOf( lengthString );
 
             FloatArray2 fa = new FloatArray2( length );
 
             String elementsString = GetJsonArrayProperty( s, "elements" );
-            String[] splitString = elementsString.split("," );
-            for( int i = 0; i < splitString.length; ++ i ) {
+            String[] splitString = elementsString.split( "," );
+            for ( int i = 0; i < splitString.length; ++i ) {
                 String valueString = splitString[ i ];
-                Float value = Float.valueOf(valueString);
+                Float value = Float.valueOf( valueString );
                 fa._values[ i ] = value;
             }
 
             return fa;
         }
-        catch( Exception e ) {
+        catch ( Exception e ) {
             return null;
         }
     }
 
     private static String GetJsonProperty( String json, String property ) {
-        int i1 = json.indexOf("\""+property+"\"");
-        int i2 = json.indexOf(":", i1); // this is the start of the property value
-        int i3a = json.indexOf("}", i2); // it ends either with } or , depending on whether it is the last property.
-        int i3b = json.indexOf(",", i2);
-        if( i3a < 0 ) {
+        int i1 = json.indexOf( "\"" + property + "\"" );
+        int i2 = json.indexOf( ":", i1 ); // this is the start of the property value
+        int i3a = json.indexOf( "}", i2 ); // it ends either with } or , depending on whether it is the last property.
+        int i3b = json.indexOf( ",", i2 );
+        if ( i3a < 0 ) {
             i3a = i3b;
         }
-        if( i3b < 0 ) {
+        if ( i3b < 0 ) {
             i3b = i3a;
         }
-        int i3 = Math.min(i3a, i3b);
-        String propertyValue = json.substring(i2 + 1, i3);
+        int i3 = Math.min( i3a, i3b );
+        String propertyValue = json.substring( i2 + 1, i3 );
         return propertyValue;
     }
 
     private static String GetJsonArrayProperty( String json, String property ) {
-        int i1 = json.indexOf("\""+property+"\"");
-        int i2 = json.indexOf("[", i1); // this is the start of the property value
-        int i3 = json.indexOf("]", i2); // it ends either with } or ,
+        int i1 = json.indexOf( "\"" + property + "\"" );
+        int i2 = json.indexOf( "[", i1 ); // this is the start of the property value
+        int i3 = json.indexOf( "]", i2 ); // it ends either with } or ,
 
-        String propertyValue = json.substring(i2 + 1, i3);
+        String propertyValue = json.substring( i2 + 1, i3 );
         return propertyValue;
     }
 }

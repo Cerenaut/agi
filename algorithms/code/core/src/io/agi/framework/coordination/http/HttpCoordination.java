@@ -1,15 +1,18 @@
 package io.agi.framework.coordination.http;
 
 import com.sun.net.httpserver.HttpServer;
-import io.agi.framework.coordination.Coordination;
 import io.agi.framework.Node;
-import io.agi.framework.serialization.ModelNode;
+import io.agi.framework.coordination.Coordination;
+import io.agi.framework.persistence.models.ModelNode;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Created by dave on 19/02/16.
@@ -38,7 +41,7 @@ public class HttpCoordination implements Coordination {
         int nodePort = _n.getPort();
         //String handlerClassName = HttpCoordinationHandler.class.getName();
         HttpCoordinationHandler h = new HttpCoordinationHandler( this );
-        _s = HttpUtil.Create(this, nodePort, HttpCoordinationHandler.CONTEXT, h);
+        _s = HttpUtil.Create( this, nodePort, HttpCoordinationHandler.CONTEXT, h );
 
         addHandlers();
 
@@ -56,6 +59,7 @@ public class HttpCoordination implements Coordination {
         HttpUtil.AddHandler( _s, HttpNodesHandler.CONTEXT, nh );
         HttpUtil.AddHandler( _s, HttpEntitiesHandler.CONTEXT, eh );
     }
+
     /**
      * Shutdown services
      */
@@ -66,30 +70,33 @@ public class HttpCoordination implements Coordination {
 
     /**
      * This is an internally generated request for a distributed update.
+     *
      * @param entityName
      */
-    public void doUpdate(String entityName) {
-        _n.doUpdate(entityName);
-        doUpdateBroadcast(entityName);
+    public void doUpdate( String entityName ) {
+        _n.doUpdate( entityName );
+        doUpdateBroadcast( entityName );
     }
 
     /**
      * Broadcasts an update request to all Nodes.
+     *
      * @param entityName
      */
-    public void doUpdateBroadcast(String entityName) {
+    public void doUpdateBroadcast( String entityName ) {
         String query = getQuery( entityName, HttpCoordinationHandler.VALUE_UPDATE, _n.getName() );
-        broadcast(query);
+        broadcast( query );
     }
 
     /**
      * This is an externally generated request for an update to an entity somewhere in the distributed system
+     *
      * @param entityName
      * @param origin
      */
-    public void doUpdateExternal(String entityName, String origin) {
-        if( origin != null ) {
-            if( origin.equals( _n.getName() ) ) {
+    public void doUpdateExternal( String entityName, String origin ) {
+        if ( origin != null ) {
+            if ( origin.equals( _n.getName() ) ) {
                 return; // ignore self events
             }
         }
@@ -98,48 +105,52 @@ public class HttpCoordination implements Coordination {
             doUpdateBroadcast( entityName );
         }
 
-        _n.doUpdate(entityName);
+        _n.doUpdate( entityName );
     }
 
     /**
      * This is an internally generated request for a distributed updated notification.
+     *
      * @param entityName
      */
-    public void onUpdated(String entityName) {
-        _n.onUpdated(entityName);
-        onUpdatedBroadcast(entityName);
+    public void onUpdated( String entityName ) {
+        _n.onUpdated( entityName );
+        onUpdatedBroadcast( entityName );
     }
 
     /**
      * Sends a local update notification to all nodes.
+     *
      * @param entityName
      */
-    public void onUpdatedBroadcast(String entityName) {
+    public void onUpdatedBroadcast( String entityName ) {
         String query = getQuery( entityName, HttpCoordinationHandler.VALUE_UPDATED, _n.getName() );
-        broadcast(query);
+        broadcast( query );
     }
 
     /**
      * This is an externally generated notification of an update to an entity somewhere in the distributed system
+     *
      * @param entityName
      * @param origin
      */
-    public void onUpdatedExternal(String entityName, String origin) {
-        if( origin != null ) {
-            if( origin.equals( _n.getName() ) ) {
+    public void onUpdatedExternal( String entityName, String origin ) {
+        if ( origin != null ) {
+            if ( origin.equals( _n.getName() ) ) {
                 return; // ignore self events
             }
         }
         else { // origin is null, i.e. was generated outside the network
             // append origin=this/here and broadcast to rest of network
-            onUpdatedBroadcast(entityName);
+            onUpdatedBroadcast( entityName );
         }
 
-        _n.onUpdated(entityName);
+        _n.onUpdated( entityName );
     }
 
     /**
      * Generates the HTTP messages the HTTP layer understands.
+     *
      * @param entityName
      * @param event
      * @param origin
@@ -155,13 +166,14 @@ public class HttpCoordination implements Coordination {
 
     /**
      * Actually broadcasts the HTTP messages to all Nodes.
+     *
      * @param query
      */
     public void broadcast( String query ) {
-        Collection<ModelNode> nodes = _n.getPersistence().getNodes();
+        Collection< ModelNode > nodes = _n.getPersistence().getNodes();
 
-        for( ModelNode jn : nodes ) {
-            if( jn._key.equals( _n.getName() ) ) {
+        for ( ModelNode jn : nodes ) {
+            if ( jn._key.equals( _n.getName() ) ) {
 //                continue; // don't send to self
             }
 
@@ -171,6 +183,7 @@ public class HttpCoordination implements Coordination {
 
     /**
      * Sends a HTTP request to the specified Node.
+     *
      * @param query
      * @param jn
      */
@@ -182,7 +195,7 @@ public class HttpCoordination implements Coordination {
         class Response {
             private InputStream body;
 
-            public Response(InputStream body) {
+            public Response( InputStream body ) {
                 this.body = body;
             }
 
@@ -191,10 +204,10 @@ public class HttpCoordination implements Coordination {
             }
         }
 
-        class Request implements Callable<Response> {
+        class Request implements Callable< Response > {
             private URL url;
 
-            public Request(URL url) {
+            public Request( URL url ) {
                 this.url = url;
             }
 
@@ -205,7 +218,7 @@ public class HttpCoordination implements Coordination {
         }
 
         try {
-            Future<Response> response = _executor.submit(new Request(new URL(url)));
+            Future< Response > response = _executor.submit( new Request( new URL( url ) ) );
 
             // Do your other tasks here (will be processed immediately, current thread won't block).
             // ...
@@ -218,7 +231,7 @@ public class HttpCoordination implements Coordination {
 //            ee.printStackTrace();
 //        }
         }
-        catch( MalformedURLException e ) {
+        catch ( MalformedURLException e ) {
             e.printStackTrace();
         }
     }

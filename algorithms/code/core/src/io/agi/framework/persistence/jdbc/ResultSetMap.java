@@ -8,12 +8,12 @@ import java.util.HashSet;
 
 /**
  * A Generic but perhaps less efficient way to store and later browser data returned from SQL query.
- *
+ * 
  * Created by dave on 18/02/16.
  */
 public class ResultSetMap implements ResultSetCallback {
 
-    public ArrayList< HashMap< String, String > > _rows = new ArrayList<HashMap< String, String >>();
+    public ArrayList< HashMap< String, String > > _rows = new ArrayList< HashMap< String, String > >();
 
     public HashSet< String > _fields = new HashSet< String >();
 
@@ -23,7 +23,7 @@ public class ResultSetMap implements ResultSetCallback {
 
     public String getRowValue( int row, String field ) {
 
-        if( row >= _rows.size() ) {
+        if ( row >= _rows.size() ) {
             return null;
         }
 
@@ -34,10 +34,10 @@ public class ResultSetMap implements ResultSetCallback {
     }
 
     public void onResultSet( ResultSet rs ) throws SQLException {
-        while( rs.next() ) {
+        while ( rs.next() ) {
             HashMap< String, String > values = new HashMap< String, String >();
 
-            for( String field : _fields ) {
+            for ( String field : _fields ) {
                 String value = rs.getString( field );
                 values.put( field, value );
             }

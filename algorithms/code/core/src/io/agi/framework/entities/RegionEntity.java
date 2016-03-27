@@ -6,7 +6,6 @@ import io.agi.core.alg.RegionFactory;
 import io.agi.core.ann.supervised.NetworkLayer;
 import io.agi.core.ann.unsupervised.CompetitiveLearningConfig;
 import io.agi.core.ann.unsupervised.GrowingNeuralGas;
-import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
 import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
 import io.agi.core.data.DataSize;
@@ -104,6 +103,11 @@ public class RegionEntity extends Entity {
             keys.add(Keys.concatenate(prefix, NetworkLayer.OUTPUTS) );
             keys.add(Keys.concatenate(prefix, NetworkLayer.ERROR_GRADIENTS) );
         }
+
+    }
+
+    @Override
+    public void getPropertyKeys( Collection< String > keys ) {
 
     }
 

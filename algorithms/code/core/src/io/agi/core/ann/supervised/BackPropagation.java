@@ -5,24 +5,24 @@ import io.agi.core.data.FloatArray2;
 /**
  * This class puts all the math associated with the backpropagation algorithm in one place.
  * It is a collection of static methods called by other objects.
- *
+ * <p>
  * Math based on:
  * http://neuralnetworksanddeeplearning.com/chap2.html
- *
+ * <p>
  * w^l_{jk} = weight from neuron k in layer l-1 to neuron j in layer l
- *
- *  i.e. the weights are associated with inputs to a neuron.
- *
+ * <p>
+ * i.e. the weights are associated with inputs to a neuron.
+ * <p>
  * b^l_j = bias for neuron j in layer l
- *
+ * <p>
  * i^l_k = the value of input k in layer l-1 to layer l
- *
+ * <p>
  * z^l_j = the sum of weights * inputs + bias for neuron j in layer l
- *
+ * <p>
  * a^l_j = activation of neuron j in layer l
- *
+ * <p>
  * This class contains the implementation of BackProp functions.
- *
+ * <p>
  * http://neuralnetworksanddeeplearning.com/chap2.html
  * Created by dave on 3/01/16.
  */
@@ -62,13 +62,13 @@ public abstract class BackPropagation {
 
         l2R = 0.5f * l2R * sumSqWeights; // http://cs231n.github.io/neural-networks-2/ and http://neuralnetworksanddeeplearning.com/chap3.html
 
-        if( lossFunction.equals( LossFunction.QUADRATIC ) ) {
+        if ( lossFunction.equals( LossFunction.QUADRATIC ) ) {
             externalErrorGradientQuadratic( weightedSums, outputs, ideals, errors, af, l2R );
         }
-        else if( lossFunction.equals( LossFunction.CROSS_ENTROPY ) ) {
-            externalErrorGradientDifference(outputs, ideals, errors, l2R );
+        else if ( lossFunction.equals( LossFunction.CROSS_ENTROPY ) ) {
+            externalErrorGradientDifference( outputs, ideals, errors, l2R );
         }
-        else if( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
+        else if ( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
             externalErrorGradientDifference( outputs, ideals, errors, l2R );
         }
     }
@@ -81,16 +81,16 @@ public abstract class BackPropagation {
             ActivationFunction af,
             float l2R ) {
         int J = weightedSums.getSize();
-        assert( errors.getSize() == J );
+        assert ( errors.getSize() == J );
 
         // d = loss * derivative( weightedSum )
-        for( int j = 0; j < J; ++j ) {
+        for ( int j = 0; j < J; ++j ) {
             float output = outputs._values[ j ];
-            float ideal  = ideals._values[ j ];
+            float ideal = ideals._values[ j ];
             float loss = LossFunction.quadratic( output, ideal );
             loss += l2R;
             float z = weightedSums._values[ j ];
-            float d = (float)af.df( z );
+            float d = ( float ) af.df( z );
             errors._values[ j ] = loss * d;
         }
     }
@@ -101,9 +101,9 @@ public abstract class BackPropagation {
             FloatArray2 errors,
             float l2R ) {
         int J = ideals.getSize();
-        assert( outputs.getSize() == J );
+        assert ( outputs.getSize() == J );
 
-        for( int j = 0; j < J; ++j ) {
+        for ( int j = 0; j < J; ++j ) {
             float y = ideals._values[ j ];
             float a = outputs._values[ j ];
             errors._values[ j ] = ( a - y ) + l2R;
@@ -120,20 +120,20 @@ public abstract class BackPropagation {
         int K = inputs.getSize(); // layer inputs ie neurons in layer l-1
         int J = errorGradient.getSize(); // layer outputs ie neurons in this layer l
 
-        assert( errorGradient.getSize() == J );
-        assert( weights.getSize() == (K*J) );
+        assert ( errorGradient.getSize() == J );
+        assert ( weights.getSize() == ( K * J ) );
 
         // w_jk = w_jk - learningRate * d_j * input_k
         // b_j = b_j - learningRate * d_j
 
-        for( int j = 0; j < J; ++j ) {
+        for ( int j = 0; j < J; ++j ) {
 
             float d = errorGradient._values[ j ];
             float bOld = biases._values[ j ];
             float bNew = bOld - learningRate * d;
             biases._values[ j ] = bNew;
 
-            for (int k = 0; k < K; ++k) { // computing error for each "input"
+            for ( int k = 0; k < K; ++k ) { // computing error for each "input"
 
                 int offset = j * K + k; // K = inputs, storage is all inputs adjacent
 
@@ -158,24 +158,24 @@ public abstract class BackPropagation {
 
         int K = errorsLayer1.getSize(); // layer inputs ie neurons in layer l-1
         int J = errorsLayer2.getSize(); // layer outputs ie neurons in this layer l
-        assert( weightedSumsLayer1.getSize() == K );
-        assert( weightsLayer2.getSize() == (K*J) );
+        assert ( weightedSumsLayer1.getSize() == K );
+        assert ( weightsLayer2.getSize() == ( K * J ) );
 
-        for( int k = 0; k < K; ++k ) { // computing error for each "input"
+        for ( int k = 0; k < K; ++k ) { // computing error for each "input"
             float sum = 0.f;
 
-            for( int j = 0; j < J; ++j ) {
+            for ( int j = 0; j < J; ++j ) {
                 int offset = j * K + k; // K = inputs, storage is all inputs adjacent
                 float w = weightsLayer2._values[ offset ];
-                float d = errorsLayer2._values[j]; // d_j i.e. partial derivative of loss fn with respect to the activation of j
-                float product = d * w + (l2R * w);
+                float d = errorsLayer2._values[ j ]; // d_j i.e. partial derivative of loss fn with respect to the activation of j
+                float product = d * w + ( l2R * w );
                 sum += product;
             }
 
             // d^l_k = sum_j :
             float z = weightedSumsLayer1._values[ k ];
-            float d = (float)afLayer1.df( z );
-            errorsLayer1._values[k] = sum * d;
+            float d = ( float ) afLayer1.df( z );
+            errorsLayer1._values[ k ] = sum * d;
         }
     }
 

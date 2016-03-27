@@ -32,15 +32,20 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
         super( entityName, om, type, n );
     }
 
-    public void getInputKeys( Collection<String> keys ) {
+    public void getInputKeys( Collection< String > keys ) {
         keys.add( INPUT );
     }
 
-    public void getOutputKeys( Collection<String> keys ) {
+    public void getOutputKeys( Collection< String > keys ) {
         keys.add( OUTPUT_WEIGHTS );
         keys.add( OUTPUT_MASK );
         keys.add( OUTPUT_ERROR );
         keys.add( OUTPUT_ACTIVE );
+    }
+
+    @Override
+    public void getPropertyKeys( Collection< String > keys ) {
+
     }
 
     protected void doUpdateSelf() {
@@ -55,10 +60,10 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
         // Get all the parameters:
         int inputs = input.getSize();
 
-        boolean reset = getPropertyBoolean(Entity.SUFFIX_RESET, false);
-        float learningRate = getPropertyFloat(DynamicSelfOrganizingMapConfig.LEARNING_RATE, 0.5f);
-        float elasticity   = getPropertyFloat(DynamicSelfOrganizingMapConfig.ELASTICITY, 1.0f);
-        int widthCells = getPropertyInt(CompetitiveLearningConfig.WIDTH_CELLS, 8);
+        boolean reset = getPropertyBoolean( Entity.SUFFIX_RESET, false );
+        float learningRate = getPropertyFloat( DynamicSelfOrganizingMapConfig.LEARNING_RATE, 0.5f );
+        float elasticity = getPropertyFloat( DynamicSelfOrganizingMapConfig.ELASTICITY, 1.0f );
+        int widthCells = getPropertyInt( CompetitiveLearningConfig.WIDTH_CELLS, 8 );
         int heightCells = getPropertyInt( CompetitiveLearningConfig.HEIGHT_CELLS, 8 );
 
         String implName = getName() + Keys.DELIMITER + IMPL_NAME; // the name of the object that implements

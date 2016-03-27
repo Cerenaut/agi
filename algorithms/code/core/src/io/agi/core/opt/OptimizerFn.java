@@ -6,8 +6,8 @@
 package io.agi.core.opt;
 
 /**
- * 1-d Optimization interface. 
- * 
+ * 1-d Optimization interface.
+ *
  * @author davidjr
  */
 public interface OptimizerFn {

@@ -3,7 +3,6 @@ package io.agi.core.ann.unsupervised;
 import io.agi.core.data.Data;
 import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.Callback;
-import io.agi.core.orm.CallbackCollection;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.orm.UnitTest;
 
@@ -39,7 +38,7 @@ public class GrowingNeuralGasTest implements UnitTest, Callback {
         float stressThreshold = 0.03f;
         int growthInterval = 5;
 
-        RandomInstance.setSeed(randomSeed); // make the tests repeatable
+        RandomInstance.setSeed( randomSeed ); // make the tests repeatable
         ObjectMap om = ObjectMap.GetInstance();
         GrowingNeuralGasConfig gngc = new GrowingNeuralGasConfig();
 
@@ -47,24 +46,24 @@ public class GrowingNeuralGasTest implements UnitTest, Callback {
                 om, GNG, inputs, widthCells, heightCells, learningRate, learningRateNeighbours, noiseMagnitude, edgeMaxAge, stressLearningRate, stressThreshold, growthInterval );
 
         GrowingNeuralGas cl = new GrowingNeuralGas( GNG, om );
-        cl.setup(gngc);
+        cl.setup( gngc );
 
         run( epochs, batch, meanErrorThreshold );
     }
 
     public GrowingNeuralGas getAlgorithm() {
         ObjectMap om = ObjectMap.GetInstance();
-        GrowingNeuralGas gng = (GrowingNeuralGas)om.get( GNG );
+        GrowingNeuralGas gng = ( GrowingNeuralGas ) om.get( GNG );
         return gng;
     }
 
     public float getDiscreteRandom() {
         float gridSize = 6.f;
-        float x = (float)RandomInstance.random() * ( gridSize - 0.f );
-        int nx = (int)x;
-        x = (float)nx;
+        float x = ( float ) RandomInstance.random() * ( gridSize - 0.f );
+        int nx = ( int ) x;
+        x = ( float ) nx;
         x /= gridSize;
-        x += ((1.f / ( gridSize )) * 0.5f );
+        x += ( ( 1.f / ( gridSize ) ) * 0.5f );
         return x;
     }
 
@@ -84,24 +83,24 @@ public class GrowingNeuralGasTest implements UnitTest, Callback {
 
         // perform tests in batches until the mean error for a batch is below threshold.
         // Otherwise, fail test.
-        for( int epoch = 0; epoch < epochs; ++epoch ) {
+        for ( int epoch = 0; epoch < epochs; ++epoch ) {
 
             float sumError = 0.f;
 
-            for( int test = 0; test < batch; ++test ) {
+            for ( int test = 0; test < batch; ++test ) {
                 float error = step();
                 sumError += error;
             }
 
             float meanError = 0.f;
 
-            if( sumError > 0.f ) {
-                meanError = sumError / (float)batch;
+            if ( sumError > 0.f ) {
+                meanError = sumError / ( float ) batch;
             }
 
-            System.out.println( "Epoch: " +epoch+ " Mean error: " + meanError );
+            System.out.println( "Epoch: " + epoch + " Mean error: " + meanError );
 
-            if( meanError < meanErrorThreshold ) {
+            if ( meanError < meanErrorThreshold ) {
                 System.out.println( "Success: Error below threshold for epoch." );
                 return 0;
             }
@@ -125,7 +124,7 @@ public class GrowingNeuralGasTest implements UnitTest, Callback {
 
         float sumError = 0.f;
 
-        for( int i = 0; i < inputs; ++i ) {
+        for ( int i = 0; i < inputs; ++i ) {
             int offset = bestCell * inputs + i;
             float x = input._values[ i ];
             float w = weights._values[ offset ];
@@ -133,7 +132,7 @@ public class GrowingNeuralGasTest implements UnitTest, Callback {
             sumError += d;
         }
 
-        float errorValue = sumError / (float)inputs;
+        float errorValue = sumError / ( float ) inputs;
 
         float x = input._values[ 0 ];
         float y = input._values[ 1 ];

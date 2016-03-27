@@ -21,31 +21,36 @@ public class LightSourceEntity extends Entity {
     public static final String MATRIX_OUTPUT = "matrix-output";
     public static final String LEARNING_RATE = "learning-rate";
 
-    public LightSourceEntity(String entityName, ObjectMap om, String type, Node n) {
+    public LightSourceEntity( String entityName, ObjectMap om, String type, Node n ) {
         super( entityName, om, type, n );
     }
 
-    public void getInputKeys( Collection<String> keys ) {
+    public void getInputKeys( Collection< String > keys ) {
         keys.add( CONTROL_INPUT );
     }
 
-    public void getOutputKeys( Collection<String> keys ) {
+    public void getOutputKeys( Collection< String > keys ) {
         keys.add( LIGHT_OUTPUT );
         keys.add( RANDOM_OUTPUT );
         keys.add( MATRIX_OUTPUT );
+    }
+
+    @Override
+    public void getPropertyKeys( Collection< String > keys ) {
+        keys.add( LEARNING_RATE );
     }
 
     protected void doUpdateSelf() {
 
         float learningRate = getPropertyFloat( LEARNING_RATE, 0.1f );
 
-        Data input = getData(CONTROL_INPUT);
+        Data input = getData( CONTROL_INPUT );
 
         if ( input == null ) {
             return;
         }
 
-        Data output = getData(LIGHT_OUTPUT, new DataSize(input._dataSize));
+        Data output = getData( LIGHT_OUTPUT, new DataSize( input._dataSize ) );
 
         int elements = input._dataSize.getVolume();
 
@@ -56,15 +61,15 @@ public class LightSourceEntity extends Entity {
             output._values[ i ] = newOutputValue;
         }
 
-        setData(LIGHT_OUTPUT, output);
+        setData( LIGHT_OUTPUT, output );
 
         Data random = new Data( 10 );
         random.setRandomNormal();
-        setData(RANDOM_OUTPUT, random);
+        setData( RANDOM_OUTPUT, random );
 
         Data matrix = new Data( 20, 20 );
         matrix.setRandom();
-        setData(MATRIX_OUTPUT, matrix);
+        setData( MATRIX_OUTPUT, matrix );
     }
 
     protected float getLight( float input, float oldOutput, float learningRate ) {

@@ -5,8 +5,8 @@ package io.agi.framework.coordination;
  */
 public interface Coordination {
 
-    void doUpdate(String entityName);
+    void doUpdate( String entityName );
 
-    void onUpdated(String entityName);
+    void onUpdated( String entityName );
 
 }

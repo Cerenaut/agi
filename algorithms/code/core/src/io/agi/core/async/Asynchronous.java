@@ -5,16 +5,16 @@ package io.agi.core.async;
  * object, i.e. we should minimize creation and deletion. Therefore, we distinguish between start/stop events (heavy) and
  * pause/resume (lightweight). The concept of "reseting" the thread to a known state is assumed to be external to this
  * interface. i.e. no guarantees are given and no interface is provided.
- *
+ * <p>
  * The thread has 2 properties:
  * - running
  * - paused
- *
+ * <p>
  * The thread is running from start until stopped.
  * The thread can be paused and resumed at any time, though it only has effect while running.
- *
+ * <p>
  * In addition, execution is assumed to be iterative, with step() called each iteration.
- *
+ * <p>
  * Created by dave on 12/09/15.
  */
 public interface Asynchronous {
@@ -39,6 +39,7 @@ public interface Asynchronous {
     /**
      * Returns actual state of thread rather than commanded state.
      * i.e. whether it is still executing.
+     *
      * @return
      */
     public boolean running();
@@ -56,6 +57,7 @@ public interface Asynchronous {
 
     /**
      * Returns true if the thread is paused.
+     *
      * @return
      */
     public boolean paused();
@@ -64,6 +66,7 @@ public interface Asynchronous {
      * The alternative mode of operation is single-step: Every time a step is
      * issued, the program iterates once and pauses. Resume() to continue with
      * asynchronous running.
+     *
      * @return
      */
     public void step();
@@ -71,6 +74,7 @@ public interface Asynchronous {
     /**
      * Rate control. This interface allows the thread to be run at a specified
      * rate, if possible.
+     *
      * @return
      */
     public int getInterval();
@@ -78,6 +82,7 @@ public interface Asynchronous {
     /**
      * Rate control. This interface allows the thread to be run at a specified
      * rate, if possible.
+     *
      * @param interval
      */
     public void setInterval( int interval );
