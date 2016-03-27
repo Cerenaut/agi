@@ -39,6 +39,10 @@ public class DiscreteRandomEntity extends Entity {
 
     @Override
     public void getPropertyKeys( Collection< String > keys ) {
+        keys.add( SUFFIX_AGE );
+        keys.add( SUFFIX_SEED );
+        keys.add( SUFFIX_RESET );
+
         keys.add( MIN );
         keys.add( MAX );
         keys.add( ELEMENTS );

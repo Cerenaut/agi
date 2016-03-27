@@ -9,6 +9,8 @@ import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.orm.UnitTest;
 
+import java.util.Random;
+
 /**
  * Created by dave on 11/01/16.
  */
@@ -73,13 +75,14 @@ public class RegionTest implements UnitTest {
 
         // Build the algorithm
         RandomInstance.setSeed(randomSeed); // make the tests repeatable
+        Random random = RandomInstance.getInstance();
         ObjectMap om = ObjectMap.GetInstance();
         String regionName = "region";
 
         RegionFactory rf = new RegionFactory();
 
         Region r = rf.create(
-            om, regionName, RandomInstance.getInstance(),
+            om, regionName, random,
             inputWidth, inputHeight,
             feedbackWidthCells, feedbackHeightCells,
             regionWidthColumns, regionHeightColumns,
@@ -92,7 +95,7 @@ public class RegionTest implements UnitTest {
         // Run
         while( true ) {
             Data d = r.getFfInput(); // will not use external FB input, just internal.
-            d.setRandom();
+            d.setRandom( random );
             d.thresholdLessThan( 0.5f, 1.f, 0.f );
             r.update();
 

@@ -60,6 +60,10 @@ public class ImageSensorEntity extends Entity {
 
     @Override
     public void getPropertyKeys( Collection< String > keys ) {
+        keys.add( SUFFIX_AGE );
+        keys.add( SUFFIX_SEED );
+        keys.add( SUFFIX_RESET );
+
         keys.add( SOURCE_FILES_PATH );
         keys.add( SOURCE_TYPE );
         keys.add( RECEPTIVE_FIELD_X );

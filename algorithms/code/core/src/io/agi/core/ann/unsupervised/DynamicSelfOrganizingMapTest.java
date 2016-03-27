@@ -35,10 +35,11 @@ public class DynamicSelfOrganizingMapTest implements UnitTest {
         float elasticity = 1.f;
 
         RandomInstance.setSeed( randomSeed ); // make the tests repeatable
+        Random random = RandomInstance.getInstance();
         ObjectMap om = ObjectMap.GetInstance();
         DynamicSelfOrganizingMapConfig clc = new DynamicSelfOrganizingMapConfig();
 
-        clc.setup( om, DSOM, inputs, widthCells, heightCells, learningRate, elasticity );
+        clc.setup( om, DSOM, random, inputs, widthCells, heightCells, learningRate, elasticity );
 
         DynamicSelfOrganizingMap cl = new DynamicSelfOrganizingMap( DSOM, om );
         cl.setup( clc );

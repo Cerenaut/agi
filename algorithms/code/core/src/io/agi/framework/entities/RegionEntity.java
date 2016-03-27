@@ -108,6 +108,9 @@ public class RegionEntity extends Entity {
 
     @Override
     public void getPropertyKeys( Collection< String > keys ) {
+        keys.add( SUFFIX_AGE );
+        keys.add( SUFFIX_SEED );
+        keys.add( SUFFIX_RESET );
 
     }
 
@@ -184,7 +187,7 @@ public class RegionEntity extends Entity {
         RegionFactory rf = new RegionFactory();
 
         Region r = rf.create(
-            om, regionName, RandomInstance.getInstance(),
+            om, regionName, getRandom(),
             inputWidth, inputHeight,
             feedbackWidthCells, feedbackHeightCells,
             organizerWidthCells, organizerHeightCells,

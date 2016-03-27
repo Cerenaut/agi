@@ -45,7 +45,7 @@ public class LightControlEntity extends Entity {
         float oldOutputValue = output._values[ 0 ];
         float newOutputValue = oldOutputValue;
 
-        float r = ( float ) RandomInstance.random();
+        float r = getRandom().nextFloat();
 
         if ( r < pChange ) {
             //System.out.println( "changing output" );

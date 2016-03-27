@@ -3,6 +3,8 @@ package io.agi.core.ann.supervised;
 import io.agi.core.ann.NetworkConfig;
 import io.agi.core.orm.ObjectMap;
 
+import java.util.Random;
+
 /**
  * Created by dave on 10/01/16.
  */
@@ -20,8 +22,8 @@ public class FeedForwardNetworkConfig extends NetworkConfig {
     public FeedForwardNetworkConfig() {
     }
 
-    public void setup( ObjectMap om, String name, String lossFunction, String activationFunction, int inputs, int outputs, int layers, String layerSizes, float l2Regularization, float learningRate ) {
-        super.setup( om, name );
+    public void setup( ObjectMap om, String name, Random r, String lossFunction, String activationFunction, int inputs, int outputs, int layers, String layerSizes, float l2Regularization, float learningRate ) {
+        super.setup( om, name, r );
 
         setLossFunction( lossFunction );
         setActivationFunction( activationFunction );

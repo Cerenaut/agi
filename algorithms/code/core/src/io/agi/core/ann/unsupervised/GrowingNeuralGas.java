@@ -424,7 +424,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
     protected void updateWeight( int cell, int inputs, int i, float inputValue, float cellLearningRate ) {
         int offset = cell * inputs + i;
 
-        float noise = ( float ) ( ( RandomInstance.random() - 0.5 ) * _c.getNoiseMagnitude() );
+        float noise = ( float ) ( ( _c._r.nextDouble() - 0.5 ) * _c.getNoiseMagnitude() );
         float weightOld = _cellWeights._values[ offset ];
         float weightNew = weightOld + cellLearningRate * ( inputValue - weightOld ) + noise;
         _cellWeights._values[ offset ] = weightNew;

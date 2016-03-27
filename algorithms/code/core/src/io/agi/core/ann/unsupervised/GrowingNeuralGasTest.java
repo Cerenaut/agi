@@ -6,6 +6,8 @@ import io.agi.core.orm.Callback;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.orm.UnitTest;
 
+import java.util.Random;
+
 /**
  * Created by dave on 11/01/16.
  */
@@ -39,11 +41,12 @@ public class GrowingNeuralGasTest implements UnitTest, Callback {
         int growthInterval = 5;
 
         RandomInstance.setSeed( randomSeed ); // make the tests repeatable
+        Random random = RandomInstance.getInstance();
         ObjectMap om = ObjectMap.GetInstance();
         GrowingNeuralGasConfig gngc = new GrowingNeuralGasConfig();
 
         gngc.setup(
-                om, GNG, inputs, widthCells, heightCells, learningRate, learningRateNeighbours, noiseMagnitude, edgeMaxAge, stressLearningRate, stressThreshold, growthInterval );
+                om, GNG, random, inputs, widthCells, heightCells, learningRate, learningRateNeighbours, noiseMagnitude, edgeMaxAge, stressLearningRate, stressThreshold, growthInterval );
 
         GrowingNeuralGas cl = new GrowingNeuralGas( GNG, om );
         cl.setup( gngc );

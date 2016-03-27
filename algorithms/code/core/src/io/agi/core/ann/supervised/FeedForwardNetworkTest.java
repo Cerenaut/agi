@@ -5,6 +5,8 @@ import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.orm.UnitTest;
 
+import java.util.Random;
+
 /**
  * Unit test
  * <p>
@@ -84,8 +86,9 @@ public class FeedForwardNetworkTest implements UnitTest {
         float l2R = regularization;//0.0001f;
 
         ObjectMap om = new ObjectMap();
+        Random r = RandomInstance.getInstance();
         FeedForwardNetworkConfig ffnc = new FeedForwardNetworkConfig();
-        ffnc.setup( om, name, lossFunction, activationFunction, inputs, outputs, layers, layerSizes, l2R, learningRate );
+        ffnc.setup( om, name, r, lossFunction, activationFunction, inputs, outputs, layers, layerSizes, l2R, learningRate );
         ActivationFunctionFactory aff = new ActivationFunctionFactory();
 
         _ffn = new FeedForwardNetwork( name, om );
@@ -93,17 +96,17 @@ public class FeedForwardNetworkTest implements UnitTest {
 
         if ( layers == 1 ) {
             // Single layer test:
-            _ffn.setupLayer( 0, inputs, outputs, learningRate, activationFunction );
+            _ffn.setupLayer( r, 0, inputs, outputs, learningRate, activationFunction );
         }
         else if ( layers == 2 ) {
             // Twin layer test:
-            _ffn.setupLayer( 0, inputs, hidden, learningRate, activationFunction );
+            _ffn.setupLayer( r, 0, inputs, hidden, learningRate, activationFunction );
 
             if ( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
-                _ffn.setupLayer( 1, hidden, outputs, learningRate, ActivationFunctionFactory.SOFTMAX );
+                _ffn.setupLayer( r, 1, hidden, outputs, learningRate, ActivationFunctionFactory.SOFTMAX );
             }
             else {
-                _ffn.setupLayer( 1, hidden, outputs, learningRate, activationFunction );
+                _ffn.setupLayer( r, 1, hidden, outputs, learningRate, activationFunction );
             }
         }
         else {

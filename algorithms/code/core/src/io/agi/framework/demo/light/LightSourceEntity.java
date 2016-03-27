@@ -64,11 +64,11 @@ public class LightSourceEntity extends Entity {
         setData( LIGHT_OUTPUT, output );
 
         Data random = new Data( 10 );
-        random.setRandomNormal();
+        random.setRandomNormal( _r );
         setData( RANDOM_OUTPUT, random );
 
         Data matrix = new Data( 20, 20 );
-        matrix.setRandom();
+        matrix.setRandom( _r );
         setData( MATRIX_OUTPUT, matrix );
     }
 

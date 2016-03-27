@@ -8,10 +8,7 @@ package io.agi.core.data;
 
 import io.agi.core.math.RandomInstance;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A point within an N-dimensional hyperrectangle.
@@ -535,7 +532,11 @@ public class Coordinate2 implements Cloneable {
         return size;
     }
 
-    public void randomize() {
+//    public void randomize() {
+//        randomize( RandomInstance.getInstance() );
+//    }
+
+    public void randomize( Random r ) {
 
         // dimension 0 moves most slowly...
         int d = 0;
@@ -545,7 +546,7 @@ public class Coordinate2 implements Cloneable {
 
             int size = _d.getSize( d );
 
-            _indices[ d ] = RandomInstance.randomInt( size );
+            _indices[ d ] = r.nextInt( size );
 
             ++d;
         }

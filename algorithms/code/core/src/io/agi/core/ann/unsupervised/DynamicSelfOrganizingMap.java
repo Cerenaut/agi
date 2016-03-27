@@ -6,6 +6,7 @@ import io.agi.core.orm.ObjectMap;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.TreeMap;
 
 /**
@@ -43,7 +44,7 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
 
     public void reset() {
         _cellMask.set( 1.f );
-        _cellWeights.setRandom();
+        _cellWeights.setRandom( _c._r );
     }
 
     public Data getInput() {

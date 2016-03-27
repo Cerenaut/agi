@@ -11,6 +11,7 @@ import io.agi.core.orm.AbstractPair;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Random;
 
 /**
  * A FloatArray with an associated DataSize object that describes the array as
@@ -230,16 +231,16 @@ public class Data extends FloatArray2 {
         return cMin;
     }
 
-    public Coordinate2 random() {  // select a voxel proportional to its value as a weight, over all values
+    public Coordinate2 random( Random r ) {  // select a voxel proportional to its value as a weight, over all values
 
         // first sum the values, and handle the all-zero case as totally random:
         Coordinate2 c = begin();
 
-        c.randomize();
+        c.randomize( r );
         return c;
     }
 
-    public ArrayList< Coordinate2 > roulette( int samples ) {  // select a voxel proportional to its value as a weight, over all values
+    public ArrayList< Coordinate2 > roulette( int samples, Random r ) {  // select a voxel proportional to its value as a weight, over all values
         // first sum the values, and handle the all-zero case as totally random:
 
         ArrayList< Coordinate2 > al = new ArrayList< Coordinate2 >();
@@ -249,11 +250,11 @@ public class Data extends FloatArray2 {
         for ( int i = 0; i < samples; ++i ) {
             if ( sum <= 0.0 ) {
                 Coordinate2 c = begin();
-                c.randomize();
+                c.randomize( r );
                 al.add( c );
             }
             else {
-                Coordinate2 c = roulette( sum );
+                Coordinate2 c = roulette( r, sum );
                 al.add( c );
             }
         }
@@ -262,21 +263,21 @@ public class Data extends FloatArray2 {
     }
 
     public Coordinate2 roulette() {  // select a voxel proportional to its value as a weight, over all values
-        return roulette( sum() );
+        return roulette( RandomInstance.getInstance(), sum() );
     }
 
-    public Coordinate2 roulette( double sum ) {  // select a voxel proportional to its value as a weight, over all values
+    public Coordinate2 roulette( Random r, double sum ) {  // select a voxel proportional to its value as a weight, over all values
 
         // first sum the values, and handle the all-zero case as totally random:
         Coordinate2 c = begin();
 
         if ( sum <= 0.0 ) {
-            c.randomize();
+            c.randomize( r );
             return c;
         }
 
         // OK so now do a roulette selection:
-        double random = RandomInstance.random() * sum;
+        double random = r.nextDouble() * sum;
         double accumulated = 0.0;
 
         do { // for-each( value in volume )

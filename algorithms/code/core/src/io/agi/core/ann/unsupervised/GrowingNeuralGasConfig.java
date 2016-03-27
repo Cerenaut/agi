@@ -3,6 +3,8 @@ package io.agi.core.ann.unsupervised;
 import io.agi.core.ann.NetworkConfig;
 import io.agi.core.orm.ObjectMap;
 
+import java.util.Random;
+
 /**
  * Created by dave on 1/01/16.
  */
@@ -22,6 +24,7 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
     public void setup(
             ObjectMap om,
             String name,
+            Random r,
             int inputs,
             int w,
             int h,
@@ -32,7 +35,7 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
             float stressLearningRate,
             float stressThreshold,
             int growthInterval ) {
-        super.setup( om, name, inputs, w, h );
+        super.setup( om, name, r, inputs, w, h );
 
         setLearningRate( learningRate );
         setLearningRateNeighbours( learningRateNeighbours );

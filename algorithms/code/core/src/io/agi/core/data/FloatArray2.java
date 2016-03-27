@@ -713,12 +713,12 @@ public class FloatArray2 {
         set( value );
     }
 
-    /**
-     * Set all values to random ones in unit interval.
-     */
-    public void setRandom() {
-        setRandom( RandomInstance.getInstance() );
-    }
+//    /**
+//     * Set all values to random ones in unit interval.
+//     */
+//    public void setRandom() {
+//        setRandom( RandomInstance.getInstance() );
+//    }
 
     /**
      * Set all values to random ones in unit interval.
@@ -733,12 +733,12 @@ public class FloatArray2 {
         }
     }
 
-    /**
-     * Set all values to be random unit values with a normal distribution
-     */
-    public void setRandomNormal() {
-        setRandomNormal( RandomInstance.getInstance() );
-    }
+//    /**
+//     * Set all values to be random unit values with a normal distribution
+//     */
+//    public void setRandomNormal() {
+//        setRandomNormal( RandomInstance.getInstance() );
+//    }
 
     /**
      * Set all values to be random unit values with a normal distribution

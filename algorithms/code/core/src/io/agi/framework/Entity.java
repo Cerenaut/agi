@@ -2,6 +2,7 @@ package io.agi.framework;
 
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
+import io.agi.core.math.FastRandom;
 import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
@@ -13,16 +14,22 @@ import io.agi.framework.persistence.models.ModelData;
 import java.util.*;
 
 /**
+ * A conceptual Entity that has an update() method, and some children Entities.
+ *
+ * Instances are transient and all state must be persisted as Data or Properties.
+ *
  * Created by dave on 14/02/16.
  */
 public abstract class Entity extends NamedObject implements EntityListener, PropertyStringAccess {
 
     public static final String SUFFIX_AGE = "age";
+    public static final String SUFFIX_SEED = "seed"; /// seeds the random number generator
     public static final String SUFFIX_RESET = "reset"; /// used as a flag to indicate the entity should reset itself on next update.
 
     protected String _type;
     protected String _parent;
     protected Node _n;
+    protected FastRandom _r;
 
     protected HashSet< String > _childrenWaiting = new HashSet< String >();
 
@@ -35,6 +42,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
         super( name, om );
         _type = type;
         _n = n;
+        _r = new FastRandom();
 
         _propertyConverter = new PropertyConverter( this );
     }
@@ -91,7 +99,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
      * @return
      */
     public Random getRandom() {
-        return RandomInstance.getInstance(); // TODO use a distributed, persisted random source
+        return _r; // A distributed, persisted random source, with one copy and one seed per entity. The seeds are persisted.
     }
 
     public Node getNode() {
@@ -164,7 +172,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
     protected void beforeUpdate() {
         String entityName = getName();
         int age = getPropertyInt( SUFFIX_AGE, 1 );
-        System.err.println( "START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName );
+        System.err.println("START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName);
     }
 
     protected void afterUpdate() {
@@ -211,16 +219,26 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
         // get all the properties and put them in the properties map.
         Collection< String > propertyKeys = new ArrayList< String >();
         getPropertyKeys(propertyKeys);
-        propertyKeys.add(SUFFIX_AGE);
+//        propertyKeys.add(SUFFIX_AGE);
+//        propertyKeys.add(SUFFIX_SEED);
+//        propertyKeys.add(SUFFIX_RESET);
         fetchProperties(propertyKeys);
+
+        // Set the random number generator
+        long seed1 = _propertyConverter.getPropertyLong(SUFFIX_SEED, System.currentTimeMillis());
+        _r.setSeed(seed1);
 
         // 3. doUpdateSelf()
         doUpdateSelf();
 
         // update age:
-        int age = _propertyConverter.getPropertyInt( SUFFIX_AGE, 0 );
+        int age = _propertyConverter.getPropertyInt(SUFFIX_AGE, 0);
         ++age;
-        _propertyConverter.setPropertyInt( SUFFIX_AGE, age );
+        _propertyConverter.setPropertyInt(SUFFIX_AGE, age);
+
+        // update the random seed for next time.
+        long seed2 = _r.getSeed();
+        _propertyConverter.setPropertyLong(SUFFIX_SEED, seed2);
 
         // 4. set outputs
         // write all the outputs back to the persistence system

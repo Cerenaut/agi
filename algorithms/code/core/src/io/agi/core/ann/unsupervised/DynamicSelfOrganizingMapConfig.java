@@ -3,6 +3,8 @@ package io.agi.core.ann.unsupervised;
 import io.agi.core.ann.NetworkConfig;
 import io.agi.core.orm.ObjectMap;
 
+import java.util.Random;
+
 /**
  * Created by dave on 29/12/15.
  */
@@ -17,8 +19,8 @@ public class DynamicSelfOrganizingMapConfig extends CompetitiveLearningConfig {
     public DynamicSelfOrganizingMapConfig() {
     }
 
-    public void setup( ObjectMap om, String name, int inputs, int w, int h, float learningRate, float elasticity ) {
-        super.setup( om, name, inputs, w, h );
+    public void setup( ObjectMap om, String name, Random r, int inputs, int w, int h, float learningRate, float elasticity ) {
+        super.setup( om, name, r, inputs, w, h );
 
         setLearningRate( learningRate );
         setElasticity( elasticity );

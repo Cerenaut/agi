@@ -88,21 +88,21 @@ public class RegionFactory {
 
         GrowingNeuralGasConfig organizerConfig = new GrowingNeuralGasConfig();
         organizerConfig.setup(
-                om, RegionConfig.SUFFIX_ORGANIZER, // temp name
+                om, RegionConfig.SUFFIX_ORGANIZER, random, // temp name
                 organizerInputs, regionWidthColumns, regionHeightColumns,
                 organizerLearningRate, organizerLearningRateNeighbours, organizerNoiseMagnitude,
                 organizerEdgeMaxAge, organizerStressLearningRate, organizerStressThreshold, organizerGrowthInterval );
 
         GrowingNeuralGasConfig classifierConfig = new GrowingNeuralGasConfig();
         classifierConfig.setup(
-                om, RegionConfig.SUFFIX_CLASSIFIER, // temp name
+                om, RegionConfig.SUFFIX_CLASSIFIER, random, // temp name
                 classifierInputs, classifierWidthCells, classifierHeightCells,
                 classifierLearningRate, classifierLearningRateNeighbours, classifierNoiseMagnitude,
                 classifierEdgeMaxAge, classifierStressLearningRate, classifierStressThreshold, classifierGrowthInterval );
 
         FeedForwardNetworkConfig predictorConfig = new FeedForwardNetworkConfig();
         predictorConfig.setup(
-                om, RegionConfig.SUFFIX_PREDICTOR, // temp name
+                om, RegionConfig.SUFFIX_PREDICTOR, random, // temp name
                 predictorLossFunction, predictorActivationFunction,
                 predictorInputs, predictorOutputs,
                 predictorLayers, predictorLayerSizes,
@@ -174,13 +174,13 @@ public class RegionFactory {
         int hidden = Integer.valueOf( layerSizes );
 
         // hardcoded for 2 layers
-        ffn.setupLayer( 0, inputs, hidden, learningRate, activationFunction);
+        ffn.setupLayer( _rc._r, 0, inputs, hidden, learningRate, activationFunction);
 
         if( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
-            ffn.setupLayer( 1, hidden, outputs, learningRate, ActivationFunctionFactory.SOFTMAX );
+            ffn.setupLayer( _rc._r, 1, hidden, outputs, learningRate, ActivationFunctionFactory.SOFTMAX );
         }
         else {
-            ffn.setupLayer( 1, hidden, outputs, learningRate, activationFunction );
+            ffn.setupLayer( _rc._r, 1, hidden, outputs, learningRate, activationFunction );
         }
 
         return ffn;

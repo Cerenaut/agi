@@ -4,6 +4,8 @@ import io.agi.core.ann.NetworkConfig;
 import io.agi.core.data.Data2d;
 import io.agi.core.orm.ObjectMap;
 
+import java.util.Random;
+
 /**
  * Parameters are stored as an ObjectMap but this provides an interface to access them.
  * Created by dave on 29/12/15.
@@ -21,8 +23,8 @@ public class CompetitiveLearningConfig extends NetworkConfig {
     public CompetitiveLearningConfig() {
     }
 
-    public void setup( ObjectMap om, String name, int inputs, int w, int h ) {
-        super.setup( om, name );
+    public void setup( ObjectMap om, String name, Random r, int inputs, int w, int h ) {
+        super.setup( om, name, r );
         setNbrInputs( inputs );
         setWidthCells( w );
         setHeightCells( h );

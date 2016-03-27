@@ -28,8 +28,6 @@ public class RegionConfig extends NetworkConfig {
     public static final String SUFFIX_CLASSIFIER = "classifier";
     public static final String SUFFIX_PREDICTOR = "predictor";
 
-    public Random _r;
-
     public GrowingNeuralGasConfig _classifierConfig;
     public GrowingNeuralGasConfig _organizerConfig;
     public FeedForwardNetworkConfig _predictorConfig;
@@ -49,8 +47,8 @@ public class RegionConfig extends NetworkConfig {
             int fbInputArea,
             int receptiveFieldsTrainingSamples,
             int receptiveFieldSize ) {
-        super.setup(om, name);
-        _r = r;
+        super.setup(om, name, r);
+
         _organizerConfig = organizerConfig;
         _classifierConfig = classifierConfig;
         _predictorConfig = predictorConfig;

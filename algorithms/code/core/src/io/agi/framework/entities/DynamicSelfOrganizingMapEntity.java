@@ -45,7 +45,9 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
 
     @Override
     public void getPropertyKeys( Collection< String > keys ) {
-
+        keys.add( SUFFIX_AGE );
+        keys.add( SUFFIX_SEED );
+        keys.add( SUFFIX_RESET );
     }
 
     protected void doUpdateSelf() {
@@ -70,7 +72,7 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
 
         // Create the config object:
         DynamicSelfOrganizingMapConfig dsomc = new DynamicSelfOrganizingMapConfig();
-        dsomc.setup( _om, implName, inputs, widthCells, heightCells, learningRate, elasticity );
+        dsomc.setup( _om, implName, getRandom(), inputs, widthCells, heightCells, learningRate, elasticity );
 
         // Create the implementing object itself, and copy data from persistence into it:
         DynamicSelfOrganizingMap dsom = new DynamicSelfOrganizingMap( implName, _om );

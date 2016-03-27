@@ -6,6 +6,7 @@ import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * A feed-forward artificial neural network trained by error backpropagation.
@@ -51,7 +52,7 @@ public class FeedForwardNetwork extends NamedObject {
 
         for( int l = 0; l < layers; ++l ) {
             NetworkLayer nl = _layers.get( l );
-            nl.reset();
+            nl.reset( _c._r );
         }
     }
 
@@ -63,13 +64,13 @@ public class FeedForwardNetwork extends NamedObject {
      * @param learningRate
      * @param activationFunction
      */
-    public void setupLayer( int layer, int inputs, int cells, float learningRate, String activationFunction ) {
+    public void setupLayer( Random r, int layer, int inputs, int cells, float learningRate, String activationFunction ) {
 
         String layerName = getLayerName( layer );
 
         NetworkLayerConfig nlc = new NetworkLayerConfig();
 
-        nlc.setup( _om, layerName, inputs, cells, learningRate, activationFunction );
+        nlc.setup( _om, layerName, r, inputs, cells, learningRate, activationFunction );
 
         NetworkLayer nl = _layers.get( layer );
         nl.setup( nlc, _aff );

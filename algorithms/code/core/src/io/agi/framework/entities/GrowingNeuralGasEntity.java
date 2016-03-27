@@ -57,7 +57,9 @@ public class GrowingNeuralGasEntity extends Entity {
 
     @Override
     public void getPropertyKeys( Collection< String > keys ) {
-
+        keys.add( SUFFIX_AGE );
+        keys.add( SUFFIX_SEED );
+        keys.add( SUFFIX_RESET );
     }
 
     protected void doUpdateSelf() {
@@ -88,7 +90,7 @@ public class GrowingNeuralGasEntity extends Entity {
 
         // Create the config object:
         GrowingNeuralGasConfig c = new GrowingNeuralGasConfig();
-        c.setup( _om, implName, inputs, widthCells, heightCells, learningRate, learningRateNeighbours, noiseMagnitude, edgeMaxAge, stressLearningRate, stressThreshold, growthInterval );
+        c.setup( _om, implName, getRandom(), inputs, widthCells, heightCells, learningRate, learningRateNeighbours, noiseMagnitude, edgeMaxAge, stressLearningRate, stressThreshold, growthInterval );
 
         // Create the implementing object itself, and copy data from persistence into it:
         GrowingNeuralGas gng = new GrowingNeuralGas( implName, _om );

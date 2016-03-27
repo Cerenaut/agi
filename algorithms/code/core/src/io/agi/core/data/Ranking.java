@@ -104,12 +104,12 @@ public class Ranking {
         return null;
     }
 
-    public static HashSet< Integer > selectValuesRoulette( TreeMap< Float, ArrayList< Integer > > ranking, int selectionSetSize ) {
+    public static HashSet< Integer > selectValuesRoulette( Random r, TreeMap< Float, ArrayList< Integer > > ranking, int selectionSetSize ) {
 
         HashSet< Integer > selections = new HashSet< Integer >();
 
         while ( selections.size() < selectionSetSize ) {
-            Integer selected = Ranking.roulette( ranking );
+            Integer selected = Ranking.roulette( r, ranking );
             if ( selected == null ) {
                 break;
             }
@@ -282,9 +282,9 @@ public class Ranking {
         return rank;
     }
 
-    public static Integer roulette( TreeMap< Float, ArrayList< Integer > > ranking ) {
-        return roulette( RandomInstance.getInstance(), ranking );
-    }
+//    public static Integer roulette( TreeMap< Float, ArrayList< Integer > > ranking ) {
+//        return roulette( Rando mInstance.getInstance(), ranking );
+//    }
 
     public static Integer roulette( Random o, TreeMap< Float, ArrayList< Integer > > ranking ) {
         float sum = Ranking.sum( ranking );

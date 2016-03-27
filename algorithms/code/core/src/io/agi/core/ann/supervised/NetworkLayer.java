@@ -5,6 +5,8 @@ import io.agi.core.data.FloatArray2;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 
+import java.util.Random;
+
 /**
  * This class represents a single layer of a feed-forward neural network.
  * <p>
@@ -50,12 +52,12 @@ public class NetworkLayer extends NamedObject {
         _outputs = new Data(cells);
         _errorGradients = new Data(cells);
 
-        reset();
+        reset( c._r );
     }
 
-    public void reset() {
-        _weights.setRandom();
-        _biases.setRandom();
+    public void reset( Random r ) {
+        _weights.setRandom( r );
+        _biases.setRandom( r );
 
         _outputs.set( 0.f );
         _errorGradients.set( 0.f );

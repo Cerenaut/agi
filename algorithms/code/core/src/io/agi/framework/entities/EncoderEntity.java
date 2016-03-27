@@ -43,6 +43,8 @@ public class EncoderEntity extends Entity {
 
     @Override
     public void getPropertyKeys( Collection< String > keys ) {
+        keys.add( SUFFIX_AGE );
+
         keys.add( ENCODER_TYPE );
         keys.add( BITS );
         keys.add( DENSITY );

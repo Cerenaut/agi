@@ -3,6 +3,8 @@ package io.agi.core.ann.supervised;
 import io.agi.core.ann.NetworkConfig;
 import io.agi.core.orm.ObjectMap;
 
+import java.util.Random;
+
 /**
  * Created by dave on 3/01/16.
  */
@@ -18,8 +20,8 @@ public class NetworkLayerConfig extends NetworkConfig {
     public NetworkLayerConfig() {
     }
 
-    public void setup( ObjectMap om, String name, int inputs, int cells, float learningRate, String activationFunction ) {
-        super.setup( om, name );
+    public void setup( ObjectMap om, String name, Random r, int inputs, int cells, float learningRate, String activationFunction ) {
+        super.setup(om, name, r);
 
         setInputs( inputs );
         setCells( cells );
