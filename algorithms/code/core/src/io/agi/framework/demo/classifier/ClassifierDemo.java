@@ -1,4 +1,4 @@
-package io.agi.framework.demo.dsom;
+package io.agi.framework.demo.classifier;
 
 import io.agi.core.orm.Keys;
 import io.agi.framework.Entity;
@@ -15,7 +15,7 @@ import io.agi.framework.persistence.models.ModelEntity;
  * <p>
  * Created by dave on 12/03/16.
  */
-public class DsomDemo {
+public class ClassifierDemo {
 
     public static void main( String[] args ) {
 
@@ -74,6 +74,6 @@ public class DsomDemo {
         propertyConverter.setPropertyInt( ageKey, 0 );
 
         String resetKey = Keys.concatenate( classifierName, Entity.SUFFIX_RESET );
-        propertyConverter.setPropertyBoolean( resetKey, true );
+        propertyConverter.setPropertyBoolean(resetKey, true);
     }
 }
