@@ -24,8 +24,8 @@ public class ModelData {
         _key = key;
         _refKeys = null;
         if ( d != null ) {
-            _sizes = DataSizeToString( d._dataSize ); //d._dataSize.toString();
-            _elements = FloatArrayToString( d );//d._values.toString();
+            _sizes = DataSizeToString( d._dataSize );
+            _elements = FloatArrayToString( d );
         }
     }
 
