@@ -99,7 +99,6 @@ public class Node {
 //        count += 1;
 //        _p.setEntityAge(entityName, count);
         unlock( entityName );
-        System.err.println( "UPDATE END " + entityName + " T=" + System.currentTimeMillis() );
 
         // broadcast to any distributed listeners:
         _c.onUpdated( entityName );

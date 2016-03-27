@@ -9,6 +9,8 @@ import com.couchbase.client.java.document.json.JsonObject;
 import com.couchbase.client.java.view.*;
 import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.persistence.Persistence;
+import io.agi.framework.persistence.PropertyConverter;
+import io.agi.framework.persistence.PropertyStringAccess;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
 import io.agi.framework.persistence.models.ModelNode;
@@ -19,7 +21,7 @@ import java.util.*;
  * Note: http://docs.couchbase.com/developer/java-2.0/querying-n1ql.html
  * Created by dave on 14/03/16.
  */
-public class CouchbasePersistence implements Persistence {
+public class CouchbasePersistence implements Persistence, PropertyStringAccess {
 
     public static final String PROPERTY_CLUSTER = "couchbase-cluster";
     public static final String PROPERTY_BUCKET = "couchbase-bucket";
@@ -47,6 +49,8 @@ public class CouchbasePersistence implements Persistence {
     public static final String PROPERTY_PROPERTY_VALUE = "value";
 
     public static final long QUERY_TIMEOUT = 999999999;
+
+    PropertyConverter _propertyConverter = null;
 
     Cluster _c;
     Bucket _b;
@@ -83,7 +87,9 @@ public class CouchbasePersistence implements Persistence {
 
         _c = CouchbaseCluster.create(cluster);
 
-        _b = _c.openBucket(bucket, password);
+        _b = _c.openBucket( bucket, password );
+
+        _propertyConverter = new PropertyConverter( this );
     }
 
     public void createViews() {
