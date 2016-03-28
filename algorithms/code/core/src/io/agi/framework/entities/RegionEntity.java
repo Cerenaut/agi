@@ -50,19 +50,6 @@ public class RegionEntity extends Entity {
         keys.add(FB_INPUT);
     }
 
-    public void getClassifierOutputKeys(Collection<String> keys, String prefix ) {
-        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS) );
-        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ERROR) );
-        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE) );
-        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_MASK) );
-
-        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS) );
-        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES) );
-        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES) );
-        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES) );
-        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH ) );
-    }
-
     public void getOutputKeys(Collection<String> keys, DataFlags flags ) {
         keys.add( FB_INPUT_OLD);
 
@@ -94,13 +81,13 @@ public class RegionEntity extends Entity {
         keys.add(PREDICTION_FP);
         keys.add(PREDICTION_FN);
 
-        flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_SPARSE_UNIT );
-        flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_SPARSE_UNIT );
+        flags.putFlag( PREDICTION_FP, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( PREDICTION_FN, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( PREDICTION_FP, DataFlags.FLAG_SPARSE_UNIT );
+        flags.putFlag( PREDICTION_FN, DataFlags.FLAG_SPARSE_UNIT );
 
         // The organizer
-        getClassifierOutputKeys( keys, RegionConfig.SUFFIX_ORGANIZER );
+        getClassifierOutputKeys( keys, flags, RegionConfig.SUFFIX_ORGANIZER );
 
         // The classifiers
         int organizerWidthCells  = getPropertyInt( Keys.concatenate( RegionConfig.SUFFIX_ORGANIZER, CompetitiveLearningConfig.WIDTH_CELLS  ), 10 );
@@ -109,7 +96,7 @@ public class RegionEntity extends Entity {
         for( int y = 0; y < organizerHeightCells; ++y ) {
             for( int x = 0; x < organizerWidthCells; ++x ) {
                 String prefix = Keys.concatenate( RegionConfig.SUFFIX_CLASSIFIER, String.valueOf( x ), String.valueOf( y ) );
-                getClassifierOutputKeys(keys, prefix);
+                getClassifierOutputKeys(keys, flags, prefix);
             }
         }
 
@@ -125,8 +112,49 @@ public class RegionEntity extends Entity {
             keys.add(Keys.concatenate(prefix, NetworkLayer.WEIGHTED_SUMS) );
             keys.add(Keys.concatenate(prefix, NetworkLayer.OUTPUTS) );
             keys.add(Keys.concatenate(prefix, NetworkLayer.ERROR_GRADIENTS) );
-        }
 
+            flags.putFlag(Keys.concatenate(prefix, NetworkLayer.INPUT), DataFlags.FLAG_NODE_CACHE);
+            flags.putFlag(Keys.concatenate(prefix, NetworkLayer.WEIGHTS), DataFlags.FLAG_NODE_CACHE);
+            flags.putFlag(Keys.concatenate(prefix, NetworkLayer.BIASES), DataFlags.FLAG_NODE_CACHE);
+            flags.putFlag(Keys.concatenate(prefix, NetworkLayer.WEIGHTED_SUMS), DataFlags.FLAG_NODE_CACHE);
+            flags.putFlag(Keys.concatenate(prefix, NetworkLayer.OUTPUTS), DataFlags.FLAG_NODE_CACHE);
+            flags.putFlag(Keys.concatenate(prefix, NetworkLayer.ERROR_GRADIENTS), DataFlags.FLAG_NODE_CACHE);
+        }
+    }
+
+    public void getClassifierOutputKeys(Collection<String> keys, DataFlags flags, String prefix ) {
+        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS) );
+        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ERROR) );
+        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE) );
+        keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_MASK));
+
+//        flags.putFlag(PREDICTION_FN, DataFlags.FLAG_NODE_CACHE);
+
+        keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS));
+        keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES));
+        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES) );
+        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES) );
+        keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH));
+
+        // These can be sparse:
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE), DataFlags.FLAG_SPARSE_UNIT);
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_MASK), DataFlags.FLAG_SPARSE_UNIT);
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES), DataFlags.FLAG_SPARSE_UNIT);
+
+        // These rarely change:
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES), DataFlags.FLAG_LAZY_PERSIST);
+
+        // These are written by only me, so can be cached:
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS), DataFlags.FLAG_NODE_CACHE);
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ERROR), DataFlags.FLAG_NODE_CACHE);
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE), DataFlags.FLAG_NODE_CACHE);
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_MASK), DataFlags.FLAG_NODE_CACHE);
+
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS), DataFlags.FLAG_NODE_CACHE);
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES), DataFlags.FLAG_NODE_CACHE);
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES), DataFlags.FLAG_NODE_CACHE);
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES), DataFlags.FLAG_NODE_CACHE);
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH), DataFlags.FLAG_NODE_CACHE);
     }
 
     @Override

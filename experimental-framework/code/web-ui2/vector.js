@@ -30,9 +30,10 @@ var Vector = {
 
     for( var d = 0; d < datas.length; ++d ) {
       var data = datas[ d ]; // TODO generalize to multiple responses.
-      var dataElements = data.elements;
-      var elements = dataElements.elements.length;
+      var elements = data.elements.length;
       maxElements = Math.max( elements, maxElements );
+
+      Framework.removeSparseUnitCoding( data );
     }
 
     var categories = [];

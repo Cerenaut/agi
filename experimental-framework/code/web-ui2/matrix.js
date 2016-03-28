@@ -27,10 +27,12 @@ var Matrix = {
     var series = [];
     series.length = matrices;
 
-    var key = data.key;
-    var dataElements = data.elements;
+    var dataKey = data.key;
     var dataSizes = data.sizes;
-    var elements = dataElements.elements.length;
+    var dataElements = data.elements;
+
+    // undo the sparse coding, if present:
+    Framework.removeSparseUnitCoding( data );
 
     var w = 0; 
     var h = 0; 
@@ -55,7 +57,7 @@ var Matrix = {
     }
 
     var values = [];
-    values.length = elements;
+    values.length = dataElements.length;
     var i = 0; 
     for( var x = 0; x < w; ++x ) {
       for( var y = 0; y < h; ++y ) {
@@ -70,7 +72,7 @@ var Matrix = {
 
 
     series[ 0 ] = {
-            name: key,
+            name: dataKey,
             borderWidth: Matrix.showLabels ? 1 : 0,
             animation: false,
             data: values,

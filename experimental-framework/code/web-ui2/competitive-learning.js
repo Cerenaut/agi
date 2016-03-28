@@ -17,6 +17,9 @@ var CompetitiveLearning = {
     var datas = JSON.parse( json.responseText );
     var data = datas[ 0 ];
 
+    // undo the sparse coding, if present:
+    Framework.removeSparseUnitCoding( data );
+
     var matrices = 1;
     var series = [];
     series.length = matrices;

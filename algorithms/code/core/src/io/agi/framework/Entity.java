@@ -44,7 +44,6 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
         _type = type;
         _n = n;
         _r = new FastRandom();
-
         _propertyConverter = new PropertyConverter( this );
     }
 
@@ -295,11 +294,11 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
             ModelData jd = null;
 
             // check for cache policy
-            if( _dataFlags.hasFlag( inputKey, DataFlags.FLAG_NODE_CACHE ) ) {
+            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_NODE_CACHE ) ) {
                 Data d = _n.getCachedData( inputKey );
 
                 if( d != null ) {
-                    System.err.println( "Skipping fetch of Data: " + inputKey );
+                    //System.err.println( "Skipping fetch of Data: " + inputKey );
                     _data.put( inputKey, d );
                     continue;
                 }
@@ -331,7 +330,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
 
                 Data combinedData = getCombinedData( keySuffix, allRefs );
 
-                jd.setData( combinedData ); // data added to ref keys.
+                jd.setData( combinedData, false ); // data added to ref keys.
 
                 p.setData( jd ); // DAVE: BUG? It writes it back out.. I guess we wanna see this, but seems excessive.
 
@@ -340,11 +339,12 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
         }
 
         // check to see whether we need a backup of these structures, to implement the lazy-persist policy.
-        for( String name : _data.keySet() ) {
-            if( _dataFlags.hasFlag( name, DataFlags.FLAG_LAZY_PERSIST ) ) {
-                Data d = _data.get(name);
+        for( String keySuffix : _dataFlags._dataFlags.keySet() ) {
+            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_LAZY_PERSIST ) ) {
+                String inputKey = getKey( keySuffix );
+                Data d = _data.get(inputKey);
                 Data copy = new Data( d ); // make a deep copy
-                _dataMap.putData( name, copy );
+                _dataMap.putData( inputKey, copy );
             }
         }
     }
@@ -357,20 +357,25 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
             Data d = _data.get(inputKey);
 
             // check for cache policy
-            if( _dataFlags.hasFlag( inputKey, DataFlags.FLAG_NODE_CACHE ) ) {
+            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_NODE_CACHE ) ) {
                 _n.setCachedData( inputKey, d ); // cache this one, so we don't need to read it next time.
             }
 
-            if( _dataFlags.hasFlag( inputKey, DataFlags.FLAG_LAZY_PERSIST ) ) {
+            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_LAZY_PERSIST ) ) {
                 Data copy = _dataMap.getData( inputKey );
 
                 if( copy.isSameAs( d ) ) {
-                    System.err.println( "Skipping persist of Data: " + inputKey );
+                    //System.err.println( "Skipping persist of Data: " + inputKey );
                     continue; // don't persist.
                 }
             }
 
-            p.setData( new ModelData( inputKey, d ) );
+            boolean sparse = false;
+            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_SPARSE_UNIT ) ) {
+                sparse = true;
+            }
+
+            p.setData( new ModelData( inputKey, d, sparse ) );
         }
     }
 

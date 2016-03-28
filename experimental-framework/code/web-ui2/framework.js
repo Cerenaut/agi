@@ -33,6 +33,21 @@ var Framework = {
     Framework.doAjaxJson( suffix, callback, "GET" );
   },
 
+  removeSparseUnitCoding : function( data ) {
+    var dataElements = data.elements;
+
+    // undo the sparse coding, if present:
+    if( dataElements.sparse ) {
+      var dataElementsLength = dataElements["length"]; // note: official length.
+      var dataElementsDense = Array.apply( null, Array( dataElementsLength ) ).map( Number.prototype.valueOf, 0 );
+      for( var i = 0; i < dataElements.elements.length; ++i ) {
+        var j = dataElements.elements[ i ];
+        dataElementsDense[ j ] = 1.0;
+      }    
+      dataElements.elements = dataElementsDense;
+    }
+  },
+
   getProperty : function( key, callback ) {
     var suffix = Framework.contextProperties + "?" + key;
     Framework.doAjaxJson( suffix, callback, "GET" );

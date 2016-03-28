@@ -20,12 +20,12 @@ public class ModelData {
     public String _sizes;
     public String _elements;
 
-    public ModelData( String key, Data d ) {
+    public ModelData( String key, Data d, boolean sparse ) {
         _key = key;
         _refKeys = null;
         if ( d != null ) {
             _sizes = DataSizeToString( d._dataSize );
-            _elements = FloatArrayToString( d );
+            _elements = FloatArrayToString( d, sparse );
         }
     }
 
@@ -75,10 +75,10 @@ public class ModelData {
      *
      * @param d
      */
-    public void setData( Data d ) {
+    public void setData( Data d, boolean sparse ) {
         try {
             _sizes = DataSizeToString( d._dataSize );
-            _elements = FloatArrayToString( d );
+            _elements = FloatArrayToString( d, sparse );
         }
         catch ( Exception e ) {
 
@@ -163,42 +163,70 @@ public class ModelData {
         }
     }
 
-    public static String FloatArrayToString( FloatArray2 fa ) {
-        String s1 = "{\"elements\":[";
-        String s2 = "],\"length\":";
-        String s3 = "}";
+    public static String FloatArrayToString( FloatArray2 fa, boolean sparse ) {
+        String s1 = "{ \"sparse\":" + sparse + ",\"length\":";
+        String s2 = ",\"elements\":["; // put elements last
+        String s3 = "]}";
 
         String length = String.valueOf( fa._values.length );
         ArrayList< String > values = new ArrayList< String >();
-        values.ensureCapacity( fa._values.length );
 
-        for( int i = 0; i < fa._values.length; ++i ) {
-            float value = fa._values[ i ];
-            String s = String.valueOf( value );
-            values.add( i, s );
+        if( sparse ) {
+            for( int i = 0; i < fa._values.length; ++i ) {
+                float value = fa._values[ i ];
+                if( value == 0.f ) {
+                    continue; // only add the nonzero value indices.
+                }
+
+                String s = String.valueOf(i);
+                values.add( s );
+            }
+        }
+        else {
+            values.ensureCapacity(fa._values.length);
+            for( int i = 0; i < fa._values.length; ++i ) {
+                float value = fa._values[ i ];
+                String s = String.valueOf( value );
+                values.add( s );
+            }
         }
 
         String elements = StringUtils.join( values, "," );
 
-        String result = s1 + elements + s2 + length + s3;
+        String result = s1 + length + s2 + elements + s3;
         return result;
     }
 
     public static FloatArray2 StringToFloatArray( String s ) {
         try {
             String lengthString = GetJsonProperty( s, "length" );
-            Integer length = Integer.valueOf( lengthString );
+            Integer length = Integer.valueOf(lengthString);
+
+            Boolean sparse = false;
+            String sparseString = GetJsonProperty(s, "sparse");
+            if( sparseString != null ) {
+                sparse = Boolean.valueOf( sparseString );
+            }
 
             FloatArray2 fa = new FloatArray2( length );
 
             String elementsString = GetJsonArrayProperty( s, "elements" );
             String[] splitString = elementsString.split( "," );
-            for ( int i = 0; i < splitString.length; ++i ) {
-                String valueString = splitString[ i ];
-                Float value = Float.valueOf( valueString );
-                fa._values[ i ] = value;
-            }
 
+            if( sparse ) {
+                for (int i = 0; i < splitString.length; ++i) {
+                    String valueString = splitString[i];
+                    Integer value = Integer.valueOf(valueString);
+                    fa._values[ value ] = 1.f;
+                }
+            }
+            else {
+                for (int i = 0; i < splitString.length; ++i) {
+                    String valueString = splitString[i];
+                    Float value = Float.valueOf(valueString);
+                    fa._values[ i ] = value;
+                }
+            }
             return fa;
         }
         catch ( Exception e ) {
