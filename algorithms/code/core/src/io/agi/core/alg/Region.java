@@ -357,7 +357,7 @@ public class Region extends NamedObject {
 
                 // FP
                 if( ( activeNew == 0.f ) && ( predictionOld == 1.f ) ) {
-                    errorFP = 0.f; // end FN error, if any
+                    errorFP = 1.f;
                 }
 
                 // store updated error state
@@ -404,6 +404,7 @@ public class Region extends NamedObject {
 
         _regionPredictionOld.copy( _regionPredictionNew );
         _regionPredictionNew.copy( output );
+        _regionPredictionNew.thresholdMoreThan( 0.5f, 1.0f, 0.0f ); // make it binary
     }
 
     public void trainPredictor() {
