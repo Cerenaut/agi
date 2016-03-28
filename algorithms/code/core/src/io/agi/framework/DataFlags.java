@@ -27,6 +27,10 @@ public class DataFlags {
     public static final String FLAG_NODE_CACHE = "node-cache";
     public static final String FLAG_SPARSE_UNIT = "sparse-unit";
 
+    // TODO implement these flags.
+    public static final String FLAG_PERSIST_ONLY = "persist-only"; // since this is only for debug output, never read it. Value will always be replaced.
+    public static final String FLAG_PERSIST_ONCE = "persist-once"; // will persist once on next update, then not. Has a separate property to make the entity persist
+
     public HashMap< String, HashSet< String > > _dataFlags = new HashMap< String, HashSet< String > >();
 
     public DataFlags() {
