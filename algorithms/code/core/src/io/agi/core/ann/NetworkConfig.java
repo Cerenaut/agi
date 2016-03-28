@@ -33,6 +33,7 @@ public class NetworkConfig {
     public void copyFrom( NetworkConfig nc, String name ) {
         _om = nc._om;
         _name = name;
+        _r = nc._r;
     }
 
     public String getKey( String suffix ) {
