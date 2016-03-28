@@ -119,6 +119,13 @@ public class RegionEntity extends Entity {
             flags.putFlag(Keys.concatenate(prefix, NetworkLayer.WEIGHTED_SUMS), DataFlags.FLAG_NODE_CACHE);
             flags.putFlag(Keys.concatenate(prefix, NetworkLayer.OUTPUTS), DataFlags.FLAG_NODE_CACHE);
             flags.putFlag(Keys.concatenate(prefix, NetworkLayer.ERROR_GRADIENTS), DataFlags.FLAG_NODE_CACHE);
+
+            flags.putFlag(Keys.concatenate(prefix, NetworkLayer.INPUT), DataFlags.FLAG_PERSIST_ON_FLUSH);
+            flags.putFlag(Keys.concatenate(prefix, NetworkLayer.WEIGHTS), DataFlags.FLAG_PERSIST_ON_FLUSH);
+            flags.putFlag(Keys.concatenate(prefix, NetworkLayer.BIASES), DataFlags.FLAG_PERSIST_ON_FLUSH);
+            flags.putFlag(Keys.concatenate(prefix, NetworkLayer.WEIGHTED_SUMS), DataFlags.FLAG_PERSIST_ON_FLUSH);
+            flags.putFlag(Keys.concatenate(prefix, NetworkLayer.OUTPUTS), DataFlags.FLAG_PERSIST_ON_FLUSH);
+            flags.putFlag(Keys.concatenate(prefix, NetworkLayer.ERROR_GRADIENTS), DataFlags.FLAG_PERSIST_ON_FLUSH);
         }
     }
 
@@ -128,12 +135,10 @@ public class RegionEntity extends Entity {
         keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE) );
         keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_MASK));
 
-//        flags.putFlag(PREDICTION_FN, DataFlags.FLAG_NODE_CACHE);
-
         keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS));
         keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES));
         keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES) );
-        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES) );
+        keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES));
         keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH));
 
         // These can be sparse:
@@ -155,6 +160,18 @@ public class RegionEntity extends Entity {
         flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES), DataFlags.FLAG_NODE_CACHE);
         flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES), DataFlags.FLAG_NODE_CACHE);
         flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH), DataFlags.FLAG_NODE_CACHE);
+
+        // These are only written on a flush event:
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS), DataFlags.FLAG_PERSIST_ON_FLUSH);
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ERROR), DataFlags.FLAG_PERSIST_ON_FLUSH);
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE), DataFlags.FLAG_PERSIST_ON_FLUSH);
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_MASK), DataFlags.FLAG_PERSIST_ON_FLUSH);
+
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS), DataFlags.FLAG_PERSIST_ON_FLUSH);
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES), DataFlags.FLAG_PERSIST_ON_FLUSH);
+        //flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES), DataFlags.FLAG_PERSIST_ON_FLUSH); lazy
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES), DataFlags.FLAG_PERSIST_ON_FLUSH);
+        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH), DataFlags.FLAG_PERSIST_ON_FLUSH);
     }
 
     @Override

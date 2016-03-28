@@ -21,9 +21,10 @@ import java.util.*;
  */
 public abstract class Entity extends NamedObject implements EntityListener, PropertyStringAccess {
 
-    public static final String SUFFIX_AGE = "age";
+    public static final String SUFFIX_AGE = "age"; /// number of updates of the entity, since reset
     public static final String SUFFIX_SEED = "seed"; /// seeds the random number generator
     public static final String SUFFIX_RESET = "reset"; /// used as a flag to indicate the entity should reset itself on next update.
+    public static final String SUFFIX_FLUSH = "flush"; /// triggers all flushable data to be persisted.
 
     protected String _type;
     protected String _parent;
@@ -295,13 +296,19 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
 
             // check for cache policy
             if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_NODE_CACHE ) ) {
-                Data d = _n.getCachedData( inputKey );
+                Data d = _n.getCachedData(inputKey);
 
                 if( d != null ) {
                     //System.err.println( "Skipping fetch of Data: " + inputKey );
                     _data.put( inputKey, d );
                     continue;
                 }
+            }
+
+            // check for no - read
+            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_PERSIST_ONLY ) ) {
+                //System.err.println( "Skipping fetch of Data: " + inputKey );
+                continue;
             }
 
             jd = p.getData( inputKey );
@@ -352,6 +359,8 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
     public void persistData( Collection< String > keys ) {
         Persistence p = _n.getPersistence();
 
+        boolean flush = getPropertyBoolean( SUFFIX_FLUSH, false );
+
         for ( String keySuffix : keys ) {
             String inputKey = getKey( keySuffix );
             Data d = _data.get(inputKey);
@@ -365,8 +374,15 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
                 Data copy = _dataMap.getData( inputKey );
 
                 if( copy.isSameAs( d ) ) {
-                    //System.err.println( "Skipping persist of Data: " + inputKey );
+                    //System.err.println( "Skipping persist of Data: " + inputKey + " because: Not changed." );
                     continue; // don't persist.
+                }
+            }
+
+            if( flush == false ) {
+                if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_PERSIST_ON_FLUSH ) ) {
+                    //System.err.println( "Skipping persist of Data: " + inputKey + " because: Only on flush, and not a flush." );
+                    continue;
                 }
             }
 
@@ -376,6 +392,11 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
             }
 
             p.setData( new ModelData( inputKey, d, sparse ) );
+        }
+
+        // clear flush after flush.
+        if( flush ) {
+            setPropertyBoolean( SUFFIX_FLUSH, false );
         }
     }
 
