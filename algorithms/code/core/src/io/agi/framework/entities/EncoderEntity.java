@@ -5,6 +5,7 @@ import io.agi.core.orm.ObjectMap;
 import io.agi.core.sdr.EncoderFactory;
 import io.agi.core.sdr.ScalarEncoder;
 import io.agi.core.sdr.SparseDistributedEncoder;
+import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
 
@@ -37,7 +38,7 @@ public class EncoderEntity extends Entity {
     }
 
     @Override
-    public void getOutputKeys( Collection< String > keys ) {
+    public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
         keys.add( DATA_OUTPUT );
     }
 

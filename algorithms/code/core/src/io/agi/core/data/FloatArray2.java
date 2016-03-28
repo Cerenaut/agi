@@ -93,6 +93,10 @@ public class FloatArray2 {
         return _values.length;
     }
 
+    public boolean isSameAs( FloatArray2 fa ) {
+        return Arrays.equals( _values, fa._values );
+    }
+
     /**
      * Will resize and copy array as necessary.
      *

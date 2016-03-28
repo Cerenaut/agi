@@ -4,6 +4,7 @@ import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.math.Unit;
 import io.agi.core.orm.ObjectMap;
+import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
 
@@ -29,7 +30,7 @@ public class LightSourceEntity extends Entity {
         keys.add( CONTROL_INPUT );
     }
 
-    public void getOutputKeys( Collection< String > keys ) {
+    public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
         keys.add( LIGHT_OUTPUT );
         keys.add( RANDOM_OUTPUT );
         keys.add( MATRIX_OUTPUT );

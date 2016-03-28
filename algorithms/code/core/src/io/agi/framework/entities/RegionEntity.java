@@ -9,10 +9,10 @@ import io.agi.core.ann.unsupervised.GrowingNeuralGas;
 import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
 import io.agi.core.data.DataSize;
-import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.Keys;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.Entity;
+import io.agi.framework.DataFlags;
 import io.agi.framework.Node;
 
 import java.awt.*;
@@ -63,18 +63,41 @@ public class RegionEntity extends Entity {
         keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH ) );
     }
 
-    public void getOutputKeys(Collection<String> keys ) {
+    public void getOutputKeys(Collection<String> keys, DataFlags flags ) {
         keys.add( FB_INPUT_OLD);
+
+        flags.putFlag(FB_INPUT_OLD, DataFlags.FLAG_NODE_CACHE);
+        flags.putFlag(FB_INPUT_OLD, DataFlags.FLAG_SPARSE_UNIT);
 
         keys.add(ACTIVITY_OLD);
         keys.add(ACTIVITY_NEW);
         keys.add(ACTIVITY);
 
+        flags.putFlag(ACTIVITY_OLD, DataFlags.FLAG_NODE_CACHE);
+        flags.putFlag(ACTIVITY_NEW, DataFlags.FLAG_NODE_CACHE);
+        flags.putFlag(FB_INPUT_OLD, DataFlags.FLAG_NODE_CACHE);
+        flags.putFlag(ACTIVITY_OLD, DataFlags.FLAG_SPARSE_UNIT);
+        flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_SPARSE_UNIT );
+        flags.putFlag( ACTIVITY    , DataFlags.FLAG_SPARSE_UNIT );
+        flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_LAZY_PERSIST );
+        flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_LAZY_PERSIST );
+        flags.putFlag( ACTIVITY, DataFlags.FLAG_LAZY_PERSIST );
+
         keys.add(PREDICTION_OLD);
         keys.add(PREDICTION_NEW);
 
+        flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag(PREDICTION_OLD, DataFlags.FLAG_SPARSE_UNIT);
+        flags.putFlag(PREDICTION_NEW, DataFlags.FLAG_SPARSE_UNIT);
+
         keys.add(PREDICTION_FP);
         keys.add(PREDICTION_FN);
+
+        flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_SPARSE_UNIT );
+        flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_SPARSE_UNIT );
 
         // The organizer
         getClassifierOutputKeys( keys, RegionConfig.SUFFIX_ORGANIZER );

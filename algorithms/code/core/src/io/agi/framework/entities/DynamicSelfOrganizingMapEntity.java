@@ -7,6 +7,7 @@ import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.orm.Keys;
 import io.agi.core.orm.ObjectMap;
+import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
 
@@ -36,7 +37,7 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
         keys.add( INPUT );
     }
 
-    public void getOutputKeys( Collection< String > keys ) {
+    public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
         keys.add( OUTPUT_WEIGHTS );
         keys.add( OUTPUT_MASK );
         keys.add( OUTPUT_ERROR );

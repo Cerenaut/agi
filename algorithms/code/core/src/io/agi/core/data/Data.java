@@ -10,6 +10,7 @@ import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.AbstractPair;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Random;
 
@@ -123,6 +124,14 @@ public class Data extends FloatArray2 {
     public void set( Coordinate2 c, float value ) {
         int offset = c.offset();
         _values[ offset ] = value;
+    }
+
+    public boolean isSameAs( Data d ) {
+        if( !_dataSize.isSameAs( d._dataSize ) ) {
+            return false;
+        }
+
+        return super.isSameAs( (FloatArray2)d );
     }
 
     public Coordinate2 begin() {

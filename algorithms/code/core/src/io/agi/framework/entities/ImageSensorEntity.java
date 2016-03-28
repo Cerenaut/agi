@@ -9,6 +9,7 @@ import io.agi.core.orm.ObjectMap;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSource;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.core.util.images.ImageScreenScraper;
+import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
 
@@ -54,7 +55,7 @@ public class ImageSensorEntity extends Entity {
     }
 
     @Override
-    public void getOutputKeys( Collection<String> keys ) {
+    public void getOutputKeys( Collection<String> keys, DataFlags flags ) {
         keys.add(OUTPUT_IMAGE_DATA);
     }
 

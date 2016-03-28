@@ -3,7 +3,6 @@ package io.agi.framework;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.math.FastRandom;
-import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.persistence.Persistence;
@@ -36,6 +35,8 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
     private HashMap< String, Data > _data = new HashMap< String, Data >();
     private HashMap< String, String > _properties = new HashMap< String, String >();
 
+    private DataFlags _dataFlags = new DataFlags();
+    private DataMap _dataMap = new DataMap(); // used to check for data changes since load.
     private PropertyConverter _propertyConverter = null;
 
     public Entity( String name, ObjectMap om, String type, Node n ) {
@@ -120,7 +121,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
      *
      * @param keys
      */
-    public abstract void getOutputKeys( Collection< String > keys );
+    public abstract void getOutputKeys( Collection< String > keys, DataFlags flags );
 
     /**
      * Get the keys for all the properties (non input/output state used by the entity).
@@ -212,7 +213,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
         // 2. fetch outputs
         // get all the outputs and put them in the object map.
         Collection< String > outputKeys = new ArrayList< String >();
-        getOutputKeys( outputKeys );
+        getOutputKeys( outputKeys, _dataFlags );
         fetchData( outputKeys );
 
         // 3. fetch properties
@@ -260,9 +261,9 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
         Persistence p = _n.getPersistence();
 
         for ( String keySuffix : keySuffixes ) {
-            String inputKey = getKey( keySuffix );
-            String value = p.getPropertyString( inputKey, "" );
-            _properties.put( keySuffix, value );
+            String inputKey = getKey(keySuffix);
+            String value = p.getPropertyString(inputKey, "");
+            _properties.put(keySuffix, value);
         }
     }
 
@@ -274,7 +275,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
     private void persistProperties( Collection< String > keySuffixes ) {
         Persistence p = _n.getPersistence();
         for ( String keySuffix : keySuffixes ) {
-            String value = _properties.get( keySuffix );
+            String value = _properties.get(keySuffix);
             String inputKey = getKey( keySuffix );
             p.setPropertyString( inputKey, value );
         }
@@ -291,14 +292,32 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
         for ( String keySuffix : keys ) {
             String inputKey = getKey( keySuffix );
 
-            ModelData jd = p.getData( inputKey );
+            ModelData jd = null;
 
-            if ( jd == null ) {
+            // check for cache policy
+            if( _dataFlags.hasFlag( inputKey, DataFlags.FLAG_NODE_CACHE ) ) {
+                Data d = _n.getCachedData( inputKey );
+
+                if( d != null ) {
+                    System.err.println( "Skipping fetch of Data: " + inputKey );
+                    _data.put( inputKey, d );
+                    continue;
+                }
+            }
+
+            jd = p.getData( inputKey );
+
+            if( jd == null ) { // not found
                 continue; // truthfully represent as null.
             }
 
             HashSet< String > refKeys = jd.getRefKeys();
-            if ( !refKeys.isEmpty() ) {
+
+            if( refKeys.isEmpty() ) {
+                Data d = jd.getData();
+                _data.put( inputKey, d );
+            }
+            else {
                 // Create an output matrix which is a composite of all the referenced inputs.
                 HashMap< String, Data > allRefs = new HashMap< String, Data >();
 
@@ -314,13 +333,18 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
 
                 jd.setData( combinedData ); // data added to ref keys.
 
-                p.setData( jd );
+                p.setData( jd ); // DAVE: BUG? It writes it back out.. I guess we wanna see this, but seems excessive.
 
                 _data.put( inputKey, combinedData );
             }
-            else {
-                Data d = jd.getData();
-                _data.put( inputKey, d );
+        }
+
+        // check to see whether we need a backup of these structures, to implement the lazy-persist policy.
+        for( String name : _data.keySet() ) {
+            if( _dataFlags.hasFlag( name, DataFlags.FLAG_LAZY_PERSIST ) ) {
+                Data d = _data.get(name);
+                Data copy = new Data( d ); // make a deep copy
+                _dataMap.putData( name, copy );
             }
         }
     }
@@ -330,7 +354,22 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
 
         for ( String keySuffix : keys ) {
             String inputKey = getKey( keySuffix );
-            Data d = _data.get( inputKey );
+            Data d = _data.get(inputKey);
+
+            // check for cache policy
+            if( _dataFlags.hasFlag( inputKey, DataFlags.FLAG_NODE_CACHE ) ) {
+                _n.setCachedData( inputKey, d ); // cache this one, so we don't need to read it next time.
+            }
+
+            if( _dataFlags.hasFlag( inputKey, DataFlags.FLAG_LAZY_PERSIST ) ) {
+                Data copy = _dataMap.getData( inputKey );
+
+                if( copy.isSameAs( d ) ) {
+                    System.err.println( "Skipping persist of Data: " + inputKey );
+                    continue; // don't persist.
+                }
+            }
+
             p.setData( new ModelData( inputKey, d ) );
         }
     }

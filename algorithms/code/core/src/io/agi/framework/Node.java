@@ -1,5 +1,6 @@
 package io.agi.framework;
 
+import io.agi.core.data.Data;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.coordination.Coordination;
 import io.agi.framework.persistence.Persistence;
@@ -28,6 +29,7 @@ public class Node {
     protected Persistence _p;
 
     protected HashMap< String, ArrayList< EntityListener > > _entityListeners = new HashMap< String, ArrayList< EntityListener > >();
+    protected DataMap _dataCache = new DataMap();
 
     public Node() {
     }
@@ -87,6 +89,25 @@ public class Node {
      */
     public Coordination getCoordination() {
         return _c;
+    }
+
+    /**
+     * Retrieves any Data object of this name that is cached.
+     * @param name
+     * @return
+     */
+    public Data getCachedData( String name ) {
+        return _dataCache.getData(name);
+    }
+
+    /**
+     * Caches this Data object within the Node.
+     *
+     * @param name
+     * @param d
+     */
+    public void setCachedData( String name, Data d ) {
+        _dataCache.putData(name, d);
     }
 
     /**

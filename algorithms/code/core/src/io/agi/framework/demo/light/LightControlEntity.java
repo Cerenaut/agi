@@ -4,6 +4,7 @@ import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.ObjectMap;
+import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
 
@@ -26,7 +27,7 @@ public class LightControlEntity extends Entity {
 
     }
 
-    public void getOutputKeys( Collection< String > keys ) {
+    public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
         keys.add( CONTROL_OUTPUT );
     }
 
