@@ -21,15 +21,16 @@ import java.util.*;
  */
 public abstract class Entity extends NamedObject implements EntityListener, PropertyStringAccess {
 
-    public static final String SUFFIX_AGE = "age"; /// number of updates of the entity, since reset
-    public static final String SUFFIX_SEED = "seed"; /// seeds the random number generator
-    public static final String SUFFIX_RESET = "reset"; /// used as a flag to indicate the entity should reset itself on next update.
-    public static final String SUFFIX_FLUSH = "flush"; /// triggers all flushable data to be persisted.
+    public static final String SUFFIX_AGE = "age"; /// Optional: Number of updates of the entity, since reset
+    public static final String SUFFIX_SEED = "seed"; /// Optional: Seeds the random number generator
+    public static final String SUFFIX_RESET = "reset"; /// Optional: Used as a flag to indicate the entity should reset itself on next update.
+    public static final String SUFFIX_FLUSH = "flush"; /// Required: Triggers all flushable data to be persisted.
 
     protected String _type;
     protected String _parent;
     protected Node _n;
     protected FastRandom _r;
+    protected boolean _flush = false;
 
     protected HashSet< String > _childrenWaiting = new HashSet< String >();
 
@@ -138,22 +139,28 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
 
         String entityName = getName();
 
-        if ( !_n.lock( entityName ) ) {
+        if( !_n.lock( entityName ) ) {
             return;
         }
 
         updateSelf();
 
         Persistence p = _n.getPersistence();
-        //        Collection< JsonEntity > children = p.getChildEntities( _name );
         Collection< String > childNames = p.getChildEntities( _name );
 
         if ( childNames.isEmpty() ) {
-            afterUpdate();
-//            _n.notifyUpdated( getName() ); // this entity, the parent, is now complete
+            afterUpdate(); // will notify the parent in the afterUpdate handler
             return;
         }
 
+        // Require all children to flush on next update.
+        // They can only be updated by this class, so we know they will respect the flush.
+        for( String childName : childNames ) {
+            String childKey = GetKey( childName, SUFFIX_FLUSH );
+            p.setPropertyString( childKey, "true" );
+        }
+
+        // Now wait for all children to update
         synchronized ( _childrenWaiting ) {
             _childrenWaiting.addAll( childNames );
 
@@ -163,7 +170,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
             }
         }
 
-        // update all the children
+        // update all the children (Note, they will update on other Nodes potentially, and definitely in another thread.
         for ( String childName : childNames ) {
             _n.requestUpdate( childName ); // schedule an update, may have already occurred
             // update to child may occur any time after this, because only 1 parent so waiting for me to call the update.
@@ -220,12 +227,14 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
         // get all the properties and put them in the properties map.
         Collection< String > propertyKeys = new ArrayList< String >();
         getPropertyKeys(propertyKeys);
-//        propertyKeys.add(SUFFIX_AGE);
-//        propertyKeys.add(SUFFIX_SEED);
-//        propertyKeys.add(SUFFIX_RESET);
+        // These properties are optional, so are only added by the derived entities as needed.
+        //propertyKeys.add(SUFFIX_AGE);
+        //propertyKeys.add(SUFFIX_SEED);
+        //propertyKeys.add(SUFFIX_RESET);
+        propertyKeys.add(SUFFIX_FLUSH); // every Entity must support flush
         fetchProperties(propertyKeys);
 
-        // Set the random number generator
+        // Set the random number generator, with the current time (i.e. random), if not loaded.
         long seed1 = _propertyConverter.getPropertyLong(SUFFIX_SEED, System.currentTimeMillis());
         _r.setSeed(seed1);
 
@@ -233,17 +242,21 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
         doUpdateSelf();
 
         // update age:
-        int age = _propertyConverter.getPropertyInt(SUFFIX_AGE, 0);
-        ++age;
-        _propertyConverter.setPropertyInt(SUFFIX_AGE, age);
+        if( propertyKeys.contains( SUFFIX_AGE ) ) {
+            int age = _propertyConverter.getPropertyInt(SUFFIX_AGE, 0);
+            ++age;
+            _propertyConverter.setPropertyInt(SUFFIX_AGE, age);
+        }
 
         // update the random seed for next time.
-        long seed2 = _r.getSeed();
-        _propertyConverter.setPropertyLong(SUFFIX_SEED, seed2);
+        if( propertyKeys.contains( SUFFIX_SEED ) ) {
+            long seed2 = _r.getSeed();
+            _propertyConverter.setPropertyLong( SUFFIX_SEED, seed2 );
+        }
 
         // 4. set outputs
         // write all the outputs back to the persistence system
-//        persistData(inputKeys); These aren't persisted, by definition you're promising not to write them.
+        //persistData(inputKeys); These aren't persisted, by definition you're promising not to write them.
         persistData( outputKeys );
 
         // 5. persist properties
@@ -359,7 +372,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
     public void persistData( Collection< String > keys ) {
         Persistence p = _n.getPersistence();
 
-        boolean flush = getPropertyBoolean( SUFFIX_FLUSH, false );
+        _flush = getPropertyBoolean( SUFFIX_FLUSH, false );
 
         for ( String keySuffix : keys ) {
             String inputKey = getKey( keySuffix );
@@ -379,7 +392,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
                 }
             }
 
-            if( flush == false ) {
+            if( _flush == false ) {
                 if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_PERSIST_ON_FLUSH ) ) {
                     //System.err.println( "Skipping persist of Data: " + inputKey + " because: Only on flush, and not a flush." );
                     continue;
@@ -395,7 +408,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
         }
 
         // clear flush after flush.
-        if( flush ) {
+        if( _flush ) {
             setPropertyBoolean( SUFFIX_FLUSH, false );
         }
     }

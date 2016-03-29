@@ -19,13 +19,18 @@ import java.util.HashSet;
  * - Sparse unit: This reduces the serialized size of the data. Use it whenever you have sparse unit data (i.e. all
  *   values are binary and there are few '1' bits.
  *
+ * - Persist only: This data is never fetched. It is written for the consumption of external entities or debugging. The
+ *   Entity must be regenerating it from other data.
+ *
+ * - Persist on flush: The data is only persisted when a flush occurs.
+ *
  * Created by dave on 28/03/16.
  */
 public class DataFlags {
 
-    public static final String FLAG_LAZY_PERSIST = "lazy-persist";
-    public static final String FLAG_NODE_CACHE = "node-cache";
-    public static final String FLAG_SPARSE_UNIT = "sparse-unit";
+    public static final String FLAG_LAZY_PERSIST = "lazy-persist"; /// will only persist if the Data has changed. Creates a copy on fetch to check for changes.
+    public static final String FLAG_NODE_CACHE = "node-cache"; /// Keeps a copy of the Data in the Node, and assumes it hasn't changed. Reloads from Cache.
+    public static final String FLAG_SPARSE_UNIT = "sparse-unit"; /// When writing the Data, it will be converted to sparse unit encoding (reduces size hugely).
 
     public static final String FLAG_PERSIST_ONLY = "persist-only"; /// since this is only for debug output, never read it. Value will always be replaced.
     public static final String FLAG_PERSIST_ON_FLUSH = "persist-on-flush"; /// will persist once on update where entity flush property is set.
