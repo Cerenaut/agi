@@ -37,9 +37,9 @@ public class BlahPersistence implements Persistence
         // if stored in sql in a conventional way, then it is obvious
 
         // if stored in sql as a json string
-        Class class = _keyToType.get( key );
+        Class theClass = _keyToType.get( key );
 
-        propertyObject  = gson.fromJson( response, class );
+        propertyObject  = gson.fromJson( response, theClass );
 
         // couchbase would be one of the above two options
 

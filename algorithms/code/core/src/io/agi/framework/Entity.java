@@ -254,9 +254,6 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
 //            String value = p.getPropertyString( inputKey, "" );
 //            _properties.put( keySuffix, value );
         }
-
-
-
     }
 
     /**
@@ -264,12 +261,17 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
      *
      * @param keySuffixes
      */
-    private void persistProperties( Collection< String > keySuffixes ) {
+    private void persistProperties( Collection< Object > properties ) {
         Persistence p = _n.getPersistence();
-        for ( String keySuffix : keySuffixes ) {
-            String value = _properties.get( keySuffix );
-            String inputKey = getKey( keySuffix );
-            p.setPropertyString( inputKey, value );
+        for ( Object propertyObject : properties ) {
+
+            String uniqueKey = getName() + propertyObject.getClass().getSimpleName();
+            p.setPropertyObject( key, propertyObject );
+
+//            String value = _properties.get( keySuffix );
+//            String inputKey = getKey( keySuffix );
+//            p.setPropertyString( inputKey, value );
+
         }
     }
 
