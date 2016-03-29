@@ -5,6 +5,8 @@ import io.agi.framework.persistence.models.ModelEntity;
 import io.agi.framework.persistence.models.ModelNode;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -55,5 +57,9 @@ public interface Persistence {
     void setPropertyString( String key, String value );
 
     Map< String, String > getProperties( String filter );
+
+
+    void getPropertyObject( String key, Object propertyObject );
+    void setPropertyObject( String key, Object propertyObject );
 
 }

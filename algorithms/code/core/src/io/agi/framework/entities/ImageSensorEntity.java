@@ -44,6 +44,7 @@ public class ImageSensorEntity extends Entity {
 
     private static final String BUFFERED_IMAGE_INDEX = "buffered-image-index";
 
+    PropertiesImageSensor _properties = new PropertiesImageSensor();
 
     public ImageSensorEntity( String entityName, ObjectMap om, String type, Node n ) {
         super( entityName, om, type, n );
@@ -58,48 +59,65 @@ public class ImageSensorEntity extends Entity {
         keys.add( IMAGE_DATA );
     }
 
-    @Override
-    public void getPropertyKeys( Collection< String > keys ) {
-        keys.add( SOURCE_FILES_PATH );
-        keys.add( SOURCE_TYPE );
-        keys.add( RECEPTIVE_FIELD_X );
-        keys.add( RECEPTIVE_FIELD_Y );
-        keys.add( RECEPTIVE_FIELD_W );
-        keys.add( RECEPTIVE_FIELD_H );
-        keys.add( RESOLUTION_X );
-        keys.add( RESOLUTION_Y );
-        keys.add( GREYSCALE );
-        keys.add( CURRENT_IMAGE_LABEL );
-        keys.add( BUFFERED_IMAGE_INDEX );
+//    @Override
+//    public void getPropertyKeys( Collection< String > keys ) {
+//        keys.add( SOURCE_FILES_PATH );
+//        keys.add( SOURCE_TYPE );
+//        keys.add( RECEPTIVE_FIELD_X );
+//        keys.add( RECEPTIVE_FIELD_Y );
+//        keys.add( RECEPTIVE_FIELD_W );
+//        keys.add( RECEPTIVE_FIELD_H );
+//        keys.add( RESOLUTION_X );
+//        keys.add( RESOLUTION_Y );
+//        keys.add( GREYSCALE );
+//        keys.add( CURRENT_IMAGE_LABEL );
+//        keys.add( BUFFERED_IMAGE_INDEX );
+//    }
+//
+    public void getProperties( Collection< Object > properties ) {
+        properties.add( _properties );
     }
 
     public void doUpdateSelf() {
 
-        String filesPath = getPropertyString( SOURCE_FILES_PATH, "./" );
-        String bufferedImageSourceType = getPropertyString( SOURCE_TYPE, BufferedImageSourceFactory.TYPE_IMAGE_FILES );
+//        String filesPath = getPropertyString( SOURCE_FILES_PATH, "./" );
+//        String bufferedImageSourceType = getPropertyString( SOURCE_TYPE, BufferedImageSourceFactory.TYPE_IMAGE_FILES );
 
-        BufferedImageSource bufferedImageSource = BufferedImageSourceFactory.create( bufferedImageSourceType, filesPath );
+//        BufferedImageSource bufferedImageSource = BufferedImageSourceFactory.create( bufferedImageSourceType, filesPath );
+        BufferedImageSource bufferedImageSource = BufferedImageSourceFactory.create(
+                _properties.sourceType,
+                _properties.sourceFilesPath );
 
-        int receptiveFieldX = getPropertyInt( RECEPTIVE_FIELD_X, -1 );
-        int receptiveFieldY = getPropertyInt( RECEPTIVE_FIELD_Y, -1 );
-        int receptiveFieldW = getPropertyInt( RECEPTIVE_FIELD_W, -1 );
-        int receptiveFieldH = getPropertyInt( RECEPTIVE_FIELD_H, -1 );
-        int resolutionX = getPropertyInt( RESOLUTION_X, 28 );
-        int resolutionY = getPropertyInt( RESOLUTION_Y, 28 );
-        boolean greyscale = getPropertyBoolean( GREYSCALE, true );
+//        int receptiveFieldX = getPropertyInt( RECEPTIVE_FIELD_X, -1 );
+//        int receptiveFieldY = getPropertyInt( RECEPTIVE_FIELD_Y, -1 );
+//        int receptiveFieldW = getPropertyInt( RECEPTIVE_FIELD_W, -1 );
+//        int receptiveFieldH = getPropertyInt( RECEPTIVE_FIELD_H, -1 );
+//        int resolutionX = getPropertyInt( RESOLUTION_X, 28 );
+//        int resolutionY = getPropertyInt( RESOLUTION_Y, 28 );
+//        boolean greyscale = getPropertyBoolean( GREYSCALE, true );
 
         ImageScreenScraper imageScreenScraper = new ImageScreenScraper();
 
-        if ( isReceptiveFieldSet( receptiveFieldX, receptiveFieldY, receptiveFieldW, receptiveFieldH ) ) {
-            Rectangle receptiveField = new Rectangle( receptiveFieldX, receptiveFieldY, receptiveFieldW, receptiveFieldH );
-            Point point = new Point( resolutionX, resolutionY );
-            imageScreenScraper.setup( bufferedImageSource, receptiveField, point, greyscale );
+//        if ( isReceptiveFieldSet( receptiveFieldX, receptiveFieldY, receptiveFieldW, receptiveFieldH ) ) {
+//            Rectangle receptiveField = new Rectangle( receptiveFieldX, receptiveFieldY, receptiveFieldW, receptiveFieldH );
+//            Point point = new Point( resolutionX, resolutionY );
+//            imageScreenScraper.setup( bufferedImageSource, receptiveField, point, greyscale );
+//        }
+//        else {
+//            imageScreenScraper.setup( bufferedImageSource, resolutionX, resolutionY, greyscale );
+//        }
+
+        if ( isReceptiveFieldSet( _properties.receptiveField ) ) {
+            //Rectangle receptiveField = new Rectangle( receptiveFieldX, receptiveFieldY, receptiveFieldW, receptiveFieldH );
+            //Point point = new Point( resolutionX, resolutionY );
+            imageScreenScraper.setup( bufferedImageSource, _properties.receptiveField, _properties.resolution, _properties.greyscale );
         }
         else {
-            imageScreenScraper.setup( bufferedImageSource, resolutionX, resolutionY, greyscale );
+            imageScreenScraper.setup( bufferedImageSource, _properties.resolution.resolutionX, _properties.resolution.resolutionY, _properties.greyscale );
         }
 
-        int index = getPropertyInt( BUFFERED_IMAGE_INDEX, 0 );
+
+//        int index = getPropertyInt( BUFFERED_IMAGE_INDEX, 0 );
 
         boolean inRange = bufferedImageSource.seek( index );
         if ( !inRange ) {
@@ -113,7 +131,7 @@ public class ImageSensorEntity extends Entity {
         }
 
         setData( IMAGE_DATA, imageScreenScraper.getData() );
-        setPropertyInt( BUFFERED_IMAGE_INDEX, index );
+//        setPropertyInt( BUFFERED_IMAGE_INDEX, index );
     }
 
     private boolean isReceptiveFieldSet( int receptiveFieldX, int receptiveFieldY, int receptiveFieldW, int receptiveFieldH ) {

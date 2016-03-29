@@ -5,6 +5,7 @@ import io.agi.core.data.DataSize;
 import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
+import io.agi.framework.entities.PropertiesImageSensor;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.PropertyConverter;
 import io.agi.framework.persistence.PropertyStringAccess;
@@ -120,6 +121,8 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
     public abstract void getPropertyKeys( Collection< String > keys );
 
 
+    public abstract void getProperties( Collection< Object > properties );
+
     // if I cant issue another update to children until this has completed...
     // then children can't get out of sync
 
@@ -210,10 +213,10 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
 
         // 3. fetch properties
         // get all the properties and put them in the properties map.
-        Collection< String > propertyKeys = new ArrayList< String >();
-        getPropertyKeys( propertyKeys );
-        propertyKeys.add( SUFFIX_AGE );
-        fetchProperties( propertyKeys );
+        Collection< Object > properties = new ArrayList< Object >();
+        getProperties( properties );
+//        propertyKeys.add( SUFFIX_AGE );
+        fetchProperties( properties );
 
         // 3. doUpdateSelf()
         doUpdateSelf();
@@ -239,14 +242,21 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
      *
      * @param keySuffixes
      */
-    private void fetchProperties( Collection< String > keySuffixes ) {
+    private void fetchProperties( Collection< Object > properties ) {
         Persistence p = _n.getPersistence();
 
-        for ( String keySuffix : keySuffixes ) {
-            String inputKey = getKey( keySuffix );
-            String value = p.getPropertyString( inputKey, "" );
-            _properties.put( keySuffix, value );
+        for ( Object propertyObject : properties ) {
+
+            String uniqueKey = getName() + propertyObject.getClass().getSimpleName();
+            p.getPropertyObject( uniqueKey, propertyObject );      // persistence hydrates the model from storage
+
+//            String inputKey = getKey( keySuffix );
+//            String value = p.getPropertyString( inputKey, "" );
+//            _properties.put( keySuffix, value );
         }
+
+
+
     }
 
     /**
