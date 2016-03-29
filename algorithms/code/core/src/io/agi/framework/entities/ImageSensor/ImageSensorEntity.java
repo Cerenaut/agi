@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package io.agi.framework.entities;
+package io.agi.framework.entities.ImageSensor;
 
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSource;
@@ -12,7 +12,6 @@ import io.agi.core.util.images.ImageScreenScraper;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
 
-import java.awt.*;
 import java.util.Collection;
 
 /**
