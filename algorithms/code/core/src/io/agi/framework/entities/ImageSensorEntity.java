@@ -31,18 +31,18 @@ public class ImageSensorEntity extends Entity {
 
     public static final String IMAGE_DATA = "image-data";
 
-    private static final String SOURCE_FILES_PATH = "source-files-path";
-    private static final String SOURCE_TYPE = "source-type";
-    private static final String RECEPTIVE_FIELD_X = "receptive-field-x";
-    private static final String RECEPTIVE_FIELD_Y = "receptive-field-y";
-    private static final String RECEPTIVE_FIELD_W = "receptive-field-w";
-    private static final String RECEPTIVE_FIELD_H = "receptive-field-h";
-    private static final String RESOLUTION_X = "resolution-x";
-    private static final String RESOLUTION_Y = "resolution-y";
-    private static final String GREYSCALE = "greyscale";
-    private static final String CURRENT_IMAGE_LABEL = "current-image-label";
-
-    private static final String BUFFERED_IMAGE_INDEX = "buffered-image-index";
+//    private static final String SOURCE_FILES_PATH = "source-files-path";
+//    private static final String SOURCE_TYPE = "source-type";
+//    private static final String RECEPTIVE_FIELD_X = "receptive-field-x";
+//    private static final String RECEPTIVE_FIELD_Y = "receptive-field-y";
+//    private static final String RECEPTIVE_FIELD_W = "receptive-field-w";
+//    private static final String RECEPTIVE_FIELD_H = "receptive-field-h";
+//    private static final String RESOLUTION_X = "resolution-x";
+//    private static final String RESOLUTION_Y = "resolution-y";
+//    private static final String GREYSCALE = "greyscale";
+//    private static final String CURRENT_IMAGE_LABEL = "current-image-label";
+//
+//    private static final String BUFFERED_IMAGE_INDEX = "buffered-image-index";
 
     PropertiesImageSensor _properties = new PropertiesImageSensor();
 
