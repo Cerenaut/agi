@@ -1,5 +1,6 @@
 package io.agi.framework.persistence;
 
+import io.agi.framework.entities.EntityProperties;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
 import io.agi.framework.persistence.models.ModelNode;
@@ -52,14 +53,8 @@ public interface Persistence {
     void removeData( String key );
 
     // Properties
-    String getPropertyString( String key, String defaultValue );
-
-    void setPropertyString( String key, String value );
-
     Map< String, String > getProperties( String filter );
 
-
-    void getPropertyObject( String key, Object propertyObject );
-    void setPropertyObject( String key, Object propertyObject );
-
+    void getProperties( String key, EntityProperties properties );
+    void setProperties( String key, EntityProperties properties );
 }

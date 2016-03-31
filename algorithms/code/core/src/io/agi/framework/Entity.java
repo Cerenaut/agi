@@ -3,11 +3,11 @@ package io.agi.framework;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.math.FastRandom;
+import io.agi.core.orm.Keys;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
+import io.agi.framework.entities.EntityProperties;
 import io.agi.framework.persistence.Persistence;
-import io.agi.framework.persistence.PropertyConverter;
-import io.agi.framework.persistence.PropertyStringAccess;
 import io.agi.framework.persistence.models.ModelData;
 
 import java.util.*;
@@ -19,7 +19,7 @@ import java.util.*;
  *
  * Created by dave on 14/02/16.
  */
-public abstract class Entity extends NamedObject implements EntityListener, PropertyStringAccess {
+public abstract class Entity extends NamedObject implements EntityListener {
 
     public static final String SUFFIX_AGE = "age"; /// Optional: Number of updates of the entity, since reset
     public static final String SUFFIX_SEED = "seed"; /// Optional: Seeds the random number generator
@@ -39,14 +39,12 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
 
     private DataFlags _dataFlags = new DataFlags();
     private DataMap _dataMap = new DataMap(); // used to check for data changes since load.
-    private PropertyConverter _propertyConverter = null;
 
     public Entity( String name, ObjectMap om, String type, Node n ) {
         super( name, om );
         _type = type;
         _n = n;
         _r = new FastRandom();
-        _propertyConverter = new PropertyConverter( this );
     }
 
     public void setParent( String parent ) {
@@ -125,12 +123,10 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
     public abstract void getOutputKeys( Collection< String > keys, DataFlags flags );
 
     /**
-     * Get the keys for all the properties (non input/output state used by the entity).
+     * Get the property objects, to be fetched at the start of update and persisted at the dn
+     * (non input/output state used by the entity).
      */
-    public abstract void getPropertyKeys( Collection< String > keys );
-
-
-    public abstract void getProperties( Collection< Object > properties );
+    public abstract EntityProperties getProperties();
 
     // if I cant issue another update to children until this has completed...
     // then children can't get out of sync
@@ -227,18 +223,13 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
 
         // 3. fetch properties
         // get all the properties and put them in the properties map.
-        Collection< String > propertyKeys = new ArrayList< String >();
-        getProperties( properties );
-        // These properties are optional, so are only added by the derived entities as needed.
-        //propertyKeys.add(SUFFIX_AGE);
-        //propertyKeys.add(SUFFIX_SEED);
-        //propertyKeys.add(SUFFIX_RESET);
-        propertyKeys.add(SUFFIX_FLUSH); // every Entity must support flush
-        etchProperties( properties );
+        EntityProperties properties = getProperties();
+        propertyKeys.add( SUFFIX_FLUSH ); // every Entity must support flush
+        fetchProperties( properties );
 
         // Set the random number generator, with the current time (i.e. random), if not loaded.
-        long seed1 = _propertyConverter.getPropertyLong(SUFFIX_SEED, System.currentTimeMillis());
-        _r.setSeed(seed1);
+        long seed1 = _propertyConverter.getPropertyLong( SUFFIX_SEED, System.currentTimeMillis() );
+        _r.setSeed( seed1 );
 
         // 3. doUpdateSelf()
         doUpdateSelf();
@@ -262,38 +253,29 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
         persistData( outputKeys );
 
         // 5. persist properties
-        persistProperties( propertyKeys );
+        persistProperties( properties );
 
         //System.err.println( "Update: " + getName() + " age: " + age );
     }
 
+    private String uniqueNameForObject( Object object ) {
+        return Keys.concatenate( getName(), object.getClass().getSimpleName() );
+    }
+
     /**
      * Populate properties map with the persisted properties.
-     *
-     * @param keySuffixes
      */
-    private void fetchProperties( Collection< Object > properties ) {
+    private void fetchProperties( EntityProperties properties ) {
         Persistence p = _n.getPersistence();
-
-        for ( String keySuffix : keySuffixes ) {
-            String inputKey = getKey(keySuffix);
-            String value = p.getPropertyString(inputKey, "");
-            _properties.put(keySuffix, value);
-        }
+        p.getProperties( uniqueNameForObject( properties ), properties );      // persistence hydrates the model from storage
     }
 
     /**
      * Persist the properties map.
-     *
-     * @param keySuffixes
      */
-    private void persistProperties( Collection< Object > properties ) {
+    private void persistProperties( EntityProperties properties ) {
         Persistence p = _n.getPersistence();
-        for ( String keySuffix : keySuffixes ) {
-            String value = _properties.get(keySuffix);
-            String inputKey = getKey( keySuffix );
-            p.setPropertyString( inputKey, value );
-        }
+        p.setProperties( uniqueNameForObject( properties ), properties );
     }
 
     /**
@@ -520,65 +502,6 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
         }
 
         return d;
-    }
-
-    /**
-     * If value doesn't exist, set it at defaultValue, and return defaultValue.
-     */
-    public String getPropertyString( String keySuffix, String defaultValue ) {
-        String value = _properties.get(keySuffix );
-
-        if ( value != null && value.length() != 0 ) {
-            return value;
-        }
-
-        _properties.put( keySuffix, defaultValue );
-        return defaultValue;
-    }
-
-    public void setPropertyString( String keySuffix, String value ) {
-        _properties.put(keySuffix, value );
-    }
-
-
-    public Float getPropertyFloat( String key, Float defaultValue ) {
-        return _propertyConverter.getPropertyFloat( key, defaultValue );
-    }
-
-    public void setPropertyFloat( String key, float value ) {
-        _propertyConverter.setPropertyFloat( key, value );
-    }
-
-    public Double getPropertyDouble( String key, Double defaultValue ) {
-        return _propertyConverter.getPropertyDouble( key, defaultValue );
-    }
-
-    public void setPropertyDouble( String key, double value ) {
-        _propertyConverter.setPropertyDouble( key, value );
-    }
-
-    public Long getPropertyLong( String key, Long defaultValue ) {
-        return _propertyConverter.getPropertyLong( key, defaultValue );
-    }
-
-    public void setPropertyLong( String key, long value ) {
-        _propertyConverter.setPropertyLong(key, value );
-    }
-
-    public Integer getPropertyInt( String key, Integer defaultValue ) {
-        return _propertyConverter.getPropertyInt( key, defaultValue );
-    }
-
-    public void setPropertyInt( String key, int value ) {
-        _propertyConverter.setPropertyInt( key, value );
-    }
-
-    public Boolean getPropertyBoolean( String key, Boolean defaultValue ) {
-        return _propertyConverter.getPropertyBoolean( key, defaultValue );
-    }
-
-    public void setPropertyBoolean( String key, boolean value ) {
-        _propertyConverter.setPropertyBoolean( key, value );
     }
 
     protected void doUpdateSelf() {
