@@ -130,6 +130,8 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
     public abstract void getPropertyKeys( Collection< String > keys );
 
 
+    public abstract void getProperties( Collection< Object > properties );
+
     // if I cant issue another update to children until this has completed...
     // then children can't get out of sync
 
@@ -226,13 +228,13 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
         // 3. fetch properties
         // get all the properties and put them in the properties map.
         Collection< String > propertyKeys = new ArrayList< String >();
-        getPropertyKeys(propertyKeys);
+        getProperties( properties );
         // These properties are optional, so are only added by the derived entities as needed.
         //propertyKeys.add(SUFFIX_AGE);
         //propertyKeys.add(SUFFIX_SEED);
         //propertyKeys.add(SUFFIX_RESET);
         propertyKeys.add(SUFFIX_FLUSH); // every Entity must support flush
-        fetchProperties(propertyKeys);
+        etchProperties( properties );
 
         // Set the random number generator, with the current time (i.e. random), if not loaded.
         long seed1 = _propertyConverter.getPropertyLong(SUFFIX_SEED, System.currentTimeMillis());
@@ -270,7 +272,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
      *
      * @param keySuffixes
      */
-    private void fetchProperties( Collection< String > keySuffixes ) {
+    private void fetchProperties( Collection< Object > properties ) {
         Persistence p = _n.getPersistence();
 
         for ( String keySuffix : keySuffixes ) {
@@ -285,7 +287,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Prop
      *
      * @param keySuffixes
      */
-    private void persistProperties( Collection< String > keySuffixes ) {
+    private void persistProperties( Collection< Object > properties ) {
         Persistence p = _n.getPersistence();
         for ( String keySuffix : keySuffixes ) {
             String value = _properties.get(keySuffix);
