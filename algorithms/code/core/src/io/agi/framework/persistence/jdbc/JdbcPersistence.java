@@ -7,6 +7,8 @@ import io.agi.framework.persistence.PropertyStringAccess;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
 import io.agi.framework.persistence.models.ModelNode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,9 +21,9 @@ import java.util.Map;
 public class JdbcPersistence implements Persistence, PropertyStringAccess {
 
     //    Entity --< Properties
-//           --< Data
-//    Entity --- name, type, children, node
-//               Could be JSON string for entities: { name: xxx, type: yyy } etc
+    //           --< Data
+    //    Entity --- name, type, children, node
+    //               Could be JSON string for entities: { name: xxx, type: yyy } etc
     public static final String PROPERTY_DATABASE_USER = "database-user";
     public static final String PROPERTY_DATABASE_PASSWORD = "database-password";
     public static final String PROPERTY_DATABASE_URL = "database-url";
@@ -35,6 +37,8 @@ public class JdbcPersistence implements Persistence, PropertyStringAccess {
     protected String _url; // e.g. jdbc:postgresql://localhost:5432/agidb"; // https://jdbc.postgresql.org/documentation/80/connect.html
 
     PropertyConverter _propertyConverter = null;
+
+    private static final Logger logger = LogManager.getLogger();
 
     public JdbcPersistence() {
     }
@@ -185,17 +189,15 @@ public class JdbcPersistence implements Persistence, PropertyStringAccess {
     }
 
     // Data
-//    public Collection< String > getDataKeys() {
-//    }
     public void setData( ModelData modelData ) {
         String refKeyString = ( modelData._refKeys != null ) ? "'" + modelData._refKeys + "'" : "null";
-        System.err.println( "setData T: " + System.currentTimeMillis() + " @1 " );
+        logger.info( "setData T: {} @1 ",  System.currentTimeMillis() );
         String sql1 = "UPDATE data SET ref_name = '" + modelData._refKeys + "', sizes = '" + modelData._sizes + "', elements = '" + modelData._elements + "' WHERE name = '" + modelData._key + "'";
         execute( sql1 );
-        System.err.println( "setData T: " + System.currentTimeMillis() + " @2 " );
+        logger.info( "setData T: {} @2 ", System.currentTimeMillis() );
         String sql2 = "INSERT INTO data (name, ref_name, sizes, elements) SELECT '" + modelData._key + "', " + refKeyString + ", '" + modelData._sizes + "', '" + modelData._elements + "' WHERE NOT EXISTS (SELECT name from data WHERE name = '" + modelData._key + "' )";
         execute( sql2 );
-        System.err.println( "setData T: " + System.currentTimeMillis() + " @3 " );
+        logger.info( "setData T: {} @3 ", System.currentTimeMillis() );
     }
 
     public ModelData getData( String key ) {

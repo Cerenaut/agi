@@ -1,6 +1,8 @@
 package io.agi.framework.persistence.jdbc;
 
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
 
@@ -13,6 +15,7 @@ import java.sql.*;
  */
 public class JdbcUtil {
 
+    private static final Logger logger = LogManager.getLogger();
 
     /**
      * Execute an INSERT or UPDATE statement, that doesn't return any data.
@@ -29,11 +32,11 @@ public class JdbcUtil {
             c = DriverManager.getConnection( dbUrl, user, password );
 
             //STEP 4: Execute a query
-            System.err.println( "JDBC T: " + System.currentTimeMillis() + " @1 jdbc = " + sql );
+            logger.info( "JDBC T: {} @1 jdbc = {}", System.currentTimeMillis(), sql );
             s = c.createStatement();
-            System.err.println( "JDBC T: " + System.currentTimeMillis() + " @2 " );
+            logger.info( "JDBC T: {} @2 ", System.currentTimeMillis() );
             s.execute( sql );
-            System.err.println( "JDBC T: " + System.currentTimeMillis() + " @3 " );
+            logger.info( "JDBC T: {} @3 ", System.currentTimeMillis() );
 
             //STEP 6: Clean-up environment
             s.close();
