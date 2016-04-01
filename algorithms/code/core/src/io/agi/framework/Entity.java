@@ -35,7 +35,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
     protected HashSet< String > _childrenWaiting = new HashSet< String >();
 
     private HashMap< String, Data > _data = new HashMap< String, Data >();
-    private HashMap< String, String > _properties = new HashMap< String, String >();
+    EntityProperties _properties = null;
 
     private DataFlags _dataFlags = new DataFlags();
     private DataMap _dataMap = new DataMap(); // used to check for data changes since load.
@@ -231,26 +231,26 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         // 3. fetch properties
         // get all the properties and put them in the properties map.
-        EntityProperties properties = getProperties();
-        fetchProperties( properties );
+        _properties = getProperties();
+        fetchProperties( _properties );
 
         // Set the random number generator, with the current time (i.e. random), if not loaded.
-        if ( properties.seed <=0 ) {
-            properties.seed = System.currentTimeMillis();
+        if ( _properties.seed <=0 ) {
+           _properties.seed = System.currentTimeMillis();
         }
-        _r.setSeed( properties.seed );
+        _r.setSeed( _properties.seed );
 
         // 3. doUpdateSelf()
         doUpdateSelf();
 
         // update age:
-        properties.age++;
+        _properties.age++;
 
         // update the random seed for next time.
-        if ( properties.seed <=0 ) {
-            properties.seed = System.currentTimeMillis();
+        if ( _properties.seed <=0 ) {
+            _properties.seed = System.currentTimeMillis();
         }
-        properties.seed = _r.getSeed();
+        _properties.seed = _r.getSeed();
 
         // 4. set outputs
         // write all the outputs back to the persistence system
@@ -258,7 +258,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
         persistData( outputKeys );
 
         // 5. persist properties
-        persistProperties( properties );
+        persistProperties( _properties );
 
         //System.err.println( "Update: " + getName() + " age: " + age );
     }

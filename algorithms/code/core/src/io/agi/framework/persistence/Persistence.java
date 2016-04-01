@@ -56,6 +56,6 @@ public interface Persistence {
     // Properties
 //    Map< String, String > getProperties( String filter );
 //
-//    void getProperties( String key, EntityProperties properties );
-//    void setProperties( String key, EntityProperties properties );
+    void getProperties( String key, EntityProperties properties );
+    void setProperties( String key, EntityProperties properties );
 }
