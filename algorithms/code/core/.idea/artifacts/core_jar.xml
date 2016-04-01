@@ -7,6 +7,7 @@
       </element>
       <element id="library" level="project" name="postgresql:postgresql:9.2-1002.jdbc4" />
       <element id="library" level="project" name="org.json:org.json:2.0" />
+      <element id="dir-copy" path="$PROJECT_DIR$/runImage" />
     </root>
   </artifact>
 </component>
