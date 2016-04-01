@@ -27,11 +27,11 @@ public interface Persistence {
     // Nodes
     Collection< ModelNode > getNodes(); // list all
 
-    void setNode( ModelNode e );
+    void setNode( ModelNode e ); /// creates if nonexistent (upsert)
 
-    ModelNode getNode( String nodeName );
+    ModelNode getNode( String nodeName ); /// retrieves if exists, or null
 
-    void removeNode( String nodeName );
+    void removeNode( String nodeName ); /// removes if exists
 
     // Entities
     Collection< ModelEntity > getEntities(); // list all
@@ -53,8 +53,8 @@ public interface Persistence {
     void removeData( String key );
 
     // Properties
-    Map< String, String > getProperties( String filter );
-
-    void getProperties( String key, EntityProperties properties );
-    void setProperties( String key, EntityProperties properties );
+//    Map< String, String > getProperties( String filter );
+//
+//    void getProperties( String key, EntityProperties properties );
+//    void setProperties( String key, EntityProperties properties );
 }

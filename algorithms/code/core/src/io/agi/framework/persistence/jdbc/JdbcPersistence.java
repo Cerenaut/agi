@@ -126,6 +126,7 @@ public class JdbcPersistence implements Persistence {
         rsm._fields.add( "type" );
         rsm._fields.add( "node" );
         rsm._fields.add( "parent" );
+        rsm._fields.add( "config" );
         executeQuery( sql, rsm );
         ArrayList< ModelEntity > nodes = new ArrayList< ModelEntity >();
         for ( int i = 0; i < rsm._rows.size(); ++i ) {
@@ -133,7 +134,8 @@ public class JdbcPersistence implements Persistence {
             String type = rsm.getRowValue( i, "type" );
             String node = rsm.getRowValue( i, "node" );
             String parent = rsm.getRowValue( i, "parent" );
-            ModelEntity je = new ModelEntity( key, type, node, parent );
+            String config = rsm.getRowValue( i, "config" );
+            ModelEntity je = new ModelEntity( key, type, node, parent, config );
             nodes.add( je );
         }
         return nodes;
@@ -159,9 +161,9 @@ public class JdbcPersistence implements Persistence {
 
     public void setEntity( ModelEntity e ) {
         // https://www.sitepoint.com/community/t/how-to-use-on-duplicate-key-update-in-postgresql-with-php/200335/4
-        String sql1 = "UPDATE entities SET type = '" + e.type + "', node = '" + e.node + "', parent = '" + e.parent + "' WHERE name = '" + e.name + "'";
+        String sql1 = "UPDATE entities SET type = '" + e.type + "', node = '" + e.node + "', parent = '" + e.parent + "', config = '"+ e.config +"' WHERE name = '" + e.name + "'";
         execute( sql1 );
-        String sql2 = "INSERT INTO entities (name, type, node,parent) SELECT '" + e.name + "', '" + e.type + "', '" + e.node + "', '" + e.parent + "' WHERE NOT EXISTS (SELECT name from entities WHERE name = '" + e.name + "')";
+        String sql2 = "INSERT INTO entities (name, type, node, parent, config) SELECT '" + e.name + "', '" + e.type + "', '" + e.node + "', '" + e.parent + "', '" + e.config + "' WHERE NOT EXISTS (SELECT name from entities WHERE name = '" + e.name + "')";
         execute( sql2 );
     }
 
@@ -171,6 +173,7 @@ public class JdbcPersistence implements Persistence {
         rsm._fields.add( "type" );
         rsm._fields.add( "node" );
         rsm._fields.add( "parent" );
+        rsm._fields.add( "config" );
         executeQuery( sql, rsm );
         if ( rsm._rows.isEmpty() ) {
             return null;
@@ -178,7 +181,8 @@ public class JdbcPersistence implements Persistence {
         String type = rsm.getRowValue( 0, "type" );
         String node = rsm.getRowValue( 0, "node" );
         String parent = rsm.getRowValue( 0, "parent" );
-        ModelEntity modelEntity = new ModelEntity( name, type, node, parent );
+        String config = rsm.getRowValue( 0, "config" );
+        ModelEntity modelEntity = new ModelEntity( name, type, node, parent, config );
 
         return modelEntity;
     }
@@ -230,49 +234,49 @@ public class JdbcPersistence implements Persistence {
         execute( sql );
     }
 
-    public Map< String, String > getProperties( String filter ) {
-        String sql = "SELECT name, value FROM properties where name like '%" + filter + "%'";
-        ResultSetMap rsm = new ResultSetMap();
-        rsm._fields.add( "name" );
-        rsm._fields.add( "value" );
-        executeQuery( sql, rsm );
-
-        HashMap< String, String > hm = new HashMap< String, String >();
-
-        for ( HashMap< String, String > row : rsm._rows ) {
-            String key = row.get( "name" );
-            String value = row.get( "value" );
-            hm.put( key, value );
-        }
-
-        return hm;
-    }
-
-    @Override
-    public void getProperties( String key, EntityProperties properties ) {
-
-        // sql to get properties jsonString for this entity
-        // !!!!     need to change the key to entity key
-        String jsonString = null;
-
-        Class propertiesClass = _keyToType.get( key );
-
-        Gson gson = new Gson();
-
-        // need to use reflection?! to instantiate a properiesClass class
-        propertiesClass = gson.fromJson( jsonString, propertiesClass );
-    }
-
-    @Override
-    public void setProperties( String key, EntityProperties properties ) {
-        _keyToType.put( key, properties.getClass() );
-
-        Gson gson = new Gson();
-        String jsonString = gson.toJson( properties );
-
-        // sql upsert this string into entity table for 'property' field
-        // so won't need the key!, unless we want to have multiple props per entity
-    }
+//    public Map< String, String > getProperties( String filter ) {
+//        String sql = "SELECT name, value FROM properties where name like '%" + filter + "%'";
+//        ResultSetMap rsm = new ResultSetMap();
+//        rsm._fields.add( "name" );
+//        rsm._fields.add( "value" );
+//        executeQuery( sql, rsm );
+//
+//        HashMap< String, String > hm = new HashMap< String, String >();
+//
+//        for ( HashMap< String, String > row : rsm._rows ) {
+//            String key = row.get( "name" );
+//            String value = row.get( "value" );
+//            hm.put( key, value );
+//        }
+//
+//        return hm;
+//    }
+//
+//    @Override
+//    public void getProperties( String key, EntityProperties properties ) {
+//
+//        // sql to get properties jsonString for this entity
+//        // !!!!     need to change the key to entity key
+//        String jsonString = null;
+//
+//        Class propertiesClass = _keyToType.get( key );
+//
+//        Gson gson = new Gson();
+//
+//        // need to use reflection?! to instantiate a properiesClass class
+//        propertiesClass = gson.fromJson( jsonString, propertiesClass );
+//    }
+//
+//    @Override
+//    public void setProperties( String key, EntityProperties properties ) {
+//        _keyToType.put( key, properties.getClass() );
+//
+//        Gson gson = new Gson();
+//        String jsonString = gson.toJson( properties );
+//
+//        // sql upsert this string into entity table for 'property' field
+//        // so won't need the key!, unless we want to have multiple props per entity
+//    }
 
 
 //    public String getPropertyString( String key, String defaultValue ) {
