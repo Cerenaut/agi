@@ -21,7 +21,7 @@ import java.util.*;
  * Note: http://docs.couchbase.com/developer/java-2.0/querying-n1ql.html
  * Created by dave on 14/03/16.
  */
-public class CouchbasePersistence implements Persistence, PropertyStringAccess {
+public class CouchbasePersistence implements Persistence { //PropertyStringAccess {
 
     public static final String PROPERTY_CLUSTER = "couchbase-cluster";
     public static final String PROPERTY_BUCKET = "couchbase-bucket";
@@ -30,7 +30,7 @@ public class CouchbasePersistence implements Persistence, PropertyStringAccess {
     public static final String KEY_PREFIX_NODE = "N";
     public static final String KEY_PREFIX_DATA = "D";
     public static final String KEY_PREFIX_ENTITY = "E";
-    public static final String KEY_PREFIX_PROPERTY = "P";
+//    public static final String KEY_PREFIX_PROPERTY = "P";
 
     public static final String PROPERTY_DOCUMENT_TYPE = "document_type";
 
@@ -40,17 +40,18 @@ public class CouchbasePersistence implements Persistence, PropertyStringAccess {
     public static final String PROPERTY_ENTITY_NODE = "node";
     public static final String PROPERTY_ENTITY_PARENT = "parent";
     public static final String PROPERTY_ENTITY_TYPE = "type";
+    public static final String PROPERTY_ENTITY_CONFIG = "config";
 
     public static final String PROPERTY_DATA_ELEMENTS = "elements";
     public static final String PROPERTY_DATA_REF_KEY = "ref_key";
     public static final String PROPERTY_DATA_SIZES = "sizes";
 
     public static final String PROPERTY_KEY = "name";
-    public static final String PROPERTY_PROPERTY_VALUE = "value";
+//    public static final String PROPERTY_PROPERTY_VALUE = "value";
 
     public static final long QUERY_TIMEOUT = 999999999;
 
-    PropertyConverter _propertyConverter = null;
+//    PropertyConverter _propertyConverter = null;
 
     Cluster _c;
     Bucket _b;
@@ -89,7 +90,7 @@ public class CouchbasePersistence implements Persistence, PropertyStringAccess {
 
         _b = _c.openBucket( bucket, password );
 
-        _propertyConverter = new PropertyConverter( this );
+//        _propertyConverter = new PropertyConverter( this );
     }
 
     public void createViews() {
@@ -109,18 +110,18 @@ public class CouchbasePersistence implements Persistence, PropertyStringAccess {
                             DefaultView.create( "all_entities",
                                     "function (doc, meta) {" +
                                             "  if( doc.document_type == 'E' ) {" +
-                                            "    emit(meta.id, [doc.name, doc.host, doc.port ] );" +
+                                            "    emit(meta.id, [doc.name, doc.node, doc.type, doc.parent, doc.config ] );" +
                                             "  } }" ),
                             DefaultView.create( "child_entities",
                                     "function (doc, meta) { " +
                                             "  if( doc.document_type == 'E' && doc.parent ) {" +
                                             "    emit(doc.parent, doc.name );" +
                                             "  } }" ),
-                            DefaultView.create( "all_properties",
-                                    "function (doc, meta) {" +
-                                            "  if( doc.document_type == 'P' && doc.name ) {" +
-                                            "    emit( doc.name, [doc.value ] );" +
-                                            "  } }" ),
+//                            DefaultView.create( "all_properties",
+//                                    "function (doc, meta) {" +
+//                                            "  if( doc.document_type == 'P' && doc.name ) {" +
+//                                            "    emit( doc.name, [doc.value ] );" +
+//                                            "  } }" ),
                             DefaultView.create( "all_docs",
                                     "function (doc, meta) { " +
                                             "  emit( meta.id, doc );" +
@@ -191,11 +192,12 @@ public class CouchbasePersistence implements Persistence, PropertyStringAccess {
         List< ViewRow > l = result.allRows();
         for ( ViewRow r : l ) {
             JsonObject jo = r.document().content();
-            String key = jo.getString( PROPERTY_KEY );
+            String key = jo.getString(PROPERTY_KEY);
             String type = jo.getString( PROPERTY_ENTITY_TYPE );
             String node = jo.getString( PROPERTY_ENTITY_NODE );
             String parent = jo.getString( PROPERTY_ENTITY_PARENT );
-            ModelEntity m = new ModelEntity( key, type, node, parent );
+            String config = jo.getString( PROPERTY_ENTITY_PARENT );
+            ModelEntity m = new ModelEntity( key, type, node, parent, config );
             models.add( m );
         }
         return models;
@@ -219,28 +221,28 @@ public class CouchbasePersistence implements Persistence, PropertyStringAccess {
         return models;
     }
 
-    public Map< String, String > getProperties( String filter ) {
-        // https://forums.couchbase.com/t/wildcard-search-using-couchbase-views/3545
-        HashMap< String, String > hm = new HashMap< String, String >();
-        String filter1 = filter;
-        String filter2 = filter + "\\uefff";
-        ViewResult result = _b.query(
-                ViewQuery
-                        .from( "persistence", "all_properties" )
-                        .startKey( filter1 )
-                        .endKey( filter2 )
-                        .inclusiveEnd( true )
-        );
-        List< ViewRow > l = result.allRows();
-        for ( ViewRow r : l ) {
-            JsonObject jo = r.document().content();
-            String key = jo.getString( PROPERTY_KEY );
-            String value = jo.getString( PROPERTY_PROPERTY_VALUE );
-            hm.put( key, value );
-        }
-
-        return hm;
-    }
+//    public Map< String, String > getProperties( String filter ) {
+//        // https://forums.couchbase.com/t/wildcard-search-using-couchbase-views/3545
+//        HashMap< String, String > hm = new HashMap< String, String >();
+//        String filter1 = filter;
+//        String filter2 = filter + "\\uefff";
+//        ViewResult result = _b.query(
+//                ViewQuery
+//                        .from( "persistence", "all_properties" )
+//                        .startKey( filter1 )
+//                        .endKey( filter2 )
+//                        .inclusiveEnd( true )
+//        );
+//        List< ViewRow > l = result.allRows();
+//        for ( ViewRow r : l ) {
+//            JsonObject jo = r.document().content();
+//            String key = jo.getString( PROPERTY_KEY );
+//            String value = jo.getString( PROPERTY_PROPERTY_VALUE );
+//            hm.put( key, value );
+//        }
+//
+//        return hm;
+//    }
 
     // Nodes
     public void setNode( ModelNode m ) {
@@ -287,11 +289,12 @@ public class CouchbasePersistence implements Persistence, PropertyStringAccess {
     public void setEntity( ModelEntity m ) {
         String key = GetKey( KEY_PREFIX_ENTITY, m.name );
         JsonObject jo = JsonObject.empty()
-                .put( PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_ENTITY )
+                .put(PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_ENTITY)
                 .put( PROPERTY_KEY, m.name )
                 .put( PROPERTY_ENTITY_NODE, m.node )
                 .put( PROPERTY_ENTITY_PARENT, m.parent )
-                .put( PROPERTY_ENTITY_TYPE, m.type );
+                .put( PROPERTY_ENTITY_TYPE, m.type )
+                .put(PROPERTY_ENTITY_CONFIG, m.config);
         JsonDocument response = upsert( key, jo );
     }
 
@@ -305,7 +308,8 @@ public class CouchbasePersistence implements Persistence, PropertyStringAccess {
             String type = loaded.content().getString( PROPERTY_ENTITY_TYPE );
             String node = loaded.content().getString( PROPERTY_ENTITY_NODE );
             String parent = loaded.content().getString( PROPERTY_ENTITY_PARENT );
-            ModelEntity m = new ModelEntity( key, type, node, parent );
+            String config = loaded.content().getString( PROPERTY_ENTITY_CONFIG );
+            ModelEntity m = new ModelEntity( key, type, node, parent, config );
             return m;
         }
     }
@@ -347,24 +351,24 @@ public class CouchbasePersistence implements Persistence, PropertyStringAccess {
         remove( key );
     }
 
-    public String getPropertyString( String propertyKey, String defaultValue ) {
-        String key = GetKey( KEY_PREFIX_PROPERTY, propertyKey );
-        JsonDocument loaded = _b.get( key );
-        if ( loaded == null ) {
-            return null;
-        }
-        else {
-            String value = loaded.content().getString( PROPERTY_PROPERTY_VALUE );
-            return value;
-        }
-    }
-
-    public void setPropertyString( String propertyKey, String value ) {
-        String key = GetKey( KEY_PREFIX_PROPERTY, propertyKey );
-        JsonObject jo = JsonObject.empty()
-                .put( PROPERTY_KEY, propertyKey )
-                .put( PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_PROPERTY )
-                .put( PROPERTY_PROPERTY_VALUE, value );
-        JsonDocument response = upsert( key, jo );
-    }
+//    public String getPropertyString( String propertyKey, String defaultValue ) {
+//        String key = GetKey( KEY_PREFIX_PROPERTY, propertyKey );
+//        JsonDocument loaded = _b.get( key );
+//        if ( loaded == null ) {
+//            return null;
+//        }
+//        else {
+//            String value = loaded.content().getString( PROPERTY_PROPERTY_VALUE );
+//            return value;
+//        }
+//    }
+//
+//    public void setPropertyString( String propertyKey, String value ) {
+//        String key = GetKey( KEY_PREFIX_PROPERTY, propertyKey );
+//        JsonObject jo = JsonObject.empty()
+//                .put( PROPERTY_KEY, propertyKey )
+//                .put( PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_PROPERTY )
+//                .put( PROPERTY_PROPERTY_VALUE, value );
+//        JsonDocument response = upsert( key, jo );
+//    }
 }

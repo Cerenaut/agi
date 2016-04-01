@@ -49,12 +49,12 @@ public class HttpCoordination implements Coordination {
     }
 
     public void addHandlers() {
-        HttpPropertiesHandler ph = new HttpPropertiesHandler( _n.getPersistence() );
+        HttpConfigHandler ph = new HttpConfigHandler( _n.getPersistence() );
         HttpDataHandler dh = new HttpDataHandler( _n.getPersistence() );
         HttpNodesHandler nh = new HttpNodesHandler( _n.getPersistence() );
         HttpEntitiesHandler eh = new HttpEntitiesHandler( _n.getPersistence() );
 
-        HttpUtil.AddHandler( _s, HttpPropertiesHandler.CONTEXT, ph );
+        HttpUtil.AddHandler( _s, HttpConfigHandler.CONTEXT, ph );
         HttpUtil.AddHandler( _s, HttpDataHandler.CONTEXT, dh );
         HttpUtil.AddHandler( _s, HttpNodesHandler.CONTEXT, nh );
         HttpUtil.AddHandler( _s, HttpEntitiesHandler.CONTEXT, eh );

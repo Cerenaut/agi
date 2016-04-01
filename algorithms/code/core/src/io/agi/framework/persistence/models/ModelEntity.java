@@ -11,12 +11,14 @@ public class ModelEntity {
     public String type;
     public String node;
     public String parent;
+    public String config;
 
-    public ModelEntity( String name, String type, String node, String parent ) {
+    public ModelEntity( String name, String type, String node, String parent, String config ) {
         this.name = name;
         this.type = type;
         this.node = node;
         this.parent = parent;
+        this.config = config;
     }
 
     public ModelEntity( Entity e ) {
@@ -26,4 +28,19 @@ public class ModelEntity {
         parent = e.getParent();
     }
 
+    /**
+     * Allows a single config property to be obtained.
+     * @param path
+     */
+    public String getConfig( String path ) {
+        TODO
+    }
+
+    /**
+     * Allows a single config property to be modified.
+     * @param path
+     */
+    public void setConfig( String path, String value ) {
+        TODO
+    }
 }
