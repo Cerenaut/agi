@@ -65,6 +65,19 @@ public class HttpEntitiesHandler implements HttpHandler {
                 response += "[ ";
 
                 for ( ModelEntity m : results ) {
+
+                    // sanitize the config
+                    String config = m.config;
+
+                    if( config == null ) {
+                        config = "null";
+                    }
+
+                    if( config.isEmpty() ) {
+                        config = "\"\""; // empty double quotes.
+                    }
+
+                    // write the entity
                     if ( first ) {
                         first = false;
                     }
@@ -78,6 +91,7 @@ public class HttpEntitiesHandler implements HttpHandler {
                     response += " \"node\": \"" + m.node + "\"" + ",";
                     response += " \"parent\": \"" + m.parent + "\"" + ",";
                     response += " \"type\": \"" + m.type + "\"";
+                    response += " \"config\": " + config; // this must be JSON
 
                     response += " }";
                 }
