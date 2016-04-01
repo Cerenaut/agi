@@ -29,13 +29,8 @@ CREATE database agidb OWNER agiu;
 \connect agidb;
 
 
--- key-value store
-CREATE TABLE properties(
-   id SERIAL PRIMARY KEY NOT NULL,
-   name text NOT NULL UNIQUE,
-   value text NOT NULL
-);
-
+-- Create tables
+-- NB Text is unlimited length, but most efficient: http://www.postgresql.org/docs/9.1/static/datatype-character.html
 CREATE TABLE nodes(
    id SERIAL PRIMARY KEY NOT NULL,
    name text,
@@ -48,12 +43,12 @@ CREATE TABLE entities(
    type text,
    node text,
    parent text,
+   config text,
    name text NOT NULL UNIQUE
 );
 
 CREATE TABLE data(
    id SERIAL PRIMARY KEY NOT NULL,
---   entity text,
    name text NOT NULL UNIQUE,
    ref_name text,
    sizes text,
