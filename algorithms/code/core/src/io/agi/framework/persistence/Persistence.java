@@ -1,10 +1,13 @@
 package io.agi.framework.persistence;
 
+import io.agi.framework.entities.EntityProperties;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
 import io.agi.framework.persistence.models.ModelNode;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -50,10 +53,8 @@ public interface Persistence {
     void removeData( String key );
 
     // Properties
-    String getPropertyString( String key, String defaultValue );
-
-    void setPropertyString( String key, String value );
-
     Map< String, String > getProperties( String filter );
 
+    void getProperties( String key, EntityProperties properties );
+    void setProperties( String key, EntityProperties properties );
 }

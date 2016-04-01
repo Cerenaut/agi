@@ -12,8 +12,9 @@ import io.agi.core.util.images.ImageScreenScraper;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
+import io.agi.framework.entities.EntityProperties;
+import io.agi.framework.entities.ImageSensorProperties;
 
-import java.awt.*;
 import java.util.Collection;
 
 /**
@@ -29,22 +30,9 @@ import java.util.Collection;
 public class ImageSensorEntity extends Entity {
 
     public static final String ENTITY_TYPE = "image-sensor";
+    public static final String IMAGE_DATA = "image-data";
 
-    public static final String OUTPUT_IMAGE_DATA = "image-data";
-
-    public static final String SOURCE_FILES_PATH = "source-files-path";
-    public static final String SOURCE_TYPE = "source-type";
-    public static final String RECEPTIVE_FIELD_X = "receptive-field-x";
-    public static final String RECEPTIVE_FIELD_Y = "receptive-field-y";
-    public static final String RECEPTIVE_FIELD_W = "receptive-field-w";
-    public static final String RECEPTIVE_FIELD_H = "receptive-field-h";
-    public static final String RESOLUTION_X = "resolution-x";
-    public static final String RESOLUTION_Y = "resolution-y";
-    public static final String GREYSCALE = "greyscale";
-    public static final String CURRENT_IMAGE_LABEL = "current-image-label";
-
-    public static final String BUFFERED_IMAGE_INDEX = "buffered-image-index";
-
+    ImageSensorProperties _properties = null;
 
     public ImageSensorEntity( String entityName, ObjectMap om, String type, Node n ) {
         super( entityName, om, type, n );
@@ -55,70 +43,43 @@ public class ImageSensorEntity extends Entity {
     }
 
     @Override
-    public void getOutputKeys( Collection<String> keys, DataFlags flags ) {
-        keys.add(OUTPUT_IMAGE_DATA);
+    public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
+        keys.add( IMAGE_DATA );
     }
 
     @Override
-    public void getPropertyKeys( Collection< String > keys ) {
-        keys.add( SUFFIX_AGE );
-        keys.add( SUFFIX_SEED );
-        keys.add( SUFFIX_RESET );
-
-        keys.add( SOURCE_FILES_PATH );
-        keys.add( SOURCE_TYPE );
-        keys.add( RECEPTIVE_FIELD_X );
-        keys.add( RECEPTIVE_FIELD_Y );
-        keys.add( RECEPTIVE_FIELD_W );
-        keys.add( RECEPTIVE_FIELD_H );
-        keys.add( RESOLUTION_X );
-        keys.add( RESOLUTION_Y );
-        keys.add( GREYSCALE );
-        keys.add( CURRENT_IMAGE_LABEL );
-        keys.add( BUFFERED_IMAGE_INDEX );
+    public EntityProperties getProperties( ) {
+        return _properties;
     }
 
     public void doUpdateSelf() {
 
-        String filesPath = getPropertyString( SOURCE_FILES_PATH, "./" );
-        String bufferedImageSourceType = getPropertyString( SOURCE_TYPE, BufferedImageSourceFactory.TYPE_IMAGE_FILES );
-
-        BufferedImageSource bufferedImageSource = BufferedImageSourceFactory.create( bufferedImageSourceType, filesPath );
-
-        int receptiveFieldX = getPropertyInt( RECEPTIVE_FIELD_X, -1 );
-        int receptiveFieldY = getPropertyInt( RECEPTIVE_FIELD_Y, -1 );
-        int receptiveFieldW = getPropertyInt( RECEPTIVE_FIELD_W, -1 );
-        int receptiveFieldH = getPropertyInt( RECEPTIVE_FIELD_H, -1 );
-        int resolutionX = getPropertyInt( RESOLUTION_X, 28 );
-        int resolutionY = getPropertyInt( RESOLUTION_Y, 28 );
-        boolean greyscale = getPropertyBoolean( GREYSCALE, true );
+        BufferedImageSource bufferedImageSource = BufferedImageSourceFactory.create(
+                _properties.sourceType,
+                _properties.sourceFilesPath );
 
         ImageScreenScraper imageScreenScraper = new ImageScreenScraper();
 
-        if ( isReceptiveFieldSet( receptiveFieldX, receptiveFieldY, receptiveFieldW, receptiveFieldH ) ) {
-            Rectangle receptiveField = new Rectangle( receptiveFieldX, receptiveFieldY, receptiveFieldW, receptiveFieldH );
-            Point point = new Point( resolutionX, resolutionY );
-            imageScreenScraper.setup( bufferedImageSource, receptiveField, point, greyscale );
+        if ( isReceptiveFieldSet( _properties.receptiveField.receptiveFieldX, _properties.receptiveField.receptiveFieldY,
+                                  _properties.receptiveField.receptiveFieldW, _properties.receptiveField.receptiveFieldH) )  {
+            imageScreenScraper.setup( bufferedImageSource, _properties.getReceptiveField(), _properties.getResolution(), _properties.greyscale );
         }
         else {
-            imageScreenScraper.setup( bufferedImageSource, resolutionX, resolutionY, greyscale );
+            imageScreenScraper.setup( bufferedImageSource, _properties.resolution.resolutionX, _properties.resolution.resolutionY, _properties.greyscale );
         }
 
-        int index = getPropertyInt( BUFFERED_IMAGE_INDEX, 0 );
-
-        boolean inRange = bufferedImageSource.seek( index );
+        boolean inRange = bufferedImageSource.seek( _properties.imageIndex);
         if ( !inRange ) {
-            index = 0;          // try to reset to beginning (may still be out of range)
+            _properties.imageIndex = 0;          // try to reset to beginning (may still be out of range)
 
             System.err.println( "ERROR: Could not get an image to scrape. Error with BufferedImageSource.seek() in ImageSensorEntity" );
         }
         else {
             imageScreenScraper.scrape();
-            index = bufferedImageSource.nextImage();
+            _properties.imageIndex = bufferedImageSource.nextImage();
         }
 
-        setData(OUTPUT_IMAGE_DATA, imageScreenScraper.getData() );
-        setPropertyInt( BUFFERED_IMAGE_INDEX, index );
+        setData( IMAGE_DATA, imageScreenScraper.getData() );
     }
 
     private boolean isReceptiveFieldSet( int receptiveFieldX, int receptiveFieldY, int receptiveFieldW, int receptiveFieldH ) {

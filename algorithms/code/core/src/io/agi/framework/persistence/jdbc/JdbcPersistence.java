@@ -1,8 +1,10 @@
 package io.agi.framework.persistence.jdbc;
 
+import com.google.gson.Gson;
 import io.agi.core.util.PropertiesUtil;
+import io.agi.framework.Entity;
+import io.agi.framework.entities.EntityProperties;
 import io.agi.framework.persistence.Persistence;
-import io.agi.framework.persistence.PropertyConverter;
 import io.agi.framework.persistence.PropertyStringAccess;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
@@ -18,7 +20,7 @@ import java.util.Map;
 /**
  * Created by dave on 16/02/16.
  */
-public class JdbcPersistence implements Persistence, PropertyStringAccess {
+public class JdbcPersistence implements Persistence {
 
     //    Entity --< Properties
     //           --< Data
@@ -36,7 +38,7 @@ public class JdbcPersistence implements Persistence, PropertyStringAccess {
     protected String _password;
     protected String _url; // e.g. jdbc:postgresql://localhost:5432/agidb"; // https://jdbc.postgresql.org/documentation/80/connect.html
 
-    PropertyConverter _propertyConverter = null;
+    HashMap< String, Class > _keyToType;
 
     private static final Logger logger = LogManager.getLogger();
 
@@ -67,8 +69,6 @@ public class JdbcPersistence implements Persistence, PropertyStringAccess {
         _user = user;
         _password = password;
         _url = url;
-
-        _propertyConverter = new PropertyConverter( this );
     }
 
     // Nodes
@@ -248,24 +248,51 @@ public class JdbcPersistence implements Persistence, PropertyStringAccess {
         return hm;
     }
 
-    public String getPropertyString( String key, String defaultValue ) {
-        String sql = "SELECT name, value FROM properties where name = '" + key + "'";
-        ResultSetMap rsm = new ResultSetMap();
-        rsm._fields.add( "value" );
-        executeQuery( sql, rsm );
-        if ( rsm._rows.isEmpty() ) {
-            return defaultValue;
-        }
-        return rsm.getRowValue( 0, "value" );
+    @Override
+    public void getProperties( String key, EntityProperties properties ) {
+
+        // sql to get properties jsonString for this entity
+        // !!!!     need to change the key to entity key
+        String jsonString = null;
+
+        Class propertiesClass = _keyToType.get( key );
+
+        Gson gson = new Gson();
+
+        // need to use reflection?! to instantiate a properiesClass class
+        propertiesClass = gson.fromJson( jsonString, propertiesClass );
     }
 
-    public void setPropertyString( String key, String value ) {
-        // https://www.sitepoint.com/community/t/how-to-use-on-duplicate-key-update-in-postgresql-with-php/200335/4
-        String sql1 = "UPDATE properties SET value = '" + value + "' WHERE name = '" + key + "'";
-        execute( sql1 );
-        String sql2 = "INSERT INTO properties (name, value) SELECT '" + key + "', '" + value + "' WHERE NOT EXISTS (SELECT name from properties WHERE name = '" + key + "')";
-        execute( sql2 );
+    @Override
+    public void setProperties( String key, EntityProperties properties ) {
+        _keyToType.put( key, properties.getClass() );
+
+        Gson gson = new Gson();
+        String jsonString = gson.toJson( properties );
+
+        // sql upsert this string into entity table for 'property' field
+        // so won't need the key!, unless we want to have multiple props per entity
     }
+
+
+//    public String getPropertyString( String key, String defaultValue ) {
+//        String sql = "SELECT name, value FROM properties where name = '" + key + "'";
+//        ResultSetMap rsm = new ResultSetMap();
+//        rsm._fields.add( "value" );
+//        executeQuery( sql, rsm );
+//        if ( rsm._rows.isEmpty() ) {
+//            return defaultValue;
+//        }
+//        return rsm.getRowValue( 0, "value" );
+//    }
+//
+//    public void setPropertyString( String key, String value ) {
+//        // https://www.sitepoint.com/community/t/how-to-use-on-duplicate-key-update-in-postgresql-with-php/200335/4
+//        String sql1 = "UPDATE properties SET value = '" + value + "' WHERE name = '" + key + "'";
+//        execute( sql1 );
+//        String sql2 = "INSERT INTO properties (name, value) SELECT '" + key + "', '" + value + "' WHERE NOT EXISTS (SELECT name from properties WHERE name = '" + key + "')";
+//        execute( sql2 );
+//    }
 
     public void execute( String sql ) {
         JdbcUtil.Execute( _url, _user, _password, sql );
