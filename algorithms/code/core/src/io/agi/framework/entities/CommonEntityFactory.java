@@ -4,7 +4,6 @@ import io.agi.core.orm.ObjectMap;
 import io.agi.framework.Entity;
 import io.agi.framework.EntityFactory;
 import io.agi.framework.Node;
-import io.agi.framework.entities.ImageSensor.ImageSensorEntity;
 
 /**
  * Base class for entity factories, that creates all the default types.

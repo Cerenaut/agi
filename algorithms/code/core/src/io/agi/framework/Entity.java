@@ -154,8 +154,16 @@ public abstract class Entity extends NamedObject implements EntityListener {
         // Require all children to flush on next update.
         // They can only be updated by this class, so we know they will respect the flush.
         for( String childName : childNames ) {
+
+
             String childKey = GetKey( childName, SUFFIX_FLUSH );
             p.setPropertyString( childKey, "true" );
+
+            // TODO TODO
+            // get the entity, then .properties of entity can be set
+
+
+
         }
 
         // Now wait for all children to update
@@ -177,13 +185,13 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
     protected void beforeUpdate() {
         String entityName = getName();
-        int age = getPropertyInt( SUFFIX_AGE, 1 );
+        int age = _properties.age; // getPropertyInt( SUFFIX_AGE, 1 );
         System.err.println("START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName);
     }
 
     protected void afterUpdate() {
         String entityName = getName();
-        int age = getPropertyInt(SUFFIX_AGE, 1);
+        int age = _properties.age; // getPropertyInt(SUFFIX_AGE, 1);
         System.err.println( "END   T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity updated: " + entityName );
 
         _n.notifyUpdated( entityName ); // this entity, the parent, is now complete
@@ -224,28 +232,25 @@ public abstract class Entity extends NamedObject implements EntityListener {
         // 3. fetch properties
         // get all the properties and put them in the properties map.
         EntityProperties properties = getProperties();
-        propertyKeys.add( SUFFIX_FLUSH ); // every Entity must support flush
         fetchProperties( properties );
 
         // Set the random number generator, with the current time (i.e. random), if not loaded.
-        long seed1 = _propertyConverter.getPropertyLong( SUFFIX_SEED, System.currentTimeMillis() );
-        _r.setSeed( seed1 );
+        if ( properties.seed <=0 ) {
+            properties.seed = System.currentTimeMillis();
+        }
+        _r.setSeed( properties.seed );
 
         // 3. doUpdateSelf()
         doUpdateSelf();
 
         // update age:
-        if( propertyKeys.contains( SUFFIX_AGE ) ) {
-            int age = _propertyConverter.getPropertyInt(SUFFIX_AGE, 0);
-            ++age;
-            _propertyConverter.setPropertyInt(SUFFIX_AGE, age);
-        }
+        properties.age++;
 
         // update the random seed for next time.
-        if( propertyKeys.contains( SUFFIX_SEED ) ) {
-            long seed2 = _r.getSeed();
-            _propertyConverter.setPropertyLong( SUFFIX_SEED, seed2 );
+        if ( properties.seed <=0 ) {
+            properties.seed = System.currentTimeMillis();
         }
+        properties.seed = _r.getSeed();
 
         // 4. set outputs
         // write all the outputs back to the persistence system
@@ -356,7 +361,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
     public void persistData( Collection< String > keys ) {
         Persistence p = _n.getPersistence();
 
-        _flush = getPropertyBoolean( SUFFIX_FLUSH, false );
+        _flush = _properties.flush;
 
         for ( String keySuffix : keys ) {
             String inputKey = getKey( keySuffix );
@@ -392,9 +397,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
         }
 
         // clear flush after flush.
-        if( _flush ) {
-            setPropertyBoolean( SUFFIX_FLUSH, false );
-        }
+        _properties.flush = _flush;
     }
 
     public void setData( String keySuffix, Data output ) {
