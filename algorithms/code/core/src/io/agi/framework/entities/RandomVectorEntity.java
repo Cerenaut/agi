@@ -40,34 +40,21 @@ public class RandomVectorEntity extends Entity {
         return RandomVectorConfig.class;
     }
 
-    @Override
-    public void getPropertyKeys( Collection< String > keys ) {
-        keys.add( SUFFIX_AGE );
-        keys.add( SUFFIX_SEED );
-        keys.add( SUFFIX_RESET );
-
-        keys.add( MIN );
-        keys.add( MAX );
-        keys.add( ELEMENTS );
-    }
-
     protected void doUpdateSelf() {
 
         // Get all the parameters:
-        float min = getPropertyFloat( MIN, 0.0f );
-        float max = getPropertyFloat( MAX, 1.0f );
-        int elements = getPropertyInt( ELEMENTS, 1 );
+        RandomVectorConfig config = (RandomVectorConfig)_config;
 
-        Data output = getDataLazyResize( OUTPUT, DataSize.create( elements ) );
+        Data output = getDataLazyResize( OUTPUT, DataSize.create( config.elements ) );
         Random r = getRandom();
 
-        float range = max - min;
+        float range = config.max - config.min;
 
-        for ( int i = 0; i < elements; ++i ) {
+        for ( int i = 0; i < config.elements; ++i ) {
 
             float x = r.nextFloat();
             x = x * range;
-            x += min;
+            x += config.min;
 
             output._values[ i ] = x;
         }

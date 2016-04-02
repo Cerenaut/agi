@@ -30,7 +30,7 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
     public static final String OUTPUT_ACTIVE = "output-active";
 
     public DynamicSelfOrganizingMapEntity( ObjectMap om, Node n, ModelEntity model ) {
-        super( om, n, model );
+        super(om, n, model);
     }
 
     public void getInputKeys( Collection< String > keys ) {
@@ -49,13 +49,6 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
         return DynamicSelfOrganizingMapConfig.class;
     }
 
-    @Override
-    public void getPropertyKeys( Collection< String > keys ) {
-        keys.add( SUFFIX_AGE );
-        keys.add( SUFFIX_SEED );
-        keys.add( SUFFIX_RESET );
-    }
-
     protected void doUpdateSelf() {
 
         // Do nothing unless the input is
@@ -68,25 +61,21 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
         // Get all the parameters:
         int inputs = input.getSize();
 
-        boolean reset = getPropertyBoolean( Entity.SUFFIX_RESET, false );
-        float learningRate = getPropertyFloat( DynamicSelfOrganizingMapConfig.LEARNING_RATE, 0.5f );
-        float elasticity = getPropertyFloat( DynamicSelfOrganizingMapConfig.ELASTICITY, 1.0f );
-        int widthCells = getPropertyInt( CompetitiveLearningConfig.WIDTH_CELLS, 8 );
-        int heightCells = getPropertyInt( CompetitiveLearningConfig.HEIGHT_CELLS, 8 );
-
         String implName = getName() + Keys.DELIMITER + IMPL_NAME; // the name of the object that implements
 
         // Create the config object:
+        io.agi.framework.entities.DynamicSelfOrganizingMapConfig config = (io.agi.framework.entities.DynamicSelfOrganizingMapConfig)_config;
+
         DynamicSelfOrganizingMapConfig dsomc = new DynamicSelfOrganizingMapConfig();
-        dsomc.setup( _om, implName, getRandom(), inputs, widthCells, heightCells, learningRate, elasticity );
+        dsomc.setup( _om, implName, getRandom(), inputs, config.widthCells, config.heightCells, config.learningRate, config.elasticity );
 
         // Create the implementing object itself, and copy data from persistence into it:
         DynamicSelfOrganizingMap dsom = new DynamicSelfOrganizingMap( implName, _om );
         dsom._c = dsomc;
         dsom._inputValues = input;
 
-        DataSize dataSizeWeights = DataSize.create( widthCells, heightCells, inputs );
-        DataSize dataSizeCells = DataSize.create( widthCells, heightCells );
+        DataSize dataSizeWeights = DataSize.create( config.widthCells, config.heightCells, inputs );
+        DataSize dataSizeCells = DataSize.create( config.widthCells, config.heightCells );
 
         Data weights = getDataLazyResize( OUTPUT_WEIGHTS, dataSizeWeights );
         Data errors = getDataLazyResize( OUTPUT_ERROR, dataSizeCells ); // deep copies the size so they each own a copy
@@ -99,9 +88,8 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
         dsom._cellActivity = activity;
         dsom._cellMask = mask;
 
-        if ( reset ) {
+        if( config.reset ) {
             dsom.reset();
-            setPropertyBoolean( SUFFIX_RESET, false ); // turn off
         }
 
         dsom.update();

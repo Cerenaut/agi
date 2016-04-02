@@ -23,10 +23,6 @@ public class ConstantMatrixEntity extends Entity {
 
     public static final String ENTITY_TYPE = "constant-matrix";
 
-    public static final String WIDTH = "width";
-    public static final String HEIGHT = "height";
-    public static final String VALUE = "value";
-
     public static final String OUTPUT = "output";
 
     public ConstantMatrixEntity( ObjectMap om, Node n, ModelEntity model ) {
@@ -45,22 +41,13 @@ public class ConstantMatrixEntity extends Entity {
         return ConstantMatrixConfig.class;
     }
 
-    @Override
-    public void getPropertyKeys( Collection< String > keys ) {
-        keys.add( VALUE );
-        keys.add( WIDTH );
-        keys.add( HEIGHT );
-    }
-
     protected void doUpdateSelf() {
 
-        // Get all the parameters:
-        float defaultValue = getPropertyFloat(VALUE, 0.0f);
-        int width = getPropertyInt( WIDTH, 1);
-        int height = getPropertyInt( HEIGHT, 1);
+        ConstantMatrixConfig config = (ConstantMatrixConfig)_config;
 
-        Data output = getDataLazyResize(OUTPUT, DataSize.create( width, height ) );
-        output.set( defaultValue );
+        // Get all the parameters:
+        Data output = getDataLazyResize(OUTPUT, DataSize.create( config.width, config.height ) );
+        output.set( config.value );
 
         setData( OUTPUT, output );
     }

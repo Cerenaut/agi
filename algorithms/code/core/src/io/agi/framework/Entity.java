@@ -211,20 +211,28 @@ public abstract class Entity extends NamedObject implements EntityListener {
         // get all the outputs and put them in the object map.
         Collection< String > outputKeys = new ArrayList< String >();
         getOutputKeys( outputKeys, _dataFlags );
-        fetchData( outputKeys );
+        fetchData(outputKeys);
 
         // Set the random number generator, with the current time (i.e. random), if not loaded.
         if( _config.seed == null ) {
            _config.seed = System.currentTimeMillis();
         }
 
-        _r.setSeed( _config.seed );
+        _r.setSeed(_config.seed);
 
         // 3. doUpdateSelf()
         doUpdateSelf();
 
-        _config.age++; // update age:
+        if( _config.reset ) {
+            _config.age = 0;
+        }
+        else {
+            _config.age++; // update age:
+        }
+
         _config.seed = _r.getSeed(); // update the random seed for next time.
+        _config.reset = false; // cancel reset after reset.
+        _config.flush = false; // clear flush after flush: if it was true, make it false.
 
         // 4. set outputs
         // write all the outputs back to the persistence system
@@ -376,9 +384,6 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
             p.setData( new ModelData( inputKey, d, sparse ) );
         }
-
-        // clear flush after flush.
-        _config.flush = false; // if it was true, make it false.
     }
 
     /**

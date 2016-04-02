@@ -59,14 +59,7 @@ public class GrowingNeuralGasEntity extends Entity {
 
     @Override
     public Class getConfigClass() {
-        return GrowingNeuralGasConfig.class;
-    }
-
-    @Override
-    public void getPropertyKeys( Collection< String > keys ) {
-        keys.add( SUFFIX_AGE );
-        keys.add( SUFFIX_SEED );
-        keys.add( SUFFIX_RESET );
+        return io.agi.framework.entities.GrowingNeuralGasConfig.class;
     }
 
     protected void doUpdateSelf() {
@@ -79,35 +72,25 @@ public class GrowingNeuralGasEntity extends Entity {
         }
 
         // Get all the parameters:
+        io.agi.framework.entities.GrowingNeuralGasConfig config = (io.agi.framework.entities.GrowingNeuralGasConfig)_config;
+
         int inputs = input.getSize();
-
-        boolean reset = getPropertyBoolean( Entity.SUFFIX_RESET, false );
-        float learningRate = getPropertyFloat( GrowingNeuralGasConfig.LEARNING_RATE, 0.1f );
-        int widthCells = getPropertyInt( CompetitiveLearningConfig.WIDTH_CELLS, 8 );
-        int heightCells = getPropertyInt( CompetitiveLearningConfig.HEIGHT_CELLS, 8 );
-
-        float learningRateNeighbours = getPropertyFloat( GrowingNeuralGasConfig.LEARNING_RATE_NEIGHBOURS, 0.05f );
-        float noiseMagnitude = getPropertyFloat( GrowingNeuralGasConfig.NOISE_MAGNITUDE, 0.005f );
-        int edgeMaxAge = getPropertyInt( GrowingNeuralGasConfig.EDGE_MAX_AGE, 200 );
-        float stressLearningRate = getPropertyFloat( GrowingNeuralGasConfig.STRESS_LEARNING_RATE, 0.15f );
-        float stressThreshold = getPropertyFloat( GrowingNeuralGasConfig.STRESS_THRESHOLD, 0.01f );
-        int growthInterval = getPropertyInt( GrowingNeuralGasConfig.GROWTH_INTERVAL, 2 );
 
         String implName = getName() + Keys.DELIMITER + IMPL_NAME; // the name of the object that implements
 
         // Create the config object:
         GrowingNeuralGasConfig c = new GrowingNeuralGasConfig();
-        c.setup( _om, implName, getRandom(), inputs, widthCells, heightCells, learningRate, learningRateNeighbours, noiseMagnitude, edgeMaxAge, stressLearningRate, stressThreshold, growthInterval );
+        c.setup( _om, implName, getRandom(), inputs, config.widthCells, config.heightCells, config.learningRate, config.learningRateNeighbours, config.noiseMagnitude, config.edgeMaxAge, config.stressLearningRate, config.stressThreshold, config.growthInterval );
 
         // Create the implementing object itself, and copy data from persistence into it:
         GrowingNeuralGas gng = new GrowingNeuralGas( implName, _om );
         gng._c = c;
         gng._inputValues = input;
 
-        int areaCells = widthCells * heightCells;
+        int areaCells = config.widthCells * config.heightCells;
 
-        DataSize dataSizeWeights = DataSize.create( widthCells, heightCells, inputs );
-        DataSize dataSizeCells = DataSize.create( widthCells, heightCells );
+        DataSize dataSizeWeights = DataSize.create( config.widthCells, config.heightCells, inputs );
+        DataSize dataSizeCells = DataSize.create( config.widthCells, config.heightCells );
         DataSize dataSizeEdges = DataSize.create( areaCells, areaCells );
 
         Data weights = getDataLazyResize( OUTPUT_WEIGHTS, dataSizeWeights );
@@ -133,10 +116,8 @@ public class GrowingNeuralGasEntity extends Entity {
         gng._edgesAges = edgesAges;
         gng._ageSinceGrowth = ageSinceGrowth;
 
-        if ( reset ) {
+        if( config.reset ) {
             gng.reset();
-            setPropertyBoolean( SUFFIX_RESET, false ); // turn off
-            setPropertyInt( SUFFIX_AGE, 0 ); // turn off
         }
 
         gng.update();

@@ -43,10 +43,4 @@ public class ExperimentEntity extends Entity {
         return ExperimentConfig.class;
     }
 
-    @Override
-    public void getPropertyKeys( Collection< String > keys ) {
-        keys.add( SUFFIX_AGE );
-        keys.add( SUFFIX_SEED );
-        keys.add( SUFFIX_RESET );
-    }
 }

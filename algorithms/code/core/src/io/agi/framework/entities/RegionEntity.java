@@ -91,11 +91,10 @@ public class RegionEntity extends Entity {
         getClassifierOutputKeys( keys, flags, RegionConfig.SUFFIX_ORGANIZER );
 
         // The classifiers
-        int organizerWidthCells  = getPropertyInt( Keys.concatenate( RegionConfig.SUFFIX_ORGANIZER, CompetitiveLearningConfig.WIDTH_CELLS  ), 10 );
-        int organizerHeightCells = getPropertyInt( Keys.concatenate( RegionConfig.SUFFIX_ORGANIZER, CompetitiveLearningConfig.HEIGHT_CELLS ), 10 );
+        io.agi.framework.entities.RegionConfig config = (io.agi.framework.entities.RegionConfig)_config;
 
-        for( int y = 0; y < organizerHeightCells; ++y ) {
-            for( int x = 0; x < organizerWidthCells; ++x ) {
+        for( int y = 0; y < config.organizerHeightCells; ++y ) {
+            for( int x = 0; x < config.organizerWidthCells; ++x ) {
                 String prefix = Keys.concatenate( RegionConfig.SUFFIX_CLASSIFIER, String.valueOf( x ), String.valueOf( y ) );
                 getClassifierOutputKeys(keys, flags, prefix);
             }
@@ -180,14 +179,6 @@ public class RegionEntity extends Entity {
         return RegionConfig.class;
     }
 
-    @Override
-    public void getPropertyKeys( Collection< String > keys ) {
-        keys.add( SUFFIX_AGE );
-        keys.add( SUFFIX_SEED );
-        keys.add( SUFFIX_RESET );
-
-    }
-
     protected void doUpdateSelf() {
 
         // Do nothing unless the input is defined
@@ -200,7 +191,6 @@ public class RegionEntity extends Entity {
 
         // Get all the parameters:
         String regionName = getName();
-        boolean reset = getPropertyBoolean(Entity.SUFFIX_RESET, false); // manual reset
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Test parameters
@@ -223,37 +213,7 @@ public class RegionEntity extends Entity {
         // Algorithm specific parameters
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Region size
-        int organizerWidthCells  = getPropertyInt( Keys.concatenate( RegionConfig.SUFFIX_ORGANIZER, CompetitiveLearningConfig.WIDTH_CELLS  ), 10 );
-        int organizerHeightCells = getPropertyInt( Keys.concatenate( RegionConfig.SUFFIX_ORGANIZER, CompetitiveLearningConfig.HEIGHT_CELLS ), 10 );
-
-        // Column Sizing
-        int classifierWidthCells  = getPropertyInt( Keys.concatenate( RegionConfig.SUFFIX_CLASSIFIER, CompetitiveLearningConfig.WIDTH_CELLS  ), 6 );
-        int classifierHeightCells = getPropertyInt( Keys.concatenate( RegionConfig.SUFFIX_CLASSIFIER, CompetitiveLearningConfig.HEIGHT_CELLS ), 6 );
-
-        // Organizer training
-        int receptiveFieldsTrainingSamples = getPropertyInt( RegionConfig.RECEPTIVE_FIELDS_TRAINING_SAMPLES, 6 );
-        int receptiveFieldSize = getPropertyInt( RegionConfig.RECEPTIVE_FIELD_SIZE, 8 );
-        float organizerLearningRate = 0.02f;
-        float organizerLearningRateNeighbours = 0.01f;
-        float organizerNoiseMagnitude = 0.0f;
-        int organizerEdgeMaxAge = 500;
-        float organizerStressLearningRate = 0.01f;
-        float organizerStressThreshold = 0.1f;
-        int organizerGrowthInterval = 100;
-
-        // Classifier training
-        float classifierLearningRate = 0.02f;
-        float classifierLearningRateNeighbours = 0.01f;
-        float classifierNoiseMagnitude = 0.0f;
-        int classifierEdgeMaxAge = 500;
-        float classifierStressLearningRate = 0.01f;
-        float classifierStressThreshold = 0.1f;
-        int classifierGrowthInterval = 100;
-
-        // Predictor
-        float predictorHiddenLayerScaleFactor = 0.1f; // Note, this assumes that the input data can be easily modelled by a few causes
-        float predictorLearningRate = 0.1f;
-        float predictorRegularization = 0.0f;
+        io.agi.framework.entities.RegionConfig config = (io.agi.framework.entities.RegionConfig)_config;
 
         // Build the algorithm
         //RandomInstance.setSeed(randomSeed); // make the tests repeatable
@@ -264,21 +224,19 @@ public class RegionEntity extends Entity {
             om, regionName, getRandom(),
             inputWidth, inputHeight,
             feedbackWidthCells, feedbackHeightCells,
-            organizerWidthCells, organizerHeightCells,
-            classifierWidthCells, classifierHeightCells,
-            receptiveFieldsTrainingSamples, receptiveFieldSize,
-            organizerLearningRate, organizerLearningRateNeighbours, organizerNoiseMagnitude, organizerEdgeMaxAge, organizerStressLearningRate, organizerStressThreshold, organizerGrowthInterval,
-            classifierLearningRate, classifierLearningRateNeighbours, classifierNoiseMagnitude, classifierEdgeMaxAge, classifierStressLearningRate, classifierStressThreshold, classifierGrowthInterval,
-            predictorHiddenLayerScaleFactor, predictorLearningRate, predictorRegularization );
+            config.organizerWidthCells, config.organizerHeightCells,
+            config.classifierWidthCells, config.classifierHeightCells,
+            config.receptiveFieldsTrainingSamples, config.receptiveFieldSize,
+            config.organizerLearningRate, config.organizerLearningRateNeighbours, config.organizerNoiseMagnitude, config.organizerEdgeMaxAge, config.organizerStressLearningRate, config.organizerStressThreshold, config.organizerGrowthInterval,
+            config.classifierLearningRate, config.classifierLearningRateNeighbours, config.classifierNoiseMagnitude, config.classifierEdgeMaxAge, config.classifierStressLearningRate, config.classifierStressThreshold, config.classifierGrowthInterval,
+            config.predictorHiddenLayerScaleFactor, config.predictorLearningRate, config.predictorRegularization );
 
         // Load data, overwriting the default setup.
         copyDataFromPersistence( r );
 
         // Process
-        if(reset ) {
+        if( config.reset ) {
             r.reset();
-            setPropertyBoolean(SUFFIX_RESET, false); // turn off
-            setPropertyInt(SUFFIX_AGE, 0); // turn off
         }
 
         r.update();

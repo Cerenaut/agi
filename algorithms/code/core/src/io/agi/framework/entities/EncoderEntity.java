@@ -20,11 +20,6 @@ public class EncoderEntity extends Entity {
 
     public static final String ENTITY_TYPE = "encoder";
 
-    // config
-    private static final String ENCODER_TYPE = "encoder-type";
-    private static final String BITS = "bits";
-    private static final String DENSITY = "density";
-
     // data
     private static final String DATA_INPUT = "data-input";
     private static final String DATA_OUTPUT = "data-output";
@@ -48,29 +43,18 @@ public class EncoderEntity extends Entity {
         return EncoderConfig.class;
     }
 
-    @Override
-    public void getPropertyKeys( Collection< String > keys ) {
-        keys.add( SUFFIX_AGE );
-
-        keys.add( ENCODER_TYPE );
-        keys.add( BITS );
-        keys.add( DENSITY );
-    }
-
     public void doUpdateSelf() {
 
-        String encoderType = getPropertyString( ENCODER_TYPE, ScalarEncoder.class.getSimpleName() );
-        int bits = getPropertyInt( BITS, 1 );
-        int density = getPropertyInt( DENSITY, 1 );
+        EncoderConfig config = (EncoderConfig)_config;
 
-        SparseDistributedEncoder encoder = EncoderFactory.create( encoderType );
+        SparseDistributedEncoder encoder = EncoderFactory.create( config.encoderType );
 
-        if ( encoder == null ) {
-            System.err.println( "Could not create EncoderEntity" );
+        if( encoder == null ) {
+            logger.error( "Could not create EncoderEntity" );
             return;
         }
 
-        encoder.setup( bits, density );
+        encoder.setup( config.bits, config.density );
 
         Data input = getData( DATA_INPUT );
         Data output = encoder.createEncodingOutput( input );

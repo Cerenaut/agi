@@ -54,31 +54,31 @@ public class ImageSensorEntity extends Entity {
 
     public void doUpdateSelf() {
 
-        ImageSensorConfig imageSensorConfig = (ImageSensorConfig)_config;
+        ImageSensorConfig config = (ImageSensorConfig)_config;
 
         BufferedImageSource bufferedImageSource = BufferedImageSourceFactory.create(
-            imageSensorConfig.sourceType,
-            imageSensorConfig.sourceFilesPath );
+            config.sourceType,
+            config.sourceFilesPath );
 
         ImageScreenScraper imageScreenScraper = new ImageScreenScraper();
 
-        if ( isReceptiveFieldSet( imageSensorConfig.receptiveField.receptiveFieldX, imageSensorConfig.receptiveField.receptiveFieldY,
-                                  imageSensorConfig.receptiveField.receptiveFieldW, imageSensorConfig.receptiveField.receptiveFieldH) )  {
-            imageScreenScraper.setup( bufferedImageSource, imageSensorConfig.getReceptiveField(), imageSensorConfig.getResolution(), imageSensorConfig.greyscale );
+        if ( isReceptiveFieldSet( config.receptiveField.receptiveFieldX, config.receptiveField.receptiveFieldY,
+                                  config.receptiveField.receptiveFieldW, config.receptiveField.receptiveFieldH) )  {
+            imageScreenScraper.setup( bufferedImageSource, config.getReceptiveField(), config.getResolution(), config.greyscale );
         }
         else {
-            imageScreenScraper.setup( bufferedImageSource, imageSensorConfig.resolution.resolutionX, imageSensorConfig.resolution.resolutionY, imageSensorConfig.greyscale );
+            imageScreenScraper.setup( bufferedImageSource, config.resolution.resolutionX, config.resolution.resolutionY, config.greyscale );
         }
 
-        boolean inRange = bufferedImageSource.seek( imageSensorConfig.imageIndex);
+        boolean inRange = bufferedImageSource.seek( config.imageIndex);
         if ( !inRange ) {
-            imageSensorConfig.imageIndex = 0;          // try to reset to beginning (may still be out of range)
+            config.imageIndex = 0;          // try to reset to beginning (may still be out of range)
 
             logger.error("Could not get an image to scrape. Error with BufferedImageSource.seek() in ImageSensorEntity" );
         }
         else {
             imageScreenScraper.scrape();
-            imageSensorConfig.imageIndex = bufferedImageSource.nextImage();
+            config.imageIndex = bufferedImageSource.nextImage();
         }
 
         setData( IMAGE_DATA, imageScreenScraper.getData() );

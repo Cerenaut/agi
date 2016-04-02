@@ -35,35 +35,35 @@ public class CommonEntityFactory implements EntityFactory {
         String entityType = me.type;
 
         if ( entityType.equals( RandomVectorEntity.ENTITY_TYPE ) ) {
-            return new RandomVectorEntity( entityName, om, RandomVectorEntity.ENTITY_TYPE, _n );
+            return new RandomVectorEntity( om, _n, me );
         }
 
         if ( entityType.equals( DiscreteRandomEntity.ENTITY_TYPE ) ) {
-            return new DiscreteRandomEntity( entityName, om, DiscreteRandomEntity.ENTITY_TYPE, _n );
+            return new DiscreteRandomEntity( om, _n, me );
         }
 
         if ( entityType.equals( DynamicSelfOrganizingMapEntity.ENTITY_TYPE ) ) {
-            return new DynamicSelfOrganizingMapEntity( entityName, om, DynamicSelfOrganizingMapEntity.ENTITY_TYPE, _n );
+            return new DynamicSelfOrganizingMapEntity( om, _n, me );
         }
 
         if ( entityType.equals( GrowingNeuralGasEntity.ENTITY_TYPE ) ) {
-            return new GrowingNeuralGasEntity( entityName, om, GrowingNeuralGasEntity.ENTITY_TYPE, _n );
+            return new GrowingNeuralGasEntity( om, _n, me );
         }
 
         if ( entityType.equals( ImageSensorEntity.ENTITY_TYPE ) ) {
-            return new ImageSensorEntity( entityName, om, ImageSensorEntity.ENTITY_TYPE, _n );
+            return new ImageSensorEntity( om, _n, me );
         }
 
         if( entityType.equals( RegionEntity.ENTITY_TYPE ) ) {
-            return new RegionEntity( entityName, om, RegionEntity.ENTITY_TYPE, _n );
+            return new RegionEntity( om, _n, me );
         }
 
         if( entityType.equals( ConstantMatrixEntity.ENTITY_TYPE ) ) {
-            return new ConstantMatrixEntity( entityName, om, ConstantMatrixEntity.ENTITY_TYPE, _n );
+            return new ConstantMatrixEntity( om, _n, me );
         }
 
         if ( entityType.equals( EncoderEntity.ENTITY_TYPE ) ) {
-            return new EncoderEntity(entityName, om, EncoderEntity.ENTITY_TYPE, _n );
+            return new EncoderEntity( om, _n, me );
         }
 
         logger.error( "Could not create an entity for " + entityName + " of type " + entityType );

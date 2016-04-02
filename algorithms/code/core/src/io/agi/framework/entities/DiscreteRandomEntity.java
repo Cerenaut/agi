@@ -22,11 +22,6 @@ public class DiscreteRandomEntity extends Entity {
 
     public static final String ENTITY_TYPE = "discrete-random";
 
-    public static final String ELEMENTS = "elements";
-    public static final String LEVELS = "levels";
-    public static final String MIN = "min";
-    public static final String MAX = "max";
-
     public static final String OUTPUT = "output";
 
     public DiscreteRandomEntity( ObjectMap om, Node n, ModelEntity model ) {
@@ -45,27 +40,11 @@ public class DiscreteRandomEntity extends Entity {
         return DiscreteRandomConfig.class;
     }
 
-    @Override
-    public void getPropertyKeys( Collection< String > keys ) {
-        keys.add( SUFFIX_AGE );
-        keys.add( SUFFIX_SEED );
-        keys.add( SUFFIX_RESET );
-
-        keys.add( MIN );
-        keys.add( MAX );
-        keys.add( ELEMENTS );
-        keys.add( LEVELS );
-    }
-
     protected void doUpdateSelf() {
 
-        // Get all the parameters:
-        float min = getPropertyFloat( MIN, 0.0f );
-        float max = getPropertyFloat( MAX, 1.0f );
-        int elements = getPropertyInt( ELEMENTS, 1 );
-        int levels = getPropertyInt( LEVELS, 5 );
+        DiscreteRandomConfig config = (DiscreteRandomConfig)_config;
 
-        Data output = getDataLazyResize( OUTPUT, DataSize.create( elements ) );
+        Data output = getDataLazyResize( OUTPUT, DataSize.create( config.elements ) );
         Random r = getRandom();
 
         // range = 1
@@ -74,15 +53,15 @@ public class DiscreteRandomEntity extends Entity {
         // _|_|_|_|_|_   = 6 gaps.
         // min        max
 
-        float perLevel = 1.f / ( float ) ( levels + 1 );
-        float range = max - min;
+        float perLevel = 1.f / ( float ) ( config.levels + 1 );
+        float range = config.max - config.min;
 
-        for ( int i = 0; i < elements; ++i ) {
+        for ( int i = 0; i < config.elements; ++i ) {
 
-            int n = r.nextInt( levels ) + 1; // so will be 0 -> n-1
+            int n = r.nextInt( config.levels ) + 1; // so will be 0 -> n-1
             float x = ( float ) n * perLevel;
             x = x * range;
-            x += min;
+            x += config.min;
             //System.out.println(  "random: " + x );
             output._values[ i ] = x;
         }
