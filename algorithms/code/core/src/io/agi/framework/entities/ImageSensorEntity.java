@@ -13,6 +13,7 @@ import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
 import io.agi.framework.EntityConfig;
+import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
 
@@ -31,10 +32,10 @@ public class ImageSensorEntity extends Entity {
     public static final String ENTITY_TYPE = "image-sensor";
     public static final String IMAGE_DATA = "image-data";
 
-    ImageSensorConfig _properties = null;
+//    ImageSensorConfig _properties = null;
 
-    public ImageSensorEntity( String entityName, ObjectMap om, String type, Node n ) {
-        super( entityName, om, type, n );
+    public ImageSensorEntity( ObjectMap om, Node n, ModelEntity model ) {
+        super( om, n, model );
     }
 
     @Override
@@ -47,35 +48,37 @@ public class ImageSensorEntity extends Entity {
     }
 
     @Override
-    public EntityConfig getConfig() {
-        return _properties;
+    public Class getConfigClass() {
+        return ImageSensorConfig.class;
     }
 
     public void doUpdateSelf() {
 
+        ImageSensorConfig imageSensorConfig = (ImageSensorConfig)_config;
+
         BufferedImageSource bufferedImageSource = BufferedImageSourceFactory.create(
-                _properties.sourceType,
-                _properties.sourceFilesPath );
+            imageSensorConfig.sourceType,
+            imageSensorConfig.sourceFilesPath );
 
         ImageScreenScraper imageScreenScraper = new ImageScreenScraper();
 
-        if ( isReceptiveFieldSet( _properties.receptiveField.receptiveFieldX, _properties.receptiveField.receptiveFieldY,
-                                  _properties.receptiveField.receptiveFieldW, _properties.receptiveField.receptiveFieldH) )  {
-            imageScreenScraper.setup( bufferedImageSource, _properties.getReceptiveField(), _properties.getResolution(), _properties.greyscale );
+        if ( isReceptiveFieldSet( imageSensorConfig.receptiveField.receptiveFieldX, imageSensorConfig.receptiveField.receptiveFieldY,
+                                  imageSensorConfig.receptiveField.receptiveFieldW, imageSensorConfig.receptiveField.receptiveFieldH) )  {
+            imageScreenScraper.setup( bufferedImageSource, imageSensorConfig.getReceptiveField(), imageSensorConfig.getResolution(), imageSensorConfig.greyscale );
         }
         else {
-            imageScreenScraper.setup( bufferedImageSource, _properties.resolution.resolutionX, _properties.resolution.resolutionY, _properties.greyscale );
+            imageScreenScraper.setup( bufferedImageSource, imageSensorConfig.resolution.resolutionX, imageSensorConfig.resolution.resolutionY, imageSensorConfig.greyscale );
         }
 
-        boolean inRange = bufferedImageSource.seek( _properties.imageIndex);
+        boolean inRange = bufferedImageSource.seek( imageSensorConfig.imageIndex);
         if ( !inRange ) {
-            _properties.imageIndex = 0;          // try to reset to beginning (may still be out of range)
+            imageSensorConfig.imageIndex = 0;          // try to reset to beginning (may still be out of range)
 
-            System.err.println( "ERROR: Could not get an image to scrape. Error with BufferedImageSource.seek() in ImageSensorEntity" );
+            logger.error("Could not get an image to scrape. Error with BufferedImageSource.seek() in ImageSensorEntity" );
         }
         else {
             imageScreenScraper.scrape();
-            _properties.imageIndex = bufferedImageSource.nextImage();
+            imageSensorConfig.imageIndex = bufferedImageSource.nextImage();
         }
 
         setData( IMAGE_DATA, imageScreenScraper.getData() );

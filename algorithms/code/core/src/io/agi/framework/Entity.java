@@ -29,7 +29,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
     public static final String SUFFIX_RESET = "reset"; /// Optional: Used as a flag to indicate the entity should reset itself on next update.
     public static final String SUFFIX_FLUSH = "flush"; /// Required: Triggers all flushable data to be persisted.
 
-    private static final Logger logger = LogManager.getLogger();
+    protected static final Logger logger = LogManager.getLogger();
 
 //    protected String _type;
 //    protected String _parent;

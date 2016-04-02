@@ -14,6 +14,7 @@ import io.agi.core.orm.ObjectMap;
 import io.agi.framework.Entity;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Node;
+import io.agi.framework.persistence.models.ModelEntity;
 
 import java.awt.*;
 import java.util.Collection;
@@ -41,8 +42,8 @@ public class RegionEntity extends Entity {
     public static final String PREDICTION_FP = "prediction-fp";
     public static final String PREDICTION_FN = "prediction-fn";
 
-    public RegionEntity(String entityName, ObjectMap om, String type, Node n) {
-        super(entityName, om, type, n);
+    public RegionEntity( ObjectMap om, Node n, ModelEntity model ) {
+        super( om, n, model );
     }
 
     public void getInputKeys(Collection<String> keys) {
