@@ -1,9 +1,11 @@
 package io.agi.framework.entities;
 
+import io.agi.core.ann.unsupervised.*;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
+import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
 
@@ -22,8 +24,8 @@ import java.util.Collection;
  */
 public class ExperimentEntity extends Entity {
 
-    public ExperimentEntity( String name, ObjectMap om, String type, Node n ) {
-        super( name, om, type, n );
+    public ExperimentEntity( ObjectMap om, Node n, ModelEntity model ) {
+        super( om, n, model );
     }
 
     @Override
@@ -34,6 +36,11 @@ public class ExperimentEntity extends Entity {
     @Override
     public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
 
+    }
+
+    @Override
+    public Class getConfigClass() {
+        return ExperimentConfig.class;
     }
 
     @Override

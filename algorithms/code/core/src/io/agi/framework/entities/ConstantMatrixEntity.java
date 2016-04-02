@@ -1,11 +1,13 @@
 package io.agi.framework.entities;
 
+import io.agi.core.ann.unsupervised.*;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
+import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
 import java.util.Random;
@@ -27,8 +29,8 @@ public class ConstantMatrixEntity extends Entity {
 
     public static final String OUTPUT = "output";
 
-    public ConstantMatrixEntity(String entityName, ObjectMap om, String type, Node n) {
-        super( entityName, om, type, n );
+    public ConstantMatrixEntity( ObjectMap om, Node n, ModelEntity model ) {
+        super( om, n, model );
     }
 
     public void getInputKeys(Collection<String> keys) {
@@ -36,6 +38,11 @@ public class ConstantMatrixEntity extends Entity {
 
     public void getOutputKeys(Collection<String> keys, DataFlags flags) {
         keys.add( OUTPUT );
+    }
+
+    @Override
+    public Class getConfigClass() {
+        return ConstantMatrixConfig.class;
     }
 
     @Override

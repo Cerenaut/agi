@@ -132,13 +132,13 @@ public class RegionEntity extends Entity {
 
     public void getClassifierOutputKeys(Collection<String> keys, DataFlags flags, String prefix ) {
         keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS) );
-        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ERROR) );
-        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE) );
+        keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ERROR));
+        keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE));
         keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_MASK));
 
         keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS));
         keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES));
-        keys.add( Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES) );
+        keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES));
         keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES));
         keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH));
 
@@ -173,6 +173,11 @@ public class RegionEntity extends Entity {
         //flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES), DataFlags.FLAG_PERSIST_ON_FLUSH); lazy
         flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES), DataFlags.FLAG_PERSIST_ON_FLUSH);
         flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH), DataFlags.FLAG_PERSIST_ON_FLUSH);
+    }
+
+    @Override
+    public Class getConfigClass() {
+        return RegionConfig.class;
     }
 
     @Override

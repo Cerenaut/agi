@@ -1,7 +1,6 @@
 package io.agi.framework.entities;
 
-import io.agi.core.ann.unsupervised.CompetitiveLearningConfig;
-import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMap;
+import io.agi.core.ann.unsupervised.*;
 import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMapConfig;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
@@ -10,6 +9,7 @@ import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
+import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
 
@@ -29,12 +29,12 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
     public static final String OUTPUT_ERROR = "output-error";
     public static final String OUTPUT_ACTIVE = "output-active";
 
-    public DynamicSelfOrganizingMapEntity( String entityName, ObjectMap om, String type, Node n ) {
-        super( entityName, om, type, n );
+    public DynamicSelfOrganizingMapEntity( ObjectMap om, Node n, ModelEntity model ) {
+        super( om, n, model );
     }
 
     public void getInputKeys( Collection< String > keys ) {
-        keys.add( INPUT );
+        keys.add(INPUT);
     }
 
     public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
@@ -42,6 +42,11 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
         keys.add( OUTPUT_MASK );
         keys.add( OUTPUT_ERROR );
         keys.add( OUTPUT_ACTIVE );
+    }
+
+    @Override
+    public Class getConfigClass() {
+        return DynamicSelfOrganizingMapConfig.class;
     }
 
     @Override

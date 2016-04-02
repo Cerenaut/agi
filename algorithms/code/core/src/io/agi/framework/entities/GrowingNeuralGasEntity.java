@@ -10,6 +10,7 @@ import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
+import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
 
@@ -35,12 +36,12 @@ public class GrowingNeuralGasEntity extends Entity {
     public static final String OUTPUT_EDGES_AGES = "output-edges-ages";
     public static final String OUTPUT_AGE_SINCE_GROWTH = "output-age-since-growth";
 
-    public GrowingNeuralGasEntity( String entityName, ObjectMap om, String type, Node n ) {
-        super( entityName, om, type, n );
+    public GrowingNeuralGasEntity( ObjectMap om, Node n, ModelEntity model ) {
+        super( om, n, model );
     }
 
     public void getInputKeys( Collection< String > keys ) {
-        keys.add( INPUT );
+        keys.add(INPUT);
     }
 
     public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
@@ -54,6 +55,11 @@ public class GrowingNeuralGasEntity extends Entity {
         keys.add( OUTPUT_EDGES );
         keys.add( OUTPUT_EDGES_AGES );
         keys.add( OUTPUT_AGE_SINCE_GROWTH );
+    }
+
+    @Override
+    public Class getConfigClass() {
+        return GrowingNeuralGasConfig.class;
     }
 
     @Override
