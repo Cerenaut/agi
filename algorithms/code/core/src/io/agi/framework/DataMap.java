@@ -6,25 +6,26 @@ import java.util.HashMap;
 
 /**
  * An in-memory cache of data structures, using their unique keys.
- *
+ * <p>
  * Created by dave on 28/03/16.
  */
 public class DataMap {
 
-    HashMap< String, Data > _cache = new HashMap< String, Data>();
+    HashMap< String, Data > _cache = new HashMap< String, Data >();
 
     public DataMap() {
 
     }
 
     public Data getData( String name ) {
-        synchronized( _cache ) {
-            Data d = _cache.get(name);
+        synchronized ( _cache ) {
+            Data d = _cache.get( name );
             return d;
         }
     }
+
     public void putData( String name, Data d ) {
-        synchronized( _cache ) {
+        synchronized ( _cache ) {
             _cache.put( name, d );
         }
     }

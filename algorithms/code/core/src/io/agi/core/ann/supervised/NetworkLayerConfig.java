@@ -21,7 +21,7 @@ public class NetworkLayerConfig extends NetworkConfig {
     }
 
     public void setup( ObjectMap om, String name, Random r, int inputs, int cells, float learningRate, String activationFunction ) {
-        super.setup(om, name, r);
+        super.setup( om, name, r );
 
         setInputs( inputs );
         setCells( cells );
@@ -41,37 +41,37 @@ public class NetworkLayerConfig extends NetworkConfig {
     }
 
     public int getInputs() {
-        Integer i = _om.getInteger( getKey(INPUTS) );
+        Integer i = _om.getInteger( getKey( INPUTS ) );
         return i.intValue();
     }
 
     public void setInputs( int inputs ) {
-        _om.put( getKey(INPUTS), inputs);
+        _om.put( getKey( INPUTS ), inputs );
     }
 
     public void setCells( int cells ) {
-        _om.put( getKey(CELLS), cells);
+        _om.put( getKey( CELLS ), cells );
     }
 
     public int getCells() {
-        Integer w = _om.getInteger( getKey(CELLS) );
+        Integer w = _om.getInteger( getKey( CELLS ) );
         return w.intValue();
     }
 
     public void setLearningRate( float learningRate ) {
-        _om.put( getKey(LEARNING_RATE), learningRate );
+        _om.put( getKey( LEARNING_RATE ), learningRate );
     }
 
     public float getLearningRate() {
-        Float r = _om.getFloat( getKey(LEARNING_RATE) );
+        Float r = _om.getFloat( getKey( LEARNING_RATE ) );
         return r.floatValue();
     }
 
-    public void setActivationFunction(String costFunction) {
-        _om.put( getKey(ACTIVATION_FUNCTION), costFunction );
+    public void setActivationFunction( String costFunction ) {
+        _om.put( getKey( ACTIVATION_FUNCTION ), costFunction );
     }
 
     public String getActivationFunction() {
-        return (String)_om.get( getKey(ACTIVATION_FUNCTION) );
+        return ( String ) _om.get( getKey( ACTIVATION_FUNCTION ) );
     }
 }

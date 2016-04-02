@@ -1,6 +1,5 @@
 package io.agi.framework.entities;
 
-import io.agi.core.ann.unsupervised.*;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.orm.ObjectMap;
@@ -10,13 +9,12 @@ import io.agi.framework.Node;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
-import java.util.Random;
 
 /**
  * Produces a constant output.
- *
+ * <p>
  * Useful for creating stub data for connecting to entities that require some form of input to be provided.
- *
+ * <p>
  * Created by dave on 26/03/16.
  */
 public class ConstantMatrixEntity extends Entity {
@@ -29,10 +27,10 @@ public class ConstantMatrixEntity extends Entity {
         super( om, n, model );
     }
 
-    public void getInputKeys(Collection<String> keys) {
+    public void getInputKeys( Collection< String > keys ) {
     }
 
-    public void getOutputKeys(Collection<String> keys, DataFlags flags) {
+    public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
         keys.add( OUTPUT );
     }
 
@@ -43,10 +41,10 @@ public class ConstantMatrixEntity extends Entity {
 
     protected void doUpdateSelf() {
 
-        ConstantMatrixConfig config = (ConstantMatrixConfig)_config;
+        ConstantMatrixConfig config = ( ConstantMatrixConfig ) _config;
 
         // Get all the parameters:
-        Data output = getDataLazyResize(OUTPUT, DataSize.create( config.width, config.height ) );
+        Data output = getDataLazyResize( OUTPUT, DataSize.create( config.width, config.height ) );
         output.set( config.value );
 
         setData( OUTPUT, output );

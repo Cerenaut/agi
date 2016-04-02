@@ -50,7 +50,7 @@ public class FeedForwardNetwork extends NamedObject {
     public void reset() {
         int layers = _c.getNbrLayers();
 
-        for( int l = 0; l < layers; ++l ) {
+        for ( int l = 0; l < layers; ++l ) {
             NetworkLayer nl = _layers.get( l );
             nl.reset( _c._r );
         }

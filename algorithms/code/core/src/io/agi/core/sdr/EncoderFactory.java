@@ -1,7 +1,5 @@
 package io.agi.core.sdr;
 
-import io.agi.framework.entities.RandomVectorEntity;
-
 /**
  * Created by gideon on 26/03/2016.
  */

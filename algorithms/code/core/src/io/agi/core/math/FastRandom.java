@@ -4,7 +4,7 @@ import java.util.Random;
 
 /**
  * Fast and quite pseudo-random (but not cryptographically random) number generator, based on the XorShift algorithm.
- *
+ * <p>
  * http://www.javamex.com/tutorials/random_numbers/generators_overview.shtml
  * "a technique was invented by mathematician George Marsaglia that can generate medium-quality random numbers extremely
  * quickly, and using only a single variable as its state. The technique is generally known as an XORShift generator and
@@ -12,10 +12,10 @@ import java.util.Random;
  * technique is especially useful when you need to generate a large quantity of random numbers in a tight loop, or
  * simply where you need a generator that is simple to code but with a slightly better quality and period than
  * java.util.Random."
- *
+ * <p>
  * http://www.javamex.com/tutorials/random_numbers/xorshift.shtml
  * https://docs.oracle.com/javase/7/docs/api/java/util/Random.html
- *
+ * <p>
  * Created by dave on 27/03/16.
  */
 public class FastRandom extends Random {
@@ -25,7 +25,7 @@ public class FastRandom extends Random {
     public FastRandom() {
     }
 
-    public FastRandom(long seed) {
+    public FastRandom( long seed ) {
         this._seed = seed;
     }
 
@@ -49,14 +49,14 @@ public class FastRandom extends Random {
     protected int next( int nbits ) {
         long x = _seed;
 
-        x ^= (x << 21);
-        x ^= (x >>> 35);
-        x ^= (x << 4);
+        x ^= ( x << 21 );
+        x ^= ( x >>> 35 );
+        x ^= ( x << 4 );
 
         _seed = x;
 
-        x &= ((1L << nbits) - 1);
+        x &= ( ( 1L << nbits ) - 1 );
 
-        return (int) x;
+        return ( int ) x;
     }
 }

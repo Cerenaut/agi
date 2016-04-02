@@ -10,7 +10,6 @@ import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.AbstractPair;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Random;
 
@@ -94,12 +93,12 @@ public class Data extends FloatArray2 {
      */
     public static AbstractPair< Integer, Integer > getSizeSquare( int volume ) {
 
-        int w = (int)Math.sqrt( volume );
+        int w = ( int ) Math.sqrt( volume );
         int h = w;
 
         int sq = w * w;
-        if( sq < volume ) {
-            h = h +1;
+        if ( sq < volume ) {
+            h = h + 1;
         }
 
         AbstractPair< Integer, Integer > ap = new AbstractPair< Integer, Integer >( w, h );
@@ -127,11 +126,11 @@ public class Data extends FloatArray2 {
     }
 
     public boolean isSameAs( Data d ) {
-        if( !_dataSize.isSameAs( d._dataSize ) ) {
+        if ( !_dataSize.isSameAs( d._dataSize ) ) {
             return false;
         }
 
-        return super.isSameAs( (FloatArray2)d );
+        return super.isSameAs( ( FloatArray2 ) d );
     }
 
     public Coordinate2 begin() {

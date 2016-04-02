@@ -171,20 +171,20 @@ public class ModelData {
         String length = String.valueOf( fa._values.length );
         ArrayList< String > values = new ArrayList< String >();
 
-        if( sparse ) {
-            for( int i = 0; i < fa._values.length; ++i ) {
+        if ( sparse ) {
+            for ( int i = 0; i < fa._values.length; ++i ) {
                 float value = fa._values[ i ];
-                if( value == 0.f ) {
+                if ( value == 0.f ) {
                     continue; // only add the nonzero value indices.
                 }
 
-                String s = String.valueOf(i);
+                String s = String.valueOf( i );
                 values.add( s );
             }
         }
         else {
-            values.ensureCapacity(fa._values.length);
-            for( int i = 0; i < fa._values.length; ++i ) {
+            values.ensureCapacity( fa._values.length );
+            for ( int i = 0; i < fa._values.length; ++i ) {
                 float value = fa._values[ i ];
                 String s = String.valueOf( value );
                 values.add( s );
@@ -200,11 +200,11 @@ public class ModelData {
     public static FloatArray2 StringToFloatArray( String s ) {
         try {
             String lengthString = GetJsonProperty( s, "length" );
-            Integer length = Integer.valueOf(lengthString);
+            Integer length = Integer.valueOf( lengthString );
 
             Boolean sparse = false;
-            String sparseString = GetJsonProperty(s, "sparse");
-            if( sparseString != null ) {
+            String sparseString = GetJsonProperty( s, "sparse" );
+            if ( sparseString != null ) {
                 sparse = Boolean.valueOf( sparseString );
             }
 
@@ -213,17 +213,17 @@ public class ModelData {
             String elementsString = GetJsonArrayProperty( s, "elements" );
             String[] splitString = elementsString.split( "," );
 
-            if( sparse ) {
-                for (int i = 0; i < splitString.length; ++i) {
-                    String valueString = splitString[i];
-                    Integer value = Integer.valueOf(valueString);
+            if ( sparse ) {
+                for ( int i = 0; i < splitString.length; ++i ) {
+                    String valueString = splitString[ i ];
+                    Integer value = Integer.valueOf( valueString );
                     fa._values[ value ] = 1.f;
                 }
             }
             else {
-                for (int i = 0; i < splitString.length; ++i) {
-                    String valueString = splitString[i];
-                    Float value = Float.valueOf(valueString);
+                for ( int i = 0; i < splitString.length; ++i ) {
+                    String valueString = splitString[ i ];
+                    Float value = Float.valueOf( valueString );
                     fa._values[ i ] = value;
                 }
             }

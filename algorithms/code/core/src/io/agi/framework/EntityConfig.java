@@ -1,10 +1,9 @@
 package io.agi.framework;
 
 /**
- *
  * These 'Property' models are bags of primitives, and can be nested objects.
  * THIS IS STANDARD practice for models.
- *
+ * <p>
  * Created by gideon on 1/04/2016.
  */
 public class EntityConfig {

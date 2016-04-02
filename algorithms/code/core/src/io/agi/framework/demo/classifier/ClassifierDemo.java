@@ -4,7 +4,10 @@ import io.agi.core.orm.Keys;
 import io.agi.framework.Entity;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
-import io.agi.framework.entities.*;
+import io.agi.framework.entities.DiscreteRandomEntity;
+import io.agi.framework.entities.DynamicSelfOrganizingMapEntity;
+import io.agi.framework.entities.GrowingNeuralGasEntity;
+import io.agi.framework.entities.RandomVectorEntity;
 import io.agi.framework.factories.CommonEntityFactory;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.models.ModelEntity;
@@ -35,7 +38,7 @@ public class ClassifierDemo {
         }
 
         if ( args.length > 3 ) {
-            m.loadConfigs(args[3]);
+            m.loadConfigs( args[ 3 ] );
         }
 
         // Programmatic hook to create entities and references..
@@ -73,6 +76,6 @@ public class ClassifierDemo {
         propertyConverter.setPropertyInt( ageKey, 0 );
 
         String resetKey = Keys.concatenate( classifierName, Entity.SUFFIX_RESET );
-        propertyConverter.setPropertyBoolean(resetKey, true);
+        propertyConverter.setPropertyBoolean( resetKey, true );
     }
 }

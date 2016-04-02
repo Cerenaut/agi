@@ -8,7 +8,7 @@ import java.util.HashSet;
 
 /**
  * A Generic but perhaps less efficient way to store and later browser data returned from SQL query.
- * 
+ * <p>
  * Created by dave on 18/02/16.
  */
 public class ResultSetMap implements ResultSetCallback {

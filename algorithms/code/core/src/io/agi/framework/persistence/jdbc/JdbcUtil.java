@@ -10,7 +10,7 @@ import java.sql.*;
  * TODO - implement some performance improvements, this list seems sensible:
  * http://javarevisited.blogspot.com.au/2012/01/improve-performance-java-database.html
  * Also try to reduce writes by having a flag whether the data has changed.
- * 
+ * <p>
  * Created by dave on 17/02/16.
  */
 public class JdbcUtil {

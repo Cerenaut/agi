@@ -2,7 +2,6 @@ package io.agi.framework.factories;
 
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.Entity;
-import io.agi.framework.EntityConfig;
 import io.agi.framework.EntityFactory;
 import io.agi.framework.Node;
 import io.agi.framework.entities.*;
@@ -12,7 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * Base class for entity factories, that creates all the default types.
- *
+ * <p>
  * Created by dave on 12/03/16.
  */
 public class CommonEntityFactory implements EntityFactory {
@@ -54,11 +53,11 @@ public class CommonEntityFactory implements EntityFactory {
             return new ImageSensorEntity( om, _n, me );
         }
 
-        if( entityType.equals( RegionEntity.ENTITY_TYPE ) ) {
+        if ( entityType.equals( RegionEntity.ENTITY_TYPE ) ) {
             return new RegionEntity( om, _n, me );
         }
 
-        if( entityType.equals( ConstantMatrixEntity.ENTITY_TYPE ) ) {
+        if ( entityType.equals( ConstantMatrixEntity.ENTITY_TYPE ) ) {
             return new ConstantMatrixEntity( om, _n, me );
         }
 

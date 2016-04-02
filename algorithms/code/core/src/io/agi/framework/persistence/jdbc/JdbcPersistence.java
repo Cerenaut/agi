@@ -156,7 +156,7 @@ public class JdbcPersistence implements Persistence {
 
     public void setEntity( ModelEntity e ) {
         // https://www.sitepoint.com/community/t/how-to-use-on-duplicate-key-update-in-postgresql-with-php/200335/4
-        String sql1 = "UPDATE entities SET type = '" + e.type + "', node = '" + e.node + "', parent = '" + e.parent + "', config = '"+ e.config +"' WHERE name = '" + e.name + "'";
+        String sql1 = "UPDATE entities SET type = '" + e.type + "', node = '" + e.node + "', parent = '" + e.parent + "', config = '" + e.config + "' WHERE name = '" + e.name + "'";
         execute( sql1 );
         String sql2 = "INSERT INTO entities (name, type, node, parent, config) SELECT '" + e.name + "', '" + e.type + "', '" + e.node + "', '" + e.parent + "', '" + e.config + "' WHERE NOT EXISTS (SELECT name from entities WHERE name = '" + e.name + "')";
         execute( sql2 );
@@ -190,7 +190,7 @@ public class JdbcPersistence implements Persistence {
     // Data
     public void setData( ModelData modelData ) {
         String refKeyString = ( modelData._refKeys != null ) ? "'" + modelData._refKeys + "'" : "null";
-        logger.info( "setData T: {} @1 ",  System.currentTimeMillis() );
+        logger.info( "setData T: {} @1 ", System.currentTimeMillis() );
         String sql1 = "UPDATE data SET ref_name = '" + modelData._refKeys + "', sizes = '" + modelData._sizes + "', elements = '" + modelData._elements + "' WHERE name = '" + modelData._key + "'";
         execute( sql1 );
         logger.info( "setData T: {} @2 ", System.currentTimeMillis() );

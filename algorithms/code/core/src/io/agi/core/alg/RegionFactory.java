@@ -13,7 +13,7 @@ import java.util.Random;
 /**
  * Factory for all the Region objects - Regions, Columns and internal parts (Classifier, Predictor, Organizer)
  * Allows each component to be replaced with a derived & modified version.
- *
+ * <p>
  * Created by dave on 28/12/15.
  */
 public class RegionFactory {
@@ -81,7 +81,7 @@ public class RegionFactory {
         int predictorOutputs = regionAreaCells;
         int predictorLayers = Region.PREDICTOR_LAYERS;
         int organizerInputs = Region.RECEPTIVE_FIELD_DIMENSIONS;
-        int hiddenLayerSize = (int)( (float)regionAreaCells * predictorHiddenLayerScaleFactor );
+        int hiddenLayerSize = ( int ) ( ( float ) regionAreaCells * predictorHiddenLayerScaleFactor );
         String predictorLayerSizes = String.valueOf( hiddenLayerSize ); // 6 * 6 * 1.something
         String predictorLossFunction = LossFunction.CROSS_ENTROPY;
         String predictorActivationFunction = ActivationFunctionFactory.LOG_SIGMOID;
@@ -109,9 +109,9 @@ public class RegionFactory {
                 predictorRegularization, predictorLearningRate );
 
         rc.setup( om, regionName, random, organizerConfig, classifierConfig, predictorConfig, inputWidth, inputHeight, feedbackAreaCells, receptiveFieldsTrainingSamples, receptiveFieldSize );
-        this.setup(rc);
+        this.setup( rc );
 
-        Region region = this.createRegion(regionName);
+        Region region = this.createRegion( regionName );
         return region;
     }
 
@@ -133,7 +133,7 @@ public class RegionFactory {
 
         String name = r.getKey( RegionConfig.SUFFIX_ORGANIZER );
         GrowingNeuralGasConfig c = new GrowingNeuralGasConfig();
-        c.copyFrom(_rc._organizerConfig, name);
+        c.copyFrom( _rc._organizerConfig, name );
 
         GrowingNeuralGas gng = new GrowingNeuralGas( c._name, c._om );
         gng.setup( c );
@@ -145,7 +145,7 @@ public class RegionFactory {
 
         String name = r.getKey( RegionConfig.SUFFIX_CLASSIFIER );
         GrowingNeuralGasConfig c = new GrowingNeuralGasConfig();
-        c.copyFrom( _rc._classifierConfig, name);
+        c.copyFrom( _rc._classifierConfig, name );
 
         GrowingNeuralGas gng = new GrowingNeuralGas( c._name, c._om );
         gng.setup( c );
@@ -174,9 +174,9 @@ public class RegionFactory {
         int hidden = Integer.valueOf( layerSizes );
 
         // hardcoded for 2 layers
-        ffn.setupLayer( _rc._r, 0, inputs, hidden, learningRate, activationFunction);
+        ffn.setupLayer( _rc._r, 0, inputs, hidden, learningRate, activationFunction );
 
-        if( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
+        if ( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
             ffn.setupLayer( _rc._r, 1, hidden, outputs, learningRate, ActivationFunctionFactory.SOFTMAX );
         }
         else {

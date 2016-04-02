@@ -75,11 +75,11 @@ public class Main {
         String type = PropertiesUtil.get( propertiesFile, PROPERTY_COORDINATION_TYPE, "http" );
         Coordination c = null;
         if ( type.equals( "http" ) ) {
-            logger.info("Distributed coordination.");
+            logger.info( "Distributed coordination." );
             c = new HttpCoordination();
         }
         else {
-            logger.info("Monolithic coordination.");
+            logger.info( "Monolithic coordination." );
             c = new SingleProcessCoordination();
         }
         return c;
@@ -89,11 +89,11 @@ public class Main {
         String type = PropertiesUtil.get( propertiesFile, PROPERTY_PERSISTENCE_TYPE, "couchbase" );
         Persistence p = null;
         if ( type.equals( "couchbase" ) ) {
-            logger.info("Using Couchbase for persistence.");
+            logger.info( "Using Couchbase for persistence." );
             p = CouchbasePersistence.Create( propertiesFile );
         }
         else {
-            logger.info("Using JDBC (SQL) for persistence.");
+            logger.info( "Using JDBC (SQL) for persistence." );
             p = JdbcPersistence.Create( propertiesFile );
         }
         return p;
@@ -108,7 +108,7 @@ public class Main {
             }
         }
         catch ( Exception e ) {
-            logger.error(e.getStackTrace());
+            logger.error( e.getStackTrace() );
             System.exit( -1 );
         }
     }

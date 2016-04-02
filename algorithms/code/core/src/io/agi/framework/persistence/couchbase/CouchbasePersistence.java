@@ -13,7 +13,10 @@ import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
 import io.agi.framework.persistence.models.ModelNode;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Note: http://docs.couchbase.com/developer/java-2.0/querying-n1ql.html
@@ -84,7 +87,7 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
         System.setProperty( "com.couchbase.connectTimeout", String.valueOf( QUERY_TIMEOUT ) );
         System.setProperty( "com.couchbase.disconnectTimeout", String.valueOf( QUERY_TIMEOUT ) );
 
-        _c = CouchbaseCluster.create(cluster);
+        _c = CouchbaseCluster.create( cluster );
 
         _b = _c.openBucket( bucket, password );
 
@@ -190,7 +193,7 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
         List< ViewRow > l = result.allRows();
         for ( ViewRow r : l ) {
             JsonObject jo = r.document().content();
-            String key = jo.getString(PROPERTY_KEY);
+            String key = jo.getString( PROPERTY_KEY );
             String type = jo.getString( PROPERTY_ENTITY_TYPE );
             String node = jo.getString( PROPERTY_ENTITY_NODE );
             String parent = jo.getString( PROPERTY_ENTITY_PARENT );
@@ -246,10 +249,10 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
     public void setNode( ModelNode m ) {
         String key = GetKey( KEY_PREFIX_NODE, m._key );
         JsonObject jo = JsonObject.empty()
-                .put(PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_NODE )
-                .put(PROPERTY_KEY, m._key )
-                .put(PROPERTY_NODE_HOST, m._host )
-                .put(PROPERTY_NODE_PORT, m._port );
+                .put( PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_NODE )
+                .put( PROPERTY_KEY, m._key )
+                .put( PROPERTY_NODE_HOST, m._host )
+                .put( PROPERTY_NODE_PORT, m._port );
         JsonDocument response = upsert( key, jo );
     }
 
@@ -287,12 +290,12 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
     public void setEntity( ModelEntity m ) {
         String key = GetKey( KEY_PREFIX_ENTITY, m.name );
         JsonObject jo = JsonObject.empty()
-                .put(PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_ENTITY)
+                .put( PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_ENTITY )
                 .put( PROPERTY_KEY, m.name )
                 .put( PROPERTY_ENTITY_NODE, m.node )
                 .put( PROPERTY_ENTITY_PARENT, m.parent )
                 .put( PROPERTY_ENTITY_TYPE, m.type )
-                .put(PROPERTY_ENTITY_CONFIG, m.config);
+                .put( PROPERTY_ENTITY_CONFIG, m.config );
         JsonDocument response = upsert( key, jo );
     }
 

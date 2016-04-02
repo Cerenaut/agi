@@ -1,6 +1,5 @@
 package io.agi.framework.entities;
 
-import io.agi.core.ann.unsupervised.CompetitiveLearningConfig;
 import io.agi.core.ann.unsupervised.GrowingNeuralGas;
 import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
 import io.agi.core.data.Data;
@@ -41,7 +40,7 @@ public class GrowingNeuralGasEntity extends Entity {
     }
 
     public void getInputKeys( Collection< String > keys ) {
-        keys.add(INPUT);
+        keys.add( INPUT );
     }
 
     public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
@@ -72,7 +71,7 @@ public class GrowingNeuralGasEntity extends Entity {
         }
 
         // Get all the parameters:
-        io.agi.framework.entities.GrowingNeuralGasConfig config = (io.agi.framework.entities.GrowingNeuralGasConfig)_config;
+        io.agi.framework.entities.GrowingNeuralGasConfig config = ( io.agi.framework.entities.GrowingNeuralGasConfig ) _config;
 
         int inputs = input.getSize();
 
@@ -116,7 +115,7 @@ public class GrowingNeuralGasEntity extends Entity {
         gng._edgesAges = edgesAges;
         gng._ageSinceGrowth = ageSinceGrowth;
 
-        if( config.reset ) {
+        if ( config.reset ) {
             gng.reset();
         }
 

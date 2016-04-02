@@ -2,7 +2,6 @@ package io.agi.framework.demo.light;
 
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
-import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;

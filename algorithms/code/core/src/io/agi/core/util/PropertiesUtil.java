@@ -5,7 +5,7 @@ import java.util.Properties;
 
 /**
  * Utility functions for properties files.
- *
+ * <p>
  * Created by dave on 27/12/15.
  */
 public class PropertiesUtil {

@@ -6,10 +6,10 @@
       "greyscale": "true",
       "resolution-x": "28",
       "resolution-y": "28",
-      "receptive-field-x" : "0",
-      "receptive-field-y" : "0",
-      "receptive-field-w" : "28",
-      "receptive-field-h" : "28",
+      "receptive-field-x": "0",
+      "receptive-field-y": "0",
+      "receptive-field-w": "28",
+      "receptive-field-h": "28",
       "source-files-path": "/Users/gideon/Development/AI/ProAGI/TestData/MNIST/mnist_output"
     }
   },
@@ -17,8 +17,8 @@
     "entity": "myEncoder",
     "properties": {
       "encoder-type": "ScalarEncoder",
-      "bits" : "4",
-      "density" : "2"
+      "bits": "4",
+      "density": "2"
     }
-  }  
+  }
 ]

@@ -1,7 +1,5 @@
 package io.agi.framework.entities;
 
-import io.agi.core.ann.unsupervised.CompetitiveLearningConfig;
-import io.agi.framework.Entity;
 import io.agi.framework.EntityConfig;
 
 /**

@@ -1,6 +1,5 @@
 package io.agi.framework.entities;
 
-import io.agi.core.ann.unsupervised.*;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
@@ -19,7 +18,7 @@ import java.util.Collection;
  * - Import/Export: Allow import and export of complete subtree to disk.
  * - Logging: Log variables of interest as they change over time.
  * - Flush: All children can be flushed from the Node Cache on demand, or on export.
- *
+ * <p>
  * Created by gideon on 20/03/2016.
  */
 public class ExperimentEntity extends Entity {

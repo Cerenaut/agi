@@ -6,24 +6,24 @@ import java.util.HashSet;
 /**
  * Flags that modify the persistence behaviour of the framework. The aim is to reduce IO and yield a faster overall
  * update. Since the framework is heavily IO bound, this makes a big difference.
- *
+ * <p>
  * Supported flags are:
- *
+ * <p>
  * - Lazy persist: This will check for changes and only persist if changed. There is a cost: We need to keep a copy of
- *   the old value of the data, and compare them. If you rarely change a data structure, then add this flag.
- *
+ * the old value of the data, and compare them. If you rarely change a data structure, then add this flag.
+ * <p>
  * - Node cache: If you do not expect / allow external writes of the data, you can cache it in the Node. This avoids the
- *   need to load the data every time, but it means you won't see external changes. Use this flag when nothing else will
- *   change your data.
- *
+ * need to load the data every time, but it means you won't see external changes. Use this flag when nothing else will
+ * change your data.
+ * <p>
  * - Sparse unit: This reduces the serialized size of the data. Use it whenever you have sparse unit data (i.e. all
- *   values are binary and there are few '1' bits.
- *
+ * values are binary and there are few '1' bits.
+ * <p>
  * - Persist only: This data is never fetched. It is written for the consumption of external entities or debugging. The
- *   Entity must be regenerating it from other data.
- *
+ * Entity must be regenerating it from other data.
+ * <p>
  * - Persist on flush: The data is only persisted when a flush occurs.
- *
+ * <p>
  * Created by dave on 28/03/16.
  */
 public class DataFlags {
@@ -44,7 +44,7 @@ public class DataFlags {
     public boolean hasFlag( String dataName, String flag ) {
         HashSet< String > flags = _dataFlags.get( dataName );
 
-        if( flags == null ) {
+        if ( flags == null ) {
             return false;
         }
 
@@ -54,7 +54,7 @@ public class DataFlags {
     public void putFlag( String dataName, String flag ) {
         HashSet< String > flags = _dataFlags.get( dataName );
 
-        if( flags == null ) {
+        if ( flags == null ) {
             flags = new HashSet< String >();
             _dataFlags.put( dataName, flags );
         }
@@ -65,10 +65,10 @@ public class DataFlags {
     public void removeFlag( String dataName, String flag ) {
         HashSet< String > flags = _dataFlags.get( dataName );
 
-        if( flags == null ) {
+        if ( flags == null ) {
             return;
         }
 
-        flags.remove(flag);
+        flags.remove( flag );
     }
 }
