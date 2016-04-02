@@ -1,6 +1,9 @@
 package io.agi.framework;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.util.FileUtil;
@@ -38,9 +41,9 @@ public class Framework {
             String inputSuffix,
             String referenceEntity,
             String referenceSuffix ) {
-        String inputKey = NamedObject.GetKey( inputEntity, inputSuffix );
+        String inputKey = NamedObject.GetKey(inputEntity, inputSuffix);
         String refKey = NamedObject.GetKey( referenceEntity, referenceSuffix );
-        SetDataReference( p, inputKey, refKey );
+        SetDataReference(p, inputKey, refKey);
     }
 
     /**
@@ -54,7 +57,7 @@ public class Framework {
             Persistence p,
             String dataKey,
             String refKeys ) {
-        ModelData modelData = p.getData( dataKey );
+        ModelData modelData = p.getData(dataKey);
 
         if ( modelData == null ) {
             modelData = new ModelData( dataKey, refKeys );
@@ -69,8 +72,28 @@ public class Framework {
      * @param entityName
      * @param configPath
      */
-    public static String GetConfig( String entityName, String configPath ) {
-        TODO
+    public static String GetConfig( String entityName, String configPath, Persistence p ) {
+        ModelEntity me = p.getEntity( entityName );
+        JsonParser parser = new JsonParser();
+        JsonObject jo = parser.parse( me.config ).getAsJsonObject();
+
+        int index = 0;
+        String[] pathParts = configPath.split( "." );
+        String part = pathParts[ index ];
+
+        while( index < pathParts.length ) {
+            JsonElement je = jo.get( part );
+
+            ++index;
+
+            if( !je.isJsonObject() ) {
+                return null;
+            }
+
+            jo = (JsonObject)je;
+        }
+
+        return jo.getAsString();
     }
 
     /**
@@ -78,8 +101,8 @@ public class Framework {
      * @param entityName
      * @param configPath
      */
-    public static void SetConfig( String entityName, String configPath, String value ) {
-        TODO
+    public static void SetConfig( String entityName, String configPath, String value, Persistence p ) {
+
     }
 
 
@@ -94,8 +117,8 @@ public class Framework {
             List< ModelEntity > entities = gson.fromJson( jsonEntity, listType );
 
             for( ModelEntity modelEntity : entities ) {
-                logger.info("Creating Entity of type: " + modelEntity.type + ", that is hosted at Node: " + modelEntity.node);
-                _p.setEntity( modelEntity );
+                logger.info( "Persisting Entity of type: " + modelEntity.type + ", that is hosted at Node: " + modelEntity.node );
+                p.setEntity( modelEntity );
             }
         }
         catch ( Exception e ) {
@@ -114,7 +137,7 @@ public class Framework {
 
             List< ModelDataReference > references = gson.fromJson( jsonEntity, listType );
             for( ModelDataReference modelDataReference : references ) {
-                logger.info("Creating data input reference for data: " + modelDataReference.dataKey + " with input data keys: " + modelDataReference.refKeys);
+                logger.info( "Persisting data input reference for data: " + modelDataReference.dataKey + " with input data keys: " + modelDataReference.refKeys );
                 Framework.SetDataReference( p, modelDataReference.dataKey, modelDataReference.refKeys );
             }
         }
@@ -135,7 +158,7 @@ public class Framework {
 
             for ( ModelEntityPathConfig modelConfig : modelConfigs ) {
 
-                logger.info( "Setting entity: " + modelConfig._entityName + " config path: " + modelConfig._configPath  + " value: " + modelConfig._configValue );
+                logger.info( "Persisting entity: " + modelConfig._entityName + " config path: " + modelConfig._configPath  + " value: " + modelConfig._configValue );
 
                 Framework.SetConfig( modelConfig._entityName, modelConfig._configPath, modelConfig._configValue );
 //                for ( String keySuffix : modelConfig._configPathValues.keySet() ) {

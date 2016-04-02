@@ -1,5 +1,6 @@
 package io.agi.framework;
 
+import com.google.gson.Gson;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.math.FastRandom;
@@ -166,7 +167,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
         int age = _config.age; // getPropertyInt(SUFFIX_AGE, 1);
         System.err.println( "END   T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity updated: " + entityName );
 
-        _n.notifyUpdated( entityName ); // this entity, the parent, is now complete
+        _n.notifyUpdated(entityName); // this entity, the parent, is now complete
     }
 
     public void onEntityUpdated( String entityName ) {
@@ -225,13 +226,17 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         // 5. persist config of this entity
 //        persistConfig(_config);
-        _model.config = serializeConfig( _config );
-        Persistence p = _n.getPersistence();
-        p.setEntity(_model);
+        persistConfig();
 
         //System.err.println( "Update: " + getName() + " age: " + age );
     }
 
+    protected void persistConfig() {
+        Gson gson = new Gson();
+        _model.config = gson.toJson( _config );
+        Persistence p = _n.getPersistence();
+        p.setEntity(_model);
+    }
 //    public static String GetConfigName( String entityName, Object object ) {
 //        return Keys.concatenate( entityName, object.getClass().getSimpleName() );
 //    }
