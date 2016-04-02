@@ -12,8 +12,7 @@ import io.agi.core.util.images.ImageScreenScraper;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
-import io.agi.framework.entities.EntityProperties;
-import io.agi.framework.entities.ImageSensorProperties;
+import io.agi.framework.EntityConfig;
 
 import java.util.Collection;
 
@@ -32,7 +31,7 @@ public class ImageSensorEntity extends Entity {
     public static final String ENTITY_TYPE = "image-sensor";
     public static final String IMAGE_DATA = "image-data";
 
-    ImageSensorProperties _properties = null;
+    ImageSensorConfig _properties = null;
 
     public ImageSensorEntity( String entityName, ObjectMap om, String type, Node n ) {
         super( entityName, om, type, n );
@@ -48,7 +47,7 @@ public class ImageSensorEntity extends Entity {
     }
 
     @Override
-    public EntityProperties getProperties( ) {
+    public EntityConfig getConfig() {
         return _properties;
     }
 

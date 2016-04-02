@@ -13,10 +13,6 @@ public class EncoderFactory {
             return new ScalarEncoder();
         }
 
-        if (encoderType.equals( RetinalEncoder.class.getTypeName() ) ) {
-            return new RetinalEncoder();
-        }
-
         System.err.println( "ERROR: EncoderFactory.create() - could not create an encoder for " + encoderType );
 
         return null;

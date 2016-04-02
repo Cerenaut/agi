@@ -2,7 +2,6 @@ package io.agi.framework;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.agi.core.orm.Keys;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.util.FileUtil;
 import io.agi.core.util.PropertiesUtil;
@@ -14,7 +13,10 @@ import io.agi.framework.persistence.couchbase.CouchbasePersistence;
 import io.agi.framework.persistence.jdbc.JdbcPersistence;
 import io.agi.framework.persistence.models.ModelDataReference;
 import io.agi.framework.persistence.models.ModelEntity;
-import io.agi.framework.persistence.models.ModelPropertySet;
+import io.agi.framework.persistence.models.ModelNode;
+import io.agi.framework.persistence.models.ModelEntityPathConfig;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -24,6 +26,8 @@ import java.util.List;
  */
 public class Main {
 
+    private static final Logger logger = LogManager.getLogger();
+
     public static final String PROPERTY_NODE_NAME = "node-name";
     public static final String PROPERTY_NODE_HOST = "node-host";
     public static final String PROPERTY_NODE_PORT = "node-port";
@@ -31,14 +35,15 @@ public class Main {
     public static final String PROPERTY_PERSISTENCE_TYPE = "persistence-type";
     public static final String PROPERTY_COORDINATION_TYPE = "coordination-type";
 
-    public String _databaseUser;
-    public String _databasePassword;
-    public String _databaseUrl;
-    public String _databaseDriverClass;
+//    public String _databaseUser;
+//    public String _databasePassword;
+//    public String _databaseUrl;
+//    public String _databaseDriverClass;
 
-    public String _nodeName;
-    public String _nodeHost;
-    public int _nodePort = 0;
+    public ModelNode _modelNode;
+//    public String _nodeName;
+//    public String _nodeHost;
+//    public int _nodePort = 0;
 
     public EntityFactory _ef;
     public ObjectMap _om;
@@ -63,13 +68,13 @@ public class Main {
         _p = createPersistence( propertiesFile );
         _c = createCoordination( propertiesFile );
 
-        _nodeName = PropertiesUtil.get( propertiesFile, PROPERTY_NODE_NAME, "node-1" );
-        _nodeHost = PropertiesUtil.get( propertiesFile, PROPERTY_NODE_HOST, "localhost" );
-        _nodePort = Integer.valueOf( PropertiesUtil.get( propertiesFile, PROPERTY_NODE_PORT, "8491" ) );
+        _modelNode._key = PropertiesUtil.get( propertiesFile, PROPERTY_NODE_NAME, "node-1" );
+        _modelNode._host = PropertiesUtil.get( propertiesFile, PROPERTY_NODE_HOST, "localhost" );
+        _modelNode._port = Integer.valueOf( PropertiesUtil.get( propertiesFile, PROPERTY_NODE_PORT, "8491" ) );
 
         // The persistent description of this Node
         Node n = new Node();
-        n.setup( _om, _nodeName, _nodeHost, _nodePort, ef, _c, _p );
+        n.setup( _om, _modelNode._key, _modelNode._host, _modelNode._port, ef, _c, _p );
         _n = n;
 
         ef.setNode( n );
@@ -79,11 +84,11 @@ public class Main {
         String type = PropertiesUtil.get( propertiesFile, PROPERTY_COORDINATION_TYPE, "http" );
         Coordination c = null;
         if ( type.equals( "http" ) ) {
-            System.out.println( "Distributed coordination." );
+            logger.info("Distributed coordination.");
             c = new HttpCoordination();
         }
         else {
-            System.out.println( "Monolithic coordination." );
+            logger.info("Monolithic coordination.");
             c = new SingleProcessCoordination();
         }
         return c;
@@ -93,84 +98,14 @@ public class Main {
         String type = PropertiesUtil.get( propertiesFile, PROPERTY_PERSISTENCE_TYPE, "couchbase" );
         Persistence p = null;
         if ( type.equals( "couchbase" ) ) {
-            System.out.println( "Using Couchbase for persistence." );
+            logger.info("Using Couchbase for persistence.");
             p = CouchbasePersistence.Create( propertiesFile );
         }
         else {
-            System.out.println( "Using JDBC (SQL) for persistence." );
+            logger.info("Using JDBC (SQL) for persistence.");
             p = JdbcPersistence.Create( propertiesFile );
         }
         return p;
-    }
-
-    public void loadEntities( String file ) {
-        Gson gson = new Gson();
-
-        try {
-            String jsonEntity = FileUtil.readFile( file );
-
-            Type listType = new TypeToken< List< ModelEntity > >() {
-            }.getType();
-            List< ModelEntity > entities = gson.fromJson( jsonEntity, listType );
-
-            for ( ModelEntity modelEntity : entities ) {
-                System.out.println( "Creating Entity of type: " + modelEntity.type + ", that is hosted at Node: " + modelEntity.node );
-                _p.setEntity( modelEntity );
-            }
-        }
-        catch ( Exception e ) {
-            e.printStackTrace();
-            System.exit( -1 );
-        }
-    }
-
-    public void loadReferences( String file ) {
-        Gson gson = new Gson();
-        try {
-            String jsonEntity = FileUtil.readFile( file );
-
-            Type listType = new TypeToken< List< ModelDataReference > >() {
-            }.getType();
-            List< ModelDataReference > references = gson.fromJson( jsonEntity, listType );
-            for ( ModelDataReference modelDataReference : references ) {
-                System.out.println( "Creating data input reference for data: " + modelDataReference.dataKey + " with input data keys: " + modelDataReference.refKeys );
-                Entity.SetDataReference( _p, modelDataReference.dataKey, modelDataReference.refKeys );
-            }
-        }
-        catch ( Exception e ) {
-            e.printStackTrace();
-            System.exit( -1 );
-        }
-    }
-
-    public void loadProperties( String file ) {
-        Gson gson = new Gson();
-        try {
-            String jsonEntity = FileUtil.readFile( file );
-
-            Type listType = new TypeToken< List< ModelPropertySet > >() {
-            }.getType();
-            List< ModelPropertySet > modelProperties = gson.fromJson( jsonEntity, listType );
-
-            for ( ModelPropertySet modelPropertySet : modelProperties ) {
-
-                System.out.println( "Creating property for entity: " + modelPropertySet.entity );
-
-                for ( String keySuffix : modelPropertySet.properties.keySet() ) {
-                    String value = modelPropertySet.properties.get( keySuffix );
-
-                    System.out.println( "\tKeySuffix: " + keySuffix + ", Value: " + value );
-
-                    String key = Keys.concatenate( modelPropertySet.entity, keySuffix );
-                    _p.setPropertyString( key, value );
-                }
-
-            }
-        }
-        catch ( Exception e ) {
-            e.printStackTrace();
-            System.exit( -1 );
-        }
     }
 
     public void run() {
@@ -182,7 +117,7 @@ public class Main {
             }
         }
         catch ( Exception e ) {
-            e.printStackTrace();
+            logger.error(e.getStackTrace());
             System.exit( -1 );
         }
     }

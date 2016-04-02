@@ -221,7 +221,7 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
         return models;
     }
 
-//    public Map< String, String > getProperties( String filter ) {
+//    public Map< String, String > getConfig( String filter ) {
 //        // https://forums.couchbase.com/t/wildcard-search-using-couchbase-views/3545
 //        HashMap< String, String > hm = new HashMap< String, String >();
 //        String filter1 = filter;

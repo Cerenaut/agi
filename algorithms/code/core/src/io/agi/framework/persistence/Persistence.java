@@ -1,14 +1,11 @@
 package io.agi.framework.persistence;
 
-import io.agi.framework.entities.EntityProperties;
+import io.agi.framework.EntityConfig;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
 import io.agi.framework.persistence.models.ModelNode;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by dave on 14/02/16.
@@ -54,8 +51,8 @@ public interface Persistence {
     void removeData( String name );
 
     // Properties
-//    Map< String, String > getProperties( String filter );
+//    Map< String, String > getConfig( String filter );
 //
-    void getProperties( String key, EntityProperties properties );
-    void setProperties( String key, EntityProperties properties );
+//    void getProperties( String key, EntityConfig _configPathValues );
+//    void setProperties( String key, EntityConfig _configPathValues );
 }

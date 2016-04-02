@@ -2,6 +2,7 @@ package io.agi.framework.coordination.http;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import io.agi.framework.Framework;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.models.ModelEntity;
 
@@ -50,10 +51,10 @@ public class HttpConfigHandler implements HttpHandler {
             ModelEntity me = _p.getEntity( entityName );
 
             if( method.equalsIgnoreCase( "GET" ) ) {
-                configValue = me.getConfig( configPath );
+                configValue = Framework.GetConfig(entityName, configPath);
             }
             else if( method.equalsIgnoreCase( "POST" ) || method.equalsIgnoreCase( "PUT" ) ) {
-                me.setConfig(configPath, configValue);
+                Framework.SetConfig(entityName, configPath, configValue);
                 _p.setEntity( me );
             }
 

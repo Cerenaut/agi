@@ -1,12 +1,14 @@
 package io.agi.framework.entities;
 
+import io.agi.framework.EntityConfig;
+
 import java.awt.*;
 
 /**
  *
  * Created by gideon on 27/03/2016.
  */
-public class ImageSensorProperties extends EntityProperties {
+public class ImageSensorConfig extends EntityConfig {
 
     public class ReceptiveField {
         int receptiveFieldX;

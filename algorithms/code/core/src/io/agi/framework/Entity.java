@@ -6,9 +6,11 @@ import io.agi.core.math.FastRandom;
 import io.agi.core.orm.Keys;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
-import io.agi.framework.entities.EntityProperties;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.models.ModelData;
+import io.agi.framework.persistence.models.ModelEntity;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
@@ -26,71 +28,37 @@ public abstract class Entity extends NamedObject implements EntityListener {
     public static final String SUFFIX_RESET = "reset"; /// Optional: Used as a flag to indicate the entity should reset itself on next update.
     public static final String SUFFIX_FLUSH = "flush"; /// Required: Triggers all flushable data to be persisted.
 
-    protected String _type;
-    protected String _parent;
+    private static final Logger logger = LogManager.getLogger();
+
+//    protected String _type;
+//    protected String _parent;
     protected Node _n;
+    protected ModelEntity _model = null;
+    protected EntityConfig _config = null;
     protected FastRandom _r;
-    protected boolean _flush = false;
-
+//    protected boolean _flush = false;
     protected HashSet< String > _childrenWaiting = new HashSet< String >();
+    protected HashMap< String, Data > _data = new HashMap< String, Data >();
+    protected DataFlags _dataFlags = new DataFlags();
+    protected DataMap _dataMap = new DataMap(); // used to check for data changes since load.
 
-    private HashMap< String, Data > _data = new HashMap< String, Data >();
-    EntityProperties _properties = null;
-
-    private DataFlags _dataFlags = new DataFlags();
-    private DataMap _dataMap = new DataMap(); // used to check for data changes since load.
-
-    public Entity( String name, ObjectMap om, String type, Node n ) {
-        super( name, om );
-        _type = type;
+    public Entity( ObjectMap om, Node n, ModelEntity model ) {
+        super( model.name, om );
+        _model = model;
         _n = n;
         _r = new FastRandom();
     }
 
-    public void setParent( String parent ) {
-        _parent = parent;
-    }
+//    public void setParent( String parent ) {
+//        _parent = parent;
+//    }
 
     public String getParent() {
-        return _parent;
+        return _model.parent;
     }
 
     public String getType() {
-        return _type;
-    }
-
-    /**
-     * Modifies the database to make the reference entity-suffix Data a reference input to the input entity-suffix.
-     *
-     * @param p
-     * @param inputEntity
-     * @param inputSuffix
-     * @param referenceEntity
-     * @param referenceSuffix
-     */
-    public static void SetDataReference(
-            Persistence p,
-            String inputEntity,
-            String inputSuffix,
-            String referenceEntity,
-            String referenceSuffix ) {
-        String inputKey = NamedObject.GetKey( inputEntity, inputSuffix );
-        String refKey = NamedObject.GetKey( referenceEntity, referenceSuffix );
-        SetDataReference( p, inputKey, refKey );
-    }
-
-    public static void SetDataReference(
-            Persistence p,
-            String dataKey,
-            String refKeys ) {
-        ModelData modelData = p.getData( dataKey );
-
-        if ( modelData == null ) {
-            modelData = new ModelData( dataKey, refKeys );
-        }
-
-        modelData._refKeys = refKeys;
-        p.setData( modelData );
+        return _model.type;
     }
 
     /**
@@ -123,15 +91,28 @@ public abstract class Entity extends NamedObject implements EntityListener {
     public abstract void getOutputKeys( Collection< String > keys, DataFlags flags );
 
     /**
-     * Get the property objects, to be fetched at the start of update and persisted at the dn
+     * Get the config object, to be fetched at the start of update and persisted at the dn
      * (non input/output state used by the entity).
      */
-    public abstract EntityProperties getProperties();
+    public EntityConfig getConfig() {
+        return _config;
+    }
+
+    public void setConfig( EntityConfig config ) {
+        _config = config;
+    }
+
+    protected void createConfig() {
+        EntityFactory ef = _n.getEntityFactory();
+        _config = ef.createConfig( _model );
+    }
 
     // if I cant issue another update to children until this has completed...
     // then children can't get out of sync
 
     public void update() {
+
+        createConfig();
 
         beforeUpdate();
 
@@ -154,16 +135,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
         // Require all children to flush on next update.
         // They can only be updated by this class, so we know they will respect the flush.
         for( String childName : childNames ) {
-
-
-            String childKey = GetKey( childName, SUFFIX_FLUSH );
-            p.setPropertyString( childKey, "true" );
-
-            // TODO TODO
-            // get the entity, then .properties of entity can be set
-
-
-
+            Framework.SetConfig(childName, SUFFIX_FLUSH, "true");
         }
 
         // Now wait for all children to update
@@ -185,13 +157,13 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
     protected void beforeUpdate() {
         String entityName = getName();
-        int age = _properties.age; // getPropertyInt( SUFFIX_AGE, 1 );
+        int age = _config.age; // getPropertyInt( SUFFIX_AGE, 1 );
         System.err.println("START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName);
     }
 
     protected void afterUpdate() {
         String entityName = getName();
-        int age = _properties.age; // getPropertyInt(SUFFIX_AGE, 1);
+        int age = _config.age; // getPropertyInt(SUFFIX_AGE, 1);
         System.err.println( "END   T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity updated: " + entityName );
 
         _n.notifyUpdated( entityName ); // this entity, the parent, is now complete
@@ -217,6 +189,10 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
     protected void updateSelf() {
 
+        // 3. fetch _configPathValues
+        // get all the _configPathValues and put them in the _configPathValues map.
+//        _config = getConfig();
+
         // 1. fetch inputs
         // get all the inputs and put them in the object map.
         Collection<String> inputKeys = new ArrayList<String>();
@@ -229,62 +205,55 @@ public abstract class Entity extends NamedObject implements EntityListener {
         getOutputKeys( outputKeys, _dataFlags );
         fetchData( outputKeys );
 
-        // 3. fetch properties
-        // get all the properties and put them in the properties map.
-        _properties = getProperties();
-        fetchProperties( _properties );
-
         // Set the random number generator, with the current time (i.e. random), if not loaded.
-        if ( _properties.seed <=0 ) {
-           _properties.seed = System.currentTimeMillis();
+        if( _config.seed == null ) {
+           _config.seed = System.currentTimeMillis();
         }
-        _r.setSeed( _properties.seed );
+
+        _r.setSeed( _config.seed );
 
         // 3. doUpdateSelf()
         doUpdateSelf();
 
-        // update age:
-        _properties.age++;
-
-        // update the random seed for next time.
-        if ( _properties.seed <=0 ) {
-            _properties.seed = System.currentTimeMillis();
-        }
-        _properties.seed = _r.getSeed();
+        _config.age++; // update age:
+        _config.seed = _r.getSeed(); // update the random seed for next time.
 
         // 4. set outputs
         // write all the outputs back to the persistence system
         //persistData(inputKeys); These aren't persisted, by definition you're promising not to write them.
         persistData( outputKeys );
 
-        // 5. persist properties
-        persistProperties( _properties );
+        // 5. persist config of this entity
+//        persistConfig(_config);
+        _model.config = serializeConfig( _config );
+        Persistence p = _n.getPersistence();
+        p.setEntity(_model);
 
         //System.err.println( "Update: " + getName() + " age: " + age );
     }
 
-    private String uniqueNameForObject( Object object ) {
-        return Keys.concatenate( getName(), object.getClass().getSimpleName() );
-    }
+//    public static String GetConfigName( String entityName, Object object ) {
+//        return Keys.concatenate( entityName, object.getClass().getSimpleName() );
+//    }
+//
+//    /**
+//     * Populate _configPathValues map with the persisted _configPathValues.
+//     */
+//    private void fetchConfig( EntityConfig config ) {
+//        Persistence p = _n.getPersistence();
+//        p.getProperties( GetConfigName( getName(), config ), config );      // persistence hydrates the model from storage
+//    }
+//
+//    /**
+//     * Persist the _configPathValues map.
+//     */
+//    private void persistConfig(EntityConfig config ) {
+//        Persistence p = _n.getPersistence();
+//        p.setProperties( GetConfigName( getName(), config ), config );
+//    }
 
     /**
-     * Populate properties map with the persisted properties.
-     */
-    private void fetchProperties( EntityProperties properties ) {
-        Persistence p = _n.getPersistence();
-        p.getProperties( uniqueNameForObject( properties ), properties );      // persistence hydrates the model from storage
-    }
-
-    /**
-     * Persist the properties map.
-     */
-    private void persistProperties( EntityProperties properties ) {
-        Persistence p = _n.getPersistence();
-        p.setProperties( uniqueNameForObject( properties ), properties );
-    }
-
-    /**
-     * Populate object map with the persisted data.
+     * Populate member object map with the persisted data.
      *
      * @param keys
      */
@@ -361,7 +330,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
     public void persistData( Collection< String > keys ) {
         Persistence p = _n.getPersistence();
 
-        _flush = _properties.flush;
+//        _flush = _config.flush;
 
         for ( String keySuffix : keys ) {
             String inputKey = getKey( keySuffix );
@@ -381,7 +350,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
                 }
             }
 
-            if( _flush == false ) {
+            if( _config.flush == false ) {
                 if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_PERSIST_ON_FLUSH ) ) {
                     //System.err.println( "Skipping persist of Data: " + inputKey + " because: Only on flush, and not a flush." );
                     continue;
@@ -389,7 +358,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
             }
 
             boolean sparse = false;
-            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_SPARSE_UNIT ) ) {
+            if (_dataFlags.hasFlag( keySuffix, DataFlags.FLAG_SPARSE_UNIT ) ) {
                 sparse = true;
             }
 
@@ -397,9 +366,14 @@ public abstract class Entity extends NamedObject implements EntityListener {
         }
 
         // clear flush after flush.
-        _properties.flush = _flush;
+        _config.flush = false; // if it was true, make it false.
     }
 
+    /**
+     * Update the local member copy of the data, which will be persisted later.
+     * @param keySuffix
+     * @param output
+     */
     public void setData( String keySuffix, Data output ) {
         _data.put(getKey(keySuffix), output );
     }
@@ -507,6 +481,9 @@ public abstract class Entity extends NamedObject implements EntityListener {
         return d;
     }
 
+    /**
+     * The actual function of the entity, to be implemented by derived classes.
+     */
     protected void doUpdateSelf() {
         // default: Nothing.
     }

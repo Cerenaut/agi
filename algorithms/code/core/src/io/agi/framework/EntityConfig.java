@@ -1,4 +1,4 @@
-package io.agi.framework.entities;
+package io.agi.framework;
 
 /**
  *
@@ -7,9 +7,10 @@ package io.agi.framework.entities;
  *
  * Created by gideon on 1/04/2016.
  */
-public class EntityProperties {
-    public int age = -1;           // default = 'not set'      optional
-    public long seed = -1;         // default = 'not set'      optional
+public class EntityConfig {
+
+    public int age = 0;            // default = 'not set'      optional
+    public Long seed = null;       // default = 'not set'      optional
     public boolean reset = false;  // default                  optional
     public boolean flush = false;  // default
 

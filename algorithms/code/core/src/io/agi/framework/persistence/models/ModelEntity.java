@@ -28,19 +28,4 @@ public class ModelEntity {
         parent = e.getParent();
     }
 
-    /**
-     * Allows a single config property to be obtained.
-     * @param path
-     */
-    public String getConfig( String path ) {
-        TODO
-    }
-
-    /**
-     * Allows a single config property to be modified.
-     * @param path
-     */
-    public void setConfig( String path, String value ) {
-        TODO
-    }
 }

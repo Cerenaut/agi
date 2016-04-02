@@ -18,7 +18,7 @@ public class RegionDemo {
 
 
     // Debug GUI
-    // file:///home/dave/workspace/agi.io/agi/experimental-framework/code/web-ui2/update.html?entity=image-source
+    // file:///home/dave/workspace/agi.io/agi/experimental-framework/code/web-ui2/update.html?_entityName=image-source
     // file:///home/dave/workspace/agi.io/agi/experimental-framework/code/web-ui2/matrix.html?data=image-source-image-data
 
     public static void main( String[] args ) {
@@ -68,13 +68,13 @@ public class RegionDemo {
         Entity.SetDataReference(p, regionName, RegionEntity.FF_INPUT, imageSourceName, ImageSensorEntity.OUTPUT_IMAGE_DATA);
         Entity.SetDataReference(p, regionName, RegionEntity.FB_INPUT, constantMatrixName, ConstantMatrixEntity.OUTPUT );
 
-        // Set properties
+        // Set _configPathValues
         PropertyConverter propertyConverter = new PropertyConverter( (PropertyStringAccess) p );
 
         String resetKey = Keys.concatenate( regionName, Entity.SUFFIX_RESET );
         propertyConverter.setPropertyBoolean(resetKey, true); // reset on every run
 
-        // TODO shouldn't have to set this, default doesn't work for string properties
+        // TODO shouldn't have to set this, default doesn't work for string _configPathValues
         String sourceTypeKey = Keys.concatenate( imageSourceName, ImageSensorEntity.SOURCE_TYPE );
         propertyConverter.setPropertyString(sourceTypeKey, BufferedImageSourceFactory.TYPE_IMAGE_FILES );
 

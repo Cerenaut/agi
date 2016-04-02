@@ -39,7 +39,7 @@ public class MNISTDemo {
         }
 
         if ( args.length > 3 ) {
-            m.loadProperties( args[ 3 ] );
+            m.loadConfigs(args[3]);
         }
 
         // Programmatic hook to create entities and references..

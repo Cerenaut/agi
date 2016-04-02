@@ -18,7 +18,7 @@ public class EncoderEntity extends Entity {
 
     public static final String ENTITY_TYPE = "encoder";
 
-    // properties
+    // config
     private static final String ENCODER_TYPE = "encoder-type";
     private static final String BITS = "bits";
     private static final String DENSITY = "density";

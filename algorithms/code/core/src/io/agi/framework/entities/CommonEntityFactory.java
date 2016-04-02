@@ -2,8 +2,12 @@ package io.agi.framework.entities;
 
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.Entity;
+import io.agi.framework.EntityConfig;
 import io.agi.framework.EntityFactory;
 import io.agi.framework.Node;
+import io.agi.framework.persistence.models.ModelEntity;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Base class for entity factories, that creates all the default types.
@@ -11,6 +15,8 @@ import io.agi.framework.Node;
  * Created by dave on 12/03/16.
  */
 public class CommonEntityFactory implements EntityFactory {
+
+    private static final Logger logger = LogManager.getLogger();
 
     protected Node _n;
 
@@ -22,7 +28,19 @@ public class CommonEntityFactory implements EntityFactory {
         _n = n;
     }
 
-    public Entity create( ObjectMap om, String entityName, String entityType ) {
+    public EntityConfig createConfig( ModelEntity me ) {
+        String entityName = me.name;
+        String entityType = me.type;
+
+        logger.error( "Could not create an entity config for " + entityName + " of type " + entityType );
+
+        return null;
+    }
+
+    public Entity create( ObjectMap om, ModelEntity me ) {
+
+        String entityName = me.name;
+        String entityType = me.type;
 
         if ( entityType.equals( RandomVectorEntity.ENTITY_TYPE ) ) {
             return new RandomVectorEntity( entityName, om, RandomVectorEntity.ENTITY_TYPE, _n );
@@ -53,10 +71,10 @@ public class CommonEntityFactory implements EntityFactory {
         }
 
         if ( entityType.equals( EncoderEntity.ENTITY_TYPE ) ) {
-            return new EncoderEntity( entityName, om, EncoderEntity.ENTITY_TYPE, _n );
+            return new EncoderEntity(entityName, om, EncoderEntity.ENTITY_TYPE, _n );
         }
 
-        System.out.println( "ERROR: CommonEntityFactory.create() - could not create an entity for " + entityName + " of type " + entityType );
+        logger.error( "Could not create an entity for " + entityName + " of type " + entityType );
 
         return null;
     }

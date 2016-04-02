@@ -1,11 +1,7 @@
 package io.agi.framework.persistence.jdbc;
 
-import com.google.gson.Gson;
 import io.agi.core.util.PropertiesUtil;
-import io.agi.framework.Entity;
-import io.agi.framework.entities.EntityProperties;
 import io.agi.framework.persistence.Persistence;
-import io.agi.framework.persistence.PropertyStringAccess;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
 import io.agi.framework.persistence.models.ModelNode;
@@ -15,7 +11,6 @@ import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by dave on 16/02/16.
@@ -234,8 +229,8 @@ public class JdbcPersistence implements Persistence {
         execute( sql );
     }
 
-//    public Map< String, String > getProperties( String filter ) {
-//        String sql = "SELECT name, value FROM properties where name like '%" + filter + "%'";
+//    public Map< String, String > getConfig( String filter ) {
+//        String sql = "SELECT name, value FROM _configPathValues where name like '%" + filter + "%'";
 //        ResultSetMap rsm = new ResultSetMap();
 //        rsm._fields.add( "name" );
 //        rsm._fields.add( "value" );
@@ -253,10 +248,10 @@ public class JdbcPersistence implements Persistence {
 //    }
 //
 //    @Override
-//    public void getProperties( String key, EntityProperties properties ) {
+//    public void getConfig( String key, EntityProperties _configPathValues ) {
 //
-//        // sql to get properties jsonString for this entity
-//        // !!!!     need to change the key to entity key
+//        // sql to get _configPathValues jsonString for this _entityName
+//        // !!!!     need to change the key to _entityName key
 //        String jsonString = null;
 //
 //        Class propertiesClass = _keyToType.get( key );
@@ -268,19 +263,19 @@ public class JdbcPersistence implements Persistence {
 //    }
 //
 //    @Override
-//    public void setProperties( String key, EntityProperties properties ) {
-//        _keyToType.put( key, properties.getClass() );
+//    public void setProperties( String key, EntityProperties _configPathValues ) {
+//        _keyToType.put( key, _configPathValues.getClass() );
 //
 //        Gson gson = new Gson();
-//        String jsonString = gson.toJson( properties );
+//        String jsonString = gson.toJson( _configPathValues );
 //
-//        // sql upsert this string into entity table for 'property' field
-//        // so won't need the key!, unless we want to have multiple props per entity
+//        // sql upsert this string into _entityName table for 'property' field
+//        // so won't need the key!, unless we want to have multiple props per _entityName
 //    }
 
 
 //    public String getPropertyString( String key, String defaultValue ) {
-//        String sql = "SELECT name, value FROM properties where name = '" + key + "'";
+//        String sql = "SELECT name, value FROM _configPathValues where name = '" + key + "'";
 //        ResultSetMap rsm = new ResultSetMap();
 //        rsm._fields.add( "value" );
 //        executeQuery( sql, rsm );
@@ -292,9 +287,9 @@ public class JdbcPersistence implements Persistence {
 //
 //    public void setPropertyString( String key, String value ) {
 //        // https://www.sitepoint.com/community/t/how-to-use-on-duplicate-key-update-in-postgresql-with-php/200335/4
-//        String sql1 = "UPDATE properties SET value = '" + value + "' WHERE name = '" + key + "'";
+//        String sql1 = "UPDATE _configPathValues SET value = '" + value + "' WHERE name = '" + key + "'";
 //        execute( sql1 );
-//        String sql2 = "INSERT INTO properties (name, value) SELECT '" + key + "', '" + value + "' WHERE NOT EXISTS (SELECT name from properties WHERE name = '" + key + "')";
+//        String sql2 = "INSERT INTO _configPathValues (name, value) SELECT '" + key + "', '" + value + "' WHERE NOT EXISTS (SELECT name from _configPathValues WHERE name = '" + key + "')";
 //        execute( sql2 );
 //    }
 

@@ -6,6 +6,8 @@ import io.agi.framework.coordination.Coordination;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.models.ModelEntity;
 import io.agi.framework.persistence.models.ModelNode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +19,8 @@ import java.util.concurrent.Semaphore;
  * Created by dave on 14/02/16.
  */
 public class Node {
+
+    private static final Logger logger = LogManager.getLogger();
 
     public static final String KEY_NODE = "node";
 
@@ -71,6 +75,10 @@ public class Node {
 
     public int getPort() {
         return _port;
+    }
+
+    public EntityFactory getEntityFactory() {
+        return _ef;
     }
 
     /**
@@ -164,10 +172,11 @@ public class Node {
             return;
         }
 
-        Entity e = _ef.create( _om, entityName, modelEntity.type );
-        e.setParent( modelEntity.parent );
+        Entity e = _ef.create( _om, modelEntity );
+//        e.setParent( modelEntity.parent );
+//        e.setConfig( _ef.createConfig( modelEntity ) );
 
-        forkUpdate( e ); // returns immediately
+        forkUpdate(e); // returns immediately
     }
 
     /**
