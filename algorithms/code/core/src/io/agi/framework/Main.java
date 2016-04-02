@@ -1,9 +1,6 @@
 package io.agi.framework;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import io.agi.core.orm.ObjectMap;
-import io.agi.core.util.FileUtil;
 import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.coordination.Coordination;
 import io.agi.framework.coordination.http.HttpCoordination;
@@ -11,15 +8,9 @@ import io.agi.framework.coordination.monolithic.SingleProcessCoordination;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.couchbase.CouchbasePersistence;
 import io.agi.framework.persistence.jdbc.JdbcPersistence;
-import io.agi.framework.persistence.models.ModelDataReference;
-import io.agi.framework.persistence.models.ModelEntity;
 import io.agi.framework.persistence.models.ModelNode;
-import io.agi.framework.persistence.models.ModelEntityPathConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.lang.reflect.Type;
-import java.util.List;
 
 /**
  * Created by dave on 6/03/16.

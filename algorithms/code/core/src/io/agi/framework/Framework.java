@@ -8,10 +8,9 @@ import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelDataReference;
 import io.agi.framework.persistence.models.ModelEntity;
-import io.agi.framework.persistence.models.ModelEntityPathConfig;
+import io.agi.framework.persistence.models.ModelEntityConfigPath;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONObject;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -184,11 +183,11 @@ public class Framework {
         try {
             String jsonEntity = FileUtil.readFile( file );
 
-            Type listType = new TypeToken< List<ModelEntityPathConfig> >() {
+            Type listType = new TypeToken< List<ModelEntityConfigPath> >() {
             }.getType();
-            List<ModelEntityPathConfig> modelConfigs = gson.fromJson( jsonEntity, listType );
+            List<ModelEntityConfigPath> modelConfigs = gson.fromJson( jsonEntity, listType );
 
-            for ( ModelEntityPathConfig modelConfig : modelConfigs ) {
+            for ( ModelEntityConfigPath modelConfig : modelConfigs ) {
 
                 logger.info( "Persisting entity: " + modelConfig._entityName + " config path: " + modelConfig._configPath  + " value: " + modelConfig._configValue );
 

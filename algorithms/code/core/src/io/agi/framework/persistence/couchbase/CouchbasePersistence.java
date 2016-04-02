@@ -9,8 +9,6 @@ import com.couchbase.client.java.document.json.JsonObject;
 import com.couchbase.client.java.view.*;
 import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.persistence.Persistence;
-import io.agi.framework.persistence.PropertyConverter;
-import io.agi.framework.persistence.PropertyStringAccess;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
 import io.agi.framework.persistence.models.ModelNode;
