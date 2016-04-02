@@ -17,7 +17,7 @@ import java.awt.image.BufferedImage;
 
 /**
  * Scrape a BufferedImage for consumption by the hierarchy.
- *
+ * <p>
  * Scrapes a rectangle defined by a receptor field @param{receptorField}, from within a BufferedImage
  * - at a specific resolution defined by @param{resolution}
  * - converts from 8 bit to unit values

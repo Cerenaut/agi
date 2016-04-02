@@ -1,6 +1,6 @@
 package io.agi.framework.entities;
 
-import io.agi.core.ann.unsupervised.*;
+import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMap;
 import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMapConfig;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
@@ -30,11 +30,11 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
     public static final String OUTPUT_ACTIVE = "output-active";
 
     public DynamicSelfOrganizingMapEntity( ObjectMap om, Node n, ModelEntity model ) {
-        super(om, n, model);
+        super( om, n, model );
     }
 
     public void getInputKeys( Collection< String > keys ) {
-        keys.add(INPUT);
+        keys.add( INPUT );
     }
 
     public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
@@ -64,7 +64,7 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
         String implName = getName() + Keys.DELIMITER + IMPL_NAME; // the name of the object that implements
 
         // Create the config object:
-        io.agi.framework.entities.DynamicSelfOrganizingMapConfig config = (io.agi.framework.entities.DynamicSelfOrganizingMapConfig)_config;
+        io.agi.framework.entities.DynamicSelfOrganizingMapConfig config = ( io.agi.framework.entities.DynamicSelfOrganizingMapConfig ) _config;
 
         DynamicSelfOrganizingMapConfig dsomc = new DynamicSelfOrganizingMapConfig();
         dsomc.setup( _om, implName, getRandom(), inputs, config.widthCells, config.heightCells, config.learningRate, config.elasticity );
@@ -88,7 +88,7 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
         dsom._cellActivity = activity;
         dsom._cellMask = mask;
 
-        if( config.reset ) {
+        if ( config.reset ) {
             dsom.reset();
         }
 

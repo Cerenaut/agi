@@ -7,7 +7,6 @@ import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -23,7 +22,7 @@ public class HttpConfigHandler implements HttpHandler {
 
     public Persistence _p;
 
-    public HttpConfigHandler(Persistence p) {
+    public HttpConfigHandler( Persistence p ) {
         _p = p;
     }
 
@@ -38,27 +37,27 @@ public class HttpConfigHandler implements HttpHandler {
 
             String method = t.getRequestMethod();
 
-            Map< String, String > m = HttpUtil.GetQueryParams(query);
+            Map< String, String > m = HttpUtil.GetQueryParams( query );
 
-            String entityName = m.get(PARAMETER_ENTITY).trim(); // essential
-            String configPath = m.get(PARAMETER_PATH).trim(); // essential
+            String entityName = m.get( PARAMETER_ENTITY ).trim(); // essential
+            String configPath = m.get( PARAMETER_PATH ).trim(); // essential
             String configValue = null; // optional
 
-            if( m.containsKey( PARAMETER_VALUE ) ) {
+            if ( m.containsKey( PARAMETER_VALUE ) ) {
                 configValue = m.get( PARAMETER_VALUE ).trim();
             }
 
             ModelEntity me = _p.getEntity( entityName );
 
-            if( method.equalsIgnoreCase( "GET" ) ) {
-                configValue = Framework.GetConfig(entityName, configPath, _p );
+            if ( method.equalsIgnoreCase( "GET" ) ) {
+                configValue = Framework.GetConfig( entityName, configPath, _p );
             }
-            else if( method.equalsIgnoreCase( "POST" ) || method.equalsIgnoreCase( "PUT" ) ) {
-                Framework.SetConfig(entityName, configPath, configValue, _p );
+            else if ( method.equalsIgnoreCase( "POST" ) || method.equalsIgnoreCase( "PUT" ) ) {
+                Framework.SetConfig( entityName, configPath, configValue, _p );
                 _p.setEntity( me );
             }
 
-            response = "{ \""+PARAMETER_ENTITY+"\" : \"" + entityName + "\", \""+ PARAMETER_PATH +"\" : \"" + configPath + "\", \""+ PARAMETER_VALUE +"\" : \"" + configValue + "\" }";
+            response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_PATH + "\" : \"" + configPath + "\", \"" + PARAMETER_VALUE + "\" : \"" + configValue + "\" }";
 
             status = 200;
         }

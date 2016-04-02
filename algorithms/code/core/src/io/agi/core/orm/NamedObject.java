@@ -3,9 +3,9 @@ package io.agi.core.orm;
 /**
  * An object that is part of a hierarchy of objects, creating a systematic method for generating unique names for
  * properties and parameters. Objects can obviously be nested.
- *
+ * <p>
  * References an object map, as this is where objects can be stored by name.
- *
+ * <p>
  * Created by dave on 10/01/16.
  */
 public class NamedObject {

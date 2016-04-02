@@ -8,6 +8,6 @@
     "name": "myEncoder",
     "type": "encoder",
     "node": "myNode",
-    "parent" : "mySensor"
+    "parent": "mySensor"
   }
 ]

@@ -1,10 +1,8 @@
 package io.agi.framework.entities;
 
-import io.agi.core.ann.unsupervised.*;
 import io.agi.core.data.Data;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.sdr.EncoderFactory;
-import io.agi.core.sdr.ScalarEncoder;
 import io.agi.core.sdr.SparseDistributedEncoder;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
@@ -30,7 +28,7 @@ public class EncoderEntity extends Entity {
 
     @Override
     public void getInputKeys( Collection< String > keys ) {
-        keys.add(DATA_INPUT);
+        keys.add( DATA_INPUT );
     }
 
     @Override
@@ -45,11 +43,11 @@ public class EncoderEntity extends Entity {
 
     public void doUpdateSelf() {
 
-        EncoderConfig config = (EncoderConfig)_config;
+        EncoderConfig config = ( EncoderConfig ) _config;
 
         SparseDistributedEncoder encoder = EncoderFactory.create( config.encoderType );
 
-        if( encoder == null ) {
+        if ( encoder == null ) {
             logger.error( "Could not create EncoderEntity" );
             return;
         }

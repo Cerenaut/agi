@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 /**
  * Key based lookup of shared objects to reduce reference passing.
- *
+ * <p>
  * A global instance provided for convenience, or you can use specific instances.
  *
  * @author dave

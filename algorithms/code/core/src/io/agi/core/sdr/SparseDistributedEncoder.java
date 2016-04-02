@@ -12,17 +12,18 @@ import io.agi.core.data.Data;
  * Encodes some input to a binary, sparse, distributed representation.
  * The input size can be modified but the output size is computed by the
  * encoder.
- * 
+ * <p>
  * SDRs are inherently hard to decode (i.e. reverse-encoding process).
  * But it's useful to try for debugging.
- * 
+ *
  * @author dave
  */
 public interface SparseDistributedEncoder {
 
     /**
      * Setup the encoder.
-     * @param bits The size (in bits) of the output of the encoder.
+     *
+     * @param bits    The size (in bits) of the output of the encoder.
      * @param density The number of 'on' bits in the output SDR.
      */
     void setup( int bits, int density );
@@ -35,15 +36,15 @@ public interface SparseDistributedEncoder {
     /**
      * Encode the input. Note both args are expected to be non null and nonzero
      * sized arrays.
+     *
      * @param encodingInput
-     * @param encodingOutput 
+     * @param encodingOutput
      */
     void encode( Data encodingInput, Data encodingOutput );
-    
+
     /**
-     * 
      * @param decodingInput
-     * @param decodingOutput 
+     * @param decodingOutput
      */
     void decode( Data decodingInput, Data decodingOutput );
 

@@ -101,11 +101,12 @@ public class Node {
 
     /**
      * Retrieves any Data object of this name that is cached.
+     *
      * @param name
      * @return
      */
     public Data getCachedData( String name ) {
-        return _dataCache.getData(name);
+        return _dataCache.getData( name );
     }
 
     /**
@@ -115,7 +116,7 @@ public class Node {
      * @param d
      */
     public void setCachedData( String name, Data d ) {
-        _dataCache.putData(name, d);
+        _dataCache.putData( name, d );
     }
 
     /**
@@ -176,7 +177,7 @@ public class Node {
 //        e.setParent( modelEntity.parent );
 //        e.setConfig( _ef.createConfig( modelEntity ) );
 
-        forkUpdate(e); // returns immediately
+        forkUpdate( e ); // returns immediately
     }
 
     /**

@@ -5,7 +5,9 @@ import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.framework.Entity;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
-import io.agi.framework.entities.*;
+import io.agi.framework.entities.ConstantMatrixEntity;
+import io.agi.framework.entities.ImageSensorEntity;
+import io.agi.framework.entities.RegionEntity;
 import io.agi.framework.factories.CommonEntityFactory;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.PropertyConverter;
@@ -29,14 +31,14 @@ public class RegionDemo {
 
         // Create a Node
         Main m = new Main();
-        m.setup( args[0], null, ef );
+        m.setup( args[ 0 ], null, ef );
 
         // Create custom entities and references
-        if( args.length > 1 ) {
-            m.loadEntities(args[1]);
+        if ( args.length > 1 ) {
+            m.loadEntities( args[ 1 ] );
         }
 
-        if( args.length > 2 ) {
+        if ( args.length > 2 ) {
             m.loadReferences( args[ 2 ] );
         }
 
@@ -61,26 +63,26 @@ public class RegionDemo {
 //        ModelEntity region = new ModelEntity( regionName, GrowingNeuralGasEntity.ENTITY_TYPE, n.getName(), null ); // linked, so we only need to update the problem
 
         Persistence p = n.getPersistence();
-        p.setEntity(imageSource);
-        p.setEntity(constantMatrix);
-        p.setEntity(region);
+        p.setEntity( imageSource );
+        p.setEntity( constantMatrix );
+        p.setEntity( region );
 
         // Connect the entities
-        Entity.SetDataReference(p, regionName, RegionEntity.FF_INPUT, imageSourceName, ImageSensorEntity.OUTPUT_IMAGE_DATA);
-        Entity.SetDataReference(p, regionName, RegionEntity.FB_INPUT, constantMatrixName, ConstantMatrixEntity.OUTPUT );
+        Entity.SetDataReference( p, regionName, RegionEntity.FF_INPUT, imageSourceName, ImageSensorEntity.OUTPUT_IMAGE_DATA );
+        Entity.SetDataReference( p, regionName, RegionEntity.FB_INPUT, constantMatrixName, ConstantMatrixEntity.OUTPUT );
 
         // Set _configPathValues
-        PropertyConverter propertyConverter = new PropertyConverter( (PropertyStringAccess) p );
+        PropertyConverter propertyConverter = new PropertyConverter( ( PropertyStringAccess ) p );
 
         String resetKey = Keys.concatenate( regionName, Entity.SUFFIX_RESET );
-        propertyConverter.setPropertyBoolean(resetKey, true); // reset on every run
+        propertyConverter.setPropertyBoolean( resetKey, true ); // reset on every run
 
         // TODO shouldn't have to set this, default doesn't work for string _configPathValues
         String sourceTypeKey = Keys.concatenate( imageSourceName, ImageSensorEntity.SOURCE_TYPE );
-        propertyConverter.setPropertyString(sourceTypeKey, BufferedImageSourceFactory.TYPE_IMAGE_FILES );
+        propertyConverter.setPropertyString( sourceTypeKey, BufferedImageSourceFactory.TYPE_IMAGE_FILES );
 
         String sourceGreyKey = Keys.concatenate( imageSourceName, ImageSensorEntity.GREYSCALE );
-        propertyConverter.setPropertyBoolean(sourceGreyKey, true);
+        propertyConverter.setPropertyBoolean( sourceGreyKey, true );
 
         String filePathKey = Keys.concatenate( imageSourceName, ImageSensorEntity.SOURCE_FILES_PATH );
         p.setPropertyString( filePathKey, "/home/dave/workspace/agi.io/agi/algorithms/code/core/run/line" );

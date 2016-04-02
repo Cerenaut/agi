@@ -1,9 +1,5 @@
 package io.agi.core.alg;
 
-import io.agi.core.ann.supervised.ActivationFunctionFactory;
-import io.agi.core.ann.supervised.FeedForwardNetworkConfig;
-import io.agi.core.ann.supervised.LossFunction;
-import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
 import io.agi.core.data.Data;
 import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.ObjectMap;
@@ -45,7 +41,7 @@ public class RegionTest implements UnitTest {
         int regionHeightColumns = 10;
 
         // Column Sizing
-        int classifierWidthCells  = 6;
+        int classifierWidthCells = 6;
         int classifierHeightCells = 6;
 
         // Organizer training
@@ -74,7 +70,7 @@ public class RegionTest implements UnitTest {
         float predictorRegularization = 0.0f;
 
         // Build the algorithm
-        RandomInstance.setSeed(randomSeed); // make the tests repeatable
+        RandomInstance.setSeed( randomSeed ); // make the tests repeatable
         Random random = RandomInstance.getInstance();
         ObjectMap om = ObjectMap.GetInstance();
         String regionName = "region";
@@ -82,18 +78,18 @@ public class RegionTest implements UnitTest {
         RegionFactory rf = new RegionFactory();
 
         Region r = rf.create(
-            om, regionName, random,
-            inputWidth, inputHeight,
-            feedbackWidthCells, feedbackHeightCells,
-            regionWidthColumns, regionHeightColumns,
-            classifierWidthCells, classifierHeightCells,
-            receptiveFieldsTrainingSamples, receptiveFieldSize,
-            organizerLearningRate, organizerLearningRateNeighbours, organizerNoiseMagnitude, organizerEdgeMaxAge, organizerStressLearningRate, organizerStressThreshold, organizerGrowthInterval,
-            classifierLearningRate, classifierLearningRateNeighbours, classifierNoiseMagnitude, classifierEdgeMaxAge, classifierStressLearningRate, classifierStressThreshold, classifierGrowthInterval,
-            predictorHiddenLayerScaleFactor, predictorLearningRate, predictorRegularization );
+                om, regionName, random,
+                inputWidth, inputHeight,
+                feedbackWidthCells, feedbackHeightCells,
+                regionWidthColumns, regionHeightColumns,
+                classifierWidthCells, classifierHeightCells,
+                receptiveFieldsTrainingSamples, receptiveFieldSize,
+                organizerLearningRate, organizerLearningRateNeighbours, organizerNoiseMagnitude, organizerEdgeMaxAge, organizerStressLearningRate, organizerStressThreshold, organizerGrowthInterval,
+                classifierLearningRate, classifierLearningRateNeighbours, classifierNoiseMagnitude, classifierEdgeMaxAge, classifierStressLearningRate, classifierStressThreshold, classifierGrowthInterval,
+                predictorHiddenLayerScaleFactor, predictorLearningRate, predictorRegularization );
 
         // Run
-        while( true ) {
+        while ( true ) {
             Data d = r.getFfInput(); // will not use external FB input, just internal.
             d.setRandom( random );
             d.thresholdLessThan( 0.5f, 1.f, 0.f );

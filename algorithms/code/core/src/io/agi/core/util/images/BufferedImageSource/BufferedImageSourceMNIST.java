@@ -9,7 +9,7 @@ import java.io.IOException;
 
 /**
  * Adapted from: http://stackoverflow.com/questions/17279049/reading-a-idx-file-type-in-java
- *
+ * <p>
  * Created by gideon on 14/03/2016.
  */
 public class BufferedImageSourceMNIST extends BufferedImageSource {
@@ -59,7 +59,7 @@ public class BufferedImageSourceMNIST extends BufferedImageSource {
     /**
      * NOTE: This advances the image stream, so DOES advance to the next image.
      * This breaks the API of the interface.
-     *
+     * <p>
      * Needs fixing if this is to be used for anything other than pre-processing.
      *
      * @return

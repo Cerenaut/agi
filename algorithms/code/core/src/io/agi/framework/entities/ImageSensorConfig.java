@@ -5,7 +5,6 @@ import io.agi.framework.EntityConfig;
 import java.awt.*;
 
 /**
- *
  * Created by gideon on 27/03/2016.
  */
 public class ImageSensorConfig extends EntityConfig {

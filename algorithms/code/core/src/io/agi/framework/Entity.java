@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.math.FastRandom;
-import io.agi.core.orm.Keys;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.persistence.Persistence;
@@ -17,27 +16,21 @@ import java.util.*;
 
 /**
  * A conceptual Entity that has an update() method, and some children Entities.
- *
+ * <p>
  * Instances are transient and all state must be persisted as Data or Properties.
- *
+ * <p>
  * Created by dave on 14/02/16.
  */
 public abstract class Entity extends NamedObject implements EntityListener {
 
-    public static final String SUFFIX_AGE = "age"; /// Optional: Number of updates of the entity, since reset
-    public static final String SUFFIX_SEED = "seed"; /// Optional: Seeds the random number generator
-    public static final String SUFFIX_RESET = "reset"; /// Optional: Used as a flag to indicate the entity should reset itself on next update.
-    public static final String SUFFIX_FLUSH = "flush"; /// Required: Triggers all flushable data to be persisted.
-
     protected static final Logger logger = LogManager.getLogger();
 
-//    protected String _type;
-//    protected String _parent;
+    public static final String SUFFIX_FLUSH = "flush"; /// Required: Triggers all flushable data to be persisted.
+
     protected Node _n;
     protected ModelEntity _model = null;
     protected EntityConfig _config = null;
     protected FastRandom _r;
-//    protected boolean _flush = false;
     protected HashSet< String > _childrenWaiting = new HashSet< String >();
     protected HashMap< String, Data > _data = new HashMap< String, Data >();
     protected DataFlags _dataFlags = new DataFlags();
@@ -49,10 +42,6 @@ public abstract class Entity extends NamedObject implements EntityListener {
         _n = n;
         _r = new FastRandom();
     }
-
-//    public void setParent( String parent ) {
-//        _parent = parent;
-//    }
 
     public String getParent() {
         return _model.parent;
@@ -93,6 +82,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
     /**
      * Return the class of the config object for the derived entity.
+     *
      * @return
      */
     public abstract Class getConfigClass();
@@ -112,7 +102,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
     protected void createConfig() {
         Class configClass = getConfigClass();
         Gson gson = new Gson();
-        _config = (EntityConfig)gson.fromJson( _model.config, configClass );
+        _config = ( EntityConfig ) gson.fromJson( _model.config, configClass );
     }
 
     // if I cant issue another update to children until this has completed...
@@ -126,7 +116,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         String entityName = getName();
 
-        if( !_n.lock( entityName ) ) {
+        if ( !_n.lock( entityName ) ) {
             return;
         }
 
@@ -142,8 +132,8 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         // Require all children to flush on next update.
         // They can only be updated by this class, so we know they will respect the flush.
-        for( String childName : childNames ) {
-            Framework.SetConfig(childName, SUFFIX_FLUSH, "true", p );
+        for ( String childName : childNames ) {
+            Framework.SetConfig( childName, SUFFIX_FLUSH, "true", p );
         }
 
         // Now wait for all children to update
@@ -166,7 +156,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
     protected void beforeUpdate() {
         String entityName = getName();
         int age = _config.age; // getPropertyInt( SUFFIX_AGE, 1 );
-        System.err.println("START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName);
+        System.err.println( "START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName );
     }
 
     protected void afterUpdate() {
@@ -174,7 +164,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
         int age = _config.age; // getPropertyInt(SUFFIX_AGE, 1);
         System.err.println( "END   T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity updated: " + entityName );
 
-        _n.notifyUpdated(entityName); // this entity, the parent, is now complete
+        _n.notifyUpdated( entityName ); // this entity, the parent, is now complete
     }
 
     public void onEntityUpdated( String entityName ) {
@@ -203,7 +193,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         // 1. fetch inputs
         // get all the inputs and put them in the object map.
-        Collection<String> inputKeys = new ArrayList<String>();
+        Collection< String > inputKeys = new ArrayList< String >();
         getInputKeys( inputKeys );
         fetchData( inputKeys );
 
@@ -211,19 +201,19 @@ public abstract class Entity extends NamedObject implements EntityListener {
         // get all the outputs and put them in the object map.
         Collection< String > outputKeys = new ArrayList< String >();
         getOutputKeys( outputKeys, _dataFlags );
-        fetchData(outputKeys);
+        fetchData( outputKeys );
 
         // Set the random number generator, with the current time (i.e. random), if not loaded.
-        if( _config.seed == null ) {
-           _config.seed = System.currentTimeMillis();
+        if ( _config.seed == null ) {
+            _config.seed = System.currentTimeMillis();
         }
 
-        _r.setSeed(_config.seed);
+        _r.setSeed( _config.seed );
 
         // 3. doUpdateSelf()
         doUpdateSelf();
 
-        if( _config.reset ) {
+        if ( _config.reset ) {
             _config.age = 0;
         }
         else {
@@ -250,7 +240,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
         Gson gson = new Gson();
         _model.config = gson.toJson( _config );
         Persistence p = _n.getPersistence();
-        p.setEntity(_model);
+        p.setEntity( _model );
     }
 //    public static String GetConfigName( String entityName, Object object ) {
 //        return Keys.concatenate( entityName, object.getClass().getSimpleName() );
@@ -286,10 +276,10 @@ public abstract class Entity extends NamedObject implements EntityListener {
             ModelData jd = null;
 
             // check for cache policy
-            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_NODE_CACHE ) ) {
-                Data d = _n.getCachedData(inputKey);
+            if ( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_NODE_CACHE ) ) {
+                Data d = _n.getCachedData( inputKey );
 
-                if( d != null ) {
+                if ( d != null ) {
                     //System.err.println( "Skipping fetch of Data: " + inputKey );
                     _data.put( inputKey, d );
                     continue;
@@ -297,20 +287,20 @@ public abstract class Entity extends NamedObject implements EntityListener {
             }
 
             // check for no - read
-            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_PERSIST_ONLY ) ) {
+            if ( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_PERSIST_ONLY ) ) {
                 //System.err.println( "Skipping fetch of Data: " + inputKey );
                 continue;
             }
 
             jd = p.getData( inputKey );
 
-            if( jd == null ) { // not found
+            if ( jd == null ) { // not found
                 continue; // truthfully represent as null.
             }
 
             HashSet< String > refKeys = jd.getRefKeys();
 
-            if( refKeys.isEmpty() ) {
+            if ( refKeys.isEmpty() ) {
                 Data d = jd.getData();
                 _data.put( inputKey, d );
             }
@@ -337,10 +327,10 @@ public abstract class Entity extends NamedObject implements EntityListener {
         }
 
         // check to see whether we need a backup of these structures, to implement the lazy-persist policy.
-        for( String keySuffix : _dataFlags._dataFlags.keySet() ) {
-            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_LAZY_PERSIST ) ) {
+        for ( String keySuffix : _dataFlags._dataFlags.keySet() ) {
+            if ( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_LAZY_PERSIST ) ) {
                 String inputKey = getKey( keySuffix );
-                Data d = _data.get(inputKey);
+                Data d = _data.get( inputKey );
                 Data copy = new Data( d ); // make a deep copy
                 _dataMap.putData( inputKey, copy );
             }
@@ -354,31 +344,31 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         for ( String keySuffix : keys ) {
             String inputKey = getKey( keySuffix );
-            Data d = _data.get(inputKey);
+            Data d = _data.get( inputKey );
 
             // check for cache policy
-            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_NODE_CACHE ) ) {
+            if ( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_NODE_CACHE ) ) {
                 _n.setCachedData( inputKey, d ); // cache this one, so we don't need to read it next time.
             }
 
-            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_LAZY_PERSIST ) ) {
+            if ( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_LAZY_PERSIST ) ) {
                 Data copy = _dataMap.getData( inputKey );
 
-                if( copy.isSameAs( d ) ) {
+                if ( copy.isSameAs( d ) ) {
                     //System.err.println( "Skipping persist of Data: " + inputKey + " because: Not changed." );
                     continue; // don't persist.
                 }
             }
 
-            if( _config.flush == false ) {
-                if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_PERSIST_ON_FLUSH ) ) {
+            if ( _config.flush == false ) {
+                if ( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_PERSIST_ON_FLUSH ) ) {
                     //System.err.println( "Skipping persist of Data: " + inputKey + " because: Only on flush, and not a flush." );
                     continue;
                 }
             }
 
             boolean sparse = false;
-            if (_dataFlags.hasFlag( keySuffix, DataFlags.FLAG_SPARSE_UNIT ) ) {
+            if ( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_SPARSE_UNIT ) ) {
                 sparse = true;
             }
 
@@ -388,11 +378,12 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
     /**
      * Update the local member copy of the data, which will be persisted later.
+     *
      * @param keySuffix
      * @param output
      */
     public void setData( String keySuffix, Data output ) {
-        _data.put(getKey(keySuffix), output );
+        _data.put( getKey( keySuffix ), output );
     }
 
     /**
@@ -464,7 +455,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
      */
     public Data getData( String keySuffix, DataSize defaultSize ) {
         String key = getKey( keySuffix );
-        Data d = _data.get(key );
+        Data d = _data.get( key );
 
         if ( d == null ) {
             d = new Data( defaultSize );

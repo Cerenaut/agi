@@ -1,7 +1,5 @@
 package io.agi.framework.entities;
 
-import io.agi.core.ann.unsupervised.CompetitiveLearningConfig;
-import io.agi.core.orm.Keys;
 import io.agi.framework.EntityConfig;
 
 /**
@@ -9,11 +7,11 @@ import io.agi.framework.EntityConfig;
  */
 public class RegionConfig extends EntityConfig {
 
-    int organizerWidthCells  = 10;
+    int organizerWidthCells = 10;
     int organizerHeightCells = 10;
 
     // Column Sizing
-    int classifierWidthCells  = 6;
+    int classifierWidthCells = 6;
     int classifierHeightCells = 6;
 
     // Organizer training

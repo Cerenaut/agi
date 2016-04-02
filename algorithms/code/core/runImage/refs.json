@@ -1,6 +1,6 @@
 [
   {
-    "dataKey" : "myEncoder-data-input",
-    "refKeys" : "mySensor-image-data"
+    "dataKey": "myEncoder-data-input",
+    "refKeys": "mySensor-image-data"
   }
 ]

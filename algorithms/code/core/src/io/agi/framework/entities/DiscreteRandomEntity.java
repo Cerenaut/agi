@@ -1,6 +1,5 @@
 package io.agi.framework.entities;
 
-import io.agi.core.ann.unsupervised.*;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.orm.ObjectMap;
@@ -42,7 +41,7 @@ public class DiscreteRandomEntity extends Entity {
 
     protected void doUpdateSelf() {
 
-        DiscreteRandomConfig config = (DiscreteRandomConfig)_config;
+        DiscreteRandomConfig config = ( DiscreteRandomConfig ) _config;
 
         Data output = getDataLazyResize( OUTPUT, DataSize.create( config.elements ) );
         Random r = getRandom();

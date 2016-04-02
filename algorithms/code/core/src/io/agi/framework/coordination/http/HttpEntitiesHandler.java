@@ -69,11 +69,11 @@ public class HttpEntitiesHandler implements HttpHandler {
                     // sanitize the config
                     String config = m.config;
 
-                    if( config == null ) {
+                    if ( config == null ) {
                         config = "null";
                     }
 
-                    if( config.isEmpty() ) {
+                    if ( config.isEmpty() ) {
                         config = "\"\""; // empty double quotes.
                     }
 

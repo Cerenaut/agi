@@ -2,7 +2,6 @@ package io.agi.core.ann.unsupervised;
 
 import io.agi.core.data.Data;
 import io.agi.core.data.Ranking;
-import io.agi.core.math.RandomInstance;
 import io.agi.core.math.Unit;
 import io.agi.core.orm.AbstractPair;
 import io.agi.core.orm.ObjectMap;

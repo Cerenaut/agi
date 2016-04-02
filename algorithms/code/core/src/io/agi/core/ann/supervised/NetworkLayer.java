@@ -45,12 +45,12 @@ public class NetworkLayer extends NamedObject {
         int inputs = c.getInputs();
         int cells = c.getCells();
 
-        _inputs = new Data(inputs);
-        _weights = new Data(inputs, cells);
-        _biases = new Data(cells);
-        _weightedSums = new Data(cells);
-        _outputs = new Data(cells);
-        _errorGradients = new Data(cells);
+        _inputs = new Data( inputs );
+        _weights = new Data( inputs, cells );
+        _biases = new Data( cells );
+        _weightedSums = new Data( cells );
+        _outputs = new Data( cells );
+        _errorGradients = new Data( cells );
 
         reset( c._r );
     }

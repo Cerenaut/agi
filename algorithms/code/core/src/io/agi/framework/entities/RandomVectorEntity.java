@@ -43,7 +43,7 @@ public class RandomVectorEntity extends Entity {
     protected void doUpdateSelf() {
 
         // Get all the parameters:
-        RandomVectorConfig config = (RandomVectorConfig)_config;
+        RandomVectorConfig config = ( RandomVectorConfig ) _config;
 
         Data output = getDataLazyResize( OUTPUT, DataSize.create( config.elements ) );
         Random r = getRandom();

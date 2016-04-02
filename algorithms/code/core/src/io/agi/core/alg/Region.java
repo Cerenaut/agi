@@ -17,19 +17,19 @@ import java.util.HashSet;
 
 /**
  * A Region of cortex, representing a small part of that surface and one hierarchical level.
- *
+ * <p>
  * Has a 2-D matrix of feedforward input.
  * Has a 2-D matrix of feedback input.
- *
+ * <p>
  * There are 2 intended outputs:
  * - Predictions
  * - False-Negative Prediction errors (a Predictive-Encoding of the state of the Region).
- *
+ * <p>
  * It has 3 parts:
  * - Organizer x1
  * - Classifiers (numerous, arranged into a grid)
  * - Predictor x1
- *
+ * <p>
  * Created by dave on 22/03/16.
  */
 public class Region extends NamedObject {
@@ -63,26 +63,26 @@ public class Region extends NamedObject {
     public RegionFactory _rf;
     public RegionConfig _rc;
     public GrowingNeuralGas _organizer;
-    public HashMap< Integer, GrowingNeuralGas > _classifiers = new HashMap< Integer, GrowingNeuralGas> ();
+    public HashMap< Integer, GrowingNeuralGas > _classifiers = new HashMap< Integer, GrowingNeuralGas >();
     public FeedForwardNetwork _predictor;
 
 
-    public Region(String name, ObjectMap om) {
-        super(name, om);
+    public Region( String name, ObjectMap om ) {
+        super( name, om );
     }
 
     public void setup( RegionFactory rf ) {
         _rf = rf;
         _rc = rf.getRegionConfig();
-        _organizer = _rf.createOrganizer(this);
-        _predictor = _rf.createPredictor(this);
+        _organizer = _rf.createOrganizer( this );
+        _predictor = _rf.createPredictor( this );
 
         Point p = _rc.getOrganizerSizeCells();
 
-        for( int y = 0; y < p.y; ++y ) {
-            for (int x = 0; x < p.x; ++x) {
+        for ( int y = 0; y < p.y; ++y ) {
+            for ( int x = 0; x < p.x; ++x ) {
                 GrowingNeuralGas classifier = _rf.createClassifier( this );
-                int regionOffset = _rc.getOrganizerOffset(x, y);
+                int regionOffset = _rc.getOrganizerOffset( x, y );
                 _classifiers.put( regionOffset, classifier );
             }
         }
@@ -93,15 +93,15 @@ public class Region extends NamedObject {
 
         DataSize dataSizeInputFF = DataSize.create( ffInputSize.x, ffInputSize.y );
         DataSize dataSizeInputFB = DataSize.create( fbInputSize.x, fbInputSize.y );
-        DataSize dataSizeRegion  = DataSize.create( regionSize.x, regionSize.y );
+        DataSize dataSizeRegion = DataSize.create( regionSize.x, regionSize.y );
 
-        _ffInput    = new Data( dataSizeInputFF );
-        _fbInput    = new Data( dataSizeInputFB );
+        _ffInput = new Data( dataSizeInputFF );
+        _fbInput = new Data( dataSizeInputFB );
         _fbInputOld = new Data( dataSizeInputFB );
 
         _regionActivityOld = new Data( dataSizeRegion );
         _regionActivityNew = new Data( dataSizeRegion );
-        _regionActivity    = new Data( dataSizeRegion );
+        _regionActivity = new Data( dataSizeRegion );
 
         _regionPredictionOld = new Data( dataSizeRegion );
         _regionPredictionNew = new Data( dataSizeRegion );
@@ -131,9 +131,9 @@ public class Region extends NamedObject {
 
         Point p = _rc.getOrganizerSizeCells();
 
-        for( int y = 0; y < p.y; ++y ) {
-            for (int x = 0; x < p.x; ++x) {
-                int regionOffset = _rc.getOrganizerOffset(x, y);
+        for ( int y = 0; y < p.y; ++y ) {
+            for ( int x = 0; x < p.x; ++x ) {
+                int regionOffset = _rc.getOrganizerOffset( x, y );
                 GrowingNeuralGas classifier = _classifiers.get( regionOffset );
                 classifier.reset();
             }
@@ -149,12 +149,12 @@ public class Region extends NamedObject {
         _regionActivity.set( 0.f ); // clear
         _regionActive = new ArrayList< Integer >(); // clear
 
-        for( int y = 0; y < p.y; ++y ) {
-            for( int x = 0; x < p.x; ++x ) {
+        for ( int y = 0; y < p.y; ++y ) {
+            for ( int x = 0; x < p.x; ++x ) {
 
                 int organizerOffset = _rc.getOrganizerOffset( x, y );
                 float mask = _organizer._cellMask._values[ organizerOffset ];
-                if( mask != 1.f ) {
+                if ( mask != 1.f ) {
                     continue; // because the cell is "dead" or inactive. We already set the region output to zero, so no action required.
                 }
 
@@ -164,7 +164,7 @@ public class Region extends NamedObject {
         }
 
         boolean classificationChanged = getClassificationChanged();
-        if( classificationChanged ) {
+        if ( classificationChanged ) {
             _regionActivityOld.copy( _regionActivityNew );
             _regionActivityNew.copy( _regionActivity );
 
@@ -174,15 +174,15 @@ public class Region extends NamedObject {
         }
 
         boolean feedbackChanged = getFeedbackChanged();
-        if( classificationChanged || feedbackChanged ) {
+        if ( classificationChanged || feedbackChanged ) {
             updatePrediction(); // make a new prediction
         }
     }
 
     public void updateSparseInput() {
         // Find the sparse input bits:
-        _ffInputActive = _ffInput.indicesMoreThan(0.f); // find all the active bits.
-        _fbInputActive = _fbInput.indicesMoreThan(0.f); // find all the active bits.
+        _ffInputActive = _ffInput.indicesMoreThan( 0.f ); // find all the active bits.
+        _fbInputActive = _fbInput.indicesMoreThan( 0.f ); // find all the active bits.
     }
 
     /**
@@ -192,7 +192,7 @@ public class Region extends NamedObject {
 
         int nbrActiveInput = _ffInputActive.size();
 
-        if( nbrActiveInput == 0 ) {
+        if ( nbrActiveInput == 0 ) {
             return; // can't train, ignore blank patterns.
         }
 
@@ -200,16 +200,16 @@ public class Region extends NamedObject {
 
         Data inputValues = _organizer.getInput();
 
-        Point inputSize = Data2d.getSize(_ffInput);
+        Point inputSize = Data2d.getSize( _ffInput );
 
         // randomly sample a fixed number of input bits.
         int samples = _rc.getReceptiveFieldsTrainingSamples();
 
-        for( int s = 0; s < samples; ++s ) {
+        for ( int s = 0; s < samples; ++s ) {
 
             int sample = _rc._r.nextInt( nbrActiveInput );
 
-            Integer offset = (Integer)activeInput[ sample ];
+            Integer offset = ( Integer ) activeInput[ sample ];
 
             Point p = Data2d.getXY( _ffInput._dataSize, offset );
 
@@ -225,6 +225,7 @@ public class Region extends NamedObject {
 
     /**
      * Returns the receptive field centroid, in pixels, of the specified classifier.
+     *
      * @param xClassifier
      * @param yClassifier
      * @return
@@ -232,19 +233,19 @@ public class Region extends NamedObject {
     public float[] getClassifierReceptiveField( int xClassifier, int yClassifier ) {
         float[] rf = new float[ Region.RECEPTIVE_FIELD_DIMENSIONS ];
 
-        int classifierOffset = _rc.getOrganizerOffset(xClassifier, yClassifier);
+        int classifierOffset = _rc.getOrganizerOffset( xClassifier, yClassifier );
         int organizerOffset = classifierOffset * Region.RECEPTIVE_FIELD_DIMENSIONS;
 
-        Point inputSize = Data2d.getSize(_ffInput);
+        Point inputSize = Data2d.getSize( _ffInput );
 
-        float rf_x = _organizer._cellWeights._values[organizerOffset + 0];
-        float rf_y = _organizer._cellWeights._values[organizerOffset + 1];
+        float rf_x = _organizer._cellWeights._values[ organizerOffset + 0 ];
+        float rf_y = _organizer._cellWeights._values[ organizerOffset + 1 ];
 
         rf_x *= inputSize.x;
         rf_y *= inputSize.y;
 
-        rf[0] = rf_x; // now in pixel coordinates, whereas it is trained as unit coordinates
-        rf[1] = rf_y;
+        rf[ 0 ] = rf_x; // now in pixel coordinates, whereas it is trained as unit coordinates
+        rf[ 1 ] = rf_y;
 
         return rf;
     }
@@ -255,33 +256,33 @@ public class Region extends NamedObject {
         // Do this with ranking.
         int columnInputs = _rc.getReceptiveFieldSize();
 
-        float[] rf = getClassifierReceptiveField(xClassifier, yClassifier); // in pixels units
+        float[] rf = getClassifierReceptiveField( xClassifier, yClassifier ); // in pixels units
 
         Ranking r = new Ranking();
 
-        for( Integer i : _ffInputActive ) {
+        for ( Integer i : _ffInputActive ) {
             Point p = Data2d.getXY( _ffInput._dataSize, i );
 
             float rf_x = rf[ 0 ];
             float rf_y = rf[ 1 ];
 
-            float d = Geometry.distanceEuclidean2d( (float) p.getX(), (float) p.getY(), rf_x, rf_y );
-            Ranking.add(r._ranking, d, i ); // add input i with quality d (distance) to r.
+            float d = Geometry.distanceEuclidean2d( ( float ) p.getX(), ( float ) p.getY(), rf_x, rf_y );
+            Ranking.add( r._ranking, d, i ); // add input i with quality d (distance) to r.
         }
 
         boolean max = false; // ie min
         int maxRank = columnInputs;
         //Ranking.truncate( r._ranking, _inputsPerColumn, max );
-        ArrayList<Integer> classifierActiveInput = Ranking.getBestValues(r._ranking, max, maxRank); // ok now we got the current set of inputs for the column
+        ArrayList< Integer > classifierActiveInput = Ranking.getBestValues( r._ranking, max, maxRank ); // ok now we got the current set of inputs for the column
 
-        int classifierOffset = _rc.getOrganizerOffset(xClassifier, yClassifier);
+        int classifierOffset = _rc.getOrganizerOffset( xClassifier, yClassifier );
 
-        _ffInputActiveClassifier.put(classifierOffset, classifierActiveInput);
+        _ffInputActiveClassifier.put( classifierOffset, classifierActiveInput );
     }
 
     public void updateClassifier( int xClassifier, int yClassifier ) {
 
-        int classifierOffset = _rc.getOrganizerOffset(xClassifier, yClassifier);
+        int classifierOffset = _rc.getOrganizerOffset( xClassifier, yClassifier );
         ArrayList< Integer > activeInput = _ffInputActiveClassifier.get( classifierOffset );
         GrowingNeuralGas classifier = _classifiers.get( classifierOffset );
 
@@ -289,24 +290,24 @@ public class Region extends NamedObject {
         classifier.update(); // trains with this sparse input.
 
         int bestCell = classifier.getBestCell();
-        int bestCellX = classifier._c.getCellX(bestCell);
-        int bestCellY = classifier._c.getCellY(bestCell);
+        int bestCellX = classifier._c.getCellX( bestCell );
+        int bestCellY = classifier._c.getCellY( bestCell );
 
-        Point classifierOrigin = _rc.getRegionClassifierOrigin(xClassifier, yClassifier);
+        Point classifierOrigin = _rc.getRegionClassifierOrigin( xClassifier, yClassifier );
         int regionX = classifierOrigin.x + bestCellX;
         int regionY = classifierOrigin.y + bestCellY;
 
-        int regionOffset = _rc.getRegionOffset(regionX, regionY);
-        _regionActivity._values[ regionOffset ]  = 1.f;
-        _regionActive.add(regionOffset);
+        int regionOffset = _rc.getRegionOffset( regionX, regionY );
+        _regionActivity._values[ regionOffset ] = 1.f;
+        _regionActive.add( regionOffset );
     }
 
     public boolean getClassificationChanged() {
         // Since there can be only 1 bit per classifier, we can check if any bit has changed by only checking the
         // new '1' bits. They should all be the same in the old structure if there is no change.
-        for( Integer i : _regionActive ) {
+        for ( Integer i : _regionActive ) {
             float lastValue = _regionActivityNew._values[ i ];
-            if( lastValue != 1.f ) {
+            if ( lastValue != 1.f ) {
                 return true;
             }
         }
@@ -317,11 +318,11 @@ public class Region extends NamedObject {
     public boolean getFeedbackChanged() {
         int fbArea = _fbInput.getSize();
 
-        for( int i = 0; i < fbArea; ++i ) {
+        for ( int i = 0; i < fbArea; ++i ) {
             float oldValue = _fbInputOld._values[ i ];
-            float newValue = _fbInput   ._values[ i ];
+            float newValue = _fbInput._values[ i ];
 
-            if( oldValue != newValue ) {
+            if ( oldValue != newValue ) {
                 return true;
             }
         }
@@ -332,8 +333,8 @@ public class Region extends NamedObject {
     public void updateRegionOutput() {
         Point regionSizeCells = _rc.getRegionSizeCells();
 
-        for( int y = 0; y < regionSizeCells.y; ++y ) {
-            for (int x = 0; x < regionSizeCells.x; ++x) {
+        for ( int y = 0; y < regionSizeCells.y; ++y ) {
+            for ( int x = 0; x < regionSizeCells.x; ++x ) {
 
                 // Rules:
                 // Prediction must START and CONTINUE until cell becomes ACTIVE.
@@ -347,16 +348,16 @@ public class Region extends NamedObject {
                 float errorFP = 0.f;
                 float errorFN = 0.f;
 
-                float     activeNew =   _regionActivityNew._values[ regionOffset ];
+                float activeNew = _regionActivityNew._values[ regionOffset ];
                 float predictionOld = _regionPredictionOld._values[ regionOffset ];
 
                 // FN
-                if( ( activeNew == 1.f ) && ( predictionOld == 0.f ) ) {
+                if ( ( activeNew == 1.f ) && ( predictionOld == 0.f ) ) {
                     errorFN = 1.f;
                 }
 
                 // FP
-                if( ( activeNew == 0.f ) && ( predictionOld == 1.f ) ) {
+                if ( ( activeNew == 0.f ) && ( predictionOld == 1.f ) ) {
                     errorFP = 1.f;
                 }
 
@@ -384,16 +385,16 @@ public class Region extends NamedObject {
         // That will scale well...
         Data input = _predictor.getInput();
 
-        input.set(0.f);
+        input.set( 0.f );
 
         // put the local cells first:
-        for( Integer i : _regionActive ) { // this is the latest set of active cells, used for a new prediction
+        for ( Integer i : _regionActive ) { // this is the latest set of active cells, used for a new prediction
             input._values[ i ] = 1.f;
         }
 
         // copy feedback:
         int regionSizeCells = _rc.getRegionAreaCells();
-        for( Integer i : _fbInputActive ) {
+        for ( Integer i : _fbInputActive ) {
             int iOffset = i + regionSizeCells;
             input._values[ iOffset ] = 1.f;
         }
@@ -413,7 +414,7 @@ public class Region extends NamedObject {
 
         ideal.set( 0.f );
 
-        for( Integer i : _regionActive ) { // this is the correct value, the new set of active cells.
+        for ( Integer i : _regionActive ) { // this is the correct value, the new set of active cells.
             ideal._values[ i ] = 1.f;
         }
 
