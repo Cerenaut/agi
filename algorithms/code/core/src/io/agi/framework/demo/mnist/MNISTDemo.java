@@ -1,6 +1,7 @@
 package io.agi.framework.demo.mnist;
 
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceMNIST;
+import io.agi.framework.Framework;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
 import io.agi.framework.factories.CommonEntityFactory;
@@ -30,16 +31,16 @@ public class MNISTDemo {
         m.setup( args[ 0 ], null, new CommonEntityFactory() );
 
         // Create custom entities and references
-        if ( args.length > 1 ) {
-            m.loadEntities( args[ 1 ] );
+        if( args.length > 1 ) {
+            Framework.LoadEntities(args[1], m._p);
         }
 
-        if ( args.length > 2 ) {
-            m.loadReferences( args[ 2 ] );
+        if( args.length > 2 ) {
+            Framework.LoadDataReferences(args[2], m._p );
         }
 
-        if ( args.length > 3 ) {
-            m.loadConfigs( args[ 3 ] );
+        if( args.length > 3 ) {
+            Framework.LoadConfigs(args[3], m._p );
         }
 
         // Programmatic hook to create entities and references..

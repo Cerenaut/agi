@@ -1,9 +1,12 @@
 package io.agi.framework.demo.light;
 
+import io.agi.framework.Framework;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
 
 /**
+ * A simple interaction between two entities.
+ *
  * Created by dave on 18/02/16.
  */
 public class LightDemo {
@@ -18,35 +21,16 @@ public class LightDemo {
         m.setup( args[ 0 ], null, ef );
 
         // Create custom entities and references
-        if ( args.length > 1 ) {
-            m.loadEntities( args[ 1 ] );
+        if( args.length > 1 ) {
+            Framework.LoadEntities(args[1], m._p);
         }
 
-        if ( args.length > 2 ) {
-            m.loadReferences( args[ 2 ] );
+        if( args.length > 2 ) {
+            Framework.LoadDataReferences( args[ 2 ], m._p );
         }
-
-        // Programmatic hook to Create entities and references..
-        createEntities( m._n );
 
         // Start the system
         m.run();
     }
 
-    public static void createEntities( Node n ) {
-
-//        // Define some entities
-//        String lightSourceName = "myLight";
-//        String lightControlName = "mySwitch";
-//
-//        JsonEntity lightControl = new JsonEntity( lightControlName, LightControl.ENTITY_TYPE, n.getName(), null );
-//        JsonEntity lightSource = new JsonEntity( lightSourceName, LightSource.ENTITY_TYPE, n.getName(), lightControlName );
-//
-//        Persistence p = n.getPersistence();
-//        p.setEntity( lightSource );
-//        p.setEntity( lightControl );
-//
-//        // Connect the entities
-//        Entity.SetDataReference( p, lightSourceName, LightSource.CONTROL_INPUT, lightControlName, LightControl.CONTROL_OUTPUT );
-    }
 }

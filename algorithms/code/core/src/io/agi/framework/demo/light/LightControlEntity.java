@@ -6,6 +6,8 @@ import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
+import io.agi.framework.entities.ConstantMatrixConfig;
+import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
 
@@ -15,11 +17,11 @@ import java.util.Collection;
 public class LightControlEntity extends Entity {
 
     public static final String ENTITY_TYPE = "light-control";
-    public static final String CONTROL_OUTPUT = "light-output";
-    public static final String CHANGE_PROBABILITY = "change-probability";
 
-    public LightControlEntity( String entityName, ObjectMap om, String type, Node n ) {
-        super( entityName, om, type, n );
+    public static final String CONTROL_OUTPUT = "light-output";
+
+    public LightControlEntity( ObjectMap om, Node n, ModelEntity me ) {
+        super( om, n, me );
     }
 
     public void getInputKeys( Collection< String > keys ) {
@@ -31,14 +33,14 @@ public class LightControlEntity extends Entity {
     }
 
     @Override
-    public void getPropertyKeys( Collection< String > keys ) {
-        keys.add( CHANGE_PROBABILITY );
+    public Class getConfigClass() {
+        return LightControlEntityConfig.class;
     }
 
     protected void doUpdateSelf() {
 
         //http://localhost:8080/update?entity=mySwitch&event=update
-        float pChange = getPropertyFloat( CHANGE_PROBABILITY, 0.05f );
+        LightControlEntityConfig config = ( LightControlEntityConfig ) _config;
 
         Data output = getData( CONTROL_OUTPUT, DataSize.create( 1 ) );
 
@@ -47,7 +49,7 @@ public class LightControlEntity extends Entity {
 
         float r = getRandom().nextFloat();
 
-        if ( r < pChange ) {
+        if ( r < config.changeProbability ) {
             //System.out.println( "changing output" );
             if ( newOutputValue < 0.5f ) {
                 newOutputValue = 1.f;

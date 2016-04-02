@@ -2,6 +2,7 @@ package io.agi.framework.demo.classifier;
 
 import io.agi.core.orm.Keys;
 import io.agi.framework.Entity;
+import io.agi.framework.Framework;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
 import io.agi.framework.entities.DiscreteRandomEntity;
@@ -29,16 +30,16 @@ public class ClassifierDemo {
         m.setup( args[ 0 ], null, ef );
 
         // Create custom entities and references
-        if ( args.length > 1 ) {
-            m.loadEntities( args[ 1 ] );
+        if( args.length > 1 ) {
+            Framework.LoadEntities( args[1], m._p );
         }
 
-        if ( args.length > 2 ) {
-            m.loadReferences( args[ 2 ] );
+        if( args.length > 2 ) {
+            Framework.LoadDataReferences( args[2], m._p );
         }
 
-        if ( args.length > 3 ) {
-            m.loadConfigs( args[ 3 ] );
+        if( args.length > 3 ) {
+            Framework.LoadConfigs(args[3], m._p);
         }
 
         // Programmatic hook to create entities and references..
@@ -53,19 +54,17 @@ public class ClassifierDemo {
         // Define some entities
         String modelName = "model";
         String classifierName = "classifier";
+        String config = "{}";
 
-        ModelEntity model = new ModelEntity( modelName, DiscreteRandomEntity.ENTITY_TYPE, n.getName(), null );
-//        ModelEntity classifier = new ModelEntity( classifierName, DynamicSelfOrganizingMapEntity.ENTITY_TYPE, n.getName(), modelName ); // linked, so we only need to update the problem
-        ModelEntity classifier = new ModelEntity( classifierName, GrowingNeuralGasEntity.ENTITY_TYPE, n.getName(), modelName ); // linked, so we only need to update the problem
+        ModelEntity model = new ModelEntity( modelName, DiscreteRandomEntity.ENTITY_TYPE, n.getName(), null, config );
+        ModelEntity classifier = new ModelEntity( classifierName, GrowingNeuralGasEntity.ENTITY_TYPE, n.getName(), modelName, config ); // linked, so we only need to update the problem
 
         Persistence p = n.getPersistence();
         p.setEntity( classifier );
         p.setEntity( model );
 
         // Connect the entities
-        Entity.SetDataReference( p, classifierName, DynamicSelfOrganizingMapEntity.INPUT, modelName, RandomVectorEntity.OUTPUT );
-
-        PropertyConverter propertyConverter = new PropertyConverter( ( PropertyStringAccess ) p );
+        Framework.SetDataReference( p, classifierName, DynamicSelfOrganizingMapEntity.INPUT, modelName, RandomVectorEntity.OUTPUT );
 
         // Set a property:
         int elements = 2; // 2D

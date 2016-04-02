@@ -7,6 +7,7 @@ import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
+import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
 
@@ -20,14 +21,13 @@ public class LightSourceEntity extends Entity {
     public static final String LIGHT_OUTPUT = "light-output";
     public static final String RANDOM_OUTPUT = "random-output";
     public static final String MATRIX_OUTPUT = "matrix-output";
-    public static final String LEARNING_RATE = "learning-rate";
 
-    public LightSourceEntity( String entityName, ObjectMap om, String type, Node n ) {
-        super( entityName, om, type, n );
+    public LightSourceEntity( ObjectMap om, Node n, ModelEntity me ) {
+        super( om, n, me );
     }
 
     public void getInputKeys( Collection< String > keys ) {
-        keys.add( CONTROL_INPUT );
+        keys.add(CONTROL_INPUT);
     }
 
     public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
@@ -37,13 +37,13 @@ public class LightSourceEntity extends Entity {
     }
 
     @Override
-    public void getPropertyKeys( Collection< String > keys ) {
-        keys.add( LEARNING_RATE );
+    public Class getConfigClass() {
+        return LightSourceEntityConfig.class;
     }
 
     protected void doUpdateSelf() {
 
-        float learningRate = getPropertyFloat( LEARNING_RATE, 0.1f );
+        LightSourceEntityConfig config = ( LightSourceEntityConfig ) _config;
 
         Data input = getData( CONTROL_INPUT );
 
@@ -58,7 +58,7 @@ public class LightSourceEntity extends Entity {
         for ( int i = 0; i < elements; ++i ) {
             float inputValue = input._values[ i ];
             float oldOutputValue = output._values[ i ];
-            float newOutputValue = getLight( inputValue, oldOutputValue, learningRate );
+            float newOutputValue = getLight( inputValue, oldOutputValue, config.learningRate );
             output._values[ i ] = newOutputValue;
         }
 
