@@ -33,6 +33,18 @@ public class CommonEntityFactory implements EntityFactory {
         String entityName = me.name;
         String entityType = me.type;
 
+        if ( entityType.equals( ExperimentEntity.ENTITY_TYPE ) ) {
+            return new ExperimentEntity( om, _n, me );
+        }
+
+        if ( entityType.equals( ThresholdEntity.ENTITY_TYPE ) ) {
+            return new ThresholdEntity( om, _n, me );
+        }
+
+        if ( entityType.equals( ValueSeriesEntity.ENTITY_TYPE ) ) {
+            return new ValueSeriesEntity( om, _n, me );
+        }
+
         if ( entityType.equals( RandomVectorEntity.ENTITY_TYPE ) ) {
             return new RandomVectorEntity( om, _n, me );
         }

@@ -7,8 +7,10 @@ import io.agi.framework.EntityConfig;
  */
 public class ExperimentConfig extends EntityConfig {
 
-    public int interval;
-    public boolean pause;
-    public String terminationConditions;
+//    public int interval; do we actually want this
+    public boolean pause = false;
+    public boolean terminate = false;
+    public String terminationEntityName;
+    public String terminationConfigPath;
 
 }

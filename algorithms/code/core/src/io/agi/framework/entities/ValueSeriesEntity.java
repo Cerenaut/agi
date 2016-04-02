@@ -14,6 +14,9 @@ import java.util.Collection;
 import java.util.Random;
 
 /**
+ * Creates a rolling window of values from a property, captured over time. The window is updated every update() with a
+ * new value from the property. The oldest value is discarded.
+ *
  * Created by dave on 2/04/16.
  */
 public class ValueSeriesEntity extends Entity {

@@ -156,7 +156,7 @@ public class Framework {
             }
         }
         catch ( Exception e ) {
-            e.printStackTrace();
+            logger.error( e.getStackTrace() );
             System.exit( -1 );
         }
     }
