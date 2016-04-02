@@ -6,6 +6,7 @@ import io.agi.framework.Entity;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
 import io.agi.framework.entities.*;
+import io.agi.framework.factories.CommonEntityFactory;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.PropertyConverter;
 import io.agi.framework.persistence.PropertyStringAccess;

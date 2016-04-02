@@ -1,10 +1,11 @@
-package io.agi.framework.entities;
+package io.agi.framework.factories;
 
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.Entity;
 import io.agi.framework.EntityConfig;
 import io.agi.framework.EntityFactory;
 import io.agi.framework.Node;
+import io.agi.framework.entities.*;
 import io.agi.framework.persistence.models.ModelEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

@@ -2,7 +2,7 @@ package io.agi.framework.demo.light;
 
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.Entity;
-import io.agi.framework.entities.CommonEntityFactory;
+import io.agi.framework.factories.CommonEntityFactory;
 
 /**
  * Created by dave on 20/02/16.

@@ -3,7 +3,7 @@ package io.agi.framework.demo.mnist;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceMNIST;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
-import io.agi.framework.entities.CommonEntityFactory;
+import io.agi.framework.factories.CommonEntityFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
