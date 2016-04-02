@@ -1,9 +1,6 @@
 package io.agi.framework;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.util.FileUtil;
@@ -14,6 +11,7 @@ import io.agi.framework.persistence.models.ModelEntity;
 import io.agi.framework.persistence.models.ModelEntityPathConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -64,7 +62,7 @@ public class Framework {
         }
 
         modelData._refKeys = refKeys;
-        p.setData( modelData );
+        p.setData(modelData);
     }
 
     /**
@@ -73,27 +71,14 @@ public class Framework {
      * @param configPath
      */
     public static String GetConfig( String entityName, String configPath, Persistence p ) {
-        ModelEntity me = p.getEntity( entityName );
+        ModelEntity me = p.getEntity(entityName);
         JsonParser parser = new JsonParser();
         JsonObject jo = parser.parse( me.config ).getAsJsonObject();
 
-        int index = 0;
-        String[] pathParts = configPath.split( "." );
-        String part = pathParts[ index ];
+        // navigate to the nested property
+        JsonElement je = GetNestedProperty( jo, configPath );
 
-        while( index < pathParts.length ) {
-            JsonElement je = jo.get( part );
-
-            ++index;
-
-            if( !je.isJsonObject() ) {
-                return null;
-            }
-
-            jo = (JsonObject)je;
-        }
-
-        return jo.getAsString();
+        return je.getAsString();
     }
 
     /**
@@ -102,9 +87,56 @@ public class Framework {
      * @param configPath
      */
     public static void SetConfig( String entityName, String configPath, String value, Persistence p ) {
+        ModelEntity me = p.getEntity( entityName );
+        JsonParser parser = new JsonParser();
+        JsonObject root = parser.parse( me.config ).getAsJsonObject();
 
+        // navigate to the nested property
+        JsonObject parent = root;
+        String[] pathParts = configPath.split(".");
+        String part = null;
+        int index = 0;
+        int maxIndex = pathParts.length -2; // NOTE: one before the one we're looking for
+
+        while( index < maxIndex ) {
+            part = pathParts[ index ];
+            JsonElement child = parent.get( part );
+
+            ++index;
+
+            parent = (JsonObject)child;
+        }
+
+        // replace the property:
+        parent.remove(part);
+        parent.addProperty(part, value);
+
+        // re-serialize the whole thing
+        me.config = root.getAsString();
+        p.setEntity( me );
     }
 
+    public static JsonElement GetNestedProperty( JsonObject root, String path ) {
+        // navigate to the nested property
+        JsonElement je = root;
+        String[] pathParts = path.split(".");
+        String part = null;
+        int index = 0;
+        int maxIndex = pathParts.length -1;
+
+        while( index < maxIndex ) {
+            part = pathParts[ index ];
+
+            JsonObject joParent = (JsonObject)je; // there is more to find
+            JsonElement jeChild = joParent.get( part );
+
+            ++index;
+
+            je = jeChild;
+        }
+
+        return je;
+    }
 
     public static void LoadEntities( String file, Persistence p ) {
         Gson gson = new Gson();
@@ -160,7 +192,7 @@ public class Framework {
 
                 logger.info( "Persisting entity: " + modelConfig._entityName + " config path: " + modelConfig._configPath  + " value: " + modelConfig._configValue );
 
-                Framework.SetConfig( modelConfig._entityName, modelConfig._configPath, modelConfig._configValue );
+                Framework.SetConfig( modelConfig._entityName, modelConfig._configPath, modelConfig._configValue, p );
 //                for ( String keySuffix : modelConfig._configPathValues.keySet() ) {
 //                    String value = modelConfig._configPathValues.get( keySuffix );
 //

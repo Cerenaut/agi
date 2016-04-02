@@ -51,10 +51,10 @@ public class HttpConfigHandler implements HttpHandler {
             ModelEntity me = _p.getEntity( entityName );
 
             if( method.equalsIgnoreCase( "GET" ) ) {
-                configValue = Framework.GetConfig(entityName, configPath);
+                configValue = Framework.GetConfig(entityName, configPath, _p );
             }
             else if( method.equalsIgnoreCase( "POST" ) || method.equalsIgnoreCase( "PUT" ) ) {
-                Framework.SetConfig(entityName, configPath, configValue);
+                Framework.SetConfig(entityName, configPath, configValue, _p );
                 _p.setEntity( me );
             }
 

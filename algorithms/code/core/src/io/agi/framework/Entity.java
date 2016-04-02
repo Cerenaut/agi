@@ -92,6 +92,12 @@ public abstract class Entity extends NamedObject implements EntityListener {
     public abstract void getOutputKeys( Collection< String > keys, DataFlags flags );
 
     /**
+     * Return the class of the config object for the derived entity.
+     * @return
+     */
+    public abstract Class getConfigClass();
+
+    /**
      * Get the config object, to be fetched at the start of update and persisted at the dn
      * (non input/output state used by the entity).
      */
@@ -104,8 +110,9 @@ public abstract class Entity extends NamedObject implements EntityListener {
     }
 
     protected void createConfig() {
-        EntityFactory ef = _n.getEntityFactory();
-        _config = ef.createConfig( _model );
+        Class configClass = getConfigClass();
+        Gson gson = new Gson();
+        _config = (EntityConfig)gson.fromJson( _model.config, configClass );
     }
 
     // if I cant issue another update to children until this has completed...
@@ -136,7 +143,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
         // Require all children to flush on next update.
         // They can only be updated by this class, so we know they will respect the flush.
         for( String childName : childNames ) {
-            Framework.SetConfig(childName, SUFFIX_FLUSH, "true");
+            Framework.SetConfig(childName, SUFFIX_FLUSH, "true", p );
         }
 
         // Now wait for all children to update

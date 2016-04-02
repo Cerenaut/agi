@@ -28,15 +28,6 @@ public class CommonEntityFactory implements EntityFactory {
         _n = n;
     }
 
-    public EntityConfig createConfig( ModelEntity me ) {
-        String entityName = me.name;
-        String entityType = me.type;
-
-        logger.error( "Could not create an entity config for " + entityName + " of type " + entityType );
-
-        return null;
-    }
-
     public Entity create( ObjectMap om, ModelEntity me ) {
 
         String entityName = me.name;
