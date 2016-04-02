@@ -26,6 +26,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
     protected static final Logger logger = LogManager.getLogger();
 
     public static final String SUFFIX_FLUSH = "flush"; /// Required: Triggers all flushable data to be persisted.
+    public static final String SUFFIX_RESET = "reset"; /// Required: Triggers all flushable data to be persisted.
 
     protected Node _n;
     protected ModelEntity _model = null;
@@ -99,10 +100,11 @@ public abstract class Entity extends NamedObject implements EntityListener {
         _config = config;
     }
 
-    protected void createConfig() {
+    public EntityConfig createConfig() {
         Class configClass = getConfigClass();
         Gson gson = new Gson();
-        _config = ( EntityConfig ) gson.fromJson( _model.config, configClass );
+        EntityConfig config = ( EntityConfig ) gson.fromJson( _model.config, configClass );
+        return config;
     }
 
     // if I cant issue another update to children until this has completed...
@@ -110,7 +112,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
     public void update() {
 
-        createConfig();
+        _config = createConfig();
 
         beforeUpdate();
 

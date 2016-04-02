@@ -77,6 +77,10 @@ public class Node {
         return _port;
     }
 
+    public ObjectMap getObjectMap() {
+        return _om;
+    }
+
     public EntityFactory getEntityFactory() {
         return _ef;
     }

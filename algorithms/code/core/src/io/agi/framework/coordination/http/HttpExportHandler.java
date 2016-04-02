@@ -31,7 +31,7 @@ public class HttpExportHandler implements HttpHandler {
         String response = "";
 
         try {
-            // TODO
+            // TODO- defer to a framework method for retrieving an entity and children (recursively) as JSON.
         }
         catch( Exception e ) {
             e.printStackTrace();
