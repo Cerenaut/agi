@@ -54,7 +54,7 @@ public class ExperimentEntity extends Entity {
         Persistence p = _n.getPersistence();
 
         try {
-            String stringValue = Framework.GetConfig(config.terminationEntityName, config.terminationConfigPath, p);
+            String stringValue = Framework.GetConfig( p, config.terminationEntityName, config.terminationConfigPath );
 
             Boolean b = Boolean.valueOf(stringValue);
 

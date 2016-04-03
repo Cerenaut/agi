@@ -32,15 +32,15 @@ public class MNISTDemo {
 
         // Create custom entities and references
         if( args.length > 1 ) {
-            Framework.LoadEntities(args[1], m._p);
+            Framework.LoadEntities( m._n, args[1] );
         }
 
         if( args.length > 2 ) {
-            Framework.LoadDataReferences(args[2], m._p );
+            Framework.LoadDataReferences( m._p, args[2] );
         }
 
         if( args.length > 3 ) {
-            Framework.LoadConfigs(args[3], m._p );
+            Framework.LoadConfigs( m._p, args[3] );
         }
 
         // Programmatic hook to create entities and references..

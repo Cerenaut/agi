@@ -135,7 +135,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
         // Require all children to flush on next update.
         // They can only be updated by this class, so we know they will respect the flush.
         for ( String childName : childNames ) {
-            Framework.SetConfig( childName, SUFFIX_FLUSH, "true", p );
+            Framework.SetConfig( p, childName, SUFFIX_FLUSH, "true" );
         }
 
         // Now wait for all children to update
@@ -166,7 +166,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
         int age = _config.age; // getPropertyInt(SUFFIX_AGE, 1);
         System.err.println( "END   T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity updated: " + entityName );
 
-        _n.notifyUpdated( entityName ); // this entity, the parent, is now complete
+        _n.notifyUpdated(entityName); // this entity, the parent, is now complete
     }
 
     public void onEntityUpdated( String entityName ) {
@@ -238,9 +238,14 @@ public abstract class Entity extends NamedObject implements EntityListener {
         //System.err.println( "Update: " + getName() + " age: " + age );
     }
 
-    protected void persistConfig() {
+    public static String SerializeConfig( EntityConfig entityConfig ) {
         Gson gson = new Gson();
-        _model.config = gson.toJson( _config );
+        String config = gson.toJson( entityConfig );
+        return config;
+    }
+
+    protected void persistConfig() {
+        _model.config = SerializeConfig( _config );
         Persistence p = _n.getPersistence();
         p.setEntity( _model );
     }
