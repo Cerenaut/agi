@@ -132,7 +132,8 @@ public class Node {
 //        int count = _p.getEntityAge(entityName);
 //        count += 1;
 //        _p.setEntityAge(entityName, count);
-        unlock( entityName );
+        logger.info(" %%Unlock%% " + entityName);
+        unlock(entityName);
 
         // broadcast to any distributed listeners:
         _c.onUpdated( entityName );
@@ -155,8 +156,6 @@ public class Node {
      * @param entityName
      */
     public void requestUpdate( String entityName ) {
-        // TODO: this should broadcast to the wider system the update request, in case it is handled by another Node
-        //doUpdate(entityName); // monolithic only variant
         _c.doUpdate( entityName );
     }
 
@@ -169,30 +168,37 @@ public class Node {
 
         ModelEntity modelEntity = _p.getEntity( entityName );
 
-        if ( modelEntity == null ) {
+        if( modelEntity == null ) {
             return; // bad entity
         }
 
-        if ( !modelEntity.node.equals( getName() ) ) {
+        if( !modelEntity.node.equals( getName() ) ) {
             return;
         }
 
-        Entity e = _ef.create( _om, modelEntity );
-//        e.setParent( modelEntity.parent );
-//        e.setConfig( _ef.createConfig( modelEntity ) );
-
-        forkUpdate( e ); // returns immediately
+        forkUpdate( entityName ); // returns immediately
     }
 
     /**
      * Creates a thread to actually do the work of updating the entity
      *
-     * @param e
+     * @param entityName
      */
-    protected void forkUpdate( final Entity e ) {
+    protected void forkUpdate( String entityName ) {
         Thread t = new Thread( new Runnable() {
             @Override
             public void run() {
+                // block forked thread forking until entity can be updated.
+                if( !lock( entityName ) ) {
+                    return;
+                }
+
+                logger.info(" %%Lock%% " + entityName);
+
+                ModelEntity modelEntity = _p.getEntity( entityName ); // NOTE: Can't get the model entity UNTIL I have the lock, or the model might be out of date.
+
+                Entity e = _ef.create( _om, modelEntity );
+
                 e.update();
             }
         } );
@@ -202,16 +208,16 @@ public class Node {
     public boolean lock( String entityName ) {
         Semaphore s = getLock( entityName );
 
-        //System.err.println( "Thread "+ Thread.currentThread().hashCode() + " waiting for " + entityName );
+        logger.info("Thread " + Thread.currentThread().hashCode() + " waiting for " + entityName);
         try {
             s.acquire();
         }
         catch ( InterruptedException ie ) {
-            //System.err.println("Thread " + Thread.currentThread().hashCode() + " cant get lock for " + entityName);
+            logger.info("Thread " + Thread.currentThread().hashCode() + " cant get lock for " + entityName);
             return false;
         }
 
-        //System.err.println("Thread " + Thread.currentThread().hashCode() + " has lock for " + entityName);
+        logger.info("Thread " + Thread.currentThread().hashCode() + " has lock for " + entityName);
 
         return true;
     }

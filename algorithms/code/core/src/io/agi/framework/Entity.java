@@ -121,12 +121,6 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         beforeUpdate();
 
-        String entityName = getName();
-
-        if ( !_n.lock( entityName ) ) {
-            return;
-        }
-
         updateSelf();
 
         Persistence p = _n.getPersistence();
@@ -157,6 +151,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         // update all the children (Note, they will update on other Nodes potentially, and definitely in another thread.
         for ( String childName : childNames ) {
+            //System.err.println( "Request update of child: " + childName );
             _n.requestUpdate( childName ); // schedule an update, may have already occurred
             // update to child may occur any time after this, because only 1 parent so waiting for me to call the update.
         }
@@ -165,13 +160,13 @@ public abstract class Entity extends NamedObject implements EntityListener {
     protected void beforeUpdate() {
         String entityName = getName();
         int age = _config.age; // getPropertyInt( SUFFIX_AGE, 1 );
-        System.err.println( "START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName );
+        logger.info("START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName);
     }
 
     protected void afterUpdate() {
         String entityName = getName();
         int age = _config.age; // getPropertyInt(SUFFIX_AGE, 1);
-        System.err.println( "END   T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity updated: " + entityName );
+        logger.info( "END   T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity updated: " + entityName );
 
         _n.notifyUpdated(entityName); // this entity, the parent, is now complete
     }

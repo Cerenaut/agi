@@ -4,6 +4,8 @@ import com.sun.net.httpserver.HttpServer;
 import io.agi.framework.Node;
 import io.agi.framework.coordination.Coordination;
 import io.agi.framework.persistence.models.ModelNode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -18,6 +20,8 @@ import java.util.concurrent.Future;
  * Created by dave on 19/02/16.
  */
 public class HttpCoordination implements Coordination {
+
+    private static final Logger logger = LogManager.getLogger();
 
     public Node _n;
     public HttpServer _s;
@@ -80,7 +84,8 @@ public class HttpCoordination implements Coordination {
      * @param entityName
      */
     public void doUpdate( String entityName ) {
-        _n.doUpdate( entityName );
+        logger.info("Coordination.doUpdate( " + entityName + ")");
+        _n.doUpdate(entityName);
         doUpdateBroadcast( entityName );
     }
 
@@ -90,6 +95,7 @@ public class HttpCoordination implements Coordination {
      * @param entityName
      */
     public void doUpdateBroadcast( String entityName ) {
+        logger.info("Coordination.doUpdateBroadcast( " + entityName + ")");
         String query = getQuery( entityName, HttpCoordinationHandler.VALUE_UPDATE, _n.getName() );
         broadcast( query );
     }
@@ -101,7 +107,8 @@ public class HttpCoordination implements Coordination {
      * @param origin
      */
     public void doUpdateExternal( String entityName, String origin ) {
-        if ( origin != null ) {
+        logger.info("Coordination.doUpdateExternal( " + entityName + ", " + origin + " )");
+        if( origin != null ) {
             if ( origin.equals( _n.getName() ) ) {
                 return; // ignore self events
             }
@@ -111,6 +118,7 @@ public class HttpCoordination implements Coordination {
             doUpdateBroadcast( entityName );
         }
 
+        logger.info("Coordinate.doUpdateExternal(): Updating locally.");
         _n.doUpdate( entityName );
     }
 
@@ -120,6 +128,7 @@ public class HttpCoordination implements Coordination {
      * @param entityName
      */
     public void onUpdated( String entityName ) {
+        logger.info("Coordination.onUpdated( " + entityName + ")");
         _n.onUpdated( entityName );
         onUpdatedBroadcast( entityName );
     }
@@ -130,6 +139,7 @@ public class HttpCoordination implements Coordination {
      * @param entityName
      */
     public void onUpdatedBroadcast( String entityName ) {
+        logger.info("Coordination.onUpdatedBroadcast( " + entityName + ")");
         String query = getQuery( entityName, HttpCoordinationHandler.VALUE_UPDATED, _n.getName() );
         broadcast( query );
     }
@@ -141,6 +151,7 @@ public class HttpCoordination implements Coordination {
      * @param origin
      */
     public void onUpdatedExternal( String entityName, String origin ) {
+        logger.info( "Coordination.onUpdatedExternal( " + entityName + ", " + origin + " )" );
         if ( origin != null ) {
             if ( origin.equals( _n.getName() ) ) {
                 return; // ignore self events

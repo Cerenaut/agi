@@ -1,6 +1,7 @@
 
 var Update = {
 
+  entityAgeOld : null,
   entityAge : null,
 
   updateCallback : function( json ) {
@@ -20,6 +21,24 @@ var Update = {
     Framework.getConfig( entityName, Update.onGetEntityAge );
   },
 
+  onGetEntityAgeAndUpdate : function( json ) {
+    Update.onGetEntityAge( json );
+
+    console.log( "OLD age: " + Update.entityAgeOld + " NEW age: " + Update.entityAge );
+    if( Update.entityAgeOld == null ) {
+      Update.entityAgeOld = Update.entityAge;
+      Update.update();
+    }
+    else if( Update.entityAgeOld != Update.entityAge ) {
+      Update.entityAgeOld = Update.entityAge;
+      Update.update();
+    }
+    else {
+      //console.log( "Not updating, same age as before." );
+    }
+
+  },
+
   onGetEntityAge : function( json ) {
     if( json.length == 0 ) {
       Update.entityAge = null;
@@ -37,26 +56,15 @@ var Update = {
     var age = config.age;
 
     $( "#age" ).html( age );
-    //console.log( "OLD age: " + Update.entityAge + " NEW age: " + age );
 
-    if( Update.entityAge == null ) {
-      Update.entityAge = age;
-      Update.update();
-    }
-    else if( Update.entityAge != age ) {
-      Update.entityAge = age;
-      Update.update();
-    }
-    else {
-      //console.log( "Not updating, same age as before." );
-    }
+    Update.entityAge = age;
   },
 
   onInterval : function() {
 
     // check if entity is ready to update yet.
     var entityName = $( "#entity" ).val();
-    Framework.getConfig( entityName, Update.onGetEntityAge );
+    Framework.getConfig( entityName, Update.onGetEntityAgeAndUpdate );    
   },
 
   update : function() {
@@ -65,6 +73,7 @@ var Update = {
 
     // localhost:8080/update?entity=mySwitch&event=update
     var entity = $( "#entity" ).val();
+    console.log( "Updating " + entity );
     Framework.update( entity, Update.updateCallback );
 /*    var suffix = "update" 
                + "?entity=" + entity 

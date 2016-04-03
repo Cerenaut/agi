@@ -66,13 +66,6 @@ public class HttpCoordinationHandler implements HttpHandler {
         }
 
         HttpUtil.SendResponse( t, status, response );
-//        ArrayList< String > list = new ArrayList< String >();
-//        list.add( "*" );
-//        t.getResponseHeaders().put( "Access-Control-Allow-Origin", list );
-//        t.sendResponseHeaders( status, response.length() );
-//        OutputStream os = t.getResponseBody();
-//        os.write(response.getBytes());
-//        os.close();
     }
 
     protected static String GetResponse( String entity, String event, String origin ) {
