@@ -2,9 +2,12 @@ package io.agi.framework.coordination.http;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import io.agi.framework.Framework;
 import io.agi.framework.persistence.Persistence;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
 
 /**
  * Created by dave on 2/04/16.
@@ -12,8 +15,6 @@ import java.io.IOException;
 public class HttpImportHandler implements HttpHandler {
 
     public static final String CONTEXT = "/import";
-
-    public static final String PARAMETER_ENTITY = "entity";
 
     public Persistence _p;
 
@@ -27,7 +28,13 @@ public class HttpImportHandler implements HttpHandler {
         String response = "";
 
         try {
-            // TODO - defer to a framework method for importing an entity from JSON, including children.
+            InputStream is = t.getRequestBody();
+            java.util.Scanner s = new java.util.Scanner( is ).useDelimiter("\\A");
+            String subtree = s.hasNext() ? s.next() : "";
+            boolean b = Framework.ImportSubtree( _p, subtree );
+            if( b ) {
+                status = 200;
+            }
         }
         catch( Exception e ) {
             e.printStackTrace();

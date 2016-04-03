@@ -63,7 +63,6 @@ public class HttpConfigHandler implements HttpHandler {
                 response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_PATH + "\" : \"" + configPath + "\", \"" + PARAMETER_VALUE + "\" : \"" + configValue + "\" }";
             }
 
-
             status = 200;
         }
         catch ( Exception e ) {

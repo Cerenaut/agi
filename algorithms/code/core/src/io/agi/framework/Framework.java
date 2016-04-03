@@ -16,6 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -174,7 +175,7 @@ public class Framework {
         EntityConfig entityConfig = entity.createConfig();
         model.config = Entity.SerializeConfig(entityConfig);
         Persistence p = n.getPersistence();
-        p.setEntity( model );
+        p.setEntity(model);
     }
 
     public static void LoadEntities( Node n, String file ) {
@@ -210,7 +211,7 @@ public class Framework {
             List< ModelDataReference > references = gson.fromJson( jsonEntity, listType );
             for ( ModelDataReference modelDataReference : references ) {
                 logger.info( "Persisting data input reference for data: " + modelDataReference.dataKey + " with input data keys: " + modelDataReference.refKeys );
-                Framework.SetDataReference( p, modelDataReference.dataKey, modelDataReference.refKeys );
+                Framework.SetDataReference(p, modelDataReference.dataKey, modelDataReference.refKeys);
             }
         }
         catch ( Exception e ) {
@@ -232,7 +233,7 @@ public class Framework {
 
                 logger.info( "Persisting entity: " + modelConfig._entityName + " config path: " + modelConfig._configPath  + " value: " + modelConfig._configValue );
 
-                Framework.SetConfig( p, modelConfig._entityName, modelConfig._configPath, modelConfig._configValue );
+                Framework.SetConfig(p, modelConfig._entityName, modelConfig._configPath, modelConfig._configValue);
             }
         }
         catch ( Exception e ) {
@@ -241,4 +242,11 @@ public class Framework {
         }
     }
 
+    public static String ExportSubtree( Persistence p, String entityName ) {
+
+    }
+
+    public static boolean ImportSubtree( Persistence p, String subtree ) {
+
+    }
 }
