@@ -243,10 +243,10 @@ public class Framework {
     }
 
     public static String ExportSubtree( Persistence p, String entityName ) {
-
+        return "";
     }
 
     public static boolean ImportSubtree( Persistence p, String subtree ) {
-
+        return false;
     }
 }
