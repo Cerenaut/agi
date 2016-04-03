@@ -16,7 +16,7 @@ var Framework = {
 
   contextData : "data",
   contextEntities : "entities",
-  contextProperties : "properties",
+  contextConfig : "config",
   contextNodes : "nodes",
   contextUpdate : "update",
 
@@ -48,13 +48,13 @@ var Framework = {
     }
   },
 
-  getProperty : function( key, callback ) {
-    var suffix = Framework.contextProperties + "?" + key;
+  getConfig : function( entityName, callback ) {
+    var suffix = Framework.contextConfig + "?entity=" + entityName;
     Framework.doAjaxJson( suffix, callback, "GET" );
   },
 
-  setProperty : function( key, value, callback ) {
-    var suffix = Framework.contextProperties + "?" + key + "=" + value;
+  setConfig : function( entityName, configPath, value, callback ) {
+    var suffix = Framework.contextConfig + "?entity=" + entityName + "&path=" + configPath + "&value=" + value;
     Framework.doAjaxJson( suffix, callback, "POST" );
   },
 

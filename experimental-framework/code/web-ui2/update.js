@@ -15,6 +15,9 @@ var Update = {
     var result = status+":<br>" +json.responseText;
 
     $( "#result" ).html( result );
+
+    var entityName = $( "#entity" ).val();
+    Framework.getConfig( entityName, Update.onGetEntityAge );
   },
 
   onGetEntityAge : function( json ) {
@@ -29,9 +32,9 @@ var Update = {
       return;
     }
 
-    var properties = JSON.parse( json.responseText );
-    var property = properties[ 0 ];
-    var age = property.value;
+    var entityConfig = JSON.parse( json.responseText );
+    var config = entityConfig.value;
+    var age = config.age;
 
     $( "#age" ).html( age );
     //console.log( "OLD age: " + Update.entityAge + " NEW age: " + age );
@@ -49,17 +52,11 @@ var Update = {
     }
   },
 
-  doGetEntityAge : function( entityName, callback ) {
-    // find the age of the entity
-    //Postgrest.getJson( "properties?key=eq."+entityName+"-age", callback );
-    Framework.getProperty( entityName + "-age", callback );
-  },
-
   onInterval : function() {
 
     // check if entity is ready to update yet.
-    var key = $( "#entity" ).val();
-    Update.doGetEntityAge( key, Update.onGetEntityAge );
+    var entityName = $( "#entity" ).val();
+    Framework.getConfig( entityName, Update.onGetEntityAge );
   },
 
   update : function() {

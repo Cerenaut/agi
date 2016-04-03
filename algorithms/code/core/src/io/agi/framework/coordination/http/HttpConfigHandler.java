@@ -39,9 +39,13 @@ public class HttpConfigHandler implements HttpHandler {
 
             Map< String, String > m = HttpUtil.GetQueryParams( query );
 
-            String entityName = m.get( PARAMETER_ENTITY ).trim(); // essential
-            String configPath = m.get( PARAMETER_PATH ).trim(); // essential
+            String entityName  = m.get( PARAMETER_ENTITY ).trim(); // essential
+            String configPath  = null; // optional
             String configValue = null; // optional
+
+            if ( m.containsKey( PARAMETER_PATH ) ) {
+                configValue = m.get( PARAMETER_PATH ).trim();
+            }
 
             if ( m.containsKey( PARAMETER_VALUE ) ) {
                 configValue = m.get( PARAMETER_VALUE ).trim();
@@ -49,15 +53,16 @@ public class HttpConfigHandler implements HttpHandler {
 
             ModelEntity me = _p.getEntity( entityName );
 
-            if ( method.equalsIgnoreCase( "GET" ) ) {
-                configValue = Framework.GetConfig( _p, entityName, configPath );
+            if( method.equalsIgnoreCase( "GET" ) ) {
+                configValue = Framework.GetConfig( _p, entityName );
+                response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_VALUE + "\" : " + configValue + " }";
             }
             else if ( method.equalsIgnoreCase( "POST" ) || method.equalsIgnoreCase( "PUT" ) ) {
                 Framework.SetConfig( _p, entityName, configPath, configValue );
                 _p.setEntity( me );
+                response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_PATH + "\" : \"" + configPath + "\", \"" + PARAMETER_VALUE + "\" : \"" + configValue + "\" }";
             }
 
-            response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_PATH + "\" : \"" + configPath + "\", \"" + PARAMETER_VALUE + "\" : \"" + configValue + "\" }";
 
             status = 200;
         }

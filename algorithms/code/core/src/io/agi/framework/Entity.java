@@ -36,6 +36,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
     protected HashMap< String, Data > _data = new HashMap< String, Data >();
     protected DataFlags _dataFlags = new DataFlags();
     protected DataMap _dataMap = new DataMap(); // used to check for data changes since load.
+    protected boolean _flushChildren = false;
 
     public Entity( ObjectMap om, Node n, ModelEntity model ) {
         super( model.name, om );
@@ -138,8 +139,10 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         // Require all children to flush on next update.
         // They can only be updated by this class, so we know they will respect the flush.
-        for ( String childName : childNames ) {
-            Framework.SetConfig( p, childName, SUFFIX_FLUSH, "true" );
+        if( _flushChildren ) {
+            for (String childName : childNames) {
+                Framework.SetConfig(p, childName, SUFFIX_FLUSH, "true");
+            }
         }
 
         // Now wait for all children to update
@@ -225,6 +228,8 @@ public abstract class Entity extends NamedObject implements EntityListener {
         else {
             _config.age++; // update age:
         }
+
+        _flushChildren = _config.flush;
 
         _config.seed = _r.getSeed(); // update the random seed for next time.
         _config.reset = false; // cancel reset after reset.

@@ -163,7 +163,7 @@ public class JdbcPersistence implements Persistence {
     }
 
     public ModelEntity getEntity( String name ) {
-        String sql = "SELECT type, node, parent FROM entities where name = '" + name + "'";
+        String sql = "SELECT type, node, parent, config FROM entities where name = '" + name + "'";
         ResultSetMap rsm = new ResultSetMap();
         rsm._fields.add( "type" );
         rsm._fields.add( "node" );

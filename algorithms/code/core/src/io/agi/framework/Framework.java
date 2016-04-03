@@ -41,9 +41,9 @@ public class Framework {
             String inputSuffix,
             String referenceEntity,
             String referenceSuffix ) {
-        String inputKey = NamedObject.GetKey( inputEntity, inputSuffix );
+        String inputKey = NamedObject.GetKey(inputEntity, inputSuffix);
         String refKey = NamedObject.GetKey( referenceEntity, referenceSuffix );
-        SetDataReference( p, inputKey, refKey );
+        SetDataReference(p, inputKey, refKey);
     }
 
     /**
@@ -85,6 +85,18 @@ public class Framework {
     }
 
     /**
+     * Gets the complete config object for the given entity.
+     *
+     * @param p
+     * @param entityName
+     * @return
+     */
+    public static String GetConfig( Persistence p, String entityName ) {
+        ModelEntity me = p.getEntity(entityName);
+        return me.config;
+    }
+
+    /**
      * Allows a single config property to be modified.
      *
      */
@@ -96,9 +108,12 @@ public class Framework {
         // navigate to the nested property
         JsonObject parent = root;
         String[] pathParts = configPath.split( "." );
-        String part = null;
         int index = 0;
         int maxIndex = pathParts.length - 2; // NOTE: one before the one we're looking for
+        String part = null;
+        if( pathParts.length == 0 ) {
+            part = configPath;
+        }
 
         while ( index < maxIndex ) {
             part = pathParts[ index ];
