@@ -77,7 +77,7 @@ public class HttpDataHandler implements HttpHandler {
 
                         response += "{ ";
 
-                        response += " \"key\": \"" + m._key + "\"" + ",";
+                        response += " \"key\": \"" + m._name + "\"" + ",";
                         response += " \"ref_key\": \"" + m._refKeys + "\"" + ",";
                         response += " \"sizes\": " + m._sizes + ",";
                         response += " \"elements\": " + m._elements;

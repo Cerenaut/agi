@@ -18,6 +18,7 @@ public class LightEntityFactory extends CommonEntityFactory {
     public Entity create( ObjectMap om, ModelEntity me ) {
 
         Entity e = super.create( om, me );
+
         if ( e != null ) {
             return e;
         }

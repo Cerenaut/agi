@@ -179,7 +179,7 @@ public class HttpCoordination implements Coordination {
         Collection< ModelNode > nodes = _n.getPersistence().getNodes();
 
         for ( ModelNode jn : nodes ) {
-            if ( jn._key.equals( _n.getName() ) ) {
+            if ( jn._name.equals( _n.getName() ) ) {
 //                continue; // don't send to self
             }
 

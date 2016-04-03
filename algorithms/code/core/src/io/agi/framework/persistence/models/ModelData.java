@@ -15,13 +15,13 @@ import java.util.HashSet;
  */
 public class ModelData {
 
-    public String _key;
+    public String _name;
     public String _refKeys;
     public String _sizes;
     public String _elements;
 
     public ModelData( String key, Data d, boolean sparse ) {
-        _key = key;
+        _name = key;
         _refKeys = null;
         if ( d != null ) {
             _sizes = DataSizeToString( d._dataSize );
@@ -30,14 +30,14 @@ public class ModelData {
     }
 
     public ModelData( String key, String refKeys ) {
-        _key = key;
+        _name = key;
         _refKeys = refKeys;
         _sizes = null;
         _elements = null;
     }
 
     public ModelData( String key, String refKeys, String sizes, String elements ) {
-        _key = key;
+        _name = key;
         _refKeys = refKeys;
         _sizes = sizes;
         _elements = elements;

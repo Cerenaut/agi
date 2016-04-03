@@ -77,8 +77,6 @@ public class CommonEntityFactory implements EntityFactory {
             return new EncoderEntity( om, _n, me );
         }
 
-        logger.error( "Could not create an entity for " + entityName + " of type " + entityType );
-
         return null;
     }
 

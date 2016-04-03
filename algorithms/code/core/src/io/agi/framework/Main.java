@@ -56,16 +56,17 @@ public class Main {
         _om = om;
 
         // Create persistence & Node now so you can Create entities in code that are hosted and persisted on the Node.
-        _p = createPersistence( propertiesFile );
-        _c = createCoordination( propertiesFile );
+        _p = createPersistence(propertiesFile);
+        _c = createCoordination(propertiesFile);
 
-        _modelNode._key = PropertiesUtil.get( propertiesFile, PROPERTY_NODE_NAME, "node-1" );
-        _modelNode._host = PropertiesUtil.get( propertiesFile, PROPERTY_NODE_HOST, "localhost" );
-        _modelNode._port = Integer.valueOf( PropertiesUtil.get( propertiesFile, PROPERTY_NODE_PORT, "8491" ) );
+        String nodeName = PropertiesUtil.get( propertiesFile, PROPERTY_NODE_NAME, "node-1" );
+        String nodeHost = PropertiesUtil.get( propertiesFile, PROPERTY_NODE_HOST, "localhost" );
+        int nodePort = Integer.valueOf(PropertiesUtil.get(propertiesFile, PROPERTY_NODE_PORT, "8491"));
+        _modelNode = new ModelNode( nodeName, nodeHost, nodePort );
 
         // The persistent description of this Node
         Node n = new Node();
-        n.setup( _om, _modelNode._key, _modelNode._host, _modelNode._port, ef, _c, _p );
+        n.setup( _om, _modelNode._name, _modelNode._host, _modelNode._port, ef, _c, _p );
         _n = n;
 
         ef.setNode( n );
