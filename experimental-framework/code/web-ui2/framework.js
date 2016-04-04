@@ -53,8 +53,13 @@ var Framework = {
     Framework.doAjaxJson( suffix, callback, "GET" );
   },
 
-  setConfig : function( entityName, configPath, value, callback ) {
+  setConfigPath : function( entityName, configPath, value, callback ) {
     var suffix = Framework.contextConfig + "?entity=" + entityName + "&path=" + configPath + "&value=" + value;
+    Framework.doAjaxJson( suffix, callback, "POST" );
+  },
+
+  setConfig : function( entityName, configValue, callback ) {
+    var suffix = Framework.contextConfig + "?entity=" + entityName + "&config=" + configValue;
     Framework.doAjaxJson( suffix, callback, "POST" );
   },
 

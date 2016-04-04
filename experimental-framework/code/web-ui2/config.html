@@ -25,7 +25,14 @@
     <![endif]-->
 
     <style type="text/css">
-      ${demo.css}
+      .old-value {
+         width:100%;
+         min-height:200px;
+      }
+      .new-value {
+         width:100%;
+         min-height:200px;
+      }
     </style>
 
   </head>
@@ -33,31 +40,31 @@
 
     <div class="agi-div-background" style="">
      <div id="controls" style="padding:2px;text-align:center;">
-      <input type="text" id="search" style="display:inline;" class="" placeholder="Search string" value=""/>
+      <label for="interval">Refresh (ms):</label>
       <input type="number" id="interval" style="display:inline;width:5em;" class="" placeholder="Update interval" value="500"/>
       <input type="button" id="pause" class="btn btn-sm btn-success" style="" onclick="Loop.togglePause();" value="Auto Refresh"/>
       <input type="button" id="update" class="btn btn-sm btn-success" style="" onclick="Loop.update();" value="Refresh"/>
-      <input type="button" id="save-all" class="btn btn-sm btn-danger" style="" onclick="Properties.saveAll();" value="Save all"/>
+      <input type="button" id="save-all" class="btn btn-sm btn-danger" style="" onclick="Config.saveAll();" value="Save all"/>
      </div>
      <div id="container" style="min-width: 310px; max-width: 800px; height: 400px; margin: 0 auto">
 
-       <table class="table">
+       <table class="table table-reflow">
          <thead>
          <tr>
-           <th>Key</th>
-           <th>Value</th>
-           <th>New value (if populated)</th>
-           <th>Actions</th>
+           <th class="col-sm-1" >Entity</th>
+           <th class="col-sm-5" >Old Config</th>
+           <th class="col-sm-5" >New Config (if populated)</th>
+           <th class="col-sm-1" >Actions</th>
          </tr>
          </thead>
 
          <tbody id="table-body-new">
           <tr>
-           <td id="key-new"><input type="text" id="key-new-value" style="" class="" placeholder="New key" value=""/></td>
+           <td id="entity-new"><input type="text" id="entity-new-value" style="" class="" placeholder="Entity name" value=""/></td>
            <td>-</td>
-           <td id="value-new"><input type="text" id="value-new-value" style="" class="" placeholder="New value" value=""/></td>
+           <td>-</td>
            <td>
-            <input type="button" id="save-new" class="btn btn-sm btn-danger" style="" onclick="Properties.saveNew();" value="Save"/>
+            <input type="button" id="save-new" class="btn btn-sm btn-danger" style="" onclick="Config.loadNew();" value="Load"/>
            </td>
           </tr>
          </tbody>
@@ -79,7 +86,7 @@
     <script src="framework.js"></script>
     <script src="parameters.js"></script>
     <script src="loop.js"></script>
-    <script src="properties.js"></script>
+    <script src="config.js"></script>
 
   </body>
 </html>

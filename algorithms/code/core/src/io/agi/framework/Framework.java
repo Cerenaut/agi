@@ -94,6 +94,10 @@ public class Framework {
      */
     public static String GetConfig( Persistence p, String entityName ) {
         ModelEntity me = p.getEntity(entityName);
+        if( me == null ) {
+            return null;
+        }
+
         return me.config;
     }
 

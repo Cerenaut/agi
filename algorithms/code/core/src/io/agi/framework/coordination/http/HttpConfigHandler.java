@@ -17,6 +17,7 @@ public class HttpConfigHandler implements HttpHandler {
     public static final String CONTEXT = "/config";
 
     public static final String PARAMETER_ENTITY = "entity";
+    public static final String PARAMETER_CONFIG = "config";
     public static final String PARAMETER_PATH = "path";
     public static final String PARAMETER_VALUE = "value";
 
@@ -37,11 +38,12 @@ public class HttpConfigHandler implements HttpHandler {
 
             String method = t.getRequestMethod();
 
-            Map< String, String > m = HttpUtil.GetQueryParams( query );
+            Map< String, String > m = HttpUtil.GetQueryParams(query);
 
             String entityName  = m.get( PARAMETER_ENTITY ).trim(); // essential
             String configPath  = null; // optional
             String configValue = null; // optional
+            String config      = null; // optional
 
             if ( m.containsKey( PARAMETER_PATH ) ) {
                 configValue = m.get( PARAMETER_PATH ).trim();
@@ -51,16 +53,32 @@ public class HttpConfigHandler implements HttpHandler {
                 configValue = m.get( PARAMETER_VALUE ).trim();
             }
 
+            if ( m.containsKey( PARAMETER_CONFIG ) ) {
+                config = m.get( PARAMETER_CONFIG ).trim();
+            }
+
             ModelEntity me = _p.getEntity( entityName );
 
             if( method.equalsIgnoreCase( "GET" ) ) {
                 configValue = Framework.GetConfig( _p, entityName );
+                if( configValue == null ) {
+                    configValue = "null";
+                }
+                if( configValue.length() == 0 ) {
+                    configValue = "{}";
+                }
                 response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_VALUE + "\" : " + configValue + " }";
             }
             else if ( method.equalsIgnoreCase( "POST" ) || method.equalsIgnoreCase( "PUT" ) ) {
-                Framework.SetConfig( _p, entityName, configPath, configValue );
-                _p.setEntity( me );
-                response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_PATH + "\" : \"" + configPath + "\", \"" + PARAMETER_VALUE + "\" : \"" + configValue + "\" }";
+                if( config != null ) {
+                    me.config = config; // replace entire config
+                    _p.setEntity( me );
+                    response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_VALUE + "\" : " + config + " }";
+                }
+                else {
+                    Framework.SetConfig(_p, entityName, configPath, configValue);
+                    response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_PATH + "\" : \"" + configPath + "\", \"" + PARAMETER_VALUE + "\" : \"" + configValue + "\" }";
+                }
             }
 
             status = 200;
