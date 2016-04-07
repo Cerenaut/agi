@@ -28,9 +28,10 @@ import java.awt.image.BufferedImage;
  */
 public class ImageScreenScraper implements Callback {
 
-    private Rectangle _receptiveField;
-    private BufferedImageSource _bis;
-    private ImageData _imageData;
+    protected Rectangle _receptiveField;
+    protected BufferedImageSource _bis;
+    protected ImageData _imageData;
+    protected boolean _invert;
 
     public ImageScreenScraper() {
     }
@@ -41,7 +42,7 @@ public class ImageScreenScraper implements Callback {
      * @param bis
      * @param greyscale
      */
-    public void setup( BufferedImageSource bis, int xResolution, int yResolution, boolean greyscale ) {
+    public void setup( BufferedImageSource bis, int xResolution, int yResolution, boolean greyscale, boolean invert ) {
         AbstractPair< Integer, Integer > ap = bis.getImageSize();
         int w = ap._first;
         int h = ap._second;
@@ -49,7 +50,7 @@ public class ImageScreenScraper implements Callback {
         Rectangle receptiveField = new Rectangle( 0, 0, w, h ); // the area of the image scanned
         Point resolution = new Point( xResolution, yResolution );
 
-        setup( bis, receptiveField, resolution, greyscale );
+        setup( bis, receptiveField, resolution, greyscale, invert );
     }
 
     /**
@@ -61,7 +62,7 @@ public class ImageScreenScraper implements Callback {
      * @param receptiveField the area of the getImage to be analysed
      * @param resolution     the resolution of the sensor (output of the analysis)
      */
-    public void setup( BufferedImageSource bis, Rectangle receptiveField, Point resolution, boolean greyscale ) {
+    public void setup( BufferedImageSource bis, Rectangle receptiveField, Point resolution, boolean greyscale, boolean invert ) {
 
         _bis = bis;
         _receptiveField = new Rectangle( receptiveField );
@@ -72,6 +73,8 @@ public class ImageScreenScraper implements Callback {
         }
 
         _imageData = new ImageData( resolution, channels );
+
+        _invert = invert;
     }
 
     /**
@@ -116,6 +119,10 @@ public class ImageScreenScraper implements Callback {
         _imageData._d.set( 0.0f );
 
         _imageData.setWithBufferedImage( biTgt );
+
+        if( _invert ) {
+            _imageData.getData().argSub(1.f);
+        }
     }
 
     public BufferedImageSource getSource() {

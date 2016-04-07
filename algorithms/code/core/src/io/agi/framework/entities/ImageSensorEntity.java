@@ -63,10 +63,10 @@ public class ImageSensorEntity extends Entity {
 
         if ( isReceptiveFieldSet( config.receptiveField.receptiveFieldX, config.receptiveField.receptiveFieldY,
                 config.receptiveField.receptiveFieldW, config.receptiveField.receptiveFieldH ) ) {
-            imageScreenScraper.setup( bufferedImageSource, config.getReceptiveField(), config.getResolution(), config.greyscale );
+            imageScreenScraper.setup( bufferedImageSource, config.getReceptiveField(), config.getResolution(), config.greyscale, config.invert );
         }
         else {
-            imageScreenScraper.setup( bufferedImageSource, config.resolution.resolutionX, config.resolution.resolutionY, config.greyscale );
+            imageScreenScraper.setup( bufferedImageSource, config.resolution.resolutionX, config.resolution.resolutionY, config.greyscale, config.invert );
         }
 
         boolean inRange = bufferedImageSource.seek( config.imageIndex );

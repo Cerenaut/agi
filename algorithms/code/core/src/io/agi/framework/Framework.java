@@ -134,7 +134,7 @@ public class Framework {
         parent.addProperty( part, value );
 
         // re-serialize the whole thing
-        me.config = root.getAsString();
+        me.config = root.toString();//getAsString();
         p.setEntity( me );
     }
 

@@ -11,5 +11,6 @@ public class EncoderConfig extends EntityConfig {
     String encoderType = ScalarEncoder.class.getSimpleName();
     int bits = 8;
     int density = 1;
+    boolean encodeZero = true;
 
 }

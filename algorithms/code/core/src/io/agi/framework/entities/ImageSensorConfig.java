@@ -24,6 +24,7 @@ public class ImageSensorConfig extends EntityConfig {
     ReceptiveField receptiveField;
     Resolution resolution;
     boolean greyscale;
+    boolean invert;
 
     String sourceFilesPath;
     String sourceType;

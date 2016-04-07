@@ -25,8 +25,9 @@ public interface SparseDistributedEncoder {
      *
      * @param bits    The size (in bits) of the output of the encoder.
      * @param density The number of 'on' bits in the output SDR.
+     * @param encodeZero Whether the zero input should produce active output bits.
      */
-    void setup( int bits, int density );
+    void setup( int bits, int density, boolean encodeZero );
 
     /**
      * Create a suitably sized output structure for the given input.
