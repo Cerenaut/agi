@@ -222,29 +222,6 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
         return models;
     }
 
-//    public Map< String, String > getConfig( String filter ) {
-//        // https://forums.couchbase.com/t/wildcard-search-using-couchbase-views/3545
-//        HashMap< String, String > hm = new HashMap< String, String >();
-//        String filter1 = filter;
-//        String filter2 = filter + "\\uefff";
-//        ViewResult result = _b.query(
-//                ViewQuery
-//                        .from( "persistence", "all_properties" )
-//                        .startKey( filter1 )
-//                        .endKey( filter2 )
-//                        .inclusiveEnd( true )
-//        );
-//        List< ViewRow > l = result.allRows();
-//        for ( ViewRow r : l ) {
-//            JsonObject jo = r.document().content();
-//            String key = jo.getString( PROPERTY_KEY );
-//            String value = jo.getString( PROPERTY_PROPERTY_VALUE );
-//            hm.put( key, value );
-//        }
-//
-//        return hm;
-//    }
-
     // Nodes
     public void setNode( ModelNode m ) {
         String key = GetKey( KEY_PREFIX_NODE, m._name );
@@ -352,24 +329,4 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
         remove( key );
     }
 
-//    public String getPropertyString( String propertyKey, String defaultValue ) {
-//        String key = GetKey( KEY_PREFIX_PROPERTY, propertyKey );
-//        JsonDocument loaded = _b.get( key );
-//        if ( loaded == null ) {
-//            return null;
-//        }
-//        else {
-//            String value = loaded.content().getString( PROPERTY_PROPERTY_VALUE );
-//            return value;
-//        }
-//    }
-//
-//    public void setPropertyString( String propertyKey, String value ) {
-//        String key = GetKey( KEY_PREFIX_PROPERTY, propertyKey );
-//        JsonObject jo = JsonObject.empty()
-//                .put( PROPERTY_KEY, propertyKey )
-//                .put( PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_PROPERTY )
-//                .put( PROPERTY_PROPERTY_VALUE, value );
-//        JsonDocument response = upsert( key, jo );
-//    }
 }
