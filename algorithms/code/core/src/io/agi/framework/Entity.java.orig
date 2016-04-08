@@ -105,7 +105,11 @@ public abstract class Entity extends NamedObject implements EntityListener {
         Class configClass = getConfigClass();
         Gson gson = new Gson();
         String configString = _model.config;
+<<<<<<< HEAD
+        if ( configString == null ) {
+=======
         if( ( configString == null ) || ( configString.length() == 0 ) ) {
+>>>>>>> 14cf80210ce3a4cf0235e9dc6c6fe61259e783e3
             configString = "{}";
         }
         EntityConfig config = ( EntityConfig ) gson.fromJson( configString, configClass );

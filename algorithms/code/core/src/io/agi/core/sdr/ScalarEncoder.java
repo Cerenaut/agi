@@ -34,9 +34,10 @@ public class ScalarEncoder implements SparseDistributedEncoder {
 
     }
 
-    public void setup( int bits, int density ) {
+    public void setup( int bits, int density, boolean encodeZero ) {
         _bits = bits;
         _density = density;
+        _encodeZero = encodeZero;
     }
 
     public int getBins() {

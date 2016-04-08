@@ -175,7 +175,7 @@ public class RegionEntity extends Entity {
 
     @Override
     public Class getConfigClass() {
-        return RegionConfig.class;
+        return io.agi.framework.entities.RegionConfig.class;
     }
 
     protected void doUpdateSelf() {

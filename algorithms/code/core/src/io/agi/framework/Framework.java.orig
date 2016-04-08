@@ -115,9 +115,15 @@ public class Framework {
         int index = 0;
         int maxIndex = pathParts.length - 1; // NOTE: one before the one we're looking for
         String part = null;
+<<<<<<< HEAD
+        if ( pathParts.length == 0 ) {
+            part = configPath;
+        }
+=======
 //        if( pathParts.length < 2 ) { // i.e. 0 or 1
 //            part = configPath;
 //        }
+>>>>>>> 14cf80210ce3a4cf0235e9dc6c6fe61259e783e3
 
         while ( index < maxIndex ) {
             part = pathParts[ index ];
@@ -135,8 +141,13 @@ public class Framework {
         parent.addProperty( part, value );
 
         // re-serialize the whole thing
-        me.config = root.toString();//getAsString();
+<<<<<<< HEAD
+        me.config = root.getAsString();
         p.persistEntity( me );
+=======
+        me.config = root.toString();//getAsString();
+        p.setEntity( me );
+>>>>>>> 14cf80210ce3a4cf0235e9dc6c6fe61259e783e3
     }
 
     public static JsonElement GetNestedProperty( JsonObject root, String path ) {

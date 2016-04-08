@@ -24,6 +24,22 @@ public class MNISTDemo {
         Main m = new Main();
         m.setup( args[ 0 ], null, new CommonEntityFactory() );
 
+<<<<<<< HEAD
+        // Create custom entities and references
+        if ( args.length > 1 ) {
+            Framework.LoadEntities( m._n, args[ 1 ] );
+        }
+
+        if ( args.length > 2 ) {
+            Framework.LoadDataReferences( m._p, args[ 2 ] );
+        }
+
+        if ( args.length > 3 ) {
+            Framework.LoadConfigs( m._p, args[ 3 ] );
+        }
+
+=======
+>>>>>>> 14cf80210ce3a4cf0235e9dc6c6fe61259e783e3
         // Programmatic hook to create entities and references..
         createEntities( m._n );
 

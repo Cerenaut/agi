@@ -13,6 +13,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
+ * NOTE: Run with the following virtual machine (VM) arguments:
+ *
+ * -Xms2000m  -Dlog4j.configurationFile=file:./log4j2.xml
+ *
  * Created by dave on 6/03/16.
  */
 public class Main {

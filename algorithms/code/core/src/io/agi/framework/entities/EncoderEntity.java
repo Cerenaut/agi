@@ -19,8 +19,8 @@ public class EncoderEntity extends Entity {
     public static final String ENTITY_TYPE = "encoder";
 
     // data
-    private static final String DATA_INPUT = "data-input";
-    private static final String DATA_OUTPUT = "data-output";
+    public static final String DATA_INPUT = "data-input";
+    public static final String DATA_OUTPUT = "data-output";
 
     public EncoderEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
@@ -52,7 +52,7 @@ public class EncoderEntity extends Entity {
             return;
         }
 
-        encoder.setup( config.bits, config.density );
+        encoder.setup( config.bits, config.density, config.encodeZero );
 
         Data input = getData( DATA_INPUT );
         Data output = encoder.createEncodingOutput( input );

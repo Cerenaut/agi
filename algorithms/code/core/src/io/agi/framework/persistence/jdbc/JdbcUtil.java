@@ -29,37 +29,38 @@ public class JdbcUtil {
         Connection c = null;
         Statement s = null;
         try {
-            c = DriverManager.getConnection( dbUrl, user, password );
+            c = DriverManager.getConnection(dbUrl, user, password);
 
             //STEP 4: Execute a query
-            logger.info( "JDBC T: {} @1 jdbc = {}", System.currentTimeMillis(), sql );
+            //logger.info( "JDBC T: {} @1 jdbc = {}", System.currentTimeMillis(), sql );
             s = c.createStatement();
-            logger.info( "JDBC T: {} @2 ", System.currentTimeMillis() );
-            s.execute( sql );
-            logger.info( "JDBC T: {} @3 ", System.currentTimeMillis() );
+            //logger.info( "JDBC T: {} @2 ", System.currentTimeMillis() );
+            s.execute(sql);
+            //logger.info( "JDBC T: {} @3 ", System.currentTimeMillis() );
 
             //STEP 6: Clean-up environment
             s.close();
             c.close();
         }
         catch ( SQLException se ) {
-            se.printStackTrace();
+            logger.error(se.getStackTrace());
         }
         catch ( Exception e ) {
-            e.printStackTrace();
+            logger.error(e.getStackTrace() );
         }
         finally {
             try {
                 if ( s != null ) s.close();
             }
             catch ( SQLException se2 ) {
+                logger.error(se2.getStackTrace());
             }
 
             try {
                 if ( c != null ) c.close();
             }
             catch ( SQLException se ) {
-                se.printStackTrace();
+                logger.error(se.getStackTrace() );
             }
 
         }
@@ -96,23 +97,24 @@ public class JdbcUtil {
             c.close();
         }
         catch ( SQLException se ) {
-            se.printStackTrace();
+            logger.error(se.getStackTrace());
         }
         catch ( Exception e ) {
-            e.printStackTrace();
+            logger.error(e.getStackTrace());
         }
         finally {
             try {
                 if ( s != null ) s.close();
             }
             catch ( SQLException se2 ) {
+                logger.error( se2.getStackTrace() );
             }
 
             try {
                 if ( c != null ) c.close();
             }
             catch ( SQLException se ) {
-                se.printStackTrace();
+                logger.error(se.getStackTrace());
             }
 
         }
@@ -139,7 +141,7 @@ public class JdbcUtil {
             return c;
         }
         catch ( Exception e ) {
-            e.printStackTrace();
+            logger.error( e.getStackTrace() );
             return null;
         }
     }
