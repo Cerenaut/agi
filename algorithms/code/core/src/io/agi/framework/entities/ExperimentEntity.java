@@ -20,7 +20,7 @@ import java.util.Collection;
  * - Import/Export: Allow import and export of complete subtree to disk.
  * - Logging: Log variables of interest as they change over time.
  * - Flush: All children can be flushed from the Node Cache on demand, or on export.
- *
+ * <p>
  * Created by gideon on 20/03/2016.
  */
 public class ExperimentEntity extends Entity {
@@ -49,22 +49,22 @@ public class ExperimentEntity extends Entity {
     protected void doUpdateSelf() {
 
         // Get all the parameters:
-        ExperimentConfig config = (ExperimentConfig) _config;
+        ExperimentConfig config = ( ExperimentConfig ) _config;
 
         Persistence p = _n.getPersistence();
 
         try {
             String stringValue = Framework.GetConfig( p, config.terminationEntityName, config.terminationConfigPath );
 
-            Boolean b = Boolean.valueOf(stringValue);
+            Boolean b = Boolean.valueOf( stringValue );
 
-            if( b != null ) {
-                if( b ) {
+            if ( b != null ) {
+                if ( b ) {
                     config.terminate = true;
                 }
             }
         }
-        catch( Exception e ) {
+        catch ( Exception e ) {
             // this is ok, the experiment is just not configured to have a termination condition
         }
     }
@@ -72,9 +72,9 @@ public class ExperimentEntity extends Entity {
     protected void afterUpdate() {
         super.afterUpdate();
 
-        ExperimentConfig config = (ExperimentConfig) _config;
+        ExperimentConfig config = ( ExperimentConfig ) _config;
 
-        if( ( !config.terminate ) && ( !config.pause ) ) {
+        if ( ( !config.terminate ) && ( !config.pause ) ) {
             _n.requestUpdate( getName() ); // queue another update.
         }
     }

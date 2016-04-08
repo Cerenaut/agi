@@ -6,7 +6,6 @@ import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
-import io.agi.framework.entities.ConstantMatrixConfig;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;

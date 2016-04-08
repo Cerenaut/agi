@@ -31,16 +31,16 @@ public class MNISTDemo {
         m.setup( args[ 0 ], null, new CommonEntityFactory() );
 
         // Create custom entities and references
-        if( args.length > 1 ) {
-            Framework.LoadEntities( m._n, args[1] );
+        if ( args.length > 1 ) {
+            Framework.LoadEntities( m._n, args[ 1 ] );
         }
 
-        if( args.length > 2 ) {
-            Framework.LoadDataReferences( m._p, args[2] );
+        if ( args.length > 2 ) {
+            Framework.LoadDataReferences( m._p, args[ 2 ] );
         }
 
-        if( args.length > 3 ) {
-            Framework.LoadConfigs( m._p, args[3] );
+        if ( args.length > 3 ) {
+            Framework.LoadConfigs( m._p, args[ 3 ] );
         }
 
         // Programmatic hook to create entities and references..

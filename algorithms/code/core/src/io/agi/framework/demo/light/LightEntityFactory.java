@@ -2,7 +2,6 @@ package io.agi.framework.demo.light;
 
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.Entity;
-import io.agi.framework.entities.ExperimentEntity;
 import io.agi.framework.factories.CommonEntityFactory;
 import io.agi.framework.persistence.models.ModelEntity;
 

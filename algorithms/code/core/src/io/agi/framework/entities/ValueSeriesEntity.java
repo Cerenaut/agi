@@ -11,12 +11,11 @@ import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
-import java.util.Random;
 
 /**
  * Creates a rolling window of values from a property, captured over time. The window is updated every update() with a
  * new value from the property. The oldest value is discarded.
- *
+ * <p>
  * Created by dave on 2/04/16.
  */
 public class ValueSeriesEntity extends Entity {
@@ -43,24 +42,24 @@ public class ValueSeriesEntity extends Entity {
     protected void doUpdateSelf() {
 
         // Get all the parameters:
-        ValueSeriesConfig config = (ValueSeriesConfig)_config;
+        ValueSeriesConfig config = ( ValueSeriesConfig ) _config;
 
-        Data output = getDataLazyResize(OUTPUT, DataSize.create(config.period));
+        Data output = getDataLazyResize( OUTPUT, DataSize.create( config.period ) );
 
         Persistence p = _n.getPersistence();
 
         String stringValue = Framework.GetConfig( p, config.entityName, config.configPath );
         Float newValue = Float.valueOf( stringValue );
 
-        if( newValue == null ) {
+        if ( newValue == null ) {
             newValue = 0.f;
         }
 
         // shift all the old values 1 place
-        for( int i1 = 0; i1 < config.period; ++i1 ) {
+        for ( int i1 = 0; i1 < config.period; ++i1 ) {
 
-            int i2 = i1+1;
-            if( i2 >= config.period ) {
+            int i2 = i1 + 1;
+            if ( i2 >= config.period ) {
                 continue;
             }
 

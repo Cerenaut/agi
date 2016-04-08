@@ -154,7 +154,7 @@ public class JdbcPersistence implements Persistence {
         return children;
     }
 
-    public void setEntity( ModelEntity e ) {
+    public void persistEntity( ModelEntity e ) {
         // https://www.sitepoint.com/community/t/how-to-use-on-duplicate-key-update-in-postgresql-with-php/200335/4
         String sql1 = "UPDATE entities SET type = '" + e.type + "', node = '" + e.node + "', parent = '" + e.parent + "', config = '" + e.config + "' WHERE name = '" + e.name + "'";
         execute( sql1 );
@@ -162,7 +162,7 @@ public class JdbcPersistence implements Persistence {
         execute( sql2 );
     }
 
-    public ModelEntity getEntity( String name ) {
+    public ModelEntity fetchEntity( String name ) {
         String sql = "SELECT type, node, parent, config FROM entities where name = '" + name + "'";
         ResultSetMap rsm = new ResultSetMap();
         rsm._fields.add( "type" );

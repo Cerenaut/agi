@@ -247,10 +247,10 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
 
     // Nodes
     public void setNode( ModelNode m ) {
-        String key = GetKey( KEY_PREFIX_NODE, m._name);
+        String key = GetKey( KEY_PREFIX_NODE, m._name );
         JsonObject jo = JsonObject.empty()
                 .put( PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_NODE )
-                .put( PROPERTY_KEY, m._name)
+                .put( PROPERTY_KEY, m._name )
                 .put( PROPERTY_NODE_HOST, m._host )
                 .put( PROPERTY_NODE_PORT, m._port );
         JsonDocument response = upsert( key, jo );
@@ -287,7 +287,7 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
 
 
     // Entities
-    public void setEntity( ModelEntity m ) {
+    public void persistEntity( ModelEntity m ) {
         String key = GetKey( KEY_PREFIX_ENTITY, m.name );
         JsonObject jo = JsonObject.empty()
                 .put( PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_ENTITY )
@@ -299,7 +299,7 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
         JsonDocument response = upsert( key, jo );
     }
 
-    public ModelEntity getEntity( String entityKey ) {
+    public ModelEntity fetchEntity( String entityKey ) {
         String key = GetKey( KEY_PREFIX_ENTITY, entityKey );
         JsonDocument loaded = _b.get( key );
         if ( loaded == null ) {
@@ -322,10 +322,10 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
 
     // Data
     public void setData( ModelData m ) {
-        String key = GetKey( KEY_PREFIX_DATA, m._name);
+        String key = GetKey( KEY_PREFIX_DATA, m._name );
         JsonObject jo = JsonObject.empty()
                 .put( PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_DATA )
-                .put( PROPERTY_KEY, m._name)
+                .put( PROPERTY_KEY, m._name )
                 .put( PROPERTY_DATA_ELEMENTS, m._elements )
                 .put( PROPERTY_DATA_REF_KEY, m._refKeys )
                 .put( PROPERTY_DATA_SIZES, m._sizes );

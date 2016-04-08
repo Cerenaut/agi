@@ -27,7 +27,7 @@ public class LightSourceEntity extends Entity {
     }
 
     public void getInputKeys( Collection< String > keys ) {
-        keys.add(CONTROL_INPUT);
+        keys.add( CONTROL_INPUT );
     }
 
     public void getOutputKeys( Collection< String > keys, DataFlags flags ) {

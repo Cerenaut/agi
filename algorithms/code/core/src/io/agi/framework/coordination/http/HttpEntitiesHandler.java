@@ -44,7 +44,7 @@ public class HttpEntitiesHandler implements HttpHandler {
                 String key = ap._first;
                 String value = ap._second;
                 if ( key.equalsIgnoreCase( PARAMETER_NAME ) ) {
-                    ModelEntity m = _p.getEntity( value );
+                    ModelEntity m = _p.fetchEntity( value );
 
                     if ( results == null ) {
                         results = new ArrayList< ModelEntity >();

@@ -31,8 +31,6 @@ public class ImageSensorEntity extends Entity {
     public static final String ENTITY_TYPE = "image-sensor";
     public static final String IMAGE_DATA = "image-data";
 
-//    ImageSensorConfig _properties = null;
-
     public ImageSensorEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
     }

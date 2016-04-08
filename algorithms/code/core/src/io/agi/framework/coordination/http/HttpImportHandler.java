@@ -7,7 +7,6 @@ import io.agi.framework.persistence.Persistence;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 /**
  * Created by dave on 2/04/16.
@@ -18,7 +17,7 @@ public class HttpImportHandler implements HttpHandler {
 
     public Persistence _p;
 
-    public HttpImportHandler(Persistence p) {
+    public HttpImportHandler( Persistence p ) {
         _p = p;
     }
 
@@ -29,17 +28,17 @@ public class HttpImportHandler implements HttpHandler {
 
         try {
             InputStream is = t.getRequestBody();
-            java.util.Scanner s = new java.util.Scanner( is ).useDelimiter("\\A");
+            java.util.Scanner s = new java.util.Scanner( is ).useDelimiter( "\\A" );
             String subtree = s.hasNext() ? s.next() : "";
             boolean b = Framework.ImportSubtree( _p, subtree );
-            if( b ) {
+            if ( b ) {
                 status = 200;
             }
         }
-        catch( Exception e ) {
+        catch ( Exception e ) {
             e.printStackTrace();
         }
 
-        HttpUtil.SendResponse(t, status, response);
+        HttpUtil.SendResponse( t, status, response );
     }
 }

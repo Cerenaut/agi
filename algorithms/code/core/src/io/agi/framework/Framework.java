@@ -16,7 +16,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Type;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -42,9 +41,9 @@ public class Framework {
             String inputSuffix,
             String referenceEntity,
             String referenceSuffix ) {
-        String inputKey = NamedObject.GetKey(inputEntity, inputSuffix);
+        String inputKey = NamedObject.GetKey( inputEntity, inputSuffix );
         String refKey = NamedObject.GetKey( referenceEntity, referenceSuffix );
-        SetDataReference(p, inputKey, refKey);
+        SetDataReference( p, inputKey, refKey );
     }
 
     /**
@@ -58,14 +57,14 @@ public class Framework {
             Persistence p,
             String dataKey,
             String refKeys ) {
-        ModelData modelData = p.getData(dataKey);
+        ModelData modelData = p.getData( dataKey );
 
         if ( modelData == null ) {
             modelData = new ModelData( dataKey, refKeys );
         }
 
         modelData._refKeys = refKeys;
-        p.setData(modelData);
+        p.setData( modelData );
     }
 
     /**
@@ -75,7 +74,7 @@ public class Framework {
      * @param configPath
      */
     public static String GetConfig( Persistence p, String entityName, String configPath ) {
-        ModelEntity me = p.getEntity(entityName);
+        ModelEntity me = p.fetchEntity( entityName );
         JsonParser parser = new JsonParser();
         JsonObject jo = parser.parse( me.config ).getAsJsonObject();
 
@@ -93,8 +92,8 @@ public class Framework {
      * @return
      */
     public static String GetConfig( Persistence p, String entityName ) {
-        ModelEntity me = p.getEntity(entityName);
-        if( me == null ) {
+        ModelEntity me = p.fetchEntity( entityName );
+        if ( me == null ) {
             return null;
         }
 
@@ -103,10 +102,9 @@ public class Framework {
 
     /**
      * Allows a single config property to be modified.
-     *
      */
     public static void SetConfig( Persistence p, String entityName, String configPath, String value ) {
-        ModelEntity me = p.getEntity( entityName );
+        ModelEntity me = p.fetchEntity( entityName );
         JsonParser parser = new JsonParser();
         JsonObject root = parser.parse( me.config ).getAsJsonObject();
 
@@ -116,7 +114,7 @@ public class Framework {
         int index = 0;
         int maxIndex = pathParts.length - 2; // NOTE: one before the one we're looking for
         String part = null;
-        if( pathParts.length == 0 ) {
+        if ( pathParts.length == 0 ) {
             part = configPath;
         }
 
@@ -135,7 +133,7 @@ public class Framework {
 
         // re-serialize the whole thing
         me.config = root.getAsString();
-        p.setEntity( me );
+        p.persistEntity( me );
     }
 
     public static JsonElement GetNestedProperty( JsonObject root, String path ) {
@@ -162,6 +160,7 @@ public class Framework {
 
     /**
      * Create an entity as specified, and generate its config so it is persisted to disk.
+     *
      * @param n
      * @param name
      * @param type
@@ -170,16 +169,16 @@ public class Framework {
      */
     public static void CreateEntity( Node n, String name, String type, String node, String parent ) {
         String config = "";
-        ModelEntity model = new ModelEntity(name, type, node, parent, config);
+        ModelEntity model = new ModelEntity( name, type, node, parent, config );
         CreateEntity( n, model );
     }
 
     public static void CreateEntity( Node n, ModelEntity model ) {
-        Entity entity = n.getEntityFactory().create(n.getObjectMap(), model);
+        Entity entity = n.getEntityFactory().create( n.getObjectMap(), model );
         EntityConfig entityConfig = entity.createConfig();
-        model.config = Entity.SerializeConfig(entityConfig);
+        model.config = Entity.SerializeConfig( entityConfig );
         Persistence p = n.getPersistence();
-        p.setEntity(model);
+        p.persistEntity( model );
     }
 
     public static void LoadEntities( Node n, String file ) {
@@ -193,8 +192,7 @@ public class Framework {
             List< ModelEntity > entities = gson.fromJson( jsonEntity, listType );
 
             for ( ModelEntity modelEntity : entities ) {
-                logger.info("Persisting Entity of type: " + modelEntity.type + ", that is hosted at Node: " + modelEntity.node);
-                //p.setEntity( modelEntity );
+                logger.info( "Persisting Entity of type: " + modelEntity.type + ", that is hosted at Node: " + modelEntity.node );
                 CreateEntity( n, modelEntity );
             }
         }
@@ -215,7 +213,7 @@ public class Framework {
             List< ModelDataReference > references = gson.fromJson( jsonEntity, listType );
             for ( ModelDataReference modelDataReference : references ) {
                 logger.info( "Persisting data input reference for data: " + modelDataReference.dataKey + " with input data keys: " + modelDataReference.refKeys );
-                Framework.SetDataReference(p, modelDataReference.dataKey, modelDataReference.refKeys);
+                Framework.SetDataReference( p, modelDataReference.dataKey, modelDataReference.refKeys );
             }
         }
         catch ( Exception e ) {
@@ -229,15 +227,15 @@ public class Framework {
         try {
             String jsonEntity = FileUtil.readFile( file );
 
-            Type listType = new TypeToken< List<ModelEntityConfigPath> >() {
+            Type listType = new TypeToken< List< ModelEntityConfigPath > >() {
             }.getType();
-            List<ModelEntityConfigPath> modelConfigs = gson.fromJson( jsonEntity, listType );
+            List< ModelEntityConfigPath > modelConfigs = gson.fromJson( jsonEntity, listType );
 
             for ( ModelEntityConfigPath modelConfig : modelConfigs ) {
 
-                logger.info( "Persisting entity: " + modelConfig._entityName + " config path: " + modelConfig._configPath  + " value: " + modelConfig._configValue );
+                logger.info( "Persisting entity: " + modelConfig._entityName + " config path: " + modelConfig._configPath + " value: " + modelConfig._configValue );
 
-                Framework.SetConfig(p, modelConfig._entityName, modelConfig._configPath, modelConfig._configValue);
+                Framework.SetConfig( p, modelConfig._entityName, modelConfig._configPath, modelConfig._configValue );
             }
         }
         catch ( Exception e ) {

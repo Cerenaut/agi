@@ -1,12 +1,15 @@
 package io.agi.framework.demo.region;
 
-import io.agi.core.orm.Keys;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
-import io.agi.framework.*;
-import io.agi.framework.entities.*;
+import io.agi.framework.Entity;
+import io.agi.framework.Framework;
+import io.agi.framework.Main;
+import io.agi.framework.Node;
+import io.agi.framework.entities.ConstantMatrixEntity;
+import io.agi.framework.entities.ImageSensorEntity;
+import io.agi.framework.entities.RegionEntity;
 import io.agi.framework.factories.CommonEntityFactory;
 import io.agi.framework.persistence.Persistence;
-import io.agi.framework.persistence.models.ModelEntity;
 
 /**
  * Created by dave on 26/03/16.
@@ -28,16 +31,16 @@ public class RegionDemo {
         m.setup( args[ 0 ], null, ef );
 
         // Create custom entities and references
-        if( args.length > 1 ) {
-            Framework.LoadEntities( m._n, args[1] );
+        if ( args.length > 1 ) {
+            Framework.LoadEntities( m._n, args[ 1 ] );
         }
 
-        if( args.length > 2 ) {
-            Framework.LoadDataReferences(m._p, args[2]);
+        if ( args.length > 2 ) {
+            Framework.LoadDataReferences( m._p, args[ 2 ] );
         }
 
-        if( args.length > 3 ) {
-            Framework.LoadConfigs( m._p, args[3] );
+        if ( args.length > 3 ) {
+            Framework.LoadConfigs( m._p, args[ 3 ] );
         }
 
         // Programmatic hook to Create entities and references..
@@ -62,7 +65,7 @@ public class RegionDemo {
         Persistence p = n.getPersistence();
 
         Framework.SetDataReference( p, regionName, RegionEntity.FF_INPUT, imageSourceName, ImageSensorEntity.IMAGE_DATA );
-        Framework.SetDataReference(p, regionName, RegionEntity.FB_INPUT, constantMatrixName, ConstantMatrixEntity.OUTPUT);
+        Framework.SetDataReference( p, regionName, RegionEntity.FB_INPUT, constantMatrixName, ConstantMatrixEntity.OUTPUT );
 
         // Set properties
         Framework.SetConfig( p, regionName, Entity.SUFFIX_RESET, "true" );

@@ -17,9 +17,6 @@ public interface Persistence {
 //               Could be JSON string for entities: { name: xxx, type: yyy } etc
 
 
-//    Collection<String> getChildren(String name);
-//    Collection<String> getNodes();
-
     // Nodes
     Collection< ModelNode > getNodes(); // list all
 
@@ -34,24 +31,17 @@ public interface Persistence {
 
     Collection< String > getChildEntities( String parent );
 
-    void setEntity( ModelEntity m );
+    void persistEntity( ModelEntity m );
 
-    ModelEntity getEntity( String name );
+    ModelEntity fetchEntity( String name );
 
     void removeEntity( String name );
 
     // Data
-//    Collection< String > getDataKeys();
-
     void setData( ModelData m );
 
     ModelData getData( String name );
 
     void removeData( String name );
 
-    // Properties
-//    Map< String, String > getConfig( String filter );
-//
-//    void getProperties( String key, EntityConfig _configPathValues );
-//    void setProperties( String key, EntityConfig _configPathValues );
 }

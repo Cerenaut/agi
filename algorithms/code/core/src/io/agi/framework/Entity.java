@@ -105,7 +105,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
         Class configClass = getConfigClass();
         Gson gson = new Gson();
         String configString = _model.config;
-        if( configString == null ) {
+        if ( configString == null ) {
             configString = "{}";
         }
         EntityConfig config = ( EntityConfig ) gson.fromJson( configString, configClass );
@@ -133,9 +133,9 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         // Require all children to flush on next update.
         // They can only be updated by this class, so we know they will respect the flush.
-        if( _flushChildren ) {
-            for (String childName : childNames) {
-                Framework.SetConfig(p, childName, SUFFIX_FLUSH, "true");
+        if ( _flushChildren ) {
+            for ( String childName : childNames ) {
+                Framework.SetConfig( p, childName, SUFFIX_FLUSH, "true" );
             }
         }
 
@@ -160,7 +160,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
     protected void beforeUpdate() {
         String entityName = getName();
         int age = _config.age; // getPropertyInt( SUFFIX_AGE, 1 );
-        logger.info("START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName);
+        logger.info( "START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName );
     }
 
     protected void afterUpdate() {
@@ -168,7 +168,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
         int age = _config.age; // getPropertyInt(SUFFIX_AGE, 1);
         logger.info( "END   T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity updated: " + entityName );
 
-        _n.notifyUpdated(entityName); // this entity, the parent, is now complete
+        _n.notifyUpdated( entityName ); // this entity, the parent, is now complete
     }
 
     public void onEntityUpdated( String entityName ) {
@@ -191,9 +191,6 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
     protected void updateSelf() {
 
-        // 3. fetch _configPathValues
-        // get all the _configPathValues and put them in the _configPathValues map.
-//        _config = getConfig();
 
         // 1. fetch inputs
         // get all the inputs and put them in the object map.
@@ -251,7 +248,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
     protected void persistConfig() {
         _model.config = SerializeConfig( _config );
         Persistence p = _n.getPersistence();
-        p.setEntity( _model );
+        p.persistEntity( _model );
     }
 //    public static String GetConfigName( String entityName, Object object ) {
 //        return Keys.concatenate( entityName, object.getClass().getSimpleName() );
@@ -350,8 +347,6 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
     public void persistData( Collection< String > keys ) {
         Persistence p = _n.getPersistence();
-
-//        _flush = _config.flush;
 
         for ( String keySuffix : keys ) {
             String inputKey = getKey( keySuffix );

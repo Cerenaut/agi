@@ -132,8 +132,8 @@ public class Node {
 //        int count = _p.getEntityAge(entityName);
 //        count += 1;
 //        _p.setEntityAge(entityName, count);
-        logger.info(" %%Unlock%% " + entityName);
-        unlock(entityName);
+        logger.info( " %%Unlock%% " + entityName );
+        unlock( entityName );
 
         // broadcast to any distributed listeners:
         _c.onUpdated( entityName );
@@ -166,13 +166,13 @@ public class Node {
      */
     public void doUpdate( String entityName ) {
 
-        ModelEntity modelEntity = _p.getEntity( entityName );
+        ModelEntity modelEntity = _p.fetchEntity( entityName );
 
-        if( modelEntity == null ) {
+        if ( modelEntity == null ) {
             return; // bad entity
         }
 
-        if( !modelEntity.node.equals( getName() ) ) {
+        if ( !modelEntity.node.equals( getName() ) ) {
             return;
         }
 
@@ -189,13 +189,13 @@ public class Node {
             @Override
             public void run() {
                 // block forked thread forking until entity can be updated.
-                if( !lock( entityName ) ) {
+                if ( !lock( entityName ) ) {
                     return;
                 }
 
-                logger.info(" %%Lock%% " + entityName);
+                logger.info( " %%Lock%% " + entityName );
 
-                ModelEntity modelEntity = _p.getEntity( entityName ); // NOTE: Can't get the model entity UNTIL I have the lock, or the model might be out of date.
+                ModelEntity modelEntity = _p.fetchEntity( entityName ); // NOTE: Can't get the model entity UNTIL I have the lock, or the model might be out of date.
 
                 Entity e = _ef.create( _om, modelEntity );
 
@@ -208,16 +208,16 @@ public class Node {
     public boolean lock( String entityName ) {
         Semaphore s = getLock( entityName );
 
-        logger.info("Thread " + Thread.currentThread().hashCode() + " waiting for " + entityName);
+        logger.info( "Thread " + Thread.currentThread().hashCode() + " waiting for " + entityName );
         try {
             s.acquire();
         }
         catch ( InterruptedException ie ) {
-            logger.info("Thread " + Thread.currentThread().hashCode() + " cant get lock for " + entityName);
+            logger.info( "Thread " + Thread.currentThread().hashCode() + " cant get lock for " + entityName );
             return false;
         }
 
-        logger.info("Thread " + Thread.currentThread().hashCode() + " has lock for " + entityName);
+        logger.info( "Thread " + Thread.currentThread().hashCode() + " has lock for " + entityName );
 
         return true;
     }
