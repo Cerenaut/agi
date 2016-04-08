@@ -33,8 +33,6 @@ public class JdbcPersistence implements Persistence {
     protected String _password;
     protected String _url; // e.g. jdbc:postgresql://localhost:5432/agidb"; // https://jdbc.postgresql.org/documentation/80/connect.html
 
-    HashMap< String, Class > _keyToType;
-
     private static final Logger logger = LogManager.getLogger();
 
     public JdbcPersistence() {

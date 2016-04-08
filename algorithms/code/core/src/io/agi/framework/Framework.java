@@ -16,6 +16,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -24,7 +26,7 @@ import java.util.List;
  */
 public class Framework {
 
-    private static final Logger logger = LogManager.getLogger();
+    protected static final Logger logger = LogManager.getLogger();
 
     /**
      * Modifies the database to make the reference _entityName-suffix Data a reference input to the input _entityName-suffix.
@@ -184,6 +186,12 @@ public class Framework {
         p.persistEntity( model );
     }
 
+    /**
+     * Create entities in the persistence layer, represented in the file (see file format).
+     * TODO document the file format
+     * @param n
+     * @param file
+     */
     public static void LoadEntities( Node n, String file ) {
         Gson gson = new Gson();
 
@@ -204,6 +212,18 @@ public class Framework {
             System.exit( -1 );
         }
     }
+
+    /**
+     * Save entities to file form (see file format).
+     *
+     * @param entities collection of EntityModel's
+     * @param file the file in which to save the entities
+     */
+    public static void SaveEntities( Collection< ModelEntity > entities, String file ) {
+
+    }
+
+
 
     public static void LoadDataReferences( Persistence p, String file ) {
         Gson gson = new Gson();
@@ -247,9 +267,45 @@ public class Framework {
         }
     }
 
+    /**
+     * Export the subtree, in the form of a serialised representation that allows full re-import, to view or resume.
+     *
+     * @param p persistence object to the persistence layer
+     * @param entityName the parent of the subtree
+     * @return serialised form of subtree
+     */
     public static String ExportSubtree( Persistence p, String entityName ) {
-        return "";
+        String entitiesExport = exportEntitiesSubtree( p, entityName );
+        return entitiesExport;
     }
+
+    protected static String exportEntitiesSubtree( Persistence p, String entityName ) {
+
+        Gson gson = new Gson();
+        Collection< ModelEntity > modelEntities = new ArrayList<>(  );
+        subtreeAsModelEntities( p, entityName, modelEntities );
+        String export = gson.toJson( modelEntities );
+        return export;
+    }
+
+    /**
+     * Flatten subtree of a given entity, referenced by name, into a collection of entity models.
+     * @param p
+     * @param entityName
+     * @param modelEntities
+     */
+    protected static void subtreeAsModelEntities( Persistence p, String entityName, Collection< ModelEntity > modelEntities ) {
+        // traverse tree depth first via recursion, building the string representation
+        ModelEntity modelEntity = p.fetchEntity( entityName );
+        modelEntities.add( modelEntity );
+
+        Collection< String > childNames = p.getChildEntities( entityName );
+        for ( String childName : childNames ) {
+            subtreeAsModelEntities( p, childName, modelEntities );
+        }
+
+    }
+
 
     public static boolean ImportSubtree( Persistence p, String subtree ) {
         return false;
