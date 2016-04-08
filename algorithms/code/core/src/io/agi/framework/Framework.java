@@ -111,14 +111,15 @@ public class Framework {
         JsonObject root = parser.parse( me.config ).getAsJsonObject();
 
         // navigate to the nested property
+        // N.B. String.split : http://stackoverflow.com/questions/3481828/how-to-split-a-string-in-java
         JsonObject parent = root;
-        String[] pathParts = configPath.split( "." );
+        String[] pathParts = configPath.split( "[.]" );
         int index = 0;
-        int maxIndex = pathParts.length - 2; // NOTE: one before the one we're looking for
+        int maxIndex = pathParts.length - 1; // NOTE: one before the one we're looking for
         String part = null;
-        if( pathParts.length == 0 ) {
-            part = configPath;
-        }
+//        if( pathParts.length < 2 ) { // i.e. 0 or 1
+//            part = configPath;
+//        }
 
         while ( index < maxIndex ) {
             part = pathParts[ index ];
@@ -128,6 +129,8 @@ public class Framework {
 
             parent = ( JsonObject ) child;
         }
+
+        part = pathParts[ index ];
 
         // replace the property:
         parent.remove( part );
@@ -141,7 +144,7 @@ public class Framework {
     public static JsonElement GetNestedProperty( JsonObject root, String path ) {
         // navigate to the nested property
         JsonElement je = root;
-        String[] pathParts = path.split( "." );
+        String[] pathParts = path.split( "[.]" );
         String part = null;
         int index = 0;
         int maxIndex = pathParts.length - 1;

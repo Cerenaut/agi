@@ -21,8 +21,8 @@ public class ImageSensorConfig extends EntityConfig {
         int resolutionY;
     }
 
-    ReceptiveField receptiveField;
-    Resolution resolution;
+    ReceptiveField receptiveField = new ReceptiveField();
+    Resolution resolution = new Resolution();
     boolean greyscale;
     boolean invert;
 

@@ -342,8 +342,10 @@ public abstract class Entity extends NamedObject implements EntityListener {
             if ( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_LAZY_PERSIST ) ) {
                 String inputKey = getKey( keySuffix );
                 Data d = _data.get( inputKey );
-                Data copy = new Data( d ); // make a deep copy
-                _dataMap.putData( inputKey, copy );
+                if( d != null ) {
+                    Data copy = new Data(d); // make a deep copy
+                    _dataMap.putData(inputKey, copy);
+                }
             }
         }
     }
@@ -365,9 +367,11 @@ public abstract class Entity extends NamedObject implements EntityListener {
             if ( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_LAZY_PERSIST ) ) {
                 Data copy = _dataMap.getData( inputKey );
 
-                if ( copy.isSameAs( d ) ) {
-                    //System.err.println( "Skipping persist of Data: " + inputKey + " because: Not changed." );
-                    continue; // don't persist.
+                if( copy != null ) {
+                    if (copy.isSameAs(d)) {
+                        //System.err.println( "Skipping persist of Data: " + inputKey + " because: Not changed." );
+                        continue; // don't persist.
+                    }
                 }
             }
 

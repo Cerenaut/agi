@@ -190,13 +190,13 @@ public class JdbcPersistence implements Persistence {
     // Data
     public void setData( ModelData modelData ) {
         String refKeyString = ( modelData._refKeys != null ) ? "'" + modelData._refKeys + "'" : "null";
-        logger.info( "setData T: {} @1 ", System.currentTimeMillis() );
+        //logger.info( "setData T: {} @1 ", System.currentTimeMillis() );
         String sql1 = "UPDATE data SET ref_name = '" + modelData._refKeys + "', sizes = '" + modelData._sizes + "', elements = '" + modelData._elements + "' WHERE name = '" + modelData._name + "'";
         execute( sql1 );
-        logger.info( "setData T: {} @2 ", System.currentTimeMillis() );
+        //logger.info( "setData T: {} @2 ", System.currentTimeMillis() );
         String sql2 = "INSERT INTO data (name, ref_name, sizes, elements) SELECT '" + modelData._name + "', " + refKeyString + ", '" + modelData._sizes + "', '" + modelData._elements + "' WHERE NOT EXISTS (SELECT name from data WHERE name = '" + modelData._name + "' )";
         execute( sql2 );
-        logger.info( "setData T: {} @3 ", System.currentTimeMillis() );
+        //logger.info( "setData T: {} @3 ", System.currentTimeMillis() );
     }
 
     public ModelData getData( String key ) {
