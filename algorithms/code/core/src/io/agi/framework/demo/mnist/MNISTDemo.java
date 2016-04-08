@@ -55,7 +55,7 @@ public class MNISTDemo {
         Framework.SetConfig( p, sensorName, "greyscale", "true" );
         Framework.SetConfig( p, sensorName, "invert", "true" );
         Framework.SetConfig( p, sensorName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
-        Framework.SetConfig( p, sensorName, "sourceFilesPath", "/home/dave/workspace/agi.io/data/mnist/postproc" );
+        Framework.SetConfig( p, sensorName, "sourceFilesPath", "/Users/gideon/Development/AI/ProAGI/TestData/MNIST/mnist_output" );
         Framework.SetConfig( p, sensorName, "receptiveField.receptiveFieldX", "0" );
         Framework.SetConfig( p, sensorName, "receptiveField.receptiveFieldY", "0" );
         Framework.SetConfig( p, sensorName, "receptiveField.receptiveFieldW", "28" );

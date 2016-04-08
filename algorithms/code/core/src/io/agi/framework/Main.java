@@ -30,15 +30,8 @@ public class Main {
     public static final String PROPERTY_PERSISTENCE_TYPE = "persistence-type";
     public static final String PROPERTY_COORDINATION_TYPE = "coordination-type";
 
-//    public String _databaseUser;
-//    public String _databasePassword;
-//    public String _databaseUrl;
-//    public String _databaseDriverClass;
-
     public ModelNode _modelNode;
-//    public String _nodeName;
-//    public String _nodeHost;
-//    public int _nodePort = 0;
+
 
     public EntityFactory _ef;
     public ObjectMap _om;

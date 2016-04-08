@@ -14,8 +14,8 @@ import java.util.HashMap;
 public class MnistPreprocess {
 
     public static void main( String[] args ) {
-        Integer max = new Integer(args[3]);
-        preprocess(args[0], args[1], args[2], max);
+        Integer max = new Integer( args[ 3 ] );
+        preprocess( args[ 0 ], args[ 1 ], args[ 2 ], max );
     }
 
     /**
@@ -50,7 +50,7 @@ public class MnistPreprocess {
 
             File outputfile = new File( outputPath + label + "_0" + labelCount.get( label ) + ".png" );
             try {
-                ImageIO.write(image, "png", outputfile);
+                ImageIO.write( image, "png", outputfile );
             }
             catch ( IOException e ) {
                 e.printStackTrace();
