@@ -32,12 +32,12 @@ public class ExperimentEntity extends Entity {
     }
 
     @Override
-    public void getInputKeys( Collection< String > keys ) {
+    public void getInputAttributes( Collection< String > attributes ) {
 
     }
 
     @Override
-    public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
+    public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
 
     }
 

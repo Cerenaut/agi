@@ -65,7 +65,7 @@ public class JdbcPersistence implements Persistence {
     }
 
     // Nodes
-    public Collection< ModelNode > getNodes() {
+    public Collection< ModelNode > fetchNodes() {
         String sql = "SELECT name, host, port FROM nodes";
         ResultSetMap rsm = new ResultSetMap();
         rsm._fields.add( "name" );
@@ -83,7 +83,7 @@ public class JdbcPersistence implements Persistence {
         return nodes;
     }
 
-    public void setNode( ModelNode e ) {
+    public void persistNode( ModelNode e ) {
         // https://www.sitepoint.com/community/t/how-to-use-on-duplicate-key-update-in-postgresql-with-php/200335/4
         String sql1 = "UPDATE nodes SET host = '" + e._host + "', port = '" + e._port + "' WHERE name = '" + e._name + "'";
         execute( sql1 );
@@ -91,7 +91,7 @@ public class JdbcPersistence implements Persistence {
         execute( sql2 );
     }
 
-    public ModelNode getNode( String nodeName ) {
+    public ModelNode fetchNode( String nodeName ) {
         String sql = "SELECT name, host, port FROM nodes where name = '" + nodeName + "'";
         ResultSetMap rsm = new ResultSetMap();
         rsm._fields.add( "host" );
@@ -186,18 +186,18 @@ public class JdbcPersistence implements Persistence {
     }
 
     // Data
-    public void setData( ModelData modelData ) {
+    public void persistData( ModelData modelData ) {
         String refKeyString = ( modelData._refKeys != null ) ? "'" + modelData._refKeys + "'" : "null";
-        //logger.info( "setData T: {} @1 ", System.currentTimeMillis() );
+        //_logger.info( "persistData T: {} @1 ", System.currentTimeMillis() );
         String sql1 = "UPDATE data SET ref_name = '" + modelData._refKeys + "', sizes = '" + modelData._sizes + "', elements = '" + modelData._elements + "' WHERE name = '" + modelData._name + "'";
         execute( sql1 );
-        //logger.info( "setData T: {} @2 ", System.currentTimeMillis() );
+        //_logger.info( "persistData T: {} @2 ", System.currentTimeMillis() );
         String sql2 = "INSERT INTO data (name, ref_name, sizes, elements) SELECT '" + modelData._name + "', " + refKeyString + ", '" + modelData._sizes + "', '" + modelData._elements + "' WHERE NOT EXISTS (SELECT name from data WHERE name = '" + modelData._name + "' )";
         execute( sql2 );
-        //logger.info( "setData T: {} @3 ", System.currentTimeMillis() );
+        //_logger.info( "persistData T: {} @3 ", System.currentTimeMillis() );
     }
 
-    public ModelData getData( String key ) {
+    public ModelData fetchData( String key ) {
         String sql = "SELECT ref_name, sizes, elements FROM data where name = '" + key + "'";
         ResultSetMap rsm = new ResultSetMap();
         rsm._fields.add( "ref_name" );
@@ -218,8 +218,8 @@ public class JdbcPersistence implements Persistence {
         }
         String sizes = rsm.getRowValue( 0, "sizes" );
         String elements = rsm.getRowValue( 0, "elements" );
-        ModelData jd = new ModelData( key, refKey, sizes, elements );
-        return jd;
+        ModelData modelData = new ModelData( key, refKey, sizes, elements );
+        return modelData;
     }
 
     public void removeData( String key ) {

@@ -59,14 +59,14 @@ public class Framework {
             Persistence p,
             String dataKey,
             String refKeys ) {
-        ModelData modelData = p.getData( dataKey );
+        ModelData modelData = p.fetchData( dataKey );
 
         if ( modelData == null ) {
             modelData = new ModelData( dataKey, refKeys );
         }
 
         modelData._refKeys = refKeys;
-        p.setData( modelData );
+        p.persistData( modelData );
     }
 
     /**
@@ -164,7 +164,7 @@ public class Framework {
     }
 
     /**
-     * Create an entity as specified, and generate its config so it is persisted to disk.
+     * Create an entity as specified, generate its config, and persist to disk.
      *
      * @param n
      * @param name
@@ -178,6 +178,11 @@ public class Framework {
         CreateEntity( n, model );
     }
 
+    /**
+     * This assumes that model.config has not been set. It is overwritten.
+     * @param n
+     * @param model
+     */
     public static void CreateEntity( Node n, ModelEntity model ) {
         Entity entity = n.getEntityFactory().create( n.getObjectMap(), model );
         EntityConfig entityConfig = entity.createConfig();
@@ -270,40 +275,90 @@ public class Framework {
     /**
      * Export the subtree, in the form of a serialised representation that allows full re-import, to view or resume.
      *
-     * @param p persistence object to the persistence layer
+     * @param node Node current node // persistence object to the persistence layer
      * @param entityName the parent of the subtree
      * @return serialised form of subtree
      */
-    public static String ExportSubtree( Persistence p, String entityName ) {
-        String entitiesExport = exportEntitiesSubtree( p, entityName );
+    public static String ExportSubtree( Node node, String entityName ) {
+        String entitiesExport = null;
+
+        //entitiesExport = exportEntitiesSubtree( node._p, entityName );
+        entitiesExport = exportDataEntitiesSubtree( node, entityName );
+
         return entitiesExport;
     }
 
-    protected static String exportEntitiesSubtree( Persistence p, String entityName ) {
+    protected static String exportDataEntitiesSubtree( Node node, String entityName ) {
 
         Gson gson = new Gson();
-        Collection< ModelEntity > modelEntities = new ArrayList<>(  );
-        subtreeAsModelEntities( p, entityName, modelEntities );
+        Collection< ModelData > modelDatas = new ArrayList<>();
+
+        subtreeModelDatas( node, entityName, modelDatas );
+
+        String export = gson.toJson( modelDatas );
+        return export;
+    }
+
+    /**
+     * Get all the Data models for all entities in the subtree, and put in a flat collection.
+     * @param entityName the parent of the subtree.
+     * @param modelDatas the flat collection that will contain the data models.
+     */
+    protected static void subtreeModelDatas( Node node, String entityName, Collection< ModelData > modelDatas ) {
+
+        addModelDatasForEntity( node, entityName, modelDatas );
+
+        Collection< String > childNames = node._p.getChildEntities( entityName );
+        for ( String childName : childNames ) {
+            subtreeModelDatas( node, childName, modelDatas );
+        }
+    }
+
+    protected static void addModelDatasForEntity( Node node, String entityName, Collection<ModelData> modelDatas ) {
+
+        ModelEntity modelEntity = node._p.fetchEntity( entityName );
+
+        Entity entity = node.getEntityFactory().create( node.getObjectMap(), modelEntity );
+        entity._config = entity.createConfig();
+
+        Collection< String > attributes = new ArrayList<>();
+        DataFlags dataFlags = new DataFlags();
+        entity.getOutputAttributes( attributes, dataFlags );
+
+        for ( String attribute : attributes ) {
+            String outputKey = entity.getKey( attribute );
+            ModelData modelData = node._p.fetchData( outputKey );
+
+            if ( modelData != null ) {
+                modelDatas.add( modelData );
+            }
+        }
+    }
+
+    protected static String exportEntitiesSubtree( Persistence p, String entityName ) {
+        Gson gson = new Gson();
+        Collection< ModelEntity > modelEntities = new ArrayList<>( );
+        subtreeModelEntities( p, entityName, modelEntities );
         String export = gson.toJson( modelEntities );
         return export;
     }
 
     /**
      * Flatten subtree of a given entity, referenced by name, into a collection of entity models.
+     * Recursive method.
      * @param p
      * @param entityName
      * @param modelEntities
      */
-    protected static void subtreeAsModelEntities( Persistence p, String entityName, Collection< ModelEntity > modelEntities ) {
+    protected static void subtreeModelEntities( Persistence p, String entityName, Collection< ModelEntity > modelEntities ) {
         // traverse tree depth first via recursion, building the string representation
         ModelEntity modelEntity = p.fetchEntity( entityName );
         modelEntities.add( modelEntity );
 
         Collection< String > childNames = p.getChildEntities( entityName );
         for ( String childName : childNames ) {
-            subtreeAsModelEntities( p, childName, modelEntities );
+            subtreeModelEntities( p, childName, modelEntities );
         }
-
     }
 
 

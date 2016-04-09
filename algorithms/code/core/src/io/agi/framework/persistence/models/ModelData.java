@@ -71,7 +71,7 @@ public class ModelData {
     }
 
     /**
-     * Conver the Data object to its serialized form, so it can be stored.
+     * Convert the Data object to its serialized form, so it can be stored.
      *
      * @param d
      */

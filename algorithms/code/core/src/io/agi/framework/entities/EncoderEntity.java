@@ -27,13 +27,13 @@ public class EncoderEntity extends Entity {
     }
 
     @Override
-    public void getInputKeys( Collection< String > keys ) {
-        keys.add( DATA_INPUT );
+    public void getInputAttributes( Collection< String > attributes ) {
+        attributes.add( DATA_INPUT );
     }
 
     @Override
-    public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
-        keys.add( DATA_OUTPUT );
+    public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
+        attributes.add( DATA_OUTPUT );
     }
 
     @Override
@@ -48,7 +48,7 @@ public class EncoderEntity extends Entity {
         SparseDistributedEncoder encoder = EncoderFactory.create( config.encoderType );
 
         if ( encoder == null ) {
-            logger.error( "Could not create EncoderEntity" );
+            _logger.error( "Could not create EncoderEntity" );
             return;
         }
 

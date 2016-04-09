@@ -58,7 +58,7 @@ public class HttpCoordination implements Coordination {
         HttpNodesHandler nh = new HttpNodesHandler( _n.getPersistence() );
         HttpEntitiesHandler eh = new HttpEntitiesHandler( _n.getPersistence() );
         HttpImportHandler imh = new HttpImportHandler( _n.getPersistence() );
-        HttpExportHandler exh = new HttpExportHandler( _n.getPersistence() );
+        HttpExportHandler exh = new HttpExportHandler( _n );
         HttpConfigHandler ch = new HttpConfigHandler( _n.getPersistence() );
 
         HttpUtil.AddHandler( _s, HttpConfigHandler.CONTEXT, ph );
@@ -187,7 +187,7 @@ public class HttpCoordination implements Coordination {
      * @param query
      */
     public void broadcast( String query ) {
-        Collection< ModelNode > nodes = _n.getPersistence().getNodes();
+        Collection< ModelNode > nodes = _n.getPersistence().fetchNodes();
 
         for ( ModelNode jn : nodes ) {
             if ( jn._name.equals( _n.getName() ) ) {

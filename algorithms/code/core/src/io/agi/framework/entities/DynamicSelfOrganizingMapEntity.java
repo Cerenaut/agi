@@ -33,15 +33,15 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
         super( om, n, model );
     }
 
-    public void getInputKeys( Collection< String > keys ) {
-        keys.add( INPUT );
+    public void getInputAttributes( Collection< String > attributes ) {
+        attributes.add( INPUT );
     }
 
-    public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
-        keys.add( OUTPUT_WEIGHTS );
-        keys.add( OUTPUT_MASK );
-        keys.add( OUTPUT_ERROR );
-        keys.add( OUTPUT_ACTIVE );
+    public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
+        attributes.add( OUTPUT_WEIGHTS );
+        attributes.add( OUTPUT_MASK );
+        attributes.add( OUTPUT_ERROR );
+        attributes.add( OUTPUT_ACTIVE );
     }
 
     @Override

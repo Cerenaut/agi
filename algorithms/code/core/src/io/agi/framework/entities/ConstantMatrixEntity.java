@@ -27,11 +27,11 @@ public class ConstantMatrixEntity extends Entity {
         super( om, n, model );
     }
 
-    public void getInputKeys( Collection< String > keys ) {
+    public void getInputAttributes( Collection< String > attributes ) {
     }
 
-    public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
-        keys.add( OUTPUT );
+    public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
+        attributes.add( OUTPUT );
     }
 
     @Override

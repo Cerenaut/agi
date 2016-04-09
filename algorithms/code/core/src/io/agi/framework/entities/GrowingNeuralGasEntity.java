@@ -39,21 +39,21 @@ public class GrowingNeuralGasEntity extends Entity {
         super( om, n, model );
     }
 
-    public void getInputKeys( Collection< String > keys ) {
-        keys.add( INPUT );
+    public void getInputAttributes( Collection< String > attributes ) {
+        attributes.add( INPUT );
     }
 
-    public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
-        keys.add( OUTPUT_WEIGHTS );
-        keys.add( OUTPUT_MASK );
-        keys.add( OUTPUT_ERROR );
-        keys.add( OUTPUT_ACTIVE );
+    public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
+        attributes.add( OUTPUT_WEIGHTS );
+        attributes.add( OUTPUT_MASK );
+        attributes.add( OUTPUT_ERROR );
+        attributes.add( OUTPUT_ACTIVE );
 
-        keys.add( OUTPUT_CELL_STRESS );
-        keys.add( OUTPUT_CELL_AGES );
-        keys.add( OUTPUT_EDGES );
-        keys.add( OUTPUT_EDGES_AGES );
-        keys.add( OUTPUT_AGE_SINCE_GROWTH );
+        attributes.add( OUTPUT_CELL_STRESS );
+        attributes.add( OUTPUT_CELL_AGES );
+        attributes.add( OUTPUT_EDGES );
+        attributes.add( OUTPUT_EDGES_AGES );
+        attributes.add( OUTPUT_AGE_SINCE_GROWTH );
     }
 
     @Override

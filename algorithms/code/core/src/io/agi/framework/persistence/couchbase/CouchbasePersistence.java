@@ -160,7 +160,7 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
         return prefix + ":" + suffix;
     }
 
-    public Collection< ModelNode > getNodes() {
+    public Collection< ModelNode > fetchNodes() {
         // http://docs.couchbase.com/admin/admin/Views/views-writing.html
         // http://docs.couchbase.com/developer/java-2.1/tutorial.html
         ArrayList< ModelNode > models = new ArrayList< ModelNode >();
@@ -223,7 +223,7 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
     }
 
     // Nodes
-    public void setNode( ModelNode m ) {
+    public void persistNode( ModelNode m ) {
         String key = GetKey( KEY_PREFIX_NODE, m._name );
         JsonObject jo = JsonObject.empty()
                 .put( PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_NODE )
@@ -233,7 +233,7 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
         JsonDocument response = upsert( key, jo );
     }
 
-    public ModelNode getNode( String nodeKey ) {
+    public ModelNode fetchNode( String nodeKey ) {
         String key = GetKey( KEY_PREFIX_NODE, nodeKey );
         JsonDocument loaded = _b.get( key );
         if ( loaded == null ) {
@@ -298,18 +298,18 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
     }
 
     // Data
-    public void setData( ModelData m ) {
-        String key = GetKey( KEY_PREFIX_DATA, m._name );
+    public void persistData( ModelData modelData ) {
+        String key = GetKey( KEY_PREFIX_DATA, modelData._name );
         JsonObject jo = JsonObject.empty()
                 .put( PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_DATA )
-                .put( PROPERTY_KEY, m._name )
-                .put( PROPERTY_DATA_ELEMENTS, m._elements )
-                .put( PROPERTY_DATA_REF_KEY, m._refKeys )
-                .put( PROPERTY_DATA_SIZES, m._sizes );
+                .put( PROPERTY_KEY, modelData._name )
+                .put( PROPERTY_DATA_ELEMENTS, modelData._elements )
+                .put( PROPERTY_DATA_REF_KEY, modelData._refKeys )
+                .put( PROPERTY_DATA_SIZES, modelData._sizes );
         JsonDocument response = upsert( key, jo );
     }
 
-    public ModelData getData( String dataKey ) {
+    public ModelData fetchData( String dataKey ) {
         String key = GetKey( KEY_PREFIX_DATA, dataKey );
         JsonDocument loaded = _b.get( key );
         if ( loaded == null ) {

@@ -62,7 +62,7 @@ public class Node {
         _p = p;
 
         ModelNode jn = new ModelNode( _name, _host, _port );
-        _p.setNode( jn );
+        _p.persistNode( jn );
     }
 
     public String getName() {

@@ -36,12 +36,12 @@ public class ImageSensorEntity extends Entity {
     }
 
     @Override
-    public void getInputKeys( Collection< String > keys ) {
+    public void getInputAttributes( Collection< String > attributes ) {
     }
 
     @Override
-    public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
-        keys.add( IMAGE_DATA );
+    public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
+        attributes.add( IMAGE_DATA );
     }
 
     @Override
@@ -71,7 +71,7 @@ public class ImageSensorEntity extends Entity {
         if ( !inRange ) {
             config.imageIndex = 0;          // try to reset to beginning (may still be out of range)
 
-            logger.error( "Could not get an image to scrape. Error with BufferedImageSource.seek() in ImageSensorEntity" );
+            _logger.error( "Could not get an image to scrape. Error with BufferedImageSource.seek() in ImageSensorEntity" );
         }
         else {
             imageScreenScraper.scrape();

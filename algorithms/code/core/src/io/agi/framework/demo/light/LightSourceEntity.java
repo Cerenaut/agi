@@ -26,14 +26,14 @@ public class LightSourceEntity extends Entity {
         super( om, n, me );
     }
 
-    public void getInputKeys( Collection< String > keys ) {
-        keys.add( CONTROL_INPUT );
+    public void getInputAttributes( Collection< String > attributes ) {
+        attributes.add( CONTROL_INPUT );
     }
 
-    public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
-        keys.add( LIGHT_OUTPUT );
-        keys.add( RANDOM_OUTPUT );
-        keys.add( MATRIX_OUTPUT );
+    public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
+        attributes.add( LIGHT_OUTPUT );
+        attributes.add( RANDOM_OUTPUT );
+        attributes.add( MATRIX_OUTPUT );
     }
 
     @Override

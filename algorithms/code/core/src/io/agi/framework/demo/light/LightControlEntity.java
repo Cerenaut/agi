@@ -23,12 +23,12 @@ public class LightControlEntity extends Entity {
         super( om, n, me );
     }
 
-    public void getInputKeys( Collection< String > keys ) {
+    public void getInputAttributes( Collection< String > attributes ) {
 
     }
 
-    public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
-        keys.add( CONTROL_OUTPUT );
+    public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
+        attributes.add( CONTROL_OUTPUT );
     }
 
     @Override

@@ -45,20 +45,20 @@ public class RegionEntity extends Entity {
         super( om, n, model );
     }
 
-    public void getInputKeys( Collection< String > keys ) {
-        keys.add( FF_INPUT );
-        keys.add( FB_INPUT );
+    public void getInputAttributes( Collection< String > attributes ) {
+        attributes.add( FF_INPUT );
+        attributes.add( FB_INPUT );
     }
 
-    public void getOutputKeys( Collection< String > keys, DataFlags flags ) {
-        keys.add( FB_INPUT_OLD );
+    public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
+        attributes.add( FB_INPUT_OLD );
 
         flags.putFlag( FB_INPUT_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( FB_INPUT_OLD, DataFlags.FLAG_SPARSE_UNIT );
 
-        keys.add( ACTIVITY_OLD );
-        keys.add( ACTIVITY_NEW );
-        keys.add( ACTIVITY );
+        attributes.add( ACTIVITY_OLD );
+        attributes.add( ACTIVITY_NEW );
+        attributes.add( ACTIVITY );
 
         flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_NODE_CACHE );
@@ -70,16 +70,16 @@ public class RegionEntity extends Entity {
         flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_LAZY_PERSIST );
         flags.putFlag( ACTIVITY, DataFlags.FLAG_LAZY_PERSIST );
 
-        keys.add( PREDICTION_OLD );
-        keys.add( PREDICTION_NEW );
+        attributes.add( PREDICTION_OLD );
+        attributes.add( PREDICTION_NEW );
 
         flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_SPARSE_UNIT );
         flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_SPARSE_UNIT );
 
-        keys.add( PREDICTION_FP );
-        keys.add( PREDICTION_FN );
+        attributes.add( PREDICTION_FP );
+        attributes.add( PREDICTION_FN );
 
         flags.putFlag( PREDICTION_FP, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( PREDICTION_FN, DataFlags.FLAG_NODE_CACHE );
@@ -87,7 +87,7 @@ public class RegionEntity extends Entity {
         flags.putFlag( PREDICTION_FN, DataFlags.FLAG_SPARSE_UNIT );
 
         // The organizer
-        getClassifierOutputKeys( keys, flags, RegionConfig.SUFFIX_ORGANIZER );
+        getClassifierOutputKeys( attributes, flags, RegionConfig.SUFFIX_ORGANIZER );
 
         // The classifiers
         io.agi.framework.entities.RegionConfig config = ( io.agi.framework.entities.RegionConfig ) _config;
@@ -95,7 +95,7 @@ public class RegionEntity extends Entity {
         for ( int y = 0; y < config.organizerHeightCells; ++y ) {
             for ( int x = 0; x < config.organizerWidthCells; ++x ) {
                 String prefix = Keys.concatenate( RegionConfig.SUFFIX_CLASSIFIER, String.valueOf( x ), String.valueOf( y ) );
-                getClassifierOutputKeys( keys, flags, prefix );
+                getClassifierOutputKeys( attributes, flags, prefix );
             }
         }
 
@@ -105,12 +105,12 @@ public class RegionEntity extends Entity {
         for ( int l = 0; l < predictorLayers; ++l ) {
             String prefix = Keys.concatenate( RegionConfig.SUFFIX_PREDICTOR, String.valueOf( l ) );
 
-            keys.add( Keys.concatenate( prefix, NetworkLayer.INPUT ) );
-            keys.add( Keys.concatenate( prefix, NetworkLayer.WEIGHTS ) );
-            keys.add( Keys.concatenate( prefix, NetworkLayer.BIASES ) );
-            keys.add( Keys.concatenate( prefix, NetworkLayer.WEIGHTED_SUMS ) );
-            keys.add( Keys.concatenate( prefix, NetworkLayer.OUTPUTS ) );
-            keys.add( Keys.concatenate( prefix, NetworkLayer.ERROR_GRADIENTS ) );
+            attributes.add( Keys.concatenate( prefix, NetworkLayer.INPUT ) );
+            attributes.add( Keys.concatenate( prefix, NetworkLayer.WEIGHTS ) );
+            attributes.add( Keys.concatenate( prefix, NetworkLayer.BIASES ) );
+            attributes.add( Keys.concatenate( prefix, NetworkLayer.WEIGHTED_SUMS ) );
+            attributes.add( Keys.concatenate( prefix, NetworkLayer.OUTPUTS ) );
+            attributes.add( Keys.concatenate( prefix, NetworkLayer.ERROR_GRADIENTS ) );
 
             flags.putFlag( Keys.concatenate( prefix, NetworkLayer.INPUT ), DataFlags.FLAG_NODE_CACHE );
             flags.putFlag( Keys.concatenate( prefix, NetworkLayer.WEIGHTS ), DataFlags.FLAG_NODE_CACHE );

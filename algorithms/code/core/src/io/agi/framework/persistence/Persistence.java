@@ -1,5 +1,6 @@
 package io.agi.framework.persistence;
 
+import io.agi.framework.Node;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
 import io.agi.framework.persistence.models.ModelNode;
@@ -11,18 +12,16 @@ import java.util.Collection;
  */
 public interface Persistence {
 
-//    Entity --< Properties
-//           --< Data
-//    Entity --- name, type, children, node
+//    Entity --< Data
+//    Entity --- name, type, children, node, config (multiple properties)
 //               Could be JSON string for entities: { name: xxx, type: yyy } etc
 
-
     // Nodes
-    Collection< ModelNode > getNodes(); // list all
+    Collection< ModelNode > fetchNodes(); // list all
 
-    void setNode( ModelNode m ); /// creates if nonexistent (upsert)
+    void persistNode( ModelNode m ); /// creates if nonexistent (upsert)
 
-    ModelNode getNode( String nodeName ); /// retrieves if exists, or null
+    ModelNode fetchNode( String nodeName ); /// retrieves if exists, or null
 
     void removeNode( String nodeName ); /// removes if exists
 
@@ -38,9 +37,9 @@ public interface Persistence {
     void removeEntity( String name );
 
     // Data
-    void setData( ModelData m );
+    void persistData( ModelData modelData );
 
-    ModelData getData( String name );
+    ModelData fetchData( String name );
 
     void removeData( String name );
 

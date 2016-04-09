@@ -23,7 +23,7 @@ import java.util.*;
  */
 public abstract class Entity extends NamedObject implements EntityListener {
 
-    protected static final Logger logger = LogManager.getLogger();
+    protected static final Logger _logger = LogManager.getLogger();
 
     public static final String SUFFIX_FLUSH = "flush"; /// Required: Triggers all flushable data to be persisted.
     public static final String SUFFIX_RESET = "reset"; /// Required: Triggers all flushable data to be persisted.
@@ -70,17 +70,17 @@ public abstract class Entity extends NamedObject implements EntityListener {
      * Get the keys for all the data that is used as input.
      * Prefetch it at the start of the update, never write it.
      *
-     * @param keys
+     * @param attributes
      */
-    public abstract void getInputKeys( Collection< String > keys );
+    public abstract void getInputAttributes( Collection< String > attributes );
 
     /**
      * Get the keys for all the data that is used as output.
      * Old value is prefetched at the start of the update, and value is written at the end of the update.
      *
-     * @param keys
+     * @param attributes
      */
-    public abstract void getOutputKeys( Collection< String > keys, DataFlags flags );
+    public abstract void getOutputAttributes( Collection< String > attributes, DataFlags flags );
 
     /**
      * Return the class of the config object for the derived entity.
@@ -151,7 +151,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         // update all the children (Note, they will update on other Nodes potentially, and definitely in another thread.
         for ( String childName : childNames ) {
-            //System.err.println( "Request update of child: " + childName );
+            _logger.info( "Request update of child: " + childName );
             _n.requestUpdate( childName ); // schedule an update, may have already occurred
             // update to child may occur any time after this, because only 1 parent so waiting for me to call the update.
         }
@@ -160,19 +160,19 @@ public abstract class Entity extends NamedObject implements EntityListener {
     protected void beforeUpdate() {
         String entityName = getName();
         int age = _config.age; // getPropertyInt( SUFFIX_AGE, 1 );
-        logger.info( "START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName );
+        _logger.info( "START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName );
     }
 
     protected void afterUpdate() {
         String entityName = getName();
         int age = _config.age; // getPropertyInt(SUFFIX_AGE, 1);
-        logger.info( "END   T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity updated: " + entityName );
+        _logger.info( "END   T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity updated: " + entityName );
 
         _n.notifyUpdated( entityName ); // this entity, the parent, is now complete
     }
 
     public void onEntityUpdated( String entityName ) {
-        //System.err.println( "Entity: " + getName() + " being notified about: " + entityName );
+        _logger.info( "Entity: " + getName() + " being notified about: " + entityName );
         synchronized ( _childrenWaiting ) {
             _childrenWaiting.remove( entityName );
 
@@ -191,17 +191,16 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
     protected void updateSelf() {
 
-
         // 1. fetch inputs
         // get all the inputs and put them in the object map.
         Collection< String > inputKeys = new ArrayList< String >();
-        getInputKeys( inputKeys );
+        getInputAttributes( inputKeys );
         fetchData( inputKeys );
 
         // 2. fetch outputs
         // get all the outputs and put them in the object map.
         Collection< String > outputKeys = new ArrayList< String >();
-        getOutputKeys( outputKeys, _dataFlags );
+        getOutputAttributes( outputKeys, _dataFlags );
         fetchData( outputKeys );
 
         // Set the random number generator, with the current time (i.e. random), if not loaded.
@@ -227,16 +226,14 @@ public abstract class Entity extends NamedObject implements EntityListener {
         _config.reset = false; // cancel reset after reset.
         _config.flush = false; // clear flush after flush: if it was true, make it false.
 
-        // 4. set outputs
+        // 4. persist data
         // write all the outputs back to the persistence system
-        //persistData(inputKeys); These aren't persisted, by definition you're promising not to write them.
         persistData( outputKeys );
 
         // 5. persist config of this entity
-//        persistConfig(_config);
         persistConfig();
 
-        //System.err.println( "Update: " + getName() + " age: " + age );
+        _logger.info( "Update: " + getName() + " age: " + _config.age );
     }
 
     public static String SerializeConfig( EntityConfig entityConfig ) {
@@ -250,66 +247,47 @@ public abstract class Entity extends NamedObject implements EntityListener {
         Persistence p = _n.getPersistence();
         p.persistEntity( _model );
     }
-//    public static String GetConfigName( String entityName, Object object ) {
-//        return Keys.concatenate( entityName, object.getClass().getSimpleName() );
-//    }
-//
-//    /**
-//     * Populate _configPathValues map with the persisted _configPathValues.
-//     */
-//    private void fetchConfig( EntityConfig config ) {
-//        Persistence p = _n.getPersistence();
-//        p.getProperties( GetConfigName( getName(), config ), config );      // persistence hydrates the model from storage
-//    }
-//
-//    /**
-//     * Persist the _configPathValues map.
-//     */
-//    private void persistConfig(EntityConfig config ) {
-//        Persistence p = _n.getPersistence();
-//        p.setProperties( GetConfigName( getName(), config ), config );
-//    }
 
     /**
      * Populate member object map with the persisted data.
      *
-     * @param keys
+     * @param attributes
      */
-    private void fetchData( Collection< String > keys ) {
+    private void fetchData( Collection< String > attributes ) {
         Persistence p = _n.getPersistence();
 
-        for ( String keySuffix : keys ) {
-            String inputKey = getKey( keySuffix );
+        for ( String attribute : attributes ) {
+            String inputKey = getKey( attribute );
 
-            ModelData jd = null;
+            ModelData modelData = null;
 
             // check for cache policy
-            if ( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_NODE_CACHE ) ) {
+            if ( _dataFlags.hasFlag( attribute, DataFlags.FLAG_NODE_CACHE ) ) {
                 Data d = _n.getCachedData( inputKey );
 
                 if ( d != null ) {
-                    //System.err.println( "Skipping fetch of Data: " + inputKey );
+                    _logger.info( "Skipping fetch of Data: " + inputKey );
                     _data.put( inputKey, d );
                     continue;
                 }
             }
 
             // check for no - read
-            if ( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_PERSIST_ONLY ) ) {
-                //System.err.println( "Skipping fetch of Data: " + inputKey );
+            if ( _dataFlags.hasFlag( attribute, DataFlags.FLAG_PERSIST_ONLY ) ) {
+                _logger.info( "Skipping fetch of Data: " + inputKey );
                 continue;
             }
 
-            jd = p.getData( inputKey );
+            modelData = p.fetchData( inputKey );
 
-            if ( jd == null ) { // not found
+            if ( modelData == null ) { // not found
                 continue; // truthfully represent as null.
             }
 
-            HashSet< String > refKeys = jd.getRefKeys();
+            HashSet< String > refKeys = modelData.getRefKeys();
 
             if ( refKeys.isEmpty() ) {
-                Data d = jd.getData();
+                Data d = modelData.getData();
                 _data.put( inputKey, d );
             }
             else {
@@ -317,18 +295,16 @@ public abstract class Entity extends NamedObject implements EntityListener {
                 HashMap< String, Data > allRefs = new HashMap< String, Data >();
 
                 for ( String refKey : refKeys ) {
-                    ModelData refJson = p.getData( refKey );
+                    ModelData refJson = p.fetchData( refKey );
                     Data refData = refJson.getData();
                     allRefs.put( refKey, refData );
                 }
 
-//                String combinedKey = inputKey;//Keys.concatenate( inputKey, SUFFIX_COMBINED );
+                Data combinedData = getCombinedData( attribute, allRefs );
 
-                Data combinedData = getCombinedData( keySuffix, allRefs );
+                modelData.setData( combinedData, false ); // data added to ref keys.
 
-                jd.setData( combinedData, false ); // data added to ref keys.
-
-                p.setData( jd ); // DAVE: BUG? It writes it back out.. I guess we wanna see this, but seems excessive.
+                p.persistData( modelData ); // DAVE: BUG? It writes it back out.. I guess we wanna see this, but seems excessive.
 
                 _data.put( inputKey, combinedData );
             }
@@ -347,10 +323,10 @@ public abstract class Entity extends NamedObject implements EntityListener {
         }
     }
 
-    public void persistData( Collection< String > keys ) {
+    public void persistData( Collection< String > attributes ) {
         Persistence p = _n.getPersistence();
 
-        for ( String keySuffix : keys ) {
+        for ( String keySuffix : attributes ) {
             String inputKey = getKey( keySuffix );
             Data d = _data.get( inputKey );
 
@@ -382,18 +358,18 @@ public abstract class Entity extends NamedObject implements EntityListener {
                 sparse = true;
             }
 
-            p.setData( new ModelData( inputKey, d, sparse ) );
+            p.persistData( new ModelData( inputKey, d, sparse ) );
         }
     }
 
     /**
      * Update the local member copy of the data, which will be persisted later.
      *
-     * @param keySuffix
+     * @param attribute
      * @param output
      */
-    public void setData( String keySuffix, Data output ) {
-        _data.put( getKey( keySuffix ), output );
+    public void setData( String attribute, Data output ) {
+        _data.put( getKey( attribute ), output );
     }
 
     /**
@@ -401,11 +377,11 @@ public abstract class Entity extends NamedObject implements EntityListener {
      * Otherwise, creates a 1-D vector containing all input bits.
      * This is a reasonable solution for many cases where shape is not important.
      *
-     * @param inputKeySuffix
+     * @param inputAttribute
      * @param allRefs
      * @return
      */
-    protected Data getCombinedData( String inputKeySuffix, HashMap< String, Data > allRefs ) {
+    protected Data getCombinedData( String inputAttribute, HashMap< String, Data > allRefs ) {
 
         // case 1: No input.
         int nbrRefs = allRefs.size();
@@ -459,12 +435,12 @@ public abstract class Entity extends NamedObject implements EntityListener {
     /**
      * Get the data if it exists, and Create it if it doesn't.
      *
-     * @param keySuffix   the name of the data
+     * @param attribute   the name of the data
      * @param defaultSize create data of this size, if the data does not exist
      * @return data
      */
-    public Data getData( String keySuffix, DataSize defaultSize ) {
-        String key = getKey( keySuffix );
+    public Data getData( String attribute, DataSize defaultSize ) {
+        String key = getKey( attribute );
         Data d = _data.get( key );
 
         if ( d == null ) {
@@ -481,12 +457,12 @@ public abstract class Entity extends NamedObject implements EntityListener {
      * Gets the specified data structure. If null, or if it does not have the same dimensions as the specified size,
      * then it will be resized. The old values are not copied on resize.
      *
-     * @param keySuffix
+     * @param attribute
      * @param defaultSize
      * @return
      */
-    public Data getDataLazyResize( String keySuffix, DataSize defaultSize ) {
-        String key = getKey( keySuffix );
+    public Data getDataLazyResize( String attribute, DataSize defaultSize ) {
+        String key = getKey( attribute );
         Data d = _data.get( key );
 
         if ( d == null ) {

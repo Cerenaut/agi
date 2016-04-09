@@ -50,7 +50,7 @@ public class MNISTDemo {
 
         Framework.SetDataReference( p, encoderName, EncoderEntity.DATA_INPUT, sensorName, ImageSensorEntity.IMAGE_DATA );
         Framework.SetDataReference( p, regionName, RegionEntity.FF_INPUT, encoderName, EncoderEntity.DATA_OUTPUT );
-        Framework.SetDataReference(p, regionName, RegionEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT);
+        Framework.SetDataReference( p, regionName, RegionEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT );
 
         Framework.SetConfig( p, sensorName, "greyscale", "true" );
         Framework.SetConfig( p, sensorName, "invert", "true" );

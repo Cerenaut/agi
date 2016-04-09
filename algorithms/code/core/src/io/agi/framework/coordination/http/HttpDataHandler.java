@@ -44,7 +44,7 @@ public class HttpDataHandler implements HttpHandler {
                 String key = ap._first;
                 String value = ap._second;
                 if ( key.equalsIgnoreCase( PARAMETER_NAME ) ) {
-                    ModelData m = _p.getData( value );
+                    ModelData m = _p.fetchData( value );
 
                     if ( results == null ) {
                         results = new ArrayList< ModelData >();
