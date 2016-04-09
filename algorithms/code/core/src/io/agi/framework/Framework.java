@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.util.FileUtil;
+import io.agi.framework.coordination.http.HttpExportHandler;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelDataReference;
@@ -279,11 +280,15 @@ public class Framework {
      * @param entityName the parent of the subtree
      * @return serialised form of subtree
      */
-    public static String ExportSubtree( Node node, String entityName ) {
+    public static String ExportSubtree( Node node, String entityName, String type ) {
         String entitiesExport = null;
 
-        //entitiesExport = exportEntitiesSubtree( node._p, entityName );
-        entitiesExport = exportDataEntitiesSubtree( node, entityName );
+        if ( type.equalsIgnoreCase( HttpExportHandler.TYPE_ENTITY ) ) {
+            entitiesExport = exportEntitiesSubtree( node._p, entityName );
+        }
+        else if ( type.equalsIgnoreCase( HttpExportHandler.TYPE_DATA ) ) {
+            entitiesExport = exportDataEntitiesSubtree( node, entityName );
+        }
 
         return entitiesExport;
     }

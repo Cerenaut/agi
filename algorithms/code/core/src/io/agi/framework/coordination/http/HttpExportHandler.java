@@ -17,6 +17,10 @@ public class HttpExportHandler implements HttpHandler {
     public static final String CONTEXT = "/export";
 
     public static final String PARAMETER_ENTITY = "entity";
+    public static final String PARAMETER_TYPE = "type";
+
+    public static final String TYPE_DATA = "data";
+    public static final String TYPE_ENTITY = "entity";
 
     public Node _n;
 
@@ -27,13 +31,20 @@ public class HttpExportHandler implements HttpHandler {
     @Override
     public void handle( HttpExchange t ) throws IOException {
         int status = 400;
-        String response = "";
+        String response = "Please specify both an Entity and a Type.";
 
         try {
             String query = t.getRequestURI().getQuery();
             Map< String, String > m = HttpUtil.GetQueryParams( query );
+
+            if (       ( !m.containsKey( PARAMETER_TYPE ) )
+                    || ( !m.containsKey( PARAMETER_ENTITY ) ) ) {
+                return;
+            }
+
             String entityName = m.get( PARAMETER_ENTITY ).trim(); // essential
-            response = Framework.ExportSubtree( _n, entityName );
+            String type = m.get( PARAMETER_TYPE ).trim(); // essential
+            response = Framework.ExportSubtree( _n, entityName, type );
             status = 200;
         }
         catch ( Exception e ) {
