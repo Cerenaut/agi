@@ -15,12 +15,12 @@ public class RegionConfig extends EntityConfig {
     int classifierHeightCells = 6;
 
     // Organizer training
-    int receptiveFieldsTrainingSamples = 6;
+    int receptiveFieldsTrainingSamples = 12;
     int receptiveFieldSize = 8;
     float organizerLearningRate = 0.02f;
     float organizerLearningRateNeighbours = 0.01f;
     float organizerNoiseMagnitude = 0.0f;
-    int organizerEdgeMaxAge = 500;
+    int organizerEdgeMaxAge = 200;
     float organizerStressLearningRate = 0.01f;
     float organizerStressThreshold = 0.1f;
     int organizerGrowthInterval = 100;
@@ -29,7 +29,7 @@ public class RegionConfig extends EntityConfig {
     float classifierLearningRate = 0.02f;
     float classifierLearningRateNeighbours = 0.01f;
     float classifierNoiseMagnitude = 0.0f;
-    int classifierEdgeMaxAge = 500;
+    int classifierEdgeMaxAge = 200;
     float classifierStressLearningRate = 0.01f;
     float classifierStressThreshold = 0.1f;
     int classifierGrowthInterval = 100;

@@ -52,10 +52,11 @@ public class MNISTDemo {
         Framework.SetDataReference( p, regionName, RegionEntity.FF_INPUT, encoderName, EncoderEntity.DATA_OUTPUT );
         Framework.SetDataReference(p, regionName, RegionEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT);
 
-        Framework.SetConfig( p, sensorName, "greyscale", "true" );
-        Framework.SetConfig( p, sensorName, "invert", "true" );
+        Framework.SetConfig(p, sensorName, "greyscale", "true");
+        Framework.SetConfig(p, sensorName, "invert", "true");
         Framework.SetConfig( p, sensorName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
-        Framework.SetConfig( p, sensorName, "sourceFilesPath", "/home/dave/workspace/agi.io/data/mnist/postproc" );
+//        Framework.SetConfig( p, sensorName, "sourceFilesPath", "/home/dave/workspace/agi.io/data/mnist/cycle10" );
+        Framework.SetConfig( p, sensorName, "sourceFilesPath", "/home/dave/workspace/agi.io/data/mnist/cycle3" );
         Framework.SetConfig( p, sensorName, "receptiveField.receptiveFieldX", "0" );
         Framework.SetConfig( p, sensorName, "receptiveField.receptiveFieldY", "0" );
         Framework.SetConfig( p, sensorName, "receptiveField.receptiveFieldW", "28" );
@@ -67,7 +68,14 @@ public class MNISTDemo {
         Framework.SetConfig( p, encoderName, "bits", "8" );
         Framework.SetConfig( p, encoderName, "encodeZero", "false" );
 
+        Framework.SetConfig( p, regionName, "organizerStressThreshold", "0.01" );
+        Framework.SetConfig( p, regionName, "organizerGrowthInterval", "5" );
+
+        Framework.SetConfig( p, regionName, "classifierStressThreshold", "0.01" );
+        Framework.SetConfig( p, regionName, "classifierGrowthInterval", "5" );
+
         Framework.SetConfig( p, regionName, Entity.SUFFIX_RESET, "true" );
+
     }
 
 
