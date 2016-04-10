@@ -48,6 +48,7 @@ public class Region extends NamedObject {
 
     public Data _regionPredictionOld;
     public Data _regionPredictionNew;
+    public Data _regionPredictionRaw;
 
     public Data _regionPredictionFP;
     public Data _regionPredictionFN;
@@ -105,6 +106,7 @@ public class Region extends NamedObject {
 
         _regionPredictionOld = new Data( dataSizeRegion );
         _regionPredictionNew = new Data( dataSizeRegion );
+        _regionPredictionRaw = new Data( dataSizeRegion );
 
         _regionPredictionFP = new Data( dataSizeRegion );
         _regionPredictionFN = new Data( dataSizeRegion );
@@ -213,8 +215,8 @@ public class Region extends NamedObject {
 
             Point p = Data2d.getXY( _ffInput._dataSize, offset );
 
-            float x_i = p.x / inputSize.x;
-            float y_i = p.y / inputSize.y;
+            float x_i = (float)p.x / (float)inputSize.x;
+            float y_i = (float)p.y / (float)inputSize.y;
 
             inputValues._values[ 0 ] = x_i;
             inputValues._values[ 1 ] = y_i;
@@ -290,16 +292,16 @@ public class Region extends NamedObject {
         classifier.update(); // trains with this sparse input.
 
         int bestCell = classifier.getBestCell();
-        int bestCellX = classifier._c.getCellX( bestCell );
+        int bestCellX = classifier._c.getCellX(bestCell);
         int bestCellY = classifier._c.getCellY( bestCell );
 
         Point classifierOrigin = _rc.getRegionClassifierOrigin( xClassifier, yClassifier );
         int regionX = classifierOrigin.x + bestCellX;
         int regionY = classifierOrigin.y + bestCellY;
 
-        int regionOffset = _rc.getRegionOffset( regionX, regionY );
+        int regionOffset = _rc.getRegionOffset(regionX, regionY);
         _regionActivity._values[ regionOffset ] = 1.f;
-        _regionActive.add( regionOffset );
+        _regionActive.add(regionOffset);
     }
 
     public boolean getClassificationChanged() {
@@ -349,7 +351,7 @@ public class Region extends NamedObject {
                 float errorFN = 0.f;
 
                 float activeNew = _regionActivityNew._values[ regionOffset ];
-                float predictionOld = _regionPredictionOld._values[ regionOffset ];
+                float predictionOld = _regionPredictionNew._values[ regionOffset ]; // we didn't update the prediction yet, so use current prediction
 
                 // FN
                 if ( ( activeNew == 1.f ) && ( predictionOld == 0.f ) ) {
@@ -404,8 +406,61 @@ public class Region extends NamedObject {
         Data output = _predictor.getOutput();
 
         _regionPredictionOld.copy( _regionPredictionNew );
-        _regionPredictionNew.copy( output );
-        _regionPredictionNew.thresholdMoreThan( 0.5f, 1.0f, 0.0f ); // make it binary
+        _regionPredictionRaw.copy( output );
+
+        //do a
+        findPredictionLocalMaxima();
+        //_regionPredictionNew.copy( output );
+        //_regionPredictionNew.thresholdMoreThan( 0.5f, 1.0f, 0.0f ); // make it binary
+    }
+
+    /**
+     * Since we always produce exactly one winner per column (classifier), we can safely take the prediction as the max
+     * value over all the cells in the Column, for each Column. This doesn't affect the predictor, only the output of
+     * the Region. Also doesn't affect classifiers or organizer.
+     */
+    protected void findPredictionLocalMaxima() {
+
+        // This method doesn't need to ignore cols (classifiers) that are not in use due to the organizer not giving
+        // them receptive fields, or cells that are not in use, because in both cases they will never be a FN case
+        // (active but not predicted) so they will never be output. Secondly, the training of the predictor is unaffected
+        // by this function. So the only effect these bad bits have, is in debugging (they will display as FP errors)
+        Point regionSizeCols = _rc.getOrganizerSizeCells();
+        Point classifierSizeCells = _rc.getClassifierSizeCells();
+
+        _regionPredictionNew.set( 0.f ); // clear
+
+        int stride = regionSizeCols.x * classifierSizeCells.x;
+
+        for ( int y = 0; y < regionSizeCols.y; ++y ) {
+            for (int x = 0; x < regionSizeCols.x; ++x) {
+
+                float pMax = 0.f;
+                int xMax = -1;
+                int yMax = -1;
+
+                for ( int yc = 0; yc < classifierSizeCells.y; ++yc ) {
+                    for (int xc = 0; xc < classifierSizeCells.x; ++xc) {
+
+                        int xr = ( x * classifierSizeCells.x ) + xc;
+                        int yr = ( y * classifierSizeCells.y ) + yc;
+                        int offset = Data2d.getOffset( stride, xr, yr );
+                        float p = _regionPredictionRaw._values[ offset ];
+
+                        if( p >= pMax ) {
+                            pMax = p;
+                            xMax = xc;
+                            yMax = yc;
+                        }
+                    }
+                }
+
+                int xr = ( x * classifierSizeCells.x ) + xMax;
+                int yr = ( y * classifierSizeCells.y ) + yMax;
+                int offset = Data2d.getOffset( stride, xr, yr );
+                _regionPredictionNew._values[ offset ] = 1.f;
+            }
+        }
     }
 
     public void trainPredictor() {
