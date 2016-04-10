@@ -228,7 +228,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         _config.seed = _r.getSeed(); // update the random seed for next time.
         _config.reset = false; // cancel reset after reset.
-        _config.flush = false; // clear flush after flush: if it was true, make it false.
+        //_config.flush = false; // clear flush after flush: if it was true, make it false. EDIT: [dave] I've disabled this, it's more useful to leave it under manual control
 
         // 4. set outputs
         // write all the outputs back to the persistence system
