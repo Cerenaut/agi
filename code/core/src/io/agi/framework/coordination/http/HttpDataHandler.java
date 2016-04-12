@@ -56,11 +56,6 @@ public class HttpDataHandler implements HttpHandler {
                 }
             }
 
-            // Nah, don't get all data! too much info!
-//            if( results == null ) {
-//                results = _p.getEntities();
-//            }
-
             boolean first = true;
             if ( method.equalsIgnoreCase( "GET" ) ) {
 
@@ -77,10 +72,10 @@ public class HttpDataHandler implements HttpHandler {
 
                         response += "{ ";
 
-                        response += " \"key\": \"" + m._name + "\"" + ",";
-                        response += " \"ref_key\": \"" + m._refKeys + "\"" + ",";
-                        response += " \"sizes\": " + m._sizes + ",";
-                        response += " \"elements\": " + m._elements;
+                        response += " \"key\": \"" + m.name + "\"" + ",";
+                        response += " \"ref_key\": \"" + m.refKeys + "\"" + ",";
+                        response += " \"sizes\": " + m.sizes + ",";
+                        response += " \"elements\": " + m.elements;
 
                         response += " }";
                     }

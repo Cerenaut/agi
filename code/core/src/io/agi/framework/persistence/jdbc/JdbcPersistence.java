@@ -10,7 +10,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 
 /**
  * Created by dave on 16/02/16.
@@ -187,12 +186,12 @@ public class JdbcPersistence implements Persistence {
 
     // Data
     public void persistData( ModelData modelData ) {
-        String refKeyString = ( modelData._refKeys != null ) ? "'" + modelData._refKeys + "'" : "null";
+        String refKeyString = ( modelData.refKeys != null ) ? "'" + modelData.refKeys + "'" : "null";
         //_logger.info( "persistData T: {} @1 ", System.currentTimeMillis() );
-        String sql1 = "UPDATE data SET ref_name = '" + modelData._refKeys + "', sizes = '" + modelData._sizes + "', elements = '" + modelData._elements + "' WHERE name = '" + modelData._name + "'";
+        String sql1 = "UPDATE data SET ref_name = '" + modelData.refKeys + "', sizes = '" + modelData.sizes + "', elements = '" + modelData.elements + "' WHERE name = '" + modelData.name + "'";
         execute( sql1 );
         //_logger.info( "persistData T: {} @2 ", System.currentTimeMillis() );
-        String sql2 = "INSERT INTO data (name, ref_name, sizes, elements) SELECT '" + modelData._name + "', " + refKeyString + ", '" + modelData._sizes + "', '" + modelData._elements + "' WHERE NOT EXISTS (SELECT name from data WHERE name = '" + modelData._name + "' )";
+        String sql2 = "INSERT INTO data (name, ref_name, sizes, elements) SELECT '" + modelData.name + "', " + refKeyString + ", '" + modelData.sizes + "', '" + modelData.elements + "' WHERE NOT EXISTS (SELECT name from data WHERE name = '" + modelData.name + "' )";
         execute( sql2 );
         //_logger.info( "persistData T: {} @3 ", System.currentTimeMillis() );
     }

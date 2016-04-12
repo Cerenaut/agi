@@ -28,53 +28,53 @@ public class CommonEntityFactory implements EntityFactory {
         _n = n;
     }
 
-    public Entity create( ObjectMap om, ModelEntity me ) {
+    public Entity create( ObjectMap objectMap, ModelEntity modelEntity ) {
 
-        String entityName = me.name;
-        String entityType = me.type;
+        String entityName = modelEntity.name;
+        String entityType = modelEntity.type;
 
         if ( entityType.equals( ExperimentEntity.ENTITY_TYPE ) ) {
-            return new ExperimentEntity( om, _n, me );
+            return new ExperimentEntity( objectMap, _n, modelEntity );
         }
 
         if ( entityType.equals( ThresholdEntity.ENTITY_TYPE ) ) {
-            return new ThresholdEntity( om, _n, me );
+            return new ThresholdEntity( objectMap, _n, modelEntity );
         }
 
         if ( entityType.equals( ValueSeriesEntity.ENTITY_TYPE ) ) {
-            return new ValueSeriesEntity( om, _n, me );
+            return new ValueSeriesEntity( objectMap, _n, modelEntity );
         }
 
         if ( entityType.equals( RandomVectorEntity.ENTITY_TYPE ) ) {
-            return new RandomVectorEntity( om, _n, me );
+            return new RandomVectorEntity( objectMap, _n, modelEntity );
         }
 
         if ( entityType.equals( DiscreteRandomEntity.ENTITY_TYPE ) ) {
-            return new DiscreteRandomEntity( om, _n, me );
+            return new DiscreteRandomEntity( objectMap, _n, modelEntity );
         }
 
         if ( entityType.equals( DynamicSelfOrganizingMapEntity.ENTITY_TYPE ) ) {
-            return new DynamicSelfOrganizingMapEntity( om, _n, me );
+            return new DynamicSelfOrganizingMapEntity( objectMap, _n, modelEntity );
         }
 
         if ( entityType.equals( GrowingNeuralGasEntity.ENTITY_TYPE ) ) {
-            return new GrowingNeuralGasEntity( om, _n, me );
+            return new GrowingNeuralGasEntity( objectMap, _n, modelEntity );
         }
 
         if ( entityType.equals( ImageSensorEntity.ENTITY_TYPE ) ) {
-            return new ImageSensorEntity( om, _n, me );
+            return new ImageSensorEntity( objectMap, _n, modelEntity );
         }
 
         if ( entityType.equals( RegionEntity.ENTITY_TYPE ) ) {
-            return new RegionEntity( om, _n, me );
+            return new RegionEntity( objectMap, _n, modelEntity );
         }
 
         if ( entityType.equals( ConstantMatrixEntity.ENTITY_TYPE ) ) {
-            return new ConstantMatrixEntity( om, _n, me );
+            return new ConstantMatrixEntity( objectMap, _n, modelEntity );
         }
 
         if ( entityType.equals( EncoderEntity.ENTITY_TYPE ) ) {
-            return new EncoderEntity( om, _n, me );
+            return new EncoderEntity( objectMap, _n, modelEntity );
         }
 
         return null;

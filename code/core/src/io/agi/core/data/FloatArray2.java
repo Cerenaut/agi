@@ -721,7 +721,7 @@ public class FloatArray2 {
 //     * Set all values to random ones in unit interval.
 //     */
 //    public void setRandom() {
-//        setRandom( RandomInstance.getInstance() );
+//        setRandom( RandomInstance.NodeInstance() );
 //    }
 
     /**
@@ -741,7 +741,7 @@ public class FloatArray2 {
 //     * Set all values to be random unit values with a normal distribution
 //     */
 //    public void setRandomNormal() {
-//        setRandomNormal( RandomInstance.getInstance() );
+//        setRandomNormal( RandomInstance.NodeInstance() );
 //    }
 
     /**

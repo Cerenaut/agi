@@ -21,11 +21,11 @@ public class LightDemo {
 
         // Create custom entities and references
         if ( args.length > 1 ) {
-            Framework.LoadEntities( m._n, args[ 1 ] );
+            Framework.LoadEntities( args[ 1 ] );
         }
 
         if ( args.length > 2 ) {
-            Framework.LoadDataReferences( m._p, args[ 2 ] );
+            Framework.LoadDataReferences( args[ 2 ] );
         }
 
         // Start the system

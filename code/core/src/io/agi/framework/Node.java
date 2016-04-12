@@ -16,6 +16,7 @@ import java.util.concurrent.Semaphore;
 /**
  * A container in which the program can execute.
  * The system can be distributed by having multiple nodes, potentially on different virtual or physical machines.
+ * This is a Singleton class.
  * Created by dave on 14/02/16.
  */
 public class Node {
@@ -35,7 +36,9 @@ public class Node {
     protected HashMap< String, ArrayList< EntityListener > > _entityListeners = new HashMap< String, ArrayList< EntityListener > >();
     protected DataMap _dataCache = new DataMap();
 
-    public Node() {
+    static protected Node _node = null;
+
+    private Node() {
     }
 
     /**
@@ -63,6 +66,14 @@ public class Node {
 
         ModelNode jn = new ModelNode( _name, _host, _port );
         _p.persistNode( jn );
+    }
+
+    public static Node NodeInstance() {
+
+        if ( _node == null ) {
+            _node = new Node();
+        }
+        return _node;
     }
 
     public String getName() {

@@ -1,6 +1,5 @@
 package io.agi.framework.persistence;
 
-import io.agi.framework.Node;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
 import io.agi.framework.persistence.models.ModelNode;

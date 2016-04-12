@@ -60,7 +60,7 @@ public class HttpConfigHandler implements HttpHandler {
             ModelEntity me = _p.fetchEntity( entityName );
 
             if ( method.equalsIgnoreCase( "GET" ) ) {
-                configValue = Framework.GetConfig( _p, entityName );
+                configValue = Framework.GetConfig( entityName );
                 if ( configValue == null ) {
                     configValue = "null";
                 }
@@ -76,7 +76,7 @@ public class HttpConfigHandler implements HttpHandler {
                     response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_VALUE + "\" : " + config + " }";
                 }
                 else {
-                    Framework.SetConfig( _p, entityName, configPath, configValue );
+                    Framework.SetConfig( entityName, configPath, configValue );
                     response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_PATH + "\" : \"" + configPath + "\", \"" + PARAMETER_VALUE + "\" : \"" + configValue + "\" }";
                 }
             }

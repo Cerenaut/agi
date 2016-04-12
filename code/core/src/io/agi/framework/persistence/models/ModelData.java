@@ -15,40 +15,40 @@ import java.util.HashSet;
  */
 public class ModelData {
 
-    public String _name;
-    public String _refKeys;
-    public String _sizes;
-    public String _elements;
+    public String name;
+    public String refKeys;
+    public String sizes;
+    public String elements;
 
     public ModelData( String key, Data d, boolean sparse ) {
-        _name = key;
-        _refKeys = null;
+        name = key;
+        refKeys = null;
         if ( d != null ) {
-            _sizes = DataSizeToString( d._dataSize );
-            _elements = FloatArrayToString( d, sparse );
+            sizes = DataSizeToString( d._dataSize );
+            elements = FloatArrayToString( d, sparse );
         }
     }
 
     public ModelData( String key, String refKeys ) {
-        _name = key;
-        _refKeys = refKeys;
-        _sizes = null;
-        _elements = null;
+        name = key;
+        this.refKeys = refKeys;
+        sizes = null;
+        elements = null;
     }
 
     public ModelData( String key, String refKeys, String sizes, String elements ) {
-        _name = key;
-        _refKeys = refKeys;
-        _sizes = sizes;
-        _elements = elements;
+        name = key;
+        this.refKeys = refKeys;
+        this.sizes = sizes;
+        this.elements = elements;
     }
 
     public HashSet< String > getRefKeys() {
         try {
             HashSet< String > refKeys = new HashSet< String >();
 
-            if ( _refKeys != null ) {
-                String[] splitKeys = _refKeys.split( "," );
+            if ( this.refKeys != null ) {
+                String[] splitKeys = this.refKeys.split( "," );
 
                 for ( int i = 0; i < splitKeys.length; ++i ) {
                     String key = splitKeys[ i ];
@@ -64,7 +64,7 @@ public class ModelData {
     }
 
     public boolean isReference() {
-        if ( _refKeys != null ) {
+        if ( refKeys != null ) {
             return true;
         }
         return false;
@@ -77,8 +77,8 @@ public class ModelData {
      */
     public void setData( Data d, boolean sparse ) {
         try {
-            _sizes = DataSizeToString( d._dataSize );
-            _elements = FloatArrayToString( d, sparse );
+            sizes = DataSizeToString( d._dataSize );
+            elements = FloatArrayToString( d, sparse );
         }
         catch ( Exception e ) {
 
@@ -92,13 +92,13 @@ public class ModelData {
      */
     public Data getData() {
         // convert into data.
-//        if( _refKeys != null ) {
+//        if( refKeys != null ) {
 //            return null;
 //        }
 
         try {
-            DataSize ds = StringToDataSize( _sizes );
-            FloatArray2 fa = StringToFloatArray( _elements );
+            DataSize ds = StringToDataSize( sizes );
+            FloatArray2 fa = StringToFloatArray( elements );
             Data d = new Data( ds, fa );
             return d;
         }

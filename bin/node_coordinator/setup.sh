@@ -8,6 +8,6 @@ source $(dirname $0)/../$variables_file
 echo "------- Build and install libs -------"
 ./build-libs.sh
 
-echo "------- Build the experimental framework -------"
-cd $AGI_HOME/experimental-framework/code/core-modules
+echo "------- Build the core and experimental framework -------"
+cd $AGI_HOME/code/core
 $MAVEN_BIN clean package

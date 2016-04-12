@@ -62,11 +62,11 @@ public class Main {
         _modelNode = new ModelNode( nodeName, nodeHost, nodePort );
 
         // The persistent description of this Node
-        Node n = new Node();
-        n.setup( _om, _modelNode._name, _modelNode._host, _modelNode._port, ef, _c, _p );
-        _n = n;
+        Node node = Node.NodeInstance();
+        node.setup( _om, _modelNode._name, _modelNode._host, _modelNode._port, ef, _c, _p );
+        _n = node;
 
-        ef.setNode( n );
+        ef.setNode( node );
     }
 
     public Coordination createCoordination( String propertiesFile ) {
