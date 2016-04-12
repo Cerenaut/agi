@@ -29,15 +29,15 @@ public class ClassifierDemo {
 
         // Create custom entities and references
         if ( args.length > 1 ) {
-            Framework.LoadEntities( m._n, args[ 1 ] );
+            Framework.LoadEntities( args[ 1 ] );
         }
 
         if ( args.length > 2 ) {
-            Framework.LoadDataReferences( m._p, args[ 2 ] );
+            Framework.LoadDataReferences( args[ 2 ] );
         }
 
         if ( args.length > 3 ) {
-            Framework.LoadConfigs( m._p, args[ 3 ] );
+            Framework.LoadConfigs( args[ 3 ] );
         }
 
         // Programmatic hook to create entities and references..
@@ -53,16 +53,16 @@ public class ClassifierDemo {
         String modelName = "model";
         String classifierName = "classifier";
 
-        Framework.CreateEntity( n, modelName, DiscreteRandomEntity.ENTITY_TYPE, n.getName(), null );
-        Framework.CreateEntity( n, classifierName, GrowingNeuralGasEntity.ENTITY_TYPE, n.getName(), modelName );
+        Framework.CreateEntity( modelName, DiscreteRandomEntity.ENTITY_TYPE, n.getName(), null );
+        Framework.CreateEntity( classifierName, GrowingNeuralGasEntity.ENTITY_TYPE, n.getName(), modelName );
 
         // Connect the entities
         Persistence p = n.getPersistence();
 
-        Framework.SetDataReference( p, classifierName, DynamicSelfOrganizingMapEntity.INPUT, modelName, RandomVectorEntity.OUTPUT );
+        Framework.SetDataReference( classifierName, DynamicSelfOrganizingMapEntity.INPUT, modelName, RandomVectorEntity.OUTPUT );
 
         // Set a property:
-        Framework.SetConfig( p, modelName, "elements", "2" );
-        Framework.SetConfig( p, classifierName, Entity.SUFFIX_RESET, "true" );
+        Framework.SetConfig( modelName, "elements", "2" );
+        Framework.SetConfig( classifierName, Entity.SUFFIX_RESET, "true" );
     }
 }

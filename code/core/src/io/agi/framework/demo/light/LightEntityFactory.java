@@ -14,22 +14,22 @@ public class LightEntityFactory extends CommonEntityFactory {
 
     }
 
-    public Entity create( ObjectMap om, ModelEntity me ) {
+    public Entity create( ObjectMap objectMap, ModelEntity modelEntity ) {
 
-        Entity e = super.create( om, me );
+        Entity e = super.create( objectMap, modelEntity );
 
         if ( e != null ) {
             return e;
         }
 
-        String entityType = me.type;
+        String entityType = modelEntity.type;
 
         if ( entityType.equals( LightSourceEntity.ENTITY_TYPE ) ) {
-            return new LightSourceEntity( om, _n, me );
+            return new LightSourceEntity( objectMap, _n, modelEntity );
         }
 
         if ( entityType.equals( LightControlEntity.ENTITY_TYPE ) ) {
-            return new LightControlEntity( om, _n, me );
+            return new LightControlEntity( objectMap, _n, modelEntity );
         }
 
         return null;

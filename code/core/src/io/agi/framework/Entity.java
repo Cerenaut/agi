@@ -101,6 +101,10 @@ public abstract class Entity extends NamedObject implements EntityListener {
         _config = config;
     }
 
+    /**
+     * Create appropriate Config object, populate with the parameters expressed as a string in 'model.config'.
+     * @return the populated config object
+     */
     public EntityConfig createConfig() {
         Class configClass = getConfigClass();
         Gson gson = new Gson();
@@ -135,7 +139,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
         // They can only be updated by this class, so we know they will respect the flush.
         if ( _flushChildren ) {
             for ( String childName : childNames ) {
-                Framework.SetConfig( p, childName, SUFFIX_FLUSH, "true" );
+                Framework.SetConfig( childName, SUFFIX_FLUSH, "true" );
             }
         }
 

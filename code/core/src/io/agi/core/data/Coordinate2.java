@@ -531,7 +531,7 @@ public class Coordinate2 implements Cloneable {
     }
 
 //    public void randomize() {
-//        randomize( RandomInstance.getInstance() );
+//        randomize( RandomInstance.NodeInstance() );
 //    }
 
     public void randomize( Random r ) {

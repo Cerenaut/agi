@@ -281,7 +281,7 @@ public class Ranking {
     }
 
 //    public static Integer roulette( TreeMap< Float, ArrayList< Integer > > ranking ) {
-//        return roulette( Rando mInstance.getInstance(), ranking );
+//        return roulette( Rando mInstance.NodeInstance(), ranking );
 //    }
 
     public static Integer roulette( Random o, TreeMap< Float, ArrayList< Integer > > ranking ) {

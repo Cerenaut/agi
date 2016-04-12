@@ -15,10 +15,8 @@ public class HttpImportHandler implements HttpHandler {
 
     public static final String CONTEXT = "/import";
 
-    public Persistence _p;
 
-    public HttpImportHandler( Persistence p ) {
-        _p = p;
+    public HttpImportHandler( ) {
     }
 
     @Override
@@ -27,10 +25,10 @@ public class HttpImportHandler implements HttpHandler {
         String response = "";
 
         try {
-            InputStream is = t.getRequestBody();
-            java.util.Scanner s = new java.util.Scanner( is ).useDelimiter( "\\A" );
+            InputStream inputStream = t.getRequestBody();
+            java.util.Scanner s = new java.util.Scanner( inputStream ).useDelimiter( "\\A" );
             String subtree = s.hasNext() ? s.next() : "";
-            boolean b = Framework.ImportSubtree( _p, subtree );
+            boolean b = Framework.ImportSubtree( subtree );
             if ( b ) {
                 status = 200;
             }

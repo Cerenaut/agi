@@ -46,7 +46,7 @@ public class ThresholdEntity extends Entity {
 
         Persistence p = _n.getPersistence();
 
-        String stringValue = Framework.GetConfig( p, config.entityName, config.configPath );
+        String stringValue = Framework.GetConfig( config.entityName, config.configPath );
         Float newValue = Float.valueOf( stringValue );
 
         if ( newValue == null ) {

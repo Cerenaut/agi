@@ -18,6 +18,7 @@ public interface EntityFactory {
 
     /**
      * Create an Entity on demand. Entities are created every time they are updated.
+     * The factory does not create the config object in the entity (expressed as a string in the model).
      *
      * @param om
      * @param me

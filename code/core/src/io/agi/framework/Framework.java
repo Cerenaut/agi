@@ -32,42 +32,49 @@ public class Framework {
     /**
      * Modifies the database to make the reference _entityName-suffix Data a reference input to the input _entityName-suffix.
      *
-     * @param p
      * @param inputEntity
      * @param inputSuffix
      * @param referenceEntity
      * @param referenceSuffix
      */
     public static void SetDataReference(
-            Persistence p,
             String inputEntity,
             String inputSuffix,
             String referenceEntity,
             String referenceSuffix ) {
         String inputKey = NamedObject.GetKey( inputEntity, inputSuffix );
         String refKey = NamedObject.GetKey( referenceEntity, referenceSuffix );
-        SetDataReference( p, inputKey, refKey );
+        SetDataReference( inputKey, refKey );
     }
 
     /**
      * Modifies the database to make the reference _entityName-suffix Data a reference input to the input _entityName-suffix.
      *
-     * @param p
      * @param dataKey
      * @param refKeys
      */
     public static void SetDataReference(
-            Persistence p,
             String dataKey,
             String refKeys ) {
-        ModelData modelData = p.fetchData( dataKey );
+        Persistence persistence = Node.NodeInstance().getPersistence();
+        ModelData modelData = persistence.fetchData( dataKey );
 
         if ( modelData == null ) {
             modelData = new ModelData( dataKey, refKeys );
         }
 
         modelData._refKeys = refKeys;
-        p.persistData( modelData );
+        persistence.persistData( modelData );
+    }
+
+    /**
+     * Set the data in the model, in the persistence layer.
+     * If an entry exists for this key, replace it.
+     * @param modelData
+     */
+    public static void SetData( ModelData modelData ) {
+        Persistence persistence = Node.NodeInstance().getPersistence();
+        persistence.persistData( modelData );
     }
 
     /**
@@ -76,8 +83,9 @@ public class Framework {
      * @param entityName
      * @param configPath
      */
-    public static String GetConfig( Persistence p, String entityName, String configPath ) {
-        ModelEntity me = p.fetchEntity( entityName );
+    public static String GetConfig( String entityName, String configPath ) {
+        Persistence persistence = Node.NodeInstance().getPersistence();
+        ModelEntity me = persistence.fetchEntity( entityName );
         JsonParser parser = new JsonParser();
         JsonObject jo = parser.parse( me.config ).getAsJsonObject();
 
@@ -90,12 +98,12 @@ public class Framework {
     /**
      * Gets the complete config object for the given entity.
      *
-     * @param p
      * @param entityName
      * @return
      */
-    public static String GetConfig( Persistence p, String entityName ) {
-        ModelEntity me = p.fetchEntity( entityName );
+    public static String GetConfig( String entityName ) {
+        Persistence persistence = Node.NodeInstance().getPersistence();
+        ModelEntity me = persistence.fetchEntity( entityName );
         if ( me == null ) {
             return null;
         }
@@ -106,8 +114,9 @@ public class Framework {
     /**
      * Allows a single config property to be modified.
      */
-    public static void SetConfig( Persistence p, String entityName, String configPath, String value ) {
-        ModelEntity me = p.fetchEntity( entityName );
+    public static void SetConfig( String entityName, String configPath, String value ) {
+        Persistence persistence = Node.NodeInstance().getPersistence();
+        ModelEntity me = persistence.fetchEntity( entityName );
         JsonParser parser = new JsonParser();
         JsonObject root = parser.parse( me.config ).getAsJsonObject();
 
@@ -139,7 +148,7 @@ public class Framework {
 
         // re-serialize the whole thing
         me.config = root.toString();//getAsString();
-        p.persistEntity( me );
+        persistence.persistEntity( me );
     }
 
     public static JsonElement GetNestedProperty( JsonObject root, String path ) {
@@ -167,38 +176,37 @@ public class Framework {
     /**
      * Create an entity as specified, generate its config, and persist to disk.
      *
-     * @param n
      * @param name
      * @param type
      * @param node
      * @param parent
      */
-    public static void CreateEntity( Node n, String name, String type, String node, String parent ) {
+    public static void CreateEntity( String name, String type, String node, String parent ) {
         String config = "";
         ModelEntity model = new ModelEntity( name, type, node, parent, config );
-        CreateEntity( n, model );
+        CreateEntity( model );
     }
 
     /**
-     * This assumes that model.config has not been set. It is overwritten.
-     * @param n
+     * Create an entity in the persistence layer using the model.
+     * Create config object from data model, convert to a string, set back to model and persist.
+     * The effect is that any undefined fields will still be present (with value of null) in the persistence layer.
      * @param model
      */
-    public static void CreateEntity( Node n, ModelEntity model ) {
-        Entity entity = n.getEntityFactory().create( n.getObjectMap(), model );
+    public static void CreateEntity( ModelEntity model ) {
+        Node node = Node.NodeInstance();
+        Entity entity = node.getEntityFactory().create( node.getObjectMap(), model );
         EntityConfig entityConfig = entity.createConfig();
         model.config = Entity.SerializeConfig( entityConfig );
-        Persistence p = n.getPersistence();
-        p.persistEntity( model );
+        node.getPersistence().persistEntity( model );
     }
 
     /**
      * Create entities in the persistence layer, represented in the file (see file format).
      * TODO document the file format
-     * @param n
      * @param file
      */
-    public static void LoadEntities( Node n, String file ) {
+    public static void LoadEntities( String file ) {
         Gson gson = new Gson();
 
         try {
@@ -210,7 +218,7 @@ public class Framework {
 
             for ( ModelEntity modelEntity : entities ) {
                 logger.info( "Persisting Entity of type: " + modelEntity.type + ", that is hosted at Node: " + modelEntity.node );
-                CreateEntity( n, modelEntity );
+                CreateEntity( modelEntity );
             }
         }
         catch ( Exception e ) {
@@ -219,19 +227,26 @@ public class Framework {
         }
     }
 
-    /**
-     * Save entities to file form (see file format).
-     *
-     * @param entities collection of EntityModel's
-     * @param file the file in which to save the entities
-     */
-    public static void SaveEntities( Collection< ModelEntity > entities, String file ) {
+    public static void LoadData( String file ) {
+        Gson gson = new Gson();
+        try {
+            String jsonEntity = FileUtil.readFile( file );
 
+            Type listType = new TypeToken< List< ModelData > >() {
+            }.getType();
+
+            List< ModelData > modelDatas = gson.fromJson( jsonEntity, listType );
+            for ( ModelData modelData : modelDatas ) {
+                Framework.SetData( modelData );
+            }
+        }
+        catch ( Exception e ) {
+            logger.error( e.getStackTrace() );
+            System.exit( -1 );
+        }
     }
 
-
-
-    public static void LoadDataReferences( Persistence p, String file ) {
+    public static void LoadDataReferences( String file ) {
         Gson gson = new Gson();
         try {
             String jsonEntity = FileUtil.readFile( file );
@@ -242,7 +257,7 @@ public class Framework {
             List< ModelDataReference > references = gson.fromJson( jsonEntity, listType );
             for ( ModelDataReference modelDataReference : references ) {
                 logger.info( "Persisting data input reference for data: " + modelDataReference.dataKey + " with input data keys: " + modelDataReference.refKeys );
-                Framework.SetDataReference( p, modelDataReference.dataKey, modelDataReference.refKeys );
+                Framework.SetDataReference( modelDataReference.dataKey, modelDataReference.refKeys );
             }
         }
         catch ( Exception e ) {
@@ -251,7 +266,7 @@ public class Framework {
         }
     }
 
-    public static void LoadConfigs( Persistence p, String file ) {
+    public static void LoadConfigs( String file ) {
         Gson gson = new Gson();
         try {
             String jsonEntity = FileUtil.readFile( file );
@@ -264,7 +279,7 @@ public class Framework {
 
                 logger.info( "Persisting entity: " + modelConfig._entityName + " config path: " + modelConfig._configPath + " value: " + modelConfig._configValue );
 
-                Framework.SetConfig( p, modelConfig._entityName, modelConfig._configPath, modelConfig._configValue );
+                Framework.SetConfig( modelConfig._entityName, modelConfig._configPath, modelConfig._configValue );
             }
         }
         catch ( Exception e ) {
@@ -276,29 +291,27 @@ public class Framework {
     /**
      * Export the subtree, in the form of a serialised representation that allows full re-import, to view or resume.
      *
-     * @param node Node current node // persistence object to the persistence layer
      * @param entityName the parent of the subtree
      * @return serialised form of subtree
      */
-    public static String ExportSubtree( Node node, String entityName, String type ) {
+    public static String ExportSubtree( String entityName, String type ) {
         String entitiesExport = null;
 
         if ( type.equalsIgnoreCase( HttpExportHandler.TYPE_ENTITY ) ) {
-            entitiesExport = exportEntitiesSubtree( node._p, entityName );
+            entitiesExport = exportEntitiesSubtree( entityName );
         }
         else if ( type.equalsIgnoreCase( HttpExportHandler.TYPE_DATA ) ) {
-            entitiesExport = exportDataEntitiesSubtree( node, entityName );
+            entitiesExport = exportDataEntitiesSubtree( entityName );
         }
 
         return entitiesExport;
     }
 
-    protected static String exportDataEntitiesSubtree( Node node, String entityName ) {
-
+    protected static String exportDataEntitiesSubtree( String entityName ) {
         Gson gson = new Gson();
         Collection< ModelData > modelDatas = new ArrayList<>();
 
-        subtreeModelDatas( node, entityName, modelDatas );
+        subtreeModelDatas( entityName, modelDatas );
 
         String export = gson.toJson( modelDatas );
         return export;
@@ -309,19 +322,21 @@ public class Framework {
      * @param entityName the parent of the subtree.
      * @param modelDatas the flat collection that will contain the data models.
      */
-    protected static void subtreeModelDatas( Node node, String entityName, Collection< ModelData > modelDatas ) {
+    protected static void subtreeModelDatas( String entityName, Collection< ModelData > modelDatas ) {
+        Node node = Node.NodeInstance();
+        addModelDatasForEntity( entityName, modelDatas );
 
-        addModelDatasForEntity( node, entityName, modelDatas );
-
-        Collection< String > childNames = node._p.getChildEntities( entityName );
+        Collection< String > childNames = node.getPersistence().getChildEntities( entityName );
         for ( String childName : childNames ) {
-            subtreeModelDatas( node, childName, modelDatas );
+            subtreeModelDatas( childName, modelDatas );
         }
     }
 
-    protected static void addModelDatasForEntity( Node node, String entityName, Collection<ModelData> modelDatas ) {
+    protected static void addModelDatasForEntity( String entityName, Collection<ModelData> modelDatas ) {
 
-        ModelEntity modelEntity = node._p.fetchEntity( entityName );
+        Node node = Node.NodeInstance();
+
+        ModelEntity modelEntity = node.getPersistence().fetchEntity( entityName );
 
         Entity entity = node.getEntityFactory().create( node.getObjectMap(), modelEntity );
         entity._config = entity.createConfig();
@@ -332,7 +347,7 @@ public class Framework {
 
         for ( String attribute : attributes ) {
             String outputKey = entity.getKey( attribute );
-            ModelData modelData = node._p.fetchData( outputKey );
+            ModelData modelData = node.getPersistence().fetchData( outputKey );
 
             if ( modelData != null ) {
                 modelDatas.add( modelData );
@@ -340,10 +355,11 @@ public class Framework {
         }
     }
 
-    protected static String exportEntitiesSubtree( Persistence p, String entityName ) {
+    protected static String exportEntitiesSubtree( String entityName ) {
+        Persistence persistence = Node.NodeInstance().getPersistence();
         Gson gson = new Gson();
         Collection< ModelEntity > modelEntities = new ArrayList<>( );
-        subtreeModelEntities( p, entityName, modelEntities );
+        subtreeModelEntities( entityName, modelEntities );
         String export = gson.toJson( modelEntities );
         return export;
     }
@@ -351,23 +367,33 @@ public class Framework {
     /**
      * Flatten subtree of a given entity, referenced by name, into a collection of entity models.
      * Recursive method.
-     * @param p
      * @param entityName
      * @param modelEntities
      */
-    protected static void subtreeModelEntities( Persistence p, String entityName, Collection< ModelEntity > modelEntities ) {
+    protected static void subtreeModelEntities( String entityName, Collection< ModelEntity > modelEntities ) {
         // traverse tree depth first via recursion, building the string representation
-        ModelEntity modelEntity = p.fetchEntity( entityName );
+        Persistence persistence = Node.NodeInstance().getPersistence();
+        ModelEntity modelEntity = persistence.fetchEntity( entityName );
         modelEntities.add( modelEntity );
 
-        Collection< String > childNames = p.getChildEntities( entityName );
+        Collection< String > childNames = persistence.getChildEntities( entityName );
         for ( String childName : childNames ) {
-            subtreeModelEntities( p, childName, modelEntities );
+            subtreeModelEntities( childName, modelEntities );
         }
     }
 
 
-    public static boolean ImportSubtree( Persistence p, String subtree ) {
+    public static boolean ImportSubtree( String subtree ) {
         return false;
     }
+
+    public static boolean ImportSubtree( String entityFilename, String dataFilename ) {
+
+        Framework.LoadEntities( entityFilename );
+        Framework.LoadData( dataFilename );
+
+        return true;
+    }
+
+
 }

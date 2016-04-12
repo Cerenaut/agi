@@ -32,15 +32,15 @@ public class RegionDemo {
 
         // Create custom entities and references
         if ( args.length > 1 ) {
-            Framework.LoadEntities( m._n, args[ 1 ] );
+            Framework.LoadEntities( args[ 1 ] );
         }
 
         if ( args.length > 2 ) {
-            Framework.LoadDataReferences( m._p, args[ 2 ] );
+            Framework.LoadDataReferences( args[ 2 ] );
         }
 
         if ( args.length > 3 ) {
-            Framework.LoadConfigs( m._p, args[ 3 ] );
+            Framework.LoadConfigs( args[ 3 ] );
         }
 
         // Programmatic hook to Create entities and references..
@@ -57,20 +57,20 @@ public class RegionDemo {
         String constantMatrixName = "constant-matrix";
         String regionName = "region";
 
-        Framework.CreateEntity( n, imageSourceName, ImageSensorEntity.ENTITY_TYPE, n.getName(), null );
-        Framework.CreateEntity( n, constantMatrixName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), imageSourceName );
-        Framework.CreateEntity( n, regionName, RegionEntity.ENTITY_TYPE, n.getName(), constantMatrixName );
+        Framework.CreateEntity( imageSourceName, ImageSensorEntity.ENTITY_TYPE, n.getName(), null );
+        Framework.CreateEntity( constantMatrixName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), imageSourceName );
+        Framework.CreateEntity( regionName, RegionEntity.ENTITY_TYPE, n.getName(), constantMatrixName );
 
         // Connect the entities' data
         Persistence p = n.getPersistence();
 
-        Framework.SetDataReference( p, regionName, RegionEntity.FF_INPUT, imageSourceName, ImageSensorEntity.IMAGE_DATA );
-        Framework.SetDataReference( p, regionName, RegionEntity.FB_INPUT, constantMatrixName, ConstantMatrixEntity.OUTPUT );
+        Framework.SetDataReference( regionName, RegionEntity.FF_INPUT, imageSourceName, ImageSensorEntity.IMAGE_DATA );
+        Framework.SetDataReference( regionName, RegionEntity.FB_INPUT, constantMatrixName, ConstantMatrixEntity.OUTPUT );
 
         // Set properties
-        Framework.SetConfig( p, regionName, Entity.SUFFIX_RESET, "true" );
-        Framework.SetConfig( p, imageSourceName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
-        Framework.SetConfig( p, imageSourceName, "greyscale", "true" );
-        Framework.SetConfig( p, imageSourceName, "sourceFilesPath", "/home/dave/workspace/agi.io/agi/algorithms/code/core/run/line" );
+        Framework.SetConfig( regionName, Entity.SUFFIX_RESET, "true" );
+        Framework.SetConfig( imageSourceName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
+        Framework.SetConfig( imageSourceName, "greyscale", "true" );
+        Framework.SetConfig( imageSourceName, "sourceFilesPath", "/home/dave/workspace/agi.io/agi/algorithms/code/core/run/line" );
     }
 }
