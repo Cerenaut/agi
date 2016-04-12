@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.core.ann.supervised;
 
 import io.agi.core.data.Data;
@@ -9,7 +28,7 @@ import java.util.Random;
 
 /**
  * Unit test
- * <p>
+ * <p/>
  * Created by dave on 10/01/16.
  */
 public class FeedForwardNetworkTest implements UnitTest {
@@ -32,18 +51,16 @@ public class FeedForwardNetworkTest implements UnitTest {
         float regularization = 0.0f;
         String lossFunction = null;
 
-        if ( args.length > 0 ) {
+        if( args.length > 0 ) {
             lossFunction = args[ 0 ];
         }
 
-        if ( lossFunction.equals( LossFunction.QUADRATIC ) ) {
+        if( lossFunction.equals( LossFunction.QUADRATIC ) ) {
             learningRate = 0.5f; // quadratic
 //            learningRate = 0.1f; // quadratic
-        }
-        else if ( lossFunction.equals( LossFunction.CROSS_ENTROPY ) ) {
+        } else if( lossFunction.equals( LossFunction.CROSS_ENTROPY ) ) {
             learningRate = 0.1f; // cross entropy
-        }
-        else if ( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
+        } else if( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
             learningRate = 0.1f;
         }
 
@@ -72,11 +89,11 @@ public class FeedForwardNetworkTest implements UnitTest {
         int outputs = 1;
 
         int layers = 2;
-        if ( hidden == 0 ) {
+        if( hidden == 0 ) {
             layers = 1;
         }
 
-        if ( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
+        if( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
             outputs = 2; // outcome A or B.
         }
 
@@ -94,46 +111,43 @@ public class FeedForwardNetworkTest implements UnitTest {
         _ffn = new FeedForwardNetwork( name, om );
         _ffn.setup( ffnc, aff );
 
-        if ( layers == 1 ) {
+        if( layers == 1 ) {
             // Single layer test:
             _ffn.setupLayer( r, 0, inputs, outputs, learningRate, activationFunction );
-        }
-        else if ( layers == 2 ) {
+        } else if( layers == 2 ) {
             // Twin layer test:
             _ffn.setupLayer( r, 0, inputs, hidden, learningRate, activationFunction );
 
-            if ( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
+            if( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
                 _ffn.setupLayer( r, 1, hidden, outputs, learningRate, ActivationFunctionFactory.SOFTMAX );
-            }
-            else {
+            } else {
                 _ffn.setupLayer( r, 1, hidden, outputs, learningRate, activationFunction );
             }
-        }
-        else {
+        } else {
             System.err.println( "Bad configuration - layers > 2." );
         }
     }
 
     public static float ideal( float x1, float x2, Logic l ) {
         // AND
-        if ( l == Logic.AND ) {
-            if ( ( x1 > 0.5 ) && ( x2 > 0.5 ) ) {
+        if( l == Logic.AND ) {
+            if( ( x1 > 0.5 ) && ( x2 > 0.5 ) ) {
                 return 1.0f;
             }
             return 0.0f;
         }
 
         // OR
-        if ( l == Logic.OR ) {
-            if ( ( x1 > 0.5 ) || ( x2 > 0.5 ) ) {
+        if( l == Logic.OR ) {
+            if( ( x1 > 0.5 ) || ( x2 > 0.5 ) ) {
                 return 1.0f;
             }
             return 0.0f;
         }
 
         // XOR
-        if ( l == Logic.XOR ) {
-            if ( ( ( x1 > 0.5 ) && ( x2 < 0.5 ) )
+        if( l == Logic.XOR ) {
+            if( ( ( x1 > 0.5 ) && ( x2 < 0.5 ) )
                     ||
                     ( ( x2 > 0.5 ) && ( x1 < 0.5 ) ) ) {
                 return 1.0f;
@@ -148,24 +162,24 @@ public class FeedForwardNetworkTest implements UnitTest {
 
         // perform tests in batches until the mean error for a batch is below threshold.
         // Otherwise, fail test.
-        for ( int epoch = 0; epoch < _epochs; ++epoch ) {
+        for( int epoch = 0; epoch < _epochs; ++epoch ) {
 
             float sumError = 0.f;
 
-            for ( int test = 0; test < _batch; ++test ) {
+            for( int test = 0; test < _batch; ++test ) {
                 float error = step();
                 sumError += error;
             }
 
             float meanError = 0.f;
 
-            if ( sumError > 0.f ) {
+            if( sumError > 0.f ) {
                 meanError = sumError / ( float ) _batch;
             }
 
             System.out.println( "Epoch: " + epoch + " Mean error: " + meanError );
 
-            if ( meanError < _meanErrorThreshold ) {
+            if( meanError < _meanErrorThreshold ) {
                 System.out.println( "Success: Error below threshold for epoch." );
                 return 0;
             }
@@ -194,16 +208,14 @@ public class FeedForwardNetworkTest implements UnitTest {
         input._values[ 0 ] = x1;
         input._values[ 1 ] = x2;
 
-        if ( ideal.getSize() == 1 ) {
+        if( ideal.getSize() == 1 ) {
             ideal._values[ 0 ] = idealValue;
-        }
-        else {
+        } else {
             assert ( ideal.getSize() == 2 );
-            if ( idealValue == 0.f ) {
+            if( idealValue == 0.f ) {
                 ideal._values[ 0 ] = 1.f;
                 ideal._values[ 1 ] = 0.f;
-            }
-            else {
+            } else {
                 ideal._values[ 0 ] = 0.f;
                 ideal._values[ 1 ] = 1.f;
             }

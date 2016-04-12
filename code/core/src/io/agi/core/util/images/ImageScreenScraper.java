@@ -1,4 +1,23 @@
 /*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
@@ -15,17 +34,6 @@ import io.agi.core.util.images.BufferedImageSource.BufferedImageSource;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-/**
- * Scrape a BufferedImage for consumption by the hierarchy.
- * <p>
- * Scrapes a rectangle defined by a receptor field @param{receptorField}, from within a BufferedImage
- * - at a specific resolution defined by @param{resolution}
- * - converts from 8 bit to unit values
- * - converts from 3 channel color to floatarray with 3x elements
- *
- * @author Gideon Kowadlo and David Rawlinson
- * @copyright Gideon Kowadlo and David Rawlinson
- */
 public class ImageScreenScraper implements Callback {
 
     protected Rectangle _receptiveField;
@@ -68,7 +76,7 @@ public class ImageScreenScraper implements Callback {
         _receptiveField = new Rectangle( receptiveField );
 
         int channels = 3; // RGB
-        if ( greyscale ) {
+        if( greyscale ) {
             channels = 1;
         }
 
@@ -95,7 +103,7 @@ public class ImageScreenScraper implements Callback {
         BufferedImage bi = _bis.getImage();
         BufferedImage biTgt = null;
 
-        if ( bi == null ) {
+        if( bi == null ) {
             System.out.println( "ERROR: ImageScreenScraper.scrape() - could not scrape image with name: " + _bis.getImageName() );
             return;
         }
@@ -121,7 +129,7 @@ public class ImageScreenScraper implements Callback {
         _imageData.setWithBufferedImage( biTgt );
 
         if( _invert ) {
-            _imageData.getData().argSub(1.f);
+            _imageData.getData().argSub( 1.f );
         }
     }
 

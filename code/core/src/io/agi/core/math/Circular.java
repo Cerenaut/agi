@@ -1,4 +1,23 @@
 /*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -32,14 +51,13 @@ public class Circular {
         double mid = max * 0.5;
         double diff;
 
-        if ( first > second ) {
+        if( first > second ) {
             diff = first - second;
-        }
-        else {
+        } else {
             diff = second - first;
         }
 
-        if ( diff > mid ) {
+        if( diff > mid ) {
             diff = max - diff;
         }
 
@@ -54,8 +72,8 @@ public class Circular {
         //_________________________________________________________________________
         int size = values.size();
 
-        if ( size < 2 ) {
-            if ( size == 0 ) {
+        if( size < 2 ) {
+            if( size == 0 ) {
                 return 0.0;
             }
             // else: size is 1.
@@ -92,13 +110,13 @@ public class Circular {
 
         // 4) Loop thru all elements.
         //_________________________________________________________________________
-        while ( i.hasNext() ) {
+        while( i.hasNext() ) {
 
             max = i.next();
 
             span = max - min; // set will have ordered them.
 
-            if ( span >= maxSpan ) {
+            if( span >= maxSpan ) {
                 maxSpanMin = min;
                 maxSpanMax = max;
                 maxSpan = span;
@@ -119,7 +137,7 @@ public class Circular {
 
         span = max + ( maxValue - min );
 
-        if ( span >= maxSpan ) {
+        if( span >= maxSpan ) {
             maxSpanMin = min;
             maxSpanMax = max;
             maxSpan = span;
@@ -137,12 +155,12 @@ public class Circular {
 
         i = sorted.iterator();
 
-        while ( i.hasNext() ) {
+        while( i.hasNext() ) {
 
             value = i.next();
             value += offset;
 
-            if ( value >= maxValue ) {
+            if( value >= maxValue ) {
                 value -= maxValue; // wrap around
             }
 
@@ -152,7 +170,7 @@ public class Circular {
         sum /= ( double ) size;
         sum -= offset;
 
-        if ( sum < 0.0 ) {
+        if( sum < 0.0 ) {
             sum += maxValue;
         }
 

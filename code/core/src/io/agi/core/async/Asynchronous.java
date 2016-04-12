@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.core.async;
 
 /**
@@ -5,16 +24,16 @@ package io.agi.core.async;
  * object, i.e. we should minimize creation and deletion. Therefore, we distinguish between start/stop events (heavy) and
  * pause/resume (lightweight). The concept of "reseting" the thread to a known state is assumed to be external to this
  * interface. i.e. no guarantees are given and no interface is provided.
- * <p>
+ * <p/>
  * The thread has 2 properties:
  * - running
  * - paused
- * <p>
+ * <p/>
  * The thread is running from start until stopped.
  * The thread can be paused and resumed at any time, though it only has effect while running.
- * <p>
+ * <p/>
  * In addition, execution is assumed to be iterative, with step() called each iteration.
- * <p>
+ * <p/>
  * Created by dave on 12/09/15.
  */
 public interface Asynchronous {

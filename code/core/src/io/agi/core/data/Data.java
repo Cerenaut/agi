@@ -1,4 +1,23 @@
 /*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -97,7 +116,7 @@ public class Data extends FloatArray2 {
         int h = w;
 
         int sq = w * w;
-        if ( sq < volume ) {
+        if( sq < volume ) {
             h = h + 1;
         }
 
@@ -114,7 +133,7 @@ public class Data extends FloatArray2 {
 
     public float get( Coordinate2 c ) {
         int offset = c.offset();
-        if ( offset < _values.length ) {
+        if( offset < _values.length ) {
             return _values[ offset ];
         }
         return 0.f;
@@ -126,7 +145,7 @@ public class Data extends FloatArray2 {
     }
 
     public boolean isSameAs( Data d ) {
-        if ( !_dataSize.isSameAs( d._dataSize ) ) {
+        if( !_dataSize.isSameAs( d._dataSize ) ) {
             return false;
         }
 
@@ -160,7 +179,7 @@ public class Data extends FloatArray2 {
             c2.translate( translations );
 
             v.set( c2, value ); // checks for validity
-        } while ( c1.next() ); // for-each( value in volume )
+        } while( c1.next() ); // for-each( value in volume )
 
         return v;
     }
@@ -172,7 +191,7 @@ public class Data extends FloatArray2 {
 
         ArrayList< Coordinate2 > al = new ArrayList< Coordinate2 >();
 
-        while ( al.size() < n ) {
+        while( al.size() < n ) {
             Coordinate2 c = v.maxAt();
 
             al.add( c );
@@ -190,7 +209,7 @@ public class Data extends FloatArray2 {
 
         ArrayList< Coordinate2 > al = new ArrayList< Coordinate2 >();
 
-        while ( al.size() < n ) {
+        while( al.size() < n ) {
             Coordinate2 c = v.minAt();
 
             al.add( c );
@@ -211,11 +230,11 @@ public class Data extends FloatArray2 {
         do { // for-each( value in volume )
             float value = get( c );
 
-            if ( value > max ) {
+            if( value > max ) {
                 max = value;
                 cMax = new Coordinate2( c );
             }
-        } while ( c.next() ); // for-each( value in volume )
+        } while( c.next() ); // for-each( value in volume )
 
         return cMax;
     }
@@ -230,11 +249,11 @@ public class Data extends FloatArray2 {
         do { // for-each( value in volume )
             float value = get( c );
 
-            if ( value < min ) {
+            if( value < min ) {
                 min = value;
                 cMin = new Coordinate2( c );
             }
-        } while ( c.next() ); // for-each( value in volume )
+        } while( c.next() ); // for-each( value in volume )
 
         return cMin;
     }
@@ -255,13 +274,12 @@ public class Data extends FloatArray2 {
 
         double sum = sum();
 
-        for ( int i = 0; i < samples; ++i ) {
-            if ( sum <= 0.0 ) {
+        for( int i = 0; i < samples; ++i ) {
+            if( sum <= 0.0 ) {
                 Coordinate2 c = begin();
                 c.randomize( r );
                 al.add( c );
-            }
-            else {
+            } else {
                 Coordinate2 c = roulette( r, sum );
                 al.add( c );
             }
@@ -279,7 +297,7 @@ public class Data extends FloatArray2 {
         // first sum the values, and handle the all-zero case as totally random:
         Coordinate2 c = begin();
 
-        if ( sum <= 0.0 ) {
+        if( sum <= 0.0 ) {
             c.randomize( r );
             return c;
         }
@@ -293,10 +311,10 @@ public class Data extends FloatArray2 {
 
             accumulated += value;
 
-            if ( accumulated >= random ) {
+            if( accumulated >= random ) {
                 return c;
             }
-        } while ( c.next() ); // for-each( value in volume )
+        } while( c.next() ); // for-each( value in volume )
 
         return end(); // shouldn't happen!
     }
@@ -322,7 +340,7 @@ public class Data extends FloatArray2 {
 
         float sum = 0.0f;
 
-        while ( offset1 < offset2 ) {
+        while( offset1 < offset2 ) {
             sum += _values[ offset1 ];
             ++offset1;
         }
@@ -343,7 +361,7 @@ public class Data extends FloatArray2 {
         int offset1 = included.offset();
         int offset2 = excluded.offset();
 
-        while ( offset1 < offset2 ) {
+        while( offset1 < offset2 ) {
             _values[ offset1 ] *= value;
             ++offset1;
         }
@@ -357,7 +375,7 @@ public class Data extends FloatArray2 {
         // x = x * (1/sum)
         float sum = sumSubVolume( dimensionsExcluded, included );
 
-        if ( sum <= 0.0f ) {
+        if( sum <= 0.0f ) {
             return;
         }
 
@@ -370,7 +388,7 @@ public class Data extends FloatArray2 {
         int volume = getSize();
         int size = _dataSize.getSize( invariantDimension );
 
-        if ( size == 0 ) {
+        if( size == 0 ) {
             return volume;
         }
 

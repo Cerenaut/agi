@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.framework.persistence.models;
 
 import com.sun.deploy.util.StringUtils;
@@ -10,7 +29,7 @@ import java.util.HashSet;
 
 /**
  * Conversion to JSON for models.
- * <p>
+ * <p/>
  * Created by dave on 16/02/16.
  */
 public class ModelData {
@@ -23,7 +42,7 @@ public class ModelData {
     public ModelData( String key, Data d, boolean sparse ) {
         name = key;
         refKeys = null;
-        if ( d != null ) {
+        if( d != null ) {
             sizes = DataSizeToString( d._dataSize );
             elements = FloatArrayToString( d, sparse );
         }
@@ -47,10 +66,10 @@ public class ModelData {
         try {
             HashSet< String > refKeys = new HashSet< String >();
 
-            if ( this.refKeys != null ) {
+            if( this.refKeys != null ) {
                 String[] splitKeys = this.refKeys.split( "," );
 
-                for ( int i = 0; i < splitKeys.length; ++i ) {
+                for( int i = 0; i < splitKeys.length; ++i ) {
                     String key = splitKeys[ i ];
                     refKeys.add( key );
                 }
@@ -58,13 +77,13 @@ public class ModelData {
 
             return refKeys;
         }
-        catch ( Exception e ) {
+        catch( Exception e ) {
             return null;
         }
     }
 
     public boolean isReference() {
-        if ( refKeys != null ) {
+        if( refKeys != null ) {
             return true;
         }
         return false;
@@ -80,7 +99,7 @@ public class ModelData {
             sizes = DataSizeToString( d._dataSize );
             elements = FloatArrayToString( d, sparse );
         }
-        catch ( Exception e ) {
+        catch( Exception e ) {
 
         }
     }
@@ -102,7 +121,7 @@ public class ModelData {
             Data d = new Data( ds, fa );
             return d;
         }
-        catch ( Exception e ) {
+        catch( Exception e ) {
             return null;
         }
     }
@@ -125,10 +144,10 @@ public class ModelData {
 
         String sizes = "";
         String labels = "";
-        for ( int d = 0; d < ds._sizes.length; ++d ) {
+        for( int d = 0; d < ds._sizes.length; ++d ) {
             int size = ds._sizes[ d ];
             String label = ds.getLabel( d );
-            if ( d > 0 ) {
+            if( d > 0 ) {
                 sizes = sizes + ","; // add comma for preceding item
                 labels = labels + ","; // add comma for preceding item
             }
@@ -148,7 +167,7 @@ public class ModelData {
 
             DataSize ds = new DataSize( splitSizes.length );
 
-            for ( int i = 0; i < splitSizes.length; ++i ) {
+            for( int i = 0; i < splitSizes.length; ++i ) {
                 String sizeString = splitSizes[ i ];
                 String labelValue = splitLabels[ i ];
                 labelValue = labelValue.replace( "\"", "" );
@@ -158,7 +177,7 @@ public class ModelData {
 
             return ds;
         }
-        catch ( Exception e ) {
+        catch( Exception e ) {
             return null;
         }
     }
@@ -171,20 +190,19 @@ public class ModelData {
         String length = String.valueOf( fa._values.length );
         ArrayList< String > values = new ArrayList< String >();
 
-        if ( sparse ) {
-            for ( int i = 0; i < fa._values.length; ++i ) {
+        if( sparse ) {
+            for( int i = 0; i < fa._values.length; ++i ) {
                 float value = fa._values[ i ];
-                if ( value == 0.f ) {
+                if( value == 0.f ) {
                     continue; // only add the nonzero value indices.
                 }
 
                 String s = String.valueOf( i );
                 values.add( s );
             }
-        }
-        else {
+        } else {
             values.ensureCapacity( fa._values.length );
-            for ( int i = 0; i < fa._values.length; ++i ) {
+            for( int i = 0; i < fa._values.length; ++i ) {
                 float value = fa._values[ i ];
                 String s = String.valueOf( value );
                 values.add( s );
@@ -204,7 +222,7 @@ public class ModelData {
 
             Boolean sparse = false;
             String sparseString = GetJsonProperty( s, "sparse" );
-            if ( sparseString != null ) {
+            if( sparseString != null ) {
                 sparse = Boolean.valueOf( sparseString );
             }
 
@@ -213,15 +231,14 @@ public class ModelData {
             String elementsString = GetJsonArrayProperty( s, "elements" );
             String[] splitString = elementsString.split( "," );
 
-            if ( sparse ) {
-                for ( int i = 0; i < splitString.length; ++i ) {
+            if( sparse ) {
+                for( int i = 0; i < splitString.length; ++i ) {
                     String valueString = splitString[ i ];
                     Integer value = Integer.valueOf( valueString );
                     fa._values[ value ] = 1.f;
                 }
-            }
-            else {
-                for ( int i = 0; i < splitString.length; ++i ) {
+            } else {
+                for( int i = 0; i < splitString.length; ++i ) {
                     String valueString = splitString[ i ];
                     Float value = Float.valueOf( valueString );
                     fa._values[ i ] = value;
@@ -229,7 +246,7 @@ public class ModelData {
             }
             return fa;
         }
-        catch ( Exception e ) {
+        catch( Exception e ) {
             return null;
         }
     }
@@ -239,10 +256,10 @@ public class ModelData {
         int i2 = json.indexOf( ":", i1 ); // this is the start of the property value
         int i3a = json.indexOf( "}", i2 ); // it ends either with } or , depending on whether it is the last property.
         int i3b = json.indexOf( ",", i2 );
-        if ( i3a < 0 ) {
+        if( i3a < 0 ) {
             i3a = i3b;
         }
-        if ( i3b < 0 ) {
+        if( i3b < 0 ) {
             i3b = i3a;
         }
         int i3 = Math.min( i3a, i3b );

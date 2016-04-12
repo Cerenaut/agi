@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.framework;
 
 import com.google.gson.Gson;
@@ -59,7 +78,7 @@ public class Framework {
         Persistence persistence = Node.NodeInstance().getPersistence();
         ModelData modelData = persistence.fetchData( dataKey );
 
-        if ( modelData == null ) {
+        if( modelData == null ) {
             modelData = new ModelData( dataKey, refKeys );
         }
 
@@ -70,6 +89,7 @@ public class Framework {
     /**
      * Set the data in the model, in the persistence layer.
      * If an entry exists for this key, replace it.
+     *
      * @param modelData
      */
     public static void SetData( ModelData modelData ) {
@@ -104,7 +124,7 @@ public class Framework {
     public static String GetConfig( String entityName ) {
         Persistence persistence = Node.NodeInstance().getPersistence();
         ModelEntity me = persistence.fetchEntity( entityName );
-        if ( me == null ) {
+        if( me == null ) {
             return null;
         }
 
@@ -131,7 +151,7 @@ public class Framework {
 //            part = configPath;
 //        }
 
-        while ( index < maxIndex ) {
+        while( index < maxIndex ) {
             part = pathParts[ index ];
             JsonElement child = parent.get( part );
 
@@ -159,7 +179,7 @@ public class Framework {
         int index = 0;
         int maxIndex = pathParts.length - 1;
 
-        while ( index < maxIndex ) {
+        while( index < maxIndex ) {
             part = pathParts[ index ];
 
             JsonObject joParent = ( JsonObject ) je; // there is more to find
@@ -191,6 +211,7 @@ public class Framework {
      * Create an entity in the persistence layer using the model.
      * Create config object from data model, convert to a string, set back to model and persist.
      * The effect is that any undefined fields will still be present (with value of null) in the persistence layer.
+     *
      * @param model
      */
     public static void CreateEntity( ModelEntity model ) {
@@ -204,6 +225,7 @@ public class Framework {
     /**
      * Create entities in the persistence layer, represented in the file (see file format).
      * TODO document the file format
+     *
      * @param file
      */
     public static void LoadEntities( String file ) {
@@ -216,12 +238,12 @@ public class Framework {
             }.getType();
             List< ModelEntity > entities = gson.fromJson( jsonEntity, listType );
 
-            for ( ModelEntity modelEntity : entities ) {
+            for( ModelEntity modelEntity : entities ) {
                 logger.info( "Persisting Entity of type: " + modelEntity.type + ", that is hosted at Node: " + modelEntity.node );
                 CreateEntity( modelEntity );
             }
         }
-        catch ( Exception e ) {
+        catch( Exception e ) {
             logger.error( e.getStackTrace() );
             System.exit( -1 );
         }
@@ -236,11 +258,11 @@ public class Framework {
             }.getType();
 
             List< ModelData > modelDatas = gson.fromJson( jsonEntity, listType );
-            for ( ModelData modelData : modelDatas ) {
+            for( ModelData modelData : modelDatas ) {
                 Framework.SetData( modelData );
             }
         }
-        catch ( Exception e ) {
+        catch( Exception e ) {
             logger.error( e.getStackTrace() );
             System.exit( -1 );
         }
@@ -255,12 +277,12 @@ public class Framework {
             }.getType();
 
             List< ModelDataReference > references = gson.fromJson( jsonEntity, listType );
-            for ( ModelDataReference modelDataReference : references ) {
+            for( ModelDataReference modelDataReference : references ) {
                 logger.info( "Persisting data input reference for data: " + modelDataReference.dataKey + " with input data keys: " + modelDataReference.refKeys );
                 Framework.SetDataReference( modelDataReference.dataKey, modelDataReference.refKeys );
             }
         }
-        catch ( Exception e ) {
+        catch( Exception e ) {
             logger.error( e.getStackTrace() );
             System.exit( -1 );
         }
@@ -275,14 +297,14 @@ public class Framework {
             }.getType();
             List< ModelEntityConfigPath > modelConfigs = gson.fromJson( jsonEntity, listType );
 
-            for ( ModelEntityConfigPath modelConfig : modelConfigs ) {
+            for( ModelEntityConfigPath modelConfig : modelConfigs ) {
 
                 logger.info( "Persisting entity: " + modelConfig._entityName + " config path: " + modelConfig._configPath + " value: " + modelConfig._configValue );
 
                 Framework.SetConfig( modelConfig._entityName, modelConfig._configPath, modelConfig._configValue );
             }
         }
-        catch ( Exception e ) {
+        catch( Exception e ) {
             logger.error( e.getStackTrace() );
             System.exit( -1 );
         }
@@ -297,10 +319,9 @@ public class Framework {
     public static String ExportSubtree( String entityName, String type ) {
         String entitiesExport = null;
 
-        if ( type.equalsIgnoreCase( HttpExportHandler.TYPE_ENTITY ) ) {
+        if( type.equalsIgnoreCase( HttpExportHandler.TYPE_ENTITY ) ) {
             entitiesExport = exportEntitiesSubtree( entityName );
-        }
-        else if ( type.equalsIgnoreCase( HttpExportHandler.TYPE_DATA ) ) {
+        } else if( type.equalsIgnoreCase( HttpExportHandler.TYPE_DATA ) ) {
             entitiesExport = exportDataEntitiesSubtree( entityName );
         }
 
@@ -319,6 +340,7 @@ public class Framework {
 
     /**
      * Get all the Data models for all entities in the subtree, and put in a flat collection.
+     *
      * @param entityName the parent of the subtree.
      * @param modelDatas the flat collection that will contain the data models.
      */
@@ -327,12 +349,12 @@ public class Framework {
         addModelDatasForEntity( entityName, modelDatas );
 
         Collection< String > childNames = node.getPersistence().getChildEntities( entityName );
-        for ( String childName : childNames ) {
+        for( String childName : childNames ) {
             subtreeModelDatas( childName, modelDatas );
         }
     }
 
-    protected static void addModelDatasForEntity( String entityName, Collection<ModelData> modelDatas ) {
+    protected static void addModelDatasForEntity( String entityName, Collection< ModelData > modelDatas ) {
 
         Node node = Node.NodeInstance();
 
@@ -345,11 +367,11 @@ public class Framework {
         DataFlags dataFlags = new DataFlags();
         entity.getOutputAttributes( attributes, dataFlags );
 
-        for ( String attribute : attributes ) {
+        for( String attribute : attributes ) {
             String outputKey = entity.getKey( attribute );
             ModelData modelData = node.getPersistence().fetchData( outputKey );
 
-            if ( modelData != null ) {
+            if( modelData != null ) {
                 modelDatas.add( modelData );
             }
         }
@@ -358,7 +380,7 @@ public class Framework {
     protected static String exportEntitiesSubtree( String entityName ) {
         Persistence persistence = Node.NodeInstance().getPersistence();
         Gson gson = new Gson();
-        Collection< ModelEntity > modelEntities = new ArrayList<>( );
+        Collection< ModelEntity > modelEntities = new ArrayList<>();
         subtreeModelEntities( entityName, modelEntities );
         String export = gson.toJson( modelEntities );
         return export;
@@ -367,6 +389,7 @@ public class Framework {
     /**
      * Flatten subtree of a given entity, referenced by name, into a collection of entity models.
      * Recursive method.
+     *
      * @param entityName
      * @param modelEntities
      */
@@ -377,7 +400,7 @@ public class Framework {
         modelEntities.add( modelEntity );
 
         Collection< String > childNames = persistence.getChildEntities( entityName );
-        for ( String childName : childNames ) {
+        for( String childName : childNames ) {
             subtreeModelEntities( childName, modelEntities );
         }
     }

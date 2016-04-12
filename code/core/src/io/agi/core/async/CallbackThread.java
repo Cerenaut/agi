@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.core.async;
 
 import io.agi.core.orm.Callback;
@@ -8,7 +27,7 @@ import io.agi.core.orm.CallbackCollection;
  * This means your implementing class doesn't need to know whether it is running in a real thread, or simply being
  * iterated. In addition, you can add diagnostic and debug hooks dynamically to all thread events. For example, getting
  * data out for visualization.
- * <p>
+ * <p/>
  * Created by dave on 27/12/15.
  */
 public abstract class CallbackThread implements Runnable, Asynchronous {
@@ -97,21 +116,21 @@ public abstract class CallbackThread implements Runnable, Asynchronous {
     /**
      * Implement Runnable interface. Creates a loop that iterates until thread
      * is instructed to stop.
-     * <p>
+     * <p/>
      * Callbacks are called on pre- and post- execution to allow setup and tidy
      * up.
      */
     @Override
     public void run() {
 
-        synchronized ( this ) {
+        synchronized( this ) {
             _doStep = true; // aka start
             _running = true;
         }
 
         _preCb.call();
 
-        while ( !stopping() ) {
+        while( !stopping() ) {
             step();
         }
         // _doStep has become false
@@ -133,18 +152,18 @@ public abstract class CallbackThread implements Runnable, Asynchronous {
         long timeWait = System.currentTimeMillis();
 
         try {
-            while ( running() ) {
+            while( running() ) {
                 Thread.sleep( sleepInterval );
-                if ( timeout != null ) {
+                if( timeout != null ) {
                     long timeNow = System.currentTimeMillis();
                     long elapsed = timeNow - timeWait;
-                    if ( elapsed > timeout ) {
+                    if( elapsed > timeout ) {
                         break;
                     }
                 }
             }
         }
-        catch ( InterruptedException ie ) {
+        catch( InterruptedException ie ) {
             System.err.print( ie );
         }
     }
@@ -152,28 +171,28 @@ public abstract class CallbackThread implements Runnable, Asynchronous {
     /**
      * This method is not synchronized so you can perform fine-grained atomicity
      * in your callbacks using the same object.
-     * <p>
+     * <p/>
      * Frame rate control is implemented if the interval is set to > 0.
      */
     public void step() {
 
         long timeStep = System.currentTimeMillis();
 
-        if ( !paused() ) {
+        if( !paused() ) {
 
             onStep();
             _stepCb.call();
 
             boolean doPause = false;
 
-            synchronized ( this ) {
-                if ( _oneStep ) {
+            synchronized( this ) {
+                if( _oneStep ) {
                     _oneStep = false;
                     doPause = true;
                 }
             }
 
-            if ( doPause ) {
+            if( doPause ) {
                 pause();
             }
         }
@@ -181,8 +200,8 @@ public abstract class CallbackThread implements Runnable, Asynchronous {
         // thread rate control
         long delay = 0;
 
-        synchronized ( this ) {
-            if ( _interval > 0 ) {
+        synchronized( this ) {
+            if( _interval > 0 ) {
 
                 long timeNow = System.currentTimeMillis();
                 long elapsed = timeNow - timeStep;
@@ -191,11 +210,11 @@ public abstract class CallbackThread implements Runnable, Asynchronous {
             }
         }
 
-        if ( delay > 0 ) {
+        if( delay > 0 ) {
             try {
                 Thread.sleep( delay );
             }
-            catch ( InterruptedException ie ) {
+            catch( InterruptedException ie ) {
                 //System.err.print( ie );
             }
         }

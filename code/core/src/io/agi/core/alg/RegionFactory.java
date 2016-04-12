@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.core.alg;
 
 import io.agi.core.ann.supervised.ActivationFunctionFactory;
@@ -13,7 +32,7 @@ import java.util.Random;
 /**
  * Factory for all the Region objects - Regions, Columns and internal parts (Classifier, Predictor, Organizer)
  * Allows each component to be replaced with a derived & modified version.
- * <p>
+ * <p/>
  * Created by dave on 28/12/15.
  */
 public class RegionFactory {
@@ -176,10 +195,9 @@ public class RegionFactory {
         // hardcoded for 2 layers
         ffn.setupLayer( _rc._r, 0, inputs, hidden, learningRate, activationFunction );
 
-        if ( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
+        if( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
             ffn.setupLayer( _rc._r, 1, hidden, outputs, learningRate, ActivationFunctionFactory.SOFTMAX );
-        }
-        else {
+        } else {
             ffn.setupLayer( _rc._r, 1, hidden, outputs, learningRate, activationFunction );
         }
 

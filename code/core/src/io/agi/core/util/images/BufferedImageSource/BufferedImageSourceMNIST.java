@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.core.util.images.BufferedImageSource;
 
 import io.agi.core.orm.AbstractPair;
@@ -9,7 +28,7 @@ import java.io.IOException;
 
 /**
  * Adapted from: http://stackoverflow.com/questions/17279049/reading-a-idx-file-type-in-java
- * <p>
+ * <p/>
  * Created by gideon on 14/03/2016.
  */
 public class BufferedImageSourceMNIST extends BufferedImageSource {
@@ -51,7 +70,7 @@ public class BufferedImageSourceMNIST extends BufferedImageSource {
 
             _numberOfPixels = _numberOfRows * _numberOfColumns;
         }
-        catch ( IOException e ) {
+        catch( IOException e ) {
             e.printStackTrace();
         }
     }
@@ -59,7 +78,7 @@ public class BufferedImageSourceMNIST extends BufferedImageSource {
     /**
      * NOTE: This advances the image stream, so DOES advance to the next image.
      * This breaks the API of the interface.
-     * <p>
+     * <p/>
      * Needs fixing if this is to be used for anything other than pre-processing.
      *
      * @return
@@ -67,7 +86,7 @@ public class BufferedImageSourceMNIST extends BufferedImageSource {
     @Override
     public BufferedImage getImage() {
 
-        if ( _image != null ) {
+        if( _image != null ) {
             return _image;
         }
 
@@ -75,7 +94,7 @@ public class BufferedImageSourceMNIST extends BufferedImageSource {
             _image = new BufferedImage( _numberOfColumns, _numberOfRows, BufferedImage.TYPE_INT_ARGB );
             int[] imgPixels = new int[ _numberOfPixels ];
 
-            for ( int p = 0; p < _numberOfPixels; p++ ) {
+            for( int p = 0; p < _numberOfPixels; p++ ) {
                 int gray = 255 - _inImage.read();
                 imgPixels[ p ] = 0xFF000000 | ( gray << 16 ) | ( gray << 8 ) | gray;
             }
@@ -84,7 +103,7 @@ public class BufferedImageSourceMNIST extends BufferedImageSource {
             Integer labelInt = _inLabel.read();
             _label = labelInt.toString();
         }
-        catch ( IOException e ) {
+        catch( IOException e ) {
             e.printStackTrace();
         }
 
@@ -101,7 +120,7 @@ public class BufferedImageSourceMNIST extends BufferedImageSource {
         int h = 0;
         getImage();
 
-        if ( _image != null ) {
+        if( _image != null ) {
             w = _image.getWidth();
             h = _image.getHeight();
         }
@@ -114,7 +133,7 @@ public class BufferedImageSourceMNIST extends BufferedImageSource {
     public int nextImage() {
         _idx++;
 
-        if ( _idx >= _numberOfImages ) { // wrap around
+        if( _idx >= _numberOfImages ) { // wrap around
             _idx = 0;
         }
 
@@ -136,7 +155,7 @@ public class BufferedImageSourceMNIST extends BufferedImageSource {
 
 
     public boolean skip( int index ) {
-        if ( index >= 0 && index < _numberOfImages ) {
+        if( index >= 0 && index < _numberOfImages ) {
             _idx = index;
 
             long numBytes = _idx * _numberOfPixels;
@@ -144,7 +163,7 @@ public class BufferedImageSourceMNIST extends BufferedImageSource {
                 _inImage.skip( numBytes );
                 _inLabel.skip( _idx );
             }
-            catch ( IOException e ) {
+            catch( IOException e ) {
                 e.printStackTrace();
             }
 

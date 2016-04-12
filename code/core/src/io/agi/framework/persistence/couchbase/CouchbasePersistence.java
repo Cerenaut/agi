@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.framework.persistence.couchbase;
 
 import com.couchbase.client.java.Bucket;
@@ -135,14 +154,14 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
 
             System.out.println( "NOTE: CouchBase views created." );
         }
-        catch ( com.couchbase.client.java.error.DesignDocumentAlreadyExistsException e ) {
+        catch( com.couchbase.client.java.error.DesignDocumentAlreadyExistsException e ) {
             System.out.println( "NOTE: CouchBase views already exist." );
 //            e.printStackTrace();
         }
     }
 
     public void stop() {
-        if ( _c != null ) {
+        if( _c != null ) {
             _c.disconnect();
             _c = null;
         }
@@ -170,7 +189,7 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
                         .descending()
         );
         List< ViewRow > l = result.allRows();
-        for ( ViewRow r : l ) {
+        for( ViewRow r : l ) {
             JsonObject jo = r.document().content();
             String key = jo.getString( PROPERTY_KEY );
             String host = jo.getString( PROPERTY_NODE_HOST );
@@ -191,7 +210,7 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
                         .descending()
         );
         List< ViewRow > l = result.allRows();
-        for ( ViewRow r : l ) {
+        for( ViewRow r : l ) {
             JsonObject jo = r.document().content();
             String key = jo.getString( PROPERTY_KEY );
             String type = jo.getString( PROPERTY_ENTITY_TYPE );
@@ -214,7 +233,7 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
                         .descending()
         );
         List< ViewRow > l = result.allRows();
-        for ( ViewRow r : l ) {
+        for( ViewRow r : l ) {
             JsonObject jo = r.document().content();
             String key = jo.getString( PROPERTY_KEY );
             models.add( key );
@@ -236,10 +255,9 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
     public ModelNode fetchNode( String nodeKey ) {
         String key = GetKey( KEY_PREFIX_NODE, nodeKey );
         JsonDocument loaded = _b.get( key );
-        if ( loaded == null ) {
+        if( loaded == null ) {
             return null;
-        }
-        else {
+        } else {
             String host = loaded.content().getString( PROPERTY_NODE_HOST );
             int port = loaded.content().getInt( PROPERTY_NODE_PORT );
             ModelNode jn = new ModelNode( nodeKey, host, Integer.valueOf( port ) );
@@ -279,10 +297,9 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
     public ModelEntity fetchEntity( String entityKey ) {
         String key = GetKey( KEY_PREFIX_ENTITY, entityKey );
         JsonDocument loaded = _b.get( key );
-        if ( loaded == null ) {
+        if( loaded == null ) {
             return null;
-        }
-        else {
+        } else {
             String type = loaded.content().getString( PROPERTY_ENTITY_TYPE );
             String node = loaded.content().getString( PROPERTY_ENTITY_NODE );
             String parent = loaded.content().getString( PROPERTY_ENTITY_PARENT );
@@ -312,10 +329,9 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
     public ModelData fetchData( String dataKey ) {
         String key = GetKey( KEY_PREFIX_DATA, dataKey );
         JsonDocument loaded = _b.get( key );
-        if ( loaded == null ) {
+        if( loaded == null ) {
             return null;
-        }
-        else {
+        } else {
             String sizes = loaded.content().getString( PROPERTY_DATA_SIZES );
             String elements = loaded.content().getString( PROPERTY_DATA_ELEMENTS );
             String refKey = loaded.content().getString( PROPERTY_DATA_REF_KEY );

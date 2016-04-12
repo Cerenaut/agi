@@ -1,4 +1,23 @@
 /*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -35,13 +54,13 @@ public class Convolution2d {
         float[] acc = new float[ channels ];     // accumulator
 
         // iterate image
-        for ( int y = 0; y < h; ++y ) {
+        for( int y = 0; y < h; ++y ) {
             c.set( DataSize.DIMENSION_Y, y );
-            for ( int x = 0; x < w; ++x ) {
+            for( int x = 0; x < w; ++x ) {
                 c.set( DataSize.DIMENSION_X, x );
                 int offset = c.offset(); // don't want to eval the 3d coord more than necessary..
 
-                for ( int i = 0; i < channels; ++i ) {
+                for( int i = 0; i < channels; ++i ) {
                     acc[ i ] = 0.f;
                 }
 
@@ -54,8 +73,8 @@ public class Convolution2d {
                 Coordinate2 mc = mask._d.begin();
 
                 // iterate mask
-                for ( int my = 0; my < mh; ++my ) {
-                    for ( int mx = 0; mx < mw; ++mx ) {
+                for( int my = 0; my < mh; ++my ) {
+                    for( int mx = 0; mx < mw; ++mx ) {
 
                         int yy = y - mhr + my;
                         int xx = x - mwr + mx;
@@ -63,7 +82,7 @@ public class Convolution2d {
                         sc.set( DataSize.DIMENSION_X, xx );
                         int soffset = sc.offset();
 
-                        if ( !sc.inside() ) {
+                        if( !sc.inside() ) {
                             break;
                         }
 
@@ -72,7 +91,7 @@ public class Convolution2d {
                         int moffset = mc.offset(); // don't want to eval the 3d coord more than necessary..
 
                         // for each channel
-                        for ( int i = 0; i < channels; ++i ) {
+                        for( int i = 0; i < channels; ++i ) {
 
 //                            if ( (soffset+i) >= src._dataSize._values.length ) {
 //                                System.out.println("oh oh");
@@ -90,7 +109,7 @@ public class Convolution2d {
                     }
                 }
 
-                for ( int i = 0; i < channels; ++i ) {
+                for( int i = 0; i < channels; ++i ) {
                     dest._d._values[ offset + i ] = acc[ i ];
                 }
 

@@ -1,4 +1,23 @@
 /*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -11,7 +30,7 @@ import java.util.Random;
 /**
  * Utilities for managing a centralized random number generator that isn't shared
  * with code except your own. Global access via static interface.
- * <p>
+ * <p/>
  * TODO: Consider http://docs.oracle.com/javase/tutorial/essential/concurrency/threadlocalrandom.html
  *
  * @author dave
@@ -32,7 +51,7 @@ public class RandomInstance {
     }
 
     public static void setSeed( long seed ) {
-        if ( _instance != null ) {
+        if( _instance != null ) {
             System.err.println( "It's too late to seed the random number generator!" );
             System.exit( -1 );
         }
@@ -56,7 +75,7 @@ public class RandomInstance {
     }
 
     public static Random getInstance() {
-        if ( _instance == null ) {
+        if( _instance == null ) {
             //_instance = new Random( getRandomSeed() ); // seeded with time
             instantiate( getRandomSeed() );
         }
@@ -96,10 +115,10 @@ public class RandomInstance {
     /**
      * Should return a value 0.0 <= n < 1.0, taken from a normal distribution
      * approximated by averaging n samples.
-     * <p>
+     * <p/>
      * Generates Irwin Hall distribution, aka uniform sum distribution.
      * This is an approximation of a normal distribution.
-     * <p>
+     * <p/>
      * n = 12 is *usually enough*
      *
      * @param o
@@ -111,7 +130,7 @@ public class RandomInstance {
         //int n = 12;
         double r = 0.0;
 
-        for ( int i = 1; i < n; ++i ) // unroll please compiler?
+        for( int i = 1; i < n; ++i ) // unroll please compiler?
         {
             r += o.nextDouble();
         }

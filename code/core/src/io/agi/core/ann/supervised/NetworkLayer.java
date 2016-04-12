@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.core.ann.supervised;
 
 import io.agi.core.data.Data;
@@ -9,10 +28,10 @@ import java.util.Random;
 
 /**
  * This class represents a single layer of a feed-forward neural network.
- * <p>
+ * <p/>
  * Terminology from:
  * http://neuralnetworksanddeeplearning.com/chap2.html
- * <p>
+ * <p/>
  * Created by dave on 3/01/16.
  */
 public class NetworkLayer extends NamedObject {
@@ -68,7 +87,7 @@ public class NetworkLayer extends NamedObject {
 
         float sumSq = 0.f;
 
-        for ( int w = 0; w < W; ++w ) {
+        for( int w = 0; w < W; ++w ) {
             float weight = _weights._values[ w ];
             sumSq += ( w * w );
         }
@@ -112,11 +131,11 @@ public class NetworkLayer extends NamedObject {
         assert ( outputs.getSize() == J );
         assert ( weights.getSize() == ( J * K ) );
 
-        for ( int j = 0; j < J; ++j ) {
+        for( int j = 0; j < J; ++j ) {
 
             float sum = 0.f;
 
-            for ( int k = 0; k < K; ++k ) {
+            for( int k = 0; k < K; ++k ) {
                 int offset = j * K + k; // K = inputs, storage is all inputs adjacent
                 float i = inputs._values[ k ];
                 float w = weights._values[ offset ];

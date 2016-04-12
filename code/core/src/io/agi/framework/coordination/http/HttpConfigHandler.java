@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.framework.coordination.http;
 
 import com.sun.net.httpserver.HttpExchange;
@@ -45,37 +64,35 @@ public class HttpConfigHandler implements HttpHandler {
             String configValue = null; // optional
             String config = null; // optional
 
-            if ( m.containsKey( PARAMETER_PATH ) ) {
+            if( m.containsKey( PARAMETER_PATH ) ) {
                 configValue = m.get( PARAMETER_PATH ).trim();
             }
 
-            if ( m.containsKey( PARAMETER_VALUE ) ) {
+            if( m.containsKey( PARAMETER_VALUE ) ) {
                 configValue = m.get( PARAMETER_VALUE ).trim();
             }
 
-            if ( m.containsKey( PARAMETER_CONFIG ) ) {
+            if( m.containsKey( PARAMETER_CONFIG ) ) {
                 config = m.get( PARAMETER_CONFIG ).trim();
             }
 
             ModelEntity me = _p.fetchEntity( entityName );
 
-            if ( method.equalsIgnoreCase( "GET" ) ) {
+            if( method.equalsIgnoreCase( "GET" ) ) {
                 configValue = Framework.GetConfig( entityName );
-                if ( configValue == null ) {
+                if( configValue == null ) {
                     configValue = "null";
                 }
-                if ( configValue.length() == 0 ) {
+                if( configValue.length() == 0 ) {
                     configValue = "{}";
                 }
                 response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_VALUE + "\" : " + configValue + " }";
-            }
-            else if ( method.equalsIgnoreCase( "POST" ) || method.equalsIgnoreCase( "PUT" ) ) {
-                if ( config != null ) {
+            } else if( method.equalsIgnoreCase( "POST" ) || method.equalsIgnoreCase( "PUT" ) ) {
+                if( config != null ) {
                     me.config = config; // replace entire config
                     _p.persistEntity( me );
                     response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_VALUE + "\" : " + config + " }";
-                }
-                else {
+                } else {
                     Framework.SetConfig( entityName, configPath, configValue );
                     response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_PATH + "\" : \"" + configPath + "\", \"" + PARAMETER_VALUE + "\" : \"" + configValue + "\" }";
                 }
@@ -83,7 +100,7 @@ public class HttpConfigHandler implements HttpHandler {
 
             status = 200;
         }
-        catch ( Exception e ) {
+        catch( Exception e ) {
             e.printStackTrace();
         }
 

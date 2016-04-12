@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.framework.entities;
 
 import io.agi.core.alg.Region;
@@ -20,7 +39,7 @@ import java.util.Collection;
 
 /**
  * Wraps the Region concept as a single Entity.
- * <p>
+ * <p/>
  * Created by dave on 12/03/16.
  */
 public class RegionEntity extends Entity {
@@ -54,14 +73,14 @@ public class RegionEntity extends Entity {
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
         attributes.add( FB_INPUT_OLD );
 
-        flags.putFlag(FB_INPUT_OLD, DataFlags.FLAG_NODE_CACHE);
+        flags.putFlag( FB_INPUT_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( FB_INPUT_OLD, DataFlags.FLAG_SPARSE_UNIT );
 
         attributes.add( ACTIVITY_OLD );
         attributes.add( ACTIVITY_NEW );
         attributes.add( ACTIVITY );
 
-        flags.putFlag(ACTIVITY_OLD, DataFlags.FLAG_NODE_CACHE);
+        flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( FB_INPUT_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_SPARSE_UNIT );
@@ -94,8 +113,8 @@ public class RegionEntity extends Entity {
         // The classifiers
         io.agi.framework.entities.RegionConfig config = ( io.agi.framework.entities.RegionConfig ) _config;
 
-        for ( int y = 0; y < config.organizerHeightCells; ++y ) {
-            for ( int x = 0; x < config.organizerWidthCells; ++x ) {
+        for( int y = 0; y < config.organizerHeightCells; ++y ) {
+            for( int x = 0; x < config.organizerWidthCells; ++x ) {
                 String prefix = Keys.concatenate( RegionConfig.SUFFIX_CLASSIFIER, String.valueOf( x ), String.valueOf( y ) );
                 getClassifierOutputKeys( attributes, flags, prefix, true );
             }
@@ -104,7 +123,7 @@ public class RegionEntity extends Entity {
         // Predictor
         int predictorLayers = Region.PREDICTOR_LAYERS;
 
-        for ( int l = 0; l < predictorLayers; ++l ) {
+        for( int l = 0; l < predictorLayers; ++l ) {
             String prefix = Keys.concatenate( RegionConfig.SUFFIX_PREDICTOR, String.valueOf( l ) );
 
             attributes.add( Keys.concatenate( prefix, NetworkLayer.INPUT ) );
@@ -132,42 +151,42 @@ public class RegionEntity extends Entity {
 
     public void getClassifierOutputKeys( Collection< String > keys, DataFlags flags, String prefix, boolean flag ) {
         keys.add( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ) );
-        keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ERROR));
-        keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE));
+        keys.add( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ) );
+        keys.add( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ) );
         keys.add( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ) );
 
         keys.add( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS ) );
         keys.add( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES ) );
-        keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES));
-        keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES));
-        keys.add(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH));
+        keys.add( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ) );
+        keys.add( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES ) );
+        keys.add( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH ) );
 
         // These can be sparse:
-        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE), DataFlags.FLAG_SPARSE_UNIT);
-        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_MASK), DataFlags.FLAG_SPARSE_UNIT);
+        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), DataFlags.FLAG_SPARSE_UNIT );
+        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), DataFlags.FLAG_SPARSE_UNIT );
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), DataFlags.FLAG_SPARSE_UNIT );
 
         // These rarely change:
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), DataFlags.FLAG_LAZY_PERSIST );
 
         // These are written by only me, so can be cached:
-        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS), DataFlags.FLAG_NODE_CACHE);
-        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ERROR), DataFlags.FLAG_NODE_CACHE);
-        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE), DataFlags.FLAG_NODE_CACHE);
-        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_MASK), DataFlags.FLAG_NODE_CACHE);
+        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ), DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), DataFlags.FLAG_NODE_CACHE );
 
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS ), DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES ), DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES), DataFlags.FLAG_NODE_CACHE);
-        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES), DataFlags.FLAG_NODE_CACHE);
-        flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH), DataFlags.FLAG_NODE_CACHE);
+        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES ), DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH ), DataFlags.FLAG_NODE_CACHE );
 
         // These are only written on a flush event:
         if( flag ) {
-            flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS), DataFlags.FLAG_PERSIST_ON_FLUSH);
-            flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ERROR), DataFlags.FLAG_PERSIST_ON_FLUSH);
-            flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE), DataFlags.FLAG_PERSIST_ON_FLUSH);
-            flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_MASK), DataFlags.FLAG_PERSIST_ON_FLUSH);
+            flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), DataFlags.FLAG_PERSIST_ON_FLUSH );
+            flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ), DataFlags.FLAG_PERSIST_ON_FLUSH );
+            flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), DataFlags.FLAG_PERSIST_ON_FLUSH );
+            flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), DataFlags.FLAG_PERSIST_ON_FLUSH );
         }
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS ), DataFlags.FLAG_PERSIST_ON_FLUSH );
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES ), DataFlags.FLAG_PERSIST_ON_FLUSH );
@@ -187,7 +206,7 @@ public class RegionEntity extends Entity {
         Data ffInput = getData( FF_INPUT );
         Data fbInput = getData( FB_INPUT );
 
-        if ( ( ffInput == null ) || ( fbInput == null ) ) {
+        if( ( ffInput == null ) || ( fbInput == null ) ) {
             return; // can't update yet.
         }
 
@@ -237,7 +256,7 @@ public class RegionEntity extends Entity {
         copyDataFromPersistence( r );
 
         // Process
-        if ( config.reset ) {
+        if( config.reset ) {
             r.reset();
         }
 
@@ -282,8 +301,8 @@ public class RegionEntity extends Entity {
 
         // The classifiers
         Data classifierInput = r._ffInput;
-        for ( int y = 0; y < organizerSize.y; ++y ) {
-            for ( int x = 0; x < organizerSize.x; ++x ) {
+        for( int y = 0; y < organizerSize.y; ++y ) {
+            for( int x = 0; x < organizerSize.x; ++x ) {
                 int regionOffset = r._rc.getOrganizerOffset( x, y );
                 GrowingNeuralGas classifier = r._classifiers.get( regionOffset );
                 String prefix = Keys.concatenate( RegionConfig.SUFFIX_CLASSIFIER, String.valueOf( x ), String.valueOf( y ) );
@@ -294,7 +313,7 @@ public class RegionEntity extends Entity {
         // Predictor
         int layers = r._predictor._layers.size();
 
-        for ( int l = 0; l < layers; ++l ) {
+        for( int l = 0; l < layers; ++l ) {
             NetworkLayer nl = r._predictor._layers.get( l );
             String prefix = Keys.concatenate( RegionConfig.SUFFIX_PREDICTOR, String.valueOf( l ) );
 
@@ -363,8 +382,8 @@ public class RegionEntity extends Entity {
         // The classifiers
         Point p = r._rc.getOrganizerSizeCells();
 
-        for ( int y = 0; y < p.y; ++y ) {
-            for ( int x = 0; x < p.x; ++x ) {
+        for( int y = 0; y < p.y; ++y ) {
+            for( int x = 0; x < p.x; ++x ) {
                 int regionOffset = r._rc.getOrganizerOffset( x, y );
                 GrowingNeuralGas classifier = r._classifiers.get( regionOffset );
                 String prefix = Keys.concatenate( RegionConfig.SUFFIX_CLASSIFIER, String.valueOf( x ), String.valueOf( y ) );
@@ -375,7 +394,7 @@ public class RegionEntity extends Entity {
         // Predictor
         int layers = r._predictor._layers.size();
 
-        for ( int l = 0; l < layers; ++l ) {
+        for( int l = 0; l < layers; ++l ) {
             NetworkLayer nl = r._predictor._layers.get( l );
             String prefix = Keys.concatenate( RegionConfig.SUFFIX_PREDICTOR, String.valueOf( l ) );
 

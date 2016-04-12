@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.framework.entities;
 
 import io.agi.core.data.Data;
@@ -15,7 +34,7 @@ import java.util.Collection;
 /**
  * Creates a rolling window of values from a property, captured over time. The window is updated every update() with a
  * new value from the property. The oldest value is discarded.
- * <p>
+ * <p/>
  * Created by dave on 2/04/16.
  */
 public class ValueSeriesEntity extends Entity {
@@ -51,15 +70,15 @@ public class ValueSeriesEntity extends Entity {
         String stringValue = Framework.GetConfig( config.entityName, config.configPath );
         Float newValue = Float.valueOf( stringValue );
 
-        if ( newValue == null ) {
+        if( newValue == null ) {
             newValue = 0.f;
         }
 
         // shift all the old values 1 place
-        for ( int i1 = 0; i1 < config.period; ++i1 ) {
+        for( int i1 = 0; i1 < config.period; ++i1 ) {
 
             int i2 = i1 + 1;
-            if ( i2 >= config.period ) {
+            if( i2 >= config.period ) {
                 continue;
             }
 

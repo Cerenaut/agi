@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.framework.coordination.http;
 
 import com.sun.net.httpserver.HttpExchange;
@@ -32,7 +51,7 @@ public class HttpExportHandler implements HttpHandler {
             String query = t.getRequestURI().getQuery();
             Map< String, String > m = HttpUtil.GetQueryParams( query );
 
-            if (       ( m.containsKey( PARAMETER_TYPE ) )
+            if( ( m.containsKey( PARAMETER_TYPE ) )
                     && ( m.containsKey( PARAMETER_ENTITY ) ) ) {
                 String entityName = m.get( PARAMETER_ENTITY ).trim(); // essential
                 String type = m.get( PARAMETER_TYPE ).trim(); // essential
@@ -40,7 +59,7 @@ public class HttpExportHandler implements HttpHandler {
                 status = 200;
             }
         }
-        catch ( Exception e ) {
+        catch( Exception e ) {
             e.printStackTrace();
         }
 

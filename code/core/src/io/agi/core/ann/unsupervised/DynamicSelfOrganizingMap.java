@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.core.ann.unsupervised;
 
 import io.agi.core.data.Data;
@@ -11,7 +30,7 @@ import java.util.TreeMap;
 /**
  * Online algorithm with parameters to determine how input feature density affects cell density (elasticity).
  * See "Dynamic Self-Organising Map" by Nicolas Rougier and Yann Boniface (2010)
- * <p>
+ * <p/>
  * Created by dave on 29/12/15.
  */
 public class DynamicSelfOrganizingMap extends CompetitiveLearning {
@@ -62,7 +81,7 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
         TreeMap< Float, ArrayList< Integer > > ranking = new TreeMap< Float, ArrayList< Integer > >();
         CompetitiveLearning.findBestNCells( _c, _cellMask, _cellErrors, _cellActivity, maxRank, false, ranking );
 
-        if ( ranking.isEmpty() ) {
+        if( ranking.isEmpty() ) {
             return;
         }
 
@@ -111,8 +130,8 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
 
         // update weights to be closer to observations
         int cell = 0;
-        for ( int y = 0; y < h; ++y ) { // for each som cell
-            for ( int x = 0; x < w; ++x ) { // for each som cell
+        for( int y = 0; y < h; ++y ) { // for each som cell
+            for( int x = 0; x < w; ++x ) { // for each som cell
 
                 float xRel = x / ( float ) w;
                 float yRel = y / ( float ) h;
@@ -129,7 +148,7 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
                 float learningRateWeight = normEucNorm * learningRate;
                 float cellDistanceWeight = getCellDistanceWeight( elasticity, cellDistanceSq, winningNormEucNormSq );
 
-                for ( int i = 0; i < inputs; ++i ) { // for each input
+                for( int i = 0; i < inputs; ++i ) { // for each input
 
                     int inputOffset = cell * inputs + i;
 
@@ -154,10 +173,10 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
 
         HashSet< Integer > activeInputValues = new HashSet< Integer >();
         int inputs = c.getNbrInputs();
-        for ( int i = 0; i < inputs; ++i ) { // for each input
+        for( int i = 0; i < inputs; ++i ) { // for each input
             float inputValue = inputValues._values[ i ]; // error from ci to cell
 
-            if ( inputValue > 0.f ) {
+            if( inputValue > 0.f ) {
                 activeInputValues.add( i );
             }
         }
@@ -194,8 +213,8 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
 
         // update weights to be closer to observations
         int cell = 0;
-        for ( int y = 0; y < h; ++y ) { // for each som cell
-            for ( int x = 0; x < w; ++x ) { // for each som cell
+        for( int y = 0; y < h; ++y ) { // for each som cell
+            for( int x = 0; x < w; ++x ) { // for each som cell
                 float xRel = x / ( float ) w;
                 float yRel = y / ( float ) h;
 
@@ -212,12 +231,12 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
 
                 int inputOffset = cell * inputs;
 
-                for ( int i = 0; i < inputs; ++i ) { // for each input
+                for( int i = 0; i < inputs; ++i ) { // for each input
 
                     //int inputOffset = cell * c._i + i;
 
                     float inputValue = 0.f; //inputValues._values[ i ]; // error from ci to cell
-                    if ( activeInputValues.contains( i ) ) {
+                    if( activeInputValues.contains( i ) ) {
                         inputValue = 1.f;
                     }
 
@@ -255,7 +274,7 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
     }
 
     public static float getCellDistanceWeight( float elasticity, float cellDistanceSq, float valueDistanceSq ) {
-        if ( valueDistanceSq <= 0.f ) {
+        if( valueDistanceSq <= 0.f ) {
             return 0.f;
         }
         float b = cellDistanceSq / valueDistanceSq;

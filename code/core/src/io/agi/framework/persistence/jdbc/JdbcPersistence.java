@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.framework.persistence.jdbc;
 
 import io.agi.core.util.PropertiesUtil;
@@ -48,7 +67,7 @@ public class JdbcPersistence implements Persistence {
         try {
             p.setup( databaseDriverClass, databaseUser, databasePassword, databaseUrl );
         }
-        catch ( ClassNotFoundException e ) {
+        catch( ClassNotFoundException e ) {
             e.printStackTrace();
             return null;
         }
@@ -72,7 +91,7 @@ public class JdbcPersistence implements Persistence {
         rsm._fields.add( "port" );
         executeQuery( sql, rsm );
         ArrayList< ModelNode > nodes = new ArrayList< ModelNode >();
-        for ( int i = 0; i < rsm._rows.size(); ++i ) {
+        for( int i = 0; i < rsm._rows.size(); ++i ) {
             String key = rsm.getRowValue( i, "name" );
             String host = rsm.getRowValue( i, "host" );
             String port = rsm.getRowValue( i, "port" );
@@ -96,7 +115,7 @@ public class JdbcPersistence implements Persistence {
         rsm._fields.add( "host" );
         rsm._fields.add( "port" );
         executeQuery( sql, rsm );
-        if ( rsm._rows.isEmpty() ) {
+        if( rsm._rows.isEmpty() ) {
             return null;
         }
         String host = rsm.getRowValue( 0, "host" );
@@ -121,7 +140,7 @@ public class JdbcPersistence implements Persistence {
         rsm._fields.add( "config" );
         executeQuery( sql, rsm );
         ArrayList< ModelEntity > nodes = new ArrayList< ModelEntity >();
-        for ( int i = 0; i < rsm._rows.size(); ++i ) {
+        for( int i = 0; i < rsm._rows.size(); ++i ) {
             String key = rsm.getRowValue( i, "name" );
             String type = rsm.getRowValue( i, "type" );
             String node = rsm.getRowValue( i, "node" );
@@ -143,7 +162,7 @@ public class JdbcPersistence implements Persistence {
 
         ArrayList< String > children = new ArrayList< String >();
 
-        for ( int i = 0; i < rsm._rows.size(); ++i ) {
+        for( int i = 0; i < rsm._rows.size(); ++i ) {
             String key = rsm.getRowValue( i, "name" );
             children.add( key );
         }
@@ -167,7 +186,7 @@ public class JdbcPersistence implements Persistence {
         rsm._fields.add( "parent" );
         rsm._fields.add( "config" );
         executeQuery( sql, rsm );
-        if ( rsm._rows.isEmpty() ) {
+        if( rsm._rows.isEmpty() ) {
             return null;
         }
         String type = rsm.getRowValue( 0, "type" );
@@ -204,13 +223,12 @@ public class JdbcPersistence implements Persistence {
         rsm._fields.add( "elements" );
         executeQuery( sql, rsm );
         String refKey = null;
-        if ( rsm._rows.isEmpty() ) {
+        if( rsm._rows.isEmpty() ) {
             return null;
-        }
-        else {
+        } else {
             refKey = rsm.getRowValue( 0, "ref_name" );
-            if ( refKey != null ) {
-                if ( refKey.equals( "null" ) ) {
+            if( refKey != null ) {
+                if( refKey.equals( "null" ) ) {
                     refKey = null;
                 }
             }

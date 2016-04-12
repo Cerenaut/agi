@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.core.ann.unsupervised;
 
 import io.agi.core.data.FloatArray2;
@@ -27,10 +46,10 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
 
         int cells = c.getNbrCells();
 
-        for ( int cell = 0; cell < cells; ++cell ) { // for each som cell
+        for( int cell = 0; cell < cells; ++cell ) { // for each som cell
             float maskValue = cellMask._values[ cell ];
 
-            if ( maskValue == 0.f ) {
+            if( maskValue == 0.f ) {
                 continue;
             }
 
@@ -50,7 +69,7 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
 
         ArrayList< Integer > cellList = new ArrayList<>();
 
-        for ( int cell = 0; cell < cells; ++cell ) { // for each som cell
+        for( int cell = 0; cell < cells; ++cell ) { // for each som cell
             cellList.add( cell );
         }
 
@@ -66,12 +85,12 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
 
         int inputs = c.getNbrInputs();
 
-        for ( Integer cell : cells ) {
+        for( Integer cell : cells ) {
 
             // set all inputs to off, then recalculate based on som vector properties.
             float sumSqError = 0.f;
 
-            for ( int i = 0; i < inputs; ++i ) { // for each input
+            for( int i = 0; i < inputs; ++i ) { // for each input
 
                 float input = inputValues._values[ i ]; // error from ci to cell
                 float weight = cellWeights._values[ cell * inputs + i ]; // error from ci to cell
@@ -93,14 +112,14 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
 
         int inputs = c.getNbrInputs();
 
-        for ( Integer cell : cells ) {
+        for( Integer cell : cells ) {
 
             // set all inputs to off, then recalculate based on som vector properties.
             float sumSqError = 0.f;
 
             // We assume there are few inputs that are nonzero.
             // first sum all the weights and square them
-            for ( int i = 0; i < inputs; ++i ) { // for each input
+            for( int i = 0; i < inputs; ++i ) { // for each input
 
                 //float input       = inputValues         ._values[ i ]; // error from ci to cell
                 float weight = cellWeights._values[ cell * inputs + i ]; // error from ci to cell
@@ -110,7 +129,7 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
             }
 
             // now go through the active ones and replace with the correct errors:
-            for ( Integer i : inputValues ) {
+            for( Integer i : inputValues ) {
                 float input = 1.f;
                 float weight = cellWeights._values[ cell * inputs + i ]; // error from ci to cell
 
@@ -150,12 +169,12 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
 
         ranking.clear();
 
-        for ( int y = 0; y < h; ++y ) { // for each som cell
-            for ( int x = 0; x < w; ++x ) { // for each som cell
+        for( int y = 0; y < h; ++y ) { // for each som cell
+            for( int x = 0; x < w; ++x ) { // for each som cell
                 int cell = y * w + x;
 
-                if ( cellMask != null ) {
-                    if ( cellMask._values[ cell ] < 1.f ) { // not a live cell
+                if( cellMask != null ) {
+                    if( cellMask._values[ cell ] < 1.f ) { // not a live cell
                         continue; // not a live cell
                     }
                 }
@@ -163,8 +182,8 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
                 // add each element, then prune the sorted list back down to size.
                 float value = cellValues._values[ cell ];
 
-                if ( findMaxima ) {
-                    if ( value <= 0.f ) {
+                if( findMaxima ) {
+                    if( value <= 0.f ) {
                         continue;
                     }
                 }
@@ -177,19 +196,19 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
         }
 
         // now go through and set the winning values mask for each winner:
-        for ( int y = 0; y < h; ++y ) { // for each som cell
-            for ( int x = 0; x < w; ++x ) { // for each som cell
+        for( int y = 0; y < h; ++y ) { // for each som cell
+            for( int x = 0; x < w; ++x ) { // for each som cell
                 int cell = y * w + x;
 
-                if ( cellMask != null ) {
-                    if ( cellMask._values[ cell ] < 1.f ) { // not a live cell
+                if( cellMask != null ) {
+                    if( cellMask._values[ cell ] < 1.f ) { // not a live cell
                         continue; // not a live cell
                     }
                 }
 
                 float ranked = 0.f;
 
-                if ( Ranking.containsValue( ranking, cell ) ) {
+                if( Ranking.containsValue( ranking, cell ) ) {
                     ranked = 1.f;
                 }
 

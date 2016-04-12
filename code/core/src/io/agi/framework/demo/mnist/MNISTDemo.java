@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.framework.demo.mnist;
 
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
@@ -10,7 +29,6 @@ import io.agi.framework.entities.EncoderEntity;
 import io.agi.framework.entities.ImageSensorEntity;
 import io.agi.framework.entities.RegionEntity;
 import io.agi.framework.factories.CommonEntityFactory;
-import io.agi.framework.persistence.Persistence;
 
 /**
  * Created by gideon on 14/03/2016.
@@ -24,11 +42,10 @@ public class MNISTDemo {
         m.setup( args[ 0 ], null, new CommonEntityFactory() );
 
         // Create custom entities and references
-        if ( args.length > 2 ) {
+        if( args.length > 2 ) {
             Framework.LoadEntities( args[ 1 ] );
             Framework.LoadData( args[ 2 ] );
-        }
-        else {
+        } else {
             // Programmatic hook to create entities and references..
             createEntities( m._n );
         }
@@ -56,8 +73,8 @@ public class MNISTDemo {
         Framework.SetDataReference( regionName, RegionEntity.FF_INPUT, encoderName, EncoderEntity.DATA_OUTPUT );
         Framework.SetDataReference( regionName, RegionEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT );
 
-        Framework.SetConfig( sensorName, "greyscale", "true");
-        Framework.SetConfig( sensorName, "invert", "true");
+        Framework.SetConfig( sensorName, "greyscale", "true" );
+        Framework.SetConfig( sensorName, "invert", "true" );
         Framework.SetConfig( sensorName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
 //        Framework.SetConfig( sensorName, "sourceFilesPath", "/home/dave/workspace/agi.io/data/mnist/cycle10" );
         Framework.SetConfig( sensorName, "sourceFilesPath", "/home/dave/workspace/agi.io/data/mnist/cycle3" );

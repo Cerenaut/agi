@@ -1,4 +1,23 @@
 /*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -17,7 +36,7 @@ import java.util.*;
 /**
  * An array of real (float) single precision numbers packed for efficiency.
  * With some functions from vectors and basic arithmetic operations.
- * <p>
+ * <p/>
  * This is the core data structure for storing real numbers.
  *
  * @author dave
@@ -51,7 +70,7 @@ public class FloatArray2 {
 
     public boolean check() {
 
-        if ( _values == null ) {
+        if( _values == null ) {
             return false;
         }
 
@@ -59,7 +78,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             float value = _values[ offset ];
             ok &= Constants.check( value );
             ++offset;
@@ -70,8 +89,8 @@ public class FloatArray2 {
 
     public void setSize( int size ) {
         // lazy
-        if ( _values != null ) {
-            if ( _values.length == size ) {
+        if( _values != null ) {
+            if( _values.length == size ) {
                 return;
             }
         }
@@ -80,14 +99,14 @@ public class FloatArray2 {
     }
 
     public boolean hasSize() {
-        if ( _values == null ) {
+        if( _values == null ) {
             return false;
         }
         return true;
     }
 
     public int getSize() {
-        if ( _values == null ) {
+        if( _values == null ) {
             return 0;
         }
         return _values.length;
@@ -126,7 +145,7 @@ public class FloatArray2 {
     }
 
     public void apply( ScalarFunction sf, FloatArray2 input, int index, int length ) {
-        for ( int i = 0; i > length; ++i ) {
+        for( int i = 0; i > length; ++i ) {
             int offset = index + i;
             float r1 = input._values[ offset ];
             float r2 = sf.f( r1 );
@@ -139,7 +158,7 @@ public class FloatArray2 {
     ////////////////////////////////////////////////////////////////////////////
     public boolean copyRange( FloatArray2 v, int offsetThis, int offsetThat, int range ) {
 
-        if ( ( ( offsetThis + range ) > _values.length )
+        if( ( ( offsetThis + range ) > _values.length )
                 || ( ( offsetThat + range ) > v._values.length ) ) {
             //System.err.println( "ERROR: Volume copy range: out of bounds. Range="+range+" this.len="+_values.length +" that.len="+v._values.length+" offsetThis="+offsetThis+" offsetThat="+offsetThat );
             return false;
@@ -148,7 +167,7 @@ public class FloatArray2 {
         int volumeThis = this.getSize();
         int volumeThat = v.getSize();
 
-        if ( ( offsetThis == 0 )
+        if( ( offsetThis == 0 )
                 && ( offsetThat == 0 )
                 && ( volumeThis == volumeThat ) ) {
             return copy( v ); // more efficient?
@@ -164,7 +183,7 @@ public class FloatArray2 {
 
         int limit = offset2 + range;
 
-        while ( offset2 < limit ) {
+        while( offset2 < limit ) {
 
             _values[ offset1 ] = model[ offset2 ];
 
@@ -178,7 +197,7 @@ public class FloatArray2 {
     public void setRange( int offset, int range, float value ) {
         int limit = offset + range;
 
-        while ( offset < limit ) {
+        while( offset < limit ) {
 
             _values[ offset ] = value;
 
@@ -193,7 +212,7 @@ public class FloatArray2 {
 
         int limit = offset2 + range;
 
-        while ( offset2 < limit ) {
+        while( offset2 < limit ) {
 
             _values[ offset1 ] *= v._values[ offset2 ];
 
@@ -211,7 +230,7 @@ public class FloatArray2 {
 
         int limit = offset2 + range;
 
-        while ( offset2 < limit ) {
+        while( offset2 < limit ) {
 
             float valueThis = _values[ offset1 ];
             float valueThat = v._values[ offset2 ];
@@ -241,14 +260,14 @@ public class FloatArray2 {
      */
     public String getString( String elementDelimiter, int decimalPlaces ) {
 
-        if ( _values == null ) {
+        if( _values == null ) {
             return "";
         }
 
         String s = "";
 
-        for ( int n = 0; n < _values.length; ++n ) {
-            if ( n > 0 ) {
+        for( int n = 0; n < _values.length; ++n ) {
+            if( n > 0 ) {
                 s += elementDelimiter;
             }
             s += String.format( "%." + decimalPlaces + "f", _values[ n ] );
@@ -263,7 +282,7 @@ public class FloatArray2 {
 
         ArrayList< String > al = new ArrayList< String >();
 
-        while ( st.hasMoreTokens() ) {
+        while( st.hasMoreTokens() ) {
             String value = st.nextToken();
             value.trim();
 
@@ -272,18 +291,17 @@ public class FloatArray2 {
 
         int size = al.size();
 
-        if ( resize ) {
+        if( resize ) {
             setSize( size );
-        }
-        else {
-            if ( _values == null ) {
+        } else {
+            if( _values == null ) {
                 return;
             }
 
             size = Math.min( _values.length, size );
         }
 
-        for ( int n = 0; n < size; ++n ) {
+        for( int n = 0; n < size; ++n ) {
             String s = al.get( n ); // one line
 
             _values[ n ] = Float.valueOf( s );
@@ -363,7 +381,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             double value = _values[ offset ];
             ++offset;
             sum += value;
@@ -380,7 +398,7 @@ public class FloatArray2 {
         int volume = _values.length;
         double qty = ( double ) volume;
 
-        if ( qty <= 0.0 ) {
+        if( qty <= 0.0 ) {
             return 0.0;
         }
 
@@ -394,10 +412,10 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             float x = _values[ offset ];
 
-            if ( x < min ) {
+            if( x < min ) {
                 min = x;
             }
 
@@ -413,10 +431,10 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             float x = _values[ offset ];
 
-            if ( x > max ) {
+            if( x > max ) {
                 max = x;
             }
 
@@ -438,7 +456,7 @@ public class FloatArray2 {
     public static FloatArray2 getHistogram( float[] values, int precision, float min, float max ) {
         float range = max - min;
 
-        if ( range <= 0.0 ) {
+        if( range <= 0.0 ) {
             return null;
         }
 
@@ -446,7 +464,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < values.length ) {
+        while( offset < values.length ) {
             float value = values[ offset ];
             ++offset;
 
@@ -471,7 +489,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             float value = _values[ offset ];
 
@@ -496,7 +514,7 @@ public class FloatArray2 {
         float sum = 0.f;
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             float valueThis = _values[ offset ];
             float valueThat = fa._values[ offset ];
@@ -531,7 +549,7 @@ public class FloatArray2 {
         float sum = 0.f;
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             float value = _values[ offset ];
             float product = value * value;
@@ -550,7 +568,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             sum += _values[ offset ];
             ++offset;
         }
@@ -586,13 +604,13 @@ public class FloatArray2 {
      */
     public void scaleSum( float total, float sum ) {
 
-        if ( sum <= 0.0f ) {
+        if( sum <= 0.0f ) {
             return;
         }
 
         float reciprocal = total / sum;
 
-        if ( Float.isInfinite( reciprocal ) ) { // cos sum is small
+        if( Float.isInfinite( reciprocal ) ) { // cos sum is small
             return;
         }
 
@@ -617,7 +635,7 @@ public class FloatArray2 {
         // x = x * (1/max)
         float max = max();
 
-        if ( max <= 0.0f ) {
+        if( max <= 0.0f ) {
             return;
         }
 
@@ -649,11 +667,11 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             float x = _values[ offset ];
 
-            if ( x < xMin ) xMin = x;
-            if ( x > xMax ) xMax = x;
+            if( x < xMin ) xMin = x;
+            if( x > xMax ) xMax = x;
 
             ++offset;
         }
@@ -661,7 +679,7 @@ public class FloatArray2 {
         float oldRange = xMax - xMin;
         float newRange = max - min;
 
-        if ( oldRange == 0.0f ) {
+        if( oldRange == 0.0f ) {
             set( min );
             return;
         }
@@ -670,7 +688,7 @@ public class FloatArray2 {
 
         offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             float x = _values[ offset ];
 
             x -= xMin;
@@ -693,11 +711,11 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             float x = _values[ offset ];
 
-            if ( x < min ) _values[ offset ] = min;
-            if ( x > max ) _values[ offset ] = max;
+            if( x < min ) _values[ offset ] = min;
+            if( x > max ) _values[ offset ] = max;
 
             ++offset;
         }
@@ -731,7 +749,7 @@ public class FloatArray2 {
      */
     public void setRandom( Random r ) {
         int offset = 0;
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             _values[ offset ] = r.nextFloat();
             ++offset;
         }
@@ -749,7 +767,7 @@ public class FloatArray2 {
      */
     public void setRandomNormal( Random r ) {
         int offset = 0;
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             _values[ offset ] = ( float ) RandomInstance.randomNormal( r, 12 );
             ++offset;
         }
@@ -760,7 +778,7 @@ public class FloatArray2 {
         int offset = 0;
         int volume = _values.length;
 
-        while ( offset < volume ) {
+        while( offset < volume ) {
 
             double value = _values[ offset ];
             double random = ( RandomInstance.randomNormal( r ) + shift ) * scale; // ie [-0.5:0.5], scaled, becomes -1:1
@@ -777,7 +795,7 @@ public class FloatArray2 {
         int offset = 0;
         int volume = _values.length;
 
-        while ( offset < volume ) {
+        while( offset < volume ) {
 
             double value = _values[ offset ];
             double random = ( r.nextFloat() + shift ) * scale; // ie [-0.5:0.5], scaled, becomes -1:1
@@ -802,7 +820,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             float value1 = _values[ offset ];
             float value2 = fa._values[ offset ];
@@ -832,7 +850,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             float x1 = _values[ offset ];
             float x2 = that._values[ offset ];
 
@@ -851,7 +869,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             float valueThis = _values[ offset ];
             float valueThat = that._values[ offset ];
@@ -872,7 +890,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             float valueThis = _values[ offset ];
             float valueThat = that._values[ offset ];
@@ -908,9 +926,9 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             float value = _values[ offset ];
-            if ( value > threshold ) {
+            if( value > threshold ) {
                 hs.add( offset );
             }
             ++offset;
@@ -924,9 +942,9 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             float value = _values[ offset ];
-            if ( value >= threshold ) {
+            if( value >= threshold ) {
                 hs.add( offset );
             }
             ++offset;
@@ -940,9 +958,9 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             float value = _values[ offset ];
-            if ( value < threshold ) {
+            if( value < threshold ) {
                 hs.add( offset );
             }
             ++offset;
@@ -956,9 +974,9 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             float value = _values[ offset ];
-            if ( value <= threshold ) {
+            if( value <= threshold ) {
                 hs.add( offset );
             }
             ++offset;
@@ -970,7 +988,7 @@ public class FloatArray2 {
     /**
      * Makes this a masked version of arg fa. Any element in mask with value
      * maskValue has the equivalent element in fa replaced with maskedValue.
-     * <p>
+     * <p/>
      * Object this is used to store the results. All arrays must be equal size.
      *
      * @param fa
@@ -981,14 +999,14 @@ public class FloatArray2 {
     public void mask( FloatArray2 fa, FloatArray2 mask, float maskValue, float maskedValue ) {
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             float value1 = fa._values[ offset ];
             float value2 = mask._values[ offset ];
 
             float value = value1;
 
-            if ( value2 == maskValue ) {
+            if( value2 == maskValue ) {
                 value = maskedValue;
             }
 
@@ -1002,14 +1020,13 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             float value = _values[ offset ];
 
-            if ( value > threshold ) {
+            if( value > threshold ) {
                 _values[ offset ] = passValue;
-            }
-            else if ( failValue != null ) {
+            } else if( failValue != null ) {
                 _values[ offset ] = failValue;
             }
 
@@ -1021,14 +1038,13 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             float value = _values[ offset ];
 
-            if ( value >= threshold ) {
+            if( value >= threshold ) {
                 _values[ offset ] = passValue;
-            }
-            else if ( failValue != null ) {
+            } else if( failValue != null ) {
                 _values[ offset ] = failValue;
             }
 
@@ -1040,14 +1056,13 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             float value = _values[ offset ];
 
-            if ( value < threshold ) {
+            if( value < threshold ) {
                 _values[ offset ] = passValue;
-            }
-            else if ( failValue != null ) {
+            } else if( failValue != null ) {
                 _values[ offset ] = failValue;
             }
 
@@ -1059,14 +1074,13 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             float value = _values[ offset ];
 
-            if ( value <= threshold ) {
+            if( value <= threshold ) {
                 _values[ offset ] = passValue;
-            }
-            else if ( failValue != null ) {
+            } else if( failValue != null ) {
                 _values[ offset ] = failValue;
             }
 
@@ -1085,7 +1099,7 @@ public class FloatArray2 {
     public void mul( float value ) {
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             _values[ offset ] *= value;
 
@@ -1096,7 +1110,7 @@ public class FloatArray2 {
     public void add( float value ) {
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             _values[ offset ] += value;
 
@@ -1107,7 +1121,7 @@ public class FloatArray2 {
     public void sub( float value ) {
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             _values[ offset ] -= value;
 
@@ -1118,7 +1132,7 @@ public class FloatArray2 {
     public void sqrt() {
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             float value = _values[ offset ];
 
@@ -1133,7 +1147,7 @@ public class FloatArray2 {
     public void sq() {
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             float value = _values[ offset ];
 
@@ -1151,7 +1165,7 @@ public class FloatArray2 {
     public void subLog() {
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             double value = _values[ offset ];
 
@@ -1165,13 +1179,13 @@ public class FloatArray2 {
 
     /**
      * Per element, x = exp( -x );
-     * <p>
+     * <p/>
      * Useful for many functions.
      */
     public void expSub() {
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             double value = _values[ offset ];
 
@@ -1186,7 +1200,7 @@ public class FloatArray2 {
     public void exp() {
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             double value = _values[ offset ];
 
@@ -1201,7 +1215,7 @@ public class FloatArray2 {
     public void log() {
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             double value = _values[ offset ];
 
@@ -1216,7 +1230,7 @@ public class FloatArray2 {
     public void pow( double power ) {
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             double value = _values[ offset ];
 
@@ -1231,7 +1245,7 @@ public class FloatArray2 {
     public void argAdd( float value ) {
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             _values[ offset ] = value + _values[ offset ];
 
@@ -1242,7 +1256,7 @@ public class FloatArray2 {
     public void argSub( float value ) {
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             _values[ offset ] = value - _values[ offset ];
 
@@ -1254,7 +1268,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             _values[ offset ] += v._values[ offset ];
             ++offset;
         }
@@ -1264,7 +1278,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             _values[ offset ] = ( v._values[ offset ] + value );
             ++offset;
         }
@@ -1274,7 +1288,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             _values[ offset ] = ( v1._values[ offset ] + v2._values[ offset ] );
             ++offset;
         }
@@ -1284,7 +1298,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             _values[ offset ] -= v._values[ offset ];
             ++offset;
         }
@@ -1294,7 +1308,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             _values[ offset ] = v1._values[ offset ] - v2._values[ offset ];
             ++offset;
         }
@@ -1309,7 +1323,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             _values[ offset ] *= v._values[ offset ];
             ++offset;
         }
@@ -1319,7 +1333,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             _values[ offset ] = v1._values[ offset ] * v2;
             ++offset;
         }
@@ -1335,7 +1349,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             _values[ offset ] = v1._values[ offset ] * v2._values[ offset ];
             ++offset;
         }
@@ -1345,7 +1359,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             float r1 = _values[ offset ];
             float r2 = v._values[ offset ];
 
@@ -1358,7 +1372,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             float r1 = _values[ offset ];
             float r2 = v._values[ offset ];
 
@@ -1371,7 +1385,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             _values[ offset ] = Math.min( v1._values[ offset ], v2._values[ offset ] );
             ++offset;
         }
@@ -1381,7 +1395,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             _values[ offset ] = Math.max( v1._values[ offset ], v2._values[ offset ] );
             ++offset;
         }
@@ -1397,7 +1411,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             float value = _values[ offset ];
 
             value *= v._values[ offset ];
@@ -1413,7 +1427,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             _values[ offset ] = ( v1._values[ offset ] * v2 ) + add;
             ++offset;
         }
@@ -1423,7 +1437,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             _values[ offset ] = ( v1._values[ offset ] * v2._values[ offset ] ) + add;
             ++offset;
         }
@@ -1433,7 +1447,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             float value = _values[ offset ];
 
             value += accumulate;
@@ -1449,7 +1463,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             _values[ offset ] = ( v1._values[ offset ] + add ) * ( v2._values[ offset ] + add );
             ++offset;
         }
@@ -1459,7 +1473,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             _values[ offset ] /= v._values[ offset ];
             ++offset;
         }
@@ -1469,7 +1483,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             _values[ offset ] /= r;
             ++offset;
         }
@@ -1486,7 +1500,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             _values[ offset ] /= ( v._values[ offset ] + uniform );
             ++offset;
         }
@@ -1496,7 +1510,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             float n = numerator._values[ offset ];
             float d = denominator._values[ offset ];
             _values[ offset ] = n / ( d + uniform );
@@ -1516,7 +1530,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
 
             float valueThis = _values[ offset ];
             float valueThat = that._values[ offset ];
@@ -1539,7 +1553,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             min = Math.min( min, _values[ offset ] );
             ++offset;
         }
@@ -1553,7 +1567,7 @@ public class FloatArray2 {
 
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             max = Math.max( max, _values[ offset ] );
             ++offset;
         }
@@ -1567,9 +1581,9 @@ public class FloatArray2 {
         int index = 0;
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             float value = _values[ offset ];
-            if ( min <= value ) {
+            if( min <= value ) {
                 min = value;
                 index = offset;
             }
@@ -1585,9 +1599,9 @@ public class FloatArray2 {
         int index = 0;
         int offset = 0;
 
-        while ( offset < _values.length ) {
+        while( offset < _values.length ) {
             float value = _values[ offset ];
-            if ( max >= value ) {
+            if( max >= value ) {
                 max = value;
                 index = offset;
             }
@@ -1606,11 +1620,11 @@ public class FloatArray2 {
         int index = 0;
         int volume = _values.length;
 
-        while ( index < volume ) {
+        while( index < volume ) {
             Float f = new Float( _values[ index ] );
             ArrayList< Integer > al = tm.get( f );
 
-            if ( al == null ) {
+            if( al == null ) {
                 al = new ArrayList< Integer >();
                 tm.put( f, al );
             }
@@ -1631,11 +1645,11 @@ public class FloatArray2 {
 
         Iterator i = s.iterator();
 
-        while ( i.hasNext() ) {
+        while( i.hasNext() ) {
             Float f = ( Float ) i.next();
             ArrayList< Integer > al = tm.get( f );
 
-            for ( Integer n : al ) {
+            for( Integer n : al ) {
                 _values[ n ] = ( float ) ( nextRank );
 
                 ++nextRank;
@@ -1655,11 +1669,11 @@ public class FloatArray2 {
 
         Iterator i = s.iterator();
 
-        while ( i.hasNext() ) {
+        while( i.hasNext() ) {
             Float f = ( Float ) i.next();
             ArrayList< Integer > al = tm.get( f );
 
-            for ( Integer n : al ) {
+            for( Integer n : al ) {
                 _values[ n ] = ( float ) ( nextRank );
             }
 
@@ -1694,11 +1708,11 @@ public class FloatArray2 {
 
         Iterator i = s.iterator();
 
-        while ( i.hasNext() ) {
+        while( i.hasNext() ) {
             Float f = ( Float ) i.next();
             ArrayList< Integer > al = tm.get( f );
 
-            for ( Integer n : al ) {
+            for( Integer n : al ) {
                 double expectedValue = ( double ) ( rank - 1 ) * reciprocal;
                 expectedValue *= linearScaling;
                 _values[ n ] = ( float ) expectedValue;

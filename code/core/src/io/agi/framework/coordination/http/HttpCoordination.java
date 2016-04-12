@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.framework.coordination.http;
 
 import com.sun.net.httpserver.HttpServer;
@@ -108,12 +127,11 @@ public class HttpCoordination implements Coordination {
      */
     public void doUpdateExternal( String entityName, String origin ) {
         logger.info( "Coordination.doUpdateExternal( " + entityName + ", " + origin + " )" );
-        if ( origin != null ) {
-            if ( origin.equals( _n.getName() ) ) {
+        if( origin != null ) {
+            if( origin.equals( _n.getName() ) ) {
                 return; // ignore self events
             }
-        }
-        else { // origin is null, i.e. was generated outside the network
+        } else { // origin is null, i.e. was generated outside the network
             // append origin=this/here and broadcast to rest of network
             doUpdateBroadcast( entityName );
         }
@@ -152,12 +170,11 @@ public class HttpCoordination implements Coordination {
      */
     public void onUpdatedExternal( String entityName, String origin ) {
         logger.info( "Coordination.onUpdatedExternal( " + entityName + ", " + origin + " )" );
-        if ( origin != null ) {
-            if ( origin.equals( _n.getName() ) ) {
+        if( origin != null ) {
+            if( origin.equals( _n.getName() ) ) {
                 return; // ignore self events
             }
-        }
-        else { // origin is null, i.e. was generated outside the network
+        } else { // origin is null, i.e. was generated outside the network
             // append origin=this/here and broadcast to rest of network
             onUpdatedBroadcast( entityName );
         }
@@ -189,8 +206,8 @@ public class HttpCoordination implements Coordination {
     public void broadcast( String query ) {
         Collection< ModelNode > nodes = _n.getPersistence().fetchNodes();
 
-        for ( ModelNode jn : nodes ) {
-            if ( jn._name.equals( _n.getName() ) ) {
+        for( ModelNode jn : nodes ) {
+            if( jn._name.equals( _n.getName() ) ) {
 //                continue; // don't send to self
             }
 
@@ -248,7 +265,7 @@ public class HttpCoordination implements Coordination {
 //            ee.printStackTrace();
 //        }
         }
-        catch ( MalformedURLException e ) {
+        catch( MalformedURLException e ) {
             e.printStackTrace();
         }
     }

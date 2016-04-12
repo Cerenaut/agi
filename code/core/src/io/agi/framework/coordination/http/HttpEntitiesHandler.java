@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.framework.coordination.http;
 
 import com.sun.net.httpserver.HttpExchange;
@@ -40,13 +59,13 @@ public class HttpEntitiesHandler implements HttpHandler {
 
             Collection< ModelEntity > results = null;
 
-            for ( AbstractPair< String, String > ap : parameters ) {
+            for( AbstractPair< String, String > ap : parameters ) {
                 String key = ap._first;
                 String value = ap._second;
-                if ( key.equalsIgnoreCase( PARAMETER_NAME ) ) {
+                if( key.equalsIgnoreCase( PARAMETER_NAME ) ) {
                     ModelEntity m = _p.fetchEntity( value );
 
-                    if ( results == null ) {
+                    if( results == null ) {
                         results = new ArrayList< ModelEntity >();
                     }
 
@@ -54,34 +73,33 @@ public class HttpEntitiesHandler implements HttpHandler {
                 }
             }
 
-            if ( results == null ) {
+            if( results == null ) {
                 results = _p.getEntities();
             }
 
             boolean first = true;
 
-            if ( method.equalsIgnoreCase( "GET" ) ) {
+            if( method.equalsIgnoreCase( "GET" ) ) {
 
                 response += "[ ";
 
-                for ( ModelEntity m : results ) {
+                for( ModelEntity m : results ) {
 
                     // sanitize the config
                     String config = m.config;
 
-                    if ( config == null ) {
+                    if( config == null ) {
                         config = "null";
                     }
 
-                    if ( config.isEmpty() ) {
+                    if( config.isEmpty() ) {
                         config = "\"\""; // empty double quotes.
                     }
 
                     // write the entity
-                    if ( first ) {
+                    if( first ) {
                         first = false;
-                    }
-                    else {
+                    } else {
                         response += ", ";
                     }
 
@@ -101,7 +119,7 @@ public class HttpEntitiesHandler implements HttpHandler {
                 status = 200;
             }
         }
-        catch ( Exception e ) {
+        catch( Exception e ) {
             e.printStackTrace();
         }
 

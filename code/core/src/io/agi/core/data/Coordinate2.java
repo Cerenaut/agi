@@ -1,4 +1,23 @@
 /*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -37,7 +56,7 @@ public class Coordinate2 implements Cloneable {
         try {
             c = ( Coordinate2 ) super.clone(); // will clone array.
         }
-        catch ( CloneNotSupportedException cnse ) {
+        catch( CloneNotSupportedException cnse ) {
             return null;
         }
 
@@ -50,11 +69,11 @@ public class Coordinate2 implements Cloneable {
 
     @Override
     public boolean equals( Object o ) {
-        if ( this == o ) {
+        if( this == o ) {
             return true;
         }
 
-        if ( !( o instanceof Coordinate2 ) ) {
+        if( !( o instanceof Coordinate2 ) ) {
             return false;
         }
 
@@ -71,8 +90,8 @@ public class Coordinate2 implements Cloneable {
     @Override
     public String toString() {
         String s = new String();
-        for ( int d = 0; d < _indices.length; ++d ) {
-            if ( d > 0 ) s = s + ", ";
+        for( int d = 0; d < _indices.length; ++d ) {
+            if( d > 0 ) s = s + ", ";
             s = s + _d.getLabel( d ) + "=" + _indices[ d ];
         }
         return s;
@@ -82,13 +101,13 @@ public class Coordinate2 implements Cloneable {
 
         Set< Map.Entry< String, Integer > > s = dimensionValues.entrySet();
 
-        for ( Map.Entry< String, Integer > e : s ) {
+        for( Map.Entry< String, Integer > e : s ) {
             String label = ( String ) e.getKey();
             int n = ( Integer ) e.getValue().intValue();
 
             int index = _d.getIndex( label );
 
-            if ( index < _indices.length ) {
+            if( index < _indices.length ) {
                 set( index, n );
             }
         }
@@ -105,7 +124,7 @@ public class Coordinate2 implements Cloneable {
 
     public void set( String d, int n ) {
         int index = _d.getIndex( d );
-        if ( index < _indices.length ) {
+        if( index < _indices.length ) {
             set( index, n );
         }
     }
@@ -122,7 +141,7 @@ public class Coordinate2 implements Cloneable {
         int d = 0;
         int dimensions = _d.getDimensions();
 
-        while ( d < dimensions ) {
+        while( d < dimensions ) {
             _indices[ d ] = _d.getSize( d ) - 1;
 
             ++d;
@@ -133,7 +152,7 @@ public class Coordinate2 implements Cloneable {
         int d = 0;
         int dimensions = _d.getDimensions();
 
-        while ( d < dimensions ) {
+        while( d < dimensions ) {
             _indices[ d ] = 0;
 
             ++d;
@@ -150,7 +169,7 @@ public class Coordinate2 implements Cloneable {
 
     public void setMax( String d ) {
         int index = _d.getIndex( d );
-        if ( index < _indices.length ) {
+        if( index < _indices.length ) {
             setMax( index );
         }
     }
@@ -168,7 +187,7 @@ public class Coordinate2 implements Cloneable {
         int dimensions = _indices.length;
         int d = 0;
 
-        while ( d < dimensions ) {
+        while( d < dimensions ) {
 
             int i = _indices[ d ];
             int delta = translations._indices[ d ];
@@ -190,7 +209,7 @@ public class Coordinate2 implements Cloneable {
         int d = 0;
         int sumSq = 0;
 
-        while ( d < dimensions ) {
+        while( d < dimensions ) {
 
             int i1 = _indices[ d ];
             int i2 = c._indices[ d ];
@@ -212,13 +231,13 @@ public class Coordinate2 implements Cloneable {
         int dimensions = _d.getDimensions();
         int d = dimensions - 1;
 
-        while ( d >= 0 ) { // from (quantity-1) to 0
-            if ( _indices[ d ] < ( _d.getSize( d ) - 1 ) ) { // if not finished @ this dim
+        while( d >= 0 ) { // from (quantity-1) to 0
+            if( _indices[ d ] < ( _d.getSize( d ) - 1 ) ) { // if not finished @ this dim
                 ++_indices[ d ]; // increment this one
 
                 // zero all subsequent quantity:
                 ++d; //int d2 = d + 1;
-                while ( d < dimensions ) { // so at last dim, nothing else incremented.
+                while( d < dimensions ) { // so at last dim, nothing else incremented.
                     _indices[ d ] = 0;
                     ++d; //int d2 = d + 1;
                 }
@@ -241,9 +260,9 @@ public class Coordinate2 implements Cloneable {
         int d = 0;
         int dimensions = _d.getDimensions();
 
-        while ( d < dimensions ) {
+        while( d < dimensions ) {
             int n = _indices[ d ];
-            if ( ( n < 0 )
+            if( ( n < 0 )
                     || ( n >= _d.getSize( d ) ) ) {
                 return false;
             }
@@ -279,7 +298,7 @@ public class Coordinate2 implements Cloneable {
 
         --d;
 
-        while ( d >= 0 ) {
+        while( d >= 0 ) {
 
             cumulative *= _d.getSize( d ); // e.g.
 
@@ -290,7 +309,7 @@ public class Coordinate2 implements Cloneable {
 
         d = 0;
 
-        while ( d <= dMax ) {
+        while( d <= dMax ) {
             int v = subVolumes[ d ];
             int q = offset / v;
             _indices[ d ] = q;
@@ -311,7 +330,7 @@ public class Coordinate2 implements Cloneable {
         int dimensions = _d.getDimensions();
         int d = dimensions - 1;
 
-        while ( d >= 0 ) {
+        while( d >= 0 ) {
 
             offset += ( _indices[ d ] * cumulative );
 
@@ -348,14 +367,14 @@ public class Coordinate2 implements Cloneable {
         int dimension = 0;
         int dimensions = _d.getDimensions();
 
-        while ( dimension < dimensions ) {
+        while( dimension < dimensions ) {
 
             int nThis = _indices[ dimension ];
             int nThat = o._indices[ dimension ];
 
             ++dimension;
 
-            if ( nThis < nThat ) {
+            if( nThis < nThat ) {
                 return true;
             }
         }
@@ -367,14 +386,14 @@ public class Coordinate2 implements Cloneable {
         int dimension = 0;
         int dimensions = _d.getDimensions();
 
-        while ( dimension < dimensions ) {
+        while( dimension < dimensions ) {
 
             int nThis = _indices[ dimension ];
             int nThat = o._indices[ dimension ];
 
             ++dimension;
 
-            if ( nThis > nThat ) {
+            if( nThis > nThat ) {
                 return true;
             }
         }
@@ -386,7 +405,7 @@ public class Coordinate2 implements Cloneable {
         int dimension = 0;
         int dimensions = _d.getDimensions();
 
-        while ( dimension < dimensions ) {
+        while( dimension < dimensions ) {
 
             _indices[ dimension ] += c._indices[ dimension ];
 
@@ -398,7 +417,7 @@ public class Coordinate2 implements Cloneable {
         int dimension = 0;
         int dimensions = _d.getDimensions();
 
-        while ( dimension < dimensions ) {
+        while( dimension < dimensions ) {
 
             _indices[ dimension ] *= c._indices[ dimension ];
 
@@ -410,7 +429,7 @@ public class Coordinate2 implements Cloneable {
         int dimension = 0;
         int dimensions = _d.getDimensions();
 
-        while ( dimension < dimensions ) {
+        while( dimension < dimensions ) {
 
             _indices[ dimension ] += value;
 
@@ -422,7 +441,7 @@ public class Coordinate2 implements Cloneable {
         int dimension = 0;
         int dimensions = _d.getDimensions();
 
-        while ( dimension < dimensions ) {
+        while( dimension < dimensions ) {
 
             _indices[ dimension ] *= value;
 
@@ -435,7 +454,7 @@ public class Coordinate2 implements Cloneable {
         int dimension = 0;
         int volume = 1;
 
-        while ( dimension < c1._indices.length ) {
+        while( dimension < c1._indices.length ) {
 
             int n1 = c1._indices[ dimension ];
             int n2 = c2._indices[ dimension ];
@@ -456,7 +475,7 @@ public class Coordinate2 implements Cloneable {
         int dimensions = c1._d.getDimensions();
         int d = dimensions - 1;
 
-        while ( d >= 0 ) { // from (quantity-1) to 0
+        while( d >= 0 ) { // from (quantity-1) to 0
 
             int n1 = c1._indices[ d ];
             int n2 = c2._indices[ d ];
@@ -478,19 +497,19 @@ public class Coordinate2 implements Cloneable {
         int dimensions = c1._d.getDimensions();
         int d = dimensions - 1;
 
-        while ( d >= 0 ) { // from (quantity-1) to 0
+        while( d >= 0 ) { // from (quantity-1) to 0
 
             int n1 = c1._indices[ d ];
             int n2 = c2._indices[ d ];
             int max = Math.max( n1, n2 ) + 1;
 
-            if ( _indices[ d ] < max ) { // if not finished @ this dim
+            if( _indices[ d ] < max ) { // if not finished @ this dim
                 ++_indices[ d ]; // increment this one
 
                 // zero all subsequent quantity:
                 ++d; // start with d+1
 
-                while ( d < dimensions ) { // so at last dim, nothing else incremented.
+                while( d < dimensions ) { // so at last dim, nothing else incremented.
 
                     n1 = c1._indices[ d ];
                     n2 = c2._indices[ d ];
@@ -516,7 +535,7 @@ public class Coordinate2 implements Cloneable {
         int d = 0;
         int dimensions = c1._d.getDimensions();
 
-        while ( d < dimensions ) {
+        while( d < dimensions ) {
             int n1 = c1._indices[ d ];
             int n2 = c2._indices[ d ];
 
@@ -540,7 +559,7 @@ public class Coordinate2 implements Cloneable {
         int d = 0;
         int dimensions = _d.getDimensions();
 
-        while ( d < dimensions ) {
+        while( d < dimensions ) {
 
             int size = _d.getSize( d );
 

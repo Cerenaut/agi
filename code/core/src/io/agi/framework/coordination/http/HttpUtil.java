@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.framework.coordination.http;
 
 import com.sun.net.httpserver.HttpExchange;
@@ -29,7 +48,7 @@ public class HttpUtil {
             server.setExecutor( null ); // creates a default executor
             return server;
         }
-        catch ( Exception e ) {
+        catch( Exception e ) {
             e.printStackTrace();
             return null;
         }
@@ -39,18 +58,17 @@ public class HttpUtil {
 
         Map< String, String > result = new HashMap< String, String >();
 
-        if ( query == null ) {
+        if( query == null ) {
             return result;
         }
 
-        for ( String param : query.split( "&" ) ) {
+        for( String param : query.split( "&" ) ) {
 
             String pair[] = param.split( "=" );
 
-            if ( pair.length > 1 ) {
+            if( pair.length > 1 ) {
                 result.put( pair[ 0 ], pair[ 1 ] );
-            }
-            else {
+            } else {
                 result.put( pair[ 0 ], "" );
             }
         }
@@ -61,18 +79,17 @@ public class HttpUtil {
 
         ArrayList< AbstractPair< String, String > > result = new ArrayList< AbstractPair< String, String > >();
 
-        if ( query == null ) {
+        if( query == null ) {
             return result;
         }
 
-        for ( String param : query.split( "&" ) ) {
+        for( String param : query.split( "&" ) ) {
 
             String pair[] = param.split( "=" );
 
-            if ( pair.length > 1 ) {
+            if( pair.length > 1 ) {
                 result.add( new AbstractPair< String, String >( pair[ 0 ], pair[ 1 ] ) );
-            }
-            else {
+            } else {
                 result.add( new AbstractPair< String, String >( pair[ 0 ], "" ) );
             }
         }

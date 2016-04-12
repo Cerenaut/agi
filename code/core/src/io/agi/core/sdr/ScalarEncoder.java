@@ -1,4 +1,23 @@
 /*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -12,13 +31,13 @@ import io.agi.core.orm.AbstractPair;
 
 /**
  * Encodes to binary matrix by encoding values as subsets of bits.
- * <p>
+ * <p/>
  * The properties of SDRs are that similar input should have similar bits.
  * So there must be some redundancy - you can't have one bit per feature.
- * <p>
+ * <p/>
  * This encoder assumes that each scalar input is represented as an array
  * of bits.
- * <p>
+ * <p/>
  * This is an adaptation of the Nupic ScalarEncoder
  * https://github.com/numenta/nupic/wiki/Encoders
  *
@@ -109,13 +128,13 @@ public class ScalarEncoder implements SparseDistributedEncoder {
 //        Dimensions d = Dimensions.create1D( Dimensions.DIMENSION_X, outputs );
 //        encodingOutput.setDimensions( d );
 
-        for ( int i = 0; i < inputs; ++i ) {
+        for( int i = 0; i < inputs; ++i ) {
             float inputValue = encodingInput._values[ i ];
 
             int offset = i * _bits;
 
-            if ( ( !_encodeZero ) && ( inputValue == 0.f ) ) {
-                for ( int b = 0; b < _bits; ++b ) {
+            if( ( !_encodeZero ) && ( inputValue == 0.f ) ) {
+                for( int b = 0; b < _bits; ++b ) {
                     encodingOutput._values[ offset + b ] = 0.f;
                 }
                 continue;
@@ -130,9 +149,9 @@ public class ScalarEncoder implements SparseDistributedEncoder {
             int bin1 = ( int ) bin;
             int bin2 = bin1 + _density;
 
-            for ( int b = 0; b < _bits; ++b ) {
+            for( int b = 0; b < _bits; ++b ) {
                 float bitValue = 0.f;
-                if ( ( b < bin2 ) && ( b >= bin1 ) ) {
+                if( ( b < bin2 ) && ( b >= bin1 ) ) {
                     bitValue = 1.f;
                 }
                 encodingOutput._values[ offset + b ] = bitValue;
@@ -152,17 +171,17 @@ public class ScalarEncoder implements SparseDistributedEncoder {
         int inputs = decodingInput.getSize();
         int outputs = inputs / _bits;
 
-        for ( int i = 0; i < outputs; ++i ) {
+        for( int i = 0; i < outputs; ++i ) {
 
             int offset = i * _bits;
 
             float sum = 0.f;
             float count = 0.f;
 
-            for ( int b = 0; b < _bits; ++b ) {
+            for( int b = 0; b < _bits; ++b ) {
                 float bitValue = decodingInput._values[ offset + b ];
 
-                if ( bitValue < 1.f ) {
+                if( bitValue < 1.f ) {
                     continue;
                 }
 
@@ -173,7 +192,7 @@ public class ScalarEncoder implements SparseDistributedEncoder {
             }
 
             float output = 0.f;
-            if ( count > 0.f ) {
+            if( count > 0.f ) {
                 output = sum / count; // mean
             }
 

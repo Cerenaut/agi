@@ -1,4 +1,23 @@
 /*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -51,21 +70,20 @@ public class FloatMatrix {
         FloatArray2 sumColsPerRow = sumColsPerRow( m1, rows1, cols1 ); // foreach( row ), sum all col of A
         FloatArray2 sumRowsPerCol = sumRowsPerCol( m2, rows2, cols2 ); // foreach( col ), sum all row of B
 
-        for ( int y = 0; y < rows3; ++y ) {
+        for( int y = 0; y < rows3; ++y ) {
 
             float value1 = sumColsPerRow._values[ y ];
 
-            for ( int x = 0; x < cols3; ++x ) {
+            for( int x = 0; x < cols3; ++x ) {
 
                 float value2 = sumRowsPerCol._values[ x ];
                 float product = value1 * value2;
 
-                if ( Float.isInfinite( product ) ) {
-                    if ( ( ( value1 > 0.f ) && ( value2 > 0.f ) ) ||
+                if( Float.isInfinite( product ) ) {
+                    if( ( ( value1 > 0.f ) && ( value2 > 0.f ) ) ||
                             ( ( value1 < 0.f ) && ( value2 < 0.f ) ) ) {
                         product = Float.MAX_VALUE;
-                    }
-                    else {
+                    } else {
                         product = 0.f - Float.MAX_VALUE;
                     }
                 }
@@ -113,11 +131,11 @@ public class FloatMatrix {
         FloatArray2 sumColsPerRow = sumColsPerRow( m1, rows1, cols1 ); // foreach( row ), sum all col of A
         FloatArray2 sumRowsPerCol = sumRowsPerCol( m2, rows2, cols2 ); // foreach( col ), sum all row of B
 
-        for ( int y = 0; y < rows3; ++y ) {
+        for( int y = 0; y < rows3; ++y ) {
 
             float value1 = sumColsPerRow._values[ y ];
 
-            for ( int x = 0; x < cols3; ++x ) {
+            for( int x = 0; x < cols3; ++x ) {
 
                 float value2 = sumRowsPerCol._values[ x ];
                 float product = value1 * value2;
@@ -157,11 +175,11 @@ public class FloatMatrix {
     public static FloatArray2 sumRowsPerCol( FloatArray2 m1, int rows, int cols ) {
         FloatArray2 m3 = new FloatArray2( cols );
 
-        for ( int x = 0; x < cols; ++x ) {
+        for( int x = 0; x < cols; ++x ) {
 
             float sum = 0.f;
 
-            for ( int y = 0; y < rows; ++y ) {
+            for( int y = 0; y < rows; ++y ) {
                 int offset = getOffset( rows, cols, y, x );
                 float value = m1._values[ offset ];
                 sum += value;
@@ -176,11 +194,11 @@ public class FloatMatrix {
     public static FloatArray2 sumColsPerRow( FloatArray2 m1, int rows, int cols ) {
         FloatArray2 m3 = new FloatArray2( rows );
 
-        for ( int y = 0; y < rows; ++y ) {
+        for( int y = 0; y < rows; ++y ) {
 
             float sum = 0.f;
 
-            for ( int x = 0; x < cols; ++x ) {
+            for( int x = 0; x < cols; ++x ) {
                 int offset = getOffset( rows, cols, y, x ); // y = row, x=col
                 float value = m1._values[ offset ];
                 sum += value;
@@ -204,8 +222,8 @@ public class FloatMatrix {
 //        5 6 
         int size = rows1 * cols1;
         FloatArray2 m3 = new FloatArray2( size );
-        for ( int y = 0; y < rows1; ++y ) {
-            for ( int x = 0; x < cols1; ++x ) {
+        for( int y = 0; y < rows1; ++y ) {
+            for( int x = 0; x < cols1; ++x ) {
                 int offset1 = getOffset( rows1, cols1, y, x );
                 float value = m1._values[ offset1 ];//y * cols1 + x ];
                 int offset2 = getOffset( rows2, cols2, x, y );

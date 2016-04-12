@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.framework;
 
 import com.google.gson.Gson;
@@ -16,9 +35,9 @@ import java.util.*;
 
 /**
  * A conceptual Entity that has an update() method, and some children Entities.
- * <p>
+ * <p/>
  * Instances are transient and all state must be persisted as Data or Properties.
- * <p>
+ * <p/>
  * Created by dave on 14/02/16.
  */
 public abstract class Entity extends NamedObject implements EntityListener {
@@ -103,6 +122,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
     /**
      * Create appropriate Config object, populate with the parameters expressed as a string in 'model.config'.
+     *
      * @return the populated config object
      */
     public EntityConfig createConfig() {
@@ -130,31 +150,31 @@ public abstract class Entity extends NamedObject implements EntityListener {
         Persistence p = _n.getPersistence();
         Collection< String > childNames = p.getChildEntities( _name );
 
-        if ( childNames.isEmpty() ) {
+        if( childNames.isEmpty() ) {
             afterUpdate(); // will notify the parent in the afterUpdate handler
             return;
         }
 
         // Require all children to flush on next update.
         // They can only be updated by this class, so we know they will respect the flush.
-        if ( _flushChildren ) {
-            for ( String childName : childNames ) {
+        if( _flushChildren ) {
+            for( String childName : childNames ) {
                 Framework.SetConfig( childName, SUFFIX_FLUSH, "true" );
             }
         }
 
         // Now wait for all children to update
-        synchronized ( _childrenWaiting ) {
+        synchronized( _childrenWaiting ) {
             _childrenWaiting.addAll( childNames );
 
             // add self as listener for these children
-            for ( String childName : childNames ) {
+            for( String childName : childNames ) {
                 _n.addEntityListener( childName, this );
             }
         }
 
         // update all the children (Note, they will update on other Nodes potentially, and definitely in another thread.
-        for ( String childName : childNames ) {
+        for( String childName : childNames ) {
             _logger.info( "Request update of child: " + childName );
             _n.requestUpdate( childName ); // schedule an update, may have already occurred
             // update to child may occur any time after this, because only 1 parent so waiting for me to call the update.
@@ -177,7 +197,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
     public void onEntityUpdated( String entityName ) {
         _logger.info( "Entity: " + getName() + " being notified about: " + entityName );
-        synchronized ( _childrenWaiting ) {
+        synchronized( _childrenWaiting ) {
             _childrenWaiting.remove( entityName );
 
             //System.err.print( "Entity: " + getName() + " notified about: " + entityName + ", waiting for " );
@@ -186,7 +206,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
             //}
             //System.err.println();
 
-            if ( _childrenWaiting.isEmpty() ) {
+            if( _childrenWaiting.isEmpty() ) {
                 afterUpdate();
             }
             // else: wait for other children
@@ -208,7 +228,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
         fetchData( outputKeys );
 
         // Set the random number generator, with the current time (i.e. random), if not loaded.
-        if ( _config.seed == null ) {
+        if( _config.seed == null ) {
             _config.seed = System.currentTimeMillis();
         }
 
@@ -217,10 +237,9 @@ public abstract class Entity extends NamedObject implements EntityListener {
         // 3. doUpdateSelf()
         doUpdateSelf();
 
-        if ( _config.reset ) {
+        if( _config.reset ) {
             _config.age = 0;
-        }
-        else {
+        } else {
             _config.age++; // update age:
         }
 
@@ -260,16 +279,16 @@ public abstract class Entity extends NamedObject implements EntityListener {
     private void fetchData( Collection< String > attributes ) {
         Persistence p = _n.getPersistence();
 
-        for ( String attribute : attributes ) {
+        for( String attribute : attributes ) {
             String inputKey = getKey( attribute );
 
             ModelData modelData = null;
 
             // check for cache policy
-            if ( _dataFlags.hasFlag( attribute, DataFlags.FLAG_NODE_CACHE ) ) {
+            if( _dataFlags.hasFlag( attribute, DataFlags.FLAG_NODE_CACHE ) ) {
                 Data d = _n.getCachedData( inputKey );
 
-                if ( d != null ) {
+                if( d != null ) {
                     _logger.info( "Skipping fetch of Data: " + inputKey );
                     _data.put( inputKey, d );
                     continue;
@@ -277,28 +296,27 @@ public abstract class Entity extends NamedObject implements EntityListener {
             }
 
             // check for no - read
-            if ( _dataFlags.hasFlag( attribute, DataFlags.FLAG_PERSIST_ONLY ) ) {
+            if( _dataFlags.hasFlag( attribute, DataFlags.FLAG_PERSIST_ONLY ) ) {
                 _logger.info( "Skipping fetch of Data: " + inputKey );
                 continue;
             }
 
             modelData = p.fetchData( inputKey );
 
-            if ( modelData == null ) { // not found
+            if( modelData == null ) { // not found
                 continue; // truthfully represent as null.
             }
 
             HashSet< String > refKeys = modelData.getRefKeys();
 
-            if ( refKeys.isEmpty() ) {
+            if( refKeys.isEmpty() ) {
                 Data d = modelData.getData();
                 _data.put( inputKey, d );
-            }
-            else {
+            } else {
                 // Create an output matrix which is a composite of all the referenced inputs.
                 HashMap< String, Data > allRefs = new HashMap< String, Data >();
 
-                for ( String refKey : refKeys ) {
+                for( String refKey : refKeys ) {
                     ModelData refJson = p.fetchData( refKey );
                     Data refData = refJson.getData();
                     allRefs.put( refKey, refData );
@@ -315,13 +333,13 @@ public abstract class Entity extends NamedObject implements EntityListener {
         }
 
         // check to see whether we need a backup of these structures, to implement the lazy-persist policy.
-        for ( String keySuffix : _dataFlags._dataFlags.keySet() ) {
-            if ( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_LAZY_PERSIST ) ) {
+        for( String keySuffix : _dataFlags._dataFlags.keySet() ) {
+            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_LAZY_PERSIST ) ) {
                 String inputKey = getKey( keySuffix );
                 Data d = _data.get( inputKey );
                 if( d != null ) {
-                    Data copy = new Data(d); // make a deep copy
-                    _dataMap.putData(inputKey, copy);
+                    Data copy = new Data( d ); // make a deep copy
+                    _dataMap.putData( inputKey, copy );
                 }
             }
         }
@@ -330,35 +348,35 @@ public abstract class Entity extends NamedObject implements EntityListener {
     public void persistData( Collection< String > attributes ) {
         Persistence p = _n.getPersistence();
 
-        for ( String keySuffix : attributes ) {
+        for( String keySuffix : attributes ) {
             String inputKey = getKey( keySuffix );
             Data d = _data.get( inputKey );
 
             // check for cache policy
-            if ( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_NODE_CACHE ) ) {
+            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_NODE_CACHE ) ) {
                 _n.setCachedData( inputKey, d ); // cache this one, so we don't need to read it next time.
             }
 
-            if ( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_LAZY_PERSIST ) ) {
+            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_LAZY_PERSIST ) ) {
                 Data copy = _dataMap.getData( inputKey );
 
                 if( copy != null ) {
-                    if (copy.isSameAs(d)) {
+                    if( copy.isSameAs( d ) ) {
                         //System.err.println( "Skipping persist of Data: " + inputKey + " because: Not changed." );
                         continue; // don't persist.
                     }
                 }
             }
 
-            if ( _config.flush == false ) {
-                if ( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_PERSIST_ON_FLUSH ) ) {
+            if( _config.flush == false ) {
+                if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_PERSIST_ON_FLUSH ) ) {
                     //System.err.println( "Skipping persist of Data: " + inputKey + " because: Only on flush, and not a flush." );
                     continue;
                 }
             }
 
             boolean sparse = false;
-            if ( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_SPARSE_UNIT ) ) {
+            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_SPARSE_UNIT ) ) {
                 sparse = true;
             }
 
@@ -389,15 +407,15 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         // case 1: No input.
         int nbrRefs = allRefs.size();
-        if ( nbrRefs == 0 ) {
+        if( nbrRefs == 0 ) {
             return null;
         }
 
         // case 2: Single input
-        if ( nbrRefs == 1 ) {
+        if( nbrRefs == 1 ) {
             String refKey = allRefs.keySet().iterator().next();
             Data refData = allRefs.get( refKey );
-            if ( refData == null ) {
+            if( refData == null ) {
                 return null;
             }
             Data d = new Data( refData );
@@ -407,9 +425,9 @@ public abstract class Entity extends NamedObject implements EntityListener {
         // case 3: Multiple inputs (combine as vector)
         int sumVolume = 0;
 
-        for ( String refKey : allRefs.keySet() ) {
+        for( String refKey : allRefs.keySet() ) {
             Data refData = allRefs.get( refKey );
-            if ( refData == null ) {
+            if( refData == null ) {
                 return null;
             }
             int volume = refData.getSize();
@@ -420,7 +438,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         int offset = 0;
 
-        for ( String refKey : allRefs.keySet() ) {
+        for( String refKey : allRefs.keySet() ) {
             Data refData = allRefs.get( refKey );
             int volume = refData.getSize();
 
@@ -447,10 +465,9 @@ public abstract class Entity extends NamedObject implements EntityListener {
         String key = getKey( attribute );
         Data d = _data.get( key );
 
-        if ( d == null ) {
+        if( d == null ) {
             d = new Data( defaultSize );
-        }
-        else {
+        } else {
             d.setSize( defaultSize );
         }
 
@@ -469,10 +486,9 @@ public abstract class Entity extends NamedObject implements EntityListener {
         String key = getKey( attribute );
         Data d = _data.get( key );
 
-        if ( d == null ) {
+        if( d == null ) {
             d = new Data( defaultSize );
-        }
-        else if ( !d._dataSize.isSameAs( defaultSize ) ) {
+        } else if( !d._dataSize.isSameAs( defaultSize ) ) {
             d.setSize( defaultSize );
         }
 

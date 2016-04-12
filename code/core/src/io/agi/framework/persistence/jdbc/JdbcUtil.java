@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.framework.persistence.jdbc;
 
 import org.apache.commons.dbcp2.BasicDataSource;
@@ -10,7 +29,7 @@ import java.sql.*;
  * TODO - implement some performance improvements, this list seems sensible:
  * http://javarevisited.blogspot.com.au/2012/01/improve-performance-java-database.html
  * Also try to reduce writes by having a flag whether the data has changed.
- * <p>
+ * <p/>
  * Created by dave on 17/02/16.
  */
 public class JdbcUtil {
@@ -29,38 +48,38 @@ public class JdbcUtil {
         Connection c = null;
         Statement s = null;
         try {
-            c = DriverManager.getConnection(dbUrl, user, password);
+            c = DriverManager.getConnection( dbUrl, user, password );
 
             //STEP 4: Execute a query
             //_logger.info( "JDBC T: {} @1 jdbc = {}", System.currentTimeMillis(), sql );
             s = c.createStatement();
             //_logger.info( "JDBC T: {} @2 ", System.currentTimeMillis() );
-            s.execute(sql);
+            s.execute( sql );
             //_logger.info( "JDBC T: {} @3 ", System.currentTimeMillis() );
 
             //STEP 6: Clean-up environment
             s.close();
             c.close();
         }
-        catch ( SQLException se ) {
-            logger.error(se.getStackTrace());
+        catch( SQLException se ) {
+            logger.error( se.getStackTrace() );
         }
-        catch ( Exception e ) {
-            logger.error(e.getStackTrace() );
+        catch( Exception e ) {
+            logger.error( e.getStackTrace() );
         }
         finally {
             try {
-                if ( s != null ) s.close();
+                if( s != null ) s.close();
             }
-            catch ( SQLException se2 ) {
-                logger.error(se2.getStackTrace());
+            catch( SQLException se2 ) {
+                logger.error( se2.getStackTrace() );
             }
 
             try {
-                if ( c != null ) c.close();
+                if( c != null ) c.close();
             }
-            catch ( SQLException se ) {
-                logger.error(se.getStackTrace() );
+            catch( SQLException se ) {
+                logger.error( se.getStackTrace() );
             }
 
         }
@@ -87,7 +106,7 @@ public class JdbcUtil {
             s = c.createStatement();
             ResultSet rs = s.executeQuery( sql );
 
-            if ( cb != null ) {
+            if( cb != null ) {
                 cb.onResultSet( rs );
             }
 
@@ -96,25 +115,25 @@ public class JdbcUtil {
             s.close();
             c.close();
         }
-        catch ( SQLException se ) {
-            logger.error(se.getStackTrace());
+        catch( SQLException se ) {
+            logger.error( se.getStackTrace() );
         }
-        catch ( Exception e ) {
-            logger.error(e.getStackTrace());
+        catch( Exception e ) {
+            logger.error( e.getStackTrace() );
         }
         finally {
             try {
-                if ( s != null ) s.close();
+                if( s != null ) s.close();
             }
-            catch ( SQLException se2 ) {
+            catch( SQLException se2 ) {
                 logger.error( se2.getStackTrace() );
             }
 
             try {
-                if ( c != null ) c.close();
+                if( c != null ) c.close();
             }
-            catch ( SQLException se ) {
-                logger.error(se.getStackTrace());
+            catch( SQLException se ) {
+                logger.error( se.getStackTrace() );
             }
 
         }
@@ -132,7 +151,7 @@ public class JdbcUtil {
     }
 
     public static Connection GetConnection( String dbUrl, String user, String password ) {
-        if ( _dataSource == null ) {
+        if( _dataSource == null ) {
             CreateDataSource( dbUrl, user, password, JdbcPersistence.DRIVER_POSTGRESQL );
         }
 
@@ -140,7 +159,7 @@ public class JdbcUtil {
             Connection c = _dataSource.getConnection();
             return c;
         }
-        catch ( Exception e ) {
+        catch( Exception e ) {
             logger.error( e.getStackTrace() );
             return null;
         }

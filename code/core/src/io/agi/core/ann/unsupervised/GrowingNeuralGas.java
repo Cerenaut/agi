@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.core.ann.unsupervised;
 
 import io.agi.core.data.Data;
@@ -12,12 +31,12 @@ import java.util.TreeMap;
 
 /**
  * Growing Neural Gas algorithm (online unsupervised learning).
- * <p>
+ * <p/>
  * Input can be provided as a dense Data structure, or as a sparse Array of values. In the latter case it is assumed
  * the values are all '1' and therefore the values of the sparse input are used as indices.
- * <p>
+ * <p/>
  * Based on pseudocode @ http://www.juergenwiki.de/work/wiki/doku.php?id=public:growing_neural_gas
- * <p>
+ * <p/>
  * Created by dave on 29/12/15.
  */
 public class GrowingNeuralGas extends CompetitiveLearning {
@@ -78,18 +97,17 @@ public class GrowingNeuralGas extends CompetitiveLearning {
 
         // given current cell mask local, ensure that there are at least 2 cells locally.
         boolean b = addCellPairLazy();
-        if ( !b ) {
+        if( !b ) {
             return; // no cells available to model any input.
         }
 
         // Compute error
         ArrayList< Integer > liveCells = createCellList( _c, _cellMask );
         ArrayList< Integer > sparseUnitInput = getSparseUnitInput();
-        if ( sparseUnitInput != null ) {
+        if( sparseUnitInput != null ) {
             // Sparse input
             sumSqErrorSparseUnit( _c, liveCells, sparseUnitInput, _cellWeights, _cellErrors );
-        }
-        else {
+        } else {
             // Dense input
             sumSqError( _c, liveCells, _inputValues, _cellWeights, _cellErrors );
         }
@@ -101,7 +119,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         _cellActivity.set( 0.f );
         findBestNCells( _c, _cellMask, _cellErrors, _cellActivity, maxRank, findMaxima, ranking ); // activity is whether ranked
         ArrayList< Integer > bestValues = Ranking.getBestValues( ranking, findMaxima, maxRank );
-        if ( bestValues.size() < 2 ) {
+        if( bestValues.size() < 2 ) {
             // This can happen when we have a local cell mask; we just need to assign two cells.
             return;
         }
@@ -128,9 +146,9 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         // Create new cells where the space is poorly represented (the cells are stressed)
         int ageSinceGrowth = ( int ) _ageSinceGrowth._values[ 0 ];
 
-        if ( ageSinceGrowth >= _c.getGrowthInterval() ) {
+        if( ageSinceGrowth >= _c.getGrowthInterval() ) {
             b = addCells();
-            if ( b ) {
+            if( b ) {
                 ageSinceGrowth = 0;
             }
         }
@@ -169,10 +187,10 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         int cells = w * h;
         int cellCount = 0;
 
-        for ( int cell = 0; cell < cells; ++cell ) {
+        for( int cell = 0; cell < cells; ++cell ) {
 
             float maskValue = _cellMask._values[ cell ];
-            if ( maskValue > 0.f ) {
+            if( maskValue > 0.f ) {
                 ++cellCount;
             }
         }
@@ -187,9 +205,9 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         // an edge will form between them when they are subsequently picked as the best (and only) match.
         int cellCount = getCellCount();
 
-        while ( cellCount < 2 ) {
+        while( cellCount < 2 ) {
             Integer freeCell = findFreeCell();
-            if ( freeCell == null ) {
+            if( freeCell == null ) {
                 return false; // no free cell
             }
 
@@ -208,10 +226,10 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         int h = _c.getHeightCells();
         int cells = w * h;
 
-        for ( int cell = 0; cell < cells; ++cell ) {
+        for( int cell = 0; cell < cells; ++cell ) {
 
             float maskValue = _cellMask._values[ cell ];
-            if ( maskValue == 0.f ) {
+            if( maskValue == 0.f ) {
                 freeCell = cell; // pick any available cell
                 break; // not a valid cell
             }
@@ -224,14 +242,14 @@ public class GrowingNeuralGas extends CompetitiveLearning {
 
         Integer freeCell = findFreeCell(); // Note: look for globally available cell
 
-        if ( freeCell == null ) {
+        if( freeCell == null ) {
             //System.err.println( "ERR: no free cell");
             return false; // can't add any cells at the moment
         }
 
         AbstractPair< Integer, Integer > ap = findStressedCells();
 
-        if ( ap == null ) {
+        if( ap == null ) {
             return false;
         }
 
@@ -251,22 +269,22 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         int h = _c.getHeightCells();
         int cells = w * h;
 
-        for ( int cell = 0; cell < cells; ++cell ) {
+        for( int cell = 0; cell < cells; ++cell ) {
 
             // Note: look for maximum stress globally.??
             float maskValue = _cellMask._values[ cell ];
-            if ( maskValue == 0.f ) {
+            if( maskValue == 0.f ) {
                 continue; // not a valid cell
             }
 
             float stress = _cellStress._values[ cell ];
-            if ( stress >= worstStress ) {
+            if( stress >= worstStress ) {
                 worstStress = stress;
                 worstCell = cell;
             }
         }
 
-        if ( worstStress < minStressThreshold ) {
+        if( worstStress < minStressThreshold ) {
             //System.err.println( "ERR: not stressed");
             return null;
         }
@@ -275,22 +293,22 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         Integer worstCell2 = null;
         float worstStress2 = 0.f;
 
-        for ( int cell2 = 0; cell2 < cells; ++cell2 ) {
+        for( int cell2 = 0; cell2 < cells; ++cell2 ) {
 
             // find an actual neighbour of worstCell
-            if ( !areNeighbours( worstCell, cell2 ) ) {
+            if( !areNeighbours( worstCell, cell2 ) ) {
                 continue;
             }
 
             // OK cell2 is a neighbour:
             float stress = _cellStress._values[ cell2 ];
-            if ( stress >= worstStress2 ) {
+            if( stress >= worstStress2 ) {
                 worstStress2 = stress;
                 worstCell2 = cell2;
             }
         }
 
-        if ( worstCell2 == null ) {
+        if( worstCell2 == null ) {
             //System.err.println( "ERR: no worst cell #2");
             return null;
         }
@@ -309,7 +327,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         // set weights of the new cell as median of the two worst cells
         int inputs = _c.getNbrInputs();
 
-        for ( int i = 0; i < inputs; ++i ) {
+        for( int i = 0; i < inputs; ++i ) {
             int offsetW = worstCell * inputs + i;
             int offsetW2 = worstCell2 * inputs + i;
             int offsetF = freeCell * inputs + i;
@@ -358,7 +376,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
 
         ArrayList< Integer > sparseUnitInput = getSparseUnitInput();
         HashSet< Integer > hs = new HashSet< Integer >();
-        if ( sparseUnitInput != null ) {
+        if( sparseUnitInput != null ) {
             hs.addAll( sparseUnitInput );
         }
 
@@ -370,30 +388,29 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         int h = _c.getHeightCells();
         int cells = w * h;
 
-        for ( int cell = 0; cell < cells; ++cell ) {
+        for( int cell = 0; cell < cells; ++cell ) {
 
             float maskValue = _cellMask._values[ cell ];
-            if ( maskValue == 0.f ) {
+            if( maskValue == 0.f ) {
                 continue; // not a valid cell
             }
 
             float cellLearningRate = learningRateNeighbours;
 
-            if ( cell == bestCell ) {
+            if( cell == bestCell ) {
                 cellLearningRate = learningRate;
-            }
-            else { // not the winner, maybe a neighbour:
-                if ( !areNeighbours( bestCell, cell ) ) {
+            } else { // not the winner, maybe a neighbour:
+                if( !areNeighbours( bestCell, cell ) ) {
                     continue;
                 }
             }
 
-            if ( sparseUnitInput != null ) {
+            if( sparseUnitInput != null ) {
                 // Sparse input
-                for ( int i = 0; i < inputs; ++i ) {
+                for( int i = 0; i < inputs; ++i ) {
 
                     float inputValue = 0.f;
-                    if ( hs.contains( i ) ) {
+                    if( hs.contains( i ) ) {
                         inputValue = 1.f;
                     }
 //                float inputMaskValue = _inputMask._values[ i ];
@@ -403,10 +420,9 @@ public class GrowingNeuralGas extends CompetitiveLearning {
 
                     updateWeight( cell, inputs, i, inputValue, cellLearningRate );
                 }
-            }
-            else {
+            } else {
                 // Dense input
-                for ( int i = 0; i < inputs; ++i ) {
+                for( int i = 0; i < inputs; ++i ) {
 
                     float inputValue = _inputValues._values[ i ];
 //                float inputMaskValue = _inputMask._values[ i ];
@@ -444,11 +460,11 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         _edges._values[ offset ] = 1.f; // Create the edge
 
         // now go and prune
-        for ( int cell1 = 0; cell1 < cells; ++cell1 ) {
-            for ( int cell2 = cell1 + 1; cell2 < cells; ++cell2 ) {
+        for( int cell1 = 0; cell1 < cells; ++cell1 ) {
+            for( int cell2 = cell1 + 1; cell2 < cells; ++cell2 ) {
                 offset = cell1 * cells + cell2;
                 float edge = _edges._values[ offset ];
-                if ( edge <= 0.f ) {
+                if( edge <= 0.f ) {
                     continue; // not a neighbour
                 }
 
@@ -456,7 +472,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
                 _edgesAges._values[ offset ] += 1.f;
 
                 float edgeAge = _edgesAges._values[ offset ];
-                if ( edgeAge > maxEdgeAge ) {
+                if( edgeAge > maxEdgeAge ) {
                     _edges._values[ offset ] = 0.f; // no longer an edge
                     _edgesAges._values[ offset ] = 0.f; // no point in storing larger ages
                 }
@@ -471,26 +487,26 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         int cells = w * h;
 
         // now go and prune
-        for ( int cell1 = 0; cell1 < cells; ++cell1 ) {
+        for( int cell1 = 0; cell1 < cells; ++cell1 ) {
 
-            if ( _cellMask._values[ cell1 ] == 0.f ) {
+            if( _cellMask._values[ cell1 ] == 0.f ) {
                 continue; // already dead
             }
 
             boolean hasEdge = false;
 
-            for ( int cell2 = 0; cell2 < cells; ++cell2 ) {
+            for( int cell2 = 0; cell2 < cells; ++cell2 ) {
 
                 int offset = getEdgeOffset( cell1, cell2 );
 
                 float edge = _edges._values[ offset ];
-                if ( edge > 0.f ) {
+                if( edge > 0.f ) {
                     hasEdge = true;
                     break; // this cell is OK
                 }
             }
 
-            if ( hasEdge ) {
+            if( hasEdge ) {
                 continue; // don't remove
             }
 
@@ -506,7 +522,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
             int cellB,
             boolean isNeighbour ) {
 
-        if ( cellA == cellB ) {
+        if( cellA == cellB ) {
             return;
         }
 
@@ -514,7 +530,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
 
         float value = 0.f;
 
-        if ( isNeighbour ) {
+        if( isNeighbour ) {
             value = 1.f;
         }
 
@@ -525,14 +541,14 @@ public class GrowingNeuralGas extends CompetitiveLearning {
             int cellA,
             int cellB ) {
 
-        if ( cellA == cellB ) {
+        if( cellA == cellB ) {
             return false;
         }
 
         int offset = getEdgeOffset( cellA, cellB );
         float value = _edges._values[ offset ];
 
-        if ( value > 0.f ) {
+        if( value > 0.f ) {
             return true;
         }
 
@@ -543,7 +559,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         // the smaller value is used as index.
         int cell1 = cellA;
         int cell2 = cellB;
-        if ( cellA > cellB ) {
+        if( cellA > cellB ) {
             cell1 = cellB;
             cell2 = cellA;
         }

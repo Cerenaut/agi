@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.core.alg;
 
 import io.agi.core.ann.supervised.FeedForwardNetwork;
@@ -17,19 +36,19 @@ import java.util.HashSet;
 
 /**
  * A Region of cortex, representing a small part of that surface and one hierarchical level.
- * <p>
+ * <p/>
  * Has a 2-D matrix of feedforward input.
  * Has a 2-D matrix of feedback input.
- * <p>
+ * <p/>
  * There are 2 intended outputs:
  * - Predictions
  * - False-Negative Prediction errors (a Predictive-Encoding of the state of the Region).
- * <p>
+ * <p/>
  * It has 3 parts:
  * - Organizer x1
  * - Classifiers (numerous, arranged into a grid)
  * - Predictor x1
- * <p>
+ * <p/>
  * Created by dave on 22/03/16.
  */
 public class Region extends NamedObject {
@@ -80,8 +99,8 @@ public class Region extends NamedObject {
 
         Point p = _rc.getOrganizerSizeCells();
 
-        for ( int y = 0; y < p.y; ++y ) {
-            for ( int x = 0; x < p.x; ++x ) {
+        for( int y = 0; y < p.y; ++y ) {
+            for( int x = 0; x < p.x; ++x ) {
                 GrowingNeuralGas classifier = _rf.createClassifier( this );
                 int regionOffset = _rc.getOrganizerOffset( x, y );
                 _classifiers.put( regionOffset, classifier );
@@ -133,8 +152,8 @@ public class Region extends NamedObject {
 
         Point p = _rc.getOrganizerSizeCells();
 
-        for ( int y = 0; y < p.y; ++y ) {
-            for ( int x = 0; x < p.x; ++x ) {
+        for( int y = 0; y < p.y; ++y ) {
+            for( int x = 0; x < p.x; ++x ) {
                 int regionOffset = _rc.getOrganizerOffset( x, y );
                 GrowingNeuralGas classifier = _classifiers.get( regionOffset );
                 classifier.reset();
@@ -151,12 +170,12 @@ public class Region extends NamedObject {
         _regionActivity.set( 0.f ); // clear
         _regionActive = new ArrayList< Integer >(); // clear
 
-        for ( int y = 0; y < p.y; ++y ) {
-            for ( int x = 0; x < p.x; ++x ) {
+        for( int y = 0; y < p.y; ++y ) {
+            for( int x = 0; x < p.x; ++x ) {
 
                 int organizerOffset = _rc.getOrganizerOffset( x, y );
                 float mask = _organizer._cellMask._values[ organizerOffset ];
-                if ( mask != 1.f ) {
+                if( mask != 1.f ) {
                     continue; // because the cell is "dead" or inactive. We already set the region output to zero, so no action required.
                 }
 
@@ -166,7 +185,7 @@ public class Region extends NamedObject {
         }
 
         boolean classificationChanged = getClassificationChanged();
-        if ( classificationChanged ) {
+        if( classificationChanged ) {
             _regionActivityOld.copy( _regionActivityNew );
             _regionActivityNew.copy( _regionActivity );
 
@@ -176,7 +195,7 @@ public class Region extends NamedObject {
         }
 
         boolean feedbackChanged = getFeedbackChanged();
-        if ( classificationChanged || feedbackChanged ) {
+        if( classificationChanged || feedbackChanged ) {
             updatePrediction(); // make a new prediction
         }
     }
@@ -194,7 +213,7 @@ public class Region extends NamedObject {
 
         int nbrActiveInput = _ffInputActive.size();
 
-        if ( nbrActiveInput == 0 ) {
+        if( nbrActiveInput == 0 ) {
             return; // can't train, ignore blank patterns.
         }
 
@@ -207,7 +226,7 @@ public class Region extends NamedObject {
         // randomly sample a fixed number of input bits.
         int samples = _rc.getReceptiveFieldsTrainingSamples();
 
-        for ( int s = 0; s < samples; ++s ) {
+        for( int s = 0; s < samples; ++s ) {
 
             int sample = _rc._r.nextInt( nbrActiveInput );
 
@@ -215,8 +234,8 @@ public class Region extends NamedObject {
 
             Point p = Data2d.getXY( _ffInput._dataSize, offset );
 
-            float x_i = (float)p.x / (float)inputSize.x;
-            float y_i = (float)p.y / (float)inputSize.y;
+            float x_i = ( float ) p.x / ( float ) inputSize.x;
+            float y_i = ( float ) p.y / ( float ) inputSize.y;
 
             inputValues._values[ 0 ] = x_i;
             inputValues._values[ 1 ] = y_i;
@@ -262,7 +281,7 @@ public class Region extends NamedObject {
 
         Ranking r = new Ranking();
 
-        for ( Integer i : _ffInputActive ) {
+        for( Integer i : _ffInputActive ) {
             Point p = Data2d.getXY( _ffInput._dataSize, i );
 
             float rf_x = rf[ 0 ];
@@ -292,24 +311,24 @@ public class Region extends NamedObject {
         classifier.update(); // trains with this sparse input.
 
         int bestCell = classifier.getBestCell();
-        int bestCellX = classifier._c.getCellX(bestCell);
+        int bestCellX = classifier._c.getCellX( bestCell );
         int bestCellY = classifier._c.getCellY( bestCell );
 
         Point classifierOrigin = _rc.getRegionClassifierOrigin( xClassifier, yClassifier );
         int regionX = classifierOrigin.x + bestCellX;
         int regionY = classifierOrigin.y + bestCellY;
 
-        int regionOffset = _rc.getRegionOffset(regionX, regionY);
+        int regionOffset = _rc.getRegionOffset( regionX, regionY );
         _regionActivity._values[ regionOffset ] = 1.f;
-        _regionActive.add(regionOffset);
+        _regionActive.add( regionOffset );
     }
 
     public boolean getClassificationChanged() {
         // Since there can be only 1 bit per classifier, we can check if any bit has changed by only checking the
         // new '1' bits. They should all be the same in the old structure if there is no change.
-        for ( Integer i : _regionActive ) {
+        for( Integer i : _regionActive ) {
             float lastValue = _regionActivityNew._values[ i ];
-            if ( lastValue != 1.f ) {
+            if( lastValue != 1.f ) {
                 return true;
             }
         }
@@ -320,11 +339,11 @@ public class Region extends NamedObject {
     public boolean getFeedbackChanged() {
         int fbArea = _fbInput.getSize();
 
-        for ( int i = 0; i < fbArea; ++i ) {
+        for( int i = 0; i < fbArea; ++i ) {
             float oldValue = _fbInputOld._values[ i ];
             float newValue = _fbInput._values[ i ];
 
-            if ( oldValue != newValue ) {
+            if( oldValue != newValue ) {
                 return true;
             }
         }
@@ -335,8 +354,8 @@ public class Region extends NamedObject {
     public void updateRegionOutput() {
         Point regionSizeCells = _rc.getRegionSizeCells();
 
-        for ( int y = 0; y < regionSizeCells.y; ++y ) {
-            for ( int x = 0; x < regionSizeCells.x; ++x ) {
+        for( int y = 0; y < regionSizeCells.y; ++y ) {
+            for( int x = 0; x < regionSizeCells.x; ++x ) {
 
                 // Rules:
                 // Prediction must START and CONTINUE until cell becomes ACTIVE.
@@ -354,12 +373,12 @@ public class Region extends NamedObject {
                 float predictionOld = _regionPredictionNew._values[ regionOffset ]; // we didn't update the prediction yet, so use current prediction
 
                 // FN
-                if ( ( activeNew == 1.f ) && ( predictionOld == 0.f ) ) {
+                if( ( activeNew == 1.f ) && ( predictionOld == 0.f ) ) {
                     errorFN = 1.f;
                 }
 
                 // FP
-                if ( ( activeNew == 0.f ) && ( predictionOld == 1.f ) ) {
+                if( ( activeNew == 0.f ) && ( predictionOld == 1.f ) ) {
                     errorFP = 1.f;
                 }
 
@@ -390,13 +409,13 @@ public class Region extends NamedObject {
         input.set( 0.f );
 
         // put the local cells first:
-        for ( Integer i : _regionActive ) { // this is the latest set of active cells, used for a new prediction
+        for( Integer i : _regionActive ) { // this is the latest set of active cells, used for a new prediction
             input._values[ i ] = 1.f;
         }
 
         // copy feedback:
         int regionSizeCells = _rc.getRegionAreaCells();
-        for ( Integer i : _fbInputActive ) {
+        for( Integer i : _fbInputActive ) {
             int iOffset = i + regionSizeCells;
             input._values[ iOffset ] = 1.f;
         }
@@ -432,15 +451,15 @@ public class Region extends NamedObject {
 
         int stride = regionSizeCols.x * classifierSizeCells.x;
 
-        for ( int y = 0; y < regionSizeCols.y; ++y ) {
-            for (int x = 0; x < regionSizeCols.x; ++x) {
+        for( int y = 0; y < regionSizeCols.y; ++y ) {
+            for( int x = 0; x < regionSizeCols.x; ++x ) {
 
                 float pMax = 0.f;
                 int xMax = -1;
                 int yMax = -1;
 
-                for ( int yc = 0; yc < classifierSizeCells.y; ++yc ) {
-                    for (int xc = 0; xc < classifierSizeCells.x; ++xc) {
+                for( int yc = 0; yc < classifierSizeCells.y; ++yc ) {
+                    for( int xc = 0; xc < classifierSizeCells.x; ++xc ) {
 
                         int xr = ( x * classifierSizeCells.x ) + xc;
                         int yr = ( y * classifierSizeCells.y ) + yc;
@@ -469,7 +488,7 @@ public class Region extends NamedObject {
 
         ideal.set( 0.f );
 
-        for ( Integer i : _regionActive ) { // this is the correct value, the new set of active cells.
+        for( Integer i : _regionActive ) { // this is the correct value, the new set of active cells.
             ideal._values[ i ] = 1.f;
         }
 

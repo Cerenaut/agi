@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.core.ann.unsupervised;
 
 import io.agi.core.data.Data;
@@ -84,24 +103,24 @@ public class DynamicSelfOrganizingMapTest implements UnitTest {
 
         // perform tests in batches until the mean error for a batch is below threshold.
         // Otherwise, fail test.
-        for ( int epoch = 0; epoch < epochs; ++epoch ) {
+        for( int epoch = 0; epoch < epochs; ++epoch ) {
 
             float sumError = 0.f;
 
-            for ( int test = 0; test < batch; ++test ) {
+            for( int test = 0; test < batch; ++test ) {
                 float error = step();
                 sumError += error;
             }
 
             float meanError = 0.f;
 
-            if ( sumError > 0.f ) {
+            if( sumError > 0.f ) {
                 meanError = sumError / ( float ) batch;
             }
 
             System.out.println( "Epoch: " + epoch + " Mean error: " + meanError );
 
-            if ( meanError < meanErrorThreshold ) {
+            if( meanError < meanErrorThreshold ) {
                 System.out.println( "Success: Error below threshold for epoch." );
                 return 0;
             }
@@ -125,7 +144,7 @@ public class DynamicSelfOrganizingMapTest implements UnitTest {
 
         float sumError = 0.f;
 
-        for ( int i = 0; i < inputs; ++i ) {
+        for( int i = 0; i < inputs; ++i ) {
             int offset = bestCell * inputs + i;
             float x = input._values[ i ];
             float w = weights._values[ offset ];

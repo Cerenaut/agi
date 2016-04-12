@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.framework;
 
 import io.agi.core.data.Data;
@@ -70,7 +89,7 @@ public class Node {
 
     public static Node NodeInstance() {
 
-        if ( _node == null ) {
+        if( _node == null ) {
             _node = new Node();
         }
         return _node;
@@ -179,11 +198,11 @@ public class Node {
 
         ModelEntity modelEntity = _p.fetchEntity( entityName );
 
-        if ( modelEntity == null ) {
+        if( modelEntity == null ) {
             return; // bad entity
         }
 
-        if ( !modelEntity.node.equals( getName() ) ) {
+        if( !modelEntity.node.equals( getName() ) ) {
             return;
         }
 
@@ -200,7 +219,7 @@ public class Node {
             @Override
             public void run() {
                 // block forked thread forking until entity can be updated.
-                if ( !lock( entityName ) ) {
+                if( !lock( entityName ) ) {
                     return;
                 }
 
@@ -223,7 +242,7 @@ public class Node {
         try {
             s.acquire();
         }
-        catch ( InterruptedException ie ) {
+        catch( InterruptedException ie ) {
             logger.info( "Thread " + Thread.currentThread().hashCode() + " cant get lock for " + entityName );
             return false;
         }
@@ -234,9 +253,9 @@ public class Node {
     }
 
     public Semaphore getLock( String entityName ) {
-        synchronized ( _entityNameSemaphores ) {
+        synchronized( _entityNameSemaphores ) {
             Semaphore l = _entityNameSemaphores.get( entityName );
-            if ( l == null ) {
+            if( l == null ) {
                 l = new Semaphore( 1 ); // binary
                 _entityNameSemaphores.put( entityName, l );
             }
@@ -263,9 +282,9 @@ public class Node {
      * @param listener
      */
     public void addEntityListener( String entity, EntityListener listener ) {
-        synchronized ( _entityListeners ) {
+        synchronized( _entityListeners ) {
             ArrayList< EntityListener > al = _entityListeners.get( entity );
-            if ( al == null ) {
+            if( al == null ) {
                 al = new ArrayList();
                 _entityListeners.put( entity, al );
             }
@@ -274,11 +293,11 @@ public class Node {
     }
 
     public void removeEntityListener( String entity, EntityListener el ) {
-        synchronized ( _entityListeners ) {
+        synchronized( _entityListeners ) {
             ArrayList< EntityListener > al = _entityListeners.get( entity );
-            if ( al != null ) {
-                for ( EntityListener el2 : al ) {
-                    if ( el2.equals( el ) ) {
+            if( al != null ) {
+                for( EntityListener el2 : al ) {
+                    if( el2.equals( el ) ) {
                         al.remove( el );
                     }
                 }
@@ -292,14 +311,14 @@ public class Node {
      * @param entity
      */
     public void callEntityListeners( String entity ) {
-        synchronized ( _entityListeners ) {
+        synchronized( _entityListeners ) {
             ArrayList< EntityListener > al = _entityListeners.get( entity );
-            if ( al == null ) {
+            if( al == null ) {
                 al = new ArrayList< EntityListener >();
                 _entityListeners.put( entity, al );
             }
 
-            for ( EntityListener listener : al ) {
+            for( EntityListener listener : al ) {
                 listener.onEntityUpdated( entity );
             }
 

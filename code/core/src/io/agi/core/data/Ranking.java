@@ -1,4 +1,23 @@
 /*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -34,13 +53,13 @@ public class Ranking {
 
         int models = vq._values.length;
 
-        for ( int j = 0; j < models; ++j ) {
+        for( int j = 0; j < models; ++j ) {
 
             float quality = vq._values[ j ];
 
             ArrayList< Integer > al = ranking.get( quality );
 
-            if ( al == null ) {
+            if( al == null ) {
                 al = new ArrayList< Integer >();
                 ranking.put( quality, al );
             }
@@ -59,14 +78,14 @@ public class Ranking {
             int thisSize = thisES.size();
             int thatSize = thatES.size();
 
-            if ( thisSize != thatSize ) {
+            if( thisSize != thatSize ) {
                 return false;
             }
 
             Iterator iThis = thisES.iterator();
             Iterator iThat = thatES.iterator();
 
-            while ( iThis.hasNext() ) {
+            while( iThis.hasNext() ) {
 
                 Entry< Float, ArrayList< Integer > > eThis = ( Entry< Float, ArrayList< Integer > > ) iThis.next();
                 Entry< Float, ArrayList< Integer > > eThat = ( Entry< Float, ArrayList< Integer > > ) iThat.next();
@@ -74,11 +93,11 @@ public class Ranking {
                 ArrayList< Integer > alThis = eThis.getValue();
                 ArrayList< Integer > alThat = eThat.getValue();
 
-                for ( int i = 0; i < alThis.size(); ++i ) {
+                for( int i = 0; i < alThis.size(); ++i ) {
                     int nThis = alThis.get( i );
                     int nThat = alThat.get( i );
 
-                    if ( nThis != nThat ) {
+                    if( nThis != nThat ) {
                         return false;
                     }
                 }
@@ -86,15 +105,15 @@ public class Ranking {
 
             return true;
         }
-        catch ( Exception e ) { // either or both null
+        catch( Exception e ) { // either or both null
             return false;
         }
     }
 
     public static Integer getElementWithIndex( HashSet< Integer > elements, int i ) {
         int index = 0;
-        for ( Integer element : elements ) {
-            if ( index == i ) {
+        for( Integer element : elements ) {
+            if( index == i ) {
                 return element;
             }
             ++index;
@@ -106,9 +125,9 @@ public class Ranking {
 
         HashSet< Integer > selections = new HashSet< Integer >();
 
-        while ( selections.size() < selectionSetSize ) {
+        while( selections.size() < selectionSetSize ) {
             Integer selected = Ranking.roulette( r, ranking );
-            if ( selected == null ) {
+            if( selected == null ) {
                 break;
             }
             Ranking.removeValue( ranking, selected );
@@ -124,11 +143,11 @@ public class Ranking {
 
         int size = 0;
 
-        while ( i.hasNext() ) {
+        while( i.hasNext() ) {
             Float key = ( Float ) i.next();
             ArrayList< Integer > al = ranking.get( key );
 
-            for ( Integer value : al ) {
+            for( Integer value : al ) {
                 values.add( value );
             }
         }
@@ -141,7 +160,7 @@ public class Ranking {
 
         int size = 0;
 
-        while ( i.hasNext() ) {
+        while( i.hasNext() ) {
             Float key = ( Float ) i.next();
             ArrayList< Integer > al = ranking.get( key );
 
@@ -153,7 +172,7 @@ public class Ranking {
 
     public static boolean containsKey( TreeMap< Float, ArrayList< Integer > > ranking, float key ) {
         ArrayList< Integer > al = ranking.get( key );
-        if ( al == null ) {
+        if( al == null ) {
             return false;
         }
         return !al.isEmpty();
@@ -162,12 +181,12 @@ public class Ranking {
     public static boolean containsValue( TreeMap< Float, ArrayList< Integer > > ranking, int label ) {
         Iterator i = ranking.keySet().iterator();
 
-        while ( i.hasNext() ) {
+        while( i.hasNext() ) {
             Float key = ( Float ) i.next();
             ArrayList< Integer > al = ranking.get( key );
 
-            for ( Integer n : al ) {
-                if ( n.equals( label ) ) {
+            for( Integer n : al ) {
+                if( n.equals( label ) ) {
                     return true;
                 }
             }
@@ -180,12 +199,11 @@ public class Ranking {
         int size = getSize( ranking );
         int excess = Math.max( 0, size - maxSize );
 
-        for ( int n = 0; n < excess; ++n ) {
+        for( int n = 0; n < excess; ++n ) {
             Iterator i = null;
-            if ( max ) {
+            if( max ) {
                 i = ranking.keySet().iterator();
-            }
-            else { // keep minima by pruning from other end:
+            } else { // keep minima by pruning from other end:
                 i = ranking.descendingKeySet().iterator();
             }
 
@@ -195,7 +213,7 @@ public class Ranking {
 
             al.remove( 0 );
 
-            if ( al.isEmpty() ) {
+            if( al.isEmpty() ) {
                 ranking.remove( key );
             }
         }
@@ -203,18 +221,17 @@ public class Ranking {
 
     public static Integer getBestValue( TreeMap< Float, ArrayList< Integer > > ranking, boolean max ) {
         Iterator i = null;
-        if ( max ) { // rank max first
+        if( max ) { // rank max first
             i = ranking.descendingKeySet().iterator(); // maxima first
-        }
-        else { // rank min first
+        } else { // rank min first
             i = ranking.keySet().iterator(); // ascending values
         }
 
-        while ( i.hasNext() ) {
+        while( i.hasNext() ) {
             Float key = ( Float ) i.next();
             ArrayList< Integer > al = ranking.get( key );
 
-            for ( Integer n : al ) {
+            for( Integer n : al ) {
                 return n;
             }
         }
@@ -224,24 +241,23 @@ public class Ranking {
 
     public static ArrayList< Integer > getBestValues( TreeMap< Float, ArrayList< Integer > > ranking, boolean max, int maxRank ) {
         Iterator i = null;
-        if ( max ) { // rank max first
+        if( max ) { // rank max first
             i = ranking.descendingKeySet().iterator(); // maxima first
-        }
-        else { // rank min first
+        } else { // rank min first
             i = ranking.keySet().iterator(); // ascending values
         }
 
         ArrayList< Integer > bestValues = new ArrayList< Integer >();
 
-        while ( i.hasNext() ) {
+        while( i.hasNext() ) {
 
             Float key = ( Float ) i.next();
             ArrayList< Integer > al = ranking.get( key );
 
-            for ( Integer n : al ) {
+            for( Integer n : al ) {
                 bestValues.add( n );
 
-                if ( bestValues.size() >= maxRank ) {
+                if( bestValues.size() >= maxRank ) {
                     return bestValues;
                 }
             }
@@ -253,23 +269,22 @@ public class Ranking {
     public static Integer getRank( TreeMap< Float, ArrayList< Integer > > ranking, boolean max, int value ) {
 
         Iterator i = null;
-        if ( max ) { // rank max first
+        if( max ) { // rank max first
             i = ranking.descendingKeySet().iterator(); // maxima first
-        }
-        else { // rank min first
+        } else { // rank min first
             i = ranking.keySet().iterator(); // ascending values
         }
 
         int rank = 0;
 
-        while ( i.hasNext() ) {
+        while( i.hasNext() ) {
             Float key = ( Float ) i.next();
 
             ArrayList< Integer > al = ranking.get( key );
 
-            for ( Integer n : al ) {
+            for( Integer n : al ) {
 
-                if ( n.equals( value ) ) {
+                if( n.equals( value ) ) {
                     return rank;
                 }
 
@@ -293,15 +308,15 @@ public class Ranking {
 
         float total = 0.f;
 
-        while ( i.hasNext() ) {
+        while( i.hasNext() ) {
             Float r = ( Float ) i.next();
 
             ArrayList< Integer > al = ranking.get( r );
 
-            for ( Integer n : al ) {
+            for( Integer n : al ) {
                 total += r;
 
-                if ( total >= random ) {
+                if( total >= random ) {
                     return n;
                 }
             }
@@ -316,20 +331,20 @@ public class Ranking {
 
         Integer index = null;
 
-        while ( i.hasNext() ) {
+        while( i.hasNext() ) {
             Float r = ( Float ) i.next();
 
             ArrayList< Integer > al = ranking.get( r );
 
 
-            for ( int n = 0; n < al.size(); ++n ) {
-                if ( al.get( n ).equals( value ) ) {
+            for( int n = 0; n < al.size(); ++n ) {
+                if( al.get( n ).equals( value ) ) {
                     index = n;
                     break;
                 }
             }
 
-            if ( index != null ) {
+            if( index != null ) {
                 al.remove( ( int ) index );
                 break;
             }
@@ -343,7 +358,7 @@ public class Ranking {
 
         float sum = 0.f;
 
-        while ( i.hasNext() ) {
+        while( i.hasNext() ) {
             Float r = ( Float ) i.next();
 
             ArrayList< Integer > al = ranking.get( r );
@@ -358,7 +373,7 @@ public class Ranking {
 
         ArrayList< Integer > al = ranking.get( key );
 
-        if ( al == null ) {
+        if( al == null ) {
             al = new ArrayList< Integer >();
             ranking.put( key, al );
         }
@@ -377,7 +392,7 @@ public class Ranking {
 
         Iterator i = keys.iterator(); // first value = highest likelihood
 
-        while ( i.hasNext() ) {
+        while( i.hasNext() ) {
             Integer n = ( Integer ) i.next();
             float k = ranking.get( n );
 
@@ -396,13 +411,13 @@ public class Ranking {
 
         Iterator i = descending.iterator(); // first value = highest likelihood
 
-        while ( i.hasNext() ) {
+        while( i.hasNext() ) {
             Float r = ( Float ) i.next();
 
             ArrayList< Integer > al = ranking.get( r );
 
-            for ( Integer n : al ) {
-                if ( n > 0 ) {
+            for( Integer n : al ) {
+                if( n > 0 ) {
                     vr._values[ n ] = 1.0f - ( k * weight );
                 }
             }

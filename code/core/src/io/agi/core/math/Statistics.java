@@ -1,4 +1,23 @@
 /*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -23,14 +42,14 @@ public class Statistics {
         double sum = 0.0;
         int offset = 0;
 
-        while ( offset < values.length ) {
+        while( offset < values.length ) {
 
             double value = values[ offset ];
             ++offset;
 
             double r = 0.0; // in the limit x*log(x) approaches 0
 
-            if ( value > 0.0 ) {
+            if( value > 0.0 ) {
                 r = value * Math.log10( value );
             }
 
@@ -53,14 +72,14 @@ public class Statistics {
 
         int offset = 0;
 
-        while ( offset < values.length ) {
+        while( offset < values.length ) {
 
             double value = values[ offset ];
             ++offset;
 
             double r = 0.0; // in the limit x*log(x) approaches 0
 
-            if ( value > 0.0 ) {
+            if( value > 0.0 ) {
                 r = value * Math.log( value );
             }
 
@@ -93,7 +112,7 @@ public class Statistics {
      * @return
      */
     public static double variance( double sum, double sumOfSq, double samples ) {
-        if ( samples <= 1.0 ) return 0.0;
+        if( samples <= 1.0 ) return 0.0;
         double normalizer = 1.0 / samples;
         double sumSq = sum * sum;
         double variance = sumOfSq - ( normalizer * sumSq );
@@ -120,12 +139,12 @@ public class Statistics {
     /**
      * This function suggests a kernel size for a Gaussian kernal with a given
      * sigma value.
-     * <p>
+     * <p/>
      * From "Image Processing, Analysis and Machine Vision", pp. 84:
      * 'Pixels more distant from the center of the operator have smaller
      * influence, and pixels farther than 3 \sigma from the center have
      * neglible influence.'
-     * <p>
+     * <p/>
      * Also, the kernel should (ideally) have odd dimension.
      *
      * @param rSigma

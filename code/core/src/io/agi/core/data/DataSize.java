@@ -1,4 +1,23 @@
 /*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -72,7 +91,7 @@ public class DataSize {
 
         Iterator i = es.iterator();
 
-        while ( i.hasNext() ) {
+        while( i.hasNext() ) {
             Map.Entry< String, Integer > e = ( Map.Entry< String, Integer > ) ( i.next() );
             _labels.put( e.getKey(), e.getValue() );
         }
@@ -100,12 +119,12 @@ public class DataSize {
 
     public boolean isSameAs( DataSize d ) {
         try {
-            if ( _sizes.length != d._sizes.length ) return false;
+            if( _sizes.length != d._sizes.length ) return false;
 
             int i = 0;
 
-            while ( i < _sizes.length ) {
-                if ( _sizes[ i ] != d._sizes[ i ] ) {
+            while( i < _sizes.length ) {
+                if( _sizes[ i ] != d._sizes[ i ] ) {
                     return false;
                 }
 
@@ -113,24 +132,24 @@ public class DataSize {
             }
 
             Set< String > keys = _labels.keySet();
-            if ( !keys.equals( d._labels.keySet() ) ) {
+            if( !keys.equals( d._labels.keySet() ) ) {
                 return false;
             }
 
             Collection< Integer > valuesThis = _labels.values();
             Collection< Integer > valuesThat = d._labels.values();
 
-            for ( String key : keys ) {
+            for( String key : keys ) {
                 Integer valueThis = _labels.get( key );
                 Integer valueThat = d._labels.get( key );
 
-                if ( !valueThis.equals( valueThat ) ) {
+                if( !valueThis.equals( valueThat ) ) {
                     return false;
                 }
             }
             return true;
         }
-        catch ( Exception e ) {
+        catch( Exception e ) {
             return false;
         }
     }
@@ -140,7 +159,7 @@ public class DataSize {
 
         int i = 0;
 
-        while ( i < _sizes.length ) {
+        while( i < _sizes.length ) {
 
             volume *= _sizes[ i ];
 
@@ -153,7 +172,7 @@ public class DataSize {
     public int getSize( String s ) {
         Integer i = _labels.get( s );
 
-        if ( i == null ) {
+        if( i == null ) {
             return 0;
         }
 
@@ -176,11 +195,11 @@ public class DataSize {
 
         Set< Map.Entry< String, Integer > > s = _labels.entrySet();
 
-        for ( Map.Entry< String, Integer > e : s ) {
+        for( Map.Entry< String, Integer > e : s ) {
             String label = ( String ) e.getKey();
             int n = ( Integer ) e.getValue().intValue();
 
-            if ( n == d ) {
+            if( n == d ) {
                 return label;
             }
         }
@@ -191,7 +210,7 @@ public class DataSize {
     public Integer getIndex( String label ) {
         Integer i = _labels.get( label );
 
-        if ( i == null ) {
+        if( i == null ) {
             return null;//sizes.length;
         }
 

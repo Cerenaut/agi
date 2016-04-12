@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.core.ann.supervised;
 
 import io.agi.core.data.FloatArray2;
@@ -5,20 +24,20 @@ import io.agi.core.data.FloatArray2;
 /**
  * Activation functions that implement the nonlinearities in a feed-forward neural network.
  * For back-propagation purposes, each also has a derivative function.
- * <p>
+ * <p/>
  * Nonlinear activation functions for neural networks.
- * <p>
+ * <p/>
  * From "Supervised Sequence Labelling with Recurrent Neural Networks"
  * by Alex Graves
  * Section 3.1.1 page 13
- * <p>
+ * <p/>
  * "This means that any function computed by a neural network with a hidden layer
  * of tanh units can be computed by another network with logistic sigmoid units
  * and vice-versa. They are therefore largely equivalent as activation functions.
  * However one reason to distinguish between them is that their output ranges are
  * different; in particular if an output between 0 and 1 is required (for example, if
  * the output represents a probability) then the logistic sigmoid should be used."
- * <p>
+ * <p/>
  * Created by dave on 3/01/16.
  */
 public abstract class ActivationFunction {
@@ -35,7 +54,7 @@ public abstract class ActivationFunction {
 
         assert ( outputs.getSize() == J );
 
-        for ( int j = 0; j < J; ++j ) {
+        for( int j = 0; j < J; ++j ) {
 
             float z = weightedSums._values[ j ];
             double a = f( z );
@@ -107,7 +126,7 @@ public abstract class ActivationFunction {
 
         double sum = Double.MIN_VALUE; // ensure avoid /0 error
 
-        for ( int j = 0; j < J; ++j ) {
+        for( int j = 0; j < J; ++j ) {
 
             float z = weightedSums._values[ j ];
             double e_z = Math.exp( z );
@@ -115,7 +134,7 @@ public abstract class ActivationFunction {
             sum += e_z;
         }
 
-        for ( int j = 0; j < J; ++j ) {
+        for( int j = 0; j < J; ++j ) {
             float e_z = outputs._values[ j ];
             double a = e_z / sum;
             outputs._values[ j ] = ( float ) a;

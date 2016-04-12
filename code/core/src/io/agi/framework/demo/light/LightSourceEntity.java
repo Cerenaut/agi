@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.framework.demo.light;
 
 import io.agi.core.data.Data;
@@ -47,7 +66,7 @@ public class LightSourceEntity extends Entity {
 
         Data input = getData( CONTROL_INPUT );
 
-        if ( input == null ) {
+        if( input == null ) {
             return;
         }
 
@@ -55,7 +74,7 @@ public class LightSourceEntity extends Entity {
 
         int elements = input._dataSize.getVolume();
 
-        for ( int i = 0; i < elements; ++i ) {
+        for( int i = 0; i < elements; ++i ) {
             float inputValue = input._values[ i ];
             float oldOutputValue = output._values[ i ];
             float newOutputValue = getLight( inputValue, oldOutputValue, config.learningRate );
@@ -75,7 +94,7 @@ public class LightSourceEntity extends Entity {
 
     protected float getLight( float input, float oldOutput, float learningRate ) {
         float x = 0.f;
-        if ( input > 0.5 ) {
+        if( input > 0.5 ) {
             x = 1.f;
         }
         float newOutput = Unit.lerp( x, oldOutput, learningRate );

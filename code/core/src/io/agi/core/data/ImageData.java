@@ -1,4 +1,23 @@
 /*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -39,7 +58,7 @@ public class ImageData {
 
     public int getChannels() {
         Integer n = _d._dataSize.getSize( DataSize.DIMENSION_Z );
-        if ( n != null ) {
+        if( n != null ) {
             return n;
         }
         return 1;
@@ -88,11 +107,11 @@ public class ImageData {
         int pixelMaxValue = 255;
         float vReciprocal = 1.0f / ( float ) pixelMaxValue;
 
-        for ( int y = 0; y < vh; ++y ) {
+        for( int y = 0; y < vh; ++y ) {
 
             c.set( DataSize.DIMENSION_Y, y );
 
-            for ( int x = 0; x < vw; ++x ) {
+            for( int x = 0; x < vw; ++x ) {
 
                 c.set( DataSize.DIMENSION_X, x );
 
@@ -111,12 +130,11 @@ public class ImageData {
 
                 assert ( ( offset + 2 ) < elements );
 
-                if ( channels == 3 ) {
+                if( channels == 3 ) {
                     _d._values[ offset + 0 ] = rScaled;
                     _d._values[ offset + 1 ] = gScaled;
                     _d._values[ offset + 2 ] = bScaled;
-                }
-                else { // greyscale
+                } else { // greyscale
                     _d._values[ offset + 0 ] = ( rScaled + gScaled + bScaled ) / 3.0f;
                 }
             }

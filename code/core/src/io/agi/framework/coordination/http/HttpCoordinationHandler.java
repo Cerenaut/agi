@@ -1,3 +1,22 @@
+/*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.agi.framework.coordination.http;
 
 import com.sun.net.httpserver.HttpExchange;
@@ -42,18 +61,17 @@ public class HttpCoordinationHandler implements HttpHandler {
             String eventValue = m.get( PARAMETER_EVENT ).trim();
             String originValue = m.get( PARAMETER_ORIGIN );
 
-            if ( originValue != null ) {
+            if( originValue != null ) {
                 originValue.trim();
             }
 
-            if ( entityName != null ) {
-                if ( eventValue != null ) {
-                    if ( eventValue.equalsIgnoreCase( VALUE_UPDATE ) ) {
+            if( entityName != null ) {
+                if( eventValue != null ) {
+                    if( eventValue.equalsIgnoreCase( VALUE_UPDATE ) ) {
                         _c.doUpdateExternal( entityName, originValue );
                         status = 200;
                         response = GetResponse( entityName, VALUE_UPDATE, originValue );
-                    }
-                    else if ( eventValue.equalsIgnoreCase( VALUE_UPDATED ) ) {
+                    } else if( eventValue.equalsIgnoreCase( VALUE_UPDATED ) ) {
                         _c.onUpdatedExternal( entityName, originValue );
                         status = 200;
                         response = GetResponse( entityName, VALUE_UPDATED, originValue );
@@ -61,7 +79,7 @@ public class HttpCoordinationHandler implements HttpHandler {
                 }
             }
         }
-        catch ( Exception e ) {
+        catch( Exception e ) {
             e.printStackTrace();
         }
 

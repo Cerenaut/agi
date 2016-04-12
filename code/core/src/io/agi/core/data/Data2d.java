@@ -1,4 +1,23 @@
 /*
+ * Copyright (c) 2016.
+ *
+ * This file is part of Project AGI. <http://agi.io>
+ *
+ * Project AGI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Project AGI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -30,8 +49,8 @@ public class Data2d {
     public static ArrayList< Integer > getIndicesInRect( int xRect, int yRect, int wRect, int hRect, int dataWidth, int dataHeight ) {
         ArrayList< Integer > indices = new ArrayList< Integer >();
 
-        for ( int y = 0; y < hRect; ++y ) {
-            for ( int x = 0; x < wRect; ++x ) {
+        for( int y = 0; y < hRect; ++y ) {
+            for( int x = 0; x < wRect; ++x ) {
 
                 int index = ( yRect + y ) * dataWidth
                         + ( xRect + x );
@@ -48,8 +67,8 @@ public class Data2d {
         Point p1 = Data2d.getSize( d1 );
         Point p2 = Data2d.getSize( d2 );
 
-        for ( int y = 0; y < h; ++y ) {
-            for ( int x = 0; x < w; ++x ) {
+        for( int y = 0; y < h; ++y ) {
+            for( int x = 0; x < w; ++x ) {
                 int xa = x1 + x;
                 int ya = y1 + y;
                 int xb = x2 + x;
@@ -72,17 +91,17 @@ public class Data2d {
      * @return Nice width and height
      */
     public static Point getSize( Data d ) {
-        if ( d == null ) {
+        if( d == null ) {
             return null;
         }
         return getSize( d._dataSize );
     }
 
     public static Point getSize( FloatArray2 fa ) {
-        if ( fa == null ) {
+        if( fa == null ) {
             return null;
         }
-        if ( fa._values == null ) {
+        if( fa._values == null ) {
             return null;
         }
         int volume = fa._values.length;
@@ -91,13 +110,13 @@ public class Data2d {
 
     public static Point getSize( DataSize d ) {
         // Look for explicit shape in w and h dimensions
-        if ( d == null ) {
+        if( d == null ) {
             return null;
         }
 
         Point p = getSizeExplicit( d );
 
-        if ( p != null ) {
+        if( p != null ) {
             return p;
         }
 
@@ -107,20 +126,20 @@ public class Data2d {
     }
 
     public static Point getSizeExplicit( Data d ) {
-        if ( d == null ) {
+        if( d == null ) {
             return null;
         }
         return getSizeExplicit( d._dataSize );
     }
 
     public static Point getSizeExplicit( DataSize d ) {
-        if ( d == null ) {
+        if( d == null ) {
             return null;
         }
-        if ( d.getDimensions() == 2 ) {
+        if( d.getDimensions() == 2 ) {
             Integer ix = d.getIndex( DataSize.DIMENSION_X );
             Integer iy = d.getIndex( DataSize.DIMENSION_Y );
-            if ( ( ix != null ) && ( iy != null ) ) {
+            if( ( ix != null ) && ( iy != null ) ) {
                 int w = d.getSize( ix );
                 int h = d.getSize( iy );
 
@@ -143,7 +162,7 @@ public class Data2d {
         int h = w;
 
         int sq = w * w;
-        if ( sq < volume ) {
+        if( sq < volume ) {
             h = h + 1;
         }
 
@@ -158,7 +177,7 @@ public class Data2d {
     }
 
     public static Point getXY( Point p, int offset ) {
-        if ( p == null ) {
+        if( p == null ) {
             return null;
         }
 
@@ -169,7 +188,7 @@ public class Data2d {
 
     public static Integer getOffset( DataSize d, int x, int y ) {
         Point p = Data2d.getSize( d );
-        if ( p == null ) {
+        if( p == null ) {
             return null;
         }
 
@@ -182,7 +201,7 @@ public class Data2d {
 
     public static Integer getX( DataSize d, int offset ) {
         Point p = Data2d.getSize( d );
-        if ( p == null ) {
+        if( p == null ) {
             return null;
         }
 
@@ -191,7 +210,7 @@ public class Data2d {
 
     public static Integer getY( DataSize d, int offset ) {
         Point p = Data2d.getSize( d );
-        if ( p == null ) {
+        if( p == null ) {
             return null;
         }
 
