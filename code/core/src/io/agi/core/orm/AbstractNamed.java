@@ -29,11 +29,11 @@ public class AbstractNamed< T > extends NamedObject {
     }
 
 //    public String getName() {
-//        return _name;
+//        return name;
 //    }
 //
 //    public void setName( String name ) {
-//        _name = name;
+//        name = name;
 //    }
 
     @Override

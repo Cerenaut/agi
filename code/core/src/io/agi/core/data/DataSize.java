@@ -192,7 +192,7 @@ public class DataSize {
         Integer i = _labels.get( label );
 
         if ( i == null ) {
-            return null;//_sizes.length;
+            return null;//sizes.length;
         }
 
         return i;//i.intValue();

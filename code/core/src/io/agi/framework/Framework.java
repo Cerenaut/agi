@@ -63,7 +63,7 @@ public class Framework {
             modelData = new ModelData( dataKey, refKeys );
         }
 
-        modelData._refKeys = refKeys;
+        modelData.refKeys = refKeys;
         persistence.persistData( modelData );
     }
 

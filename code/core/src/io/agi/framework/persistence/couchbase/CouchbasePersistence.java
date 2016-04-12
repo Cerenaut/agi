@@ -299,13 +299,13 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
 
     // Data
     public void persistData( ModelData modelData ) {
-        String key = GetKey( KEY_PREFIX_DATA, modelData._name );
+        String key = GetKey( KEY_PREFIX_DATA, modelData.name );
         JsonObject jo = JsonObject.empty()
                 .put( PROPERTY_DOCUMENT_TYPE, KEY_PREFIX_DATA )
-                .put( PROPERTY_KEY, modelData._name )
-                .put( PROPERTY_DATA_ELEMENTS, modelData._elements )
-                .put( PROPERTY_DATA_REF_KEY, modelData._refKeys )
-                .put( PROPERTY_DATA_SIZES, modelData._sizes );
+                .put( PROPERTY_KEY, modelData.name )
+                .put( PROPERTY_DATA_ELEMENTS, modelData.elements )
+                .put( PROPERTY_DATA_REF_KEY, modelData.refKeys )
+                .put( PROPERTY_DATA_SIZES, modelData.sizes );
         JsonDocument response = upsert( key, jo );
     }
 
