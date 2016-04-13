@@ -19,28 +19,93 @@
 
 package io.agi.framework.coordination.http;
 
+import org.apache.commons.fileupload.FileItem;
+
+import org.apache.commons.fileupload.RequestContext;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
+import javax.servlet.*;
+
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.agi.framework.Framework;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by dave on 2/04/16.
  */
 public class HttpImportHandler implements HttpHandler {
 
-    public static final String CONTEXT = "/import";
+    protected static final Logger logger = LogManager.getLogger();
 
+    public static final String CONTEXT = "/import";
 
     public HttpImportHandler() {
     }
 
     @Override
     public void handle( HttpExchange t ) throws IOException {
+
         int status = 400;
         String response = "";
+
+        for(Map.Entry<String, List<String> > header : t.getRequestHeaders().entrySet()) {
+            System.out.println(header.getKey() + ": " + header.getValue().get(0));
+        }
+
+        // Based on accepted answer: http://stackoverflow.com/questions/33732110/file-upload-using-httphandler
+        DiskFileItemFactory d = new DiskFileItemFactory();
+
+        try {
+            ServletFileUpload up = new ServletFileUpload( d );
+            List< FileItem > result = up.parseRequest( new RequestContext() {
+
+                @Override
+                public String getCharacterEncoding() {
+                    return "UTF-8";
+                }
+
+                @Override
+                public int getContentLength() {
+                    return 0; //tested to work with 0 as return
+                }
+
+                @Override
+                public String getContentType() {
+                    return t.getRequestHeaders().getFirst("Content-type");
+                }
+
+                @Override
+                public InputStream getInputStream() throws IOException {
+                    return t.getRequestBody();
+                }
+
+            } );
+
+//            t.getResponseHeaders().add( "Content-type", "text/plain" );
+//            t.sendResponseHeaders( 200, 0 );
+//
+//            OutputStream os = t.getResponseBody();
+            for( FileItem fi : result ) {
+
+//                os.write(fi.getName().getBytes());
+//                os.write("\r\n".getBytes());
+                System.out.println("File-Item: " + fi.getFieldName() + " = " + fi.getName());
+            }
+//            os.close();
+
+        }
+        catch( Exception e ) {
+            logger.error( e.getStackTrace() );
+        }
 
         try {
             InputStream inputStream = t.getRequestBody();

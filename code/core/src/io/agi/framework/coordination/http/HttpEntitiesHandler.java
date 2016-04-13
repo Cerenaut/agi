@@ -24,6 +24,8 @@ import com.sun.net.httpserver.HttpHandler;
 import io.agi.core.orm.AbstractPair;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.models.ModelEntity;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,6 +35,8 @@ import java.util.Collection;
  * Created by dave on 17/03/16.
  */
 public class HttpEntitiesHandler implements HttpHandler {
+
+    protected static final Logger logger = LogManager.getLogger();
 
     public static final String CONTEXT = "/entities";
 
@@ -105,10 +109,10 @@ public class HttpEntitiesHandler implements HttpHandler {
 
                     response += "{ ";
 
-                    response += " \"key\": \"" + m.name + "\"" + ",";
-                    response += " \"node\": \"" + m.node + "\"" + ",";
-                    response += " \"parent\": \"" + m.parent + "\"" + ",";
-                    response += " \"type\": \"" + m.type + "\"";
+                    response += " \"key\": \"" + m.name + "\",";
+                    response += " \"node\": \"" + m.node + "\",";
+                    response += " \"parent\": \"" + m.parent + "\",";
+                    response += " \"type\": \"" + m.type + "\",";
                     response += " \"config\": " + config; // this must be JSON
 
                     response += " }";
@@ -120,7 +124,7 @@ public class HttpEntitiesHandler implements HttpHandler {
             }
         }
         catch( Exception e ) {
-            e.printStackTrace();
+            logger.error( e.getStackTrace() );
         }
 
         HttpUtil.SendResponse( t, status, response );

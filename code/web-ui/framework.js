@@ -19,6 +19,11 @@ var Framework = {
   contextConfig : "config",
   contextNodes : "nodes",
   contextUpdate : "update",
+  contextImport : "import",
+  contextExport : "export",
+
+  exportTypeEntity : "entity",  
+  exportTypeData : "data",  
 
   update : function( entity, callback ) {
     var suffix = Framework.contextUpdate 
@@ -48,6 +53,20 @@ var Framework = {
     }
   },
 
+  exportEntity : function( entityName, type ) {
+    var suffix = Framework.contextExport + "?entity=" + entityName + "&type="+type;
+    var url = Framework.getUrl( suffix );
+    window.open( url, "_blank" );
+  },
+
+  importEntity : function( entityName, callback ) {
+  },
+
+  getEntity : function( entityName, callback ) {
+    var suffix = Framework.contextEntities + "?name=" + entityName;
+    Framework.doAjaxJson( suffix, callback, "GET" );
+  },
+
   getConfig : function( entityName, callback ) {
     var suffix = Framework.contextConfig + "?entity=" + entityName;
     Framework.doAjaxJson( suffix, callback, "GET" );
@@ -63,9 +82,13 @@ var Framework = {
     Framework.doAjaxJson( suffix, callback, "POST" );
   },
 
-  doAjaxJson : function( suffix, callback, method ) {
+  getUrl : function( suffix ) {
     var url = Framework.protocol + "://" + Framework.host + ":" + Framework.port + "/" + suffix;
+    return url;
+  },
 
+  doAjaxJson : function( suffix, callback, method ) {
+    var url = Framework.getUrl( suffix );
     $.ajax( url, {
       type: method,
 //      contentType: 'application/json',

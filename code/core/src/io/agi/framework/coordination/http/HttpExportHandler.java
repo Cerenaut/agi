@@ -22,6 +22,8 @@ package io.agi.framework.coordination.http;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.agi.framework.Framework;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Map;
@@ -30,6 +32,8 @@ import java.util.Map;
  * Created by dave on 2/04/16.
  */
 public class HttpExportHandler implements HttpHandler {
+
+    protected static final Logger logger = LogManager.getLogger();
 
     public static final String CONTEXT = "/export";
 
@@ -56,11 +60,16 @@ public class HttpExportHandler implements HttpHandler {
                 String entityName = m.get( PARAMETER_ENTITY ).trim(); // essential
                 String type = m.get( PARAMETER_TYPE ).trim(); // essential
                 response = Framework.ExportSubtree( entityName, type );
+
+                String filename = entityName + "-" + type + ".json";
+                t.getResponseHeaders().add( "Content-type", "text/json/force-download" );
+                t.getResponseHeaders().add( "Content-Disposition", "attachment; filename=" + filename );
+
                 status = 200;
             }
         }
         catch( Exception e ) {
-            e.printStackTrace();
+            logger.error( e.getStackTrace() );
         }
 
         HttpUtil.SendResponse( t, status, response );

@@ -19,7 +19,7 @@ var Parameters = {
         var index = param.indexOf( "=" );
         var key = param.slice( 0, index );
         var value = param.slice( index+1 );
-        console.log( "Parameter: "+key+","+value );
+        console.log( "Parameter: '"+key+"' with value: '"+value + "'" );
         parameterCallback( key, value );
       }
     }
