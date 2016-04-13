@@ -46,7 +46,9 @@ public class HttpImportHandler implements HttpHandler {
             InputStream inputStream = t.getRequestBody();
             java.util.Scanner s = new java.util.Scanner( inputStream ).useDelimiter( "\\A" );
             String subtree = s.hasNext() ? s.next() : "";
-            boolean b = Framework.ImportSubtree( subtree );
+            String jsonEntities = null;
+            String jsonData = null;
+            boolean b = Framework.ImportSubtree( jsonEntities, jsonData );
             if( b ) {
                 status = 200;
             }

@@ -229,14 +229,29 @@ public class Framework {
      * @param file
      */
     public static void LoadEntities( String file ) {
+        try {
+            String jsonEntities = FileUtil.readFile( file );
+            ImportEntities( jsonEntities );
+        }
+        catch( Exception e ) {
+            logger.error( e.getStackTrace() );
+            System.exit( -1 );
+        }
+    }
+
+    /**
+     * Import Entities to the system from serialized form as Json.
+     *
+     * @param jsonEntities
+     * @throws Exception
+     */
+    public static void ImportEntities( String jsonEntities ) throws Exception {
         Gson gson = new Gson();
 
         try {
-            String jsonEntity = FileUtil.readFile( file );
-
             Type listType = new TypeToken< List< ModelEntity > >() {
             }.getType();
-            List< ModelEntity > entities = gson.fromJson( jsonEntity, listType );
+            List< ModelEntity > entities = gson.fromJson( jsonEntities, listType );
 
             for( ModelEntity modelEntity : entities ) {
                 logger.info( "Persisting Entity of type: " + modelEntity.type + ", that is hosted at Node: " + modelEntity.node );
@@ -244,23 +259,18 @@ public class Framework {
             }
         }
         catch( Exception e ) {
-            logger.error( e.getStackTrace() );
-            System.exit( -1 );
+            throw( e );
         }
     }
 
+    /**
+     * Load Data objects from file into the system.
+     * @param file
+     */
     public static void LoadData( String file ) {
-        Gson gson = new Gson();
         try {
-            String jsonEntity = FileUtil.readFile( file );
-
-            Type listType = new TypeToken< List< ModelData > >() {
-            }.getType();
-
-            List< ModelData > modelDatas = gson.fromJson( jsonEntity, listType );
-            for( ModelData modelData : modelDatas ) {
-                Framework.SetData( modelData );
-            }
+            String jsonData = FileUtil.readFile( file );
+            ImportData( jsonData );
         }
         catch( Exception e ) {
             logger.error( e.getStackTrace() );
@@ -268,6 +278,32 @@ public class Framework {
         }
     }
 
+    /**
+     * Import Data objects to the system from serialized form as Json.
+     *
+     * @param jsonData
+     * @throws Exception
+     */
+    public static void ImportData( String jsonData ) throws Exception {
+        Gson gson = new Gson();
+        try {
+            Type listType = new TypeToken< List< ModelData > >() {
+            }.getType();
+
+            List< ModelData > modelDatas = gson.fromJson( jsonData, listType );
+            for( ModelData modelData : modelDatas ) {
+                Framework.SetData( modelData );
+            }
+        }
+        catch( Exception e ) {
+            throw( e );
+        }
+    }
+
+    /**
+     * Load data references from file, which allows data to be mapped from one entity to another (input and outputs).
+     * @param file
+     */
     public static void LoadDataReferences( String file ) {
         Gson gson = new Gson();
         try {
@@ -310,31 +346,13 @@ public class Framework {
         }
     }
 
-    /**
-     * Export the subtree, in the form of a serialised representation that allows full re-import, to view or resume.
-     *
-     * @param entityName the parent of the subtree
-     * @return serialised form of subtree
-     */
-    public static String ExportSubtree( String entityName, String type ) {
-        String entitiesExport = null;
-
-        if( type.equalsIgnoreCase( HttpExportHandler.TYPE_ENTITY ) ) {
-            entitiesExport = exportEntitiesSubtree( entityName );
-        } else if( type.equalsIgnoreCase( HttpExportHandler.TYPE_DATA ) ) {
-            entitiesExport = exportDataEntitiesSubtree( entityName );
-        }
-
-        return entitiesExport;
-    }
-
-    protected static String exportDataEntitiesSubtree( String entityName ) {
+    protected static String GetEntityDataSubtree( String entityName ) {
         Gson gson = new Gson();
-        Collection< ModelData > modelDatas = new ArrayList<>();
+        Collection< ModelData > modelData = new ArrayList<>();
 
-        subtreeModelDatas( entityName, modelDatas );
+        GetEntityDataSubtree( entityName, modelData );
 
-        String export = gson.toJson( modelDatas );
+        String export = gson.toJson( modelData );
         return export;
     }
 
@@ -344,17 +362,17 @@ public class Framework {
      * @param entityName the parent of the subtree.
      * @param modelDatas the flat collection that will contain the data models.
      */
-    protected static void subtreeModelDatas( String entityName, Collection< ModelData > modelDatas ) {
+    protected static void GetEntityDataSubtree( String entityName, Collection< ModelData > modelDatas ) {
         Node node = Node.NodeInstance();
-        addModelDatasForEntity( entityName, modelDatas );
+        AddEntityData( entityName, modelDatas );
 
         Collection< String > childNames = node.getPersistence().getChildEntities( entityName );
         for( String childName : childNames ) {
-            subtreeModelDatas( childName, modelDatas );
+            GetEntityDataSubtree( childName, modelDatas );
         }
     }
 
-    protected static void addModelDatasForEntity( String entityName, Collection< ModelData > modelDatas ) {
+    protected static void AddEntityData( String entityName, Collection< ModelData > modelDatas ) {
 
         Node node = Node.NodeInstance();
 
@@ -377,11 +395,10 @@ public class Framework {
         }
     }
 
-    protected static String exportEntitiesSubtree( String entityName ) {
-        Persistence persistence = Node.NodeInstance().getPersistence();
+    protected static String GetEntitySubtree( String entityName ) {
         Gson gson = new Gson();
         Collection< ModelEntity > modelEntities = new ArrayList<>();
-        subtreeModelEntities( entityName, modelEntities );
+        AddEntitySubtree( entityName, modelEntities );
         String export = gson.toJson( modelEntities );
         return export;
     }
@@ -393,7 +410,7 @@ public class Framework {
      * @param entityName
      * @param modelEntities
      */
-    protected static void subtreeModelEntities( String entityName, Collection< ModelEntity > modelEntities ) {
+    protected static void AddEntitySubtree( String entityName, Collection< ModelEntity > modelEntities ) {
         // traverse tree depth first via recursion, building the string representation
         Persistence persistence = Node.NodeInstance().getPersistence();
         ModelEntity modelEntity = persistence.fetchEntity( entityName );
@@ -401,21 +418,46 @@ public class Framework {
 
         Collection< String > childNames = persistence.getChildEntities( entityName );
         for( String childName : childNames ) {
-            subtreeModelEntities( childName, modelEntities );
+            AddEntitySubtree( childName, modelEntities );
         }
     }
 
+    /**
+     * Export a subtree of entities and data, in the form of a serialised representation that allows full re-import,
+     * to view or resume.
+     *
+     * @param entityName the parent of the subtree
+     * @return serialised form of subtree
+     */
+    public static String ExportSubtree( String entityName, String type ) {
+        String entitiesExport = null;
 
-    public static boolean ImportSubtree( String subtree ) {
-        return false;
+        if( type.equalsIgnoreCase( HttpExportHandler.TYPE_ENTITY ) ) {
+            entitiesExport = GetEntitySubtree( entityName );
+        } else if( type.equalsIgnoreCase( HttpExportHandler.TYPE_DATA ) ) {
+            entitiesExport = GetEntityDataSubtree( entityName );
+        }
+
+        return entitiesExport;
     }
 
-    public static boolean ImportSubtree( String entityFilename, String dataFilename ) {
-
-        Framework.LoadEntities( entityFilename );
-        Framework.LoadData( dataFilename );
-
-        return true;
+    /**
+     * Import a subtree of entities and data.
+     *
+     * @param jsonEntities
+     * @param jsonData
+     * @return
+     */
+    public static boolean ImportSubtree( String jsonEntities, String jsonData ) {
+        try {
+            Framework.ImportEntities( jsonEntities );
+            Framework.ImportData( jsonData );
+            return true;
+        }
+        catch( Exception e ) {
+            logger.error( e.getStackTrace() );
+            return false;
+        }
     }
 
 
