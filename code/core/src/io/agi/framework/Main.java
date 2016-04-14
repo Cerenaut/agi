@@ -24,6 +24,7 @@ import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.coordination.Coordination;
 import io.agi.framework.coordination.http.HttpCoordination;
 import io.agi.framework.coordination.monolithic.SingleProcessCoordination;
+import io.agi.framework.factories.CommonEntityFactory;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.couchbase.CouchbasePersistence;
 import io.agi.framework.persistence.jdbc.JdbcPersistence;
@@ -127,4 +128,35 @@ public class Main {
             System.exit( -1 );
         }
     }
+
+    /**
+     * A default main method to create an empty Node.
+     *
+     * @param args
+     */
+    public static void main( String[] args ) {
+
+        // Create a Node
+        if( args.length == 0 ) {
+            System.err.println( "Must specify node .properties file as first argument." );
+            System.exit( -1 );
+        }
+
+        String nodePropertiesFile = args[ 0 ];
+
+        Main m = new Main();
+        m.setup( nodePropertiesFile, null, new CommonEntityFactory() );
+
+        // Create custom entities and references
+        if( args.length > 1 ) {
+            Framework.LoadEntities( args[ 1 ] );
+        }
+        if( args.length > 2 ) {
+            Framework.LoadData( args[ 2 ] );
+        }
+
+        // Start the system
+        m.run();
+    }
+
 }
