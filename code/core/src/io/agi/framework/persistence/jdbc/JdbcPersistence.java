@@ -131,7 +131,7 @@ public class JdbcPersistence implements Persistence {
 
     // Entities
     public Collection< ModelEntity > getEntities() {
-        String sql = "SELECT name, host, port FROM nodes";
+        String sql = "SELECT name, type, node, parent, config FROM entities";
         ResultSetMap rsm = new ResultSetMap();
         rsm._fields.add( "name" );
         rsm._fields.add( "type" );
@@ -213,6 +213,22 @@ public class JdbcPersistence implements Persistence {
         String sql2 = "INSERT INTO data (name, ref_name, sizes, elements) SELECT '" + modelData.name + "', " + refKeyString + ", '" + modelData.sizes + "', '" + modelData.elements + "' WHERE NOT EXISTS (SELECT name from data WHERE name = '" + modelData.name + "' )";
         execute( sql2 );
         //_logger.info( "persistData T: {} @3 ", System.currentTimeMillis() );
+    }
+
+    public Collection< String > getData() {
+        String sql = "SELECT name FROM data";
+        ResultSetMap rsm = new ResultSetMap();
+        rsm._fields.add( "name" );
+        executeQuery( sql, rsm );
+
+        ArrayList< String > names = new ArrayList< String >();
+
+        for( int i = 0; i < rsm._rows.size(); ++i ) {
+            String name = rsm.getRowValue( i, "name" );
+            names.add( name );
+        }
+
+        return names;
     }
 
     public ModelData fetchData( String key ) {

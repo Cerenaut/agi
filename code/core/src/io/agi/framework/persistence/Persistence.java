@@ -55,6 +55,8 @@ public interface Persistence {
     void removeEntity( String name );
 
     // Data
+    Collection< String > getData(); // list all, note, only obtains keys, as the volume of data would be too large to fetch all.
+
     void persistData( ModelData modelData );
 
     ModelData fetchData( String name );

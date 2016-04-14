@@ -3,9 +3,8 @@
 var CompetitiveLearning = {
 
   update : function() {
-    var key = $( "#data" ).val();
-    //Postgrest.getJson( "data?key=eq."+key, CompetitiveLearning.onGetData );
-    var suffix = "name="+key;
+    var dataName = $( "#data" ).val();
+    var suffix = "name="+dataName;
     Framework.getData( suffix, CompetitiveLearning.onGetData );
   },
 
@@ -24,7 +23,7 @@ var CompetitiveLearning = {
     var series = [];
     series.length = matrices;
 
-    var key = data.key;
+    var dataName = data.name;
     var dataElements = data.elements;
     var dataSizes = data.sizes;
     var elements = dataElements.elements.length;
@@ -58,7 +57,7 @@ var CompetitiveLearning = {
     }
 
     series[ 0 ] = {
-      name: key,
+      name: dataName,
       color: 'rgba(223, 83, 83, .5)',
       data: values
     }

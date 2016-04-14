@@ -33,8 +33,13 @@ var Framework = {
     Framework.doAjaxJson( suffix, callback, verb );
   },
 
-  getData : function( key, callback ) {
-    var suffix = Framework.contextData + "?" + key;
+  getDataNames : function( callback ) {
+    var suffix = Framework.contextData;
+    Framework.doAjaxJson( suffix, callback, "GET" );
+  },
+
+  getData : function( dataName, callback ) {
+    var suffix = Framework.contextData + "?" + dataName;
     Framework.doAjaxJson( suffix, callback, "GET" );
   },
 
@@ -64,6 +69,16 @@ var Framework = {
     var suffix = Framework.contextImport + "?entity=" + entityName;
     var url = Framework.getUrl( suffix );
     return url;    
+  },
+
+  getNodes : function( callback ) {
+    var suffix = Framework.contextNodes;
+    Framework.doAjaxJson( suffix, callback, "GET" );
+  },
+
+  getEntities : function( callback ) {
+    var suffix = Framework.contextEntities;
+    Framework.doAjaxJson( suffix, callback, "GET" );
   },
 
   getEntity : function( entityName, callback ) {

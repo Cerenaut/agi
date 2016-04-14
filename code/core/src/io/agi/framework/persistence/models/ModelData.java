@@ -39,6 +39,10 @@ public class ModelData {
     public String sizes;
     public String elements;
 
+    public ModelData() {
+
+    }
+
     public ModelData( String key, Data d, boolean sparse ) {
         name = key;
         refKeys = null;

@@ -22,6 +22,7 @@ package io.agi.framework.persistence.couchbase;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.CouchbaseCluster;
+import com.couchbase.client.java.PersistTo;
 import com.couchbase.client.java.bucket.BucketManager;
 import com.couchbase.client.java.document.JsonDocument;
 import com.couchbase.client.java.document.json.JsonObject;
@@ -137,11 +138,11 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
                                             "  if( doc.document_type == 'E' && doc.parent ) {" +
                                             "    emit(doc.parent, doc.name );" +
                                             "  } }" ),
-//                            DefaultView.create( "all_properties",
-//                                    "function (doc, meta) {" +
-//                                            "  if( doc.document_type == 'P' && doc.name ) {" +
-//                                            "    emit( doc.name, [doc.value ] );" +
-//                                            "  } }" ),
+                            DefaultView.create( "all_data",
+                                    "function (doc, meta) {" +
+                                            "  if( doc.document_type == 'D' ) {" +
+                                            "    emit( doc.name );" +
+                                            "  } }" ),
                             DefaultView.create( "all_docs",
                                     "function (doc, meta) { " +
                                             "  emit( meta.id, doc );" +
@@ -276,6 +277,7 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
 
     public JsonDocument upsert( String key, JsonObject jo ) {
         JsonDocument doc = JsonDocument.create( key, jo );
+//        JsonDocument response = _b.upsert( doc, PersistTo.MASTER ); // trying to prevent stale documents
         JsonDocument response = _b.upsert( doc );
         return response;
     }
@@ -300,10 +302,11 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
         if( loaded == null ) {
             return null;
         } else {
-            String type = loaded.content().getString( PROPERTY_ENTITY_TYPE );
-            String node = loaded.content().getString( PROPERTY_ENTITY_NODE );
-            String parent = loaded.content().getString( PROPERTY_ENTITY_PARENT );
-            String config = loaded.content().getString( PROPERTY_ENTITY_CONFIG );
+            JsonObject content = loaded.content();
+            String type = content.getString( PROPERTY_ENTITY_TYPE );
+            String node = content.getString( PROPERTY_ENTITY_NODE );
+            String parent = content.getString( PROPERTY_ENTITY_PARENT );
+            String config = content.getString( PROPERTY_ENTITY_CONFIG );
             ModelEntity m = new ModelEntity( key, type, node, parent, config );
             return m;
         }
@@ -315,6 +318,26 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
     }
 
     // Data
+    public Collection< String > getData() {
+        // http://docs.couchbase.com/admin/admin/Views/views-writing.html
+        // http://docs.couchbase.com/developer/java-2.1/tutorial.html
+        ArrayList< String > names = new ArrayList< String >();
+        ViewResult result = _b.query(
+                ViewQuery
+                        .from( "persistence", "all_data" )
+                        .descending()
+        );
+        List< ViewRow > l = result.allRows();
+        for( ViewRow r : l ) {
+            JsonObject jo = r.document().content();
+            String name = jo.getString( PROPERTY_KEY );
+
+            names.add( name );
+        }
+        return names;
+    }
+
+
     public void persistData( ModelData modelData ) {
         String key = GetKey( KEY_PREFIX_DATA, modelData.name );
         JsonObject jo = JsonObject.empty()

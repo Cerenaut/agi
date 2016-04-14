@@ -5,8 +5,8 @@ var Matrix = {
   showLabels : false,
 
   update : function() {
-    var key = $( "#data" ).val();
-    var suffix = "name="+key;
+    var dataName = $( "#data" ).val();
+    var suffix = "name="+dataName;
     Framework.getData( suffix, Matrix.onGetData );
   },
 
@@ -27,7 +27,7 @@ var Matrix = {
     var series = [];
     series.length = matrices;
 
-    var dataKey = data.key;
+    var dataName = data.name;
     var dataSizes = data.sizes;
     var dataElements = data.elements;
 
@@ -72,7 +72,7 @@ var Matrix = {
 
 
     series[ 0 ] = {
-            name: dataKey,
+            name: dataName,
             borderWidth: Matrix.showLabels ? 1 : 0,
             animation: false,
             data: values,

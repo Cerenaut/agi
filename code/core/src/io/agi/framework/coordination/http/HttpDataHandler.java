@@ -57,7 +57,7 @@ public class HttpDataHandler implements HttpHandler {
 
             ArrayList< AbstractPair< String, String > > parameters = HttpUtil.GetDuplicateQueryParams( query );
 
-            Collection< ModelData > results = null;
+            Collection< ModelData > results = new ArrayList< ModelData >();
 
             for( AbstractPair< String, String > ap : parameters ) {
                 String key = ap._first;
@@ -65,13 +65,20 @@ public class HttpDataHandler implements HttpHandler {
                 if( key.equalsIgnoreCase( PARAMETER_NAME ) ) {
                     ModelData m = _p.fetchData( value );
 
-                    if( results == null ) {
-                        results = new ArrayList< ModelData >();
-                    }
-
                     if( m != null ) {
                         results.add( m );
                     }
+                }
+            }
+
+            // if no data specified, get all data names.
+            if( results.isEmpty() ) {
+                Collection< String > names = _p.getData();
+
+                for( String name : names ) {
+                    ModelData m = new ModelData();
+                    m.name = name;
+                    results.add( m );
                 }
             }
 
@@ -80,23 +87,21 @@ public class HttpDataHandler implements HttpHandler {
 
                 response += "[ ";
 
-                if( results != null ) {
-                    for( ModelData m : results ) {
-                        if( first ) {
-                            first = false;
-                        } else {
-                            response += ", ";
-                        }
-
-                        response += "{ ";
-
-                        response += " \"key\": \"" + m.name + "\"" + ",";
-                        response += " \"ref_key\": \"" + m.refKeys + "\"" + ",";
-                        response += " \"sizes\": " + m.sizes + ",";
-                        response += " \"elements\": " + m.elements;
-
-                        response += " }";
+                for( ModelData m : results ) {
+                    if( first ) {
+                        first = false;
+                    } else {
+                        response += ", ";
                     }
+
+                    response += "{ ";
+
+                    response += " \"name\": \"" + m.name + "\"" + ",";
+                    response += " \"refKeys\": \"" + m.refKeys + "\"" + ",";
+                    response += " \"sizes\": " + m.sizes + ",";
+                    response += " \"elements\": " + m.elements;
+
+                    response += " }";
                 }
 
                 response += " ]";

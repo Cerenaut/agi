@@ -3,17 +3,16 @@
 var Vector = {
 
   update : function() {
-    var keys = $( "#data" ).val();
-    var keyList = keys.split( "," );
+    var names = $( "#data" ).val();
+    var nameList = names.split( "," );
     var suffix = "";
-    for( var i = 0; i < keyList.length; ++i ) {
-      key = keyList[ i ]; 
+    for( var i = 0; i < nameList.length; ++i ) {
+      dataName = nameList[ i ]; 
       if( i > 0 ) {
         suffix = suffix + "&";
       }
-      suffix = suffix + "name=" + key;
+      suffix = suffix + "name=" + dataName;
     }
-    //Postgrest.getJson( "data?key=in."+key+"&order=key.asc", Vector.onGetData );
     Framework.getData( suffix, Vector.onGetData );
   },
 
@@ -48,7 +47,7 @@ var Vector = {
       var dataSizes = data.sizes;
       var elements = dataElements.elements.length;
 
-      var key = data.key;
+      var dataName = data.name;
       var values = [];
       values.length = elements;
 
@@ -63,7 +62,7 @@ var Vector = {
       } 
      
       series[ d ] = {
-            name: key,
+            name: dataName,
             data: values,
             animation: false
       }

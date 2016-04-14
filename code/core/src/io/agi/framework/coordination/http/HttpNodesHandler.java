@@ -69,7 +69,7 @@ public class HttpNodesHandler implements HttpHandler {
 
                     response += "{ ";
 
-                    response += " \"key\": \"" + m._name + "\"" + ",";
+                    response += " \"name\": \"" + m._name + "\"" + ",";
                     response += " \"host\": \"" + m._host + "\"" + ",";
                     response += " \"port\": " + m._port;
 
