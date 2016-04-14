@@ -57,9 +57,9 @@ public class HttpImportHandler implements HttpHandler {
         int status = 400;
         String response = "";
 
-        for(Map.Entry<String, List<String> > header : t.getRequestHeaders().entrySet()) {
-            System.out.println(header.getKey() + ": " + header.getValue().get(0));
-        }
+        //for(Map.Entry<String, List<String> > header : t.getRequestHeaders().entrySet()) {
+        //    System.out.println(header.getKey() + ": " + header.getValue().get(0));
+        //}
 
         // Based on accepted answer: http://stackoverflow.com/questions/33732110/file-upload-using-httphandler
         DiskFileItemFactory d = new DiskFileItemFactory();
@@ -90,36 +90,35 @@ public class HttpImportHandler implements HttpHandler {
 
             } );
 
-//            t.getResponseHeaders().add( "Content-type", "text/plain" );
-//            t.sendResponseHeaders( 200, 0 );
-//
-//            OutputStream os = t.getResponseBody();
             for( FileItem fi : result ) {
 
-//                os.write(fi.getName().getBytes());
-//                os.write("\r\n".getBytes());
-                System.out.println("File-Item: " + fi.getFieldName() + " = " + fi.getName());
+                //System.out.println("File-Item: " + fi.getFieldName() + " = " + fi.getName());
+
+                String value = fi.getString();
+
+                if( value == null ) {
+                    continue;
+                }
+
+                //System.out.print( value );
+
+                String fieldName = fi.getFieldName();
+
+                if( fieldName.equalsIgnoreCase( "entity-file" ) ) {
+                    Framework.ImportEntities( value );
+                    status = 200;
+                    response = response + "Imported Entities from: " + fi.getName() + "\n";
+                }
+                else if( fieldName.equalsIgnoreCase( "data-file" ) ) {
+                    Framework.ImportData( value );
+                    status = 200;
+                    response = response + "Imported Data from: " + fi.getName() + "\n";
+                }
             }
-//            os.close();
 
         }
         catch( Exception e ) {
             logger.error( e.getStackTrace() );
-        }
-
-        try {
-            InputStream inputStream = t.getRequestBody();
-            java.util.Scanner s = new java.util.Scanner( inputStream ).useDelimiter( "\\A" );
-            String subtree = s.hasNext() ? s.next() : "";
-            String jsonEntities = null;
-            String jsonData = null;
-            boolean b = Framework.ImportSubtree( jsonEntities, jsonData );
-            if( b ) {
-                status = 200;
-            }
-        }
-        catch( Exception e ) {
-            e.printStackTrace();
         }
 
         HttpUtil.SendResponse( t, status, response );

@@ -59,7 +59,11 @@ var Framework = {
     window.open( url, "_blank" );
   },
 
-  importEntity : function( entityName, callback ) {
+  getImportUrl : function( entityName ) {
+//  importEntity : function( entityName, callback ) {
+    var suffix = Framework.contextImport + "?entity=" + entityName;
+    var url = Framework.getUrl( suffix );
+    return url;    
   },
 
   getEntity : function( entityName, callback ) {

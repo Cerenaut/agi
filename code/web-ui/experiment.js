@@ -74,6 +74,15 @@ var Experiment = {
   },
 
   importEntity : function() {
+    var entityName = $( "#entity" ).val();
+    var importAction = Framework.getImportUrl( entityName );
+
+    $( "#import-form" )[ 0 ].action = importAction;
+    $( "#import-form" )[ 0 ].submit( function( event ) {
+      event.preventDefault();
+      event.stopPropagation();
+      return false;
+    } );
   },
 
   update : function() {

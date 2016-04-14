@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <!-- Show only error level as default -->
+        <Root level="error">
+            <AppenderRef ref="Console"/>
+        </Root>
+        <!-- show the following at the desired level -->
+        <Logger name="io.agi.framework.persistence.jdbc.JdbcUtil" level="INFO"/>
+    </Loggers>
+</Configuration>

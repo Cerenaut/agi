@@ -48,19 +48,21 @@ show flush, show age. -->
        <i>Seed</i> <span id="entity-seed">?</span>
        </small>
        </p>
+       <form id="import-form" method="POST" enctype="multipart/form-data" >
        <p>
        <label for="entity-file">Entity file</label>
-       <input type="file" id="entity-file" style="display:inline;" class="btn btn-sm" placeholder="Entity file name"/>
+       <input type="file" name="entity-file" id="entity-file" style="display:inline;" class="btn btn-sm" placeholder="Entity file name"/>
        </p>
        <p>
        <label for="data-file">Data file</label>
-       <input type="file" id="data-file" style="display:inline;" class="btn btn-sm" placeholder="Data file name"/>
+       <input type="file" name="data-file" id="data-file" style="display:inline;" class="btn btn-sm" placeholder="Data file name"/>
        </p>
        <p>
        <input type="button" id="import" class="btn btn-sm btn-primary" style="" onclick="Experiment.importEntity()" value="Import Files"/>
        <input type="button" id="exportEntity" class="btn btn-sm btn-primary" style="" onclick="Experiment.exportEntity()" value="Export Entities"/>
        <input type="button" id="exportData" class="btn btn-sm btn-primary" style="" onclick="Experiment.exportData()" value="Export Data"/>
        </p>
+       </form>
        <p class="well">
        <label for="update">Update</label>
        <input type="button" id="update" class="btn btn-sm btn-danger" style="" onclick="Experiment.update()" value="Update"/>
