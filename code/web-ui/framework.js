@@ -7,6 +7,7 @@
   // data       GET    Name, ...        Named data, as JSON       (no all-data query as this would be very large)
   // properties GET    Name, ...        Named properties, as JSON  
   // properties PUT    Name=Value, ...  Named properties, as JSON  
+  // subtree    GET    Name,            Entities, as JSON
 
 var Framework = {
 
@@ -25,6 +26,7 @@ var Framework = {
   exportTypeEntity : "entity",  
   exportTypeData : "data",  
 
+
   update : function( entity, callback ) {
     var suffix = Framework.contextUpdate 
                + "?entity=" + entity 
@@ -40,6 +42,16 @@ var Framework = {
 
   getData : function( dataName, callback ) {
     var suffix = Framework.contextData + "?" + dataName;
+    Framework.doAjaxJson( suffix, callback, "GET" );
+  },
+
+  getEntities : function( key, callback ) {
+    var suffix = Framework.contextEntities + "?" + key;
+    Framework.doAjaxJson( suffix, callback, "GET" );
+  },
+
+  getSubtree : function( key, callback ) {
+    var suffix = "export?type=entity&entity=" + key;
     Framework.doAjaxJson( suffix, callback, "GET" );
   },
 
