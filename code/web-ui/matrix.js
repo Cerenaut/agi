@@ -6,8 +6,7 @@ var Matrix = {
 
   update : function() {
     var dataName = $( "#data" ).val();
-    var suffix = "name="+dataName;
-    Framework.getData( suffix, Matrix.onGetData );
+    Framework.getData( dataName, Matrix.onGetData );
   },
 
   toggleLabels : function() {
@@ -34,14 +33,17 @@ var Matrix = {
     // undo the sparse coding, if present:
     Framework.removeSparseUnitCoding( data );
 
-    var w = 0; 
+/*    var w = 0; 
     var h = 0; 
 
     for( var i = 0; i < dataSizes.labels.length; ++i ) {
       var label = dataSizes.labels[ i ];
       if( label == "x" ) w = dataSizes.sizes[ i ];
       if( label == "y" ) h = dataSizes.sizes[ i ];
-    }
+    }*/
+    var dataSize = Framework.getDataSize( data );
+    var w = dataSize.w;
+    var h = dataSize.h;
 
     var xCategories = [];
     var yCategories = [];

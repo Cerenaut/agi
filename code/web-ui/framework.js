@@ -35,13 +35,33 @@ var Framework = {
     Framework.doAjaxJson( suffix, callback, verb );
   },
 
+  getDataSize : function( data ) {
+    var w = 0; 
+    var h = 0; 
+    var dataSizes = data.sizes;
+
+    for( var i = 0; i < dataSizes.labels.length; ++i ) {
+      var label = dataSizes.labels[ i ];
+      if( label == "x" ) w = dataSizes.sizes[ i ];
+      if( label == "y" ) h = dataSizes.sizes[ i ];
+    }
+
+    var size = { w: w, h: h };
+    return size;
+  },
+
   getDataNames : function( callback ) {
     var suffix = Framework.contextData;
     Framework.doAjaxJson( suffix, callback, "GET" );
   },
 
   getData : function( dataName, callback ) {
-    var suffix = Framework.contextData + "?" + dataName;
+    var suffix = Framework.contextData + "?name=" + dataName;
+    Framework.doAjaxJson( suffix, callback, "GET" );
+  },
+
+  getDataList : function( dataNames, callback ) {
+    var suffix = Framework.contextData + "?" + dataNames;
     Framework.doAjaxJson( suffix, callback, "GET" );
   },
 
@@ -56,6 +76,9 @@ var Framework = {
   },
 
   removeSparseUnitCoding : function( data ) {
+    if( !data.elements ) {
+      return;
+    }
     var dataElements = data.elements;
 
     // undo the sparse coding, if present:

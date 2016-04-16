@@ -3,17 +3,17 @@ var Search = {
 
   getNodes : function() {
     Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
-    Framework.getNodes( Search.onGetEntities );    
+    Framework.getNodes( Search.onGetObjects );    
   },
 
   getData : function() {
     Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
-    Framework.getDataNames( Search.onGetEntities );    
+    Framework.getDataNames( Search.onGetObjects );    
   },
 
   getEntities : function() {
     Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
-    Framework.getEntities( Search.onGetEntities );    
+    Framework.getEntities( Search.onGetObjects );    
   },
 
   onGetObjects : function( json ) {

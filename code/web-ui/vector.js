@@ -13,7 +13,7 @@ var Vector = {
       }
       suffix = suffix + "name=" + dataName;
     }
-    Framework.getData( suffix, Vector.onGetData );
+    Framework.getDataList( suffix, Vector.onGetData );
   },
 
   onGetData : function( json ) {
