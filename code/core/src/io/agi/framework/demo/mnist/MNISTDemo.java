@@ -89,13 +89,19 @@ public class MNISTDemo {
         Framework.SetConfig( encoderName, "bits", "8" );
         Framework.SetConfig( encoderName, "encodeZero", "false" );
 
-        Framework.SetConfig( regionName, "organizerStressThreshold", "0.01" );
-        Framework.SetConfig( regionName, "organizerGrowthInterval", "5" );
+        Framework.SetConfig( regionName, "receptiveFieldsTrainingSamples", "100" );
+        Framework.SetConfig( regionName, "organizerStressThreshold", "0.0" );
+        Framework.SetConfig( regionName, "organizerGrowthInterval", "1" );
+        Framework.SetConfig( regionName, "organizerEdgeMaxAge", "1000" );
+        Framework.SetConfig( regionName, "organizerNoiseMagnitude", "0.0" );
+        Framework.SetConfig( regionName, "organizerLearningRate", "0.002" );
+        Framework.SetConfig( regionName, "organizerLearningRateNeighbours", "0.001" );
 
-        Framework.SetConfig( regionName, "classifierStressThreshold", "0.01" );
-        Framework.SetConfig( regionName, "classifierGrowthInterval", "5" );
+        Framework.SetConfig( regionName, "classifierStressThreshold", "0.0" );
+        Framework.SetConfig( regionName, "classifierGrowthInterval", "1" );
 
         Framework.SetConfig( regionName, Entity.SUFFIX_RESET, "true" );
+//        Framework.SetConfig( regionName, Entity.SUFFIX_RESET, "false" );
     }
 
 }
