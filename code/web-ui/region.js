@@ -26,6 +26,7 @@ function getScrollbarWidth() {
 
 var Region = {
 
+  pixelsReceptiveField : 8,
   pixelsColumnGap : 3,
   pixelsMargin : 4,
   pixelsPerBit : 8,
@@ -34,8 +35,13 @@ var Region = {
   selectedLeft : [  ],
   selectedRight : [  ],
 
-  suffixes : [ "-activity-new", "-prediction-old", "-prediction-new", "-ff-input", "-organizer-output-mask", "-organizer-output-weights" ],
-  suffixIdx : 0,
+  classifierSuffixes : [ "-output-weights", "-output-mask" ],
+//  classifierSuffixes : [ "-output-mask" ],
+  classifierDataCount : 0,
+  classifierDataRequests : 0,
+
+  regionSuffixes : [ "-activity-new", "-prediction-old", "-prediction-new", "-ff-input", "-organizer-output-mask", "-organizer-output-weights" ],
+  regionSuffixIdx : 0,
   dataMap : {
   },
 
@@ -150,7 +156,9 @@ var Region = {
   },
 
   repaint : function() {
+    console.log( "repaint cells" );
     Region.repaintCells();
+    console.log( "repaint input" );
     Region.repaintInput();
   },
 
@@ -199,6 +207,7 @@ var Region = {
     var ch = rh / oh;
 
     // draw the data
+    var half = Region.pixelsPerBit * 0.5;
     var c = $( "#left-canvas" )[ 0 ];
     c.width  = rw * Region.pixelsPerBit + (ow-1) * Region.pixelsColumnGap;
     c.height = rh * Region.pixelsPerBit + (oh-1) * Region.pixelsColumnGap;
@@ -209,6 +218,13 @@ var Region = {
 
     for( var oy = 0; oy < oh; ++oy ) {
       for( var ox = 0; ox < ow; ++ox ) {
+
+            // now mark dead cells so we can ignore them
+            var dataName = Region.getClassifierDataName( ox, oy, "-output-mask" );
+            var dataClassifierOutputMask = Region.findData( dataName );
+            if( !dataClassifierOutputMask ) {
+              continue;
+            }
 
         for( var cy = 0; cy < ch; ++cy ) {
           for( var cx = 0; cx < cw; ++cx ) {
@@ -246,11 +262,42 @@ var Region = {
 
             ctx.strokeStyle = "#808080";
             ctx.strokeRect( x, y, Region.pixelsPerBit, Region.pixelsPerBit );        
+
+            offset = cy * cw + cx;
+   
+            var maskValue = dataClassifierOutputMask.elements.elements[ offset ];
+            if( maskValue < 0.5 ) {
+              ctx.strokeRect( x, y, half, half );        
+//              ctx.moveTo( x, y ); KILLS chrome renderer, insanely slow.
+//              ctx.lineTo( x + Region.pixelsPerBit, y + Region.pixelsPerBit );        
+            }
+
           }
         }
       }
     }
 
+    // mark dead columns (classifiers)
+    var w = Region.pixelsPerBit * cw + Region.pixelsColumnGap;
+    var h = Region.pixelsPerBit * cw + Region.pixelsColumnGap;
+    ctx.fillStyle = "rgba( 100,100,100, 0.5 )";
+
+    for( var oy = 0; oy < oh; ++oy ) {
+      for( var ox = 0; ox < ow; ++ox ) {
+        var offset = oy * ow + ox;
+        var mask = dataOrganizerOutputMask.elements.elements[ offset ];
+        if( mask != 0 ) {
+          continue; // live, don't paint
+        }
+
+        var x = ox * w;
+        var y = oy * h;
+
+        ctx.fillRect( x, y, w, h );        
+      }
+    }
+
+    // paint selections
     ctx.strokeStyle = "#FFFFFF";
     for( var i = 0; i < Region.selectedLeft.length; ++i ) {
       var offset = Region.selectedLeft[ i ];
@@ -270,7 +317,6 @@ var Region = {
 
   },
 
-
   repaintInput : function() {
     var data = Region.findData( "-ff-input" );
     if( !data ) {
@@ -283,6 +329,35 @@ var Region = {
 
     if( ( w == 0 ) || ( h == 0 ) ) {
       return;
+    }
+
+    var dataActivityNew = Region.findData( "-activity-new" );
+    if( !dataActivityNew ) {
+      return; // can't paint
+    }
+
+    var dataOrganizerOutputMask = Region.findData( "-organizer-output-mask" );
+    if( !dataOrganizerOutputMask ) {
+      return; // can't paint
+    }
+
+    var organizerDataSize = Framework.getDataSize( dataOrganizerOutputMask );
+    var ow = organizerDataSize.w;
+    var oh = organizerDataSize.h;
+
+    if( ( ow == 0 ) || ( oh == 0 ) ) {
+      return;
+    }
+
+    var regionDataSize = Framework.getDataSize( dataActivityNew );
+    var rw = regionDataSize.w;
+    var rh = regionDataSize.h;
+    var cw = rw / ow;
+    var ch = rh / oh;
+
+    var dataOrganizerOutputWeights = Region.findData( "-organizer-output-weights" );
+    if( !dataOrganizerOutputWeights ) {
+      return; // can't paint
     }
 
     var c = $( "#right-canvas" )[ 0 ];
@@ -319,6 +394,95 @@ var Region = {
       }
     }
 
+    // paint organizer receptive field centroids
+    var rw = ow * cw;
+    var inputArea = w *h;
+
+    for( var oy = 0; oy < oh; ++oy ) {
+      for( var ox = 0; ox < ow; ++ox ) {
+        var offset = oy * ow + ox;
+        var mask = dataOrganizerOutputMask.elements.elements[ offset ];
+        if( mask == 0 ) {
+          continue; // dead, don't paint
+        }
+
+        offset = oy * ( ow * 2 ) + ( ox * 2 );
+        var xWeight = dataOrganizerOutputWeights.elements.elements[ offset +0 ];
+        var yWeight = dataOrganizerOutputWeights.elements.elements[ offset +1 ];
+
+        var x = w * xWeight * Region.pixelsPerBit;
+        var y = h * yWeight * Region.pixelsPerBit;
+
+        ctx.strokeStyle = "rgb(0,255,0)";
+
+        for( var i = 0; i < Region.selectedLeft.length; ++i ) {
+          var offset = Region.selectedLeft[ i ]; // a cell within the region     
+
+          var rx = Math.floor( offset % rw );
+          var ry = Math.floor( offset / rw );
+
+          var oxSelected = Math.floor( rx / cw ); // coordinates of column in grid (region).
+          var oySelected = Math.floor( ry / ch );    
+
+          if( ( oxSelected == ox ) && ( oySelected == oy ) ) {
+            ctx.strokeStyle = "rgb(255,0,255)";
+
+            break;
+          }
+        }
+
+        ctx.beginPath();
+        ctx.moveTo( x,y-Region.pixelsReceptiveField );
+        ctx.lineTo( x,y+Region.pixelsReceptiveField );
+        ctx.moveTo( x-Region.pixelsReceptiveField,y );
+        ctx.lineTo( x+Region.pixelsReceptiveField,y );
+        ctx.stroke();   
+      }
+    }
+
+    // paint weights of selected cells
+    for( var i = 0; i < Region.selectedLeft.length; ++i ) {
+      var offset = Region.selectedLeft[ i ]; // a cell within the region     
+      var rx = Math.floor( offset % rw );
+      var ry = Math.floor( offset / rw );
+
+      var ox = Math.floor( rx / cw ); // coordinates of column in grid (region).
+      var oy = Math.floor( ry / ch );    
+
+      var dataName = Region.getClassifierDataName( ox, oy, "-output-weights" );
+      var dataClassifierOutputWeights = Region.findData( dataName );
+      if( !dataClassifierOutputWeights ) {
+        continue; // can't paint
+      }
+
+      var cx = rx - ( ox * cw ); // coordinates in column.
+      var cy = ry - ( oy * ch );    
+
+      var classifierOffset = cy * cw * inputArea 
+                           + cx      * inputArea
+
+      for( var y = 0; y < h; ++y ) {
+        for( var x = 0; x < w; ++x ) {
+          var inputOffset = y * w + x;
+          var offset = classifierOffset + inputOffset;
+
+          var value = dataClassifierOutputWeights.elements.elements[ offset ];
+ 
+          if( value < 0.01 ) {
+            continue;
+          }
+
+          ctx.fillStyle = "rgba(255,0,255,"+value.toFixed( 3 ) + ")";
+          var cx = x * Region.pixelsPerBit;
+          var cy = y * Region.pixelsPerBit;
+       
+          ctx.fillRect( cx, cy, Region.pixelsPerBit, Region.pixelsPerBit );        
+        }
+      }
+
+    }
+
+    // paint selected input bits
     ctx.strokeStyle = "#FF0000";
     for( var i = 0; i < Region.selectedRight.length; ++i ) {
       var offset = Region.selectedRight[ i ];
@@ -338,23 +502,24 @@ var Region = {
   },
 
   onGotData : function() {
-    Region.setStatus( "Got all data. " );
-    Region.repaint();    
+    Region.setStatus( "Got all region data, getting classifier data... " );
+    //Region.repaint();    
+    Region.getClassifierData();
   },
 
   getData : function() {
 
-    if( Region.suffixIdx >= Region.suffixes.length ) {
+    if( Region.regionSuffixIdx >= Region.regionSuffixes.length ) {
       Region.onGotData();
       return;
     }
 
-    var dataName = Region.prefix + Region.suffixes[ Region.suffixIdx ];
+    var dataName = Region.prefix + Region.regionSuffixes[ Region.regionSuffixIdx ];
 
-    Region.setStatus( "Getting " + Region.suffixIdx + " of " + Region.suffixes.length + ", name: " + dataName );
+    Region.setStatus( "Getting " + Region.regionSuffixIdx + " of " + Region.regionSuffixes.length + ", name: " + dataName );
 
     Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
-    Region.suffixIdx = Region.suffixIdx +1; // get next
+    Region.regionSuffixIdx = Region.regionSuffixIdx +1; // get next
     Framework.getData( dataName, Region.onGetData );
   },
 
@@ -371,6 +536,81 @@ var Region = {
 
     Region.dataMap[ data.name ] = data;
     Region.getData(); // get next data.
+  },
+
+  onGotClassifierData : function() {
+    Region.setStatus( "Repainting... " );
+    Region.repaint();    
+  },
+
+  findClassifierData : function( ox, oy, suffix ) {
+    var dataName = Region.getClassifierDataName( ox, oy, suffix );
+    var data = Region.dataMap[ dataName ];
+    return data;
+  },
+  
+  getClassifierDataName : function( ox, oy, suffix ) {
+    var dataName = "-classifier-" + ox + "-" + oy + suffix;
+    return dataName;
+  },
+
+  getClassifierData : function() {
+    Region.classifierDataCount = 0;
+    Region.classifierDataRequests = 0;
+
+    var dataOrganizerOutputMask = Region.findData( "-organizer-output-mask" );
+    if( !dataOrganizerOutputMask ) {
+      return; // can't paint
+    }
+
+    var organizerDataSize = Framework.getDataSize( dataOrganizerOutputMask );
+    var ow = organizerDataSize.w;
+    var oh = organizerDataSize.h;
+    if( ( ow == 0 ) || ( oh == 0 ) ) {
+      return;
+    }
+
+    // ask for all suffixes for each classifier    
+    for( var oy = 0; oy < oh; ++oy ) {
+      for( var ox = 0; ox < ow; ++ox ) {
+        for( var i = 0; i < Region.classifierSuffixes.length; ++i ) {
+          Region.classifierDataRequests += 1;
+        }
+      }
+    }
+
+    for( var oy = 0; oy < oh; ++oy ) {
+      for( var ox = 0; ox < ow; ++ox ) {
+        for( var i = 0; i < Region.classifierSuffixes.length; ++i ) {
+          var suffix = Region.classifierSuffixes[ i ];
+          var dataName = Region.prefix + Region.getClassifierDataName( ox, oy, suffix );
+          console.log( "Requesting data: " + dataName );
+          Framework.getData( dataName, Region.onGetClassifierData );
+        }
+      }
+    }
+
+  },
+
+  onGetClassifierData : function( json ) {
+    if( json.status != 200 ) {
+      Region.setStatus( "Error getting data" );
+      return;
+    }
+
+    var datas = JSON.parse( json.responseText );
+    var data = datas[ 0 ];
+    Framework.removeSparseUnitCoding( data );
+    Region.dataMap[ data.name ] = data;
+
+    console.log( "Received data: " + data.name );
+
+    Region.classifierDataCount = Region.classifierDataCount +1;
+
+    Region.setStatus( "Got " + Region.classifierDataCount + " of " + Region.classifierDataRequests + " classifier data." );
+    if( Region.classifierDataCount == Region.classifierDataRequests ) {
+      Region.onGotClassifierData();
+    }
   },
 
   resizeDataArea : function() {
@@ -394,7 +634,7 @@ var Region = {
 
     Region.setStatus( "Refreshing..." );
     Region.dataMap = {};
-    Region.suffixIdx = 0;
+    Region.regionSuffixIdx = 0;
     Region.prefix = entity;
     Region.getData();    
   },
@@ -417,9 +657,11 @@ var Region = {
 
     $( "#left-canvas" )[ 0 ].addEventListener( 'click', function( e ) {
       Region.onMouseClickLeft( e, e.offsetX, e.offsetY );
+//      Region.onMouseClickLeft( e, e.clientX, e.clientY );
     } );
     $( "#right-canvas" )[ 0 ].addEventListener( 'click', function( e ) {
       Region.onMouseClickRight( e, e.offsetX, e.offsetY );
+//      Region.onMouseClickRight( e, e.clientX, e.clientY );
     } );
   }
 
