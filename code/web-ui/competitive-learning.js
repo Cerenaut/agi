@@ -4,8 +4,7 @@ var CompetitiveLearning = {
 
   update : function() {
     var dataName = $( "#data" ).val();
-    var suffix = "name="+dataName;
-    Framework.getData( suffix, CompetitiveLearning.onGetData );
+    Framework.getData( dataName, CompetitiveLearning.onGetData );
   },
 
   onGetData : function( json ) {
@@ -51,6 +50,9 @@ var CompetitiveLearning = {
         var xValue = parseFloat( dataElements.elements[ offset    ].toFixed( 3 ) );
         var yValue = parseFloat( dataElements.elements[ offset +1 ].toFixed( 3 ) );
 
+        yValue = Math.min( 1.0, yValue );
+        yValue = 1.0 - yValue;
+        
         values[ i ] = [ xValue, yValue ];
         ++i;
       }
