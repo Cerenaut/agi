@@ -65,7 +65,7 @@ public class HttpConfigHandler implements HttpHandler {
             String config = null; // optional
 
             if( m.containsKey( PARAMETER_PATH ) ) {
-                configValue = m.get( PARAMETER_PATH ).trim();
+                configPath = m.get( PARAMETER_PATH ).trim();
             }
 
             if( m.containsKey( PARAMETER_VALUE ) ) {
@@ -92,7 +92,7 @@ public class HttpConfigHandler implements HttpHandler {
                     me.config = config; // replace entire config
                     _p.persistEntity( me );
                     response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_VALUE + "\" : " + config + " }";
-                } else {
+                } else if( ( configPath != null ) && ( configValue != null ) ) {
                     Framework.SetConfig( entityName, configPath, configValue );
                     response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_PATH + "\" : \"" + configPath + "\", \"" + PARAMETER_VALUE + "\" : \"" + configValue + "\" }";
                 }
