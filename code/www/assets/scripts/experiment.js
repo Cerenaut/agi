@@ -85,6 +85,19 @@ var Experiment = {
     } );
   },
 
+  setFlushAndReset : function() {
+    var entityName = $( "#entity" ).val();
+    var flushValue = $( "#flush" ).is( ":checked" );
+    var resetValue = $( "#flush" ).is( ":checked" );
+
+    Framework.setConfigPath( entityName, "flush", flushValue, Experiment.onSetFlushAndReset ); 
+    Framework.setConfigPath( entityName, "reset", resetValue, Experiment.onSetFlushAndReset ); 
+  },
+
+  onSetFlushAndReset : function( response ) {
+    console.log( "Response from POST config: " + JSON.stringify( response ) );
+  },
+
   update : function() {
 
     var entity = $( "#entity" ).val();
@@ -101,6 +114,7 @@ var Experiment = {
   },
 
   setup : function() {
+
     Parameters.extract( Experiment.onParameter );
     Loop.setup( Experiment.onInterval );
   }
