@@ -56,6 +56,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
     protected DataFlags _dataFlags = new DataFlags();
     protected DataMap _dataMap = new DataMap(); // used to check for data changes since load.
     protected boolean _flushChildren = false;
+    protected boolean _resetChildren = false;
 
     public Entity( ObjectMap om, Node n, ModelEntity model ) {
         super( model.name, om );
@@ -162,6 +163,11 @@ public abstract class Entity extends NamedObject implements EntityListener {
                 Framework.SetConfig( childName, SUFFIX_FLUSH, "true" );
             }
         }
+        if( _resetChildren ) {
+            for( String childName : childNames ) {
+                Framework.SetConfig( childName, SUFFIX_RESET, "true" );
+            }
+        }
 
         // Now wait for all children to update
         synchronized( _childrenWaiting ) {
@@ -244,6 +250,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
         }
 
         _flushChildren = _config.flush;
+        _resetChildren = _config.reset;
 
         _config.seed = _r.getSeed(); // update the random seed for next time.
         _config.reset = false; // cancel reset after reset.
@@ -293,6 +300,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
                     _data.put( inputKey, d );
                     continue;
                 }
+                // else: allow read
             }
 
             // check for no - read
