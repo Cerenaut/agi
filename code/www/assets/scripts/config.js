@@ -26,11 +26,11 @@ var Config = {
   },
 
   onPostData : function( response ) {
-    console.log( "Response from POST save: " + response );
+    console.log( "Response from POST save: " + JSON.stringify( response ) );
   },
 
   onGetEntityConfig : function( json ) {
-console.log( "." );
+
     var entityConfig = JSON.parse( json.responseText );
     var config = entityConfig.value;
     var pretty = JSON.stringify( config, null, 2 );

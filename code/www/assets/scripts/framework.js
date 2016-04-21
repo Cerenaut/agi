@@ -138,11 +138,12 @@ var Framework = {
 
   getUrl : function( suffix ) {
     var url = Framework.protocol + "://" + Framework.host + ":" + Framework.port + "/" + suffix;
-    return url;
+    var urlEncoded = encodeURI( url );    
+    return urlEncoded;
   },
 
   doAjaxJson : function( suffix, callback, method ) {
-    var url = Framework.getUrl( suffix );
+    var url = Framework.getUrl( suffix );   
     $.ajax( url, {
       type: method,
 //      contentType: 'application/json',
