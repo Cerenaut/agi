@@ -332,7 +332,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
                 Data combinedData = getCombinedData( attribute, allRefs );
 
-                modelData.setData( combinedData, false ); // data added to ref keys.
+                modelData.setData( combinedData, ModelData.ENCODING_DENSE ); // data added to ref keys.
 
                 p.persistData( modelData ); // DAVE: BUG? It writes it back out.. I guess we wanna see this, but seems excessive.
 
@@ -383,12 +383,16 @@ public abstract class Entity extends NamedObject implements EntityListener {
                 }
             }
 
-            boolean sparse = false;
-            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_SPARSE_UNIT ) ) {
-                sparse = true;
+            String encoding = ModelData.ENCODING_DENSE;
+
+            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_SPARSE_BINARY ) ) {
+                encoding = ModelData.ENCODING_SPARSE_BINARY;
+            }
+            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_SPARSE_REAL ) ) {
+                encoding = ModelData.ENCODING_SPARSE_REAL;
             }
 
-            p.persistData( new ModelData( inputKey, d, sparse ) );
+            p.persistData( new ModelData( inputKey, d, encoding ) );
         }
     }
 

@@ -532,7 +532,7 @@ var Region = {
     var datas = JSON.parse( json.responseText );
     var data = datas[ 0 ];
 
-    Framework.removeSparseUnitCoding( data );
+    Framework.decode( data );
 
     Region.dataMap[ data.name ] = data;
     Region.getData(); // get next data.
@@ -600,7 +600,7 @@ var Region = {
 
     var datas = JSON.parse( json.responseText );
     var data = datas[ 0 ];
-    Framework.removeSparseUnitCoding( data );
+    Framework.decode( data );
     Region.dataMap[ data.name ] = data;
 
     console.log( "Received data: " + data.name );

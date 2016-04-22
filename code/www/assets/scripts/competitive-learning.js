@@ -16,7 +16,7 @@ var CompetitiveLearning = {
     var data = datas[ 0 ];
 
     // undo the sparse coding, if present:
-    Framework.removeSparseUnitCoding( data );
+    Framework.decode( data );
 
     var matrices = 1;
     var series = [];

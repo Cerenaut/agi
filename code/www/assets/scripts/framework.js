@@ -75,20 +75,35 @@ var Framework = {
     Framework.doAjaxJson( suffix, callback, "GET" );
   },
 
-  removeSparseUnitCoding : function( data ) {
+  decode : function( data ) {
     if( !data.elements ) {
       return;
     }
+
     var dataElements = data.elements;
 
     // undo the sparse coding, if present:
-    if( dataElements.sparse ) {
+    if( dataElements.encoding == "sparse-binary" ) {
       var dataElementsLength = dataElements["length"]; // note: official length.
       var dataElementsDense = Array.apply( null, Array( dataElementsLength ) ).map( Number.prototype.valueOf, 0 );
       for( var i = 0; i < dataElements.elements.length; ++i ) {
         var j = dataElements.elements[ i ];
         dataElementsDense[ j ] = 1.0;
       }    
+      dataElements.elements = dataElementsDense;
+    }
+    else if( dataElements.encoding == "sparse-real" ) {
+      var dataElementsLength = dataElements["length"]; // note: official length.
+      var dataElementsDense = Array.apply( null, Array( dataElementsLength ) ).map( Number.prototype.valueOf, 0 ); // create large array of zeros, preallocated
+      var encodedValues = dataElements.elements.length / 2;
+      for( var i = 0; i < encodedValues; ++i ) { // the encoded length
+        var i1 = i * 2;
+        var i2 = i1 +1;
+        var index = Math.floor( dataElements.elements[ i1 ] );
+        var value =             dataElements.elements[ i2 ];
+        dataElementsDense[ index ] = value;
+      }    
+
       dataElements.elements = dataElementsDense;
     }
   },

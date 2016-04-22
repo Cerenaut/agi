@@ -34,6 +34,10 @@ import java.util.HashSet;
  */
 public class ModelData {
 
+    public static final String ENCODING_DENSE = "dense";
+    public static final String ENCODING_SPARSE_BINARY = "sparse-binary";
+    public static final String ENCODING_SPARSE_REAL = "sparse-real";
+
     public String name;
     public String refKeys;
     public String sizes;
@@ -43,12 +47,12 @@ public class ModelData {
 
     }
 
-    public ModelData( String key, Data d, boolean sparse ) {
+    public ModelData( String key, Data d, String encoding ) {
         name = key;
         refKeys = null;
         if( d != null ) {
             sizes = DataSizeToString( d._dataSize );
-            elements = FloatArrayToString( d, sparse );
+            elements = FloatArrayToString( d, encoding );
         }
     }
 
@@ -98,10 +102,10 @@ public class ModelData {
      *
      * @param d
      */
-    public void setData( Data d, boolean sparse ) {
+    public void setData( Data d, String encoding ) {
         try {
             sizes = DataSizeToString( d._dataSize );
-            elements = FloatArrayToString( d, sparse );
+            elements = FloatArrayToString( d, encoding );
         }
         catch( Exception e ) {
 
@@ -186,15 +190,15 @@ public class ModelData {
         }
     }
 
-    public static String FloatArrayToString( FloatArray2 fa, boolean sparse ) {
-        String s1 = "{ \"sparse\":" + sparse + ",\"length\":";
+    public static String FloatArrayToString( FloatArray2 fa, String encoding ) {
+        String s1 = "{ \"encoding\":" + encoding + ",\"length\":";
         String s2 = ",\"elements\":["; // put elements last
         String s3 = "]}";
 
         String length = String.valueOf( fa._values.length );
         ArrayList< String > values = new ArrayList< String >();
 
-        if( sparse ) {
+        if( ( encoding != null ) && ( encoding.equals( ModelData.ENCODING_SPARSE_BINARY ) ) ) {
             for( int i = 0; i < fa._values.length; ++i ) {
                 float value = fa._values[ i ];
                 if( value == 0.f ) {
@@ -204,7 +208,19 @@ public class ModelData {
                 String s = String.valueOf( i );
                 values.add( s );
             }
-        } else {
+        }
+        else if( ( encoding != null ) && ( encoding.equals( ModelData.ENCODING_SPARSE_REAL ) ) ) {
+            for( int i = 0; i < fa._values.length; ++i ) {
+                float value = fa._values[ i ];
+                if( value == 0.f ) {
+                    continue; // only add the nonzero value indices.
+                }
+
+                String s = String.valueOf( i ) + "," + String.valueOf( value ); // index,value
+                values.add( s );
+            }
+        }
+        else {
             values.ensureCapacity( fa._values.length );
             for( int i = 0; i < fa._values.length; ++i ) {
                 float value = fa._values[ i ];
@@ -224,22 +240,33 @@ public class ModelData {
             String lengthString = GetJsonProperty( s, "length" );
             Integer length = Integer.valueOf( lengthString );
 
-            Boolean sparse = false;
-            String sparseString = GetJsonProperty( s, "sparse" );
-            if( sparseString != null ) {
-                sparse = Boolean.valueOf( sparseString );
+            String encoding = GetJsonProperty( s, "encoding" );
+            if( encoding == null ) {
+                encoding = ModelData.ENCODING_DENSE; // assume if not mentioned
             }
 
-            FloatArray2 fa = new FloatArray2( length );
+            FloatArray2 fa = new FloatArray2( length ); // default to zeroes
 
             String elementsString = GetJsonArrayProperty( s, "elements" );
             String[] splitString = elementsString.split( "," );
 
-            if( sparse ) {
+            if( ( encoding != null ) && ( encoding.equals( ModelData.ENCODING_SPARSE_BINARY ) ) ) {
                 for( int i = 0; i < splitString.length; ++i ) {
                     String valueString = splitString[ i ];
                     Integer value = Integer.valueOf( valueString );
                     fa._values[ value ] = 1.f;
+                }
+            }
+            else if( ( encoding != null ) && ( encoding.equals( ModelData.ENCODING_SPARSE_REAL ) ) ) {
+                int values = splitString.length >> 1;
+                for( int i = 0; i < values; ++i ) {
+                    int i1 = i * 2;
+                    int i2 = i1 +1;
+                    String indexString = splitString[ i1 ];
+                    String valueString = splitString[ i2 ];
+                    Integer index = Integer.valueOf( indexString );
+                    Float value = Float.valueOf( valueString );
+                    fa._values[ index ] = value;
                 }
             } else {
                 for( int i = 0; i < splitString.length; ++i ) {

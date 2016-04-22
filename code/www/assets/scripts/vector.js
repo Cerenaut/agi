@@ -32,7 +32,7 @@ var Vector = {
       var elements = data.elements.length;
       maxElements = Math.max( elements, maxElements );
 
-      Framework.removeSparseUnitCoding( data );
+      Framework.decode( data );
     }
 
     var categories = [];

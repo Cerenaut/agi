@@ -74,7 +74,7 @@ public class RegionEntity extends Entity {
         attributes.add( FB_INPUT_OLD );
 
         flags.putFlag( FB_INPUT_OLD, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( FB_INPUT_OLD, DataFlags.FLAG_SPARSE_UNIT );
+        flags.putFlag( FB_INPUT_OLD, DataFlags.FLAG_SPARSE_BINARY );
 
         attributes.add( ACTIVITY_OLD );
         attributes.add( ACTIVITY_NEW );
@@ -83,9 +83,9 @@ public class RegionEntity extends Entity {
         flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( FB_INPUT_OLD, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_SPARSE_UNIT );
-        flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_SPARSE_UNIT );
-        flags.putFlag( ACTIVITY, DataFlags.FLAG_SPARSE_UNIT );
+        flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_SPARSE_BINARY );
+        flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_SPARSE_BINARY );
+        flags.putFlag( ACTIVITY, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_LAZY_PERSIST );
         flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_LAZY_PERSIST );
         flags.putFlag( ACTIVITY, DataFlags.FLAG_LAZY_PERSIST );
@@ -96,16 +96,16 @@ public class RegionEntity extends Entity {
 
         flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_SPARSE_UNIT );
-        flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_SPARSE_UNIT );
+        flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_SPARSE_BINARY );
+        flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_SPARSE_BINARY );
 
         attributes.add( PREDICTION_FP );
         attributes.add( PREDICTION_FN );
 
         flags.putFlag( PREDICTION_FP, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( PREDICTION_FN, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_FP, DataFlags.FLAG_SPARSE_UNIT );
-        flags.putFlag( PREDICTION_FN, DataFlags.FLAG_SPARSE_UNIT );
+        flags.putFlag( PREDICTION_FP, DataFlags.FLAG_SPARSE_BINARY );
+        flags.putFlag( PREDICTION_FN, DataFlags.FLAG_SPARSE_BINARY );
 
         // The organizer
         getClassifierOutputKeys( attributes, flags, RegionConfig.SUFFIX_ORGANIZER, false );
@@ -162,9 +162,9 @@ public class RegionEntity extends Entity {
         keys.add( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH ) );
 
         // These can be sparse:
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), DataFlags.FLAG_SPARSE_UNIT );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), DataFlags.FLAG_SPARSE_UNIT );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), DataFlags.FLAG_SPARSE_UNIT );
+        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), DataFlags.FLAG_SPARSE_BINARY );
+        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), DataFlags.FLAG_SPARSE_BINARY );
+        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), DataFlags.FLAG_SPARSE_BINARY );
 
         // These rarely change:
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), DataFlags.FLAG_LAZY_PERSIST );
