@@ -111,7 +111,7 @@ public class RegionEntity extends Entity {
         getClassifierOutputKeys( attributes, flags, RegionConfig.SUFFIX_ORGANIZER, false );
 
         // The classifiers
-        io.agi.framework.entities.RegionConfig config = ( io.agi.framework.entities.RegionConfig ) _config;
+        RegionEntityConfig config = ( RegionEntityConfig ) _config;
 
         for( int y = 0; y < config.organizerHeightCells; ++y ) {
             for( int x = 0; x < config.organizerWidthCells; ++x ) {
@@ -197,7 +197,7 @@ public class RegionEntity extends Entity {
 
     @Override
     public Class getConfigClass() {
-        return io.agi.framework.entities.RegionConfig.class;
+        return RegionEntityConfig.class;
     }
 
     protected void doUpdateSelf() {
@@ -234,7 +234,7 @@ public class RegionEntity extends Entity {
         // Algorithm specific parameters
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Region size
-        io.agi.framework.entities.RegionConfig config = ( io.agi.framework.entities.RegionConfig ) _config;
+        RegionEntityConfig config = ( RegionEntityConfig ) _config;
 
         // Build the algorithm
         //RandomInstance.setSeed(randomSeed); // make the tests repeatable

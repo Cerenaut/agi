@@ -24,7 +24,7 @@ import io.agi.framework.EntityConfig;
 /**
  * Created by dave on 2/04/16.
  */
-public class RegionConfig extends EntityConfig {
+public class RegionEntityConfig extends EntityConfig {
 
     int organizerWidthCells = 10;
     int organizerHeightCells = 10;
@@ -34,7 +34,7 @@ public class RegionConfig extends EntityConfig {
     int classifierHeightCells = 6;
 
     // Organizer training
-    int receptiveFieldsTrainingSamples = 12;
+    float receptiveFieldsTrainingSamples = 0.1f;//12;
     int receptiveFieldSize = 8;
     float organizerLearningRate = 0.02f;
     float organizerLearningRateNeighbours = 0.01f;

@@ -224,7 +224,9 @@ public class Region extends NamedObject {
         Point inputSize = Data2d.getSize( _ffInput );
 
         // randomly sample a fixed number of input bits.
-        int samples = _rc.getReceptiveFieldsTrainingSamples();
+        float samplesFraction = _rc.getReceptiveFieldsTrainingSamples();
+        float sampleArea = (float)_ffInput.getSize();
+        int samples = (int)( samplesFraction * sampleArea ); // e.g. 0.1 (10%) of the input area
 
         for( int s = 0; s < samples; ++s ) {
 

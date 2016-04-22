@@ -89,7 +89,7 @@ public class MNISTDemo {
         Framework.SetConfig( encoderName, "bits", "8" );
         Framework.SetConfig( encoderName, "encodeZero", "false" );
 
-        Framework.SetConfig( regionName, "receptiveFieldsTrainingSamples", "100" );
+        Framework.SetConfig( regionName, "receptiveFieldsTrainingSamples", "0.1" );
         Framework.SetConfig( regionName, "organizerStressThreshold", "0.0" );
         Framework.SetConfig( regionName, "organizerGrowthInterval", "1" );
         Framework.SetConfig( regionName, "organizerEdgeMaxAge", "1000" );

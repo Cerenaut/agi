@@ -63,7 +63,7 @@ public class RegionConfig extends NetworkConfig {
             int ffInputWidth,
             int ffInputHeight,
             int fbInputArea,
-            int receptiveFieldsTrainingSamples,
+            float receptiveFieldsTrainingSamples,
             int receptiveFieldSize ) {
         super.setup( om, name, r );
 
@@ -140,12 +140,12 @@ public class RegionConfig extends NetworkConfig {
         _om.put( getKey( RECEPTIVE_FIELD_SIZE ), receptiveFieldSize );
     }
 
-    public int getReceptiveFieldsTrainingSamples() {
-        int n = _om.getInteger( getKey( RECEPTIVE_FIELDS_TRAINING_SAMPLES ) );
-        return n;
+    public float getReceptiveFieldsTrainingSamples() {
+        float r = _om.getFloat( getKey( RECEPTIVE_FIELDS_TRAINING_SAMPLES ) );
+        return r;
     }
 
-    public void setReceptiveFieldsTrainingSamples( int receptiveFieldsTrainingSamples ) {
+    public void setReceptiveFieldsTrainingSamples( float receptiveFieldsTrainingSamples ) {
         _om.put( getKey( RECEPTIVE_FIELDS_TRAINING_SAMPLES ), receptiveFieldsTrainingSamples );
     }
 

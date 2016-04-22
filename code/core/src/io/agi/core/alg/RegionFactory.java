@@ -66,7 +66,7 @@ public class RegionFactory {
             int classifierHeightCells,
 
             // Organizer training
-            int receptiveFieldsTrainingSamples,
+            float receptiveFieldsTrainingSamples,
             int receptiveFieldSize,
             float organizerLearningRate,
             float organizerLearningRateNeighbours,
