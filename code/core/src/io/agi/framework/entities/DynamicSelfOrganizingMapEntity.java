@@ -83,7 +83,7 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
         String implName = getName() + Keys.DELIMITER + IMPL_NAME; // the name of the object that implements
 
         // Create the config object:
-        io.agi.framework.entities.DynamicSelfOrganizingMapConfig config = ( io.agi.framework.entities.DynamicSelfOrganizingMapConfig ) _config;
+        DynamicSelfOrganizingMapEntityConfig config = ( DynamicSelfOrganizingMapEntityConfig ) _config;
 
         DynamicSelfOrganizingMapConfig dsomc = new DynamicSelfOrganizingMapConfig();
         dsomc.setup( _om, implName, getRandom(), inputs, config.widthCells, config.heightCells, config.learningRate, config.elasticity );

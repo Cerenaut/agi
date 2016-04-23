@@ -55,12 +55,12 @@ public class DiscreteRandomEntity extends Entity {
 
     @Override
     public Class getConfigClass() {
-        return DiscreteRandomConfig.class;
+        return DiscreteRandomEntityConfig.class;
     }
 
     protected void doUpdateSelf() {
 
-        DiscreteRandomConfig config = ( DiscreteRandomConfig ) _config;
+        DiscreteRandomEntityConfig config = ( DiscreteRandomEntityConfig ) _config;
 
         Data output = getDataLazyResize( OUTPUT, DataSize.create( config.elements ) );
         Random r = getRandom();

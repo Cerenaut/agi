@@ -55,13 +55,13 @@ public class ValueSeriesEntity extends Entity {
     }
 
     public Class getConfigClass() {
-        return ValueSeriesConfig.class;
+        return ValueSeriesEntityConfig.class;
     }
 
     protected void doUpdateSelf() {
 
         // Get all the parameters:
-        ValueSeriesConfig config = ( ValueSeriesConfig ) _config;
+        ValueSeriesEntityConfig config = ( ValueSeriesEntityConfig ) _config;
 
         Data output = getDataLazyResize( OUTPUT, DataSize.create( config.period ) );
 

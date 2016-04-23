@@ -56,13 +56,13 @@ public class RandomVectorEntity extends Entity {
 
     @Override
     public Class getConfigClass() {
-        return RandomVectorConfig.class;
+        return RandomVectorEntityConfig.class;
     }
 
     protected void doUpdateSelf() {
 
         // Get all the parameters:
-        RandomVectorConfig config = ( RandomVectorConfig ) _config;
+        RandomVectorEntityConfig config = ( RandomVectorEntityConfig ) _config;
 
         Data output = getDataLazyResize( OUTPUT, DataSize.create( config.elements ) );
         Random r = getRandom();

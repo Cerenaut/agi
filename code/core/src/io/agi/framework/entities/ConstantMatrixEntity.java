@@ -55,12 +55,12 @@ public class ConstantMatrixEntity extends Entity {
 
     @Override
     public Class getConfigClass() {
-        return ConstantMatrixConfig.class;
+        return ConstantMatrixEntityConfig.class;
     }
 
     protected void doUpdateSelf() {
 
-        ConstantMatrixConfig config = ( ConstantMatrixConfig ) _config;
+        ConstantMatrixEntityConfig config = ( ConstantMatrixEntityConfig ) _config;
 
         // Get all the parameters:
         Data output = getDataLazyResize( OUTPUT, DataSize.create( config.width, config.height ) );

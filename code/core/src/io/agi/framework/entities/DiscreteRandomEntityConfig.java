@@ -24,10 +24,12 @@ import io.agi.framework.EntityConfig;
 /**
  * Created by dave on 2/04/16.
  */
-public class ValueSeriesConfig extends EntityConfig {
+public class DiscreteRandomEntityConfig extends EntityConfig {
 
-    public int period = 100; // number of samples before it wraps
-    public String entityName;
-    public String configPath;
+    public float min = 0.f;
+    public float max = 1.f;
+    public int elements = 1;
+    public int levels = 5;
 
 }
+

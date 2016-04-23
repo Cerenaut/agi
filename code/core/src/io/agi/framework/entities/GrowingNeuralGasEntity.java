@@ -77,7 +77,7 @@ public class GrowingNeuralGasEntity extends Entity {
 
     @Override
     public Class getConfigClass() {
-        return io.agi.framework.entities.GrowingNeuralGasConfig.class;
+        return GrowingNeuralGasEntityConfig.class;
     }
 
     protected void doUpdateSelf() {
@@ -90,7 +90,7 @@ public class GrowingNeuralGasEntity extends Entity {
         }
 
         // Get all the parameters:
-        io.agi.framework.entities.GrowingNeuralGasConfig config = ( io.agi.framework.entities.GrowingNeuralGasConfig ) _config;
+        GrowingNeuralGasEntityConfig config = ( GrowingNeuralGasEntityConfig ) _config;
 
         int inputs = input.getSize();
 

@@ -62,13 +62,13 @@ public class ExperimentEntity extends Entity {
 
     @Override
     public Class getConfigClass() {
-        return ExperimentConfig.class;
+        return ExperimentEntityConfig.class;
     }
 
     protected void doUpdateSelf() {
 
         // Get all the parameters:
-        ExperimentConfig config = ( ExperimentConfig ) _config;
+        ExperimentEntityConfig config = ( ExperimentEntityConfig ) _config;
 
         Persistence p = _n.getPersistence();
 
@@ -91,7 +91,7 @@ public class ExperimentEntity extends Entity {
     protected void afterUpdate() {
         super.afterUpdate();
 
-        ExperimentConfig config = ( ExperimentConfig ) _config;
+        ExperimentEntityConfig config = ( ExperimentEntityConfig ) _config;
 
         if( ( !config.terminate ) && ( !config.pause ) ) {
             _n.requestUpdate( getName() ); // queue another update.

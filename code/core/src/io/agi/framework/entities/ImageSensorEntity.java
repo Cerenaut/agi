@@ -55,12 +55,12 @@ public class ImageSensorEntity extends Entity {
 
     @Override
     public Class getConfigClass() {
-        return ImageSensorConfig.class;
+        return ImageSensorEntityConfig.class;
     }
 
     public void doUpdateSelf() {
 
-        ImageSensorConfig config = ( ImageSensorConfig ) _config;
+        ImageSensorEntityConfig config = ( ImageSensorEntityConfig ) _config;
 
         BufferedImageSource bufferedImageSource = BufferedImageSourceFactory.create(
                 config.sourceType,

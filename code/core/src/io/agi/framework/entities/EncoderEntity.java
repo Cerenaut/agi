@@ -57,12 +57,12 @@ public class EncoderEntity extends Entity {
 
     @Override
     public Class getConfigClass() {
-        return EncoderConfig.class;
+        return EncoderEntityConfig.class;
     }
 
     public void doUpdateSelf() {
 
-        EncoderConfig config = ( EncoderConfig ) _config;
+        EncoderEntityConfig config = ( EncoderEntityConfig ) _config;
 
         SparseDistributedEncoder encoder = EncoderFactory.create( config.encoderType );
 

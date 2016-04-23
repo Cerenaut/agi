@@ -24,12 +24,10 @@ import io.agi.framework.EntityConfig;
 /**
  * Created by dave on 2/04/16.
  */
-public class DynamicSelfOrganizingMapConfig extends EntityConfig {
+public class ValueSeriesEntityConfig extends EntityConfig {
 
-    boolean reset = false;
-    float learningRate = 0.5f;
-    float elasticity = 1.0f;
-    int widthCells = 8;
-    int heightCells = 8;
+    public int period = 100; // number of samples before it wraps
+    public String entityName;
+    public String configPath;
 
 }
