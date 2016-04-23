@@ -49,6 +49,8 @@ public class RegionEntity extends Entity {
     public static final String FF_INPUT = "ff-input";
     public static final String FB_INPUT = "fb-input";
     public static final String FB_INPUT_OLD = "fb-input";
+    public static final String FB_OUTPUT_UNFOLDED_ACTIVITY = "fb-output-unfolded-activity";
+    public static final String FB_OUTPUT_UNFOLDED_PREDICTION = "fb-output-unfolded-prediction";
 
     public static final String ACTIVITY_OLD = "activity-old";
     public static final String ACTIVITY_NEW = "activity-new";
@@ -71,6 +73,15 @@ public class RegionEntity extends Entity {
     }
 
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
+
+        attributes.add( FB_OUTPUT_UNFOLDED_ACTIVITY );
+        attributes.add( FB_OUTPUT_UNFOLDED_PREDICTION );
+
+        flags.putFlag( FB_OUTPUT_UNFOLDED_ACTIVITY, DataFlags.FLAG_PERSIST_ONLY ); // never read
+        flags.putFlag( FB_OUTPUT_UNFOLDED_PREDICTION, DataFlags.FLAG_PERSIST_ONLY ); // never read
+        flags.putFlag( FB_OUTPUT_UNFOLDED_ACTIVITY, DataFlags.FLAG_SPARSE_BINARY );
+        flags.putFlag( FB_OUTPUT_UNFOLDED_PREDICTION, DataFlags.FLAG_SPARSE_BINARY );
+
         attributes.add( FB_INPUT_OLD );
 
         flags.putFlag( FB_INPUT_OLD, DataFlags.FLAG_NODE_CACHE );

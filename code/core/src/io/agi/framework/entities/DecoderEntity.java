@@ -33,26 +33,26 @@ import java.util.Collection;
 /**
  * Created by gideon on 26/03/2016.
  */
-public class EncoderEntity extends Entity {
+public class DecoderEntity extends Entity {
 
-    public static final String ENTITY_TYPE = "encoder";
+    public static final String ENTITY_TYPE = "decoder";
 
     // data
-    public static final String DATA_INPUT = "input";
-    public static final String DATA_OUTPUT_ENCODED = "output-encoded";
+    public static final String DATA_INPUT_ENCODED = "input-encoded";
+    public static final String DATA_OUTPUT_DECODED = "output-decoded";
 
-    public EncoderEntity( ObjectMap om, Node n, ModelEntity model ) {
+    public DecoderEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
     }
 
     @Override
     public void getInputAttributes( Collection< String > attributes ) {
-        attributes.add( DATA_INPUT );
+        attributes.add( DATA_INPUT_ENCODED );
     }
 
     @Override
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
-        attributes.add( DATA_OUTPUT_ENCODED );
+        attributes.add( DATA_OUTPUT_DECODED );
     }
 
     @Override
@@ -73,11 +73,11 @@ public class EncoderEntity extends Entity {
 
         encoder.setup( config.bits, config.density, config.encodeZero );
 
-        Data input = getData( DATA_INPUT );
-        Data output = encoder.createEncodingOutput( input );
-        encoder.encode( input, output );
+        Data input = getData( DATA_INPUT_ENCODED );
+        Data output = encoder.createDecodingOutput( input );
+        encoder.decode( input, output );
 
-        setData( DATA_OUTPUT_ENCODED, output );
+        setData( DATA_OUTPUT_DECODED, output );
     }
 
 }

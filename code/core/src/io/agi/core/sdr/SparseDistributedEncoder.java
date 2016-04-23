@@ -54,6 +54,13 @@ public interface SparseDistributedEncoder {
     Data createEncodingOutput( Data encodingInput );
 
     /**
+     * Create suitably sized output structure for given input.
+     * @param encodingInput
+     * @return
+     */
+    Data createDecodingOutput( Data decodingInput );
+
+    /**
      * Encode the input. Note both args are expected to be non null and nonzero
      * sized arrays.
      *

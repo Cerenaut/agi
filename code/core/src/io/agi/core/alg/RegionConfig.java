@@ -161,6 +161,46 @@ public class RegionConfig extends NetworkConfig {
         return Data2d.getOffset( stride, xRegion, yRegion );
     }
 
+    public Point getRegionGivenOffset( int regionOffset ) {
+        Point regionSize = getRegionSizeCells();
+        int yRegion = regionOffset / regionSize.x;
+        int xRegion = regionOffset % regionSize.x;
+        return new Point( xRegion, yRegion );
+    }
+
+    /**
+     * Calculates the coordinates of the classifier that owns the given region cell.
+     * @param xRegion
+     * @param yRegion
+     * @return
+     */
+    public Point getOrganizerCoordinateGivenRegionCoordinate( int xRegion, int yRegion ) {
+        Point organizerSize = getOrganizerSizeCells();
+
+        int xClassifier = xRegion / organizerSize.x;
+        int yClassifier = yRegion / organizerSize.y;
+
+        return new Point( xClassifier, yClassifier ); // the
+    }
+
+    /**
+     * Calculates the coordinates of the cell within a classifier that represents the given region cell.
+     * @param xRegion
+     * @param yRegion
+     * @return
+     */
+    public Point getClassifierCoordinateGivenRegionCoordinate( int xRegion, int yRegion ) {
+        Point organizerSize = getOrganizerSizeCells();
+
+        int xClassifier = xRegion / organizerSize.x;
+        int yClassifier = yRegion / organizerSize.y;
+
+        int xCell = xRegion - xClassifier;
+        int yCell = yRegion - yClassifier;
+
+        return new Point( xCell, yCell ); // the
+    }
+
     public Point getRegionClassifierOrigin( int xClassifier, int yClassifier ) {
         Point classifierSize = getClassifierSizeCells();
         int xRegion = xClassifier * classifierSize.x;

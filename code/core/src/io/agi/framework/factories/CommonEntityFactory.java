@@ -96,6 +96,10 @@ public class CommonEntityFactory implements EntityFactory {
             return new EncoderEntity( objectMap, _n, modelEntity );
         }
 
+        if( entityType.equals( DecoderEntity.ENTITY_TYPE ) ) {
+            return new DecoderEntity( objectMap, _n, modelEntity );
+        }
+
         return null;
     }
 

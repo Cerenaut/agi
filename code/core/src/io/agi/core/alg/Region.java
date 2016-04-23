@@ -61,6 +61,9 @@ public class Region extends NamedObject {
     public Data _fbInput;
     public Data _fbInputOld;
 
+    public Data _fbOutputUnfoldedActivity;
+    public Data _fbOutputUnfoldedPrediction;
+
     public Data _regionActivityOld;
     public Data _regionActivityNew;
     public Data _regionActivity;
@@ -118,6 +121,9 @@ public class Region extends NamedObject {
         _ffInput = new Data( dataSizeInputFF );
         _fbInput = new Data( dataSizeInputFB );
         _fbInputOld = new Data( dataSizeInputFB );
+
+        _fbOutputUnfoldedActivity = new Data( dataSizeInputFF );
+        _fbOutputUnfoldedPrediction = new Data( dataSizeInputFF );
 
         _regionActivityOld = new Data( dataSizeRegion );
         _regionActivityNew = new Data( dataSizeRegion );
@@ -197,6 +203,56 @@ public class Region extends NamedObject {
         boolean feedbackChanged = getFeedbackChanged();
         if( classificationChanged || feedbackChanged ) {
             updatePrediction(); // make a new prediction
+        }
+
+        updateUnfoldedOutput();
+    }
+
+    public void updateUnfoldedOutput() {
+        unfold( _regionActivityNew, _fbOutputUnfoldedActivity );
+        unfold( _regionPredictionNew, _fbOutputUnfoldedPrediction );
+    }
+
+    /**
+     * Invert the transformation from the original input into a distributed set of bits. Since the transformation is
+     * lossy, the inverse is also nonexact.
+     *
+     * Since each classifier only has a few input bits in its receptive field, and the receptive field varies in size,
+     * we don't know how to consider zero bits. They don't necessarily have any opinion on some bits.
+     *
+     * @param region
+     * @param ffInput
+     */
+    public void unfold( Data region, Data ffInput ) {
+        ffInput.set( 0.f );
+
+        float threshold = 0.5f; // this is as meaningful as anything else..
+
+        int weights = ffInput.getSize();
+
+        HashSet< Integer > activeBits = region.indicesMoreThan( 0.f ); // find all the active bits.
+
+        for( Integer i : activeBits ) {
+
+            Point xyRegion = _rc.getRegionGivenOffset( i );
+            Point xyOrganizer = _rc.getOrganizerCoordinateGivenRegionCoordinate( xyRegion.x, xyRegion.y );
+            Point xyClassifier = _rc.getClassifierCoordinateGivenRegionCoordinate( xyRegion.x, xyRegion.y );
+
+            int organizerOffset = _rc.getOrganizerOffset( xyOrganizer.x, xyOrganizer.y );
+            GrowingNeuralGas classifier = _classifiers.get( organizerOffset );
+
+            int cell = classifier._c.getCell( xyClassifier.x, xyClassifier.y );
+
+            for( int w = 0; w < weights; ++w ) {
+
+                int weightsOrigin = cell * weights;
+                int weightsOffset = weightsOrigin +w;
+                float weight = classifier._cellWeights._values[ weightsOffset ];
+
+                if( weight > threshold ) {
+                    ffInput._values[ weightsOffset ] = 1.f; // either was zero, or was 1. Either way the update is correct.
+                }
+            }
         }
     }
 
