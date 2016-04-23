@@ -25,6 +25,7 @@ import io.agi.core.orm.ObjectMap;
 import java.util.Random;
 
 /**
+ * Note, stress threshold is compared to recent-moving-average (exponentially weighted) of sum of input error.
  * Created by dave on 1/01/16.
  */
 public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {

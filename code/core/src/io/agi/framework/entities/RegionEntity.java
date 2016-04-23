@@ -254,6 +254,17 @@ public class RegionEntity extends Entity {
         ObjectMap om = ObjectMap.GetInstance();
         RegionFactory rf = new RegionFactory();
 
+        // since each classifier is given config.receptiveFieldSize inputs, the max error is 1 * config.receptiveFieldSize
+        // (i.e. all the inputs are wrong). Actually this isn't strictly true - there might be no overlap between the
+        // actual bits of the column and the current input bits, so say it is 2 * config.receptiveFieldSize
+        float classifierStressThreshold = config.classifierStressThreshold; // sum
+
+//      should stop adding cells when error is < 1 bit, which is
+//        0.1 * 0.1 = 0.01
+//        0.5 * 0.5 = 0.25
+//        sum = 0.26
+//        sqrt( sum ) = 0.509 which is less than the sum of errors.
+
         Region r = rf.create(
                 om, regionName, getRandom(),
                 inputWidth, inputHeight,
@@ -262,7 +273,7 @@ public class RegionEntity extends Entity {
                 config.classifierWidthCells, config.classifierHeightCells,
                 config.receptiveFieldsTrainingSamples, config.receptiveFieldSize,
                 config.organizerLearningRate, config.organizerLearningRateNeighbours, config.organizerNoiseMagnitude, config.organizerEdgeMaxAge, config.organizerStressLearningRate, config.organizerStressThreshold, config.organizerGrowthInterval,
-                config.classifierLearningRate, config.classifierLearningRateNeighbours, config.classifierNoiseMagnitude, config.classifierEdgeMaxAge, config.classifierStressLearningRate, config.classifierStressThreshold, config.classifierGrowthInterval,
+                config.classifierLearningRate, config.classifierLearningRateNeighbours, config.classifierNoiseMagnitude, config.classifierEdgeMaxAge, config.classifierStressLearningRate, classifierStressThreshold, config.classifierGrowthInterval,
                 config.predictorHiddenLayerScaleFactor, config.predictorLearningRate, config.predictorRegularization );
 
         // Load data, overwriting the default setup.

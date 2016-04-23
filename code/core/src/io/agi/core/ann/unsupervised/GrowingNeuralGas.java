@@ -362,11 +362,15 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         _cellStress.set( 0.f ); // give it time to accumulate
     }
 
+    /**
+     * Stress is defined as the sum of errors for the input, over a moving recent average.
+     * @param bestCell
+     */
     public void updateStress( int bestCell ) {
         float cellStressAlpha = 1.f - _c.getStressLearningRate();
-        float bestSumSqError = _cellErrors._values[ bestCell ];
+        float bestSumSqError = _cellErrors._values[ bestCell ]; // use abs errors instead of sq errors?
         float bestUnitError = ( float ) Math.sqrt( bestSumSqError );
-//              bestUnitError /= inputs;
+//              bestUnitError /= inputs; this makes the values too small
         float stressOld = _cellStress._values[ bestCell ];
         float stressNew = ( float ) Unit.lerp( stressOld, bestUnitError, cellStressAlpha );
         _cellStress._values[ bestCell ] = stressNew;
