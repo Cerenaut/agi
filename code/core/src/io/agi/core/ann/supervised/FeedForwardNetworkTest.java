@@ -69,9 +69,8 @@ public class FeedForwardNetworkTest implements UnitTest {
         epochs();
     }
 
-    public enum Logic {AND, OR, XOR}
+    public enum Logic {AND, OR, XOR };
 
-    ;
     public Logic _l;
     public int _epochs;
     public int _batch;

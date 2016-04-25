@@ -24,6 +24,8 @@ import com.sun.net.httpserver.HttpHandler;
 import io.agi.framework.Framework;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.models.ModelEntity;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Map;
@@ -32,6 +34,8 @@ import java.util.Map;
  * Created by dave on 17/03/16.
  */
 public class HttpConfigHandler implements HttpHandler {
+
+    protected static final Logger logger = LogManager.getLogger();
 
     public static final String CONTEXT = "/config";
 
@@ -101,7 +105,7 @@ public class HttpConfigHandler implements HttpHandler {
             status = 200;
         }
         catch( Exception e ) {
-            e.printStackTrace();
+            logger.error( e.getStackTrace() );
         }
 
         HttpUtil.SendResponse( t, status, response );

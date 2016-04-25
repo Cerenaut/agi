@@ -88,7 +88,7 @@ var Experiment = {
   setFlushAndReset : function() {
     var entityName = $( "#entity" ).val();
     var flushValue = $( "#flush" ).is( ":checked" );
-    var resetValue = $( "#flush" ).is( ":checked" );
+    var resetValue = $( "#reset" ).is( ":checked" );
 
     Framework.setConfigPath( entityName, "flush", flushValue, Experiment.onSetFlushAndReset ); 
     Framework.setConfigPath( entityName, "reset", resetValue, Experiment.onSetFlushAndReset ); 

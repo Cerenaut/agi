@@ -156,17 +156,13 @@ public abstract class Entity extends NamedObject implements EntityListener {
             return;
         }
 
-        // Require all children to flush on next update.
+        // Propagate reset and flush behaviour to all children.
         // They can only be updated by this class, so we know they will respect the flush.
-        if( _flushChildren ) {
-            for( String childName : childNames ) {
-                Framework.SetConfig( childName, SUFFIX_FLUSH, "true" );
-            }
+        for( String childName : childNames ) {
+            Framework.SetConfig( childName, SUFFIX_FLUSH, String.valueOf( _flushChildren ) );
         }
-        if( _resetChildren ) {
-            for( String childName : childNames ) {
-                Framework.SetConfig( childName, SUFFIX_RESET, "true" );
-            }
+        for( String childName : childNames ) {
+            Framework.SetConfig( childName, SUFFIX_RESET, String.valueOf( _resetChildren ) );
         }
 
         // Now wait for all children to update
@@ -244,9 +240,14 @@ public abstract class Entity extends NamedObject implements EntityListener {
         doUpdateSelf();
 
         if( _config.reset ) {
+            _logger.info( getName() + ": Reset enabled." );
             _config.age = 0;
         } else {
             _config.age++; // update age:
+        }
+
+        if( _config.flush ) {
+            _logger.info( getName() + ": Flush enabled." );
         }
 
         _flushChildren = _config.flush;
@@ -296,7 +297,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
                 Data d = _n.getCachedData( inputKey );
 
                 if( d != null ) {
-                    _logger.info( "Skipping fetch of Data: " + inputKey );
+                    //_logger.info( "Skipping fetch of Data: " + inputKey );
                     _data.put( inputKey, d );
                     continue;
                 }
@@ -305,7 +306,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
             // check for no - read
             if( _dataFlags.hasFlag( attribute, DataFlags.FLAG_PERSIST_ONLY ) ) {
-                _logger.info( "Skipping fetch of Data: " + inputKey );
+                //_logger.info( "Skipping fetch of Data: " + inputKey );
                 continue;
             }
 

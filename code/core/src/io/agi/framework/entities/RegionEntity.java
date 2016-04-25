@@ -389,6 +389,9 @@ public class RegionEntity extends Entity {
         setData( FB_INPUT, r._fbInput );
         setData( FB_INPUT_OLD, r._fbInputOld );
 
+        setData( FB_OUTPUT_UNFOLDED_ACTIVITY, r._fbOutputUnfoldedActivity );
+        setData( FB_OUTPUT_UNFOLDED_PREDICTION, r._fbOutputUnfoldedPrediction );
+
         setData( ACTIVITY_OLD, r._regionActivityOld );
         setData( ACTIVITY_NEW, r._regionActivityNew );
         setData( ACTIVITY, r._regionActivity );

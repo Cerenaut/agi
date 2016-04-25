@@ -19,6 +19,8 @@ var Matrix = {
       return;
     }
 
+    var normalize = $( "#normalize" ).is( ":checked" );
+
     var datas = JSON.parse( json.responseText );
     var data = datas[ 0 ];
 
@@ -52,13 +54,26 @@ var Matrix = {
 
     var values = [];
     values.length = dataElements.length;
+
+    var maxValue = 0.0;
+    if( normalize ) {
+      for( var i = 0; i < dataElements.elements.length; ++i ) {
+        var value = dataElements.elements[ i ];
+        maxValue = Math.max( value, maxValue );
+      }
+    }
+    else {
+      maxValue = 1.0;
+    }
+
     var i = 0; 
     for( var x = 0; x < w; ++x ) {
       for( var y = 0; y < h; ++y ) {
         // for HighCharts heatmap, the origin is lower-left (col major). For AGI data, the origin is top-left (row major).
         var y2 = h-y-1;
         var offset = y2 * w + x;
-        var value = dataElements.elements[ offset ].toFixed( 3 );
+        var value = dataElements.elements[ offset ];
+        value = value.toFixed( 3 );
         values[ i ] = [ x, y, value ];
         ++i;
       }
@@ -85,7 +100,7 @@ var Matrix = {
         },
         colorAxis: {
             min: 0,
-            max: 1,
+            max: maxValue,
             minColor: '#000000',
             maxColor: '#ff0000'//Highcharts.getOptions().colors[0]
         },

@@ -191,7 +191,7 @@ public class ModelData {
     }
 
     public static String FloatArrayToString( FloatArray2 fa, String encoding ) {
-        String s1 = "{ \"encoding\":" + encoding + ",\"length\":";
+        String s1 = "{ \"encoding\":\"" + encoding + "\",\"length\":";
         String s2 = ",\"elements\":["; // put elements last
         String s3 = "]}";
 
@@ -251,24 +251,29 @@ public class ModelData {
             String[] splitString = elementsString.split( "," );
 
             if( ( encoding != null ) && ( encoding.equals( ModelData.ENCODING_SPARSE_BINARY ) ) ) {
-                for( int i = 0; i < splitString.length; ++i ) {
-                    String valueString = splitString[ i ];
-                    Integer value = Integer.valueOf( valueString );
-                    fa._values[ value ] = 1.f;
+                if( elementsString.length() > 0 ) { // can be empty string if all zeros.
+                    for( int i = 0; i < splitString.length; ++i ) {
+                        String valueString = splitString[ i ];
+                        Integer value = Integer.valueOf( valueString );
+                        fa._values[ value ] = 1.f;
+                    }
                 }
             }
             else if( ( encoding != null ) && ( encoding.equals( ModelData.ENCODING_SPARSE_REAL ) ) ) {
-                int values = splitString.length >> 1;
-                for( int i = 0; i < values; ++i ) {
-                    int i1 = i * 2;
-                    int i2 = i1 +1;
-                    String indexString = splitString[ i1 ];
-                    String valueString = splitString[ i2 ];
-                    Integer index = Integer.valueOf( indexString );
-                    Float value = Float.valueOf( valueString );
-                    fa._values[ index ] = value;
+                if( elementsString.length() > 0 ) { // can be empty string if all zeros.
+                    int values = splitString.length >> 1;
+                    for( int i = 0; i < values; ++i ) {
+                        int i1 = i * 2;
+                        int i2 = i1 +1;
+                        String indexString = splitString[ i1 ];
+                        String valueString = splitString[ i2 ];
+                        Integer index = Integer.valueOf( indexString );
+                        Float value = Float.valueOf( valueString );
+                        fa._values[ index ] = value;
+                    }
                 }
-            } else {
+            }
+            else {
                 for( int i = 0; i < splitString.length; ++i ) {
                     String valueString = splitString[ i ];
                     Float value = Float.valueOf( valueString );
@@ -295,6 +300,7 @@ public class ModelData {
         }
         int i3 = Math.min( i3a, i3b );
         String propertyValue = json.substring( i2 + 1, i3 );
+        propertyValue = propertyValue.replaceAll( "^\"|\"$", "" ); // remove quotes if present at start and end. http://stackoverflow.com/questions/2608665/how-can-i-trim-beginning-and-ending-double-quotes-from-a-string
         return propertyValue;
     }
 

@@ -87,6 +87,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
 
     public void reset() {
         _cellMask.set( 0.f ); // disable all cells
+        _cellStress.set( 0.f ); // disable all cells
     }
 
     public void call() {

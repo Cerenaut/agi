@@ -85,7 +85,10 @@ var Framework = {
     // undo the sparse coding, if present:
     if( dataElements.encoding == "sparse-binary" ) {
       var dataElementsLength = dataElements["length"]; // note: official length.
-      var dataElementsDense = Array.apply( null, Array( dataElementsLength ) ).map( Number.prototype.valueOf, 0 );
+      var dataElementsDense = new Array( dataElementsLength );//.join('0').split('').map(parseFloat);//Array.apply( null, Array( dataElementsLength ) ).map( Number.prototype.valueOf, 0 );
+      for( var i = 0; i < dataElementsLength; ++i ) {
+        dataElementsDense[ i ] = 0;
+      }
       for( var i = 0; i < dataElements.elements.length; ++i ) {
         var j = dataElements.elements[ i ];
         dataElementsDense[ j ] = 1.0;
@@ -94,7 +97,10 @@ var Framework = {
     }
     else if( dataElements.encoding == "sparse-real" ) {
       var dataElementsLength = dataElements["length"]; // note: official length.
-      var dataElementsDense = Array.apply( null, Array( dataElementsLength ) ).map( Number.prototype.valueOf, 0 ); // create large array of zeros, preallocated
+      var dataElementsDense = new Array( dataElementsLength );//.join('0').split('').map(parseFloat);//Array.apply( null, Array( dataElementsLength ) ).map( Number.prototype.valueOf, 0 ); // create large array of zeros, preallocated
+      for( var i = 0; i < dataElementsLength; ++i ) {
+        dataElementsDense[ i ] = 0;
+      }
       var encodedValues = dataElements.elements.length / 2;
       for( var i = 0; i < encodedValues; ++i ) { // the encoded length
         var i1 = i * 2;

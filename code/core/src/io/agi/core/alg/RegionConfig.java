@@ -175,10 +175,10 @@ public class RegionConfig extends NetworkConfig {
      * @return
      */
     public Point getOrganizerCoordinateGivenRegionCoordinate( int xRegion, int yRegion ) {
-        Point organizerSize = getOrganizerSizeCells();
+        Point classifierSize = getClassifierSizeCells();
 
-        int xClassifier = xRegion / organizerSize.x;
-        int yClassifier = yRegion / organizerSize.y;
+        int xClassifier = xRegion / classifierSize.x;
+        int yClassifier = yRegion / classifierSize.y;
 
         return new Point( xClassifier, yClassifier ); // the
     }
@@ -190,10 +190,10 @@ public class RegionConfig extends NetworkConfig {
      * @return
      */
     public Point getClassifierCoordinateGivenRegionCoordinate( int xRegion, int yRegion ) {
-        Point organizerSize = getOrganizerSizeCells();
+        Point classifierSize = getClassifierSizeCells();
 
-        int xClassifier = xRegion / organizerSize.x;
-        int yClassifier = yRegion / organizerSize.y;
+        int xClassifier = ( xRegion / classifierSize.x ) * classifierSize.x;
+        int yClassifier = ( yRegion / classifierSize.y ) * classifierSize.y;
 
         int xCell = xRegion - xClassifier;
         int yCell = yRegion - yClassifier;

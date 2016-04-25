@@ -39,12 +39,11 @@ public class MNISTDemo {
         m.setup( args[ 0 ], null, new CommonEntityFactory() );
 
         // Create custom entities and references
-        if( args.length > 2 ) {
-            Framework.LoadEntities( args[ 1 ] );
-            Framework.LoadData( args[ 2 ] );
-        } else {
-            // Programmatic hook to create entities and references..
-            createEntities( m._n );
+        if( args.length > 1 ) {
+            if( args[ 1 ].equalsIgnoreCase( "create" ) ) {
+                // Programmatic hook to create entities and references..
+                createEntities( m._n );
+            }
         }
 
         // Start the system
@@ -52,8 +51,8 @@ public class MNISTDemo {
 
     }
 
-
     public static void createEntities( Node n ) {
+
         // Define some entities
         String sensorName = "image-sensor";
         String encoderName = "binary-encoder";
@@ -107,12 +106,18 @@ public class MNISTDemo {
         Framework.SetConfig( regionName, "organizerNoiseMagnitude", "0.0" );
         Framework.SetConfig( regionName, "organizerLearningRate", "0.002" );
         Framework.SetConfig( regionName, "organizerLearningRateNeighbours", "0.001" );
+        Framework.SetConfig( regionName, "organizerWidthCells", "3" );
+        Framework.SetConfig( regionName, "organizerHeightCells", "3" );
 
+        Framework.SetConfig( regionName, "classifierWidthCells", "4" );
+        Framework.SetConfig( regionName, "classifierHeightCells", "4" );
         Framework.SetConfig( regionName, "classifierStressThreshold", "0.0" );
         Framework.SetConfig( regionName, "classifierGrowthInterval", "1" );
+        Framework.SetConfig( regionName, "classifierEdgeMaxAge", "12" );
 
-        Framework.SetConfig( regionName, Entity.SUFFIX_RESET, "true" );
-//        Framework.SetConfig( regionName, Entity.SUFFIX_RESET, "false" );
+        // now that the experiment UI allows a reset, we should
+//        Framework.SetConfig( regionName, Entity.SUFFIX_RESET, "true" );
+//        Framework.SetConfig( regionName, Entity.SUFFIX_RESET, "false" ); // now that the
     }
 
 }

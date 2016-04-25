@@ -186,7 +186,7 @@ public class Region extends NamedObject {
                 }
 
                 updateClassifierReceptiveField( x, y );
-                updateClassifier( x, y );
+                updateClassifier( x, y ); // adds to _regionActive and _regionActivity
             }
         }
 
@@ -250,7 +250,7 @@ public class Region extends NamedObject {
                 float weight = classifier._cellWeights._values[ weightsOffset ];
 
                 if( weight > threshold ) {
-                    ffInput._values[ weightsOffset ] = 1.f; // either was zero, or was 1. Either way the update is correct.
+                    ffInput._values[ w ] = 1.f; // either was zero, or was 1. Either way the update is correct.
                 }
             }
         }
@@ -336,14 +336,13 @@ public class Region extends NamedObject {
         int columnInputs = _rc.getReceptiveFieldSize();
 
         float[] rf = getClassifierReceptiveField( xClassifier, yClassifier ); // in pixels units
+        float rf_x = rf[ 0 ];
+        float rf_y = rf[ 1 ];
 
         Ranking r = new Ranking();
 
         for( Integer i : _ffInputActive ) {
             Point p = Data2d.getXY( _ffInput._dataSize, i );
-
-            float rf_x = rf[ 0 ];
-            float rf_y = rf[ 1 ];
 
             float d = Geometry.distanceEuclidean2d( ( float ) p.getX(), ( float ) p.getY(), rf_x, rf_y );
             Ranking.add( r._ranking, d, i ); // add input i with quality d (distance) to r.

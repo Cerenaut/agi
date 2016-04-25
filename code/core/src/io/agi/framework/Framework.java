@@ -132,6 +132,9 @@ public class Framework {
      * Allows a single config property to be modified.
      */
     public static void SetConfig( String entityName, String configPath, String value ) {
+
+        logger.info( "Set config of: " + entityName + " path: " + configPath + " value: " + value );
+
         Persistence persistence = Node.NodeInstance().getPersistence();
         ModelEntity me = persistence.fetchEntity( entityName );
         JsonParser parser = new JsonParser();

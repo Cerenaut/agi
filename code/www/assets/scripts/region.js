@@ -49,6 +49,14 @@ var Region = {
     $( "#status" ).html( status );
   },
 
+  // info about mouse actions
+  setMouseLeft : function( status ) {
+    $( "#mouse-left" ).html( status );
+  },
+  setMouseRight : function( status ) {
+    $( "#mouse-right" ).html( status );
+  },
+
   onMouseMoveLeft : function( e, mx, my ) {
   },
   onMouseMoveRight : function( e, mx, my ) {
@@ -106,6 +114,7 @@ var Region = {
 
     var offset = ry * rw + rx;
 
+    Region.setMouseLeft( "Col.: " + ox + "," + oy + " Cell: " + cx + ", " + cy );
     Region.toggleSelection( Region.selectedLeft, offset );
     Region.repaint();
   },
@@ -133,6 +142,7 @@ var Region = {
 
     var offset = iy * iw + ix;
 
+    Region.setMouseRight( "Bit: " + ix + "," + iy );
     Region.toggleSelection( Region.selectedRight, offset );
     Region.repaint();
   },
@@ -219,12 +229,12 @@ var Region = {
     for( var oy = 0; oy < oh; ++oy ) {
       for( var ox = 0; ox < ow; ++ox ) {
 
-            // now mark dead cells so we can ignore them
-            var dataName = Region.getClassifierDataName( ox, oy, "-output-mask" );
-            var dataClassifierOutputMask = Region.findData( dataName );
-            if( !dataClassifierOutputMask ) {
-              continue;
-            }
+        // now mark dead cells so we can ignore them
+        var dataName = Region.getClassifierDataName( ox, oy, "-output-mask" );
+        var dataClassifierOutputMask = Region.findData( dataName );
+        if( !dataClassifierOutputMask ) {
+          continue;
+        }
 
         for( var cy = 0; cy < ch; ++cy ) {
           for( var cx = 0; cx < cw; ++cx ) {
@@ -280,7 +290,7 @@ var Region = {
     // mark dead columns (classifiers)
     var w = Region.pixelsPerBit * cw + Region.pixelsColumnGap;
     var h = Region.pixelsPerBit * cw + Region.pixelsColumnGap;
-    ctx.fillStyle = "rgba( 100,100,100, 0.5 )";
+    ctx.fillStyle = "rgba( 255,255,0, 0.5 )";
 
     for( var oy = 0; oy < oh; ++oy ) {
       for( var ox = 0; ox < ow; ++ox ) {
@@ -298,7 +308,7 @@ var Region = {
     }
 
     // paint selections
-    ctx.strokeStyle = "#FFFFFF";
+    ctx.strokeStyle = "#FFFF00";
     for( var i = 0; i < Region.selectedLeft.length; ++i ) {
       var offset = Region.selectedLeft[ i ];
       var rx = Math.floor( offset % rw );
@@ -416,16 +426,17 @@ var Region = {
         ctx.strokeStyle = "rgb(0,255,0)";
 
         for( var i = 0; i < Region.selectedLeft.length; ++i ) {
-          var offset = Region.selectedLeft[ i ]; // a cell within the region     
+          var regionOffset = Region.selectedLeft[ i ]; // a cell within the region     
 
-          var rx = Math.floor( offset % rw );
-          var ry = Math.floor( offset / rw );
+          var rx = Math.floor( regionOffset % rw );
+          var ry = Math.floor( regionOffset / rw );
 
           var oxSelected = Math.floor( rx / cw ); // coordinates of column in grid (region).
           var oySelected = Math.floor( ry / ch );    
 
           if( ( oxSelected == ox ) && ( oySelected == oy ) ) {
             ctx.strokeStyle = "rgb(255,0,255)";
+console.log( "selected col is : " + ox + ", " + oy );
 
             break;
           }
@@ -442,9 +453,9 @@ var Region = {
 
     // paint weights of selected cells
     for( var i = 0; i < Region.selectedLeft.length; ++i ) {
-      var offset = Region.selectedLeft[ i ]; // a cell within the region     
-      var rx = Math.floor( offset % rw );
-      var ry = Math.floor( offset / rw );
+      var regionOffset = Region.selectedLeft[ i ]; // a cell within the region     
+      var rx = Math.floor( regionOffset % rw );
+      var ry = Math.floor( regionOffset / rw );
 
       var ox = Math.floor( rx / cw ); // coordinates of column in grid (region).
       var oy = Math.floor( ry / ch );    
@@ -458,21 +469,38 @@ var Region = {
       var cx = rx - ( ox * cw ); // coordinates in column.
       var cy = ry - ( oy * ch );    
 
-      var classifierOffset = cy * cw * inputArea 
-                           + cx      * inputArea
+      var classifierOffset = ( ( cy * cw ) + cx ) * inputArea;
+
+      // find max input
+      maxWeight = 0.0;
 
       for( var y = 0; y < h; ++y ) {
         for( var x = 0; x < w; ++x ) {
           var inputOffset = y * w + x;
-          var offset = classifierOffset + inputOffset;
+          var weightsOffset = classifierOffset + inputOffset;
 
-          var value = dataClassifierOutputWeights.elements.elements[ offset ];
- 
-          if( value < 0.01 ) {
+          var value = dataClassifierOutputWeights.elements.elements[ weightsOffset ];
+          if( value > maxWeight ) {
+            maxWeight = value;
+          }
+        }
+      }
+
+      var minWeight = 0.01;
+      if( maxWeight < minWeight ) maxWeight = minWeight;
+      // examine each input:
+      for( var y = 0; y < h; ++y ) {
+        for( var x = 0; x < w; ++x ) {
+          var inputOffset = y * w + x;
+          var weightsOffset = classifierOffset + inputOffset;
+
+          var value = dataClassifierOutputWeights.elements.elements[ weightsOffset ];
+          value = value / maxWeight;
+          if( value < minWeight ) { // if less than this frac of max weight, don't bother drawing
             continue;
           }
 
-          ctx.fillStyle = "rgba(255,0,255,"+value.toFixed( 3 ) + ")";
+          ctx.fillStyle = "rgba(255,0,0,"+value.toFixed( 3 ) + ")";
           var cx = x * Region.pixelsPerBit;
           var cy = y * Region.pixelsPerBit;
        
@@ -541,6 +569,7 @@ var Region = {
   onGotClassifierData : function() {
     Region.setStatus( "Repainting... " );
     Region.repaint();    
+    Region.setStatus( "Ready." );
   },
 
   findClassifierData : function( ox, oy, suffix ) {

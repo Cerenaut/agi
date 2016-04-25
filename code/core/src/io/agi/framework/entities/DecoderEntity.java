@@ -74,6 +74,13 @@ public class DecoderEntity extends Entity {
         encoder.setup( config.bits, config.density, config.encodeZero );
 
         Data input = getData( DATA_INPUT_ENCODED );
+
+        if( input == null ) {
+            getData( DATA_INPUT_ENCODED );
+            _logger.info( getName() + ": Could not update because input missing." );
+            return;
+        }
+
         Data output = encoder.createDecodingOutput( input );
         encoder.decode( input, output );
 
