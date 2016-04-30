@@ -54,7 +54,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
     protected HashSet< String > _childrenWaiting = new HashSet< String >();
     protected HashMap< String, Data > _data = new HashMap< String, Data >();
     protected DataFlags _dataFlags = new DataFlags();
-    protected DataMap _dataMap = new DataMap(); // used to check for data changes since load.
+    protected DataMap _dataCopy = new DataMap(); // used to check for data changes since load.
     protected boolean _flushChildren = false;
     protected boolean _resetChildren = false;
 
@@ -348,7 +348,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
                 Data d = _data.get( inputKey );
                 if( d != null ) {
                     Data copy = new Data( d ); // make a deep copy
-                    _dataMap.putData( inputKey, copy );
+                    _dataCopy.putData( inputKey, copy );
                 }
             }
         }
@@ -367,7 +367,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
             }
 
             if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_LAZY_PERSIST ) ) {
-                Data copy = _dataMap.getData( inputKey );
+                Data copy = _dataCopy.getData( inputKey );
 
                 if( copy != null ) {
                     if( copy.isSameAs( d ) ) {

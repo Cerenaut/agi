@@ -22,7 +22,6 @@ package io.agi.framework.entities;
 import io.agi.core.alg.Region;
 import io.agi.core.alg.RegionConfig;
 import io.agi.core.alg.RegionFactory;
-import io.agi.core.ann.supervised.NetworkLayer;
 import io.agi.core.ann.unsupervised.GrowingNeuralGas;
 import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
@@ -46,15 +45,15 @@ public class RegionEntity extends Entity {
 
     public static final String ENTITY_TYPE = "region";
 
-    public static final String FF_INPUT = "ff-input";
-    public static final String FB_INPUT = "fb-input";
-    public static final String FB_INPUT_OLD = "fb-input";
-    public static final String FB_OUTPUT_UNFOLDED_ACTIVITY = "fb-output-unfolded-activity";
+    public static final String FF_INPUT     = "ff-input";
+    public static final String FB_INPUT     = "fb-input";
+    public static final String FB_INPUT_OLD = "fb-input-old";
+    public static final String FB_OUTPUT_UNFOLDED_ACTIVITY   = "fb-output-unfolded-activity";
     public static final String FB_OUTPUT_UNFOLDED_PREDICTION = "fb-output-unfolded-prediction";
 
     public static final String ACTIVITY_OLD = "activity-old";
     public static final String ACTIVITY_NEW = "activity-new";
-    public static final String ACTIVITY = "activity";
+    public static final String ACTIVITY     = "activity";
 
     public static final String PREDICTION_OLD = "prediction-old";
     public static final String PREDICTION_NEW = "prediction-new";
@@ -62,6 +61,9 @@ public class RegionEntity extends Entity {
 
     public static final String PREDICTION_FP = "prediction-fp";
     public static final String PREDICTION_FN = "prediction-fn";
+
+    public static final String HEBBIAN_PREDICTOR_CONTEXTS = "hebbian-predictor-contexts";
+    public static final String HEBBIAN_PREDICTOR_WEIGHTS = "hebbian-predictor-weights";
 
     public RegionEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
@@ -89,17 +91,19 @@ public class RegionEntity extends Entity {
 
         attributes.add( ACTIVITY_OLD );
         attributes.add( ACTIVITY_NEW );
-        attributes.add( ACTIVITY );
+        attributes.add( ACTIVITY     );
 
         flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( FB_INPUT_OLD, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( ACTIVITY,     DataFlags.FLAG_NODE_CACHE );
+
         flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_SPARSE_BINARY );
-        flags.putFlag( ACTIVITY, DataFlags.FLAG_SPARSE_BINARY );
+        flags.putFlag( ACTIVITY,     DataFlags.FLAG_SPARSE_BINARY );
+
         flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_LAZY_PERSIST );
         flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_LAZY_PERSIST );
-        flags.putFlag( ACTIVITY, DataFlags.FLAG_LAZY_PERSIST );
+        flags.putFlag( ACTIVITY,     DataFlags.FLAG_LAZY_PERSIST );
 
         attributes.add( PREDICTION_OLD );
         attributes.add( PREDICTION_NEW );
@@ -107,16 +111,27 @@ public class RegionEntity extends Entity {
 
         flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( PREDICTION_RAW, DataFlags.FLAG_NODE_CACHE );
+
         flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_SPARSE_BINARY );
+        flags.putFlag( PREDICTION_RAW, DataFlags.FLAG_SPARSE_REAL );
 
         attributes.add( PREDICTION_FP );
         attributes.add( PREDICTION_FN );
 
         flags.putFlag( PREDICTION_FP, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( PREDICTION_FN, DataFlags.FLAG_NODE_CACHE );
+
         flags.putFlag( PREDICTION_FP, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( PREDICTION_FN, DataFlags.FLAG_SPARSE_BINARY );
+
+        // Hebbian predictor:
+        attributes.add( HEBBIAN_PREDICTOR_CONTEXTS );
+        attributes.add( HEBBIAN_PREDICTOR_WEIGHTS );
+        flags.putFlag( HEBBIAN_PREDICTOR_CONTEXTS, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( HEBBIAN_PREDICTOR_WEIGHTS, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( HEBBIAN_PREDICTOR_CONTEXTS, DataFlags.FLAG_SPARSE_BINARY );
 
         // The organizer
         getClassifierOutputKeys( attributes, flags, RegionConfig.SUFFIX_ORGANIZER, false );
@@ -132,7 +147,7 @@ public class RegionEntity extends Entity {
         }
 
         // Predictor
-        int predictorLayers = Region.PREDICTOR_LAYERS;
+/*        int predictorLayers = Region.PREDICTOR_LAYERS;
 
         for( int l = 0; l < predictorLayers; ++l ) {
             String prefix = Keys.concatenate( RegionConfig.SUFFIX_PREDICTOR, String.valueOf( l ) );
@@ -157,7 +172,7 @@ public class RegionEntity extends Entity {
             flags.putFlag( Keys.concatenate( prefix, NetworkLayer.WEIGHTED_SUMS ), DataFlags.FLAG_PERSIST_ON_FLUSH );
             flags.putFlag( Keys.concatenate( prefix, NetworkLayer.OUTPUTS ), DataFlags.FLAG_PERSIST_ON_FLUSH );
             flags.putFlag( Keys.concatenate( prefix, NetworkLayer.ERROR_GRADIENTS ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-        }
+        }*/
     }
 
     public void getClassifierOutputKeys( Collection< String > keys, DataFlags flags, String prefix, boolean flag ) {
@@ -201,6 +216,7 @@ public class RegionEntity extends Entity {
             flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), DataFlags.FLAG_PERSIST_ON_FLUSH );
             flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), DataFlags.FLAG_PERSIST_ON_FLUSH );
         }
+
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS ), DataFlags.FLAG_PERSIST_ON_FLUSH );
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES ), DataFlags.FLAG_PERSIST_ON_FLUSH );
         //flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES), DataFlags.FLAG_PERSIST_ON_FLUSH); lazy
@@ -311,7 +327,7 @@ public class RegionEntity extends Entity {
 
         r._regionActivityOld = getDataLazyResize( ACTIVITY_OLD, dataSizeRegion );
         r._regionActivityNew = getDataLazyResize( ACTIVITY_NEW, dataSizeRegion );
-        r._regionActivity = getDataLazyResize( ACTIVITY, dataSizeRegion );
+        r._regionActivity    = getDataLazyResize( ACTIVITY,     dataSizeRegion );
 
         r._regionPredictionOld = getDataLazyResize( PREDICTION_OLD, dataSizeRegion );
         r._regionPredictionNew = getDataLazyResize( PREDICTION_NEW, dataSizeRegion );
@@ -334,20 +350,26 @@ public class RegionEntity extends Entity {
             }
         }
 
-        // Predictor
+        // Hebbian predictor:
+        int hebbianPredictorContext = r.getHebbianPredictorContextSizeRegion();
+        int hebbianPredictorWeights = r.getHebbianPredictorWeightsSizeRegion();
+        r._hebbianPredictorContext = getDataLazyResize( HEBBIAN_PREDICTOR_CONTEXTS, DataSize.create( hebbianPredictorContext ) );
+        r._hebbianPredictorWeights = getDataLazyResize( HEBBIAN_PREDICTOR_WEIGHTS, DataSize.create( hebbianPredictorWeights ) );
+
+/*        // Predictor
         int layers = r._predictor._layers.size();
 
         for( int l = 0; l < layers; ++l ) {
             NetworkLayer nl = r._predictor._layers.get( l );
             String prefix = Keys.concatenate( RegionConfig.SUFFIX_PREDICTOR, String.valueOf( l ) );
 
-            nl._inputs = getData( Keys.concatenate( prefix, NetworkLayer.INPUT ), nl._inputs._dataSize );
-            nl._weights = getData( Keys.concatenate( prefix, NetworkLayer.WEIGHTS ), nl._weights._dataSize );
-            nl._biases = getData( Keys.concatenate( prefix, NetworkLayer.BIASES ), nl._biases._dataSize );
-            nl._weightedSums = getData( Keys.concatenate( prefix, NetworkLayer.WEIGHTED_SUMS ), nl._weightedSums._dataSize );
-            nl._outputs = getData( Keys.concatenate( prefix, NetworkLayer.OUTPUTS ), nl._outputs._dataSize );
+            nl._inputs         = getData( Keys.concatenate( prefix, NetworkLayer.INPUT ), nl._inputs._dataSize );
+            nl._weights        = getData( Keys.concatenate( prefix, NetworkLayer.WEIGHTS ), nl._weights._dataSize );
+            nl._biases         = getData( Keys.concatenate( prefix, NetworkLayer.BIASES ), nl._biases._dataSize );
+            nl._weightedSums   = getData( Keys.concatenate( prefix, NetworkLayer.WEIGHTED_SUMS ), nl._weightedSums._dataSize );
+            nl._outputs        = getData( Keys.concatenate( prefix, NetworkLayer.OUTPUTS ), nl._outputs._dataSize );
             nl._errorGradients = getData( Keys.concatenate( prefix, NetworkLayer.ERROR_GRADIENTS ), nl._errorGradients._dataSize );
-        }
+        }*/
     }
 
     protected void copyDataFromPersistence( String prefix, GrowingNeuralGas gng, int widthCells, int heightCells, Data input ) {
@@ -385,16 +407,16 @@ public class RegionEntity extends Entity {
     protected void copyDataToPersistence( Region r ) {
 
         // The region itself
-        setData( FF_INPUT, r._ffInput );
-        setData( FB_INPUT, r._fbInput );
+        setData( FF_INPUT,     r._ffInput );
+        setData( FB_INPUT,     r._fbInput );
         setData( FB_INPUT_OLD, r._fbInputOld );
 
-        setData( FB_OUTPUT_UNFOLDED_ACTIVITY, r._fbOutputUnfoldedActivity );
+        setData( FB_OUTPUT_UNFOLDED_ACTIVITY,   r._fbOutputUnfoldedActivity );
         setData( FB_OUTPUT_UNFOLDED_PREDICTION, r._fbOutputUnfoldedPrediction );
 
         setData( ACTIVITY_OLD, r._regionActivityOld );
         setData( ACTIVITY_NEW, r._regionActivityNew );
-        setData( ACTIVITY, r._regionActivity );
+        setData( ACTIVITY,     r._regionActivity );
 
         setData( PREDICTION_OLD, r._regionPredictionOld );
         setData( PREDICTION_NEW, r._regionPredictionNew );
@@ -418,7 +440,11 @@ public class RegionEntity extends Entity {
             }
         }
 
-        // Predictor
+        // Hebbian predictor:
+        setData( HEBBIAN_PREDICTOR_CONTEXTS, r._hebbianPredictorContext );
+        setData( HEBBIAN_PREDICTOR_WEIGHTS, r._hebbianPredictorWeights );
+
+/*        // Predictor
         int layers = r._predictor._layers.size();
 
         for( int l = 0; l < layers; ++l ) {
@@ -431,7 +457,7 @@ public class RegionEntity extends Entity {
             setData( Keys.concatenate( prefix, NetworkLayer.WEIGHTED_SUMS ), nl._weightedSums );
             setData( Keys.concatenate( prefix, NetworkLayer.OUTPUTS ), nl._outputs );
             setData( Keys.concatenate( prefix, NetworkLayer.ERROR_GRADIENTS ), nl._errorGradients );
-        }
+        }*/
     }
 
     protected void copyDataToPersistence( String prefix, GrowingNeuralGas gng ) {

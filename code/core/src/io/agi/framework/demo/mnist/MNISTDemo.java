@@ -106,14 +106,16 @@ public class MNISTDemo {
         Framework.SetConfig( regionName, "organizerNoiseMagnitude", "0.0" );
         Framework.SetConfig( regionName, "organizerLearningRate", "0.002" );
         Framework.SetConfig( regionName, "organizerLearningRateNeighbours", "0.001" );
-        Framework.SetConfig( regionName, "organizerWidthCells", "3" );
-        Framework.SetConfig( regionName, "organizerHeightCells", "3" );
+        Framework.SetConfig( regionName, "organizerWidthCells", "6" );
+        Framework.SetConfig( regionName, "organizerHeightCells", "6" );
 
         Framework.SetConfig( regionName, "classifierWidthCells", "4" );
         Framework.SetConfig( regionName, "classifierHeightCells", "4" );
         Framework.SetConfig( regionName, "classifierStressThreshold", "0.0" );
         Framework.SetConfig( regionName, "classifierGrowthInterval", "1" );
         Framework.SetConfig( regionName, "classifierEdgeMaxAge", "12" );
+
+        Framework.SetConfig( regionName, "predictorHiddenLayerScaleFactor", "0.5" );
 
         // now that the experiment UI allows a reset, we should
 //        Framework.SetConfig( regionName, Entity.SUFFIX_RESET, "true" );

@@ -19,7 +19,7 @@
 
 package io.agi.core.alg;
 
-import io.agi.core.ann.supervised.FeedForwardNetwork;
+import io.agi.core.ann.unsupervised.SparseHebbianLearning;
 import io.agi.core.ann.unsupervised.GrowingNeuralGas;
 import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
@@ -30,9 +30,7 @@ import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * A Region of cortex, representing a small part of that surface and one hierarchical level.
@@ -75,6 +73,9 @@ public class Region extends NamedObject {
     public Data _regionPredictionFP;
     public Data _regionPredictionFN;
 
+    public Data _hebbianPredictorContext;
+    public Data _hebbianPredictorWeights;
+
     // Sparse structures
     public HashSet< Integer > _ffInputActive;
     public HashSet< Integer > _fbInputActive;
@@ -87,8 +88,10 @@ public class Region extends NamedObject {
     public RegionConfig _rc;
     public GrowingNeuralGas _organizer;
     public HashMap< Integer, GrowingNeuralGas > _classifiers = new HashMap< Integer, GrowingNeuralGas >();
-    public FeedForwardNetwork _predictor;
+//    public FeedForwardNetwork _predictor;
+    public SparseHebbianLearning _hebbianPredictor;
 
+    protected HashMap< Integer, Integer > _classifiersBestCells = new HashMap< Integer, Integer >();
 
     public Region( String name, ObjectMap om ) {
         super( name, om );
@@ -98,12 +101,12 @@ public class Region extends NamedObject {
         _rf = rf;
         _rc = rf.getRegionConfig();
         _organizer = _rf.createOrganizer( this );
-        _predictor = _rf.createPredictor( this );
+//        _predictor = _rf.createPredictor( this );
 
-        Point p = _rc.getOrganizerSizeCells();
+        Point organizerSizeCells = _rc.getOrganizerSizeCells();
 
-        for( int y = 0; y < p.y; ++y ) {
-            for( int x = 0; x < p.x; ++x ) {
+        for( int y = 0; y < organizerSizeCells.y; ++y ) {
+            for( int x = 0; x < organizerSizeCells.x; ++x ) {
                 GrowingNeuralGas classifier = _rf.createClassifier( this );
                 int regionOffset = _rc.getOrganizerOffset( x, y );
                 _classifiers.put( regionOffset, classifier );
@@ -136,8 +139,46 @@ public class Region extends NamedObject {
         _regionPredictionFP = new Data( dataSizeRegion );
         _regionPredictionFN = new Data( dataSizeRegion );
 
+        // Hebbian Predictor:
+        float predictorLearningRate = 0.1f;
+        int hebbianStates = getHebbianPredictorStates();
+        int hebbianContext = getHebbianPredictorContext();
+        _hebbianPredictor = new SparseHebbianLearning();
+        _hebbianPredictor.setup( hebbianStates, hebbianContext, predictorLearningRate );
+
+        int hebbianPredictorInputs  = getHebbianPredictorContextSizeRegion();
+        int hebbianPredictorWeights = getHebbianPredictorWeightsSizeRegion();
+
+        _hebbianPredictorContext = new Data( DataSize.create( hebbianPredictorInputs ) );
+        _hebbianPredictorWeights = new Data( DataSize.create( hebbianPredictorWeights ) );
+
         reset();
     }
+
+// TODO move to config object ?
+    public int getHebbianPredictorStates() {
+        int hebbianStates = _rc.getClassifierSizeCells().x * _rc.getClassifierSizeCells().y;
+        return hebbianStates;
+    }
+    public int getHebbianPredictorContext() {
+        int regionArea = _rc.getRegionAreaCells();
+        int feedbackVolume = _fbInput.getSize();
+        int hebbianContext = regionArea + feedbackVolume; // this is the contextual info it uses to work out the next state
+        return hebbianContext;
+    }
+    public int getHebbianPredictorContextSizeRegion() {
+        Point organizerSizeCells = _rc.getOrganizerSizeCells();
+        int nbrClassifiers = organizerSizeCells.x * organizerSizeCells.y;
+        int hebbianPredictorInputs  = nbrClassifiers * _hebbianPredictor._context.getSize();
+        return hebbianPredictorInputs;
+    }
+    public int getHebbianPredictorWeightsSizeRegion() {
+        Point organizerSizeCells = _rc.getOrganizerSizeCells();
+        int nbrClassifiers = organizerSizeCells.x * organizerSizeCells.y;
+        int hebbianPredictorWeights = nbrClassifiers * _hebbianPredictor._weights.getSize();
+        return hebbianPredictorWeights;
+    }
+// END TODO
 
     public Data getFfInput() {
         return _ffInput;
@@ -154,7 +195,8 @@ public class Region extends NamedObject {
         _ffInputActiveClassifier.clear();
 
         _organizer.reset();
-        _predictor.reset();
+//        _predictor.reset();
+        _hebbianPredictor.reset();
 
         Point p = _rc.getOrganizerSizeCells();
 
@@ -175,6 +217,7 @@ public class Region extends NamedObject {
 
         _regionActivity.set( 0.f ); // clear
         _regionActive = new ArrayList< Integer >(); // clear
+        _classifiersBestCells.clear();
 
         for( int y = 0; y < p.y; ++y ) {
             for( int x = 0; x < p.x; ++x ) {
@@ -203,9 +246,8 @@ public class Region extends NamedObject {
         boolean feedbackChanged = getFeedbackChanged();
         if( classificationChanged || feedbackChanged ) {
             updatePrediction(); // make a new prediction
+            updateUnfoldedOutput();
         }
-
-        updateUnfoldedOutput();
     }
 
     public void updateUnfoldedOutput() {
@@ -254,6 +296,33 @@ public class Region extends NamedObject {
                 }
             }
         }
+    }
+
+    /**
+     * Debugging method for quickly scanning sparse binary sets
+     * @param d
+     * @param prefix
+     */
+    public void printSet( Data d, String prefix ) {
+        Collection< Integer > c = d.indicesMoreThan( 0.f ); // find all the active bits.
+        printSet( c, prefix );
+    }
+
+    /**
+     * Debugging method for quickly scanning sparse binary sets
+     * @param c
+     * @param prefix
+     */
+    public void printSet( Collection< Integer > c, String prefix ) {
+        ArrayList< Integer > list = new ArrayList< Integer >();
+        list.addAll( c );
+        Collections.sort( list );
+
+        System.err.println( prefix + "{" );
+        for( Integer i : list ) {
+            System.err.print( i + ", " );
+        }
+        System.err.println( prefix + "}" );
     }
 
     public void updateSparseInput() {
@@ -378,6 +447,8 @@ public class Region extends NamedObject {
         int regionOffset = _rc.getRegionOffset( regionX, regionY );
         _regionActivity._values[ regionOffset ] = 1.f;
         _regionActive.add( regionOffset );
+
+        _classifiersBestCells.put( classifierOffset, bestCell );
     }
 
     public boolean getClassificationChanged() {
@@ -409,6 +480,9 @@ public class Region extends NamedObject {
     }
 
     public void updateRegionOutput() {
+
+        //printSet( _regionActivityNew, "updateRegionOutput() _regionActivityNew" );
+        //printSet( _regionPredictionNew, "updateRegionOutput() _regionPredictionNew" );
         Point regionSizeCells = _rc.getRegionSizeCells();
 
         for( int y = 0; y < regionSizeCells.y; ++y ) {
@@ -461,7 +535,7 @@ public class Region extends NamedObject {
         // improves or worsens and we have too many inputs.
         // So one way to do it would be to provide all cells at level +1 ... +N to predict. Or all cells with reciprocal relations.
         // That will scale well...
-        Data input = _predictor.getInput();
+/*        Data input = _predictor.getInput();
 
         input.set( 0.f );
 
@@ -480,14 +554,89 @@ public class Region extends NamedObject {
         _predictor.feedForward(); // generate a prediction
 
         Data output = _predictor.getOutput();
+*/
+        // Create active context bits:
+        HashSet< Integer > activeContext = new HashSet< Integer >();
+
+        // put the local cells first:
+        for( Integer i : _regionActive ) { // this is the latest set of active cells, used for a new prediction
+            int j = i;
+            activeContext.add( j );
+        }
+
+        // copy feedback:
+        int regionSizeCells = _rc.getRegionAreaCells();
+        for( Integer i : _fbInputActive ) {
+            int j = i + regionSizeCells;
+            activeContext.add( j );
+        }
+
+        Point organizerSizeCells = _rc.getOrganizerSizeCells();
+        Point classifierSizeCells = _rc.getClassifierSizeCells();
+
+        int hebbianPredictorStates  = getHebbianPredictorStates();
+        int hebbianPredictorContext = getHebbianPredictorContext();
+        int hebbianPredictorWeights = _hebbianPredictor._weights.getSize();
+
+        Data classifierState = new Data( DataSize.create( hebbianPredictorStates ) );
+
+        for( int yClassifier = 0; yClassifier < organizerSizeCells.y; ++yClassifier ) {
+            for( int xClassifier = 0; xClassifier < organizerSizeCells.x; ++xClassifier ) {
+
+                // copy weights, context, state
+                int classifierOffset = _rc.getOrganizerOffset( xClassifier, yClassifier );
+                int offsetContext = classifierOffset * hebbianPredictorContext;
+                int offsetWeights = classifierOffset * hebbianPredictorWeights;
+
+                // build the input state matrix for the hebbian module
+                classifierState.set( 0.f );
+                Integer bestCell = _classifiersBestCells.get( classifierOffset );
+                if( bestCell != null ) {
+                    classifierState._values[ bestCell ] = 1.f;
+                }
+
+                // Copy other state for the hebbian module
+                //                        .copyRange( that, offsetThis, offsetThat, range );
+                _hebbianPredictor._state  .copyRange( classifierState, 0, 0, hebbianPredictorStates );
+                _hebbianPredictor._context.copyRange( _hebbianPredictorContext, 0, offsetContext, hebbianPredictorContext );
+                _hebbianPredictor._weights.copyRange( _hebbianPredictorWeights, 0, offsetWeights, hebbianPredictorWeights );
+
+                _hebbianPredictor.updateContext( activeContext );
+                _hebbianPredictor.predict();
+
+                // Copy changed state for hebbian module back to region permanent storage
+                // copy? weights(n), context(y), state(n), predicted(n)
+                //                      .copyRange( that, offsetThis, offsetThat, range );
+                _hebbianPredictorContext.copyRange( _hebbianPredictor._context, offsetContext, 0, hebbianPredictorContext );
+//                _hebbianPredictorWeights.copyRange( _hebbianPredictor._weights, offsetWeights, 0, hebbianPredictorWeights ); // unchanged
+
+                // Extract the prediction values (raw)
+                Point classifierOrigin = _rc.getRegionClassifierOrigin( xClassifier, yClassifier );
+
+                for( int yc = 0; yc < classifierSizeCells.y; ++yc ) {
+                    for( int xc = 0; xc < classifierSizeCells.x; ++xc ) {
+                        int offsetPredictor = ( yc * classifierSizeCells.x ) + xc;
+
+                        float pValue = _hebbianPredictor._statePredicted._values[ offsetPredictor ];
+
+                        int regionX = classifierOrigin.x + xc;
+                        int regionY = classifierOrigin.y + yc;
+                        int regionOffset = _rc.getRegionOffset( regionX, regionY );
+                        _regionPredictionRaw._values[ regionOffset ] = pValue;
+                    }
+                }
+            }
+        }
 
         _regionPredictionOld.copy( _regionPredictionNew );
-        _regionPredictionRaw.copy( output );
+//        _regionPredictionRaw.copy( output );
 
-        //do a
         findPredictionLocalMaxima();
-        //_regionPredictionNew.copy( output );
-        //_regionPredictionNew.thresholdMoreThan( 0.5f, 1.0f, 0.0f ); // make it binary
+
+        //printSet( _regionActive, "updatePrediction() _regionActive" );
+        //printSet( _regionActivity, "updatePrediction() _regionActivity" );
+        //printSet( _regionPredictionOld, "updatePrediction() _regionPredictionOld" );
+        //printSet( _regionPredictionNew, "updatePrediction() _regionPredictionNew" );
     }
 
     /**
@@ -540,7 +689,67 @@ public class Region extends NamedObject {
     }
 
     public void trainPredictor() {
-        // Note: Must train predictor based on old activation and prediction output, before generating a new prediction
+
+        Point organizerSizeCells = _rc.getOrganizerSizeCells();
+        Point classifierSizeCells = _rc.getClassifierSizeCells();
+
+        int hebbianPredictorStates  = getHebbianPredictorStates();
+        int hebbianPredictorContext = getHebbianPredictorContext();
+        int hebbianPredictorWeights = _hebbianPredictor._weights.getSize();
+
+        Data classifierStateOld = new Data( DataSize.create( hebbianPredictorStates ) );
+        Data classifierStateNew = new Data( DataSize.create( hebbianPredictorStates ) );
+
+        for( int yClassifier = 0; yClassifier < organizerSizeCells.y; ++yClassifier ) {
+            for( int xClassifier = 0; xClassifier < organizerSizeCells.x; ++xClassifier ) {
+
+                int classifierOffset = _rc.getOrganizerOffset( xClassifier, yClassifier );
+                int offsetContext = classifierOffset * hebbianPredictorContext;
+                int offsetWeights = classifierOffset * hebbianPredictorWeights;
+
+                // build the state matrices for this predictor:
+                classifierStateOld.set( 0.f );
+                classifierStateNew.set( 0.f );
+
+                Point classifierOrigin = _rc.getRegionClassifierOrigin( xClassifier, yClassifier );
+
+                for( int yc = 0; yc < classifierSizeCells.y; ++yc ) {
+                    for( int xc = 0; xc < classifierSizeCells.x; ++xc ) {
+                        int offsetPredictor = ( yc * classifierSizeCells.x ) + xc;
+
+                        int regionX = classifierOrigin.x + xc;
+                        int regionY = classifierOrigin.y + yc;
+                        int regionOffset = _rc.getRegionOffset( regionX, regionY );
+
+                        float activityOld = _regionActivityOld._values[ regionOffset ];
+                        if( activityOld > 0.f ) {
+                            classifierStateOld._values[ offsetPredictor ] = 1.f;
+                        }
+
+                        float activityNew = _regionActivityNew._values[ regionOffset ];
+                        if( activityNew > 0.f ) {
+                            classifierStateNew._values[ offsetPredictor ] = 1.f;
+                        }
+                    }
+                }
+
+                // Copy other state for the hebbian module
+                //                        .copyRange( that, offsetThis, offsetThat, range );
+                _hebbianPredictor._state  .copyRange( classifierStateOld, 0, 0, hebbianPredictorStates );
+                _hebbianPredictor._context.copyRange( _hebbianPredictorContext, 0, offsetContext, hebbianPredictorContext );
+                _hebbianPredictor._weights.copyRange( _hebbianPredictorWeights, 0, offsetWeights, hebbianPredictorWeights );
+
+                _hebbianPredictor.train( classifierStateNew );
+
+                // Copy changed state for hebbian module back to region permanent storage
+                // copy? weights(n), context(y), state(n), predicted(n)
+                //                      .copyRange( that, offsetThis, offsetThat, range );
+                _hebbianPredictorContext.copyRange( _hebbianPredictor._context, offsetContext, 0, hebbianPredictorContext ); // changed (cleared)
+                _hebbianPredictorWeights.copyRange( _hebbianPredictor._weights, offsetWeights, 0, hebbianPredictorWeights ); // changed (trained)
+            }
+        }
+
+/*        // Note: Must train predictor based on old activation and prediction output, before generating a new prediction
         Data ideal = _predictor.getIdeal();
 
         ideal.set( 0.f );
@@ -549,7 +758,35 @@ public class Region extends NamedObject {
             ideal._values[ i ] = 1.f;
         }
 
+///////////////////////////////////////////////////////
+//        printSet( _predictor._layers.get( 0 )._inputs, "trainPredictor() _predictor._layers( 0 )._INputs" );
+//        Data d = new Data( _predictor._layers.get( 1 )._outputs  );
+//        d.thresholdMoreThan( 0.5f, 1.f, 0.f );
+//        printSet( d, "trainPredictor() _predictor._layers( 1 )._outputs" );
+//        printSet( _predictor._ideals, "trainPredictor() _predictor._ideals" );
+        HashSet< Integer > oldAct = _regionActivityOld.indicesMoreThan( 0.5f );
+        Data input = _predictor.getInput();
+        input.set( 0.f );
+        for( Integer i : oldAct ) {
+            input._values[ i ] = 1.f;
+        }
+        _predictor.feedForward(); // generate a prediction
+////////////////////////////////////////////////////////
         _predictor.feedBackward(); // train based on a transition
-    }
+
+////////////////////////////////////////////////////////
+//        printSet( _predictor._ideals, "trainPredictor() _predictor._ideals" );
+        printSet( _predictor._layers.get( 0 )._inputs, "trainPredictor() _predictor._INputs " );
+        Data output = _predictor.getOutput();
+        HashSet< Integer > newOut = output.indicesMoreThan( 0.5f );
+        printSet( newOut, "trainPredictor() _predictor._output " );
+        printSet( _predictor._ideals, "trainPredictor() _predictor._ideals " );
+//        printSet( _regionActive, "trainPredictor() _regionActive" );
+//        printSet( _regionActivity, "trainPredictor() _regionActivity" );
+//        printSet( _regionPredictionOld, "trainPredictor() _regionPredictionOld" );
+//        printSet( _regionPredictionNew, "trainPredictor() _regionPredictionNew" );
+////////////////////////////////////////////////////////
+*/
+   }
 
 }
