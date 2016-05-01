@@ -25,6 +25,7 @@ import io.agi.framework.coordination.Coordination;
 import io.agi.framework.coordination.http.HttpCoordination;
 import io.agi.framework.coordination.monolithic.SingleProcessCoordination;
 import io.agi.framework.factories.CommonEntityFactory;
+import io.agi.framework.persistence.NodeMemoryPersistence;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.couchbase.CouchbasePersistence;
 import io.agi.framework.persistence.jdbc.JdbcPersistence;
@@ -108,9 +109,14 @@ public class Main {
         if( type.equals( "couchbase" ) ) {
             logger.info( "Using Couchbase for persistence." );
             p = CouchbasePersistence.Create( propertiesFile );
-        } else {
+        }
+        else if( type.equals( "jdbc" ) ) {
             logger.info( "Using JDBC (SQL) for persistence." );
             p = JdbcPersistence.Create( propertiesFile );
+        }
+        else if( type.equals( "node" ) ) {
+            logger.info( "Using Node memory for persistence (note: You mustn't have more than one node in this configuration)." );
+            p = new NodeMemoryPersistence();
         }
         return p;
     }

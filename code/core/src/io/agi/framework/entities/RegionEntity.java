@@ -328,7 +328,7 @@ public class RegionEntity extends Entity {
         // The region itself
         r._ffInput = getData( FF_INPUT );
         r._fbInput = getData( FB_INPUT );
-        r._fbInputOld = getData( FB_INPUT_OLD );
+        r._fbInputOld = getDataLazyResize( FB_INPUT_OLD, r._fbInput._dataSize );
 
         Point organizerSize = r._rc.getOrganizerSizeCells();
         Point classifierSize = r._rc.getClassifierSizeCells();

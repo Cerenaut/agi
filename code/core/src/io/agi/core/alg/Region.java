@@ -465,6 +465,10 @@ public class Region extends NamedObject {
     }
 
     public boolean getFeedbackChanged() {
+        if( _fbInputOld == null ) {
+            return true;
+        }
+
         int fbArea = _fbInput.getSize();
 
         for( int i = 0; i < fbArea; ++i ) {
