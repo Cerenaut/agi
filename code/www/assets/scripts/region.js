@@ -35,12 +35,12 @@ var Region = {
   selectedLeft : [  ],
   selectedRight : [  ],
 
-  classifierSuffixes : [ "-output-weights", "-output-mask" ],
+//  classifierSuffixes : [ "-classifier-output-weights", "-classifier-output-mask" ],
 //  classifierSuffixes : [ "-output-mask" ],
-  classifierDataCount : 0,
-  classifierDataRequests : 0,
+//  classifierDataCount : 0,
+//  classifierDataRequests : 0,
 
-  regionSuffixes : [ "-activity-new", "-prediction-old", "-prediction-new", "-ff-input", "-organizer-output-mask", "-organizer-output-weights" ],
+  regionSuffixes : [ "-activity-new", "-prediction-old", "-prediction-new", "-ff-input", "-organizer-output-mask", "-organizer-output-weights", "-classifier-output-weights", "-classifier-output-mask" ],
   regionSuffixIdx : 0,
   dataMap : {
   },
@@ -230,11 +230,16 @@ var Region = {
       for( var ox = 0; ox < ow; ++ox ) {
 
         // now mark dead cells so we can ignore them
-        var dataName = Region.getClassifierDataName( ox, oy, "-output-mask" );
-        var dataClassifierOutputMask = Region.findData( dataName );
+//        var dataName = Region.getClassifierDataName( ox, oy, "-output-mask" );
+//        var dataClassifierOutputMask = Region.findData( dataName );
+        var dataClassifierOutputMask = Region.findData( "-classifier-output-mask" );
         if( !dataClassifierOutputMask ) {
           continue;
         }
+
+        var classifierSize = cw * ch; // Each classifier has this number of cells. 
+        var classifierIndex = oy * ow + ox;
+        var packedOffset = classifierIndex * classifierSize;
 
         for( var cy = 0; cy < ch; ++cy ) {
           for( var cx = 0; cx < cw; ++cx ) {
@@ -273,7 +278,7 @@ var Region = {
             ctx.strokeStyle = "#808080";
             ctx.strokeRect( x, y, Region.pixelsPerBit, Region.pixelsPerBit );        
 
-            offset = cy * cw + cx;
+            offset = packedOffset + ( cy * cw + cx );
    
             var maskValue = dataClassifierOutputMask.elements.elements[ offset ];
             if( maskValue < 0.5 ) {
@@ -460,8 +465,9 @@ console.log( "selected col is : " + ox + ", " + oy );
       var ox = Math.floor( rx / cw ); // coordinates of column in grid (region).
       var oy = Math.floor( ry / ch );    
 
-      var dataName = Region.getClassifierDataName( ox, oy, "-output-weights" );
-      var dataClassifierOutputWeights = Region.findData( dataName );
+//      var dataName = Region.getClassifierDataName( ox, oy, "-output-weights" );
+//      var dataClassifierOutputWeights = Region.findData( dataName );
+      var dataClassifierOutputWeights = Region.findData( "-classifier-output-weights" );
       if( !dataClassifierOutputWeights ) {
         continue; // can't paint
       }
@@ -471,13 +477,17 @@ console.log( "selected col is : " + ox + ", " + oy );
 
       var classifierOffset = ( ( cy * cw ) + cx ) * inputArea;
 
+      var classifierSize = cw * ch * inputArea; // Each classifier has this number of cells. 
+      var classifierIndex = oy * ow + ox;
+      var packedOffset = classifierIndex * classifierSize;
+
       // find max input
       maxWeight = 0.0;
 
       for( var y = 0; y < h; ++y ) {
         for( var x = 0; x < w; ++x ) {
           var inputOffset = y * w + x;
-          var weightsOffset = classifierOffset + inputOffset;
+          var weightsOffset = packedOffset + classifierOffset + inputOffset;
 
           var value = dataClassifierOutputWeights.elements.elements[ weightsOffset ];
           if( value > maxWeight ) {
@@ -492,7 +502,7 @@ console.log( "selected col is : " + ox + ", " + oy );
       for( var y = 0; y < h; ++y ) {
         for( var x = 0; x < w; ++x ) {
           var inputOffset = y * w + x;
-          var weightsOffset = classifierOffset + inputOffset;
+          var weightsOffset = packedOffset + classifierOffset + inputOffset;
 
           var value = dataClassifierOutputWeights.elements.elements[ weightsOffset ];
           value = value / maxWeight;
@@ -530,9 +540,12 @@ console.log( "selected col is : " + ox + ", " + oy );
   },
 
   onGotData : function() {
-    Region.setStatus( "Got all region data, getting classifier data... " );
-    //Region.repaint();    
-    Region.getClassifierData();
+    Region.setStatus( "Repainting... " );
+    Region.repaint();    
+    Region.setStatus( "Ready." );
+//    Region.setStatus( "Got all region data, getting classifier data... " );
+//    //Region.repaint();    
+//    Region.getClassifierData();
   },
 
   getData : function() {
@@ -566,24 +579,24 @@ console.log( "selected col is : " + ox + ", " + oy );
     Region.getData(); // get next data.
   },
 
-  onGotClassifierData : function() {
+/*  onGotClassifierData : function() {
     Region.setStatus( "Repainting... " );
     Region.repaint();    
     Region.setStatus( "Ready." );
   },
 
-  findClassifierData : function( ox, oy, suffix ) {
+/*  findClassifierData : function( ox, oy, suffix ) {
     var dataName = Region.getClassifierDataName( ox, oy, suffix );
     var data = Region.dataMap[ dataName ];
     return data;
   },
   
-  getClassifierDataName : function( ox, oy, suffix ) {
+/*  getClassifierDataName : function( ox, oy, suffix ) {
     var dataName = "-classifier-" + ox + "-" + oy + suffix;
     return dataName;
   },
 
-  getClassifierData : function() {
+/*  getClassifierData : function() {
     Region.classifierDataCount = 0;
     Region.classifierDataRequests = 0;
 
@@ -619,9 +632,9 @@ console.log( "selected col is : " + ox + ", " + oy );
       }
     }
 
-  },
+  },*/
 
-  onGetClassifierData : function( json ) {
+/*  onGetClassifierData : function( json ) {
     if( json.status != 200 ) {
       Region.setStatus( "Error getting data" );
       return;
@@ -640,7 +653,7 @@ console.log( "selected col is : " + ox + ", " + oy );
     if( Region.classifierDataCount == Region.classifierDataRequests ) {
       Region.onGotClassifierData();
     }
-  },
+  },*/
 
   resizeDataArea : function() {
     var dataElement = $( "#region-data" )[ 0 ];
