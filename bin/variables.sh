@@ -9,10 +9,13 @@
 # ----------------------------------------
 # AGI Home 
 # ---------------------------------------
-export AGI_HOME=~/Development/AI/ProAGI/agi
+export AGI_HOME=~/Development/ProjectAGI/AGIEF/agi
 
 # RUN Home
-export AGI_RUN_HOME=~/Development/AI/ProAGI/runFolders/runImage
+export AGI_RUN_HOME=~/Development/ProjectAGI/AGIEF/runFolders/runImage
+
+# Database port
+export DB_PORT=5432
 
 # ----------------------------------------
 # Dependencies

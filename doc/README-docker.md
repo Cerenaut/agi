@@ -23,20 +23,20 @@ All the docker commands must be executed within the Docker virtual environment t
 ### Building the Docker image for Development
 ```sh
 $ cd <path_to>/agi/experimental-framework/bin/docker
-$ docker build -t agi/ef-dev -f Dockerfile-dev ../../../
+$ docker build -t agief-dev -f Dockerfile-dev ../../../
 ```
 
 ### Building the Docker image for Deployment
 ```sh
 $ cd <path_to>/agi/experimental-framework/bin/docker
-$ docker build -t agi/ef -f Dockerfile ../../../
+$ docker build -t agief -f Dockerfile ../../../
 ```
 
 
-Note: this creates a container with the name **agi/ef-dev** or **agi/ef** with the docker files in **bin/docker**
+Note: this creates a container with the name **agief-dev** or **agief** with the docker files in **bin/docker**
 
 ### Start the container
-The container has all pre requisites set up to dev (for agi/ef-dev) or run (for agi/ef) AGIEF. 
+The container has all pre requisites set up to dev (for agief-dev) or run (for agief) AGIEF. 
 The codebase is in the mapped folder and it should be built and run with the scripts in /bin as in the README documents.
 
 This container uses a postgres database running in another container which you must run before you run this one. 
@@ -46,18 +46,18 @@ You start the docker container, linking it to the running Postgres container, wi
 
 ### Case 1 Deployment: 
 ```sh
-$docker run --name AGI_Node --link postgres:db -i -d -p $DATABASE_API_PORT:$DATABASE_API_PORT -v $AGI_HOME:/root/dev/agi agi/ef
+$docker run --name AGI_Node --link postgres:db -i -d -p $DATABASE_API_PORT:$DATABASE_API_PORT -v $AGI_HOME:/root/dev/agi agief
 ```
 
 ### Case 2a: Development: You want to use the framework as is (Most common):
 ```sh
-$docker run --name AGI_Node --link postgres:db -i -d -p $DATABASE_API_PORT:$DATABASE_API_PORT -v $AGI_HOME:/root/dev/agi -v agi/ef-dev
+$docker run --name AGI_Node --link postgres:db -i -d -p $DATABASE_API_PORT:$DATABASE_API_PORT -v $AGI_HOME:/root/dev/agi -v agief-dev
 ```
 
 ## Case 2b: Development: You want to modify the framework:
 This may require modifying the http API's, which then requires modifying the Swagger spec and running code generation.
 ```sh
-$docker run --name AGI_Node --link postgres:db -i -d -p $DATABASE_API_PORT:$DATABASE_API_PORT -v $AGI_HOME:/root/dev/agi -v $SWAGGER_HOME:/root/dev/swagger-codegen agi/ef-dev
+$docker run --name AGI_Node --link postgres:db -i -d -p $DATABASE_API_PORT:$DATABASE_API_PORT -v $AGI_HOME:/root/dev/agi -v $SWAGGER_HOME:/root/dev/swagger-codegen agief-dev
 ```
 
 Note: This runs the container we just created, called **agi/ef[-dev]**, maps the docker container port DATABASE_API_PORT to localhost:DATABASE_API_PORT, maps the volumes specified after ‘-v’ so that those folders are available inside the container.
@@ -65,7 +65,7 @@ Note: This runs the container we just created, called **agi/ef[-dev]**, maps the
 ### Stop the container
 Stopping a running container is possible via the docker api. If only one instance of this container is running this command will stop it:
 ```sh
-$ docker stop `sudo docker ps |grep agi/ef-dev |cut -d\  -f1`
+$ docker stop `sudo docker ps |grep agief-dev |cut -d\  -f1`
 ```
 
 ## Hacking

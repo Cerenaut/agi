@@ -8,12 +8,11 @@ MAINTAINER Gideon Kowadlo <gideon@agi.io>
 
 RUN apt-get update && apt-get install -y \
 maven \ 
-openjdk-8-jdk \
-postgresql postgresql-contrib
+openjdk-8-jdk
 
 # Use docker specific variables.sh file (install of default at /bin/variables.sh)
 ENV VARIABLES_FILE variables-docker.sh
 
 # Run coordinator
-WORKDIR /root/dev/agi/experimental-framework/bin
-CMD ["./node_coordinator/run.sh", "coordinator"]
+WORKDIR /root/dev/agi/bin
+CMD ["./node_coordinator/run.sh"]
