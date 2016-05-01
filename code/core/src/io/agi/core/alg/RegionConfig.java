@@ -41,6 +41,7 @@ public class RegionConfig extends NetworkConfig {
 
     public static final String RECEPTIVE_FIELDS_TRAINING_SAMPLES = "receptive-fields-training-samples";
     public static final String RECEPTIVE_FIELD_SIZE = "receptive-field-size";
+    public static final String PREDICTOR_LEARNING_RATE = "predictor-learning-rate";
 
     public static final String SUFFIX_ORGANIZER = "organizer";
     public static final String SUFFIX_CLASSIFIER = "classifier";
@@ -48,7 +49,7 @@ public class RegionConfig extends NetworkConfig {
 
     public GrowingNeuralGasConfig _classifierConfig;
     public GrowingNeuralGasConfig _organizerConfig;
-    public FeedForwardNetworkConfig _predictorConfig;
+//    public FeedForwardNetworkConfig _predictorConfig;
 
     public RegionConfig() {
     }
@@ -59,18 +60,20 @@ public class RegionConfig extends NetworkConfig {
             Random r,
             GrowingNeuralGasConfig organizerConfig,
             GrowingNeuralGasConfig classifierConfig,
-            FeedForwardNetworkConfig predictorConfig,
+//            FeedForwardNetworkConfig predictorConfig,
             int ffInputWidth,
             int ffInputHeight,
             int fbInputArea,
+            float predictorLearningRate,
             float receptiveFieldsTrainingSamples,
             int receptiveFieldSize ) {
         super.setup( om, name, r );
 
         _organizerConfig = organizerConfig;
         _classifierConfig = classifierConfig;
-        _predictorConfig = predictorConfig;
+//        _predictorConfig = predictorConfig;
 
+        setPredictorLearningRate( predictorLearningRate );
         setReceptiveFieldsTrainingSamples( receptiveFieldsTrainingSamples );
         setReceptiveFieldSize( receptiveFieldSize );
         setFfInputSize( ffInputWidth, ffInputHeight );
@@ -110,6 +113,15 @@ public class RegionConfig extends NetworkConfig {
 
     public void setFbInputArea( int fbInputArea ) {
         _om.put( getKey( FB_INPUTS ), fbInputArea );
+    }
+
+    public float getPredictorLearningRate() {
+        float r = _om.getFloat( getKey( PREDICTOR_LEARNING_RATE ) );
+        return r;
+    }
+
+    public void setPredictorLearningRate( float learningRate ) {
+        _om.put( getKey( PREDICTOR_LEARNING_RATE ), learningRate );
     }
 
     public int getPredictorInputs() {

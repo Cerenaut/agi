@@ -105,7 +105,8 @@ public class RegionTest implements UnitTest {
                 receptiveFieldsTrainingSamples, receptiveFieldSize,
                 organizerLearningRate, organizerLearningRateNeighbours, organizerNoiseMagnitude, organizerEdgeMaxAge, organizerStressLearningRate, organizerStressThreshold, organizerGrowthInterval,
                 classifierLearningRate, classifierLearningRateNeighbours, classifierNoiseMagnitude, classifierEdgeMaxAge, classifierStressLearningRate, classifierStressThreshold, classifierGrowthInterval,
-                predictorHiddenLayerScaleFactor, predictorLearningRate, predictorRegularization );
+                predictorLearningRate );
+//                predictorHiddenLayerScaleFactor, predictorLearningRate, predictorRegularization );
 
         // Run
         while( true ) {

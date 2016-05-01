@@ -241,8 +241,9 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         if( _config.reset ) {
             _logger.info( getName() + ": Reset enabled." );
-            _config.age = 0;
-        } else {
+            _config.age = 1; // i.e. 1 step after the reset.
+        }
+        else {
             _config.age++; // update age:
         }
 
@@ -393,7 +394,8 @@ public abstract class Entity extends NamedObject implements EntityListener {
                 encoding = ModelData.ENCODING_SPARSE_REAL;
             }
 
-            p.persistData( new ModelData( inputKey, d, encoding ) );
+            ModelData modelData = new ModelData( inputKey, d, encoding ); // converts to json
+            p.persistData( modelData );
         }
     }
 

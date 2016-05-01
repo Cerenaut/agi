@@ -65,6 +65,17 @@ public class RegionEntity extends Entity {
     public static final String HEBBIAN_PREDICTOR_CONTEXTS = "hebbian-predictor-contexts";
     public static final String HEBBIAN_PREDICTOR_WEIGHTS = "hebbian-predictor-weights";
 
+    protected Data _classifierCellWeights;
+    protected Data _classifierCellErrors;
+    protected Data _classifierCellActivity;
+    protected Data _classifierCellMask;
+
+    protected Data _classifierCellStress;
+    protected Data _classifierCellAges;
+    protected Data _classifierEdges;
+    protected Data _classifierEdgesAges;
+    protected Data _classifierAgeSinceGrowth;
+
     public RegionEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
     }
@@ -91,7 +102,7 @@ public class RegionEntity extends Entity {
 
         attributes.add( ACTIVITY_OLD );
         attributes.add( ACTIVITY_NEW );
-        attributes.add( ACTIVITY     );
+        attributes.add( ACTIVITY );
 
         flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_NODE_CACHE );
@@ -103,7 +114,7 @@ public class RegionEntity extends Entity {
 
         flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_LAZY_PERSIST );
         flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_LAZY_PERSIST );
-        flags.putFlag( ACTIVITY,     DataFlags.FLAG_LAZY_PERSIST );
+        flags.putFlag( ACTIVITY, DataFlags.FLAG_LAZY_PERSIST );
 
         attributes.add( PREDICTION_OLD );
         attributes.add( PREDICTION_NEW );
@@ -129,22 +140,27 @@ public class RegionEntity extends Entity {
         // Hebbian predictor:
         attributes.add( HEBBIAN_PREDICTOR_CONTEXTS );
         attributes.add( HEBBIAN_PREDICTOR_WEIGHTS );
+
         flags.putFlag( HEBBIAN_PREDICTOR_CONTEXTS, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( HEBBIAN_PREDICTOR_WEIGHTS, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( HEBBIAN_PREDICTOR_CONTEXTS, DataFlags.FLAG_SPARSE_BINARY );
 
+        flags.putFlag( HEBBIAN_PREDICTOR_WEIGHTS, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( HEBBIAN_PREDICTOR_WEIGHTS, DataFlags.FLAG_PERSIST_ON_FLUSH );
+        flags.putFlag( HEBBIAN_PREDICTOR_WEIGHTS, DataFlags.FLAG_SPARSE_REAL ); // drops from about 2.2 to 1.5 sec.
+
         // The organizer
-        getClassifierOutputKeys( attributes, flags, RegionConfig.SUFFIX_ORGANIZER, false );
+        getClassifierOutputKeys( attributes, flags, RegionConfig.SUFFIX_ORGANIZER );//, false );
 
         // The classifiers
         RegionEntityConfig config = ( RegionEntityConfig ) _config;
 
-        for( int y = 0; y < config.organizerHeightCells; ++y ) {
-            for( int x = 0; x < config.organizerWidthCells; ++x ) {
-                String prefix = Keys.concatenate( RegionConfig.SUFFIX_CLASSIFIER, String.valueOf( x ), String.valueOf( y ) );
-                getClassifierOutputKeys( attributes, flags, prefix, true );
-            }
-        }
+//        for( int y = 0; y < config.organizerHeightCells; ++y ) {
+//            for( int x = 0; x < config.organizerWidthCells; ++x ) {
+//                String prefix = Keys.concatenate( RegionConfig.SUFFIX_CLASSIFIER, String.valueOf( x ), String.valueOf( y ) );
+                String prefix = RegionConfig.SUFFIX_CLASSIFIER;
+                getClassifierOutputKeys( attributes, flags, prefix );//, true );
+//            }
+//        }
 
         // Predictor
 /*        int predictorLayers = Region.PREDICTOR_LAYERS;
@@ -175,7 +191,7 @@ public class RegionEntity extends Entity {
         }*/
     }
 
-    public void getClassifierOutputKeys( Collection< String > keys, DataFlags flags, String prefix, boolean flag ) {
+    public void getClassifierOutputKeys( Collection< String > keys, DataFlags flags, String prefix ) {//}, boolean flag ) {
         keys.add( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ) );
         keys.add( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ) );
         keys.add( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ) );
@@ -197,7 +213,7 @@ public class RegionEntity extends Entity {
         // These rarely change:
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), DataFlags.FLAG_LAZY_PERSIST );
 
-        // These are written by only me, so can be cached:
+        // These are written by only me, so can be cached, avoiding the read.
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ), DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), DataFlags.FLAG_NODE_CACHE );
@@ -210,12 +226,12 @@ public class RegionEntity extends Entity {
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH ), DataFlags.FLAG_NODE_CACHE );
 
         // These are only written on a flush event:
-        if( flag ) {
+//        if( flag ) {
             flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), DataFlags.FLAG_PERSIST_ON_FLUSH );
             flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ), DataFlags.FLAG_PERSIST_ON_FLUSH );
             flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), DataFlags.FLAG_PERSIST_ON_FLUSH );
             flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-        }
+//        }
 
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS ), DataFlags.FLAG_PERSIST_ON_FLUSH );
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES ), DataFlags.FLAG_PERSIST_ON_FLUSH );
@@ -290,7 +306,8 @@ public class RegionEntity extends Entity {
                 config.receptiveFieldsTrainingSamples, config.receptiveFieldSize,
                 config.organizerLearningRate, config.organizerLearningRateNeighbours, config.organizerNoiseMagnitude, config.organizerEdgeMaxAge, config.organizerStressLearningRate, config.organizerStressThreshold, config.organizerGrowthInterval,
                 config.classifierLearningRate, config.classifierLearningRateNeighbours, config.classifierNoiseMagnitude, config.classifierEdgeMaxAge, config.classifierStressLearningRate, classifierStressThreshold, config.classifierGrowthInterval,
-                config.predictorHiddenLayerScaleFactor, config.predictorLearningRate, config.predictorRegularization );
+                config.predictorLearningRate );
+//                config.predictorHiddenLayerScaleFactor, config.predictorLearningRate, config.predictorRegularization );
 
         // Load data, overwriting the default setup.
         copyDataFromPersistence( r );
@@ -300,7 +317,7 @@ public class RegionEntity extends Entity {
             r.reset();
         }
 
-        r.update();
+        r.update(); // 120-150ms. The rest of doUpdateSelf() is maybe 50ms.
 
         // Save data
         copyDataToPersistence( r );
@@ -340,7 +357,59 @@ public class RegionEntity extends Entity {
         copyDataFromPersistence( RegionConfig.SUFFIX_ORGANIZER, r._organizer, organizerWidthCells, organizerHeightCells, organizerInput );
 
         // The classifiers
+        // 1. Copy packed data from persistence
         Data classifierInput = r._ffInput;
+        int nbrClassifiers = organizerSize.x * organizerSize.y;
+        int areaCells = classifierWidthCells * classifierHeightCells;
+        int inputs = classifierInput.getSize();
+        DataSize dataSizeWeights = DataSize.create( classifierWidthCells, classifierHeightCells, inputs );
+        DataSize dataSizeCells = DataSize.create( classifierWidthCells, classifierHeightCells );
+        DataSize dataSizeEdges = DataSize.create( areaCells, areaCells );
+
+        DataSize dataSizeWeightsAll = DataSize.create( dataSizeWeights.getVolume() * nbrClassifiers );
+        DataSize dataSizeCellsAll   = DataSize.create( dataSizeCells  .getVolume() * nbrClassifiers );
+        DataSize dataSizeEdgesAll   = DataSize.create( dataSizeEdges  .getVolume() * nbrClassifiers );
+
+        String prefix = RegionConfig.SUFFIX_CLASSIFIER;
+        _classifierCellWeights    = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS          ), dataSizeWeightsAll );
+        _classifierCellErrors     = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR            ), dataSizeCellsAll ); // deep copies the size so they each own a copy
+        _classifierCellActivity   = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE           ), dataSizeCellsAll ); // deep copies the size so they each own a copy
+        _classifierCellMask       = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK             ), dataSizeCellsAll ); // deep copies the size so they each own a copy
+        _classifierCellStress     = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS      ), dataSizeCellsAll );
+        _classifierCellAges       = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES        ), dataSizeCellsAll );
+        _classifierEdges          = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES            ), dataSizeEdgesAll );
+        _classifierEdgesAges      = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES       ), dataSizeEdgesAll );
+        _classifierAgeSinceGrowth = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH ), DataSize.create( nbrClassifiers ) );
+
+        // 2. Unpack into the individual classifiers
+        for( int y = 0; y < organizerSize.y; ++y ) {
+            for( int x = 0; x < organizerSize.x; ++x ) {
+                int regionOffset = r._rc.getOrganizerOffset( x, y );
+                GrowingNeuralGas classifier = r._classifiers.get( regionOffset );
+
+                int weightsSize = dataSizeWeights.getVolume();
+                int cellsSize = dataSizeCells.getVolume();
+                int edgesSize = dataSizeEdges.getVolume();
+
+                int weightsOffset = weightsSize * regionOffset;
+                int cellsOffset = cellsSize * regionOffset;
+                int edgesOffset = edgesSize * regionOffset;
+
+                // .copyRange( that, offsetThis, offsetThat, range );
+                classifier._inputValues = classifierInput;
+                classifier._cellWeights   .copyRange( _classifierCellWeights   , 0, weightsOffset, weightsSize );
+                classifier._cellErrors    .copyRange( _classifierCellErrors    , 0, cellsOffset, cellsSize );
+                classifier._cellActivity  .copyRange( _classifierCellActivity  , 0, cellsOffset, cellsSize );
+                classifier._cellMask      .copyRange( _classifierCellMask      , 0, cellsOffset, cellsSize );
+                classifier._cellStress    .copyRange( _classifierCellStress    , 0, cellsOffset, cellsSize );
+                classifier._cellAges      .copyRange( _classifierCellAges      , 0, cellsOffset, cellsSize );
+                classifier._edges         .copyRange( _classifierEdges         , 0, edgesOffset, edgesSize );
+                classifier._edgesAges     .copyRange( _classifierEdgesAges     , 0, edgesOffset, edgesSize );
+                classifier._ageSinceGrowth.copyRange( _classifierAgeSinceGrowth, 0, regionOffset, 1 );
+            }
+        }
+
+/*        Data classifierInput = r._ffInput;
         for( int y = 0; y < organizerSize.y; ++y ) {
             for( int x = 0; x < organizerSize.x; ++x ) {
                 int regionOffset = r._rc.getOrganizerOffset( x, y );
@@ -348,7 +417,7 @@ public class RegionEntity extends Entity {
                 String prefix = Keys.concatenate( RegionConfig.SUFFIX_CLASSIFIER, String.valueOf( x ), String.valueOf( y ) );
                 copyDataFromPersistence( prefix, classifier, classifierWidthCells, classifierHeightCells, classifierInput );
             }
-        }
+        }*/
 
         // Hebbian predictor:
         int hebbianPredictorContext = r.getHebbianPredictorContextSizeRegion();
@@ -429,16 +498,56 @@ public class RegionEntity extends Entity {
         copyDataToPersistence( RegionConfig.SUFFIX_ORGANIZER, r._organizer );
 
         // The classifiers
+        // 1. Pack the data.
         Point p = r._rc.getOrganizerSizeCells();
 
         for( int y = 0; y < p.y; ++y ) {
             for( int x = 0; x < p.x; ++x ) {
                 int regionOffset = r._rc.getOrganizerOffset( x, y );
                 GrowingNeuralGas classifier = r._classifiers.get( regionOffset );
+
+                int weightsSize = classifier._cellWeights.getSize();
+                int cellsSize = classifier._cellErrors.getSize();
+                int edgesSize = classifier._edges.getSize();
+
+                int weightsOffset = weightsSize * regionOffset;
+                int cellsOffset = cellsSize * regionOffset;
+                int edgesOffset = edgesSize * regionOffset;
+
+                // .copyRange( that, offsetThis, offsetThat, range );
+                _classifierCellWeights   .copyRange( classifier._cellWeights   , weightsOffset, 0, weightsSize );
+                _classifierCellErrors    .copyRange( classifier._cellErrors    , cellsOffset, 0, cellsSize );
+                _classifierCellActivity  .copyRange( classifier._cellActivity  , cellsOffset, 0, cellsSize );
+                _classifierCellMask      .copyRange( classifier._cellMask      , cellsOffset, 0, cellsSize );
+                _classifierCellStress    .copyRange( classifier._cellStress    , cellsOffset, 0, cellsSize );
+                _classifierCellAges      .copyRange( classifier._cellAges      , cellsOffset, 0, cellsSize );
+                _classifierEdges         .copyRange( classifier._edges         , edgesOffset, 0, edgesSize );
+                _classifierEdgesAges     .copyRange( classifier._edgesAges     , edgesOffset, 0, edgesSize );
+                _classifierAgeSinceGrowth.copyRange( classifier._ageSinceGrowth, regionOffset, 0, 1 );
+            }
+        }
+
+/*        for( int y = 0; y < p.y; ++y ) {
+            for( int x = 0; x < p.x; ++x ) {
+                int regionOffset = r._rc.getOrganizerOffset( x, y );
+                GrowingNeuralGas classifier = r._classifiers.get( regionOffset );
                 String prefix = Keys.concatenate( RegionConfig.SUFFIX_CLASSIFIER, String.valueOf( x ), String.valueOf( y ) );
                 copyDataToPersistence( prefix, classifier );
             }
-        }
+        }*/
+
+        // 2. Store the packed data.
+        String prefix = RegionConfig.SUFFIX_CLASSIFIER;
+        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), _classifierCellWeights );
+        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ), _classifierCellErrors );
+        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), _classifierCellActivity );
+        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), _classifierCellMask );
+
+        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS ), _classifierCellStress );
+        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES ), _classifierCellAges );
+        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), _classifierEdges );
+        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES ), _classifierEdgesAges );
+        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH ), _classifierAgeSinceGrowth );
 
         // Hebbian predictor:
         setData( HEBBIAN_PREDICTOR_CONTEXTS, r._hebbianPredictorContext );

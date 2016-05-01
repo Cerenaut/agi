@@ -86,9 +86,9 @@ public class RegionFactory {
             int classifierGrowthInterval,
 
             // Predictor
-            float predictorHiddenLayerScaleFactor,
-            float predictorLearningRate,
-            float predictorRegularization ) {
+//            float predictorHiddenLayerScaleFactor,
+            float predictorLearningRate ) {
+//            float predictorRegularization ) {
 
         RegionConfig rc = new RegionConfig();
 
@@ -100,10 +100,10 @@ public class RegionFactory {
         int predictorOutputs = regionAreaCells;
         int predictorLayers = Region.PREDICTOR_LAYERS;
         int organizerInputs = Region.RECEPTIVE_FIELD_DIMENSIONS;
-        int hiddenLayerSize = ( int ) ( ( float ) regionAreaCells * predictorHiddenLayerScaleFactor );
-        String predictorLayerSizes = String.valueOf( hiddenLayerSize ); // 6 * 6 * 1.something
-        String predictorLossFunction = LossFunction.CROSS_ENTROPY;
-        String predictorActivationFunction = ActivationFunctionFactory.LOG_SIGMOID;
+//        int hiddenLayerSize = ( int ) ( ( float ) regionAreaCells * predictorHiddenLayerScaleFactor );
+//        String predictorLayerSizes = String.valueOf( hiddenLayerSize ); // 6 * 6 * 1.something
+//        String predictorLossFunction = LossFunction.CROSS_ENTROPY;
+//        String predictorActivationFunction = ActivationFunctionFactory.LOG_SIGMOID;
 
         GrowingNeuralGasConfig organizerConfig = new GrowingNeuralGasConfig();
         organizerConfig.setup(
@@ -119,15 +119,16 @@ public class RegionFactory {
                 classifierLearningRate, classifierLearningRateNeighbours, classifierNoiseMagnitude,
                 classifierEdgeMaxAge, classifierStressLearningRate, classifierStressThreshold, classifierGrowthInterval );
 
-        FeedForwardNetworkConfig predictorConfig = new FeedForwardNetworkConfig();
-        predictorConfig.setup(
-                om, RegionConfig.SUFFIX_PREDICTOR, random, // temp name
-                predictorLossFunction, predictorActivationFunction,
-                predictorInputs, predictorOutputs,
-                predictorLayers, predictorLayerSizes,
-                predictorRegularization, predictorLearningRate );
+//        FeedForwardNetworkConfig predictorConfig = new FeedForwardNetworkConfig();
+//        predictorConfig.setup(
+//                om, RegionConfig.SUFFIX_PREDICTOR, random, // temp name
+//                predictorLossFunction, predictorActivationFunction,
+//                predictorInputs, predictorOutputs,
+//                predictorLayers, predictorLayerSizes,
+//                predictorRegularization, predictorLearningRate );
 
-        rc.setup( om, regionName, random, organizerConfig, classifierConfig, predictorConfig, inputWidth, inputHeight, feedbackAreaCells, receptiveFieldsTrainingSamples, receptiveFieldSize );
+//        rc.setup( om, regionName, random, organizerConfig, classifierConfig, predictorConfig, inputWidth, inputHeight, feedbackAreaCells, receptiveFieldsTrainingSamples, receptiveFieldSize );
+        rc.setup( om, regionName, random, organizerConfig, classifierConfig, inputWidth, inputHeight, feedbackAreaCells, predictorLearningRate, receptiveFieldsTrainingSamples, receptiveFieldSize );
         this.setup( rc );
 
         Region region = this.createRegion( regionName );
@@ -172,35 +173,36 @@ public class RegionFactory {
         return gng;
     }
 
-    public FeedForwardNetwork createPredictor( Region r ) {
-
-        String name = r.getKey( RegionConfig.SUFFIX_PREDICTOR );
-        FeedForwardNetworkConfig c = new FeedForwardNetworkConfig();
-        c.copyFrom( _rc._predictorConfig, name );
-
-        ActivationFunctionFactory aff = new ActivationFunctionFactory();
-
-        FeedForwardNetwork ffn = new FeedForwardNetwork( c._name, c._om );
-        ffn.setup( c, aff );
-
-        // Twin layer test:
-        String lossFunction = c.getLossFunction();
-        String activationFunction = c.getActivationFunction();
-        float learningRate = c.getLearningRate();
-        int inputs = c.getNbrInputs();
-        int outputs = c.getNbrOutputs();
-        String layerSizes = c.getLayerSizes();
-        int hidden = Integer.valueOf( layerSizes );
-
-        // hardcoded for 2 layers
-        ffn.setupLayer( _rc._r, 0, inputs, hidden, learningRate, activationFunction );
-
-        if( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
-            ffn.setupLayer( _rc._r, 1, hidden, outputs, learningRate, ActivationFunctionFactory.SOFTMAX );
-        } else {
-            ffn.setupLayer( _rc._r, 1, hidden, outputs, learningRate, activationFunction );
-        }
-
-        return ffn;
-    }
+//    public FeedForwardNetwork createPredictor( Region r ) {
+//        return null;
+//
+//        String name = r.getKey( RegionConfig.SUFFIX_PREDICTOR );
+//        FeedForwardNetworkConfig c = new FeedForwardNetworkConfig();
+//        c.copyFrom( _rc._predictorConfig, name );
+//
+//        ActivationFunctionFactory aff = new ActivationFunctionFactory();
+//
+//        FeedForwardNetwork ffn = new FeedForwardNetwork( c._name, c._om );
+//        ffn.setup( c, aff );
+//
+//        // Twin layer test:
+//        String lossFunction = c.getLossFunction();
+//        String activationFunction = c.getActivationFunction();
+//        float learningRate = c.getLearningRate();
+//        int inputs = c.getNbrInputs();
+//        int outputs = c.getNbrOutputs();
+//        String layerSizes = c.getLayerSizes();
+//        int hidden = Integer.valueOf( layerSizes );
+//
+//        // hardcoded for 2 layers
+//        ffn.setupLayer( _rc._r, 0, inputs, hidden, learningRate, activationFunction );
+//
+//        if( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
+//            ffn.setupLayer( _rc._r, 1, hidden, outputs, learningRate, ActivationFunctionFactory.SOFTMAX );
+//        } else {
+//            ffn.setupLayer( _rc._r, 1, hidden, outputs, learningRate, activationFunction );
+//        }
+//
+//        return ffn;
+//    }
 }

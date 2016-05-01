@@ -26,10 +26,11 @@ import io.agi.framework.EntityConfig;
  */
 public class ExperimentEntityConfig extends EntityConfig {
 
-    //    public int interval; do we actually want this
+    //    public int interval; do we actually want this? No, it's slow enough already..!
     public boolean pause = false;
     public boolean terminate = false;
     public String terminationEntityName;
     public String terminationConfigPath;
+    public int terminationAge = -1; // if negative, then never terminates unless via termination condition.
 
 }

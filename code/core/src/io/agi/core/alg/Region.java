@@ -89,7 +89,7 @@ public class Region extends NamedObject {
     public GrowingNeuralGas _organizer;
     public HashMap< Integer, GrowingNeuralGas > _classifiers = new HashMap< Integer, GrowingNeuralGas >();
 //    public FeedForwardNetwork _predictor;
-    public SparseHebbianLearning _hebbianPredictor;
+    public SparseHebbianLearning _hebbianPredictor; // actually this one object stands in for one predictor per column, because the columns may update asynchronously
 
     protected HashMap< Integer, Integer > _classifiersBestCells = new HashMap< Integer, Integer >();
 
@@ -140,7 +140,7 @@ public class Region extends NamedObject {
         _regionPredictionFN = new Data( dataSizeRegion );
 
         // Hebbian Predictor:
-        float predictorLearningRate = 0.1f;
+        float predictorLearningRate = _rc.getPredictorLearningRate();// 0.1f;
         int hebbianStates = getHebbianPredictorStates();
         int hebbianContext = getHebbianPredictorContext();
         _hebbianPredictor = new SparseHebbianLearning();

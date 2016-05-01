@@ -219,6 +219,7 @@ public class ModelData {
                 String s = String.valueOf( i ) + "," + String.valueOf( value ); // index,value
                 values.add( s );
             }
+            //System.err.println( " Sparse real encoding: Original size: " + fa._values.length + " encoded size: " + values.size() );
         }
         else {
             values.ensureCapacity( fa._values.length );

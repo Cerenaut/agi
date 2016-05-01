@@ -54,8 +54,8 @@ public class RegionEntityConfig extends EntityConfig {
     int classifierGrowthInterval = 100;
 
     // Predictor
-    float predictorHiddenLayerScaleFactor = 0.1f; // Note, this assumes that the input data can be easily modelled by a few causes
+//    float predictorHiddenLayerScaleFactor = 0.1f; // Note, this assumes that the input data can be easily modelled by a few causes
     float predictorLearningRate = 0.1f;
-    float predictorRegularization = 0.0f;
+//    float predictorRegularization = 0.0f;
 
 }

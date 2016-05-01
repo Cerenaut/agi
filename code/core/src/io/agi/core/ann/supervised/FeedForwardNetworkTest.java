@@ -228,7 +228,7 @@ public class FeedForwardNetworkTest implements UnitTest {
 
         float errorValue = output.sumAbsDiff( ideal );
 
-//        System.out.println( "Input: " +x1+ "," +x2+ " Ideal: " + idealValue + " Error: " + errorValue );
+        System.out.println( "Input: " +x1+ "," +x2+ " Ideal: " + idealValue + " Error: " + errorValue );
 
         return errorValue;
     }

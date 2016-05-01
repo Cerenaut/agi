@@ -54,6 +54,7 @@ public class MNISTDemo {
     public static void createEntities( Node n ) {
 
         // Define some entities
+        String experimentName = "experiment";
         String sensorName = "image-sensor";
         String encoderName = "binary-encoder";
         String constantName = "constant";
@@ -61,7 +62,8 @@ public class MNISTDemo {
         String decoderNameActivity = "binary-decoder-activity";
         String decoderNamePredicted = "binary-decoder-predicted";
 
-        Framework.CreateEntity( sensorName, ImageSensorEntity.ENTITY_TYPE, n.getName(), null );
+        Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
+        Framework.CreateEntity( sensorName, ImageSensorEntity.ENTITY_TYPE, n.getName(), experimentName );
         Framework.CreateEntity( encoderName, EncoderEntity.ENTITY_TYPE, n.getName(), sensorName );
         Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), encoderName );
         Framework.CreateEntity( regionName, RegionEntity.ENTITY_TYPE, n.getName(), constantName );
@@ -115,7 +117,9 @@ public class MNISTDemo {
         Framework.SetConfig( regionName, "classifierGrowthInterval", "1" );
         Framework.SetConfig( regionName, "classifierEdgeMaxAge", "12" );
 
-        Framework.SetConfig( regionName, "predictorHiddenLayerScaleFactor", "0.5" );
+        Framework.SetConfig( experimentName, "terminationAge", "10" );
+
+//        Framework.SetConfig( regionName, "predictorHiddenLayerScaleFactor", "0.5" );
 
         // now that the experiment UI allows a reset, we should
 //        Framework.SetConfig( regionName, Entity.SUFFIX_RESET, "true" );
