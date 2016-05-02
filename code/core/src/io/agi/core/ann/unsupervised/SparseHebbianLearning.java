@@ -49,7 +49,7 @@ public class SparseHebbianLearning {
     public Data _context;
     public Data _weights;
 
-    public float _learningRate = 0.1f;
+    public float _learningRate = 100; // e.g. moves 1 part in 100 each step. Max value is 99, min is 0, giving 100 intervals.
 
     public void setup( int states, int context, float learningRate ) {
 
@@ -165,20 +165,30 @@ public class SparseHebbianLearning {
 
         HashSet< Integer > activeContext = _context.indicesMoreThan( 0f );
 
+        int maxValue = ( (int)_learningRate ) -1; // e.g. 0..99
+
         for( int s1 = 0; s1 < states; ++s1 ) {
             for( Integer c : activeContext ) { // don't train for context bits that were not present.. we don't have any opinion on their influence.
                 for( int s2 = 0; s2 < states; ++s2 ) {
 
-                    float observation = 0.f; // transition wasn't to s2 given this original state and the context.
+                    int delta = -1;
+//                    float observation = 0.f; // transition wasn't to s2 given this original state and the context.
                     if( s2 == s2Best ) {
-                        observation = 1.f; // i.e. there was a transition to s2 from s1.
+                        delta = 1;
+//                        observation = 1.f; // i.e. there was a transition to s2 from s1.
                     }
 
                     int offset = s1 * context * states
                                +      c       * s2; // the weight from state s1, with context bit c, to state s2.
 
                     float oldWeight = _weights._values[ offset ];
-                    float newWeight = Unit.lerp( observation, oldWeight, _learningRate );
+//                    float newWeight = Unit.lerp( observation, oldWeight, _learningRate );
+
+                    int newValue = (int)( oldWeight ) + delta; // force integer updates.
+                    newValue = Math.max( 0, newValue );
+                    newValue = Math.min( maxValue, newValue );
+
+                    float newWeight = (float)newValue;
 
                     _weights._values[ offset ] = newWeight;
                 }
