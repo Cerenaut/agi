@@ -341,6 +341,8 @@ public class Region extends NamedObject {
             return;
         }
 
+        _organizer._c.setLearn( true );
+        
         int nbrActiveInput = _ffInputActive.size();
         if( nbrActiveInput == 0 ) {
             return; // can't train, ignore blank patterns.
