@@ -165,7 +165,7 @@ public class SparseHebbianLearning {
 
         HashSet< Integer > activeContext = _context.indicesMoreThan( 0f );
 
-        int maxValue = ( (int)_learningRate ) -1; // e.g. 0..99
+        int maxValue = ( ( int ) _learningRate ) - 1; // e.g. 0..99
 
         for( int s1 = 0; s1 < states; ++s1 ) {
             for( Integer c : activeContext ) { // don't train for context bits that were not present.. we don't have any opinion on their influence.
@@ -179,22 +179,24 @@ public class SparseHebbianLearning {
                     }
 
                     int offset = s1 * context * states
-                               +      c       * s2; // the weight from state s1, with context bit c, to state s2.
+                            + c * s2; // the weight from state s1, with context bit c, to state s2.
 
                     float oldWeight = _weights._values[ offset ];
 //                    float newWeight = Unit.lerp( observation, oldWeight, _learningRate );
 
-                    int newValue = (int)( oldWeight ) + delta; // force integer updates.
+                    int newValue = ( int ) ( oldWeight ) + delta; // force integer updates.
                     newValue = Math.max( 0, newValue );
                     newValue = Math.min( maxValue, newValue );
 
-                    float newWeight = (float)newValue;
+                    float newWeight = ( float ) newValue;
 
                     _weights._values[ offset ] = newWeight;
                 }
             }
         }
+    }
 
+    public void update( Data stateNew ) {
 //        _stateOld.copy( _state );
         _state.copy( stateNew );
         _context.set( 0.f ); // clear all context

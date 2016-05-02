@@ -336,8 +336,12 @@ public class Region extends NamedObject {
      */
     public void updateOrganizerReceptiveFields() {
 
-        int nbrActiveInput = _ffInputActive.size();
+        boolean learn = _rc.getLearn();
+        if( !learn ) {
+            return;
+        }
 
+        int nbrActiveInput = _ffInputActive.size();
         if( nbrActiveInput == 0 ) {
             return; // can't train, ignore blank patterns.
         }
@@ -433,6 +437,8 @@ public class Region extends NamedObject {
         ArrayList< Integer > activeInput = _ffInputActiveClassifier.get( classifierOffset );
         GrowingNeuralGas classifier = _classifiers.get( classifierOffset );
 
+        boolean learn = _rc.getLearn();
+        classifier._c.setLearn( learn );
         classifier.setSparseUnitInput( activeInput );
         classifier.update(); // trains with this sparse input.
 
@@ -704,6 +710,8 @@ public class Region extends NamedObject {
         Data classifierStateOld = new Data( DataSize.create( hebbianPredictorStates ) );
         Data classifierStateNew = new Data( DataSize.create( hebbianPredictorStates ) );
 
+        boolean learn = _rc.getLearn();
+
         for( int yClassifier = 0; yClassifier < organizerSizeCells.y; ++yClassifier ) {
             for( int xClassifier = 0; xClassifier < organizerSizeCells.x; ++xClassifier ) {
 
@@ -743,7 +751,10 @@ public class Region extends NamedObject {
                 _hebbianPredictor._context.copyRange( _hebbianPredictorContext, 0, offsetContext, hebbianPredictorContext );
                 _hebbianPredictor._weights.copyRange( _hebbianPredictorWeights, 0, offsetWeights, hebbianPredictorWeights );
 
-                _hebbianPredictor.train( classifierStateNew );
+                if( learn ) {
+                    _hebbianPredictor.train( classifierStateNew );
+                }
+                _hebbianPredictor.update( classifierStateNew );
 
                 // Copy changed state for hebbian module back to region permanent storage
                 // copy? weights(n), context(y), state(n), predicted(n)

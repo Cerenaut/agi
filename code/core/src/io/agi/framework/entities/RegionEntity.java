@@ -317,6 +317,8 @@ public class RegionEntity extends Entity {
             r.reset();
         }
 
+        r._rc.setLearn( config.learn );
+
         r.update(); // 120-150ms. The rest of doUpdateSelf() is maybe 50ms.
 
         // Save data

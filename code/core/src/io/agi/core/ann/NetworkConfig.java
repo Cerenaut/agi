@@ -33,6 +33,8 @@ import java.util.Random;
  */
 public class NetworkConfig {
 
+    public static final String KEY_LEARN = "learn";
+
     public String _name;
     public ObjectMap _om;
     public Random _r;
@@ -47,6 +49,8 @@ public class NetworkConfig {
         _om = om;
         _name = name;
         _r = r;
+
+        setLearn( true );
     }
 
     public void copyFrom( NetworkConfig nc, String name ) {
@@ -57,6 +61,15 @@ public class NetworkConfig {
 
     public String getKey( String suffix ) {
         return Keys.concatenate( _name, suffix );
+    }
+
+    public void setLearn( boolean b ) {
+        _om.put( getKey( KEY_LEARN ), b );
+    }
+
+    public boolean getLearn() {
+        Boolean b = _om.getBoolean( getKey( KEY_LEARN ) );
+        return b.booleanValue();
     }
 
 }

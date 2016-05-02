@@ -102,6 +102,8 @@ public class GrowingNeuralGas extends CompetitiveLearning {
             return; // no cells available to model any input.
         }
 
+        boolean learn = _c.getLearn();
+
         // Compute error
         ArrayList< Integer > liveCells = createCellList( _c, _cellMask );
         ArrayList< Integer > sparseUnitInput = getSparseUnitInput();
@@ -127,6 +129,13 @@ public class GrowingNeuralGas extends CompetitiveLearning {
 
         int bestCellA = bestValues.get( 0 );
         int bestCellB = bestValues.get( 1 );
+
+        _bestCellA = bestCellA;
+        _bestCellB = bestCellB;
+
+        if( !learn ) {
+            return;
+        }
 
         _cellAges._values[ bestCellA ] += 1.f;
         _cellAges._values[ bestCellB ] += 1.f;
@@ -157,9 +166,6 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         ++ageSinceGrowth;
 
         _ageSinceGrowth._values[ 0 ] = ( float ) ageSinceGrowth;
-
-        _bestCellA = bestCellA;
-        _bestCellB = bestCellB;
 
         //System.out.println( "best: " + _bestCellA + " population: " + _cellMask.sum() + " age since growth: " + _ageSinceGrowth._values[ 0 ] );
     }

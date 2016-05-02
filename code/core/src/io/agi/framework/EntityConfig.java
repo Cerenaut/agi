@@ -31,5 +31,6 @@ public class EntityConfig {
     public Long seed = null;       // default = 'not set'      optional
     public boolean reset = false;  // default                  optional
     public boolean flush = false;  // default
+    public boolean learn = true;  // default
 
 }
