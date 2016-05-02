@@ -186,52 +186,69 @@ public class ScalarEncoder implements SparseDistributedEncoder {
         int bins = getBins();
 
         float reciprocalBits = 1.f / (float)_bits;
+        float denominatorBits = (float)( Math.max( 1, _bits -1 ) );
 
         for( int i = 0; i < outputs; ++i ) {
 
-            int offset = i * _bits;
+            float output = 0.f;
 
-            float sum = 0.f;
-            float count = 0.f;
+            if( _bits == 1 ) {
+                float bitValue = decodingInput._values[ i ];
+                if( bitValue > 0.f ) {
+                    output = 1.f;
+                }
+            }
+            else {
+                int offset = i * _bits;
 
-            for( int b = 0; b < _bits; ++b ) {
-                float bitValue = decodingInput._values[ offset + b ];
+                float sum = 0.f;
+                float count = 0.f;
 
-                if( bitValue < 1.f ) {
-                    continue;
+                for( int b = 0; b < _bits; ++b ) {
+                    float bitValue = decodingInput._values[ offset + b ];
+
+                    if( bitValue < 1.f ) {
+                        continue;
+                    }
+
+                    // density = 1 bits = 1
+                    // possible patterns are:                      bit / (bits-1)
+                    // 0                                     00000 0/1 = 0
+                    // 1 = 1 possible bins                   00001 1/1 = 1
+                    //
+                    // density = 2 bits = 5
+                    // possible patterns are:                      bit / (bits-1)
+                    // 11000                                 10000 0/4 = 0.0
+                    // 01100                                 01000 1/4 = 0.25
+                    // 00110                                 00100 2/4 = 0.5
+                    // 00011 = 4 possible bins = 5-2 +1 = 4  00010 3/4 = 0.75
+                    //                                       00001 4/4 = 1.0
+                    // density = 3 bits = 8
+                    // 1110 0000                             0/7 = 0.0
+                    // 0111 0000                             1/7 = 0.14
+                    // 0011 1000                             2/7 = 0.28
+                    // 0001 1100                             3/7 = 0.42
+                    // 0000 1110                             4/7 = 0.57
+                    // 0000 0111 = 6 bins = 8-3 +1 = 6       5/7 = 0.71
+                    //                                       6/7 = 0.85
+                    //                                       7/7 = 1.0
+                    float bitWeight = ( float ) b / denominatorBits; // so between zero and 1 inclusive
+
+                    sum += bitWeight;
+                    count += 1.f;
                 }
 
-                // density = 2 bits = 5
-                // possible patterns are:                      bit / (bits-1)
-                // 11000                                 10000 0/4 = 0.0
-                // 01100                                 01000 1/4 = 0.25
-                // 00110                                 00100 2/4 = 0.5
-                // 00011 = 4 possible bins = 5-2 +1 = 4  00010 3/4 = 0.75
-                //                                       00001 4/4 = 1.0
-                // density = 3 bits = 8
-                // 1110 0000                             0/7 = 0.0
-                // 0111 0000                             1/7 = 0.14
-                // 0011 1000                             2/7 = 0.28
-                // 0001 1100                             3/7 = 0.42
-                // 0000 1110                             4/7 = 0.57
-                // 0000 0111 = 6 bins = 8-3 +1 = 6       5/7 = 0.71
-                //                                       6/7 = 0.85
-                //                                       7/7 = 1.0
-                float bitWeight = (float)b / (float)( _bits -1 ); // so between zero and 1 inclusive
+                // e.g. 11000     = 0.0 + 0.25 / 2 = 0.125
+                // e.g. 00011     = 0.75 + 1.0 / 2 = 0.875
+                // e.g. 1110 0000 = 0.0 + 0.14 + 0.28 / 3 = 0.14   0.14 would've been encoded as 0.14*(6) = 0.84 = bin 0,1,2
+                float meanBit = 0.f;
+                if( count > 0.f ) {
+                    meanBit = sum / count; // mean
+                }
 
-                sum += bitWeight;
-                count += 1.f;
+                output = meanBit * reciprocalBits;
             }
 
-            // e.g. 11000     = 0.0 + 0.25 / 2 = 0.125
-            // e.g. 00011     = 0.75 + 1.0 / 2 = 0.875
-            // e.g. 1110 0000 = 0.0 + 0.14 + 0.28 / 3 = 0.14   0.14 would've been encoded as 0.14*(6) = 0.84 = bin 0,1,2
-            float meanBit = 0.f;
-            if( count > 0.f ) {
-                meanBit = sum / count; // mean
-            }
-
-            float output = meanBit * reciprocalBits;
             decodingOutput._values[ i ] = output;
         }
     }

@@ -80,8 +80,8 @@ public class MNISTDemo {
         Framework.SetConfig( sensorName, "greyscale", "true" );
         Framework.SetConfig( sensorName, "invert", "true" );
         Framework.SetConfig( sensorName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
-//        Framework.SetConfig( sensorName, "sourceFilesPath", "/home/dave/workspace/agi.io/data/mnist/cycle10" );
-        Framework.SetConfig( sensorName, "sourceFilesPath", "/home/dave/workspace/agi.io/data/mnist/cycle3" );
+        Framework.SetConfig( sensorName, "sourceFilesPath", "/home/dave/workspace/agi.io/data/mnist/cycle10" );
+//        Framework.SetConfig( sensorName, "sourceFilesPath", "/home/dave/workspace/agi.io/data/mnist/cycle3" );
         Framework.SetConfig( sensorName, "receptiveField.receptiveFieldX", "0" );
         Framework.SetConfig( sensorName, "receptiveField.receptiveFieldY", "0" );
         Framework.SetConfig( sensorName, "receptiveField.receptiveFieldW", "28" );
@@ -90,17 +90,18 @@ public class MNISTDemo {
         Framework.SetConfig( sensorName, "resolution.resolutionY", "28" );
 
         Framework.SetConfig( encoderName, "density", "1" );
-        Framework.SetConfig( encoderName, "bits", "8" );
+        Framework.SetConfig( encoderName, "bits", "1" );
         Framework.SetConfig( encoderName, "encodeZero", "false" );
 
         Framework.SetConfig( decoderNameActivity, "density", "1" );
-        Framework.SetConfig( decoderNameActivity, "bits", "8" );
+        Framework.SetConfig( decoderNameActivity, "bits", "1" );
         Framework.SetConfig( decoderNameActivity, "encodeZero", "false" );
 
         Framework.SetConfig( decoderNamePredicted, "density", "1" );
-        Framework.SetConfig( decoderNamePredicted, "bits", "8" );
+        Framework.SetConfig( decoderNamePredicted, "bits", "1" );
         Framework.SetConfig( decoderNamePredicted, "encodeZero", "false" );
 
+        Framework.SetConfig( regionName, "predictorLearningRate", "100" );
         Framework.SetConfig( regionName, "receptiveFieldsTrainingSamples", "0.1" );
         Framework.SetConfig( regionName, "organizerStressThreshold", "0.0" );
         Framework.SetConfig( regionName, "organizerGrowthInterval", "1" );
@@ -108,11 +109,11 @@ public class MNISTDemo {
         Framework.SetConfig( regionName, "organizerNoiseMagnitude", "0.0" );
         Framework.SetConfig( regionName, "organizerLearningRate", "0.002" );
         Framework.SetConfig( regionName, "organizerLearningRateNeighbours", "0.001" );
-        Framework.SetConfig( regionName, "organizerWidthCells", "6" );
-        Framework.SetConfig( regionName, "organizerHeightCells", "6" );
+        Framework.SetConfig( regionName, "organizerWidthCells", "8" );
+        Framework.SetConfig( regionName, "organizerHeightCells", "8" );
 
-        Framework.SetConfig( regionName, "classifierWidthCells", "4" );
-        Framework.SetConfig( regionName, "classifierHeightCells", "4" );
+        Framework.SetConfig( regionName, "classifierWidthCells", "5" );
+        Framework.SetConfig( regionName, "classifierHeightCells", "5" );
         Framework.SetConfig( regionName, "classifierStressThreshold", "0.0" );
         Framework.SetConfig( regionName, "classifierGrowthInterval", "1" );
         Framework.SetConfig( regionName, "classifierEdgeMaxAge", "12" );

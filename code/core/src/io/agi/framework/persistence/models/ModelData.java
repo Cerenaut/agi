@@ -205,7 +205,7 @@ public class ModelData {
                     continue; // only add the nonzero value indices.
                 }
 
-                String s = String.valueOf( i );
+                String s = String.valueOf( i ); // TODO consider serializing this as integer.
                 values.add( s );
             }
         }
