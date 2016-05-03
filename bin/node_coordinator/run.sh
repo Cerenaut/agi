@@ -6,14 +6,14 @@ source $(dirname $0)/../$variables_file
 
 
 if [ "$1" == "-h" -o "$1" == "--help" ]; then
-  echo "Usage: `basename $0` ENTITIES_FILE DATA_FILE"
+  echo "Usage: `basename $0` NODE_PROPERTIES ENTITIES_FILE DATA_FILE"
   echo "All arguments are optional."
   exit 0
 fi
 
 node_properties=${1:-$AGI_RUN_HOME/node.properties}
-entity_file=${2:-"$AGI_RUN_HOME/entities.json"}   
-data_file=${3:-"$AGI_RUN_HOME/data.json"}   
+entity_file=${2:-"$AGI_RUN_HOME/entities.json"}
+data_file=${3:-"$AGI_RUN_HOME/data.json"}
 
 log_config="$AGI_RUN_HOME/log4j2.xml"
 
