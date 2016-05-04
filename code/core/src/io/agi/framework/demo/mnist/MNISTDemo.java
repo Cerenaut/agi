@@ -80,7 +80,7 @@ public class MNISTDemo {
         Framework.SetConfig( sensorName, "greyscale", "true" );
         Framework.SetConfig( sensorName, "invert", "true" );
         Framework.SetConfig( sensorName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
-        Framework.SetConfig( sensorName, "sourceFilesPath", "/home/dave/workspace/agi.io/data/mnist/cycle10" );
+        Framework.SetConfig( sensorName, "sourceFilesPath", "./input" );
 //        Framework.SetConfig( sensorName, "sourceFilesPath", "/home/dave/workspace/agi.io/data/mnist/cycle3" );
         Framework.SetConfig( sensorName, "receptiveField.receptiveFieldX", "0" );
         Framework.SetConfig( sensorName, "receptiveField.receptiveFieldY", "0" );
