@@ -28,9 +28,17 @@ var Search = {
     var html = "";
     var objects = JSON.parse( json.responseText );
     for( var i = 0; i < objects.length; ++i ) {
-      var object = objects[ i ];
-      var objectName = object.name;
-      html = html + "<tr><td style='text-align:left;'>" + objectName + "</td></tr>";      
+      var entity = objects[ i ];
+      var entityName = entity.name;
+      var parentName = entity.parent;
+
+      var val = entityName;
+      if ( parentName == "null" ) {
+        val = val + " *** ROOT ***";
+      }
+
+
+      html = html + "<tr><td style='text-align:left;'>" + val + "</td></tr>";
     }
 
     $( "#table-body" ).html( html );

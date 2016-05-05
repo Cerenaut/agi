@@ -38,6 +38,11 @@
 
     <div class="agi-div-background" style="">
      <div id="controls" style="padding:2px;text-align:center;">
+      <p>
+         <label for="host">Node</label>
+         <input type="text" id="host" style="" class="" placeholder="Host" value="localhost"/>
+         <input type="number" id="port" style="width:5em;" class="" placeholder="Port" value="8491"/>
+      </p>
       <input type="text" id="data" style="display:inline;" class="" placeholder="Data name" value=""/>
       <input type="number" id="interval" style="display:inline;width:5em;" class="" placeholder="Update interval" value="500"/>
       <input type="button" id="pause" class="btn btn-sm btn-danger" style="" onclick="Loop.togglePause();" value="Resume"/>
