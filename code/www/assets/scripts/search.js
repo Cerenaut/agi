@@ -30,7 +30,7 @@ var Search = {
     for( var i = 0; i < objects.length; ++i ) {
       var object = objects[ i ];
       var objectName = object.name;
-      html = html + "<tr><td style='text-align:left;'>" + object + "</td></tr>";
+      html = html + "<tr><td style='text-align:left;'>" + objectName + "</td></tr>";
     }
 
     $( "#table-body" ).html( html );
