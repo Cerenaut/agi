@@ -56,6 +56,7 @@ public class Region extends NamedObject {
 
     // Data structures
     public Data _ffInput;
+    public Data _ffInputOld;
     public Data _fbInput;
     public Data _fbInputOld;
 
@@ -122,6 +123,7 @@ public class Region extends NamedObject {
         DataSize dataSizeRegion = DataSize.create( regionSize.x, regionSize.y );
 
         _ffInput = new Data( dataSizeInputFF );
+        _ffInputOld = new Data( dataSizeInputFF );
         _fbInput = new Data( dataSizeInputFB );
         _fbInputOld = new Data( dataSizeInputFB );
 
@@ -211,6 +213,19 @@ public class Region extends NamedObject {
 
     public void update() {
         updateSparseInput();
+
+        boolean inputChanged = getFeedForwardChanged();
+
+        if( !inputChanged ) {
+            // TODO: This may be a bug. We should consider including intermediate feedback bits for prediction.
+            // TODO: This would simply mean adding feedback bits (context) to the predictor.
+            // TODO: We should also think about updating the prediction produced, as there may be a new result from the
+            // TODO: extra feedback information... this is important to allow the latest feedback to cascade down.
+            return; // don't do anything.
+        }
+
+        _ffInputOld.copy( _ffInput );
+
         updateOrganizerReceptiveFields();
 
         Point p = _rc.getOrganizerSizeCells();
@@ -342,7 +357,7 @@ public class Region extends NamedObject {
         }
 
         _organizer._c.setLearn( true );
-        
+
         int nbrActiveInput = _ffInputActive.size();
         if( nbrActiveInput == 0 ) {
             return; // can't train, ignore blank patterns.
@@ -491,6 +506,29 @@ public class Region extends NamedObject {
         return false;
     }
 
+    public boolean getFeedForwardChanged() {
+        if( _ffInputOld == null ) {
+            return true;
+        }
+
+        int ffArea = _ffInput.getSize();
+
+        for( int i = 0; i < ffArea; ++i ) {
+            float oldValue = _ffInputOld._values[ i ];
+            float newValue = 0.f;
+
+            if( _ffInputActive.contains( i ) ) {
+                newValue = 1.f;
+            }
+
+            if( oldValue != newValue ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public void updateRegionOutput() {
 
         //printSet( _regionActivityNew, "updateRegionOutput() _regionActivityNew" );
@@ -629,7 +667,7 @@ public class Region extends NamedObject {
                     for( int xc = 0; xc < classifierSizeCells.x; ++xc ) {
                         int offsetPredictor = ( yc * classifierSizeCells.x ) + xc;
 
-                        float pValue = _hebbianPredictor._statePredicted._values[ offsetPredictor ];
+                        float pValue = _hebbianPredictor._statePredictedRaw._values[ offsetPredictor ];
 
                         int regionX = classifierOrigin.x + xc;
                         int regionY = classifierOrigin.y + yc;

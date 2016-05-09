@@ -287,6 +287,11 @@ var Region = {
 //              ctx.lineTo( x + Region.pixelsPerBit, y + Region.pixelsPerBit );        
             }
 
+            if( predictionNew > 0.5 ) {
+              ctx.strokeStyle = "#FFFF00";
+              ctx.strokeRect( x+half, y, half, half );        
+            }
+
           }
         }
       }

@@ -46,6 +46,7 @@ public class RegionEntity extends Entity {
     public static final String ENTITY_TYPE = "region";
 
     public static final String FF_INPUT     = "ff-input";
+    public static final String FF_INPUT_OLD = "ff-input-old";
     public static final String FB_INPUT     = "fb-input";
     public static final String FB_INPUT_OLD = "fb-input-old";
     public static final String FB_OUTPUT_UNFOLDED_ACTIVITY   = "fb-output-unfolded-activity";
@@ -96,6 +97,10 @@ public class RegionEntity extends Entity {
         flags.putFlag( FB_OUTPUT_UNFOLDED_PREDICTION, DataFlags.FLAG_SPARSE_BINARY );
 
         attributes.add( FB_INPUT_OLD );
+        attributes.add( FF_INPUT_OLD );
+
+        flags.putFlag( FF_INPUT_OLD, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( FF_INPUT_OLD, DataFlags.FLAG_SPARSE_BINARY );
 
         flags.putFlag( FB_INPUT_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( FB_INPUT_OLD, DataFlags.FLAG_SPARSE_BINARY );
@@ -329,6 +334,7 @@ public class RegionEntity extends Entity {
 
         // The region itself
         r._ffInput = getData( FF_INPUT );
+        r._ffInputOld = getDataLazyResize( FF_INPUT_OLD, r._ffInput._dataSize );
         r._fbInput = getData( FB_INPUT );
         r._fbInputOld = getDataLazyResize( FB_INPUT_OLD, r._fbInput._dataSize );
 
@@ -479,6 +485,7 @@ public class RegionEntity extends Entity {
 
         // The region itself
         setData( FF_INPUT,     r._ffInput );
+        setData( FF_INPUT_OLD, r._ffInputOld );
         setData( FB_INPUT,     r._fbInput );
         setData( FB_INPUT_OLD, r._fbInputOld );
 

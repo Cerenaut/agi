@@ -89,7 +89,7 @@ public class ScalarEncoder implements SparseDistributedEncoder {
 
         // Dimensions.DIMENSION_X, outputs
         int w = size.x * _bits;
-        int h = size.x;
+        int h = size.y;
 
         Data encodingOutput = new Data( w, h );
 

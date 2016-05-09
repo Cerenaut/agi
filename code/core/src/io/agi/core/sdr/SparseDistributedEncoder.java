@@ -39,14 +39,15 @@ import io.agi.core.data.Data;
  */
 public interface SparseDistributedEncoder {
 
-    /**
-     * Setup the encoder.
-     *
-     * @param bits       The size (in bits) of the output of the encoder.
-     * @param density    The number of 'on' bits in the output SDR.
-     * @param encodeZero Whether the zero input should produce active output bits.
-     */
-    void setup( int bits, int density, boolean encodeZero );
+// Not general to all encoder types.
+//    /**
+//     * Setup the encoder.
+//     *
+//     * @param bits       The size (in bits) of the output of the encoder.
+//     * @param density    The number of 'on' bits in the output SDR.
+//     * @param encodeZero Whether the zero input should produce active output bits.
+//     */
+//    void setup( int bits, int density, boolean encodeZero );
 
     /**
      * Create a suitably sized output structure for the given input.
@@ -55,7 +56,7 @@ public interface SparseDistributedEncoder {
 
     /**
      * Create suitably sized output structure for given input.
-     * @param encodingInput
+     * @param decodingInput
      * @return
      */
     Data createDecodingOutput( Data decodingInput );

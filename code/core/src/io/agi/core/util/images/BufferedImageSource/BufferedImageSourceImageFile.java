@@ -33,10 +33,10 @@ import java.util.Collections;
  */
 public class BufferedImageSourceImageFile extends BufferedImageSource {
 
-    private ArrayList< String > _fileNames = new ArrayList< String >();
-    private String _folderName = null;
-    private BufferedImage _image = null;
-    private int _idx = 0;
+    protected ArrayList< String > _fileNames = new ArrayList< String >();
+    protected String _folderName = null;
+    protected BufferedImage _image = null;
+    protected int _idx = 0;
 
     public BufferedImageSourceImageFile( String folderName ) {
 
@@ -77,12 +77,33 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
      *
      * @return
      */
-    public String getImageName() {
+    public String getImageFilePath() {
+        return getImageFilePath( _idx );
+    }
+
+    public String getImageFilePath( int idx ) {
         String fullFileName = "undefined";
         if( _idx >= 0 && _idx < _fileNames.size() ) {
-            fullFileName = _folderName + "/" + _fileNames.get( _idx );
+            fullFileName = _folderName + "/" + _fileNames.get( idx );
         }
         return fullFileName;
+    }
+
+    public String getImageFileName() {
+        return getImageFileName( _idx );
+    }
+    /**
+     * Get the filename of the specified image or null if not found.
+     * @param idx
+     * @return
+     */
+    public String getImageFileName( int idx ) {
+        try {
+            return _fileNames.get( idx );
+        }
+        catch( Exception e ) {
+            return null;
+        }
     }
 
     /**
@@ -91,10 +112,8 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
      */
     public BufferedImage getImage() {
 
-        if( _image == null
-                && ( _idx >= 0 && _idx < _fileNames.size() ) ) {
-
-            String fullFileName = _folderName + "/" + _fileNames.get( _idx );
+        if( _image == null ) {
+            String fullFileName = getImageFilePath();
 
             try {
                 _image = ImageIO.read( new File( fullFileName ) );
@@ -128,6 +147,10 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
         return ap;
     }
 
+    public int getIdx() {
+        return _idx;
+    }
+
     @Override
     public int nextImage() {
         _idx++;
@@ -158,6 +181,10 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
         }
 
         return false;
+    }
+
+    public int getNbrImages() {
+        return _fileNames.size();
     }
 
     @Override

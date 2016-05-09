@@ -21,7 +21,6 @@ package io.agi.framework.entities;
 
 import io.agi.core.data.Data;
 import io.agi.core.orm.ObjectMap;
-import io.agi.core.sdr.EncoderFactory;
 import io.agi.core.sdr.SparseDistributedEncoder;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
@@ -64,14 +63,14 @@ public class EncoderEntity extends Entity {
 
         EncoderEntityConfig config = ( EncoderEntityConfig ) _config;
 
-        SparseDistributedEncoder encoder = EncoderFactory.create( config.encoderType );
+        SparseDistributedEncoder encoder = EncoderFactory.create( config );
 
         if( encoder == null ) {
             _logger.error( getName() + ": Could not create Encoder object" );
             return;
         }
 
-        encoder.setup( config.bits, config.density, config.encodeZero );
+        //encoder.setup( config.bits, config.density, config.encodeZero ); now done in the factory
 
         Data input = getData( DATA_INPUT );
         Data output = encoder.createEncodingOutput( input );

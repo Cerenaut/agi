@@ -88,7 +88,7 @@ public class ImageSensorEntity extends Entity {
         setData( IMAGE_DATA, imageScreenScraper.getData() );
     }
 
-    private boolean isReceptiveFieldSet( int receptiveFieldX, int receptiveFieldY, int receptiveFieldW, int receptiveFieldH ) {
+    public static boolean isReceptiveFieldSet( int receptiveFieldX, int receptiveFieldY, int receptiveFieldW, int receptiveFieldH ) {
 
         if( receptiveFieldX >= 0
                 && receptiveFieldY >= 0
