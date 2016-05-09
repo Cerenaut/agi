@@ -56,8 +56,8 @@ public class MNISTDemo {
     public static void createEntities( Node n ) {
 
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-        String trainingPath = "./input";
-        String testingPath = "";
+        String trainingPath = "./training";
+        String testingPath = "./testing";
 //        int terminationAge = -1; // run until complete
         int terminationAge = 2000;
         boolean testClassRegion = false;
