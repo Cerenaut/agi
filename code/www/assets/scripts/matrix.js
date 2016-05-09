@@ -6,6 +6,7 @@ var Matrix = {
 
   update : function() {
     var dataName = $( "#data" ).val();
+    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
     Framework.getData( dataName, Matrix.onGetData );
   },
 

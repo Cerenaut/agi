@@ -55,8 +55,8 @@ public class MNISTDemo {
 
     public static void createEntities( Node n ) {
 
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/postprocrand";
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+        String trainingPath = "./input";
         String testingPath = "";
 //        int terminationAge = -1; // run until complete
         int terminationAge = 2000;
@@ -196,8 +196,6 @@ public class MNISTDemo {
         Framework.SetConfig( classRegionName, "classifierStressThreshold", "0.0" );
         Framework.SetConfig( classRegionName, "classifierGrowthInterval", "10" );
         Framework.SetConfig( classRegionName, "classifierEdgeMaxAge", "30" );
-
-
     }
 
 }
