@@ -122,15 +122,18 @@ public class MnistEntity extends Entity {
         BufferedImageSourceImageFile bis = null;
 
         int trainingImages = bisTraining.getNbrImages();
-        int testingImages = bisTesting.getNbrImages();
+        int  testingImages = bisTesting .getNbrImages();
 
         // Decide which image set to use
         boolean learning = true;
         bis = bisTraining;
+        int imageSourceIndex = config.imageIndex;
         if( config.imageIndex >= trainingImages ) {
             learning = false;
             bis = bisTesting;
+            imageSourceIndex -= trainingImages;
         }
+        // System.err.println( "learning?" + learning + " config.imageIndex: " + config.imageIndex + " imageSourceIndex: " + imageSourceIndex );
 
         // set learning status of entities
         try {
@@ -138,7 +141,7 @@ public class MnistEntity extends Entity {
             _logger.info( "Setting learning flag entity: " + config.learningEntityName + " config path: " + config.learningConfigPath + " training? " + learning );
         }
         catch( Exception e ) {
-            // this is ok, the experiment is just not configured to have a termination condition
+            // this is ok, the experiment is just not configured to have a learning flag
         }
 
         _logger.info( "Training set: " + trainingImages + " testing set: " + testingImages + " index: " + config.imageIndex + " training? " + learning );
@@ -217,7 +220,8 @@ public class MnistEntity extends Entity {
 
         // Update the experiment:
         if( !config.imageStep ) {
-            config.imageIndex = bis.nextImage(); // set to fetch next image
+//            config.imageIndex = bis.nextImage(); // set to fetch next image
+            config.imageIndex = config.imageIndex +1; // set to fetch next image
         }
 
         config.imageStep = !config.imageStep; // invert
