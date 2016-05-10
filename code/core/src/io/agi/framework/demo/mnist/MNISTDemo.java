@@ -20,7 +20,6 @@
 package io.agi.framework.demo.mnist;
 
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
-import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
