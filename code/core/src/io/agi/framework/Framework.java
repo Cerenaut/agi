@@ -177,7 +177,7 @@ public class Framework {
         String[] pathParts = path.split( "[.]" );
         String part = null;
         int index = 0;
-        int maxIndex = pathParts.length - 1;
+        int maxIndex = pathParts.length;
 
         while( index < maxIndex ) {
             part = pathParts[ index ];

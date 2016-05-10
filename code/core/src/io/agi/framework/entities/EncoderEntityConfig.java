@@ -27,9 +27,15 @@ import io.agi.framework.EntityConfig;
  */
 public class EncoderEntityConfig extends EntityConfig {
 
-    String encoderType = ScalarEncoder.class.getSimpleName();
-    int bits = 8;
-    int density = 1;
-    boolean encodeZero = true;
+        String encoderType = ScalarEncoder.class.getSimpleName();
+
+        // Scalar encoder
+        int bits = 8;
+        int density = 1;
+        boolean encodeZero = true;
+
+        // Number encoder
+        public int digits = 1;
+        public int numbers = 1;
 
 }

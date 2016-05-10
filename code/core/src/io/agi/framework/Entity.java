@@ -328,6 +328,9 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
                 for( String refKey : refKeys ) {
                     ModelData refJson = p.fetchData( refKey );
+                    if( refJson == null ) {
+                        continue; // don't put in data store
+                    }
                     Data refData = refJson.getData();
                     allRefs.put( refKey, refData );
                 }

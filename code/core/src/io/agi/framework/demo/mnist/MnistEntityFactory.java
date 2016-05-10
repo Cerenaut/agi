@@ -17,20 +17,35 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.core.sdr;
+package io.agi.framework.demo.mnist;
+
+import io.agi.core.orm.ObjectMap;
+import io.agi.framework.Entity;
+import io.agi.framework.factories.CommonEntityFactory;
+import io.agi.framework.persistence.models.ModelEntity;
 
 /**
- * Created by gideon on 26/03/2016.
+ * Created by dave on 5/05/16.
  */
-public class EncoderFactory {
+public class MnistEntityFactory extends CommonEntityFactory {
 
-    public static SparseDistributedEncoder create( String encoderType ) {
+    public MnistEntityFactory() {
 
-        if( encoderType.equals( ScalarEncoder.class.getSimpleName() ) ) {
-            return new ScalarEncoder();
+    }
+
+    public Entity create( ObjectMap objectMap, ModelEntity modelEntity ) {
+
+        Entity e = super.create( objectMap, modelEntity );
+
+        if( e != null ) {
+            return e;
         }
 
-        System.err.println( "ERROR: EncoderFactory.create() - could not create an encoder for " + encoderType );
+        String entityType = modelEntity.type;
+
+        if( entityType.equals( MnistEntity.ENTITY_TYPE ) ) {
+            return new MnistEntity( objectMap, _n, modelEntity );
+        }
 
         return null;
     }

@@ -28,17 +28,15 @@ var Search = {
     var html = "";
     var objects = JSON.parse( json.responseText );
     for( var i = 0; i < objects.length; ++i ) {
-      var entity = objects[ i ];
-      var entityName = entity.name;
-      var parentName = entity.parent;
-
-      var val = entityName;
-      if ( parentName == "null" ) {
-        val = val + " *** ROOT ***";
+      var object = objects[ i ];
+      var objectName = object.name;
+      var objectValue = objectName;
+      if( "parent" in object ) {
+        if( object.parent == "null" ) {
+          objectValue = objectValue + " <b style='color:#ff0000'>(Root)</b>";
+        }
       }
-
-
-      html = html + "<tr><td style='text-align:left;'>" + val + "</td></tr>";
+      html = html + "<tr><td style='text-align:left;'>" + objectValue + "</td></tr>";
     }
 
     $( "#table-body" ).html( html );

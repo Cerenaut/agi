@@ -26,6 +26,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Random;
+import java.util.UUID;
 
 /**
  * Created by dave on 5/04/16.
@@ -34,7 +36,11 @@ public class MnistPreprocess {
 
     public static void main( String[] args ) {
         Integer max = new Integer( args[ 3 ] );
-        preprocess( args[ 0 ], args[ 1 ], args[ 2 ], max );
+        boolean randomize = false;
+        if( args.length > 4 ) {
+            randomize = true;
+        }
+        preprocess( args[ 0 ], args[ 1 ], args[ 2 ], max, randomize );
     }
 
     /**
@@ -43,16 +49,19 @@ public class MnistPreprocess {
      * @param outputPath
      * @param maxNumImages if < 0 or > number of images, then go through all images
      */
-    private static void preprocess( String labelFile, String imageFile, String outputPath, int maxNumImages ) {
+    private static void preprocess( String labelFile, String imageFile, String outputPath, int maxNumImages, boolean randomize ) {
+
+        int randomCharacters = 6;
 
         BufferedImageSourceMNIST imagesMNIST = new BufferedImageSourceMNIST( labelFile, imageFile );
 
-        if( ( maxNumImages < 0 ) ||
-                ( maxNumImages >= imagesMNIST.bufferSize() ) ) {
+        if( ( maxNumImages <= 0                        ) ||
+            ( maxNumImages >= imagesMNIST.bufferSize() ) ) {
             maxNumImages = imagesMNIST.bufferSize();
         }
 
         HashMap< String, Integer > labelCount = new HashMap<>();
+
         for( int i = 0; i < maxNumImages; i++ ) {
 
             BufferedImage image = imagesMNIST.getImage();
@@ -65,9 +74,19 @@ public class MnistPreprocess {
                 count = labelCount.get( label );
                 count++;
             }
+
             labelCount.put( label, count );
 
-            File outputfile = new File( outputPath + label + "_0" + labelCount.get( label ) + ".png" );
+            String random = "";
+            if( randomize ) {
+                String uuid = UUID.randomUUID().toString().replaceAll( "-", "" );
+                random = "_" + uuid.substring( 0, randomCharacters );
+            }
+
+//            String outputFileName = outputPath + File.separator + random + "_" + label + "_" + labelCount.get( label ) + ".png";
+            String outputFileName = outputPath + random + "_" + label + "_" + labelCount.get( label ) + ".png";
+            File outputfile = new File( outputFileName ); // I removed the leading zero because there may be more needed so it becomes a malformed number
+
             try {
                 ImageIO.write( image, "png", outputfile );
             }

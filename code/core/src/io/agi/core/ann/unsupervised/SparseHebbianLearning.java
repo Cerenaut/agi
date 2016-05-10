@@ -46,6 +46,7 @@ public class SparseHebbianLearning {
     public Data _state;
 //    public Data _stateOld;
     public Data _statePredicted;
+    public Data _statePredictedRaw;
     public Data _context;
     public Data _weights;
 
@@ -59,6 +60,7 @@ public class SparseHebbianLearning {
 
         _state = new Data( DataSize.create( states ) );
         _statePredicted = new Data( DataSize.create( states ) );
+        _statePredictedRaw = new Data( DataSize.create( states ) );
         _context = new Data( DataSize.create( context ) );
         _weights = new Data( DataSize.create( weights ) );
     }
@@ -79,10 +81,10 @@ public class SparseHebbianLearning {
      * Generates a new prediction based on the current state and context bits.
      */
     public void predict() {
-        predict( _state, _context, _weights, _statePredicted );
+        predict( _state, _context, _weights, _statePredicted, _statePredictedRaw );
     }
 
-    public static void predict( Data state, Data context, Data weights, Data statePredicted ) {
+    public static void predict( Data state, Data context, Data weights, Data statePredicted, Data statePredictedRaw ) {
 
         int states = state.getSize();
         int contexts = context.getSize();
@@ -113,7 +115,8 @@ public class SparseHebbianLearning {
                 }
 
                 int offset = s1 * contexts * states
-                           +      c        * s2; // the weight from state s1, with context bit c, to state s2.
+                           +      c        * states
+                           +                 s2; // the weight from state s1, with context bit c, to state s2.
 
                 float weight = weights._values[ offset ];
 
@@ -130,6 +133,8 @@ public class SparseHebbianLearning {
                 wMeanBest = wMean;
                 s2Best = s2;
             }
+
+            statePredictedRaw._values[ s2 ] = wMean;
         }
 
         statePredicted._values[ s2Best ] = 1.f;
@@ -159,8 +164,9 @@ public class SparseHebbianLearning {
      */
     public void train( Data stateNew ) {
         int states = _state.getSize();
-        int context = _context.getSize();
+        int contexts = _context.getSize();
 
+        int s1Best =   _state.maxAt().offset();
         int s2Best = stateNew.maxAt().offset();
 
         HashSet< Integer > activeContext = _context.indicesMoreThan( 0f );
@@ -168,18 +174,20 @@ public class SparseHebbianLearning {
         int maxValue = ( ( int ) _learningRate ) - 1; // e.g. 0..99
 
         for( int s1 = 0; s1 < states; ++s1 ) {
+            if( s1 != s1Best ) {
+                continue; // only learn from the current state
+            }
             for( Integer c : activeContext ) { // don't train for context bits that were not present.. we don't have any opinion on their influence.
                 for( int s2 = 0; s2 < states; ++s2 ) {
 
                     int delta = -1;
-//                    float observation = 0.f; // transition wasn't to s2 given this original state and the context.
                     if( s2 == s2Best ) {
                         delta = 1;
-//                        observation = 1.f; // i.e. there was a transition to s2 from s1.
                     }
 
-                    int offset = s1 * context * states
-                            + c * s2; // the weight from state s1, with context bit c, to state s2.
+                    int offset = s1 * contexts * states
+                            +         c        * states
+                            +                    s2; // the weight from state s1, with context bit c, to state s2.
 
                     float oldWeight = _weights._values[ offset ];
 //                    float newWeight = Unit.lerp( observation, oldWeight, _learningRate );
