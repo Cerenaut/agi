@@ -80,6 +80,8 @@ public class MnistEntity extends Entity {
     public static final String OUTPUT_CLASSIFICATION = "output-class";
     public static final String OUTPUT_ERROR = "output-error";
     public static final String OUTPUT_ERROR_SERIES = "output-error-series";
+    public static final String OUTPUT_TRUTH_SERIES = "output-truth-series";
+    public static final String OUTPUT_CLASS_SERIES = "output-class-series";
 
     public static final int NO_CLASSIFICATION = 10;
 
@@ -98,6 +100,8 @@ public class MnistEntity extends Entity {
         attributes.add( OUTPUT_CLASSIFICATION );
         attributes.add( OUTPUT_ERROR );
         attributes.add( OUTPUT_ERROR_SERIES );
+        attributes.add( OUTPUT_TRUTH_SERIES );
+        attributes.add( OUTPUT_CLASS_SERIES );
     }
 
     @Override
@@ -114,6 +118,7 @@ public class MnistEntity extends Entity {
             config.imageIndex = 0;
             config.imageStep = true;
             config.terminate = false;
+            config.batch = 0;
         }
 
         // Load all files in training and testing folders.
@@ -125,26 +130,52 @@ public class MnistEntity extends Entity {
         int  testingImages = bisTesting .getNbrImages();
 
         // Decide which image set to use
-        boolean learning = true;
+        boolean training = true;
         bis = bisTraining;
-        int imageSourceIndex = config.imageIndex;
-        if( config.imageIndex >= trainingImages ) {
-            learning = false;
+        if( config.batch == config.trainingBatches ) {
+            training = false; // testing time
             bis = bisTesting;
-            imageSourceIndex -= trainingImages;
         }
-        // System.err.println( "learning?" + learning + " config.imageIndex: " + config.imageIndex + " imageSourceIndex: " + imageSourceIndex );
+
+        // catch end of images before it happens:
+        int images = bis.getNbrImages();
+        if( config.imageIndex >= images ) {
+            if( config.batch < config.trainingBatches ) { // say batches = 3, then 0 1 2 for training, then 3 for testing
+                config.batch += 1;
+                config.imageIndex = 0;
+            }
+            else {
+                config.imageIndex = 0; // reset the index to allow further updates:
+                config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
+                _logger.info( "MNIST dataset complete." );
+                return;
+            }
+        }
+
+        // may have changed from training to testing.
+        if( config.batch == config.trainingBatches ) {
+            training = false; // testing time
+            bis = bisTesting;
+        }
+
+        boolean inRange = bis.seek( config.imageIndex ); // next image
+        if( !inRange ) { // occurs if no testing images
+            config.imageIndex = 0; // reset the index to allow further updates:
+            config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
+            _logger.info( "MNIST dataset complete." );
+            return;
+        }
 
         // set learning status of entities
         try {
-            Framework.SetConfig( config.learningEntityName, config.learningConfigPath, String.valueOf( learning ) );
-            _logger.info( "Setting learning flag entity: " + config.learningEntityName + " config path: " + config.learningConfigPath + " training? " + learning );
+            Framework.SetConfig( config.learningEntityName, config.learningConfigPath, String.valueOf( training ) );
+            _logger.info( "Setting learning flag entity: " + config.learningEntityName + " config path: " + config.learningConfigPath + " training? " + training );
         }
         catch( Exception e ) {
             // this is ok, the experiment is just not configured to have a learning flag
         }
 
-        _logger.info( "Training set: " + trainingImages + " testing set: " + testingImages + " index: " + config.imageIndex + " training? " + learning );
+        _logger.info( "Training set: " + trainingImages + " testing set: " + testingImages + " index: " + config.imageIndex + " training? " + training );
 
         // Setup screen scraper
         ImageScreenScraper imageScreenScraper = new ImageScreenScraper();
@@ -159,25 +190,25 @@ public class MnistEntity extends Entity {
             imageScreenScraper.setup( bis, config.resolution.resolutionX, config.resolution.resolutionY, config.greyscale, config.invert );
         }
 
-        boolean inRange = bis.seek( config.imageIndex ); // next image
-        if( !inRange ) {
-            // stop the experiment:
-            config.terminate = true; // experiment must be hooked up to listen to this.
-            _logger.info( "MNIST dataset complete." );
-            return;
-        }
-
         // get all data
         imageScreenScraper.scrape(); // get the current image
         String imageFileName = bis.getImageFileName();
         Integer classification = getClassification( imageFileName );//, config.sourceFilesPrefix );
 
-        Data  inputClass = getDataLazyResize(  INPUT_CLASSIFICATION, DataSize.create( 1 ) ); // an external attempt to classify
+        Data  inputClass = getDataLazyResize( INPUT_CLASSIFICATION, DataSize.create( 1 ) ); // an external attempt to classify
         Data outputClass = getDataLazyResize( OUTPUT_CLASSIFICATION, DataSize.create( 1 ) ); // the true classification
         Data outputError = getDataLazyResize( OUTPUT_ERROR         , DataSize.create( 1 ) ); // error in classification (0,1)
         Data outputErrorSeries = getData( OUTPUT_ERROR_SERIES ); // error in classification (0,1)
         if( outputErrorSeries == null ) {
             outputErrorSeries = new Data( DataSize.create( 1 ) );
+        }
+        Data outputTruthSeries = getData( OUTPUT_TRUTH_SERIES ); // error in classification (0,1)
+        if( outputTruthSeries == null ) {
+            outputTruthSeries = new Data( DataSize.create( 1 ) );
+        }
+        Data outputClassSeries = getData( OUTPUT_CLASS_SERIES ); // error in classification (0,1)
+        if( outputClassSeries == null ) {
+            outputClassSeries = new Data( DataSize.create( 1 ) );
         }
 
         Data image = imageScreenScraper.getData();
@@ -190,33 +221,35 @@ public class MnistEntity extends Entity {
         // t+3       i+1         c(i+1)
         // t+4  -I-- i+2 ------  10      -------------------------
         // t+5       i+2         c(i+2)
-        int digit = -1;
+        int label = -1;
         int error = 0;
 
         if( config.imageStep ) {
-            digit = NO_CLASSIFICATION;
-            _logger.info( "Emitting image " + bis.getIdx() + " class. " + classification + " class.out: " + digit );
+            label = NO_CLASSIFICATION;
+            _logger.info( "Emitting image " + bis.getIdx() + " class. " + classification + " class.out: " + label );
         }
         else { // classification step
-            digit = classification;
-            int inputDigit = (int)inputClass._values[ 0 ];
-            if( inputDigit != digit ) {
+            label = classification;
+            int classifiedLabel = (int)inputClass._values[ 0 ];
+            if( classifiedLabel != label ) {
                 error = 1;
             }
-            else {
-                if( inputDigit != 0 ) {
-                    int g = 0;
-                    g++;
-                }
-            }
+//            else {
+//                if( classifiedLabel != 0 ) {
+//                    int g = 0;
+//                    g++;
+//                }
+//            }
             //System.err.println( "Input class: " + inputDigit + " correct: " + digit  + " err : " + error );
             outputErrorSeries = updateErrorSeries( outputErrorSeries, (float)error );
+            outputTruthSeries = updateErrorSeries( outputTruthSeries, (float)label );
+            outputClassSeries = updateErrorSeries( outputClassSeries, (float)classifiedLabel );
 
-            _logger.info( "Emitting image " + bis.getIdx() + " class. " + classification + " class.out: " + digit + " class.in: " + inputDigit + " error: " + error );
+            _logger.info( "Emitting image " + bis.getIdx() + " class. " + classification + " class.out: " + label + " class.in: " + classifiedLabel + " error: " + error );
         }
 
         outputError._values[ 0 ] = (float)error;
-        outputClass._values[ 0 ] = (float)digit;
+        outputClass._values[ 0 ] = (float)label;
 
         // Update the experiment:
         if( !config.imageStep ) {
@@ -230,6 +263,8 @@ public class MnistEntity extends Entity {
         setData( OUTPUT_CLASSIFICATION, outputClass );
         setData( OUTPUT_ERROR, outputError );
         setData( OUTPUT_ERROR_SERIES, outputErrorSeries );
+        setData( OUTPUT_TRUTH_SERIES, outputTruthSeries );
+        setData( OUTPUT_CLASS_SERIES, outputClassSeries );
         setData( OUTPUT_IMAGE, image );
     }
 

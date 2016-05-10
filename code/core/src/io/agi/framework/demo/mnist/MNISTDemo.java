@@ -56,10 +56,12 @@ public class MNISTDemo {
     public static void createEntities( Node n ) {
 
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
         String trainingPath = "./training";
         String testingPath = "./testing";
-//        int terminationAge = -1; // run until complete
-        int terminationAge = 2000;
+        int terminationAge = -1; // run until complete
+//        int terminationAge = 2000;
+        int trainingBatches = 3;
         boolean testClassRegion = false;
 
         // Define some entities
@@ -134,6 +136,7 @@ public class MNISTDemo {
         Framework.SetConfig( mnistName, "sourceFilesPrefix", "postproc" );
         Framework.SetConfig( mnistName, "sourceFilesPathTraining", trainingPath );
         Framework.SetConfig( mnistName, "sourceFilesPathTesting", testingPath );
+        Framework.SetConfig( mnistName, "trainingBatches", String.valueOf( trainingBatches ) );
 
         // constant config
 
