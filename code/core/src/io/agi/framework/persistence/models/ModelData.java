@@ -19,10 +19,12 @@
 
 package io.agi.framework.persistence.models;
 
-import com.sun.deploy.util.StringUtils;
+
+
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.data.FloatArray2;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
