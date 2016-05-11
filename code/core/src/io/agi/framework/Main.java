@@ -145,6 +145,12 @@ public class Main {
         // Create a Node
         if( args.length == 0 ) {
             System.err.println( "Must specify node .properties file as first argument." );
+            help();
+            System.exit( -1 );
+        }
+
+        if( args[ 0 ].indexOf( "help" ) >= 0 ) {
+            help();
             System.exit( -1 );
         }
 
@@ -160,9 +166,17 @@ public class Main {
         if( args.length > 2 ) {
             Framework.LoadData( args[ 2 ] );
         }
+        if( args.length > 3 ) {
+            Framework.LoadConfigs( args[ 3 ] ); // apply a delta config patch to loaded entities
+        }
 
         // Start the system
         m.run();
     }
 
+    public static void help() {
+        System.out.println( "Arguments: node.properties [entities.json] [data.json] [configs.json]" );
+        System.out.println( "The first argument is mandatory. The other arguments are optional." );
+        System.out.println( "Entities and data JSON files may be empty JSON arrays." );
+    }
 }

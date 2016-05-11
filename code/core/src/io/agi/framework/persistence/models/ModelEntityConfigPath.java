@@ -25,13 +25,13 @@ package io.agi.framework.persistence.models;
  */
 public class ModelEntityConfigPath {
 
-    public String _entityName;
-    public String _configPath;
-    public String _configValue;
+    public String entityName;
+    public String configPath;
+    public String configValue;
 
     public ModelEntityConfigPath( String entityName, String configPath, String configValue ) {
-        this._entityName = entityName;
-        this._configPath = configPath;
-        this._configValue = configValue;
+        this.entityName = entityName;
+        this.configPath = configPath;
+        this.configValue = configValue;
     }
 }
