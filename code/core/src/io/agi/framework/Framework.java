@@ -335,9 +335,9 @@ public class Framework {
 
             for( ModelEntityConfigPath modelConfig : modelConfigs ) {
 
-                logger.info( "Persisting entity: " + modelConfig._entityName + " config path: " + modelConfig._configPath + " value: " + modelConfig._configValue );
+                logger.info( "Persisting entity: " + modelConfig.entityName + " config path: " + modelConfig.configPath + " value: " + modelConfig.configValue );
 
-                Framework.SetConfig( modelConfig._entityName, modelConfig._configPath, modelConfig._configValue );
+                Framework.SetConfig( modelConfig.entityName, modelConfig.configPath, modelConfig.configValue );
             }
         }
         catch( Exception e ) {

@@ -50,7 +50,11 @@ public class MnistEntityConfig extends EntityConfig {
 
     String sourceFilesPathTraining;
     String sourceFilesPathTesting;
+
     int imageIndex = 0;
+    int batch = 0;
+    int trainingBatches = 1;
+
     boolean imageStep = true;
     boolean terminate = false;
 
