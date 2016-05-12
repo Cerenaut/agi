@@ -2,7 +2,7 @@
   "containerDefinitions": [
     {
       "volumesFrom": [],
-      "memory": 300,
+      "memory": 20000,
       "portMappings": [
         {
           "hostPort": 8491,
@@ -34,7 +34,7 @@
       "command": [
         "sh -c ./node_coordinator/run.sh"
       ],
-      "cpu": 10
+      "cpu": 2000
     }
   ],
   "volumes": [
