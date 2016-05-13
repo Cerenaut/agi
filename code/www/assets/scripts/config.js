@@ -4,12 +4,14 @@ var Config = {
   refresh : function() {
     $( ".entity-name" ).each( function( index ) {
       var entityName = this.innerHTML;
+      Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
       Framework.getConfig( entityName, Config.onGetEntityConfig );
     } );
   },
 
   loadNew : function() {
     var entityName = $( "#entity-new-value" ).val();
+    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
     Framework.getConfig( entityName, Config.onGetEntityConfig );
   },
 
@@ -22,6 +24,7 @@ var Config = {
 
   save : function( entityName ) {
     var configValue = $( "#"+entityName+"-new-config" ).val();
+    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
     Framework.setConfig( entityName, configValue, Config.onPostData );
   },
 
@@ -68,7 +71,7 @@ var Config = {
 
   setup : function() {
     Parameters.extract( Config.onParameter );
-    Framework.setup();
+    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
     Loop.setup( Config.refresh );
   }
 

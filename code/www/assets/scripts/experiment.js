@@ -11,6 +11,7 @@ var Experiment = {
     $( "#update-result" ).html( "<b>"+json.status+"</b><br><pre style='border-radius:0;border:none;'>" + JSON.stringify( jsonResponse, null, 2 ) + "</pre>" );
 
     var entityName = $( "#entity" ).val();
+    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
     Framework.getEntity( entityName, Experiment.onGetEntity );
   },
 
@@ -60,21 +61,25 @@ var Experiment = {
 
     // check if entity is ready to update yet.
     var entityName = $( "#entity" ).val();
+    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
     Framework.getEntity( entityName, Experiment.onGetEntityAndUpdate );    
   },
 
   exportEntity : function() {
     var entityName = $( "#entity" ).val();
+    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
     Framework.exportEntity( entityName, Framework.exportTypeEntity );
   },
 
   exportData : function() {
     var entityName = $( "#entity" ).val();
+    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
     Framework.exportEntity( entityName, Framework.exportTypeData );
   },
 
   importEntity : function() {
     var entityName = $( "#entity" ).val();
+    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
     var importAction = Framework.getImportUrl( entityName );
 
     $( "#import-form" )[ 0 ].action = importAction;
@@ -90,6 +95,7 @@ var Experiment = {
     var flushValue = $( "#flush" ).is( ":checked" );
     var resetValue = $( "#reset" ).is( ":checked" );
 
+    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
     Framework.setConfigPath( entityName, "flush", flushValue, Experiment.onSetFlushAndReset ); 
     Framework.setConfigPath( entityName, "reset", resetValue, Experiment.onSetFlushAndReset ); 
   },
