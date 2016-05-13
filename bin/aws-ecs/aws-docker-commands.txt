@@ -23,3 +23,11 @@ aws s3 sync s3://agief-project/run 	$AGI_RUN_HOME
 
 
 aws s3 sync s3://agief-project 	~/agief-project/
+
+
+# start the ec2 instance (for ecs)
+aws ec2 start-instances --instance-ids i-3d504de2
+aws ec2 stop-instances --instance-ids i-3d504de2
+
+# register a task definition
+aws ecs register-task-definition --cli-input-json file://$AGI_HOME/bin/aws-ecs/ecs-task-definition.json

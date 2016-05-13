@@ -1,21 +1,8 @@
 {
-  "requiresAttributes": [
-    {
-      "value": null,
-      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.17"
-    }
-  ],
-  "taskDefinitionArn": "arn:aws:ecs:ap-southeast-2:702057836183:task-definition/console-sample-app-static:26",
-  "status": "ACTIVE",
-  "revision": 26,
   "containerDefinitions": [
     {
       "volumesFrom": [],
-      "memory": 300,
-      "extraHosts": null,
-      "dnsServers": null,
-      "disableNetworking": null,
-      "dnsSearchDomains": null,
+      "memory": 20000,
       "portMappings": [
         {
           "hostPort": 8491,
@@ -28,7 +15,6 @@
           "protocol": "tcp"
         }
       ],
-      "hostname": null,
       "essential": true,
       "entryPoint": [
         "sh",
@@ -37,26 +23,18 @@
       "mountPoints": [
         {
           "containerPath": "/root/dev",
-          "sourceVolume": "agief-project",
-          "readOnly": null
+          "sourceVolume": "agief-project"
         }
       ],
-      "name": "simple-app",
-      "ulimits": null,
-      "dockerSecurityOptions": null,
+      "name": "coordinator-node",
       "environment": [],
       "links": [],
       "workingDirectory": "/root/dev/agi/bin",
-      "readonlyRootFilesystem": null,
       "image": "gkowadlo/agief:latest",
       "command": [
         "sh -c ./node_coordinator/run.sh"
       ],
-      "user": null,
-      "dockerLabels": null,
-      "logConfiguration": null,
-      "cpu": 10,
-      "privileged": null
+      "cpu": 2000
     }
   ],
   "volumes": [
@@ -67,5 +45,5 @@
       "name": "agief-project"
     }
   ],
-  "family": "console-sample-app-static"
+  "family": "mnist-spatial-task"
 }
