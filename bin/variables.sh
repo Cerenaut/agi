@@ -13,7 +13,7 @@ export AGI_HOME=~/Development/ProjectAGI/AGIEF/agi
 
 # RUN Home
 # export AGI_RUN_HOME=~/Development/ProjectAGI/AGIEF/runFolders/runImage 
-export AGI_RUN_HOME=~/Development/ProjectAGI/AGIEF/experiments/cycle10
+export AGI_RUN_HOME=~/Development/ProjectAGI/AGIEF/experiments/cycle10k
 
 # Database port
 export DB_PORT=5432
