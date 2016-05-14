@@ -89,6 +89,10 @@ public class CommonEntityFactory implements EntityFactory {
             return new RegionEntity( objectMap, _n, modelEntity );
         }
 
+        if( entityType.equals( RegionLayerEntity.ENTITY_TYPE ) ) {
+            return new RegionLayerEntity( objectMap, _n, modelEntity );
+        }
+
         if( entityType.equals( ConstantMatrixEntity.ENTITY_TYPE ) ) {
             return new ConstantMatrixEntity( objectMap, _n, modelEntity );
         }

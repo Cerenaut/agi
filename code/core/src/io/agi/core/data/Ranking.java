@@ -40,9 +40,12 @@ public class Ranking {
     public TreeMap< Float, ArrayList< Integer > > _ranking;
 
     public Ranking() {
-        _ranking = new TreeMap< Float, ArrayList< Integer > >();
+        _ranking = CreateRanking();
     }
 
+    public static TreeMap< Float, ArrayList< Integer > > CreateRanking() {
+        return new TreeMap< Float, ArrayList< Integer > >();
+    }
     public Ranking( FloatArray v ) {
         _ranking = rank( v );
     }

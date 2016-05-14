@@ -168,15 +168,20 @@ public class SparseHebbianLearning {
 
         int s1Best =   _state.maxAt().offset();
         int s2Best = stateNew.maxAt().offset();
+        if( s1Best == s2Best ) {
+            return;
+        }
 
         HashSet< Integer > activeContext = _context.indicesMoreThan( 0f );
 
         int maxValue = ( ( int ) _learningRate ) - 1; // e.g. 0..99
 
         for( int s1 = 0; s1 < states; ++s1 ) {
+
             if( s1 != s1Best ) {
                 continue; // only learn from the current state
             }
+
             for( Integer c : activeContext ) { // don't train for context bits that were not present.. we don't have any opinion on their influence.
                 for( int s2 = 0; s2 < states; ++s2 ) {
 
@@ -205,6 +210,12 @@ public class SparseHebbianLearning {
     }
 
     public void update( Data stateNew ) {
+        int s1Best =   _state.maxAt().offset();
+        int s2Best = stateNew.maxAt().offset();
+        if( s1Best == s2Best ) {
+            return; // don't change anything! The state didn't change yet.
+        }
+
 //        _stateOld.copy( _state );
         _state.copy( stateNew );
         _context.set( 0.f ); // clear all context
