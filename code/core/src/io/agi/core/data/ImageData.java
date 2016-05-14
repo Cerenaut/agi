@@ -65,7 +65,7 @@ public class ImageData {
     }
 
     public int getOffset( int x, int y, int channel ) {
-        Coordinate2 c = _d.begin();
+        Coordinate c = _d.begin();
         c.set( DataSize.DIMENSION_X, x );
         c.set( DataSize.DIMENSION_Y, y );
         c.set( DataSize.DIMENSION_Z, channel );
@@ -98,7 +98,7 @@ public class ImageData {
 
         int[] sample = new int[ 4 ]; // RGB24
 
-        Coordinate2 c = _d.begin();
+        Coordinate c = _d.begin();
 
         c.set( DataSize.DIMENSION_Z, 0 );
 

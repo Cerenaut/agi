@@ -46,7 +46,7 @@ public class Convolution2d {
         int mwr = mw / 2;       // mask width radius
         int mhr = mh / 2;       // mask height radius
 
-        Coordinate2 c = src._d.begin();
+        Coordinate c = src._d.begin();
 
         int channels = src.getChannels();
         int elements = src._d.getSize();
@@ -67,10 +67,10 @@ public class Convolution2d {
                 assert ( ( offset + 2 ) < elements );
 
                 // offset for source image
-                Coordinate2 sc = src._d.begin();
+                Coordinate sc = src._d.begin();
 
                 // offset for mask
-                Coordinate2 mc = mask._d.begin();
+                Coordinate mc = mask._d.begin();
 
                 // iterate mask
                 for( int my = 0; my < mh; ++my ) {

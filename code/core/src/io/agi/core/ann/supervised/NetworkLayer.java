@@ -20,7 +20,7 @@
 package io.agi.core.ann.supervised;
 
 import io.agi.core.data.Data;
-import io.agi.core.data.FloatArray2;
+import io.agi.core.data.FloatArray;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 
@@ -124,7 +124,7 @@ public class NetworkLayer extends NamedObject {
      * @param biases
      * @param outputs
      */
-    public static void WeightedSum( FloatArray2 weights, FloatArray2 inputs, FloatArray2 biases, FloatArray2 outputs ) {
+    public static void WeightedSum( FloatArray weights, FloatArray inputs, FloatArray biases, FloatArray outputs ) {
         int K = inputs.getSize();
         int J = biases.getSize();
 
@@ -158,7 +158,7 @@ public class NetworkLayer extends NamedObject {
      * @param af
      * @param outputs
      */
-    public static void Activate( FloatArray2 weightedSums, ActivationFunction af, FloatArray2 outputs ) {
+    public static void Activate( FloatArray weightedSums, ActivationFunction af, FloatArray outputs ) {
         af.f( weightedSums, outputs );
     }
 

@@ -19,7 +19,7 @@
 
 package io.agi.core.ann.supervised;
 
-import io.agi.core.data.FloatArray2;
+import io.agi.core.data.FloatArray;
 
 /**
  * Activation functions that implement the nonlinearities in a feed-forward neural network.
@@ -49,7 +49,7 @@ public abstract class ActivationFunction {
      * @param outputs
      * @return
      */
-    public void f( FloatArray2 weightedSums, FloatArray2 outputs ) {
+    public void f( FloatArray weightedSums, FloatArray outputs ) {
         int J = weightedSums.getSize();
 
         assert ( outputs.getSize() == J );
@@ -109,7 +109,7 @@ public abstract class ActivationFunction {
 
     public static ActivationFunction createSoftmax() {
         return new ActivationFunction() {
-            public void f( FloatArray2 weightedSums, FloatArray2 outputs ) {
+            public void f( FloatArray weightedSums, FloatArray outputs ) {
                 softmax( weightedSums, outputs );
             }
 
@@ -119,7 +119,7 @@ public abstract class ActivationFunction {
         };
     }
 
-    public static void softmax( FloatArray2 weightedSums, FloatArray2 outputs ) {
+    public static void softmax( FloatArray weightedSums, FloatArray outputs ) {
         int J = weightedSums.getSize();
 
         assert ( outputs.getSize() == J );

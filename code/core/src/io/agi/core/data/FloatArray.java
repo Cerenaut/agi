@@ -41,19 +41,19 @@ import java.util.*;
  *
  * @author dave
  */
-public class FloatArray2 {
+public class FloatArray {
 
     public float[] _values = null;
 
-    public FloatArray2() {
+    public FloatArray() {
         // null values
     }
 
-    public FloatArray2( int size ) {
+    public FloatArray( int size ) {
         setSize( size );
     }
 
-    public FloatArray2( FloatArray2 v ) {
+    public FloatArray( FloatArray v ) {
         _values = Arrays.copyOf( v._values, v._values.length );
     }
 
@@ -112,7 +112,7 @@ public class FloatArray2 {
         return _values.length;
     }
 
-    public boolean isSameAs( FloatArray2 fa ) {
+    public boolean isSameAs( FloatArray fa ) {
         return Arrays.equals( _values, fa._values );
     }
 
@@ -122,7 +122,7 @@ public class FloatArray2 {
      * @param v
      * @return
      */
-    public boolean copy( FloatArray2 v ) {
+    public boolean copy( FloatArray v ) {
 
 //        if( getSize() != v.getSize() ) {
 //            return false;
@@ -133,7 +133,7 @@ public class FloatArray2 {
         return true;
     }
 
-    public void concatenate( FloatArray2 v1, FloatArray2 v2 ) {
+    public void concatenate( FloatArray v1, FloatArray v2 ) {
 
         int volume1 = v1.getSize();
         int volume2 = v2.getSize();
@@ -144,7 +144,7 @@ public class FloatArray2 {
         copyRange( v2, volume1, 0, volume2 );
     }
 
-    public void apply( ScalarFunction sf, FloatArray2 input, int index, int length ) {
+    public void apply( ScalarFunction sf, FloatArray input, int index, int length ) {
         for( int i = 0; i > length; ++i ) {
             int offset = index + i;
             float r1 = input._values[ offset ];
@@ -156,7 +156,7 @@ public class FloatArray2 {
     ////////////////////////////////////////////////////////////////////////////
     // Operations on ranges
     ////////////////////////////////////////////////////////////////////////////
-    public boolean copyRange( FloatArray2 v, int offsetThis, int offsetThat, int range ) {
+    public boolean copyRange( FloatArray v, int offsetThis, int offsetThat, int range ) {
 
         if( ( ( offsetThis + range ) > _values.length )
                 || ( ( offsetThat + range ) > v._values.length ) ) {
@@ -205,7 +205,7 @@ public class FloatArray2 {
         }
     }
 
-    public boolean mulRange( FloatArray2 v, int offsetThis, int offsetThat, int range ) {
+    public boolean mulRange( FloatArray v, int offsetThis, int offsetThat, int range ) {
 
         int offset1 = offsetThis;
         int offset2 = offsetThat;
@@ -223,7 +223,7 @@ public class FloatArray2 {
         return true;
     }
 
-    public boolean lerpRange( FloatArray2 v, int offsetThis, int offsetThat, int range, float coefficientThis, float coefficientThat ) {
+    public boolean lerpRange( FloatArray v, int offsetThis, int offsetThat, int range, float coefficientThis, float coefficientThat ) {
 
         int offset1 = offsetThis;
         int offset2 = offsetThat;
@@ -444,23 +444,23 @@ public class FloatArray2 {
         return max;
     }
 
-    public FloatArray2 getHistogram( int precision ) {
+    public FloatArray getHistogram( int precision ) {
         Point.Float r = getMinMax();
         return getHistogram( precision, r.x, r.y );
     }
 
-    public FloatArray2 getHistogram( int precision, float min, float max ) {
+    public FloatArray getHistogram( int precision, float min, float max ) {
         return getHistogram( _values, precision, min, max );
     }
 
-    public static FloatArray2 getHistogram( float[] values, int precision, float min, float max ) {
+    public static FloatArray getHistogram( float[] values, int precision, float min, float max ) {
         float range = max - min;
 
         if( range <= 0.0 ) {
             return null;
         }
 
-        FloatArray2 h = new FloatArray2( precision );
+        FloatArray h = new FloatArray( precision );
 
         int offset = 0;
 
@@ -505,7 +505,7 @@ public class FloatArray2 {
     ////////////////////////////////////////////////////////////////////////////
     // Vector operations
     ////////////////////////////////////////////////////////////////////////////
-    public float dotProduct( FloatArray2 fa ) {
+    public float dotProduct( FloatArray fa ) {
 
 //        if( fa._values.length != this.fa._values.length ) {
 //            return 0.f;
@@ -816,7 +816,7 @@ public class FloatArray2 {
      *
      * @param v
      */
-    public void absDiff( FloatArray2 fa ) {
+    public void absDiff( FloatArray fa ) {
 
         int offset = 0;
 
@@ -839,12 +839,12 @@ public class FloatArray2 {
      * @param tolerance corresponding values must be within tolerance of each other to be considered equal.
      * @return true if equal
      */
-    public boolean approxEquals( FloatArray2 that, float tolerance ) {
+    public boolean approxEquals( FloatArray that, float tolerance ) {
         float maxAbsDiff = maxAbsDiff( that );
         return ( maxAbsDiff < tolerance );
     }
 
-    public float maxAbsDiff( FloatArray2 that ) {
+    public float maxAbsDiff( FloatArray that ) {
 
         float maxAbsDiff = 0.0f;
 
@@ -863,7 +863,7 @@ public class FloatArray2 {
         return maxAbsDiff;
     }
 
-    public double sumSqDiff( FloatArray2 that ) {
+    public double sumSqDiff( FloatArray that ) {
 
         double sumSqDiff = 0.0;
 
@@ -884,7 +884,7 @@ public class FloatArray2 {
         return sumSqDiff;
     }
 
-    public float sumAbsDiff( FloatArray2 that ) {
+    public float sumAbsDiff( FloatArray that ) {
 
         float sumAbsDiff = 0.0f;
 
@@ -911,7 +911,7 @@ public class FloatArray2 {
      * @param that
      * @return
      */
-    public double normalizedAbsDiff( FloatArray2 that ) {
+    public double normalizedAbsDiff( FloatArray that ) {
         double sumAbsDiff = sumAbsDiff( that );
         double volume = ( double ) _values.length;
         double normalizedAbsDiff = sumAbsDiff / volume;
@@ -996,7 +996,7 @@ public class FloatArray2 {
      * @param maskValue
      * @param maskedValue
      */
-    public void mask( FloatArray2 fa, FloatArray2 mask, float maskValue, float maskedValue ) {
+    public void mask( FloatArray fa, FloatArray mask, float maskValue, float maskedValue ) {
         int offset = 0;
 
         while( offset < _values.length ) {
@@ -1264,7 +1264,7 @@ public class FloatArray2 {
         }
     }
 
-    public void add( FloatArray2 v ) {
+    public void add( FloatArray v ) {
 
         int offset = 0;
 
@@ -1274,7 +1274,7 @@ public class FloatArray2 {
         }
     }
 
-    public void add( FloatArray2 v, float value ) {
+    public void add( FloatArray v, float value ) {
 
         int offset = 0;
 
@@ -1284,7 +1284,7 @@ public class FloatArray2 {
         }
     }
 
-    public void add( FloatArray2 v1, FloatArray2 v2 ) {
+    public void add( FloatArray v1, FloatArray v2 ) {
 
         int offset = 0;
 
@@ -1294,7 +1294,7 @@ public class FloatArray2 {
         }
     }
 
-    public void sub( FloatArray2 v ) {
+    public void sub( FloatArray v ) {
 
         int offset = 0;
 
@@ -1304,7 +1304,7 @@ public class FloatArray2 {
         }
     }
 
-    public void sub( FloatArray2 v1, FloatArray2 v2 ) {
+    public void sub( FloatArray v1, FloatArray v2 ) {
 
         int offset = 0;
 
@@ -1319,7 +1319,7 @@ public class FloatArray2 {
      *
      * @param v
      */
-    public void mul( FloatArray2 v ) {
+    public void mul( FloatArray v ) {
 
         int offset = 0;
 
@@ -1329,7 +1329,7 @@ public class FloatArray2 {
         }
     }
 
-    public void mul( FloatArray2 v1, float v2 ) {
+    public void mul( FloatArray v1, float v2 ) {
 
         int offset = 0;
 
@@ -1345,7 +1345,7 @@ public class FloatArray2 {
      * @param v1
      * @param v2
      */
-    public void mul( FloatArray2 v1, FloatArray2 v2 ) {
+    public void mul( FloatArray v1, FloatArray v2 ) {
 
         int offset = 0;
 
@@ -1355,7 +1355,7 @@ public class FloatArray2 {
         }
     }
 
-    public void min( FloatArray2 v ) {
+    public void min( FloatArray v ) {
 
         int offset = 0;
 
@@ -1368,7 +1368,7 @@ public class FloatArray2 {
         }
     }
 
-    public void max( FloatArray2 v ) {
+    public void max( FloatArray v ) {
 
         int offset = 0;
 
@@ -1381,7 +1381,7 @@ public class FloatArray2 {
         }
     }
 
-    public void min( FloatArray2 v1, FloatArray2 v2 ) {
+    public void min( FloatArray v1, FloatArray v2 ) {
 
         int offset = 0;
 
@@ -1391,7 +1391,7 @@ public class FloatArray2 {
         }
     }
 
-    public void max( FloatArray2 v1, FloatArray2 v2 ) {
+    public void max( FloatArray v1, FloatArray v2 ) {
 
         int offset = 0;
 
@@ -1407,7 +1407,7 @@ public class FloatArray2 {
      * @param v
      * @param accumulate
      */
-    public void mac( FloatArray2 v, float accumulate ) {
+    public void mac( FloatArray v, float accumulate ) {
 
         int offset = 0;
 
@@ -1423,7 +1423,7 @@ public class FloatArray2 {
         }
     }
 
-    public void mac( FloatArray2 v1, float v2, float add ) {
+    public void mac( FloatArray v1, float v2, float add ) {
 
         int offset = 0;
 
@@ -1433,7 +1433,7 @@ public class FloatArray2 {
         }
     }
 
-    public void mac( FloatArray2 v1, FloatArray2 v2, float add ) {
+    public void mac( FloatArray v1, FloatArray v2, float add ) {
 
         int offset = 0;
 
@@ -1443,7 +1443,7 @@ public class FloatArray2 {
         }
     }
 
-    public void addMul( FloatArray2 v, float accumulate ) {
+    public void addMul( FloatArray v, float accumulate ) {
 
         int offset = 0;
 
@@ -1459,7 +1459,7 @@ public class FloatArray2 {
         }
     }
 
-    public void addMul( FloatArray2 v1, FloatArray2 v2, float add ) {
+    public void addMul( FloatArray v1, FloatArray v2, float add ) {
 
         int offset = 0;
 
@@ -1469,7 +1469,7 @@ public class FloatArray2 {
         }
     }
 
-    public void div( FloatArray2 v ) {
+    public void div( FloatArray v ) {
 
         int offset = 0;
 
@@ -1496,7 +1496,7 @@ public class FloatArray2 {
      * @param v
      * @param uniform
      */
-    public void addDiv( FloatArray2 v, float uniform ) {
+    public void addDiv( FloatArray v, float uniform ) {
 
         int offset = 0;
 
@@ -1506,7 +1506,7 @@ public class FloatArray2 {
         }
     }
 
-    public void div( FloatArray2 numerator, FloatArray2 denominator, float uniform ) {
+    public void div( FloatArray numerator, FloatArray denominator, float uniform ) {
 
         int offset = 0;
 
@@ -1526,7 +1526,7 @@ public class FloatArray2 {
      * @param weightThis
      * @param weightThat
      */
-    public void lerp( FloatArray2 that, float weightThis, float weightThat ) {
+    public void lerp( FloatArray that, float weightThis, float weightThat ) {
 
         int offset = 0;
 

@@ -20,7 +20,7 @@
 package io.agi.core.ann.unsupervised;
 
 import io.agi.core.data.Data;
-import io.agi.core.data.FloatArray2;
+import io.agi.core.data.FloatArray;
 import io.agi.core.orm.ObjectMap;
 
 import java.util.ArrayList;
@@ -93,18 +93,18 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
 
     public static void trainWithInput(
             DynamicSelfOrganizingMapConfig c,
-            FloatArray2 inputValues,
-            FloatArray2 cellWeights,  // Size = cells * inputs
-            FloatArray2 cellSumSqError ) {
+            FloatArray inputValues,
+            FloatArray cellWeights,  // Size = cells * inputs
+            FloatArray cellSumSqError ) {
         int winningCell = cellSumSqError.minValueIndex();
         trainWithInput( c, inputValues, cellWeights, cellSumSqError, winningCell );
     }
 
     public static void trainWithInput(
             DynamicSelfOrganizingMapConfig c,
-            FloatArray2 inputValues,
-            FloatArray2 cellWeights,  // Size = cells * inputs
-            FloatArray2 cellSumSqError,
+            FloatArray inputValues,
+            FloatArray cellWeights,  // Size = cells * inputs
+            FloatArray cellSumSqError,
             int winningCell ) {
 
         int inputs = c.getNbrInputs();
@@ -166,9 +166,9 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
 
     public static void trainWithSparseInput(
             DynamicSelfOrganizingMapConfig c,
-            FloatArray2 inputValues,
-            FloatArray2 cellWeights,  // Size = cells * inputs
-            FloatArray2 cellSumSqError,
+            FloatArray inputValues,
+            FloatArray cellWeights,  // Size = cells * inputs
+            FloatArray cellSumSqError,
             int winningCell ) {
 
         HashSet< Integer > activeInputValues = new HashSet< Integer >();
@@ -187,8 +187,8 @@ public class DynamicSelfOrganizingMap extends CompetitiveLearning {
     public static void trainWithSparseInput(
             DynamicSelfOrganizingMapConfig c,
             HashSet< Integer > activeInputValues,
-            FloatArray2 cellWeights,  // Size = cells * inputs
-            FloatArray2 cellSumSqError,
+            FloatArray cellWeights,  // Size = cells * inputs
+            FloatArray cellSumSqError,
             int winningCell ) {
         int inputs = c.getNbrInputs();
         int cells = c.getNbrCells();

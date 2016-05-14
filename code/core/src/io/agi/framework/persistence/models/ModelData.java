@@ -23,7 +23,7 @@ package io.agi.framework.persistence.models;
 
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
-import io.agi.core.data.FloatArray2;
+import io.agi.core.data.FloatArray;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -127,7 +127,7 @@ public class ModelData {
 
         try {
             DataSize ds = StringToDataSize( sizes );
-            FloatArray2 fa = StringToFloatArray( elements );
+            FloatArray fa = StringToFloatArray( elements );
             Data d = new Data( ds, fa );
             return d;
         }
@@ -192,7 +192,7 @@ public class ModelData {
         }
     }
 
-    public static String FloatArrayToString( FloatArray2 fa, String encoding ) {
+    public static String FloatArrayToString( FloatArray fa, String encoding ) {
         String s1 = "{ \"encoding\":\"" + encoding + "\",\"length\":";
         String s2 = ",\"elements\":["; // put elements last
         String s3 = "]}";
@@ -238,7 +238,7 @@ public class ModelData {
         return result;
     }
 
-    public static FloatArray2 StringToFloatArray( String s ) {
+    public static FloatArray StringToFloatArray( String s ) {
         try {
             String lengthString = GetJsonProperty( s, "length" );
             Integer length = Integer.valueOf( lengthString );
@@ -248,7 +248,7 @@ public class ModelData {
                 encoding = ModelData.ENCODING_DENSE; // assume if not mentioned
             }
 
-            FloatArray2 fa = new FloatArray2( length ); // default to zeroes
+            FloatArray fa = new FloatArray( length ); // default to zeroes
 
             String elementsString = GetJsonArrayProperty( s, "elements" );
             String[] splitString = elementsString.split( "," );
