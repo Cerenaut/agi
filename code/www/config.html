@@ -41,6 +41,10 @@
 
     <div class="agi-div-background" style="">
      <div id="controls" style="padding:2px;text-align:center;">
+       <label for="host">Node</label>
+       <input type="text" id="host" style="" class="" placeholder="Host" value="localhost"/>
+       <input type="number" id="port" style="width:5em;" class="" placeholder="Port" value="8491"/>
+
       <label for="interval">Refresh (ms):</label>
       <input type="number" id="interval" style="display:inline;width:5em;" class="" placeholder="Update interval" value="500"/>
       <input type="button" id="pause" class="btn btn-sm btn-success" style="" onclick="Loop.togglePause();" value="Auto Refresh"/>
