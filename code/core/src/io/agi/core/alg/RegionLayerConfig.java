@@ -262,10 +262,10 @@ public class RegionLayerConfig extends NetworkConfig {
         int hebbianPredictorInputs  = nbrClassifiers * predictorContextSize;//_predictor._context.getSize();
         return hebbianPredictorInputs;
     }
-    public int getHebbianPredictorWeightsSizeRegion( int predictorContextSize ) {
+    public int getHebbianPredictorWeightsSizeRegion( int predictorWeightsSize ) {
         Point organizerSizeCells = getOrganizerSizeCells();
         int nbrClassifiers = organizerSizeCells.x * organizerSizeCells.y;
-        int hebbianPredictorWeights = nbrClassifiers * predictorContextSize;//_predictor._weights.getSize();
+        int hebbianPredictorWeights = nbrClassifiers * predictorWeightsSize;//_predictor._weights.getSize();
         return hebbianPredictorWeights;
     }
 }

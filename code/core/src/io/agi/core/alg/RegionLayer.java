@@ -21,10 +21,7 @@ package io.agi.core.alg;
 
 import io.agi.core.ann.unsupervised.GrowingNeuralGas;
 import io.agi.core.ann.unsupervised.SparseHebbianLearning;
-import io.agi.core.data.Data;
-import io.agi.core.data.Data2d;
-import io.agi.core.data.DataSize;
-import io.agi.core.data.Ranking;
+import io.agi.core.data.*;
 import io.agi.core.math.Geometry;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
@@ -58,7 +55,9 @@ public class RegionLayer extends NamedObject {
     public Data _fbInput;
     public Data _fbInputOld;
 
+    public Data _outputUnfoldedActivityRaw;
     public Data _outputUnfoldedActivity;
+    public Data _outputUnfoldedPredictionRaw;
     public Data _outputUnfoldedPrediction;
 
     public Data _regionActivityOld;
@@ -129,8 +128,9 @@ public class RegionLayer extends NamedObject {
         Point regionSize = _rc.getRegionSizeCells();
 
         int predictorContextSize = _predictor._context.getSize();
+        int predictorWeightsSize = _predictor._weights.getSize();
         int hebbianPredictorInputs  = _rc.getHebbianPredictorContextSizeRegion( predictorContextSize );
-        int hebbianPredictorWeights = _rc.getHebbianPredictorWeightsSizeRegion( predictorContextSize );
+        int hebbianPredictorWeights = _rc.getHebbianPredictorWeightsSizeRegion( predictorWeightsSize );
 
         DataSize dataSizeInputFF = DataSize.create( ffInputSize.x, ffInputSize.y );
         DataSize dataSizeInputFB = DataSize.create( fbInputSize.x, fbInputSize.y );
@@ -141,8 +141,10 @@ public class RegionLayer extends NamedObject {
         _fbInput = new Data( dataSizeInputFB );
         _fbInputOld = new Data( dataSizeInputFB );
 
-        _outputUnfoldedActivity = new Data( dataSizeInputFF );
-        _outputUnfoldedPrediction = new Data( dataSizeInputFF );
+        _outputUnfoldedActivityRaw   = new Data( dataSizeInputFF );
+        _outputUnfoldedActivity      = new Data( dataSizeInputFF );
+        _outputUnfoldedPredictionRaw = new Data( dataSizeInputFF );
+        _outputUnfoldedPrediction    = new Data( dataSizeInputFF );
 
         _regionActivityOld = new Data( dataSizeRegion );
         _regionActivityNew = new Data( dataSizeRegion );
@@ -217,8 +219,27 @@ public class RegionLayer extends NamedObject {
     }
 
     protected void updateUnfoldedOutput() {
-        unfold( _regionActivityNew, _outputUnfoldedActivity );
-        unfold( _regionPredictionNew, _outputUnfoldedPrediction );
+//        unfold( _regionActivityNew, _outputUnfoldedActivity );
+
+        // Remove unchanged cols from current state reconstruction.
+        HashSet< Integer > regionBits = _regionActivityNew.indicesMoreThan( 0.f ); // find all the active bits.
+
+        for( Integer c : _transient._unchangedCells ) {
+            regionBits.remove( c );
+        }
+
+        unfold( regionBits, _outputUnfoldedActivityRaw );
+        unfold( _regionPredictionNew, _outputUnfoldedPredictionRaw );
+
+        // now threshold:
+        _outputUnfoldedActivityRaw  .scaleRange( 0.f, 1.f );
+        _outputUnfoldedPredictionRaw.scaleRange( 0.f, 1.f );
+        _outputUnfoldedActivity  .copy( _outputUnfoldedActivityRaw );
+        _outputUnfoldedPrediction.copy( _outputUnfoldedPredictionRaw );
+        _outputUnfoldedActivity  .thresholdMoreThan( 0.5f, 1.f, 0.f );
+        _outputUnfoldedPrediction.thresholdMoreThan( 0.5f, 1.f, 0.f );
+//        Otsu.apply( _outputUnfoldedActivityRaw  , _outputUnfoldedActivity  , 20, 0.f, 1.f );
+//        Otsu.apply( _outputUnfoldedPredictionRaw, _outputUnfoldedPrediction, 20, 0.f, 1.f );
     }
 
     /**
@@ -232,20 +253,32 @@ public class RegionLayer extends NamedObject {
      * @param ffInput
      */
     public void unfold( Data region, Data ffInput ) {
+
+//        float threshold = 0.5f; // this is as meaningful as anything else..
+
+        HashSet< Integer > regionBits = region.indicesMoreThan( 0.f ); // find all the active bits.
+
+        unfold( regionBits, ffInput );
+    }
+
+    public void unfold( HashSet< Integer > regionBits, Data ffInput ) {//, Float threshold ) {
+
         ffInput.set( 0.f );
 
-        float threshold = 0.5f; // this is as meaningful as anything else..
+        if( regionBits.isEmpty() ) {
+            return;
+        }
 
         int weights = ffInput.getSize();
 
-        HashSet< Integer > activeBits = region.indicesMoreThan( 0.f ); // find all the active bits.
+//        float bitWeight = 1.f / (float)regionBits.size();
 
-        for( Integer i : activeBits ) {
+        for( Integer i : regionBits ) {
 
             Point xyRegion = _rc.getRegionGivenOffset( i );
             Point xyOrganizer = _rc.getOrganizerCoordinateGivenRegionCoordinate( xyRegion.x, xyRegion.y );
             Point xyClassifier = _rc.getClassifierCoordinateGivenRegionCoordinate( xyRegion.x, xyRegion.y );
-
+            // TODO dont unfold unchanged columns (in activity, with prediction, cant tell)?
             int organizerOffset = _rc.getOrganizerOffset( xyOrganizer.x, xyOrganizer.y );
             GrowingNeuralGas classifier = _classifiers.get( organizerOffset );
 
@@ -257,9 +290,12 @@ public class RegionLayer extends NamedObject {
                 int weightsOffset = weightsOrigin +w;
                 float weight = classifier._cellWeights._values[ weightsOffset ];
 
-                if( weight > threshold ) {
-                    ffInput._values[ w ] = 1.f; // either was zero, or was 1. Either way the update is correct.
-                }
+//                weight *= bitWeight;
+//                if( threshold != null ) {
+//                    if( weight > threshold ) {
+                        ffInput._values[ w ] += weight; // either was zero, or was 1. Either way the update is correct.
+//                    }
+//                }
             }
         }
     }
@@ -440,7 +476,7 @@ public class RegionLayer extends NamedObject {
         Point classifierOrigin = _rc.getRegionClassifierOrigin( xClassifier, yClassifier );
         int classifierOffset = _rc.getOrganizerOffset( xClassifier, yClassifier );
 
-        ArrayList< Integer > activeInput = _transient._classifierActiveInput.get( classifierOffset );
+        ArrayList< Integer > activeInput = _transient.getClassifierActiveInput( classifierOffset );//_classifierActiveInput.get( classifierOffset );
         GrowingNeuralGas classifier = _classifiers.get( classifierOffset );
 
         int bestCell = 0;
@@ -450,7 +486,7 @@ public class RegionLayer extends NamedObject {
             // For stability, preserve the current active cell, even though the classifier had no input.
             Point classifierSizeCells = _rc.getClassifierSizeCells();
 
-            boolean bestCellFound = false;
+//            boolean bestCellFound = false;
 
             for( int yc = 0; yc < classifierSizeCells.y; ++yc ) {
                 for( int xc = 0; xc < classifierSizeCells.x; ++xc ) {
@@ -463,15 +499,16 @@ public class RegionLayer extends NamedObject {
 
                     if( active > 0.f ) {
                         bestCell = classifier._c.getCell( xc, yc ); // find the original best cell in this column (classifier)
-                        bestCellFound = true;
+                        _transient._unchangedCells.add( regionOffset );
+//                        bestCellFound = true;
                     }
                 }
             }
 
-            if( !bestCellFound ) { // a bug?
-                int g = 0;
-                g++;
-            }
+            _transient._unchangedClassifiers.add( classifierOffset );
+            // happens at the start only (verified)
+//            if( !bestCellFound ) { // a bug?
+//            }
         }
         else {
             boolean learn = _rc.getLearn();
@@ -554,41 +591,75 @@ public class RegionLayer extends NamedObject {
 
     protected void updateRegionOutput() {
 
-        Point regionSizeCells = _rc.getRegionSizeCells();
+//        Point regionSizeCells = _rc.getRegionSizeCells();
+        Point organizerSizeCells = _rc.getOrganizerSizeCells();
+        Point classifierSizeCells = _rc.getClassifierSizeCells();
 
-        for( int y = 0; y < regionSizeCells.y; ++y ) {
-            for( int x = 0; x < regionSizeCells.x; ++x ) {
+        int stride = organizerSizeCells.x * classifierSizeCells.x;
 
-                // Rules:
-                // Prediction must START and CONTINUE until cell becomes ACTIVE.
-                // If prediction ends too early - FP, then when cell active, FN.
-                // If prediction ends too late -
-                // If the cell becomes active after the prediction, OK
-                // If the cell doesnt become active during prediction, Bad.
-                int regionOffset = y * regionSizeCells.x + x;
+        for( int yClassifier = 0; yClassifier < organizerSizeCells.y; ++yClassifier ) {
+            for( int xClassifier = 0; xClassifier < organizerSizeCells.x; ++xClassifier ) {
 
-                // update regional output
-                float errorFP = 0.f;
-                float errorFN = 0.f;
+                // copy weights, context, state
+                int classifierOffset = _rc.getOrganizerOffset( xClassifier, yClassifier );
 
-                float     activeNew = _regionActivityNew  ._values[ regionOffset ];
-                float predictionOld = _regionPredictionNew._values[ regionOffset ]; // we didn't update the prediction yet, so use current prediction
+                boolean unchanged = _transient._unchangedClassifiers.contains( classifierOffset );
 
-                // FN
-                if( ( activeNew == 1.f ) && ( predictionOld == 0.f ) ) {
-                    errorFN = 1.f;
+                if( unchanged ) {
+                    continue; // leave FP/FN unchanged
                 }
 
-                // FP
-                if( ( activeNew == 0.f ) && ( predictionOld == 1.f ) ) {
-                    errorFP = 1.f;
+                for( int yc = 0; yc < classifierSizeCells.y; ++yc ) {
+                    for( int xc = 0; xc < classifierSizeCells.x; ++xc ) {
+
+//        for( int y = 0; y < regionSizeCells.y; ++y ) {
+//            for( int x = 0; x < regionSizeCells.x; ++x ) {
+                        int xr = ( xClassifier * classifierSizeCells.x ) + xc;
+                        int yr = ( yClassifier * classifierSizeCells.y ) + yc;
+                        int regionOffset = Data2d.getOffset( stride, xr, yr );
+
+                        // Rules:
+                        // Prediction must START and CONTINUE until cell becomes ACTIVE.
+                        // If prediction ends too early - FP, then when cell active, FN.
+                        // If prediction ends too late -
+                        // If the cell becomes active after the prediction, OK
+                        // If the cell doesnt become active during prediction, Bad.
+//                int regionOffset = y * regionSizeCells.x + x;
+
+                        // update regional output
+                        float errorFP = 0.f;
+                        float errorFN = 0.f;
+
+                        // no error output for cells that didn't change.
+                        // Hold earlier errors for these columns? It might be informative..
+//                        if( unchanged ) {
+//                            errorFP = _regionPredictionFP._values[ regionOffset ];
+//                            errorFN = _regionPredictionFN._values[ regionOffset ];
+//                        }
+//                        else{
+                            float     activeNew = _regionActivityNew  ._values[ regionOffset ];
+                            float predictionOld = _regionPredictionNew._values[ regionOffset ]; // we didn't update the prediction yet, so use current prediction
+
+                            // FN
+                            if( ( activeNew == 1.f ) && ( predictionOld == 0.f ) ) {
+                                errorFN = 1.f;
+                            }
+
+                            // FP
+                            if( ( activeNew == 0.f ) && ( predictionOld == 1.f ) ) {
+                                errorFP = 1.f;
+                            }
+//                        }
+
+                        // store updated error state
+                        _regionPredictionFP._values[ regionOffset ] = errorFP;
+                        _regionPredictionFN._values[ regionOffset ] = errorFN;
+                    }
                 }
 
-                // store updated error state
-                _regionPredictionFP._values[ regionOffset ] = errorFP;
-                _regionPredictionFN._values[ regionOffset ] = errorFN;
             }
         }
+
     }
 
     protected void updatePrediction() {

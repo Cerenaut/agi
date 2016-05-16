@@ -37,12 +37,19 @@
 
     <div class="agi-div-background" style="">
      <div id="controls" style="padding:2px;text-align:center;">
+      <label for="host">Node</label>
+      <input type="text" id="host" style="" class="" placeholder="Host" value="localhost"/>
+      <input type="number" id="port" style="width:5em;" class="" placeholder="Port" value="8491"/>
+      <label for="data">Data</label>
       <input type="text" id="data" style="display:inline;" class="" placeholder="Data name" value=""/>
+      <label for="data">Interval</label>
       <input type="number" id="interval" style="display:inline;width:5em;" class="" placeholder="Update interval" value="500"/>
       <input type="button" id="pause" class="btn btn-sm btn-danger" style="" onclick="Loop.togglePause();" value="Resume"/>
       <input type="button" id="update" class="btn btn-sm btn-danger" style="" onclick="Loop.update();" value="Refresh"/>
+      <label for="normalize">Scale to unit</label>
+      <input id="normalize" type="checkbox" name="normalize" checked />
      </div>
-     <div id="container" style="width: 480px; height: 400px; margin: 0 auto"></div>
+     <div id="container" style="width: 1280px; height: 800px; margin: 0 auto"></div>
     </div>
 
     <!-- Latest compiled and minified JavaScript -->

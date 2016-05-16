@@ -47,8 +47,10 @@ public class RegionLayerEntity extends Entity {
     public static final String FF_INPUT_OLD = "ff-input-old";
     public static final String FB_INPUT     = "fb-input";
     public static final String FB_INPUT_OLD = "fb-input-old";
-    public static final String FB_OUTPUT_UNFOLDED_ACTIVITY   = "fb-output-unfolded-activity";
-    public static final String FB_OUTPUT_UNFOLDED_PREDICTION = "fb-output-unfolded-prediction";
+    public static final String FB_OUTPUT_UNFOLDED_ACTIVITY_RAW   = "fb-output-unfolded-activity-raw";
+    public static final String FB_OUTPUT_UNFOLDED_ACTIVITY       = "fb-output-unfolded-activity";
+    public static final String FB_OUTPUT_UNFOLDED_PREDICTION_RAW = "fb-output-unfolded-prediction-raw";
+    public static final String FB_OUTPUT_UNFOLDED_PREDICTION     = "fb-output-unfolded-prediction";
 
     public static final String ACTIVITY_OLD = "activity-old";
     public static final String ACTIVITY_NEW = "activity-new";
@@ -86,11 +88,14 @@ public class RegionLayerEntity extends Entity {
 
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
 
+        attributes.add( FB_OUTPUT_UNFOLDED_ACTIVITY_RAW );
         attributes.add( FB_OUTPUT_UNFOLDED_ACTIVITY );
+        attributes.add( FB_OUTPUT_UNFOLDED_PREDICTION_RAW );
         attributes.add( FB_OUTPUT_UNFOLDED_PREDICTION );
 
         flags.putFlag( FB_OUTPUT_UNFOLDED_ACTIVITY, DataFlags.FLAG_PERSIST_ONLY ); // never read
         flags.putFlag( FB_OUTPUT_UNFOLDED_PREDICTION, DataFlags.FLAG_PERSIST_ONLY ); // never read
+
         flags.putFlag( FB_OUTPUT_UNFOLDED_ACTIVITY, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( FB_OUTPUT_UNFOLDED_PREDICTION, DataFlags.FLAG_SPARSE_BINARY );
 
@@ -294,6 +299,10 @@ public class RegionLayerEntity extends Entity {
         r._fbInput = getData( FB_INPUT );
         r._fbInputOld = getDataLazyResize( FB_INPUT_OLD, r._fbInput._dataSize );
 
+        // copy the raw unfolded data back in
+        r._outputUnfoldedActivityRaw   = getDataLazyResize( FB_OUTPUT_UNFOLDED_ACTIVITY_RAW  , r._ffInput._dataSize );
+        r._outputUnfoldedPredictionRaw = getDataLazyResize( FB_OUTPUT_UNFOLDED_PREDICTION_RAW, r._ffInput._dataSize );
+
         Point organizerSize = r._rc.getOrganizerSizeCells();
         Point classifierSize = r._rc.getClassifierSizeCells();
 
@@ -375,8 +384,9 @@ public class RegionLayerEntity extends Entity {
 
         // Predictor:
         int predictorContextSize = r._predictor._context.getSize();
+        int predictorWeightsSize = r._predictor._weights.getSize();
         int hebbianPredictorContext = r._rc.getHebbianPredictorContextSizeRegion( predictorContextSize );
-        int hebbianPredictorWeights = r._rc.getHebbianPredictorWeightsSizeRegion( predictorContextSize );
+        int hebbianPredictorWeights = r._rc.getHebbianPredictorWeightsSizeRegion( predictorWeightsSize );
         r._regionPredictorContext = getDataLazyResize( PREDICTOR_CONTEXTS, DataSize.create( hebbianPredictorContext ) );
         r._regionPredictorWeights = getDataLazyResize( PREDICTOR_WEIGHTS, DataSize.create( hebbianPredictorWeights ) );
     }
@@ -421,8 +431,10 @@ public class RegionLayerEntity extends Entity {
         setData( FB_INPUT,     r._fbInput );
         setData( FB_INPUT_OLD, r._fbInputOld );
 
-        setData( FB_OUTPUT_UNFOLDED_ACTIVITY,   r._outputUnfoldedActivity );
-        setData( FB_OUTPUT_UNFOLDED_PREDICTION, r._outputUnfoldedPrediction );
+        setData( FB_OUTPUT_UNFOLDED_ACTIVITY_RAW,   r._outputUnfoldedActivityRaw );
+        setData( FB_OUTPUT_UNFOLDED_ACTIVITY,       r._outputUnfoldedActivity );
+        setData( FB_OUTPUT_UNFOLDED_PREDICTION_RAW, r._outputUnfoldedPredictionRaw );
+        setData( FB_OUTPUT_UNFOLDED_PREDICTION,     r._outputUnfoldedPrediction );
 
         setData( ACTIVITY_OLD, r._regionActivityOld );
         setData( ACTIVITY_NEW, r._regionActivityNew );

@@ -40,6 +40,9 @@ public class RegionLayerTransient {
 
     public ArrayList< Integer > _regionActiveCells = new ArrayList< Integer >();
 
+    public ArrayList< Integer > _unchangedClassifiers = new ArrayList< Integer >(); // not updated because their cols had no input.
+    public ArrayList< Integer > _unchangedCells = new ArrayList< Integer >(); // not updated because their cols had no input.
+
     public HashMap< Integer, Integer > _classifierActiveCells = new HashMap< Integer, Integer >();
     public HashMap< Integer, ArrayList< Integer > > _classifierActiveInput = new HashMap< Integer, ArrayList< Integer > >();
 
@@ -57,6 +60,14 @@ public class RegionLayerTransient {
             rankingMap.put( i, ranking );
         }
         return ranking;
+    }
+
+    public ArrayList< Integer > getClassifierActiveInput( int classifier ) {
+        ArrayList< Integer > activeInput = _classifierActiveInput.get( classifier );
+        if( activeInput == null ) {
+            return new ArrayList< Integer >();
+        }
+        return activeInput;
     }
 
     public void addClassifierActiveInput( int classifier, int activeInput ) {

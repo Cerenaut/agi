@@ -56,12 +56,18 @@ public class MNISTDemo {
 
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle_twin";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle_twin";
         String trainingPath = "./training";
         String testingPath = "./testing";
-        int terminationAge = -1; // run until complete
-//        int terminationAge = 2000;
+//        int terminationAge = -1; // run until complete
+        int terminationAge = 2000;
         int trainingBatches = 3;
         boolean testClassRegion = false;
+        boolean terminateByAge = true;
+//        boolean terminateByAge = false;
 
         // Define some entities
         String experimentName = "experiment";
@@ -82,12 +88,12 @@ public class MNISTDemo {
         Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), imageEncoderName ); // ok all input to the regions is ready
 
         if( testClassRegion ) {
-            Framework.CreateEntity( imageRegionName, RegionEntity.ENTITY_TYPE, n.getName(), null ); // disconnect image region
-            Framework.CreateEntity( classRegionName, RegionEntity.ENTITY_TYPE, n.getName(), constantName ); // test
+            Framework.CreateEntity( imageRegionName, RegionLayerEntity.ENTITY_TYPE, n.getName(), null ); // disconnect image region
+            Framework.CreateEntity( classRegionName, RegionLayerEntity.ENTITY_TYPE, n.getName(), constantName ); // test
         }
         else {
-            Framework.CreateEntity( imageRegionName, RegionEntity.ENTITY_TYPE, n.getName(), constantName );
-            Framework.CreateEntity( classRegionName, RegionEntity.ENTITY_TYPE, n.getName(), imageRegionName ); // 2nd, class region updates after first to get its feedback
+            Framework.CreateEntity( imageRegionName, RegionLayerEntity.ENTITY_TYPE, n.getName(), constantName );
+            Framework.CreateEntity( classRegionName, RegionLayerEntity.ENTITY_TYPE, n.getName(), imageRegionName ); // 2nd, class region updates after first to get its feedback
         }
 
         Framework.CreateEntity( classDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), classRegionName ); // produce the predicted classification for inspection by mnist next time
@@ -97,30 +103,32 @@ public class MNISTDemo {
         // Connect the entities' data
         // a) Image to image region, and decode
         Framework.SetDataReference( imageEncoderName, EncoderEntity.DATA_INPUT, mnistName, MnistEntity.OUTPUT_IMAGE );
-        Framework.SetDataReference( imageRegionName, RegionEntity.FF_INPUT, imageEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
-        Framework.SetDataReference( imageRegionName, RegionEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT ); // feedback to this region is just a constant
-        Framework.SetDataReference( activityImageDecoderName, DecoderEntity.DATA_INPUT_ENCODED, imageRegionName, RegionEntity.FB_OUTPUT_UNFOLDED_ACTIVITY );
-        Framework.SetDataReference( predictedImageDecoderName, DecoderEntity.DATA_INPUT_ENCODED, imageRegionName, RegionEntity.FB_OUTPUT_UNFOLDED_PREDICTION );
+        Framework.SetDataReference( imageRegionName, RegionLayerEntity.FF_INPUT, imageEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
+        Framework.SetDataReference( imageRegionName, RegionLayerEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT ); // feedback to this region is just a constant
+        Framework.SetDataReference( activityImageDecoderName, DecoderEntity.DATA_INPUT_ENCODED, imageRegionName, RegionLayerEntity.FB_OUTPUT_UNFOLDED_ACTIVITY );
+        Framework.SetDataReference( predictedImageDecoderName, DecoderEntity.DATA_INPUT_ENCODED, imageRegionName, RegionLayerEntity.FB_OUTPUT_UNFOLDED_PREDICTION );
 
         // a) Class to class region, and decode
         Framework.SetDataReference( classEncoderName, EncoderEntity.DATA_INPUT, mnistName, MnistEntity.OUTPUT_CLASSIFICATION );
-        Framework.SetDataReference( classRegionName, RegionEntity.FF_INPUT, classEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
+        Framework.SetDataReference( classRegionName, RegionLayerEntity.FF_INPUT, classEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
 
         if( testClassRegion ) {
-            Framework.SetDataReference( classRegionName, RegionEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT ); // get current state from the region to be used to predict
+            Framework.SetDataReference( classRegionName, RegionLayerEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT ); // get current state from the region to be used to predict
         }
         else { // whole system, use image classification to predict
-            Framework.SetDataReference( classRegionName, RegionEntity.FB_INPUT, imageRegionName, RegionEntity.ACTIVITY_NEW ); // get current state from the region to be used to predict
+            Framework.SetDataReference( classRegionName, RegionLayerEntity.FB_INPUT, imageRegionName, RegionLayerEntity.ACTIVITY_NEW ); // get current state from the region to be used to predict
         }
 
-        Framework.SetDataReference( classDecoderName, DecoderEntity.DATA_INPUT_ENCODED, classRegionName, RegionEntity.FB_OUTPUT_UNFOLDED_PREDICTION ); // the prediction of the next state
+        Framework.SetDataReference( classDecoderName, DecoderEntity.DATA_INPUT_ENCODED, classRegionName, RegionLayerEntity.FB_OUTPUT_UNFOLDED_PREDICTION ); // the prediction of the next state
         Framework.SetDataReference( mnistName, MnistEntity.INPUT_CLASSIFICATION, classDecoderName, DecoderEntity.DATA_OUTPUT_DECODED ); // the (decoded) prediction of the next state
 
         // Experiment config
         Framework.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
 //        Framework.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
-        Framework.SetConfig( experimentName, "terminationEntityName", mnistName );
-        Framework.SetConfig( experimentName, "terminationConfigPath", "terminate" );
+        if( !terminateByAge ) {
+            Framework.SetConfig( experimentName, "terminationEntityName", mnistName );
+            Framework.SetConfig( experimentName, "terminationConfigPath", "terminate" );
+        }
 
         // Mnist config
         Framework.SetConfig( mnistName, "receptiveField.receptiveFieldX", "0" );
@@ -166,6 +174,7 @@ public class MNISTDemo {
         // image region config
         Framework.SetConfig( imageRegionName, "predictorLearningRate", "100" );
         Framework.SetConfig( imageRegionName, "receptiveFieldsTrainingSamples", "0.1" );
+        Framework.SetConfig( imageRegionName, "classifiersPerBit", "5" );
         Framework.SetConfig( imageRegionName, "organizerStressThreshold", "0.0" );
         Framework.SetConfig( imageRegionName, "organizerGrowthInterval", "1" );
         Framework.SetConfig( imageRegionName, "organizerEdgeMaxAge", "1000" );
@@ -183,6 +192,7 @@ public class MNISTDemo {
         // class region config
         Framework.SetConfig( classRegionName, "predictorLearningRate", "100" );
         Framework.SetConfig( classRegionName, "receptiveFieldsTrainingSamples", "0.1" );
+        Framework.SetConfig( classRegionName, "classifiersPerBit", "5" );
         Framework.SetConfig( classRegionName, "organizerStressThreshold", "0.0" );
         Framework.SetConfig( classRegionName, "organizerGrowthInterval", "1" );
         Framework.SetConfig( classRegionName, "organizerEdgeMaxAge", "1000" );

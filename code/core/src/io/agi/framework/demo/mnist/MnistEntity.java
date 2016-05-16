@@ -163,7 +163,7 @@ public class MnistEntity extends Entity {
             config.imageIndex = 0; // reset the index to allow further updates:
             config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
             _logger.info( "MNIST dataset complete." );
-            return;
+//            return; dont skip producing an image.
         }
 
         // set learning status of entities

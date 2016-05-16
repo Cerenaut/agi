@@ -158,7 +158,7 @@ var Matrix = {
 
   setup : function() {
     Parameters.extract( Matrix.onParameter );
-    Framework.setup();
+    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
     Loop.setup( Matrix.update );
   }
 
