@@ -11,5 +11,5 @@ source $(dirname $0)/../$variables_file
 # sync to S3
 ./aws-s3-sync-up.sh
 
-# syc from S3 to ec2 instance
-ssh -i "$AGI_HOME/../credentials/nextpair.pem" ec2-user@x.agi.io 'bash -s' < $AGI_HOME/bin/aws-ecs/aws-s3-sync-down.sh
+# syc from S3 to ec2 instance (NOTE: you must setup your ssh keys for different hosts in .ssh/config)
+ssh ec2-user@x.agi.io 'bash -s' < $AGI_HOME/bin/aws-ecs/aws-s3-sync-down.sh

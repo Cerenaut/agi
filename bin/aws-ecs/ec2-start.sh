@@ -8,7 +8,7 @@ fi
 
 # parameters
 start=${1:-1}
-instanceId=${2:-i-cf55394d}
+instanceId=${2:-i-cf55394d}			# node=i-cf55394d, postgres=i-b1d1bd33
 
 
 if [ "$start" == 1 ]; then
