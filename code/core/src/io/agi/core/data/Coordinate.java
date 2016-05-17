@@ -32,29 +32,29 @@ import java.util.*;
  *
  * @author dave
  */
-public class Coordinate2 implements Cloneable {
+public class Coordinate implements Cloneable {
 
     public DataSize _d = null;
     public int[] _indices = null;
 
-    public Coordinate2( DataSize d ) {
+    public Coordinate( DataSize d ) {
         _d = d;
         _indices = new int[ _d.getDimensions() ];
         setMin();
     }
 
-    public Coordinate2( Coordinate2 c ) {
+    public Coordinate( Coordinate c ) {
         _d = c._d;
         _indices = Arrays.copyOf( c._indices, c._indices.length );
     }
 
     public
     @Override
-    Coordinate2 clone() {
-        Coordinate2 c = null;
+    Coordinate clone() {
+        Coordinate c = null;
 
         try {
-            c = ( Coordinate2 ) super.clone(); // will clone array.
+            c = ( Coordinate ) super.clone(); // will clone array.
         }
         catch( CloneNotSupportedException cnse ) {
             return null;
@@ -63,7 +63,7 @@ public class Coordinate2 implements Cloneable {
         return c;
     }
 
-    public boolean equivalent( Coordinate2 c ) {
+    public boolean equivalent( Coordinate c ) {
         return Arrays.equals( _indices, c._indices );
     }
 
@@ -73,11 +73,11 @@ public class Coordinate2 implements Cloneable {
             return true;
         }
 
-        if( !( o instanceof Coordinate2 ) ) {
+        if( !( o instanceof Coordinate ) ) {
             return false;
         }
 
-        Coordinate2 c = ( Coordinate2 ) o; // allow throw of exception otherwise
+        Coordinate c = ( Coordinate ) o; // allow throw of exception otherwise
 
         return equivalent( c );//Arrays.equals( _indices, c._indices );
     }
@@ -183,7 +183,7 @@ public class Coordinate2 implements Cloneable {
      *
      * @param translations
      */
-    public void translate( Coordinate2 translations ) {
+    public void translate( Coordinate translations ) {
         int dimensions = _indices.length;
         int d = 0;
 
@@ -199,12 +199,12 @@ public class Coordinate2 implements Cloneable {
         }
     }
 
-    public double euclidean( Coordinate2 c ) {
+    public double euclidean( Coordinate c ) {
         int sumSqDiff = sumSqDiff( c );
         return Math.sqrt( ( double ) sumSqDiff );
     }
 
-    public int sumSqDiff( Coordinate2 c ) {
+    public int sumSqDiff( Coordinate c ) {
         int dimensions = _indices.length;
         int d = 0;
         int sumSq = 0;
@@ -363,7 +363,7 @@ public class Coordinate2 implements Cloneable {
         return offset;
     }*/
 
-    public boolean anyLessThan( Coordinate2 o ) {
+    public boolean anyLessThan( Coordinate o ) {
         int dimension = 0;
         int dimensions = _d.getDimensions();
 
@@ -382,7 +382,7 @@ public class Coordinate2 implements Cloneable {
         return false;
     }
 
-    public boolean anyGreaterThan( Coordinate2 o ) {
+    public boolean anyGreaterThan( Coordinate o ) {
         int dimension = 0;
         int dimensions = _d.getDimensions();
 
@@ -401,7 +401,7 @@ public class Coordinate2 implements Cloneable {
         return false;
     }
 
-    public void add( Coordinate2 c ) {
+    public void add( Coordinate c ) {
         int dimension = 0;
         int dimensions = _d.getDimensions();
 
@@ -413,7 +413,7 @@ public class Coordinate2 implements Cloneable {
         }
     }
 
-    public void mul( Coordinate2 c ) {
+    public void mul( Coordinate c ) {
         int dimension = 0;
         int dimensions = _d.getDimensions();
 
@@ -449,7 +449,7 @@ public class Coordinate2 implements Cloneable {
         }
     }
 
-    public static int volume( Coordinate2 c1, Coordinate2 c2 ) {
+    public static int volume( Coordinate c1, Coordinate c2 ) {
 
         int dimension = 0;
         int volume = 1;
@@ -469,8 +469,8 @@ public class Coordinate2 implements Cloneable {
         return volume;
     }
 
-    public static Coordinate2 lowerBound( Coordinate2 c1, Coordinate2 c2 ) {
-        Coordinate2 c3 = new Coordinate2( c1._d );
+    public static Coordinate lowerBound( Coordinate c1, Coordinate c2 ) {
+        Coordinate c3 = new Coordinate( c1._d );
 
         int dimensions = c1._d.getDimensions();
         int d = dimensions - 1;
@@ -490,7 +490,7 @@ public class Coordinate2 implements Cloneable {
         return c3;
     }
 
-    public boolean nextBounded( Coordinate2 c1, Coordinate2 c2 ) {
+    public boolean nextBounded( Coordinate c1, Coordinate c2 ) {
 
         // dimension 0 moves most slowly...
         // dimension n-1 moves fastest
@@ -528,7 +528,7 @@ public class Coordinate2 implements Cloneable {
         return false; // finished.
     }
 
-    public static int volumeBounded( Coordinate2 c1, Coordinate2 c2 ) { // size of the volume defined by these 2 ordinates,
+    public static int volumeBounded( Coordinate c1, Coordinate c2 ) { // size of the volume defined by these 2 ordinates,
 
         // dimension 0 moves most slowly...
         int size = 1;

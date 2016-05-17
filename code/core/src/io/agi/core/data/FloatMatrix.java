@@ -43,11 +43,11 @@ public class FloatMatrix {
      * @param cols2
      * @return
      */
-    public static FloatArray2 mulSafe( FloatArray2 m1, FloatArray2 m2, int rows1, int cols1, int rows2, int cols2 ) {
+    public static FloatArray mulSafe( FloatArray m1, FloatArray m2, int rows1, int cols1, int rows2, int cols2 ) {
         int rows3 = rows1;
         int cols3 = cols2;
         int size = rows3 * cols3;
-        FloatArray2 m3 = new FloatArray2( size );
+        FloatArray m3 = new FloatArray( size );
         mulSafe( m1, m2, m3, rows1, cols1, rows2, cols2 );
         return m3;
     }
@@ -63,12 +63,12 @@ public class FloatMatrix {
      * @param rows2
      * @param cols2
      */
-    public static void mulSafe( FloatArray2 m1, FloatArray2 m2, FloatArray2 m3, int rows1, int cols1, int rows2, int cols2 ) {
+    public static void mulSafe( FloatArray m1, FloatArray m2, FloatArray m3, int rows1, int cols1, int rows2, int cols2 ) {
         int rows3 = rows1;
         int cols3 = cols2;
 
-        FloatArray2 sumColsPerRow = sumColsPerRow( m1, rows1, cols1 ); // foreach( row ), sum all col of A
-        FloatArray2 sumRowsPerCol = sumRowsPerCol( m2, rows2, cols2 ); // foreach( col ), sum all row of B
+        FloatArray sumColsPerRow = sumColsPerRow( m1, rows1, cols1 ); // foreach( row ), sum all col of A
+        FloatArray sumRowsPerCol = sumRowsPerCol( m2, rows2, cols2 ); // foreach( col ), sum all row of B
 
         for( int y = 0; y < rows3; ++y ) {
 
@@ -104,11 +104,11 @@ public class FloatMatrix {
      * @param cols2
      * @return
      */
-    public static FloatArray2 mul( FloatArray2 m1, FloatArray2 m2, int rows1, int cols1, int rows2, int cols2 ) {
+    public static FloatArray mul( FloatArray m1, FloatArray m2, int rows1, int cols1, int rows2, int cols2 ) {
         int rows3 = rows1;
         int cols3 = cols2;
         int size = rows3 * cols3;
-        FloatArray2 m3 = new FloatArray2( size );
+        FloatArray m3 = new FloatArray( size );
         mul( m1, m2, m3, rows1, cols1, rows2, cols2 );
         return m3;
     }
@@ -124,12 +124,12 @@ public class FloatMatrix {
      * @param rows2
      * @param cols2
      */
-    public static void mul( FloatArray2 m1, FloatArray2 m2, FloatArray2 m3, int rows1, int cols1, int rows2, int cols2 ) {
+    public static void mul( FloatArray m1, FloatArray m2, FloatArray m3, int rows1, int cols1, int rows2, int cols2 ) {
         int rows3 = rows1;
         int cols3 = cols2;
 
-        FloatArray2 sumColsPerRow = sumColsPerRow( m1, rows1, cols1 ); // foreach( row ), sum all col of A
-        FloatArray2 sumRowsPerCol = sumRowsPerCol( m2, rows2, cols2 ); // foreach( col ), sum all row of B
+        FloatArray sumColsPerRow = sumColsPerRow( m1, rows1, cols1 ); // foreach( row ), sum all col of A
+        FloatArray sumRowsPerCol = sumRowsPerCol( m2, rows2, cols2 ); // foreach( col ), sum all row of B
 
         for( int y = 0; y < rows3; ++y ) {
 
@@ -146,13 +146,13 @@ public class FloatMatrix {
         }
     }
 
-    public static FloatArray2 add( FloatArray2 m1, FloatArray2 m2 ) {
-        FloatArray2 m3 = new FloatArray2( m1 );
+    public static FloatArray add( FloatArray m1, FloatArray m2 ) {
+        FloatArray m3 = new FloatArray( m1 );
         m3.add( m2 );
         return m3;
     }
 
-    public static void add( FloatArray2 m1, FloatArray2 m2, FloatArray2 m3 ) {
+    public static void add( FloatArray m1, FloatArray m2, FloatArray m3 ) {
         m3.add( m1, m2 );
     }
 
@@ -161,19 +161,19 @@ public class FloatMatrix {
         return offset;
     }
 
-    public static float get( FloatArray2 m1, int rows, int cols, int row, int col ) {
+    public static float get( FloatArray m1, int rows, int cols, int row, int col ) {
         int offset = getOffset( rows, cols, row, col );
         float value = m1._values[ offset ];
         return value;
     }
 
-    public static void set( FloatArray2 m1, int rows, int cols, int row, int col, float value ) {
+    public static void set( FloatArray m1, int rows, int cols, int row, int col, float value ) {
         int offset = getOffset( rows, cols, row, col );
         m1._values[ offset ] = value;
     }
 
-    public static FloatArray2 sumRowsPerCol( FloatArray2 m1, int rows, int cols ) {
-        FloatArray2 m3 = new FloatArray2( cols );
+    public static FloatArray sumRowsPerCol( FloatArray m1, int rows, int cols ) {
+        FloatArray m3 = new FloatArray( cols );
 
         for( int x = 0; x < cols; ++x ) {
 
@@ -191,8 +191,8 @@ public class FloatMatrix {
         return m3;
     }
 
-    public static FloatArray2 sumColsPerRow( FloatArray2 m1, int rows, int cols ) {
-        FloatArray2 m3 = new FloatArray2( rows );
+    public static FloatArray sumColsPerRow( FloatArray m1, int rows, int cols ) {
+        FloatArray m3 = new FloatArray( rows );
 
         for( int y = 0; y < rows; ++y ) {
 
@@ -210,7 +210,7 @@ public class FloatMatrix {
         return m3;
     }
 
-    public static FloatArray2 transpose( FloatArray2 m1, int rows1, int cols1 ) {
+    public static FloatArray transpose( FloatArray m1, int rows1, int cols1 ) {
         // vectors too
         // storage in 1d as col-dominant or row-dominant?
         // Images are row-dominant but matlab is cols:
@@ -221,7 +221,7 @@ public class FloatMatrix {
 //        3 4   ==>   2 4 6
 //        5 6 
         int size = rows1 * cols1;
-        FloatArray2 m3 = new FloatArray2( size );
+        FloatArray m3 = new FloatArray( size );
         for( int y = 0; y < rows1; ++y ) {
             for( int x = 0; x < cols1; ++x ) {
                 int offset1 = getOffset( rows1, cols1, y, x );
@@ -243,8 +243,8 @@ public class FloatMatrix {
         return m3;
     }
 
-    public static FloatArray2 scalarMul( FloatArray2 m1, float scalar ) {
-        FloatArray2 m3 = new FloatArray2( m1 );
+    public static FloatArray scalarMul( FloatArray m1, float scalar ) {
+        FloatArray m3 = new FloatArray( m1 );
         m3.mul( scalar );
         return m3;
     }

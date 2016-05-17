@@ -38,7 +38,7 @@ import java.util.Random;
  *
  * @author dave
  */
-public class Data extends FloatArray2 {
+public class Data extends FloatArray {
 
     public DataSize _dataSize = null;
 
@@ -91,7 +91,7 @@ public class Data extends FloatArray2 {
      * @param d
      * @param fa
      */
-    public Data( DataSize d, FloatArray2 fa ) {
+    public Data( DataSize d, FloatArray fa ) {
         _dataSize = d;
         _values = fa._values;
     }
@@ -131,7 +131,7 @@ public class Data extends FloatArray2 {
         setSize( size );
     }
 
-    public float get( Coordinate2 c ) {
+    public float get( Coordinate c ) {
         int offset = c.offset();
         if( offset < _values.length ) {
             return _values[ offset ];
@@ -139,7 +139,7 @@ public class Data extends FloatArray2 {
         return 0.f;
     }
 
-    public void set( Coordinate2 c, float value ) {
+    public void set( Coordinate c, float value ) {
         int offset = c.offset();
         _values[ offset ] = value;
     }
@@ -149,24 +149,24 @@ public class Data extends FloatArray2 {
             return false;
         }
 
-        return super.isSameAs( ( FloatArray2 ) d );
+        return super.isSameAs( ( FloatArray ) d );
     }
 
-    public Coordinate2 begin() {
-        return new Coordinate2( _dataSize );
+    public Coordinate begin() {
+        return new Coordinate( _dataSize );
     }
 
-    public Coordinate2 end() {
-        Coordinate2 c = new Coordinate2( _dataSize );
+    public Coordinate end() {
+        Coordinate c = new Coordinate( _dataSize );
         c.setMax();
         return c;
     }
 
-    public Data translate( Coordinate2 translations ) {
+    public Data translate( Coordinate translations ) {
 
         Data v = new Data( _dataSize );
 
-        Coordinate2 c1 = begin();
+        Coordinate c1 = begin();
 
         int offset = 0;
 
@@ -175,7 +175,7 @@ public class Data extends FloatArray2 {
 
             ++offset;
 
-            Coordinate2 c2 = new Coordinate2( c1 );
+            Coordinate c2 = new Coordinate( c1 );
             c2.translate( translations );
 
             v.set( c2, value ); // checks for validity
@@ -184,15 +184,15 @@ public class Data extends FloatArray2 {
         return v;
     }
 
-    public Collection< Coordinate2 > maxN( int n ) {
+    public Collection< Coordinate > maxN( int n ) {
         Data v = new Data( _dataSize );
 
         float min = Float.MIN_VALUE;
 
-        ArrayList< Coordinate2 > al = new ArrayList< Coordinate2 >();
+        ArrayList< Coordinate > al = new ArrayList< Coordinate >();
 
         while( al.size() < n ) {
-            Coordinate2 c = v.maxAt();
+            Coordinate c = v.maxAt();
 
             al.add( c );
 
@@ -202,15 +202,15 @@ public class Data extends FloatArray2 {
         return al;
     }
 
-    public Collection< Coordinate2 > minN( int n ) {
+    public Collection< Coordinate > minN( int n ) {
         Data v = new Data( _dataSize );
 
         float max = Float.MAX_VALUE;
 
-        ArrayList< Coordinate2 > al = new ArrayList< Coordinate2 >();
+        ArrayList< Coordinate > al = new ArrayList< Coordinate >();
 
         while( al.size() < n ) {
-            Coordinate2 c = v.minAt();
+            Coordinate c = v.minAt();
 
             al.add( c );
 
@@ -220,67 +220,67 @@ public class Data extends FloatArray2 {
         return al;
     }
 
-    public Coordinate2 maxAt() {
+    public Coordinate maxAt() {
 
         float max = Float.MIN_VALUE;
 
-        Coordinate2 c = begin();
-        Coordinate2 cMax = c;
+        Coordinate c = begin();
+        Coordinate cMax = c;
 
         do { // for-each( value in volume )
             float value = get( c );
 
             if( value > max ) {
                 max = value;
-                cMax = new Coordinate2( c );
+                cMax = new Coordinate( c );
             }
         } while( c.next() ); // for-each( value in volume )
 
         return cMax;
     }
 
-    public Coordinate2 minAt() {
+    public Coordinate minAt() {
 
         float min = Float.MAX_VALUE;
 
-        Coordinate2 c = begin();
-        Coordinate2 cMin = c;
+        Coordinate c = begin();
+        Coordinate cMin = c;
 
         do { // for-each( value in volume )
             float value = get( c );
 
             if( value < min ) {
                 min = value;
-                cMin = new Coordinate2( c );
+                cMin = new Coordinate( c );
             }
         } while( c.next() ); // for-each( value in volume )
 
         return cMin;
     }
 
-    public Coordinate2 random( Random r ) {  // select a voxel proportional to its value as a weight, over all values
+    public Coordinate random( Random r ) {  // select a voxel proportional to its value as a weight, over all values
 
         // first sum the values, and handle the all-zero case as totally random:
-        Coordinate2 c = begin();
+        Coordinate c = begin();
 
         c.randomize( r );
         return c;
     }
 
-    public ArrayList< Coordinate2 > roulette( int samples, Random r ) {  // select a voxel proportional to its value as a weight, over all values
+    public ArrayList< Coordinate > roulette( int samples, Random r ) {  // select a voxel proportional to its value as a weight, over all values
         // first sum the values, and handle the all-zero case as totally random:
 
-        ArrayList< Coordinate2 > al = new ArrayList< Coordinate2 >();
+        ArrayList< Coordinate > al = new ArrayList< Coordinate >();
 
         double sum = sum();
 
         for( int i = 0; i < samples; ++i ) {
             if( sum <= 0.0 ) {
-                Coordinate2 c = begin();
+                Coordinate c = begin();
                 c.randomize( r );
                 al.add( c );
             } else {
-                Coordinate2 c = roulette( r, sum );
+                Coordinate c = roulette( r, sum );
                 al.add( c );
             }
         }
@@ -288,14 +288,14 @@ public class Data extends FloatArray2 {
         return al;
     }
 
-    public Coordinate2 roulette() {  // select a voxel proportional to its value as a weight, over all values
+    public Coordinate roulette() {  // select a voxel proportional to its value as a weight, over all values
         return roulette( RandomInstance.getInstance(), sum() );
     }
 
-    public Coordinate2 roulette( Random r, double sum ) {  // select a voxel proportional to its value as a weight, over all values
+    public Coordinate roulette( Random r, double sum ) {  // select a voxel proportional to its value as a weight, over all values
 
         // first sum the values, and handle the all-zero case as totally random:
-        Coordinate2 c = begin();
+        Coordinate c = begin();
 
         if( sum <= 0.0 ) {
             c.randomize( r );
@@ -319,7 +319,7 @@ public class Data extends FloatArray2 {
         return end(); // shouldn't happen!
     }
 
-    public float sumSubVolume( int dimensionsExcluded, Coordinate2 included ) {
+    public float sumSubVolume( int dimensionsExcluded, Coordinate included ) {
 
         // First we assume the user has specified the indices in all excluded
         // dimensions using the param "included".
@@ -327,8 +327,8 @@ public class Data extends FloatArray2 {
         // Then we compute a second coordinate which is 1 position beyond the
         // included range (ie the first excluded coordinate).
         // excluded should be 12400
-        Coordinate2 excluded = new Coordinate2( included );
-        Coordinate2 offset = new Coordinate2( _dataSize );
+        Coordinate excluded = new Coordinate( included );
+        Coordinate offset = new Coordinate( _dataSize );
         offset._indices[ dimensionsExcluded - 1 ] = 1;
 
         excluded.add( offset );
@@ -348,10 +348,10 @@ public class Data extends FloatArray2 {
         return sum;
     }
 
-    public void mulSubVolume( int dimensionsExcluded, Coordinate2 included, float value ) {
+    public void mulSubVolume( int dimensionsExcluded, Coordinate included, float value ) {
 
-        Coordinate2 excluded = new Coordinate2( included );
-        Coordinate2 offset = new Coordinate2( _dataSize );
+        Coordinate excluded = new Coordinate( included );
+        Coordinate offset = new Coordinate( _dataSize );
         offset._indices[ dimensionsExcluded - 1 ] = 1;
 
         excluded.add( offset );
@@ -367,7 +367,7 @@ public class Data extends FloatArray2 {
         }
     }
 
-    public void scaleSubVolume( int dimensionsExcluded, Coordinate2 included, float total ) {
+    public void scaleSubVolume( int dimensionsExcluded, Coordinate included, float total ) {
 
         // formula:
         // x = x / sum

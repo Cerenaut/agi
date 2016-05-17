@@ -658,7 +658,7 @@ public class Region extends NamedObject {
                 // copy? weights(n), context(y), state(n), predicted(n)
                 //                      .copyRange( that, offsetThis, offsetThat, range );
                 _hebbianPredictorContext.copyRange( _hebbianPredictor._context, offsetContext, 0, hebbianPredictorContext );
-//                _hebbianPredictorWeights.copyRange( _hebbianPredictor._weights, offsetWeights, 0, hebbianPredictorWeights ); // unchanged
+//                _regionPredictorWeights.copyRange( _predictor._weights, offsetWeights, 0, hebbianPredictorWeights ); // unchanged
 
                 // Extract the prediction values (raw)
                 Point classifierOrigin = _rc.getRegionClassifierOrigin( xClassifier, yClassifier );

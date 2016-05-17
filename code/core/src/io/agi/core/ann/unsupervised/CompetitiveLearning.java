@@ -19,7 +19,7 @@
 
 package io.agi.core.ann.unsupervised;
 
-import io.agi.core.data.FloatArray2;
+import io.agi.core.data.FloatArray;
 import io.agi.core.data.Ranking;
 import io.agi.core.orm.Callback;
 import io.agi.core.orm.NamedObject;
@@ -40,7 +40,7 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
 
     public ArrayList< Integer > createCellList(
             CompetitiveLearningConfig c,
-            FloatArray2 cellMask ) {
+            FloatArray cellMask ) {
 
         ArrayList< Integer > cellList = new ArrayList<>();
 
@@ -61,9 +61,9 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
 
     public static void sumSqError(
             CompetitiveLearningConfig c,
-            FloatArray2 inputValues,
-            FloatArray2 cellWeights,  // Size = cells * inputs
-            FloatArray2 cellSumSqError ) { // size = cells
+            FloatArray inputValues,
+            FloatArray cellWeights,  // Size = cells * inputs
+            FloatArray cellSumSqError ) { // size = cells
 
         int cells = c.getNbrCells();
 
@@ -79,9 +79,9 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
     public static void sumSqError(
             CompetitiveLearningConfig c,
             ArrayList< Integer > cells,
-            FloatArray2 inputValues,
-            FloatArray2 cellWeights,  // Size = cells * inputs
-            FloatArray2 cellSumSqError ) { // size = cells
+            FloatArray inputValues,
+            FloatArray cellWeights,  // Size = cells * inputs
+            FloatArray cellSumSqError ) { // size = cells
 
         int inputs = c.getNbrInputs();
 
@@ -107,8 +107,8 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
             CompetitiveLearningConfig c,
             ArrayList< Integer > cells,
             ArrayList< Integer > inputValues, // assume
-            FloatArray2 cellWeights,  // Size = cells * inputs
-            FloatArray2 cellSumSqError ) { // size = cells
+            FloatArray cellWeights,  // Size = cells * inputs
+            FloatArray cellSumSqError ) { // size = cells
 
         int inputs = c.getNbrInputs();
 
@@ -146,9 +146,9 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
 
     public static void findBestNCells(
             CompetitiveLearningConfig c,
-            FloatArray2 cellMask,  // Size = cells
-            FloatArray2 cellValues, // ie less is better
-            FloatArray2 cellRanked, // a 1 if within top N ranks
+            FloatArray cellMask,  // Size = cells
+            FloatArray cellValues, // ie less is better
+            FloatArray cellRanked, // a 1 if within top N ranks
             int maxRank, // max rank to keep, 0 based
             boolean findMaxima, // if false, rank minima
             TreeMap< Float, ArrayList< Integer > > ranking ) {
@@ -160,9 +160,9 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
     public static void findBestNCells(
             int w,
             int h,
-            FloatArray2 cellMask,  // Size = cells
-            FloatArray2 cellValues, // ie less is better
-            FloatArray2 cellRanked, // a 1 if within top N ranks
+            FloatArray cellMask,  // Size = cells
+            FloatArray cellValues, // ie less is better
+            FloatArray cellRanked, // a 1 if within top N ranks
             int maxRank, // max rank to keep, 0 based
             boolean findMaxima, // if false, rank minima
             TreeMap< Float, ArrayList< Integer > > ranking ) {

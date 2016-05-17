@@ -33,13 +33,13 @@ package io.agi.core.data;
  */
 public class Otsu {
 
-    public static void apply( FloatArray2 v1, FloatArray2 v2, int precision, float lo, float hi ) {
+    public static void apply( FloatArray v1, FloatArray v2, int precision, float lo, float hi ) {
 
         int values = v1.getSize();
-        FloatArray2 vh = v1.getHistogram( precision, 0.0f, 1.0f );
+        FloatArray vh = v1.getHistogram( precision, 0.0f, 1.0f );
 
         if( v2 == null ) {
-            v2 = new FloatArray2( v1 );
+            v2 = new FloatArray( v1 );
         } else {
             v2.copy( v1 );
         }

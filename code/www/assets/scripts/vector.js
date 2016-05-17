@@ -13,6 +13,7 @@ var Vector = {
       }
       suffix = suffix + "name=" + dataName;
     }
+    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
     Framework.getDataList( suffix, Vector.onGetData );
   },
 
@@ -20,6 +21,8 @@ var Vector = {
     if( json.status != 200 ) {
       return;
     }
+
+    var normalize = $( "#normalize" ).is( ":checked" );
 
     var datas = JSON.parse( json.responseText );
 
@@ -50,6 +53,17 @@ var Vector = {
       var dataName = data.name;
       var values = [];
       values.length = elements;
+
+      var maxValue = 0.0;
+      if( normalize ) {
+        for( var i = 0; i < elements; ++i ) {
+          var value = dataElements.elements[ i ];
+          maxValue = Math.max( value, maxValue );
+        }
+      }
+      else {
+        maxValue = 1.0;
+      }
 
       var i = 0;
       for( i = 0; i < elements; ++i ) {
@@ -85,7 +99,7 @@ var Vector = {
         },
         yAxis: {
             min: 0,
-            max: 1,
+            max: maxValue,
             title: {
                 text: 'Value',
                 align: 'high'
@@ -140,7 +154,7 @@ var Vector = {
 
   setup : function() {
     Parameters.extract( Vector.onParameter );
-    Framework.setup();
+    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
     Loop.setup( Vector.update );
   }
 

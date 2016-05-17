@@ -19,7 +19,7 @@
 
 package io.agi.core.ann.supervised;
 
-import io.agi.core.data.FloatArray2;
+import io.agi.core.data.FloatArray;
 
 /**
  * This class puts all the math associated with the backpropagation algorithm in one place.
@@ -69,11 +69,11 @@ public abstract class BackPropagation {
 //    }
 
     public static void externalErrorGradient(
-            FloatArray2 weightedSums,
-            FloatArray2 outputs,
-            FloatArray2 ideals,
+            FloatArray weightedSums,
+            FloatArray outputs,
+            FloatArray ideals,
 //            FloatArray2 losses,
-            FloatArray2 errors,
+            FloatArray errors,
             ActivationFunction af,
             String lossFunction,
             float l2R,
@@ -91,10 +91,10 @@ public abstract class BackPropagation {
     }
 
     public static void externalErrorGradientQuadratic(
-            FloatArray2 weightedSums,
-            FloatArray2 outputs,
-            FloatArray2 ideals,
-            FloatArray2 errors,
+            FloatArray weightedSums,
+            FloatArray outputs,
+            FloatArray ideals,
+            FloatArray errors,
             ActivationFunction af,
             float l2R ) {
         int J = weightedSums.getSize();
@@ -113,9 +113,9 @@ public abstract class BackPropagation {
     }
 
     public static void externalErrorGradientDifference(
-            FloatArray2 outputs,
-            FloatArray2 ideals,
-            FloatArray2 errors,
+            FloatArray outputs,
+            FloatArray ideals,
+            FloatArray errors,
             float l2R ) {
         int J = ideals.getSize();
         assert ( outputs.getSize() == J );
@@ -128,10 +128,10 @@ public abstract class BackPropagation {
     }
 
     public static void train(
-            FloatArray2 inputs, // a, or i ie the activations of the layer before (l-1)
-            FloatArray2 weights, // w
-            FloatArray2 biases, // b
-            FloatArray2 errorGradient, // d
+            FloatArray inputs, // a, or i ie the activations of the layer before (l-1)
+            FloatArray weights, // w
+            FloatArray biases, // b
+            FloatArray errorGradient, // d
             float learningRate,
             float l2R ) {
         int K = inputs.getSize(); // layer inputs ie neurons in layer l-1
@@ -166,10 +166,10 @@ public abstract class BackPropagation {
     }
 
     public static void internalErrorGradient(
-            FloatArray2 weightedSumsLayer1,
-            FloatArray2 errorsLayer1,
-            FloatArray2 weightsLayer2,
-            FloatArray2 errorsLayer2,
+            FloatArray weightedSumsLayer1,
+            FloatArray errorsLayer1,
+            FloatArray weightsLayer2,
+            FloatArray errorsLayer2,
             ActivationFunction afLayer1,
             float l2R ) {
 

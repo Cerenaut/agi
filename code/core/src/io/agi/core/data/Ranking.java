@@ -40,14 +40,17 @@ public class Ranking {
     public TreeMap< Float, ArrayList< Integer > > _ranking;
 
     public Ranking() {
-        _ranking = new TreeMap< Float, ArrayList< Integer > >();
+        _ranking = CreateRanking();
     }
 
-    public Ranking( FloatArray2 v ) {
+    public static TreeMap< Float, ArrayList< Integer > > CreateRanking() {
+        return new TreeMap< Float, ArrayList< Integer > >();
+    }
+    public Ranking( FloatArray v ) {
         _ranking = rank( v );
     }
 
-    public static TreeMap< Float, ArrayList< Integer > > rank( FloatArray2 vq ) {
+    public static TreeMap< Float, ArrayList< Integer > > rank( FloatArray vq ) {
 
         TreeMap< Float, ArrayList< Integer > > ranking = new TreeMap< Float, ArrayList< Integer > >();
 
@@ -382,7 +385,7 @@ public class Ranking {
 
     }
 
-    public static void toArray( HashMap< Integer, Float > ranking, FloatArray2 vr ) {
+    public static void toArray( HashMap< Integer, Float > ranking, FloatArray vr ) {
 
         vr.set( 0.0f );
 
@@ -400,7 +403,7 @@ public class Ranking {
         }
     }
 
-    public static void toArray( TreeMap< Float, ArrayList< Integer > > ranking, FloatArray2 vr ) {
+    public static void toArray( TreeMap< Float, ArrayList< Integer > > ranking, FloatArray vr ) {
 
         vr.set( 0.0f );
 

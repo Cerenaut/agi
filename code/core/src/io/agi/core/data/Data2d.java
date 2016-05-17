@@ -97,7 +97,7 @@ public class Data2d {
         return getSize( d._dataSize );
     }
 
-    public static Point getSize( FloatArray2 fa ) {
+    public static Point getSize( FloatArray fa ) {
         if( fa == null ) {
             return null;
         }

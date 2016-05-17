@@ -23,6 +23,7 @@ import io.agi.core.orm.ObjectMap;
 import io.agi.framework.Entity;
 import io.agi.framework.EntityFactory;
 import io.agi.framework.Node;
+import io.agi.framework.demo.mnist.MnistEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.persistence.models.ModelEntity;
 import org.apache.logging.log4j.LogManager;
@@ -88,6 +89,10 @@ public class CommonEntityFactory implements EntityFactory {
             return new RegionEntity( objectMap, _n, modelEntity );
         }
 
+        if( entityType.equals( RegionLayerEntity.ENTITY_TYPE ) ) {
+            return new RegionLayerEntity( objectMap, _n, modelEntity );
+        }
+
         if( entityType.equals( ConstantMatrixEntity.ENTITY_TYPE ) ) {
             return new ConstantMatrixEntity( objectMap, _n, modelEntity );
         }
@@ -98,6 +103,10 @@ public class CommonEntityFactory implements EntityFactory {
 
         if( entityType.equals( DecoderEntity.ENTITY_TYPE ) ) {
             return new DecoderEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( MnistEntity.ENTITY_TYPE ) ) {
+            return new MnistEntity( objectMap, _n, modelEntity );
         }
 
         return null;

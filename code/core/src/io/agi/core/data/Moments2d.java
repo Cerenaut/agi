@@ -35,7 +35,7 @@ import java.awt.*;
 public class Moments2d {
 
     public static Point.Float weightedCentreOfMass(
-            FloatArray2 input,
+            FloatArray input,
             int offset,
             int w,
             int h ) {
