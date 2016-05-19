@@ -70,8 +70,6 @@ public class ExperimentEntity extends Entity {
         // Get all the parameters:
         ExperimentEntityConfig config = ( ExperimentEntityConfig ) _config;
 
-        Persistence p = _n.getPersistence();
-
         _logger.info( getName() + " experiment age: " + _config.age + " terminationAge: " + ( ( ExperimentEntityConfig ) _config ).terminationAge );
 
         // reset if age == 0
