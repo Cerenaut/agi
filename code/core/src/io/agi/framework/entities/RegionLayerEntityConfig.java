@@ -31,7 +31,8 @@ public class RegionLayerEntityConfig extends EntityConfig {
 
     // Column Sizing
     int classifierWidthCells = 6;
-    int classifierHeightCells = 6;
+    int classifierHeightCells = 3;
+    int classifierDepthCells = 2;
 
     // Organizer training
     float receptiveFieldsTrainingSamples = 0.1f;//12;

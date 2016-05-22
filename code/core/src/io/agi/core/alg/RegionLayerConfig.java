@@ -42,6 +42,7 @@ public class RegionLayerConfig extends NetworkConfig {
 //    public static final String RECEPTIVE_FIELD_SIZE = "receptive-field-size";
     public static final String CLASSIFIERS_PER_BIT = "classifiers-per-bit";
     public static final String PREDICTOR_LEARNING_RATE = "predictor-learning-rate";
+    public static final String DEPTH_CELLS = "depth-cells";
 
     public static final String SUFFIX_ORGANIZER = "organizer";
     public static final String SUFFIX_CLASSIFIER = "classifier";
@@ -64,7 +65,8 @@ public class RegionLayerConfig extends NetworkConfig {
             int fbInputArea,
             float predictorLearningRate,
             float receptiveFieldsTrainingSamples,
-            int classifiersPerBit ) {
+            int classifiersPerBit,
+            int depthCells ) {
         super.setup( om, name, r );
 
         _organizerConfig = organizerConfig;
@@ -76,6 +78,7 @@ public class RegionLayerConfig extends NetworkConfig {
         setClassifiersPerBit( classifiersPerBit );
         setFfInputSize( ffInputWidth, ffInputHeight );
         setFbInputArea( fbInputArea );
+        setDepthCells( depthCells );
     }
 
     public Random getRandom() {
@@ -155,8 +158,17 @@ public class RegionLayerConfig extends NetworkConfig {
         return n;
     }
 
-    public void setClassifiersPerBit( int classifiersPerBit ) {
-        _om.put( getKey( CLASSIFIERS_PER_BIT ), classifiersPerBit );
+    public void setClassifiersPerBit( int depthCells ) {
+        _om.put( getKey( CLASSIFIERS_PER_BIT ), depthCells );
+    }
+
+    public int getDepthCells() {
+        int n = _om.getInteger( getKey( DEPTH_CELLS ) );
+        return n;
+    }
+
+    public void setDepthCells( int depthCells ) {
+        _om.put( getKey( DEPTH_CELLS ), depthCells );
     }
 
     public float getReceptiveFieldsTrainingSamples() {
@@ -194,36 +206,63 @@ public class RegionLayerConfig extends NetworkConfig {
      * @return
      */
     public Point getOrganizerCoordinateGivenRegionCoordinate( int xRegion, int yRegion ) {
-        Point classifierSize = getClassifierSizeCells();
-
-        int xClassifier = xRegion / classifierSize.x;
-        int yClassifier = yRegion / classifierSize.y;
-
+        Point columnSize = getColumnSizeCells();
+        int xClassifier = xRegion / columnSize.x;
+        int yClassifier = yRegion / columnSize.y;
         return new Point( xClassifier, yClassifier ); // the
     }
 
+    public Point getColumnSizeCells() {
+        Point classifierSize = getClassifierSizeCells();
+        int depthCells = getDepthCells();
+        int wColumn = classifierSize.x;
+        int hColumn = classifierSize.y * depthCells;
+        return new Point( wColumn, hColumn );
+    }
     /**
      * Calculates the coordinates of the cell within a classifier that represents the given region cell.
      * @param xRegion
      * @param yRegion
      * @return
      */
-    public Point getClassifierCoordinateGivenRegionCoordinate( int xRegion, int yRegion ) {
-        Point classifierSize = getClassifierSizeCells();
+    public Point getColumnCoordinateGivenRegionCoordinate( int xRegion, int yRegion ) {
+//        Point classifierSize = getClassifierSizeCells();
+        Point columnSize = getColumnSizeCells();
 
-        int xClassifier = ( xRegion / classifierSize.x ) * classifierSize.x;
-        int yClassifier = ( yRegion / classifierSize.y ) * classifierSize.y;
+        int xClassifier = ( xRegion / columnSize.x ) * columnSize.x;
+        int yClassifier = ( yRegion / columnSize.y ) * columnSize.y;
 
         int xCell = xRegion - xClassifier;
-        int yCell = yRegion - yClassifier;
+        int yCell = yRegion - yClassifier; // note: may include depth
 
         return new Point( xCell, yCell ); // the
     }
 
+    public Point getClassifierCellGivenColumnCell( int xColumnCell, int yColumnCell ) {
+        Point classifierSizeCells = getClassifierSizeCells();
+        int yOrigin = ( yColumnCell / classifierSizeCells.y ) * classifierSizeCells.y; // excludes any fractional part
+
+        int xClassifierCell = xColumnCell;
+        int yClassifierCell = yColumnCell - yOrigin;
+
+        return new Point( xClassifierCell, yClassifierCell ); // the
+    }
+
+    public Point getColumnCellGivenClassifierCell( int xClassifierCell, int yClassifierCell, int zDepth ) {
+        Point classifierSizeCells = getClassifierSizeCells();
+        int yOrigin = zDepth * classifierSizeCells.y;
+
+        int xColumnCell = xClassifierCell;
+        int yColumnCell = yClassifierCell + yOrigin;
+
+        return new Point( xColumnCell, yColumnCell ); // the
+    }
+
     public Point getRegionClassifierOrigin( int xClassifier, int yClassifier ) {
-        Point classifierSize = getClassifierSizeCells();
-        int xRegion = xClassifier * classifierSize.x;
-        int yRegion = yClassifier * classifierSize.y;
+//        Point classifierSize = getClassifierSizeCells();
+        Point columnSize = getColumnSizeCells();
+        int xRegion = xClassifier * columnSize.x;
+        int yRegion = yClassifier * columnSize.y;
 
         Point regionOrigin = new Point( xRegion, yRegion );
         return regionOrigin;
@@ -236,18 +275,21 @@ public class RegionLayerConfig extends NetworkConfig {
     }
 
     public Point getRegionSizeCells() {
-        Point classifierSize = getClassifierSizeCells();
+//        Point classifierSize = getClassifierSizeCells();
+        Point columnSize = getColumnSizeCells();
         Point organizerSize = getOrganizerSizeCells();
 
-        int width = classifierSize.x * organizerSize.x;
-        int height = classifierSize.y * organizerSize.y;
+        int width  = columnSize.x * organizerSize.x;
+        int height = columnSize.y * organizerSize.y;
 
         Point regionSize = new Point( width, height );
         return regionSize;
     }
 
     public int getHebbianPredictorStates() {
-        int hebbianStates = getClassifierSizeCells().x * getClassifierSizeCells().y;
+//        int hebbianStates = getClassifierSizeCells().x * getClassifierSizeCells().y;
+        Point columnSize = getColumnSizeCells();
+        int hebbianStates = columnSize.x * columnSize.y;
         return hebbianStates;
     }
     public int getHebbianPredictorContext( int fbInputArea ) {

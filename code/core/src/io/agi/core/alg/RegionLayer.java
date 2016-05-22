@@ -134,18 +134,21 @@ public class RegionLayer extends NamedObject {
 
         DataSize dataSizeInputFF = DataSize.create( ffInputSize.x, ffInputSize.y );
         DataSize dataSizeInputFB = DataSize.create( fbInputSize.x, fbInputSize.y );
-        DataSize dataSizeRegion = DataSize.create( regionSize.x, regionSize.y );
+        DataSize dataSizeRegion  = DataSize.create( regionSize.x, regionSize.y );
 
-        _ffInput = new Data( dataSizeInputFF );
+        // external inputs
+        _ffInput    = new Data( dataSizeInputFF );
         _ffInputOld = new Data( dataSizeInputFF );
-        _fbInput = new Data( dataSizeInputFB );
+        _fbInput    = new Data( dataSizeInputFB );
         _fbInputOld = new Data( dataSizeInputFB );
 
+        // unfolded structures: input size.
         _outputUnfoldedActivityRaw   = new Data( dataSizeInputFF );
         _outputUnfoldedActivity      = new Data( dataSizeInputFF );
         _outputUnfoldedPredictionRaw = new Data( dataSizeInputFF );
         _outputUnfoldedPrediction    = new Data( dataSizeInputFF );
 
+        // region sized structures
         _regionActivityOld = new Data( dataSizeRegion );
         _regionActivityNew = new Data( dataSizeRegion );
         _regionActivity = new Data( dataSizeRegion );
@@ -171,7 +174,6 @@ public class RegionLayer extends NamedObject {
 
     public void reset() {
         _transient = null;
-
         _organizer.reset();
         _predictor.reset();
 
@@ -195,9 +197,9 @@ public class RegionLayer extends NamedObject {
         // update all the classifiers and thus the set of active cells in the region
         _regionActivity.set( 0.f ); // clear
 //        _transient._regionActiveCells = new ArrayList< Integer >(); // clear
-//        _transient._classifierActiveCells.clear();
+//        _transient._columnActiveCells.clear();
 
-        updateClassifiers(); // adds to _transient._regionActiveCells, _transient._classifierActiveCells, and _regionActivity
+        updateClassifiers(); // adds to _transient._regionActiveCells, _transient._columnActiveCells, and _regionActivity
 
         _ffInputOld.copy( _ffInput );
 
@@ -275,9 +277,11 @@ public class RegionLayer extends NamedObject {
 
         for( Integer i : regionBits ) {
 
-            Point xyRegion = _rc.getRegionGivenOffset( i );
-            Point xyOrganizer = _rc.getOrganizerCoordinateGivenRegionCoordinate( xyRegion.x, xyRegion.y );
-            Point xyClassifier = _rc.getClassifierCoordinateGivenRegionCoordinate( xyRegion.x, xyRegion.y );
+            Point xyRegion     = _rc.getRegionGivenOffset( i );
+            Point xyOrganizer  = _rc.getOrganizerCoordinateGivenRegionCoordinate( xyRegion.x, xyRegion.y );
+            Point xyColumn     = _rc.getColumnCoordinateGivenRegionCoordinate( xyRegion.x, xyRegion.y );
+            Point xyClassifier = _rc.getClassifierCellGivenColumnCell( xyColumn.x, xyColumn.y ); // convert from column to classifier cell
+
             // TODO dont unfold unchanged columns (in activity, with prediction, cant tell)?
             int organizerOffset = _rc.getOrganizerOffset( xyOrganizer.x, xyOrganizer.y );
             GrowingNeuralGas classifier = _classifiers.get( organizerOffset );
@@ -475,62 +479,134 @@ public class RegionLayer extends NamedObject {
 
         Point classifierOrigin = _rc.getRegionClassifierOrigin( xClassifier, yClassifier );
         int classifierOffset = _rc.getOrganizerOffset( xClassifier, yClassifier );
+        Point columnSizeCells = _rc.getColumnSizeCells();
 
         ArrayList< Integer > activeInput = _transient.getClassifierActiveInput( classifierOffset );//_classifierActiveInput.get( classifierOffset );
         GrowingNeuralGas classifier = _classifiers.get( classifierOffset );
 
-        int bestCell = 0;
+        Integer currentColumnCell = null; // in column
+        Integer currentColumnCellX = null; // in column
+        Integer currentColumnCellY = null; // in column
+        Integer currentColumnCellRegionOffset = null; // in column
+
+        // find the currently active cell.
+        for( int yc = 0; yc < columnSizeCells.y; ++yc ) {
+
+            // stop searching when found
+            if( currentColumnCell != null ) {
+                break;
+            }
+
+            for( int xc = 0; xc < columnSizeCells.x; ++xc ) {
+
+                int regionX = classifierOrigin.x + xc;
+                int regionY = classifierOrigin.y + yc;
+                int regionOffset = _rc.getRegionOffset( regionX, regionY );
+
+                float active = _regionActivityNew._values[ regionOffset ]; // old value
+                if( active > 0.f ) {
+//                        bestColumnCell = classifier._c.getCell( xc, yc ); // find the original best cell in this column (classifier)
+                    currentColumnCellX = xc;
+                    currentColumnCellY = yc;
+                    currentColumnCell = Data2d.getOffset( columnSizeCells.x, xc, yc ); //yc * columnSizeCells.x + xc;
+                    currentColumnCellRegionOffset = regionOffset;
+                    break; // stop searching
+                }
+            }
+        }
+
+        // detect case where current cell isn't ever set. This happens the first time. Default to 0,0
+        if( currentColumnCell == null ) {
+            int xc = 0;
+            int yc = 0;
+            int regionX = classifierOrigin.x + xc;
+            int regionY = classifierOrigin.y + yc;
+            int regionOffset = _rc.getRegionOffset( regionX, regionY );
+            currentColumnCellX = xc;
+            currentColumnCellY = yc;
+            currentColumnCell = Data2d.getOffset( columnSizeCells.x, xc, yc ); //yc * columnSizeCells.x + xc;
+            currentColumnCellRegionOffset = regionOffset;
+        }
+
+        // OK now we found the CURRENT column cell, let's look for the new best:
+        int bestColumnCell = 0; // in column
 
         if( activeInput.isEmpty() ) {
             // don't update this classifier. Let it ignore the current input.
             // For stability, preserve the current active cell, even though the classifier had no input.
-            Point classifierSizeCells = _rc.getClassifierSizeCells();
-
-//            boolean bestCellFound = false;
-
-            for( int yc = 0; yc < classifierSizeCells.y; ++yc ) {
-                for( int xc = 0; xc < classifierSizeCells.x; ++xc ) {
-
-                    int regionX = classifierOrigin.x + xc;
-                    int regionY = classifierOrigin.y + yc;
-                    int regionOffset = _rc.getRegionOffset( regionX, regionY );
-
-                    float active = _regionActivityNew._values[ regionOffset ];
-
-                    if( active > 0.f ) {
-                        bestCell = classifier._c.getCell( xc, yc ); // find the original best cell in this column (classifier)
-                        _transient._unchangedCells.add( regionOffset );
-//                        bestCellFound = true;
-                    }
-                }
-            }
-
-            _transient._unchangedClassifiers.add( classifierOffset );
-            // happens at the start only (verified)
-//            if( !bestCellFound ) { // a bug?
-//            }
+            bestColumnCell = currentColumnCell;
         }
-        else {
+        else { // do classification on input
             boolean learn = _rc.getLearn();
             classifier._c.setLearn( learn );
             classifier.setSparseUnitInput( activeInput );
             classifier.update(); // trains with this sparse input.
 
-            bestCell = classifier.getBestCell();
+            // check whether the classifier result has changed. If it hasn't, we keep the current cell.
+            // If it has changed, find the least inhibited cell.
+            Point xyClassifierCell = _rc.getClassifierCellGivenColumnCell( currentColumnCellX, currentColumnCellY );
+            int currentClassifierCell = classifier._c.getCell( xyClassifierCell.x, xyClassifierCell.y );
+            int    bestClassifierCell = classifier.getBestCell();
+
+            // check whether same classifier cell:
+            if( bestClassifierCell == currentClassifierCell ) {
+                bestColumnCell = currentColumnCell;
+            }
+            else {
+                bestColumnCell = findLeastInhibitedColumnCell( classifier, classifierOffset, currentColumnCell );//choose least inhibited
+            }
         }
 
-        // Now deal with the best cell:
-        int bestCellX = classifier._c.getCellX( bestCell );
-        int bestCellY = classifier._c.getCellY( bestCell );
+        // Check whether this is the same cell as last time:
+        if( bestColumnCell == currentColumnCell ) {
+            _transient._unchangedCells.add( currentColumnCellRegionOffset ); // extra step
+            _transient._unchangedClassifiers.add( classifierOffset );
+        }
 
-        int regionX = classifierOrigin.x + bestCellX;
-        int regionY = classifierOrigin.y + bestCellY;
+        // Now deal with the best cell in the column:
+        int bestColumnCellX = Data2d.getX( columnSizeCells.x, bestColumnCell );
+        int bestColumnCellY = Data2d.getY( columnSizeCells.x, bestColumnCell );
+
+        int regionX = classifierOrigin.x + bestColumnCellX;
+        int regionY = classifierOrigin.y + bestColumnCellY;
         int regionOffset = _rc.getRegionOffset( regionX, regionY );
 
         _regionActivity._values[ regionOffset ] = 1.f;
-
         _transient._regionActiveCells.add( regionOffset );
-        _transient._classifierActiveCells.put( classifierOffset, bestCell );
+        _transient._columnActiveCells.put( classifierOffset, bestColumnCell );
+    }
+
+    protected int findLeastInhibitedColumnCell( GrowingNeuralGas classifier, int classifierOffset, int currentColumnCell ) {
+//        Point classifierSizeCells = _rc.getClassifierSizeCells();
+        Point columnSizeCells = _rc.getColumnSizeCells();
+        int depth = _rc.getDepthCells();
+
+        int bestClassifierCell  = classifier.getBestCell();
+        int bestClassifierCellX = classifier._c.getCellX( bestClassifierCell );
+        int bestClassifierCellY = classifier._c.getCellY( bestClassifierCell );
+
+        int bestColumnCell  = 0;
+        float bestInhibition = Float.MAX_VALUE;
+
+        int hebbianPredictorWeights = _predictor._weights.getSize();
+        int offsetWeights = classifierOffset * hebbianPredictorWeights;
+        _predictor._weights.copyRange( _regionPredictorWeights, 0, offsetWeights, hebbianPredictorWeights );
+
+        for( int z = 0; z < depth; ++z ) {
+            Point xyColumnCell = _rc.getColumnCellGivenClassifierCell( bestClassifierCellX, bestClassifierCellY, z );
+            int columnCellX = xyColumnCell.x;
+            int columnCellY = xyColumnCell.y;//bestClassifierCellY + z * classifierSizeCells.y;
+            int columnCell = Data2d.getOffset( columnSizeCells.x, columnCellX, columnCellY );
+
+            float inhibition = _predictor.getUnpredictedWeight( currentColumnCell, columnCell );
+
+            if( inhibition < bestInhibition ) {
+                bestInhibition = inhibition;
+                bestColumnCell = columnCell;
+            }
+        }
+
+        return bestColumnCell;
     }
 
     protected boolean hasClassificationChanged() {
@@ -593,9 +669,10 @@ public class RegionLayer extends NamedObject {
 
 //        Point regionSizeCells = _rc.getRegionSizeCells();
         Point organizerSizeCells = _rc.getOrganizerSizeCells();
-        Point classifierSizeCells = _rc.getClassifierSizeCells();
+//        Point classifierSizeCells = _rc.getClassifierSizeCells();
+        Point columnSizeCells = _rc.getColumnSizeCells();
 
-        int stride = organizerSizeCells.x * classifierSizeCells.x;
+        int stride = organizerSizeCells.x * columnSizeCells.x;
 
         for( int yClassifier = 0; yClassifier < organizerSizeCells.y; ++yClassifier ) {
             for( int xClassifier = 0; xClassifier < organizerSizeCells.x; ++xClassifier ) {
@@ -609,13 +686,13 @@ public class RegionLayer extends NamedObject {
                     continue; // leave FP/FN unchanged
                 }
 
-                for( int yc = 0; yc < classifierSizeCells.y; ++yc ) {
-                    for( int xc = 0; xc < classifierSizeCells.x; ++xc ) {
+                for( int yc = 0; yc < columnSizeCells.y; ++yc ) {
+                    for( int xc = 0; xc < columnSizeCells.x; ++xc ) {
 
 //        for( int y = 0; y < regionSizeCells.y; ++y ) {
 //            for( int x = 0; x < regionSizeCells.x; ++x ) {
-                        int xr = ( xClassifier * classifierSizeCells.x ) + xc;
-                        int yr = ( yClassifier * classifierSizeCells.y ) + yc;
+                        int xr = ( xClassifier * columnSizeCells.x ) + xc;
+                        int yr = ( yClassifier * columnSizeCells.y ) + yc;
                         int regionOffset = Data2d.getOffset( stride, xr, yr );
 
                         // Rules:
@@ -695,7 +772,8 @@ public class RegionLayer extends NamedObject {
         }
 
         Point organizerSizeCells = _rc.getOrganizerSizeCells();
-        Point classifierSizeCells = _rc.getClassifierSizeCells();
+//        Point classifierSizeCells = _rc.getClassifierSizeCells();
+        Point columnSizeCells = _rc.getColumnSizeCells();
 
         int fbInputArea = _fbInput.getSize();
         int hebbianPredictorStates  = _rc.getHebbianPredictorStates();
@@ -714,7 +792,7 @@ public class RegionLayer extends NamedObject {
 
                 // build the input state matrix for the hebbian module
                 classifierState.set( 0.f );
-                Integer bestCell = _transient._classifierActiveCells.get( classifierOffset );
+                Integer bestCell = _transient._columnActiveCells.get( classifierOffset );
                 if( bestCell != null ) {
                     classifierState._values[ bestCell ] = 1.f;
                 }
@@ -737,9 +815,9 @@ public class RegionLayer extends NamedObject {
                 // Extract the prediction values (raw)
                 Point classifierOrigin = _rc.getRegionClassifierOrigin( xClassifier, yClassifier );
 
-                for( int yc = 0; yc < classifierSizeCells.y; ++yc ) {
-                    for( int xc = 0; xc < classifierSizeCells.x; ++xc ) {
-                        int offsetPredictor = ( yc * classifierSizeCells.x ) + xc;
+                for( int yc = 0; yc < columnSizeCells.y; ++yc ) {
+                    for( int xc = 0; xc < columnSizeCells.x; ++xc ) {
+                        int offsetPredictor = ( yc * columnSizeCells.x ) + xc;
 
                         float pValue = _predictor._statePredictedRaw._values[ offsetPredictor ];
 
@@ -770,11 +848,12 @@ public class RegionLayer extends NamedObject {
         // (active but not predicted) so they will never be output. Secondly, the training of the predictor is unaffected
         // by this function. So the only effect these bad bits have, is in debugging (they will display as FP errors)
         Point regionSizeCols = _rc.getOrganizerSizeCells();
-        Point classifierSizeCells = _rc.getClassifierSizeCells();
+//        Point classifierSizeCells = _rc.getClassifierSizeCells();
+        Point columnSizeCells = _rc.getColumnSizeCells();
 
         _regionPredictionNew.set( 0.f ); // clear
 
-        int stride = regionSizeCols.x * classifierSizeCells.x;
+        int stride = regionSizeCols.x * columnSizeCells.x;
 
         for( int y = 0; y < regionSizeCols.y; ++y ) {
             for( int x = 0; x < regionSizeCols.x; ++x ) {
@@ -783,11 +862,11 @@ public class RegionLayer extends NamedObject {
                 int xMax = -1;
                 int yMax = -1;
 
-                for( int yc = 0; yc < classifierSizeCells.y; ++yc ) {
-                    for( int xc = 0; xc < classifierSizeCells.x; ++xc ) {
+                for( int yc = 0; yc < columnSizeCells.y; ++yc ) {
+                    for( int xc = 0; xc < columnSizeCells.x; ++xc ) {
 
-                        int xr = ( x * classifierSizeCells.x ) + xc;
-                        int yr = ( y * classifierSizeCells.y ) + yc;
+                        int xr = ( x * columnSizeCells.x ) + xc;
+                        int yr = ( y * columnSizeCells.y ) + yc;
                         int offset = Data2d.getOffset( stride, xr, yr );
                         float p = _regionPredictionRaw._values[ offset ];
 
@@ -799,8 +878,8 @@ public class RegionLayer extends NamedObject {
                     }
                 }
 
-                int xr = ( x * classifierSizeCells.x ) + xMax;
-                int yr = ( y * classifierSizeCells.y ) + yMax;
+                int xr = ( x * columnSizeCells.x ) + xMax;
+                int yr = ( y * columnSizeCells.y ) + yMax;
                 int offset = Data2d.getOffset( stride, xr, yr );
                 _regionPredictionNew._values[ offset ] = 1.f;
             }
@@ -810,7 +889,8 @@ public class RegionLayer extends NamedObject {
     protected void trainPredictor() {
 
         Point organizerSizeCells = _rc.getOrganizerSizeCells();
-        Point classifierSizeCells = _rc.getClassifierSizeCells();
+//        Point classifierSizeCells = _rc.getClassifierSizeCells();
+        Point columnSizeCells = _rc.getColumnSizeCells();
 
         int fbInputArea = _fbInput.getSize();
         int hebbianPredictorStates  = _rc.getHebbianPredictorStates();
@@ -838,9 +918,9 @@ public class RegionLayer extends NamedObject {
 //                int bestOld = 0;
 //                int bestNew = 0;
 
-                for( int yc = 0; yc < classifierSizeCells.y; ++yc ) {
-                    for( int xc = 0; xc < classifierSizeCells.x; ++xc ) {
-                        int offsetPredictor = ( yc * classifierSizeCells.x ) + xc;
+                for( int yc = 0; yc < columnSizeCells.y; ++yc ) {
+                    for( int xc = 0; xc < columnSizeCells.x; ++xc ) {
+                        int offsetPredictor = ( yc * columnSizeCells.x ) + xc;
 
                         int regionX = classifierOrigin.x + xc;
                         int regionY = classifierOrigin.y + yc;
@@ -860,6 +940,10 @@ public class RegionLayer extends NamedObject {
                     }
                 }
 
+                if( classifierStateNew == classifierStateOld ) {
+                    continue; // don't train unless there's a state change
+                }
+
                 // Copy other state for the hebbian module
                 //                        .copyRange( that, offsetThis, offsetThat, range );
                 _predictor._state  .copyRange( classifierStateOld, 0, 0, hebbianPredictorStates );
@@ -869,6 +953,7 @@ public class RegionLayer extends NamedObject {
                 if( learn ) {
                     _predictor.train( classifierStateNew );
                 }
+
                 _predictor.update( classifierStateNew );
 
                 // Copy changed state for hebbian module back to region permanent storage

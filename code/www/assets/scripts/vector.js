@@ -85,7 +85,8 @@ var Vector = {
     var chart = {
         chart: {
 //            type: 'bar'
-            type: 'column'
+//            type: 'column'
+            type: 'line'
         },
         title: {
             text: 'Vector plot'

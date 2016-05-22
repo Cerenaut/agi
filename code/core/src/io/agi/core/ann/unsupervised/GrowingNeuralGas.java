@@ -67,7 +67,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
 
         int inputs = c.getNbrInputs();
         int w = c.getWidthCells();
-        int h = c.getWidthCells();
+        int h = c.getHeightCells();
         int cells = c.getNbrCells();
 
         _inputValues = new Data( inputs );

@@ -25,12 +25,11 @@ import io.agi.framework.Framework;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
 import io.agi.framework.entities.*;
-import io.agi.framework.factories.CommonEntityFactory;
 
 /**
  * Created by gideon on 14/03/2016.
  */
-public class MNISTDemo {
+public class DeepMNISTDemo {
 
     public static void main( String[] args ) {
 
@@ -53,7 +52,11 @@ public class MNISTDemo {
     }
 
     public static void createEntities( Node n ) {
-
+//show real FP/FN errors only in gui
+//somehow illustrate dormant cols
+//how to plumb up the fb pathway?
+//inverted region - gets FN errors from above
+//use the state of the inverted region to read out the predictions?
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
@@ -66,7 +69,6 @@ public class MNISTDemo {
         String testingPath = "./testing";
         int terminationAge = 2000;
         int trainingBatches = 2;
-        boolean testClassRegion = false;
 //        boolean terminateByAge = true;
         boolean terminateByAge = false;
 
@@ -77,7 +79,8 @@ public class MNISTDemo {
         String classEncoderName = "class-encoder";
         String classDecoderName = "class-decoder";
         String constantName = "constant";
-        String imageRegionName = "image-region";
+        String region1FfName = "image-region-1-ff";
+        String region2FfName = "image-region-2-ff";
         String classRegionName = "class-region";
         String activityImageDecoderName = "activity-image-decoder";
         String predictedImageDecoderName = "predicted-image-decoder";
@@ -88,14 +91,9 @@ public class MNISTDemo {
         Framework.CreateEntity( imageEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), classEncoderName );
         Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), imageEncoderName ); // ok all input to the regions is ready
 
-        if( testClassRegion ) {
-            Framework.CreateEntity( imageRegionName, RegionLayerEntity.ENTITY_TYPE, n.getName(), null ); // disconnect image region
-            Framework.CreateEntity( classRegionName, RegionLayerEntity.ENTITY_TYPE, n.getName(), constantName ); // test
-        }
-        else {
-            Framework.CreateEntity( imageRegionName, RegionLayerEntity.ENTITY_TYPE, n.getName(), constantName );
-            Framework.CreateEntity( classRegionName, RegionLayerEntity.ENTITY_TYPE, n.getName(), imageRegionName ); // 2nd, class region updates after first to get its feedback
-        }
+        Framework.CreateEntity( region1FfName, RegionLayerEntity.ENTITY_TYPE, n.getName(), constantName );
+        Framework.CreateEntity( region2FfName, RegionLayerEntity.ENTITY_TYPE, n.getName(), region1FfName );
+        Framework.CreateEntity( classRegionName, RegionLayerEntity.ENTITY_TYPE, n.getName(), region2FfName ); // 2nd, class region updates after first to get its feedback
 
         Framework.CreateEntity( classDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), classRegionName ); // produce the predicted classification for inspection by mnist next time
         Framework.CreateEntity( activityImageDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), classRegionName );
@@ -104,21 +102,21 @@ public class MNISTDemo {
         // Connect the entities' data
         // a) Image to image region, and decode
         Framework.SetDataReference( imageEncoderName, EncoderEntity.DATA_INPUT, mnistName, MnistEntity.OUTPUT_IMAGE );
-        Framework.SetDataReference( imageRegionName, RegionLayerEntity.FF_INPUT, imageEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
-        Framework.SetDataReference( imageRegionName, RegionLayerEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT ); // feedback to this region is just a constant
-        Framework.SetDataReference( activityImageDecoderName, DecoderEntity.DATA_INPUT_ENCODED, imageRegionName, RegionLayerEntity.FB_OUTPUT_UNFOLDED_ACTIVITY );
-        Framework.SetDataReference( predictedImageDecoderName, DecoderEntity.DATA_INPUT_ENCODED, imageRegionName, RegionLayerEntity.FB_OUTPUT_UNFOLDED_PREDICTION );
+
+        Framework.SetDataReference( region1FfName, RegionLayerEntity.FF_INPUT, imageEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
+        Framework.SetDataReference( region1FfName, RegionLayerEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT ); // feedback to this region is just a constant
+
+        Framework.SetDataReference( region2FfName, RegionLayerEntity.FF_INPUT, region1FfName, RegionLayerEntity.PREDICTION_FN );
+        Framework.SetDataReference( region2FfName, RegionLayerEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT ); // feedback to this region is just a constant
+
+        Framework.SetDataReference( activityImageDecoderName, DecoderEntity.DATA_INPUT_ENCODED, region1FfName, RegionLayerEntity.FB_OUTPUT_UNFOLDED_ACTIVITY );
+        Framework.SetDataReference( predictedImageDecoderName, DecoderEntity.DATA_INPUT_ENCODED, region1FfName, RegionLayerEntity.FB_OUTPUT_UNFOLDED_PREDICTION );
 
         // a) Class to class region, and decode
         Framework.SetDataReference( classEncoderName, EncoderEntity.DATA_INPUT, mnistName, MnistEntity.OUTPUT_CLASSIFICATION );
         Framework.SetDataReference( classRegionName, RegionLayerEntity.FF_INPUT, classEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
 
-        if( testClassRegion ) {
-            Framework.SetDataReference( classRegionName, RegionLayerEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT ); // get current state from the region to be used to predict
-        }
-        else { // whole system, use image classification to predict
-            Framework.SetDataReference( classRegionName, RegionLayerEntity.FB_INPUT, imageRegionName, RegionLayerEntity.ACTIVITY_NEW ); // get current state from the region to be used to predict
-        }
+        Framework.SetDataReference( classRegionName, RegionLayerEntity.FB_INPUT, region1FfName, RegionLayerEntity.ACTIVITY_NEW ); // get current state from the region to be used to predict
 
         Framework.SetDataReference( classDecoderName, DecoderEntity.DATA_INPUT_ENCODED, classRegionName, RegionLayerEntity.FB_OUTPUT_UNFOLDED_PREDICTION ); // the prediction of the next state
         Framework.SetDataReference( mnistName, MnistEntity.INPUT_CLASSIFICATION, classDecoderName, DecoderEntity.DATA_OUTPUT_DECODED ); // the (decoded) prediction of the next state
@@ -175,22 +173,8 @@ public class MNISTDemo {
         Framework.SetConfig( classDecoderName, "numbers", "1" );
 
         // image region config
-        Framework.SetConfig( imageRegionName, "predictorLearningRate", "100" );
-        Framework.SetConfig( imageRegionName, "receptiveFieldsTrainingSamples", "0.1" );
-        Framework.SetConfig( imageRegionName, "classifiersPerBit", "5" );
-        Framework.SetConfig( imageRegionName, "organizerStressThreshold", "0.0" );
-        Framework.SetConfig( imageRegionName, "organizerGrowthInterval", "1" );
-        Framework.SetConfig( imageRegionName, "organizerEdgeMaxAge", "1000" );
-        Framework.SetConfig( imageRegionName, "organizerNoiseMagnitude", "0.0" );
-        Framework.SetConfig( imageRegionName, "organizerLearningRate", "0.002" );
-        Framework.SetConfig( imageRegionName, "organizerLearningRateNeighbours", "0.001" );
-        Framework.SetConfig( imageRegionName, "organizerWidthCells", "8" );
-        Framework.SetConfig( imageRegionName, "organizerHeightCells", "8" );
-        Framework.SetConfig( imageRegionName, "classifierWidthCells", "5" );
-        Framework.SetConfig( imageRegionName, "classifierHeightCells", "5" );
-        Framework.SetConfig( imageRegionName, "classifierStressThreshold", "0.0" );
-        Framework.SetConfig( imageRegionName, "classifierGrowthInterval", "10" );
-        Framework.SetConfig( imageRegionName, "classifierEdgeMaxAge", "12" );
+        setRegionLayerConfig( region1FfName );
+        setRegionLayerConfig( region2FfName );
 
         // class region config
         Framework.SetConfig( classRegionName, "predictorLearningRate", "100" );
@@ -208,9 +192,30 @@ public class MNISTDemo {
 //        Framework.SetConfig( classRegionName, "classifierHeightCells", "4" );
         Framework.SetConfig( classRegionName, "classifierWidthCells", "5" );
         Framework.SetConfig( classRegionName, "classifierHeightCells", "5" );
+        Framework.SetConfig( classRegionName, "classifierDepthCells", "1" );
         Framework.SetConfig( classRegionName, "classifierStressThreshold", "0.0" );
         Framework.SetConfig( classRegionName, "classifierGrowthInterval", "10" );
         Framework.SetConfig( classRegionName, "classifierEdgeMaxAge", "30" );
+    }
+
+    public static void setRegionLayerConfig( String regionLayerName ) {
+        Framework.SetConfig( regionLayerName, "predictorLearningRate", "100" );
+        Framework.SetConfig( regionLayerName, "receptiveFieldsTrainingSamples", "0.1" );
+        Framework.SetConfig( regionLayerName, "classifiersPerBit", "5" );
+        Framework.SetConfig( regionLayerName, "organizerStressThreshold", "0.0" );
+        Framework.SetConfig( regionLayerName, "organizerGrowthInterval", "1" );
+        Framework.SetConfig( regionLayerName, "organizerEdgeMaxAge", "1000" );
+        Framework.SetConfig( regionLayerName, "organizerNoiseMagnitude", "0.0" );
+        Framework.SetConfig( regionLayerName, "organizerLearningRate", "0.002" );
+        Framework.SetConfig( regionLayerName, "organizerLearningRateNeighbours", "0.001" );
+        Framework.SetConfig( regionLayerName, "organizerWidthCells", "8" );
+        Framework.SetConfig( regionLayerName, "organizerHeightCells", "8" );
+        Framework.SetConfig( regionLayerName, "classifierWidthCells", "5" );
+        Framework.SetConfig( regionLayerName, "classifierHeightCells", "2" );
+        Framework.SetConfig( regionLayerName, "classifierDepthCells", "2" );
+        Framework.SetConfig( regionLayerName, "classifierStressThreshold", "0.0" );
+        Framework.SetConfig( regionLayerName, "classifierGrowthInterval", "30" );
+        Framework.SetConfig( regionLayerName, "classifierEdgeMaxAge", "60" );
     }
 
 }
