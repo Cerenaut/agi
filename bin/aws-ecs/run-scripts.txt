@@ -1,0 +1,20 @@
+# #!/bin/bash
+
+# variables_file=${VARIABLES_FILE:-"variables.sh"}
+# echo "Using variables file = \"$variables_file\""
+# source $(dirname $0)/../$variables_file
+
+
+# start instances
+./ec2-start.sh 1 i-cf55394d		# container instance
+./ec2-start.sh 1 i-b1d1bd33		# postgres
+								# jenkins  = i-d3b9ca44
+
+# sync files
+./ec2-sync-experiment.sh		# sync local files to the container instance
+
+# run task
+aws ecs run-task --cluster default --task-definition mnist-spatial-task:3 			# replace with desired task definition
+
+# stop task
+aws ecs stop-task --cluster default --task 33732b27-cc1e-4cee-97e4-a4931dafbeef		# replace with taskID
