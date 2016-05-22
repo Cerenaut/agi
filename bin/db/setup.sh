@@ -12,8 +12,8 @@ if [ "$1" == "-h" -o "$1" == "--help" ]; then
 fi
 
 
-database_host=${1:-$DATABASE_HOST} 
-database_port=${2:-$DATABASE_PORT}
+database_host=${1:-$DB_HOST} 
+database_port=${2:-$DB_PORT}
 
 # create agidb in database_host
 $POSTGRESQL_BIN -h $database_host -p $database_port -U postgres -f $AGI_HOME/resources/sql/agidb.sql

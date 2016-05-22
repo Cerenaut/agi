@@ -17,8 +17,9 @@ export AGI_HOME=~/dev/agi
 # RUN Home
 export AGI_RUN_HOME=~/dev/run
 
-# Database port
+# Database 
 export DB_PORT=5432
+export DB_HOST=localhost
 
 # ---------------------------------------
 # Dependencies

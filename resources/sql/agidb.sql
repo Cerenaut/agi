@@ -5,9 +5,6 @@
 -- You need sudo to change to the postgres user without a password.
 -- You only need to run this once.
 
--- Note: 
--- After running this, run postgREST HTTP service like so:
--- ./postgrest-0.2.10.0 --db-host localhost  --db-port 5432 --db-name agidb  --db-user agiu --db-pass password --db-pool 200  --anonymous agiu --port 3000 --v1schema public
 
 DROP database IF EXISTS agidb;
 
