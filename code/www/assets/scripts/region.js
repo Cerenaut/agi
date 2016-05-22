@@ -221,6 +221,8 @@ var Region = {
     var cw = rw / ow;
     var ch = rh / oh;
     var cd = Region.config.classifierDepthCells;
+    var classifierHeight = ( ch / cd );
+    var inputArea = w *h;
 
     // draw the data
     var half = Region.pixelsPerBit * 0.5;
@@ -315,7 +317,7 @@ var Region = {
 //            offset = packedOffset + ( cy * cw + cx );
 //            var classifierY = cy - ( cd * Math.floor( cy / cd ) );
             var classifierY = cy - ( classifierHeight * Math.floor( cy / classifierHeight ) );
-            offset = packedOffset + ( classifierY * cw + cx );
+            offset = packedOffset + ( ( classifierY * cw ) + cx );
    
             var maskValue = dataClassifierOutputMask.elements.elements[ offset ];
             if( maskValue < 0.5 ) {
@@ -335,7 +337,6 @@ var Region = {
 
       // paint depth boundaries
       ctx.strokeStyle = "#0000AA";
-      var classifierHeight = ( ch / cd );
       var w = ow * cw * Region.pixelsPerBit + (ow) * Region.pixelsColumnGap;
       for( var d = 1; d < cd; ++d ) {
         var yd = d * classifierHeight * Region.pixelsPerBit + oy * ch * Region.pixelsPerBit + (oy) * Region.pixelsColumnGap;
