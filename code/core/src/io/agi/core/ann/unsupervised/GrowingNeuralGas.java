@@ -378,6 +378,9 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         float bestSumSqError = _cellErrors._values[ bestCell ]; // use abs errors instead of sq errors?
         float bestUnitError = ( float ) Math.sqrt( bestSumSqError );
 //              bestUnitError /= inputs; this makes the values too small
+        if( Float.isNaN( bestUnitError ) ) {
+            bestUnitError = 0.f;
+        }
         float stressOld = _cellStress._values[ bestCell ];
         float stressNew = ( float ) Unit.lerp( stressOld, bestUnitError, cellStressAlpha );
         _cellStress._values[ bestCell ] = stressNew;
