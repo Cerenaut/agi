@@ -67,7 +67,7 @@ public class DeepMNISTDemo {
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle_deep";
         String trainingPath = "./training";
         String testingPath = "./testing";
-        int terminationAge = 2000;
+        int terminationAge = 1000;
         int trainingBatches = 2;
 //        boolean terminateByAge = true;
         boolean terminateByAge = false;
@@ -199,9 +199,11 @@ public class DeepMNISTDemo {
     }
 
     public static void setRegionLayerConfig( String regionLayerName ) {
+
         Framework.SetConfig( regionLayerName, "predictorLearningRate", "100" );
         Framework.SetConfig( regionLayerName, "receptiveFieldsTrainingSamples", "0.1" );
         Framework.SetConfig( regionLayerName, "classifiersPerBit", "5" );
+
         Framework.SetConfig( regionLayerName, "organizerStressThreshold", "0.0" );
         Framework.SetConfig( regionLayerName, "organizerGrowthInterval", "1" );
         Framework.SetConfig( regionLayerName, "organizerEdgeMaxAge", "1000" );
@@ -210,12 +212,17 @@ public class DeepMNISTDemo {
         Framework.SetConfig( regionLayerName, "organizerLearningRateNeighbours", "0.001" );
         Framework.SetConfig( regionLayerName, "organizerWidthCells", "8" );
         Framework.SetConfig( regionLayerName, "organizerHeightCells", "8" );
+
+//        float classifierLearningRate = 0.02f;
+//        float classifierLearningRateNeighbours = 0.01f;
+//        float classifierStressLearningRate = 0.01f; // irrelevant if stress threshold = 0
+
         Framework.SetConfig( regionLayerName, "classifierWidthCells", "5" );
         Framework.SetConfig( regionLayerName, "classifierHeightCells", "2" );
         Framework.SetConfig( regionLayerName, "classifierDepthCells", "2" );
-        Framework.SetConfig( regionLayerName, "classifierStressThreshold", "0.0" );
-        Framework.SetConfig( regionLayerName, "classifierGrowthInterval", "30" );
-        Framework.SetConfig( regionLayerName, "classifierEdgeMaxAge", "60" );
+        Framework.SetConfig( regionLayerName, "classifierStressThreshold", "2" ); // means it will attempt to use all cells.
+        Framework.SetConfig( regionLayerName, "classifierGrowthInterval", "300" );
+        Framework.SetConfig( regionLayerName, "classifierEdgeMaxAge", "200" );
     }
 
 }
