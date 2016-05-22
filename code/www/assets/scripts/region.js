@@ -40,7 +40,7 @@ var Region = {
 //  classifierDataCount : 0,
 //  classifierDataRequests : 0,
 
-  regionSuffixes : [ "-activity-new", "-prediction-old", "-prediction-new", "-ff-input", "-organizer-output-mask", "-organizer-output-weights", "-classifier-output-weights", "-classifier-output-mask" ],
+  regionSuffixes : [ "-activity-new", "-activity-old", "-prediction-old", "-prediction-new", "-ff-input", "-organizer-output-mask", "-organizer-output-weights", "-classifier-output-weights", "-classifier-output-mask" ],
   regionSuffixIdx : 0,
   dataMap : {
   },
@@ -94,7 +94,7 @@ var Region = {
     }
     
     var cw = rw / ow;
-    var ch = rh / oh;
+    var ch = rh / oh; // this is column not classifier
 
     var ox = Math.floor( mx / ( cw * Region.pixelsPerBit + Region.pixelsColumnGap ) );
     var oy = Math.floor( my / ( ch * Region.pixelsPerBit + Region.pixelsColumnGap ) );
@@ -178,6 +178,11 @@ var Region = {
       return; // can't paint
     }
 
+    var dataActivityOld = Region.findData( "-activity-old" );
+    if( !dataActivityOld ) {
+      return; // can't paint
+    }
+
     var dataPredictionOld = Region.findData( "-prediction-old" );
     if( !dataPredictionOld ) {
       return; // can't paint
@@ -215,6 +220,7 @@ var Region = {
     
     var cw = rw / ow;
     var ch = rh / oh;
+    var cd = Region.config.classifierDepthCells;
 
     // draw the data
     var half = Region.pixelsPerBit * 0.5;
@@ -237,9 +243,28 @@ var Region = {
           continue;
         }
 
-        var classifierSize = cw * ch; // Each classifier has this number of cells. 
+        var classifierSize = cw * ( ch / cd ); // Each classifier has this number of cells. 
         var classifierIndex = oy * ow + ox;
         var packedOffset = classifierIndex * classifierSize;
+
+        var classifierUnchanged = false;
+
+        for( var cy = 0; cy < ch; ++cy ) {
+          for( var cx = 0; cx < cw; ++cx ) {
+            var rx = cx + ox * cw;
+            var ry = cy + oy * ch;
+
+            var offset = ry * rw + rx;
+            var activityNew   = dataActivityNew  .elements.elements[ offset ];
+            var activityOld   = dataActivityOld  .elements.elements[ offset ];
+
+            if( ( activityNew > 0.5 ) && ( activityOld > 0.5 ) ) {
+              classifierUnchanged = true;
+              cx = cw;
+              cy = ch; // break loops
+            }
+          }
+        }
 
         for( var cy = 0; cy < ch; ++cy ) {
           for( var cx = 0; cx < cw; ++cx ) {
@@ -252,11 +277,15 @@ var Region = {
 
             var offset = ry * rw + rx;
             var activityNew   = dataActivityNew  .elements.elements[ offset ];
+            var activityOld   = dataActivityOld  .elements.elements[ offset ];
             var predictionOld = dataPredictionOld.elements.elements[ offset ];
             var predictionNew = dataPredictionNew.elements.elements[ offset ];
         
             if( activityNew > 0.5 ) {
-              if( predictionOld > 0.5 ) {
+              if( classifierUnchanged ) {
+                ctx.fillStyle = "#444400";
+              }
+              else if( predictionOld > 0.5 ) {
                 ctx.fillStyle = "#00FF00";
               }
               else { // active, unpredicted
@@ -265,7 +294,12 @@ var Region = {
             }
             else { // inactive now
               if( predictionOld > 0.5 ) {
-                ctx.fillStyle = "#FF00FF";
+                if( classifierUnchanged ) {
+                  ctx.fillStyle = "#440044";
+                }
+                else {
+                  ctx.fillStyle = "#FF00FF";
+                }
               }
               else { // inactive, unpredicted
                 ctx.fillStyle = "#000000";
@@ -278,7 +312,10 @@ var Region = {
             ctx.strokeStyle = "#808080";
             ctx.strokeRect( x, y, Region.pixelsPerBit, Region.pixelsPerBit );        
 
-            offset = packedOffset + ( cy * cw + cx );
+//            offset = packedOffset + ( cy * cw + cx );
+//            var classifierY = cy - ( cd * Math.floor( cy / cd ) );
+            var classifierY = cy - ( classifierHeight * Math.floor( cy / classifierHeight ) );
+            offset = packedOffset + ( classifierY * cw + cx );
    
             var maskValue = dataClassifierOutputMask.elements.elements[ offset ];
             if( maskValue < 0.5 ) {
@@ -295,11 +332,24 @@ var Region = {
           }
         }
       }
+
+      // paint depth boundaries
+      ctx.strokeStyle = "#0000AA";
+      var classifierHeight = ( ch / cd );
+      var w = ow * cw * Region.pixelsPerBit + (ow) * Region.pixelsColumnGap;
+      for( var d = 1; d < cd; ++d ) {
+        var yd = d * classifierHeight * Region.pixelsPerBit + oy * ch * Region.pixelsPerBit + (oy) * Region.pixelsColumnGap;
+        ctx.beginPath();
+        ctx.moveTo( 0, yd );
+        ctx.lineTo( w, yd );
+        ctx.stroke();
+      }
+
     }
 
     // mark dead columns (classifiers)
     var w = Region.pixelsPerBit * cw + Region.pixelsColumnGap;
-    var h = Region.pixelsPerBit * cw + Region.pixelsColumnGap;
+    var h = Region.pixelsPerBit * ch + Region.pixelsColumnGap;
     ctx.fillStyle = "rgba( 255,255,0, 0.5 )";
 
     for( var oy = 0; oy < oh; ++oy ) {
@@ -374,6 +424,7 @@ var Region = {
     var rh = regionDataSize.h;
     var cw = rw / ow;
     var ch = rh / oh;
+    var cd = Region.config.classifierDepthCells;
 
     var dataOrganizerOutputWeights = Region.findData( "-organizer-output-weights" );
     if( !dataOrganizerOutputWeights ) {
@@ -397,7 +448,7 @@ var Region = {
          
         ctx.fillStyle = "#000000";
         if( value > 0.5 ) {
-          ctx.fillStyle = "#FFFF00";
+          ctx.fillStyle = "#FFFFFF";
         }
         ctx.fillRect( cx, cy, Region.pixelsPerBit, Region.pixelsPerBit );        
         ctx.fill();
@@ -418,49 +469,6 @@ var Region = {
     var rw = ow * cw;
     var inputArea = w *h;
 
-    for( var oy = 0; oy < oh; ++oy ) {
-      for( var ox = 0; ox < ow; ++ox ) {
-        var offset = oy * ow + ox;
-        var mask = dataOrganizerOutputMask.elements.elements[ offset ];
-        if( mask == 0 ) {
-          continue; // dead, don't paint
-        }
-
-        offset = oy * ( ow * 2 ) + ( ox * 2 );
-        var xWeight = dataOrganizerOutputWeights.elements.elements[ offset +0 ];
-        var yWeight = dataOrganizerOutputWeights.elements.elements[ offset +1 ];
-
-        var x = w * xWeight * Region.pixelsPerBit;
-        var y = h * yWeight * Region.pixelsPerBit;
-
-        ctx.strokeStyle = "rgb(0,255,0)";
-
-        for( var i = 0; i < Region.selectedLeft.length; ++i ) {
-          var regionOffset = Region.selectedLeft[ i ]; // a cell within the region     
-
-          var rx = Math.floor( regionOffset % rw );
-          var ry = Math.floor( regionOffset / rw );
-
-          var oxSelected = Math.floor( rx / cw ); // coordinates of column in grid (region).
-          var oySelected = Math.floor( ry / ch );    
-
-          if( ( oxSelected == ox ) && ( oySelected == oy ) ) {
-            ctx.strokeStyle = "rgb(255,0,255)";
-console.log( "selected col is : " + ox + ", " + oy );
-
-            break;
-          }
-        }
-
-        ctx.beginPath();
-        ctx.moveTo( x,y-Region.pixelsReceptiveField );
-        ctx.lineTo( x,y+Region.pixelsReceptiveField );
-        ctx.moveTo( x-Region.pixelsReceptiveField,y );
-        ctx.lineTo( x+Region.pixelsReceptiveField,y );
-        ctx.stroke();   
-      }
-    }
-
     // paint weights of selected cells
     for( var i = 0; i < Region.selectedLeft.length; ++i ) {
       var regionOffset = Region.selectedLeft[ i ]; // a cell within the region     
@@ -480,9 +488,11 @@ console.log( "selected col is : " + ox + ", " + oy );
       var cx = rx - ( ox * cw ); // coordinates in column.
       var cy = ry - ( oy * ch );    
 
-      var classifierOffset = ( ( cy * cw ) + cx ) * inputArea;
+      var classifierHeight = ( ch / cd );
+      var classifierY = cy - ( classifierHeight * Math.floor( cy / classifierHeight ) );
+      var classifierOffset = ( ( classifierY * cw ) + cx ) * inputArea;
 
-      var classifierSize = cw * ch * inputArea; // Each classifier has this number of cells. 
+      var classifierSize = cw * classifierHeight * inputArea; // Each classifier has this number of cells. 
       var classifierIndex = oy * ow + ox;
       var packedOffset = classifierIndex * classifierSize;
 
@@ -525,6 +535,49 @@ console.log( "selected col is : " + ox + ", " + oy );
 
     }
 
+    for( var oy = 0; oy < oh; ++oy ) {
+      for( var ox = 0; ox < ow; ++ox ) {
+        var offset = oy * ow + ox;
+        var mask = dataOrganizerOutputMask.elements.elements[ offset ];
+        if( mask == 0 ) {
+          continue; // dead, don't paint
+        }
+
+        offset = oy * ( ow * 2 ) + ( ox * 2 );
+        var xWeight = dataOrganizerOutputWeights.elements.elements[ offset +0 ];
+        var yWeight = dataOrganizerOutputWeights.elements.elements[ offset +1 ];
+
+        var x = w * xWeight * Region.pixelsPerBit;
+        var y = h * yWeight * Region.pixelsPerBit;
+
+        ctx.strokeStyle = "rgb(0,255,0)";
+
+        for( var i = 0; i < Region.selectedLeft.length; ++i ) {
+          var regionOffset = Region.selectedLeft[ i ]; // a cell within the region     
+
+          var rx = Math.floor( regionOffset % rw );
+          var ry = Math.floor( regionOffset / rw );
+
+          var oxSelected = Math.floor( rx / cw ); // coordinates of column in grid (region).
+          var oySelected = Math.floor( ry / ch );    
+
+          if( ( oxSelected == ox ) && ( oySelected == oy ) ) {
+            ctx.strokeStyle = "rgb(255,255,0)";
+            //console.log( "selected col is : " + ox + ", " + oy );
+
+            break;
+          }
+        }
+
+        ctx.beginPath();
+        ctx.moveTo( x,y-Region.pixelsReceptiveField );
+        ctx.lineTo( x,y+Region.pixelsReceptiveField );
+        ctx.moveTo( x-Region.pixelsReceptiveField,y );
+        ctx.lineTo( x+Region.pixelsReceptiveField,y );
+        ctx.stroke();   
+      }
+    }
+
     // paint selected input bits
     ctx.strokeStyle = "#FF0000";
     for( var i = 0; i < Region.selectedRight.length; ++i ) {
@@ -545,12 +598,24 @@ console.log( "selected col is : " + ox + ", " + oy );
   },
 
   onGotData : function() {
-    Region.setStatus( "Repainting... " );
-    Region.repaint();    
-    Region.setStatus( "Ready." );
+
+    Region.setStatus( "Getting config... " );
+    var entity = $( "#entity" ).val();
+    Framework.getConfig( entity, Region.onGetRegionConfig );
+
 //    Region.setStatus( "Got all region data, getting classifier data... " );
 //    //Region.repaint();    
 //    Region.getClassifierData();
+  },
+
+  onGetRegionConfig : function( json ) {
+
+    var entityConfig = JSON.parse( json.responseText );
+    Region.config = entityConfig.value;
+
+    Region.setStatus( "Repainting... " );
+    Region.repaint();    
+    Region.setStatus( "Ready." );
   },
 
   getData : function() {
@@ -584,82 +649,6 @@ console.log( "selected col is : " + ox + ", " + oy );
     Region.getData(); // get next data.
   },
 
-/*  onGotClassifierData : function() {
-    Region.setStatus( "Repainting... " );
-    Region.repaint();    
-    Region.setStatus( "Ready." );
-  },
-
-/*  findClassifierData : function( ox, oy, suffix ) {
-    var dataName = Region.getClassifierDataName( ox, oy, suffix );
-    var data = Region.dataMap[ dataName ];
-    return data;
-  },
-  
-/*  getClassifierDataName : function( ox, oy, suffix ) {
-    var dataName = "-classifier-" + ox + "-" + oy + suffix;
-    return dataName;
-  },
-
-/*  getClassifierData : function() {
-    Region.classifierDataCount = 0;
-    Region.classifierDataRequests = 0;
-
-    var dataOrganizerOutputMask = Region.findData( "-organizer-output-mask" );
-    if( !dataOrganizerOutputMask ) {
-      return; // can't paint
-    }
-
-    var organizerDataSize = Framework.getDataSize( dataOrganizerOutputMask );
-    var ow = organizerDataSize.w;
-    var oh = organizerDataSize.h;
-    if( ( ow == 0 ) || ( oh == 0 ) ) {
-      return;
-    }
-
-    // ask for all suffixes for each classifier    
-    for( var oy = 0; oy < oh; ++oy ) {
-      for( var ox = 0; ox < ow; ++ox ) {
-        for( var i = 0; i < Region.classifierSuffixes.length; ++i ) {
-          Region.classifierDataRequests += 1;
-        }
-      }
-    }
-
-    for( var oy = 0; oy < oh; ++oy ) {
-      for( var ox = 0; ox < ow; ++ox ) {
-        for( var i = 0; i < Region.classifierSuffixes.length; ++i ) {
-          var suffix = Region.classifierSuffixes[ i ];
-          var dataName = Region.prefix + Region.getClassifierDataName( ox, oy, suffix );
-          console.log( "Requesting data: " + dataName );
-          Framework.getData( dataName, Region.onGetClassifierData );
-        }
-      }
-    }
-
-  },*/
-
-/*  onGetClassifierData : function( json ) {
-    if( json.status != 200 ) {
-      Region.setStatus( "Error getting data" );
-      return;
-    }
-
-    var datas = JSON.parse( json.responseText );
-    var data = datas[ 0 ];
-    Framework.decode( data );
-    Region.dataMap[ data.name ] = data;
-
-    console.log( "Received data: " + data.name );
-
-    Region.classifierDataCount = Region.classifierDataCount +1;
-
-    Region.setStatus( "Got " + Region.classifierDataCount + " of " + Region.classifierDataRequests + " classifier data." );
-    if( Region.classifierDataCount == Region.classifierDataRequests ) {
-      Region.onGotClassifierData();
-    }
-  },*/
-
   resizeDataArea : function() {
     var dataElement = $( "#region-data" )[ 0 ];
     var infoElement = $( "#region-info" )[ 0 ];
@@ -669,13 +658,25 @@ console.log( "selected col is : " + ox + ", " + oy );
     $( "#region-data-right" ).css( "height", height );
   },
 
+  update : function() {
+    var entity = $( "#root-entity" ).val();
+    console.log( "Updating " + entity );
+
+    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
+    Framework.update( entity, Region.onUpdate );
+  },
+
+  onUpdate : function() {
+    // TODO: Poll for changes then 
+  },
+
   refresh : function() {
 
     var pxPerBit = $( "#size" ).val();
     Region.pixelsPerBit = pxPerBit;
 
     var entity = $( "#entity" ).val();
-    console.log( "Updating " + entity );
+    console.log( "Repainting " + entity );
 
     Region.resizeDataArea();
 
@@ -689,6 +690,9 @@ console.log( "selected col is : " + ox + ", " + oy );
   onParameter : function( key, value ) {
     if( key == "entity" ) {
       $("#entity").val( value ); 
+    }
+    if( key == "root-entity" ) {
+      $("#root-entity").val( value ); 
     }
   },
 

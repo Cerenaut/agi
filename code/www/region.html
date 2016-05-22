@@ -32,26 +32,29 @@
 <!-- import, export, update/resume, flush toggle.
 update interval
 show flush, show age. -->
-       <img src="assets/images/logo-inverse-brown.png" style="width:50px;display:inline;"/><h1 style="display:inline;">Region Browser</h1>
+       <img src="assets/images/logo-inverse-brown.png" style="width:50px;display:inline;margin-top:1em;margin-bottom:1em;"/><h1 style="display:inline;">Region Browser</h1>
        <p>
        <label for="host">Node</label>
        <input type="text" id="host" style="" class="" placeholder="Host" value="localhost"/>
        <input type="number" id="port" style="width:5em;" class="" placeholder="Port" value="8491"/>
        </p>
-       <p>
-       <b>TP <span style="color:#00FF00;">&#9632;</span> TN <span style="color:#000000;">&#9632;</span> FP <span style="color:#FF00FF;">&#9632;</span> FN <span style="color:#FF0000;">&#9632;</span></b>
-       <label for="host">Region Entity</label>
-       <input type="text" id="entity" style="" class="" placeholder="Entity name"/>
-       <small>
-       <i>Type</i> <span id="entity-type">?</span>
-       <i>Age</i> <span id="entity-age">?</span>
-       <i>Seed</i> <span id="entity-seed">?</span>
-       </small>
-       <label for="size">Px/Bit</label>
-       <input type="number" id="size" style="width:3em;" class="" placeholder="" title="Pixels per Bit" value="12"/>
-       <input type="button" id="refresh" class="btn btn-sm btn-danger" style="" onclick="Region.refresh()" value="Refresh"/>
-       <b>Status:</b> <span id="status">?</span>
-       <b>Selections:</b> (L)<span id="mouse-left">?</span> (R)<span id="mouse-right">?</span>
+        <div class="well" style="background:#000000;color:#777777;margin-bottom:0;">
+         <b>Legend &nbsp;&nbsp;&nbsp;TP <span style="color:#00FF00;">&#9632;&nbsp;&nbsp;&nbsp;</span> TN <span style="color:#000000;">&#9632;&nbsp;&nbsp;&nbsp;</span> FP <span style="color:#FF00FF;">&#9632;&nbsp;&nbsp;&nbsp;</span> FN <span style="color:#FF0000;">&#9632;&nbsp;&nbsp;&nbsp;</span> P(t+1) <span style="color:#FFFF00;">&#9633;&nbsp;&nbsp;&nbsp;</span> A(t), idle <span style="color:#444400;">&#9632;&nbsp;&nbsp;&nbsp;</span> P(t), idle <span style="color:#440044;">&#9632;&nbsp;&nbsp;&nbsp;</span></b>        
+         <label for="size">Px/Bit</label>
+         <input type="number" id="size" style="width:3em;" class="" placeholder="" title="Pixels per Bit" value="12"/>
+         <b>Selections:</b> (L)<span id="mouse-left">?</span> (R)<span id="mouse-right">?</span>
+        </div>
+       <p class="well">
+        <label for="root-entity">Root Entity</label>
+        <input type="text" id="root-entity" style="" class="" placeholder="Update Entity name"/>
+        <input type="button" id="update" class="btn btn-sm btn-danger" style="" onclick="Region.update()" value="Update"/>
+        <label for="host">Region Entity</label>
+        <input type="text" id="entity" style="" class="" placeholder="Entity name"/>
+        <input type="button" id="refresh" class="btn btn-sm btn-danger" style="" onclick="Region.refresh()" value="Refresh"/>
+        <small>
+         <i>Age</i> <span id="entity-age">?</span>
+        </small>
+        <b>Status:</b> <span id="status">?</span>
        </p>
       </div><!-- /.row -->
      </div><!-- /.row -->

@@ -57,6 +57,7 @@ public class RegionLayerFactory {
             // Column Sizing
             int classifierWidthCells,
             int classifierHeightCells,
+            int classifierDepthCells,
 
             // Organizer training
             float receptiveFieldsTrainingSamples,
@@ -106,7 +107,7 @@ public class RegionLayerFactory {
                 classifierLearningRate, classifierLearningRateNeighbours, classifierNoiseMagnitude,
                 classifierEdgeMaxAge, classifierStressLearningRate, classifierStressThreshold, classifierGrowthInterval );
 
-        rc.setup( om, regionName, random, organizerConfig, classifierConfig, inputWidth, inputHeight, feedbackAreaCells, predictorLearningRate, receptiveFieldsTrainingSamples, classifiersPerBit );
+        rc.setup( om, regionName, random, organizerConfig, classifierConfig, inputWidth, inputHeight, feedbackAreaCells, predictorLearningRate, receptiveFieldsTrainingSamples, classifiersPerBit, classifierDepthCells );
 
         this.setup( rc );
 

@@ -141,6 +141,42 @@ public class SparseHebbianLearning {
     }
 
     /**
+     * Sum the inbound weights to a state s2 from a state s1, given a set of current context bits.
+     * Only add for context bits that are currently zero (i.e. not predicting).
+     * We want to find out how much this cell s2 is involved in a sequence that isn't currently active.
+     *
+     * @param s2
+     *
+     * @return
+     */
+    public float getUnpredictedWeight( int s1a, int s2 ) {
+        int states = _state.getSize();
+        int contexts = _context.getSize();
+
+        float wSum = 0.f;
+
+        for( int s1 = 0; s1 < states; ++s1 ) {
+
+            if( s1 == s1a ) {
+                continue; // exclude this sequence from the summation
+            }
+
+            for( int c = 0; c < contexts; ++c ) {
+
+                int offset = s1 * contexts * states
+                           +      c        * states
+                           +                 s2; // the weight from state s1, with context bit c, to state s2.
+
+                float weight = _weights._values[ offset ];
+
+                wSum += weight;
+            }
+        }
+
+        return wSum;
+    }
+
+    /**
      * Accumulate any bits seen during the state transition, as they may occur asynchronously
      * @param context
      */

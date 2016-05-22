@@ -66,6 +66,8 @@ public class RegionLayerEntity extends Entity {
     public static final String PREDICTOR_CONTEXTS = "predictor-contexts";
     public static final String PREDICTOR_WEIGHTS = "predictor-weights";
 
+    public static final String LOG_FN_COUNT = "log-fn-count";
+
     protected Data _classifierCellWeights;
     protected Data _classifierCellErrors;
     protected Data _classifierCellActivity;
@@ -87,6 +89,8 @@ public class RegionLayerEntity extends Entity {
     }
 
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
+
+        attributes.add( LOG_FN_COUNT );
 
         attributes.add( FB_OUTPUT_UNFOLDED_ACTIVITY_RAW );
         attributes.add( FB_OUTPUT_UNFOLDED_ACTIVITY );
@@ -271,7 +275,7 @@ public class RegionLayerEntity extends Entity {
                 inputWidth, inputHeight,
                 feedbackWidthCells, feedbackHeightCells,
                 config.organizerWidthCells, config.organizerHeightCells,
-                config.classifierWidthCells, config.classifierHeightCells,
+                config.classifierWidthCells, config.classifierHeightCells, config.classifierDepthCells,
                 config.receptiveFieldsTrainingSamples, config.classifiersPerBit, //config.receptiveFieldSize,
                 config.organizerLearningRate, config.organizerLearningRateNeighbours, config.organizerNoiseMagnitude, config.organizerEdgeMaxAge, config.organizerStressLearningRate, config.organizerStressThreshold, config.organizerGrowthInterval,
                 config.classifierLearningRate, config.classifierLearningRateNeighbours, config.classifierNoiseMagnitude, config.classifierEdgeMaxAge, config.classifierStressLearningRate, classifierStressThreshold, config.classifierGrowthInterval,
@@ -287,8 +291,31 @@ public class RegionLayerEntity extends Entity {
         r._rc.setLearn( config.learn );
         r.update(); // 120-150ms. The rest of doUpdateSelf() is maybe 50ms.
 
+        // update data logging
+        int fnCount = r._regionPredictionFN.indicesMoreThan( 0.f ).size();
+        updateDataLog( LOG_FN_COUNT, (float)fnCount );
+
         // Save data
         copyDataToPersistence( r );
+    }
+
+    protected void updateDataLog( String logSuffix, float value ) {
+        Data dataLog = getData( logSuffix ); // error in classification (0,1)
+
+        int oldLength = 0;
+        if( dataLog != null ) {
+            oldLength = dataLog.getSize();
+        }
+
+        Data dataLogNew = new Data( DataSize.create( oldLength +1 ) );
+
+        for( int i = 0; i < oldLength; ++i ) {
+            dataLogNew._values[ i ] = dataLog._values[ i ];
+        }
+
+        dataLogNew._values[ oldLength ] = value;
+
+        setData( logSuffix, dataLogNew );
     }
 
     protected void copyDataFromPersistence( RegionLayer r ) {
@@ -305,13 +332,16 @@ public class RegionLayerEntity extends Entity {
 
         Point organizerSize = r._rc.getOrganizerSizeCells();
         Point classifierSize = r._rc.getClassifierSizeCells();
+        Point columnSize = r._rc.getColumnSizeCells();
 
         int organizerWidthCells = organizerSize.x;
         int organizerHeightCells = organizerSize.y;
+        int columnWidthCells = columnSize.x;
+        int columnHeightCells = columnSize.y;
         int classifierWidthCells = classifierSize.x;
         int classifierHeightCells = classifierSize.y;
-        int regionWidthCells = organizerWidthCells * classifierWidthCells;
-        int regionHeightCells = organizerHeightCells * classifierHeightCells;
+        int regionWidthCells  = organizerWidthCells  * columnWidthCells;
+        int regionHeightCells = organizerHeightCells * columnHeightCells;
 
         DataSize dataSizeRegion = DataSize.create( regionWidthCells, regionHeightCells );
 
@@ -336,8 +366,8 @@ public class RegionLayerEntity extends Entity {
         int areaCells = classifierWidthCells * classifierHeightCells;
         int inputs = classifierInput.getSize();
         DataSize dataSizeWeights = DataSize.create( classifierWidthCells, classifierHeightCells, inputs );
-        DataSize dataSizeCells = DataSize.create( classifierWidthCells, classifierHeightCells );
-        DataSize dataSizeEdges = DataSize.create( areaCells, areaCells );
+        DataSize dataSizeCells   = DataSize.create( classifierWidthCells, classifierHeightCells );
+        DataSize dataSizeEdges   = DataSize.create( areaCells, areaCells );
 
         DataSize dataSizeWeightsAll = DataSize.create( dataSizeWeights.getVolume() * nbrClassifiers );
         DataSize dataSizeCellsAll   = DataSize.create( dataSizeCells  .getVolume() * nbrClassifiers );
@@ -388,7 +418,7 @@ public class RegionLayerEntity extends Entity {
         int hebbianPredictorContext = r._rc.getHebbianPredictorContextSizeRegion( predictorContextSize );
         int hebbianPredictorWeights = r._rc.getHebbianPredictorWeightsSizeRegion( predictorWeightsSize );
         r._regionPredictorContext = getDataLazyResize( PREDICTOR_CONTEXTS, DataSize.create( hebbianPredictorContext ) );
-        r._regionPredictorWeights = getDataLazyResize( PREDICTOR_WEIGHTS, DataSize.create( hebbianPredictorWeights ) );
+        r._regionPredictorWeights = getDataLazyResize( PREDICTOR_WEIGHTS , DataSize.create( hebbianPredictorWeights ) );
     }
 
     protected void copyDataFromPersistence( String prefix, GrowingNeuralGas gng, int widthCells, int heightCells, Data input ) {
@@ -396,18 +426,18 @@ public class RegionLayerEntity extends Entity {
         int inputs = input.getSize();
 
         DataSize dataSizeWeights = DataSize.create( widthCells, heightCells, inputs );
-        DataSize dataSizeCells = DataSize.create( widthCells, heightCells );
-        DataSize dataSizeEdges = DataSize.create( areaCells, areaCells );
+        DataSize dataSizeCells   = DataSize.create( widthCells, heightCells );
+        DataSize dataSizeEdges   = DataSize.create( areaCells, areaCells );
 
-        Data weights = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), dataSizeWeights );
-        Data errors = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ), dataSizeCells ); // deep copies the size so they each own a copy
+        Data weights  = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), dataSizeWeights );
+        Data errors   = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ), dataSizeCells ); // deep copies the size so they each own a copy
         Data activity = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), dataSizeCells ); // deep copies the size so they each own a copy
-        Data mask = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), dataSizeCells ); // deep copies the size so they each own a copy
+        Data mask     = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), dataSizeCells ); // deep copies the size so they each own a copy
 
-        Data cellStress = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS ), dataSizeCells );
-        Data cellAges = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES ), dataSizeCells );
-        Data edges = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), dataSizeEdges );
-        Data edgesAges = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES ), dataSizeEdges );
+        Data cellStress     = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS ), dataSizeCells );
+        Data cellAges       = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES ), dataSizeCells );
+        Data edges          = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), dataSizeEdges );
+        Data edgesAges      = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES ), dataSizeEdges );
         Data ageSinceGrowth = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH ), DataSize.create( 1 ) );
 
         gng._inputValues = input;
