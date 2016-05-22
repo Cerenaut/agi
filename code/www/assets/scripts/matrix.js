@@ -40,6 +40,12 @@ var Matrix = {
     var w = dataSize.w;
     var h = dataSize.h;
 
+    var stride = $( "#stride" ).val();
+    if( stride > 0 ) {
+      w = stride;
+      h = dataElements.length / w;
+    }
+
     var xCategories = [];
     var yCategories = [];
     xCategories.length = w;
