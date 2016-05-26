@@ -335,13 +335,13 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         int inputs = _c.getNbrInputs();
 
         for( int i = 0; i < inputs; ++i ) {
-            int offsetW = worstCell * inputs + i;
+            int offsetW  =  worstCell * inputs + i;
             int offsetW2 = worstCell2 * inputs + i;
-            int offsetF = freeCell * inputs + i;
+            int offsetF  =   freeCell * inputs + i;
 
-            float weightW = _cellWeights._values[ offsetW ];
+            float weightW  = _cellWeights._values[ offsetW ];
             float weightW2 = _cellWeights._values[ offsetW2 ];
-            float weightF = ( weightW + weightW2 ) * 0.5f;
+            float weightF  = ( weightW + weightW2 ) * 0.5f;
             _cellWeights._values[ offsetF ] = weightF;
         }
 
@@ -351,16 +351,16 @@ public class GrowingNeuralGas extends CompetitiveLearning {
 
         // Create edges: worst, free; worst2, free;
         // remove edges: worst, worst2
-        int offsetWW2 = getEdgeOffset( worstCell, worstCell2 );
-        int offsetWF = getEdgeOffset( worstCell, freeCell );
+        int offsetWW2 = getEdgeOffset( worstCell , worstCell2 );
+        int offsetWF  = getEdgeOffset( worstCell , freeCell );
         int offsetW2F = getEdgeOffset( worstCell2, freeCell );
 
         _edgesAges._values[ offsetWW2 ] = 0.f; // this one was just used
-        _edgesAges._values[ offsetWF ] = 0.f; // this one was just used
+        _edgesAges._values[ offsetWF  ] = 0.f; // this one was just used
         _edgesAges._values[ offsetW2F ] = 0.f; // this one was just used
 
         _edges._values[ offsetWW2 ] = 0.f; // remove the edge
-        _edges._values[ offsetWF ] = 1.f; // Create the edge
+        _edges._values[ offsetWF  ] = 1.f; // Create the edge
         _edges._values[ offsetW2F ] = 1.f; // Create the edge
 
         // reset stress of all cells.
@@ -376,13 +376,13 @@ public class GrowingNeuralGas extends CompetitiveLearning {
     public void updateStress( int bestCell ) {
         float cellStressAlpha = 1.f - _c.getStressLearningRate();
         float bestSumSqError = _cellErrors._values[ bestCell ]; // use abs errors instead of sq errors?
-        float bestUnitError = ( float ) Math.sqrt( bestSumSqError );
+//        float bestUnitError = ( float ) Math.sqrt( bestSumSqError );
 //              bestUnitError /= inputs; this makes the values too small
-        if( Float.isNaN( bestUnitError ) ) {
-            bestUnitError = 0.f;
-        }
+//        if( Float.isNaN( bestUnitError ) ) {
+//            bestUnitError = 0.f;
+//        }
         float stressOld = _cellStress._values[ bestCell ];
-        float stressNew = ( float ) Unit.lerp( stressOld, bestUnitError, cellStressAlpha );
+        float stressNew = ( float ) Unit.lerp( stressOld, bestSumSqError, cellStressAlpha );
         _cellStress._values[ bestCell ] = stressNew;
     }
 
@@ -453,7 +453,11 @@ public class GrowingNeuralGas extends CompetitiveLearning {
     protected void updateWeight( int cell, int inputs, int i, float inputValue, float cellLearningRate ) {
         int offset = cell * inputs + i;
 
-        float noise = ( float ) ( ( _c._r.nextDouble() - 0.5 ) * _c.getNoiseMagnitude() );
+        float magnitude = _c.getNoiseMagnitude();
+        float noise = 0.f;
+        if( magnitude > 0.f ) {
+            noise = ( float ) ( ( _c._r.nextDouble() - 0.5 ) * magnitude );
+        }
         float weightOld = _cellWeights._values[ offset ];
         float weightNew = weightOld + cellLearningRate * ( inputValue - weightOld ) + noise;
         _cellWeights._values[ offset ] = weightNew;
@@ -471,7 +475,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         int offset = getEdgeOffset( bestCellA, bestCellB );
 //        edgeAges.add( 1.f ); only increment ages of neighbours of bestCellA
         _edgesAges._values[ offset ] = 0.f; // this one was just used
-        _edges._values[ offset ] = 1.f; // Create the edge
+        _edges._values[ offset ] = 1.f; // Create the edge if not already
 
         // now go and prune
         for( int cell1 = 0; cell1 < cells; ++cell1 ) {
