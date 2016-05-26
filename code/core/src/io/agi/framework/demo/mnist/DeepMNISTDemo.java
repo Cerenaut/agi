@@ -65,12 +65,16 @@ public class DeepMNISTDemo {
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle_twin";
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle_deep";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle_deep";
-        String trainingPath = "./training";
-        String testingPath = "./testing";
-        int terminationAge = 1000;
-        int trainingBatches = 2;
-//        boolean terminateByAge = true;
-        boolean terminateByAge = false;
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/all_train";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/all_t10k";
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
+        String testingPath = "/home/dave/workspace/agi.io/data/mnist/5k_test";
+//        String trainingPath = "./training";
+//        String testingPath = "./testing";
+        int terminationAge = 5000;
+        int trainingBatches = 1;
+        boolean terminateByAge = true;
+//        boolean terminateByAge = false;
 
         // Define some entities
         String experimentName = "experiment";
@@ -121,6 +125,7 @@ public class DeepMNISTDemo {
         Framework.SetDataReference( classDecoderName, DecoderEntity.DATA_INPUT_ENCODED, classRegionName, RegionLayerEntity.FB_OUTPUT_UNFOLDED_PREDICTION ); // the prediction of the next state
         Framework.SetDataReference( mnistName, MnistEntity.INPUT_CLASSIFICATION, classDecoderName, DecoderEntity.DATA_OUTPUT_DECODED ); // the (decoded) prediction of the next state
 
+
         // Experiment config
         if( !terminateByAge ) {
             Framework.SetConfig( experimentName, "terminationEntityName", mnistName );
@@ -150,13 +155,13 @@ public class DeepMNISTDemo {
 
         // image encoder config
         Framework.SetConfig( imageEncoderName, "density", "1" );
-        Framework.SetConfig( imageEncoderName, "bits", "1" );
-        Framework.SetConfig( imageEncoderName, "encodeZero", "false" );
+        Framework.SetConfig( imageEncoderName, "bits", "2" );
+        Framework.SetConfig( imageEncoderName, "encodeZero", "true" );
 
         // image decoder config x2
         Framework.SetConfig( activityImageDecoderName, "density", "1" );
-        Framework.SetConfig( activityImageDecoderName, "bits", "1" );
-        Framework.SetConfig( activityImageDecoderName, "encodeZero", "false" );
+        Framework.SetConfig( activityImageDecoderName, "bits", "2" );
+        Framework.SetConfig( activityImageDecoderName, "encodeZero", "true" );
 
         Framework.SetConfig( predictedImageDecoderName, "density", "1" );
         Framework.SetConfig( predictedImageDecoderName, "bits", "1" );
@@ -180,6 +185,7 @@ public class DeepMNISTDemo {
         Framework.SetConfig( classRegionName, "predictorLearningRate", "100" );
         Framework.SetConfig( classRegionName, "receptiveFieldsTrainingSamples", "0.1" );
         Framework.SetConfig( classRegionName, "classifiersPerBit", "5" );
+
         Framework.SetConfig( classRegionName, "organizerStressThreshold", "0.0" );
         Framework.SetConfig( classRegionName, "organizerGrowthInterval", "1" );
         Framework.SetConfig( classRegionName, "organizerEdgeMaxAge", "1000" );
@@ -188,14 +194,19 @@ public class DeepMNISTDemo {
         Framework.SetConfig( classRegionName, "organizerLearningRateNeighbours", "0.001" );
         Framework.SetConfig( classRegionName, "organizerWidthCells", "2" );
         Framework.SetConfig( classRegionName, "organizerHeightCells", "2" );
+
 //        Framework.SetConfig( classRegionName, "classifierWidthCells", "4" );
 //        Framework.SetConfig( classRegionName, "classifierHeightCells", "4" );
         Framework.SetConfig( classRegionName, "classifierWidthCells", "5" );
         Framework.SetConfig( classRegionName, "classifierHeightCells", "5" );
         Framework.SetConfig( classRegionName, "classifierDepthCells", "1" );
-        Framework.SetConfig( classRegionName, "classifierStressThreshold", "0.0" );
-        Framework.SetConfig( classRegionName, "classifierGrowthInterval", "10" );
-        Framework.SetConfig( classRegionName, "classifierEdgeMaxAge", "30" );
+        Framework.SetConfig( classRegionName, "classifierStressThreshold", "0.25" );
+        Framework.SetConfig( classRegionName, "classifierGrowthInterval", "120" );
+        Framework.SetConfig( classRegionName, "classifierEdgeMaxAge", "100" );
+
+        Framework.SetConfig( classRegionName, "classifierLearningRate", "0.05" );
+        Framework.SetConfig( classRegionName, "classifierLearningRateNeighbours", "0.005" );
+        Framework.SetConfig( classRegionName, "classifierStressLearningRate", "0.1" );
     }
 
     public static void setRegionLayerConfig( String regionLayerName ) {
@@ -210,19 +221,23 @@ public class DeepMNISTDemo {
         Framework.SetConfig( regionLayerName, "organizerNoiseMagnitude", "0.0" );
         Framework.SetConfig( regionLayerName, "organizerLearningRate", "0.002" );
         Framework.SetConfig( regionLayerName, "organizerLearningRateNeighbours", "0.001" );
-        Framework.SetConfig( regionLayerName, "organizerWidthCells", "8" );
-        Framework.SetConfig( regionLayerName, "organizerHeightCells", "8" );
-
-//        float classifierLearningRate = 0.02f;
-//        float classifierLearningRateNeighbours = 0.01f;
-//        float classifierStressLearningRate = 0.01f; // irrelevant if stress threshold = 0
+        Framework.SetConfig( regionLayerName, "organizerWidthCells", "9" );
+        Framework.SetConfig( regionLayerName, "organizerHeightCells", "9" );
 
         Framework.SetConfig( regionLayerName, "classifierWidthCells", "5" );
-        Framework.SetConfig( regionLayerName, "classifierHeightCells", "2" );
-        Framework.SetConfig( regionLayerName, "classifierDepthCells", "2" );
-        Framework.SetConfig( regionLayerName, "classifierStressThreshold", "2" ); // means it will attempt to use all cells.
-        Framework.SetConfig( regionLayerName, "classifierGrowthInterval", "300" );
-        Framework.SetConfig( regionLayerName, "classifierEdgeMaxAge", "200" );
+//        Framework.SetConfig( regionLayerName, "classifierHeightCells", "2" );
+//        Framework.SetConfig( regionLayerName, "classifierDepthCells", "2" );
+        Framework.SetConfig( regionLayerName, "classifierHeightCells", "4" );
+        Framework.SetConfig( regionLayerName, "classifierDepthCells", "1" );
+//        Framework.SetConfig( regionLayerName, "classifierStressThreshold", "2" ); // means it will attempt to use all cells.
+        Framework.SetConfig( regionLayerName, "classifierStressThreshold", "0.5" );
+        Framework.SetConfig( regionLayerName, "classifierGrowthInterval", "120" );
+        Framework.SetConfig( regionLayerName, "classifierEdgeMaxAge", "100" );
+
+        Framework.SetConfig( regionLayerName, "classifierLearningRate", "0.05" );
+        Framework.SetConfig( regionLayerName, "classifierLearningRateNeighbours", "0.005" );
+        Framework.SetConfig( regionLayerName, "classifierStressLearningRate", "0.1" );
+
     }
 
 }
