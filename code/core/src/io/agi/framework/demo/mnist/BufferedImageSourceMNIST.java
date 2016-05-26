@@ -17,9 +17,10 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.core.util.images.BufferedImageSource;
+package io.agi.framework.demo.mnist;
 
 import io.agi.core.orm.AbstractPair;
+import io.agi.core.util.images.BufferedImageSource.BufferedImageSource;
 
 import java.awt.image.BufferedImage;
 import java.io.FileInputStream;

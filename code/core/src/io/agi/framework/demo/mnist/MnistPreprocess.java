@@ -19,14 +19,11 @@
 
 package io.agi.framework.demo.mnist;
 
-import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceMNIST;
-
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Random;
 import java.util.UUID;
 
 /**
