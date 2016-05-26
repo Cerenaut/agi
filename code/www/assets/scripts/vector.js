@@ -44,6 +44,9 @@ var Vector = {
       categories[ i ] = i;
     }
 
+    var chartType = $( "#type" ).val();
+    var window = $( "#window" ).val();
+
     for( var d = 0; d < datas.length; ++d ) {
       var data = datas[ d ]; // TODO generalize to multiple responses.
       var dataElements = data.elements;
@@ -54,7 +57,30 @@ var Vector = {
       var values = [];
       values.length = elements;
 
+      if( window > 1 ) {
+        var values2 = [];
+
+        for( var i = 0; i < elements; ++i ) {
+          var count = 0;
+          var sum = 0;
+          var j0 = Math.max( 0, i-j-1 );
+          for( var j = i; j >= j0; --j ) {
+            var value = dataElements.elements[ j ];
+            sum += value;
+            count += 1;
+          }
+          var mean = 0;
+          if( count > 0 ) {
+            mean = sum / count;
+          }
+          values2.push( mean );
+        }
+
+        dataElements.elements = values2;
+      }
+
       var maxValue = 0.0;
+
       if( normalize ) {
         for( var i = 0; i < elements; ++i ) {
           var value = dataElements.elements[ i ];
@@ -84,9 +110,10 @@ var Vector = {
 
     var chart = {
         chart: {
+              type: chartType
 //            type: 'bar'
 //            type: 'column'
-            type: 'line'
+//            type: 'line'
         },
         title: {
             text: 'Vector plot'
