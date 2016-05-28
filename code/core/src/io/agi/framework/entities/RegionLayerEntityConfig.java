@@ -36,6 +36,7 @@ public class RegionLayerEntityConfig extends EntityConfig {
 
     // Organizer training
     float receptiveFieldsTrainingSamples = 0.1f;//12;
+    float defaultPredictionInhibition = 0.f; // don't inhibit
     int classifiersPerBit = 5;
 
     float organizerLearningRate = 0.02f;

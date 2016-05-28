@@ -104,14 +104,16 @@ public class MNISTDemo {
         // Connect the entities' data
         // a) Image to image region, and decode
         Framework.SetDataReference( imageEncoderName, EncoderEntity.DATA_INPUT, mnistName, MnistEntity.OUTPUT_IMAGE );
-        Framework.SetDataReference( imageRegionName, RegionLayerEntity.FF_INPUT, imageEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
+        Framework.SetDataReference( imageRegionName, RegionLayerEntity.FF_INPUT_1, imageEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
+        Framework.SetDataReference( imageRegionName, RegionLayerEntity.FF_INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
         Framework.SetDataReference( imageRegionName, RegionLayerEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT ); // feedback to this region is just a constant
-        Framework.SetDataReference( activityImageDecoderName, DecoderEntity.DATA_INPUT_ENCODED, imageRegionName, RegionLayerEntity.FB_OUTPUT_UNFOLDED_ACTIVITY );
-        Framework.SetDataReference( predictedImageDecoderName, DecoderEntity.DATA_INPUT_ENCODED, imageRegionName, RegionLayerEntity.FB_OUTPUT_UNFOLDED_PREDICTION );
+        Framework.SetDataReference( activityImageDecoderName, DecoderEntity.DATA_INPUT_ENCODED, imageRegionName, RegionLayerEntity.FB_OUTPUT_1_UNFOLDED_ACTIVITY );
+        Framework.SetDataReference( predictedImageDecoderName, DecoderEntity.DATA_INPUT_ENCODED, imageRegionName, RegionLayerEntity.FB_OUTPUT_1_UNFOLDED_PREDICTION );
 
         // a) Class to class region, and decode
         Framework.SetDataReference( classEncoderName, EncoderEntity.DATA_INPUT, mnistName, MnistEntity.OUTPUT_CLASSIFICATION );
-        Framework.SetDataReference( classRegionName, RegionLayerEntity.FF_INPUT, classEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
+        Framework.SetDataReference( classRegionName, RegionLayerEntity.FF_INPUT_1, classEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
+        Framework.SetDataReference( classRegionName, RegionLayerEntity.FF_INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
 
         if( testClassRegion ) {
             Framework.SetDataReference( classRegionName, RegionLayerEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT ); // get current state from the region to be used to predict
@@ -120,7 +122,7 @@ public class MNISTDemo {
             Framework.SetDataReference( classRegionName, RegionLayerEntity.FB_INPUT, imageRegionName, RegionLayerEntity.ACTIVITY_NEW ); // get current state from the region to be used to predict
         }
 
-        Framework.SetDataReference( classDecoderName, DecoderEntity.DATA_INPUT_ENCODED, classRegionName, RegionLayerEntity.FB_OUTPUT_UNFOLDED_PREDICTION ); // the prediction of the next state
+        Framework.SetDataReference( classDecoderName, DecoderEntity.DATA_INPUT_ENCODED, classRegionName, RegionLayerEntity.FB_OUTPUT_1_UNFOLDED_PREDICTION ); // the prediction of the next state
         Framework.SetDataReference( mnistName, MnistEntity.INPUT_CLASSIFICATION, classDecoderName, DecoderEntity.DATA_OUTPUT_DECODED ); // the (decoded) prediction of the next state
 
         // Experiment config

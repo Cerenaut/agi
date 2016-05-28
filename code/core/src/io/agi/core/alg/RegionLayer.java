@@ -27,6 +27,7 @@ import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.util.*;
 
 /**
@@ -50,15 +51,22 @@ import java.util.*;
 public class RegionLayer extends NamedObject {
 
     // Data structures
-    public Data _ffInput;
-    public Data _ffInputOld;
+    public Data _ffInput1;
+    public Data _ffInput1Old;
+    public Data _ffInput2;
+    public Data _ffInput2Old;
     public Data _fbInput;
     public Data _fbInputOld;
 
-    public Data _outputUnfoldedActivityRaw;
-    public Data _outputUnfoldedActivity;
-    public Data _outputUnfoldedPredictionRaw;
-    public Data _outputUnfoldedPrediction;
+    public Data _output1UnfoldedActivityRaw;
+    public Data _output1UnfoldedActivity;
+    public Data _output1UnfoldedPredictionRaw;
+    public Data _output1UnfoldedPrediction;
+
+    public Data _output2UnfoldedActivityRaw;
+    public Data _output2UnfoldedActivity;
+    public Data _output2UnfoldedPredictionRaw;
+    public Data _output2UnfoldedPrediction;
 
     public Data _regionActivityOld;
     public Data _regionActivityNew;
@@ -70,6 +78,7 @@ public class RegionLayer extends NamedObject {
 
     public Data _regionPredictionFP;
     public Data _regionPredictionFN;
+    public Data _regionPredictionInhibition;
 
     public Data _regionPredictorContext;
     public Data _regionPredictorWeights;
@@ -123,7 +132,8 @@ public class RegionLayer extends NamedObject {
     }
 
     protected void setupData() {
-        Point ffInputSize = _rc.getFfInputSize();
+        Point ffInput1Size = _rc.getFfInput1Size();
+        Point ffInput2Size = _rc.getFfInput2Size();
         Point fbInputSize = _rc.getFbInputSize();
         Point regionSize = _rc.getRegionSizeCells();
 
@@ -132,21 +142,29 @@ public class RegionLayer extends NamedObject {
         int hebbianPredictorInputs  = _rc.getHebbianPredictorContextSizeRegion( predictorContextSize );
         int hebbianPredictorWeights = _rc.getHebbianPredictorWeightsSizeRegion( predictorWeightsSize );
 
-        DataSize dataSizeInputFF = DataSize.create( ffInputSize.x, ffInputSize.y );
-        DataSize dataSizeInputFB = DataSize.create( fbInputSize.x, fbInputSize.y );
+        DataSize dataSizeFfInput1 = DataSize.create( ffInput1Size.x, ffInput1Size.y );
+        DataSize dataSizeFfInput2 = DataSize.create( ffInput2Size.x, ffInput2Size.y );
+        DataSize dataSizeFbInput = DataSize.create( fbInputSize.x, fbInputSize.y );
         DataSize dataSizeRegion  = DataSize.create( regionSize.x, regionSize.y );
 
         // external inputs
-        _ffInput    = new Data( dataSizeInputFF );
-        _ffInputOld = new Data( dataSizeInputFF );
-        _fbInput    = new Data( dataSizeInputFB );
-        _fbInputOld = new Data( dataSizeInputFB );
+        _ffInput1    = new Data( dataSizeFfInput1 );
+        _ffInput1Old = new Data( dataSizeFfInput1 );
+        _ffInput2    = new Data( dataSizeFfInput2 );
+        _ffInput2Old = new Data( dataSizeFfInput2 );
+        _fbInput    = new Data( dataSizeFbInput );
+        _fbInputOld = new Data( dataSizeFbInput );
 
         // unfolded structures: input size.
-        _outputUnfoldedActivityRaw   = new Data( dataSizeInputFF );
-        _outputUnfoldedActivity      = new Data( dataSizeInputFF );
-        _outputUnfoldedPredictionRaw = new Data( dataSizeInputFF );
-        _outputUnfoldedPrediction    = new Data( dataSizeInputFF );
+        _output1UnfoldedActivityRaw   = new Data( dataSizeFfInput1 );
+        _output1UnfoldedActivity      = new Data( dataSizeFfInput1 );
+        _output1UnfoldedPredictionRaw = new Data( dataSizeFfInput1 );
+        _output1UnfoldedPrediction    = new Data( dataSizeFfInput1 );
+
+        _output2UnfoldedActivityRaw   = new Data( dataSizeFfInput2 );
+        _output2UnfoldedActivity      = new Data( dataSizeFfInput2 );
+        _output2UnfoldedPredictionRaw = new Data( dataSizeFfInput2 );
+        _output2UnfoldedPrediction    = new Data( dataSizeFfInput2 );
 
         // region sized structures
         _regionActivityOld = new Data( dataSizeRegion );
@@ -157,15 +175,20 @@ public class RegionLayer extends NamedObject {
         _regionPredictionNew = new Data( dataSizeRegion );
         _regionPredictionRaw = new Data( dataSizeRegion );
 
-        _regionPredictionFP = new Data( dataSizeRegion );
-        _regionPredictionFN = new Data( dataSizeRegion );
+        _regionPredictionFP         = new Data( dataSizeRegion );
+        _regionPredictionFN         = new Data( dataSizeRegion );
+        _regionPredictionInhibition = new Data( dataSizeRegion );
 
         _regionPredictorContext = new Data( DataSize.create( hebbianPredictorInputs ) );
         _regionPredictorWeights = new Data( DataSize.create( hebbianPredictorWeights ) );
     }
 
-    public Data getFfInput() {
-        return _ffInput;
+    public Data getFfInput1() {
+        return _ffInput1;
+    }
+
+    public Data getFfInput2() {
+        return _ffInput2;
     }
 
     public Data getFbInput() {
@@ -186,6 +209,9 @@ public class RegionLayer extends NamedObject {
                 classifier.reset();
             }
         }
+
+        float defaultPredictionInhibition = _rc.getDefaultPredictionInhibition();
+        _regionPredictionInhibition.set( defaultPredictionInhibition );
     }
 
     public void update() {
@@ -201,7 +227,8 @@ public class RegionLayer extends NamedObject {
 
         updateClassifiers(); // adds to _transient._regionActiveCells, _transient._columnActiveCells, and _regionActivity
 
-        _ffInputOld.copy( _ffInput );
+        _ffInput1Old.copy( _ffInput1 );
+        _ffInput2Old.copy( _ffInput2 );
 
         boolean classificationChanged = hasClassificationChanged(); // based on current value of _regionActivityNew
         if( classificationChanged ) {
@@ -230,16 +257,24 @@ public class RegionLayer extends NamedObject {
             regionBits.remove( c );
         }
 
-        unfold( regionBits, _outputUnfoldedActivityRaw );
-        unfold( _regionPredictionNew, _outputUnfoldedPredictionRaw );
+        unfold( regionBits          , _output1UnfoldedActivityRaw  , _output2UnfoldedActivityRaw );
+        unfold( _regionPredictionNew, _output1UnfoldedPredictionRaw, _output2UnfoldedPredictionRaw );
 
         // now threshold:
-        _outputUnfoldedActivityRaw  .scaleRange( 0.f, 1.f );
-        _outputUnfoldedPredictionRaw.scaleRange( 0.f, 1.f );
-        _outputUnfoldedActivity  .copy( _outputUnfoldedActivityRaw );
-        _outputUnfoldedPrediction.copy( _outputUnfoldedPredictionRaw );
-        _outputUnfoldedActivity  .thresholdMoreThan( 0.5f, 1.f, 0.f );
-        _outputUnfoldedPrediction.thresholdMoreThan( 0.5f, 1.f, 0.f );
+        _output1UnfoldedActivityRaw  .scaleRange( 0.f, 1.f );
+        _output1UnfoldedPredictionRaw.scaleRange( 0.f, 1.f );
+        _output1UnfoldedActivity  .copy( _output1UnfoldedActivityRaw );
+        _output1UnfoldedPrediction.copy( _output1UnfoldedPredictionRaw );
+        _output1UnfoldedActivity  .thresholdMoreThan( 0.5f, 1.f, 0.f );
+        _output1UnfoldedPrediction.thresholdMoreThan( 0.5f, 1.f, 0.f );
+
+        _output2UnfoldedActivityRaw  .scaleRange( 0.f, 1.f );
+        _output2UnfoldedPredictionRaw.scaleRange( 0.f, 1.f );
+        _output2UnfoldedActivity  .copy( _output2UnfoldedActivityRaw );
+        _output2UnfoldedPrediction.copy( _output2UnfoldedPredictionRaw );
+        _output2UnfoldedActivity  .thresholdMoreThan( 0.5f, 1.f, 0.f );
+        _output2UnfoldedPrediction.thresholdMoreThan( 0.5f, 1.f, 0.f );
+
 //        Otsu.apply( _outputUnfoldedActivityRaw  , _outputUnfoldedActivity  , 20, 0.f, 1.f );
 //        Otsu.apply( _outputUnfoldedPredictionRaw, _outputUnfoldedPrediction, 20, 0.f, 1.f );
     }
@@ -252,26 +287,30 @@ public class RegionLayer extends NamedObject {
      * we don't know how to consider zero bits. They don't necessarily have any opinion on some bits.
      *
      * @param region
-     * @param ffInput
+     * @param ffInput1
+     * @param ffInput2
      */
-    public void unfold( Data region, Data ffInput ) {
+    public void unfold( Data region, Data ffInput1, Data ffInput2 ) {
 
 //        float threshold = 0.5f; // this is as meaningful as anything else..
 
         HashSet< Integer > regionBits = region.indicesMoreThan( 0.f ); // find all the active bits.
 
-        unfold( regionBits, ffInput );
+        unfold( regionBits, ffInput1, ffInput2 );
     }
 
-    public void unfold( HashSet< Integer > regionBits, Data ffInput ) {//, Float threshold ) {
+    public void unfold( HashSet< Integer > regionBits, Data ffInput1, Data ffInput2 ) {
 
-        ffInput.set( 0.f );
+        ffInput1.set( 0.f );
+        ffInput2.set( 0.f );
 
         if( regionBits.isEmpty() ) {
             return;
         }
 
-        int weights = ffInput.getSize();
+        int ffInput1Area = ffInput1.getSize();
+        int ffInput2Area = ffInput2.getSize();
+        int weights = ffInput1Area + ffInput2Area;
 
 //        float bitWeight = 1.f / (float)regionBits.size();
 
@@ -294,19 +333,21 @@ public class RegionLayer extends NamedObject {
                 int weightsOffset = weightsOrigin +w;
                 float weight = classifier._cellWeights._values[ weightsOffset ];
 
-//                weight *= bitWeight;
-//                if( threshold != null ) {
-//                    if( weight > threshold ) {
-                        ffInput._values[ w ] += weight; // either was zero, or was 1. Either way the update is correct.
-//                    }
-//                }
+                if( w < ffInput1Area ) {
+                    ffInput1._values[ w ] += weight; // either was zero, or was 1. Either way the update is correct.
+                }
+                else {
+                    int w2 = w - ffInput1Area;
+                    ffInput2._values[ w2 ] += weight; // either was zero, or was 1. Either way the update is correct.
+                }
             }
         }
     }
 
     protected void updateSparseInput() {
         // Find the sparse input bits:
-        _transient._ffInputActive = _ffInput.indicesMoreThan( 0.f ); // find all the active bits.
+        _transient._ffInput1Active = _ffInput1.indicesMoreThan( 0.f ); // find all the active bits.
+        _transient._ffInput2Active = _ffInput2.indicesMoreThan( 0.f ); // find all the active bits.
         _transient._fbInputActive = _fbInput.indicesMoreThan( 0.f ); // find all the active bits.
     }
 
@@ -327,41 +368,63 @@ public class RegionLayer extends NamedObject {
             return; // don't do anything.
         }
 
-        int nbrActiveInput = _transient._ffInputActive.size();
+        int nbrActiveInput1 = _transient._ffInput1Active.size();
+        int nbrActiveInput2 = _transient._ffInput2Active.size();
+        int nbrActiveInput = nbrActiveInput1 + nbrActiveInput2;
         if( nbrActiveInput == 0 ) {
             return; // can't train, ignore blank patterns.
         }
 
-        Object[] activeInput = _transient._ffInputActive.toArray();
+        Object[] activeInput1 = _transient._ffInput1Active.toArray();
+        Object[] activeInput2 = _transient._ffInput2Active.toArray();
 
         Data inputValues = _organizer.getInput();
 
-        Point inputSize = Data2d.getSize( _ffInput );
+        Point input1Size = Data2d.getSize( _ffInput1 );
+        Point input2Size = Data2d.getSize( _ffInput1 );
 
         // randomly sample a fixed number of input bits.
         float samplesFraction = _rc.getReceptiveFieldsTrainingSamples();
-        float sampleArea = (float)_ffInput.getSize();
+        float sampleArea1 = (float)_ffInput1.getSize();
+        float sampleArea2 = (float)_ffInput2.getSize();
+        float sampleArea = sampleArea1 + sampleArea2; // so kinda an average of the two
         int samples = (int)( samplesFraction * sampleArea ); // e.g. 0.1 (10%) of the input area
 
         // TODO: Consider limiting samples to the number of active input bits, to reduce overtraining on these.
         for( int s = 0; s < samples; ++s ) {
 
-            int sample = _rc._r.nextInt( nbrActiveInput );
+            // pick a pair of points: one from each receptive field
+            // we are targeting clusters of inputs, which will occur more due to relative frequency
+            Point.Float sample1 = getSample( activeInput1, _ffInput1._dataSize, input1Size );
+            Point.Float sample2 = getSample( activeInput2, _ffInput2._dataSize, input2Size );
 
-            Integer offset = ( Integer ) activeInput[ sample ];
-
-            Point p = Data2d.getXY( _ffInput._dataSize, offset );
-
-            float x_i = ( float ) p.x / ( float ) inputSize.x;
-            float y_i = ( float ) p.y / ( float ) inputSize.y;
-
-            inputValues._values[ 0 ] = x_i;
-            inputValues._values[ 1 ] = y_i;
+            inputValues._values[ 0 ] = sample1.x;
+            inputValues._values[ 1 ] = sample1.y;
+            inputValues._values[ 2 ] = sample2.x;
+            inputValues._values[ 3 ] = sample2.y;
 
             _organizer.update(); // train the organizer to look for this value.
         }
     }
 
+    protected Point.Float getSample( Object[] activeInput, DataSize dataSize, Point dataSize2d ) {
+        int length = activeInput.length;
+
+        float xUnit = 0.5f;
+        float yUnit = 0.5f; // the centre of the input, so will make it more compatible with other samplings
+
+        if( length > 0 ) {
+            int sample = _rc._r.nextInt( length );
+            Integer offset = ( Integer ) activeInput[ sample ];
+            Point p = Data2d.getXY( dataSize, offset );
+
+            xUnit = ( float ) p.x / ( float ) dataSize2d.x;
+            yUnit = ( float ) p.y / ( float ) dataSize2d.y;
+        }
+
+        Point.Float sample = new Point2D.Float( xUnit, yUnit );
+        return sample;
+    }
     /**
      * Returns the receptive field centroid, in pixels, of the specified classifier.
      *
@@ -370,21 +433,32 @@ public class RegionLayer extends NamedObject {
      * @return
      */
     public float[] getClassifierReceptiveField( int xClassifier, int yClassifier ) {
-        float[] rf = new float[ RegionLayerConfig.RECEPTIVE_FIELD_DIMENSIONS ];
+        int dimensions = 2;
+        int inputs = 2;
+        int elements = dimensions * inputs;
+        float[] rf = new float[ elements ];
 
         int classifierOffset = _rc.getOrganizerOffset( xClassifier, yClassifier );
-        int organizerOffset = classifierOffset * RegionLayerConfig.RECEPTIVE_FIELD_DIMENSIONS;
+        int organizerOffset = classifierOffset * elements;//RegionLayerConfig.RECEPTIVE_FIELD_DIMENSIONS;
 
-        Point inputSize = Data2d.getSize( _ffInput );
+        Point inputSize1 = Data2d.getSize( _ffInput1 );
+        Point inputSize2 = Data2d.getSize( _ffInput2 );
 
-        float rf_x = _organizer._cellWeights._values[ organizerOffset + 0 ];
-        float rf_y = _organizer._cellWeights._values[ organizerOffset + 1 ];
+        float rf1_x = _organizer._cellWeights._values[ organizerOffset + 0 ];
+        float rf1_y = _organizer._cellWeights._values[ organizerOffset + 1 ];
+        float rf2_x = _organizer._cellWeights._values[ organizerOffset + 2 ];
+        float rf2_y = _organizer._cellWeights._values[ organizerOffset + 3 ];
 
-        rf_x *= inputSize.x;
-        rf_y *= inputSize.y;
+        rf1_x *= inputSize1.x;
+        rf1_y *= inputSize1.y;
 
-        rf[ 0 ] = rf_x; // now in pixel coordinates, whereas it is trained as unit coordinates
-        rf[ 1 ] = rf_y;
+        rf2_x *= inputSize2.x;
+        rf2_y *= inputSize2.y;
+
+        rf[ 0 ] = rf1_x; // now in pixel coordinates, whereas it is trained as unit coordinates
+        rf[ 1 ] = rf1_y;
+        rf[ 2 ] = rf2_x; // now in pixel coordinates, whereas it is trained as unit coordinates
+        rf[ 3 ] = rf2_y;
 
         return rf;
     }
@@ -402,9 +476,7 @@ public class RegionLayer extends NamedObject {
                     continue; // because the cell is "dead" or inactive. We already set the region output to zero, so no action required.
                 }
 
-                rankClassifierReceptiveField( x, y );
-//                updateClassifierReceptiveFields( x, y );
-//                updateClassifier( x, y ); // adds to _transient._regionActiveCells and _regionActivity
+                rankClassifierReceptiveFields( x, y );
             }
         }
 
@@ -428,34 +500,37 @@ public class RegionLayer extends NamedObject {
 //    I could make each classifier remember its average distance, and exclude anything beyond that? - but this has weird failure modes e.g. one bit brings average down to almost zero.
 //    I could have a threshold which is a fraction of the input size? But this is a parameter and might not suit very spread out bits in higher regions.
 //    I could limit the number of classifiers per bit. Originally I thought in combination with the max bits per classifier, but in fact this is better alone?
-    protected void rankClassifierReceptiveField( int xClassifier, int yClassifier ) {
+    protected void rankClassifierReceptiveFields( int xClassifier, int yClassifier ) {
 
-        // find the closest N active input to col.
-        // Do this with ranking.
+        // find the closest N cols to each active input bit
+        float[] rf = getClassifierReceptiveField( xClassifier, yClassifier ); // in pixels units
+        float xField1 = rf[ 0 ];
+        float yField1 = rf[ 1 ];
+        float xField2 = rf[ 2 ];
+        float yField2 = rf[ 3 ];
+
+        int inputOffset1 = 0;
+        int inputOffset2 = _ffInput1.getSize();
+
+        rankClassifierReceptiveField( xClassifier, yClassifier, _ffInput1, _transient._ffInput1Active, xField1, yField1, inputOffset1 );
+        rankClassifierReceptiveField( xClassifier, yClassifier, _ffInput2, _transient._ffInput2Active, xField2, yField2, inputOffset2 );
+    }
+
+    protected void rankClassifierReceptiveField( int xClassifier, int yClassifier, Data ffInput, HashSet< Integer > ffInputActive, float xField, float yField, int inputOffset ) {
         int classifierOffset = _rc.getOrganizerOffset( xClassifier, yClassifier );
 
-//        int columnInputs = _rc.getReceptiveFieldSize();
+        for( Integer i : ffInputActive ) {
+            Point p = Data2d.getXY( ffInput._dataSize, i );
 
-        float[] rf = getClassifierReceptiveField( xClassifier, yClassifier ); // in pixels units
-        float rf_x = rf[ 0 ];
-        float rf_y = rf[ 1 ];
+            float d = Geometry.distanceEuclidean2d( ( float ) p.getX(), ( float ) p.getY(), xField, yField );
+            int inputBit = i + inputOffset;
 
-//        Ranking r = new Ranking();
-//        TreeMap< Float, ArrayList< Integer > > classifierRanking = _transient.getRankingLazy( _transient._classifierActiveInputRanking, classifierOffset );
+            TreeMap< Float, ArrayList< Integer > > activeInputRanking = _transient.getRankingLazy( _transient._activeInputClassifierRanking, inputBit );
 
-        for( Integer i : _transient._ffInputActive ) {
-            Point p = Data2d.getXY( _ffInput._dataSize, i );
-
-            float d = Geometry.distanceEuclidean2d( ( float ) p.getX(), ( float ) p.getY(), rf_x, rf_y );
-
-            TreeMap< Float, ArrayList< Integer > > activeInputRanking = _transient.getRankingLazy( _transient._activeInputClassifierRanking, i );
-
-            //Ranking.add( r._ranking, d, i ); // add input i with quality d (distance) to r.
-//            Ranking.add( classifierRanking, d, i ); // add input i with quality d (distance) to r.
-
-            // also rank by classifier:
+            // Rank by classifier:
             Ranking.add( activeInputRanking, d, classifierOffset ); // add classifier with quality d (distance) to i.
         }
+
     }
 
     protected void updateClassifierInput() {
@@ -464,13 +539,16 @@ public class RegionLayer extends NamedObject {
         boolean max = false; // ie min [distance]
         int maxRank = classifiersPerBit;
 
-        for( Integer i : _transient._ffInputActive ) {
-            TreeMap< Float, ArrayList< Integer > > activeInputRanking = _transient.getRankingLazy( _transient._activeInputClassifierRanking, i );
+//        for( Integer inputBit : _transient._ffInput1Active ) {
+        Set< Integer > activeInputBits = _transient._activeInputClassifierRanking.keySet();
+        for( Integer inputBit : activeInputBits ) {
+
+            TreeMap< Float, ArrayList< Integer > > activeInputRanking = _transient.getRankingLazy( _transient._activeInputClassifierRanking, inputBit );
 
             ArrayList< Integer > activeInputClassifiers = Ranking.getBestValues( activeInputRanking, max, maxRank ); // ok now we got the current set of inputs for the column
 
             for( Integer classifierOffset : activeInputClassifiers ) {
-                _transient.addClassifierActiveInput( classifierOffset, i );
+                _transient.addClassifierActiveInput( classifierOffset, inputBit );
             }
         }
     }
@@ -643,17 +721,44 @@ public class RegionLayer extends NamedObject {
     }
 
     protected boolean hasFfInputChanged() {
-        if( _ffInputOld == null ) {
+        return ( hasFfInput1Changed() || hasFfInput1Changed() );
+    }
+
+    protected boolean hasFfInput1Changed() {
+        if( _ffInput1Old == null ) {
             return true;
         }
 
-        int ffArea = _ffInput.getSize();
+        int ffArea = _ffInput1.getSize();
 
         for( int i = 0; i < ffArea; ++i ) {
-            float oldValue = _ffInputOld._values[ i ];
+            float oldValue = _ffInput1Old._values[ i ];
             float newValue = 0.f;
 
-            if( _transient._ffInputActive.contains( i ) ) {
+            if( _transient._ffInput1Active.contains( i ) ) {
+                newValue = 1.f;
+            }
+
+            if( oldValue != newValue ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected boolean hasFfInput2Changed() {
+        if( _ffInput2Old == null ) {
+            return true;
+        }
+
+        int ffArea = _ffInput2.getSize();
+
+        for( int i = 0; i < ffArea; ++i ) {
+            float oldValue = _ffInput2Old._values[ i ];
+            float newValue = 0.f;
+
+            if( _transient._ffInput2Active.contains( i ) ) {
                 newValue = 1.f;
             }
 
@@ -716,6 +821,13 @@ public class RegionLayer extends NamedObject {
 //                        else{
                             float     activeNew = _regionActivityNew  ._values[ regionOffset ];
                             float predictionOld = _regionPredictionNew._values[ regionOffset ]; // we didn't update the prediction yet, so use current prediction
+
+                            // Optionally suppress the predicted state, which is useful for static classification and for selective attention
+                            float predictionInhibition = _regionPredictionInhibition._values[ regionOffset ];
+                            //if( predictionInhibition > 0.f ) {
+                            //    predictionOld = 0.f; // inhibit the cell from entering the predicted state.
+                            //}
+                            predictionOld *= ( 1.f - predictionInhibition ); // i.e. if inh. == 1, then pred *= 0. else if inh = 0, then 1-0=1 so *= 1.
 
                             // FN
                             if( ( activeNew == 1.f ) && ( predictionOld == 0.f ) ) {

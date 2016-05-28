@@ -33,14 +33,15 @@ var Region = {
   prefix : "",
 
   selectedLeft : [  ],
-  selectedRight : [  ],
+  selectedRight1 : [  ],
+  selectedRight2 : [  ],
 
 //  classifierSuffixes : [ "-classifier-output-weights", "-classifier-output-mask" ],
 //  classifierSuffixes : [ "-output-mask" ],
 //  classifierDataCount : 0,
 //  classifierDataRequests : 0,
 
-  regionSuffixes : [ "-activity-new", "-activity-old", "-prediction-old", "-prediction-new", "-ff-input", "-organizer-output-mask", "-organizer-output-weights", "-classifier-output-weights", "-classifier-output-mask" ],
+  regionSuffixes : [ "-activity-new", "-activity-old", "-prediction-old", "-prediction-new", "-ff-input-1", "-ff-input-2", "-organizer-output-mask", "-organizer-output-weights", "-classifier-output-weights", "-classifier-output-mask" ],
   regionSuffixIdx : 0,
   dataMap : {
   },
@@ -120,30 +121,64 @@ var Region = {
   },
 
   onMouseClickRight : function( e, mx, my ) {
-    var data = Region.findData( "-ff-input" );
-    if( !data ) {
+    var data1 = Region.findData( "-ff-input-1" );
+    if( !data1 ) {
       return; // can't paint
     }
 
-    var dataSize = Framework.getDataSize( data );
-    var iw = dataSize.w;
-    var ih = dataSize.h;
+    var data2 = Region.findData( "-ff-input-2" );
+    if( !data2 ) {
+      return; // can't paint
+    }
 
-    if( ( iw == 0 ) || ( ih == 0 ) ) {
+    var dataSize1 = Framework.getDataSize( data1 );
+    var iw1 = dataSize1.w;
+    var ih1 = dataSize1.h;
+
+    if( ( iw1 == 0 ) || ( ih1 == 0 ) ) {
+      return;
+    }
+
+    var dataSize2 = Framework.getDataSize( data2 );
+    var iw2 = dataSize2.w;
+    var ih2 = dataSize2.h;
+
+    if( ( iw2 == 0 ) || ( ih2 == 0 ) ) {
       return;
     }
 
     var ix = Math.floor( mx / Region.pixelsPerBit );
     var iy = Math.floor( my / Region.pixelsPerBit );
 
-    if( ( ix < 0 ) || ( iy < 0 ) || ( ix >= iw ) || ( iy >= ih ) ) {
+    if( ( ix < 0 ) || ( iy < 0 ) ) {
       return;
     }
 
-    var offset = iy * iw + ix;
+    var i = 1;
 
-    Region.setMouseRight( "Bit: " + ix + "," + iy );
-    Region.toggleSelection( Region.selectedRight, offset );
+    if( iy < ih1 ) { // 1st FF input
+      if( ix >= iw1 ) {
+        return; // out of bounds
+      }      
+
+      var offset = iy * iw1 + ix;
+      Region.toggleSelection( Region.selectedRight1, offset );
+    }
+    else { // maybe 2nd FF input
+      if( ix >= iw2 ) {
+        return; // out of bounds
+      }      
+
+      my -= ( Region.pixelsPerBit * ih1 + Region.pixelsMargin );    
+      iy = Math.floor( my / Region.pixelsPerBit );
+ 
+      var offset = iy * iw2 + ix;
+      Region.toggleSelection( Region.selectedRight2, offset );
+
+      i = 2;
+    }
+
+    Region.setMouseRight( "Bit: I" + i + ":" + ix + "," + iy );
     Region.repaint();
   },
 
@@ -222,7 +257,6 @@ var Region = {
     var ch = rh / oh;
     var cd = Region.config.classifierDepthCells;
     var classifierHeight = ( ch / cd );
-    var inputArea = w *h;
 
     // draw the data
     var half = Region.pixelsPerBit * 0.5;
@@ -389,16 +423,29 @@ var Region = {
   },
 
   repaintInput : function() {
-    var data = Region.findData( "-ff-input" );
-    if( !data ) {
+    var data1 = Region.findData( "-ff-input-1" );
+    if( !data1 ) {
       return; // can't paint
     }
 
-    var dataSize = Framework.getDataSize( data );
-    var w = dataSize.w;
-    var h = dataSize.h;
+    var dataSize1 = Framework.getDataSize( data1 );
+    var w1 = dataSize1.w;
+    var h1 = dataSize1.h;
 
-    if( ( w == 0 ) || ( h == 0 ) ) {
+    if( ( w1 == 0 ) || ( h1 == 0 ) ) {
+      return;
+    }
+
+    var data2 = Region.findData( "-ff-input-2" );
+    if( !data2 ) {
+      return; // can't paint
+    }
+
+    var dataSize2 = Framework.getDataSize( data2 );
+    var w2 = dataSize2.w;
+    var h2 = dataSize2.h;
+
+    if( ( w2 == 0 ) || ( h2 == 0 ) ) {
       return;
     }
 
@@ -433,54 +480,66 @@ var Region = {
     }
 
     var c = $( "#right-canvas" )[ 0 ];
-    c.width = w * Region.pixelsPerBit;
-    c.height = h * Region.pixelsPerBit;
+    c.width  = w1 * Region.pixelsPerBit;
+    c.height = h1 * Region.pixelsPerBit + Region.pixelsMargin + h2 * Region.pixelsPerBit;
 
     var ctx = c.getContext( "2d" );
     ctx.fillStyle = "#808080";
     ctx.fillRect( 0, 0, c.width, c.height );
+
+    var classifierInputStride = w1 * h1 + w2 * h2;
+
+    var x0 = 0;
+    var y0 = 0;
+
+    Region.paintInputData( ctx, x0, y0, w1, h1, data1, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, cd, Region.selectedRight1, Region.selectedLeft, classifierInputStride );
+
+    y0 = y0 + h1 * Region.pixelsPerBit + Region.pixelsMargin;
+
+    Region.paintInputData( ctx, x0, y0, w2, h2, data2, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, cd, Region.selectedRight2, Region.selectedLeft, classifierInputStride );
+  },
+
+  paintInputData : function( ctx, x0, y0, w, h, dataInput, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, cd, selectedInput, selectedCells, classifierInputStride ) {
 
     for( var y = 0; y < h; ++y ) {
       for( var x = 0; x < w; ++x ) {
         var cx = x * Region.pixelsPerBit;
         var cy = y * Region.pixelsPerBit;
         var offset = y * w + x;
-        var value = data.elements.elements[ offset ];
+        var value = dataInput.elements.elements[ offset ];
          
         ctx.fillStyle = "#000000";
         if( value > 0.5 ) {
           ctx.fillStyle = "#FFFFFF";
         }
-        ctx.fillRect( cx, cy, Region.pixelsPerBit, Region.pixelsPerBit );        
+        ctx.fillRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
         ctx.fill();
 
         ctx.strokeStyle = "#808080";
 
-        if( Region.selectedRight.length > 0 ) {
-          if( Region.selectedRight[ 0 ] == offset ) {
+        if( selectedInput.length > 0 ) {
+          if( selectedInput[ 0 ] == offset ) { // select one at a time
             ctx.strokeStyle = "#FF0000";
           }
         }
 
-        ctx.strokeRect( cx, cy, Region.pixelsPerBit, Region.pixelsPerBit );        
+        ctx.strokeRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
       }
     }
 
     // paint organizer receptive field centroids
     var rw = ow * cw;
-    var inputArea = w *h;
+//    var inputArea = w * h;
 
     // paint weights of selected cells
-    for( var i = 0; i < Region.selectedLeft.length; ++i ) {
-      var regionOffset = Region.selectedLeft[ i ]; // a cell within the region     
+    for( var i = 0; i < selectedCells.length; ++i ) {
+      var regionOffset = selectedCells[ i ]; // a cell within the region     
       var rx = Math.floor( regionOffset % rw );
       var ry = Math.floor( regionOffset / rw );
 
       var ox = Math.floor( rx / cw ); // coordinates of column in grid (region).
       var oy = Math.floor( ry / ch );    
 
-//      var dataName = Region.getClassifierDataName( ox, oy, "-output-weights" );
-//      var dataClassifierOutputWeights = Region.findData( dataName );
       var dataClassifierOutputWeights = Region.findData( "-classifier-output-weights" );
       if( !dataClassifierOutputWeights ) {
         continue; // can't paint
@@ -491,9 +550,9 @@ var Region = {
 
       var classifierHeight = ( ch / cd );
       var classifierY = cy - ( classifierHeight * Math.floor( cy / classifierHeight ) );
-      var classifierOffset = ( ( classifierY * cw ) + cx ) * inputArea;
+      var classifierOffset = ( ( classifierY * cw ) + cx ) * classifierInputStride;
 
-      var classifierSize = cw * classifierHeight * inputArea; // Each classifier has this number of cells. 
+      var classifierSize = cw * classifierHeight * classifierInputStride; // Each classifier has this number of cells. 
       var classifierIndex = oy * ow + ox;
       var packedOffset = classifierIndex * classifierSize;
 
@@ -530,7 +589,7 @@ var Region = {
           var cx = x * Region.pixelsPerBit;
           var cy = y * Region.pixelsPerBit;
        
-          ctx.fillRect( cx, cy, Region.pixelsPerBit, Region.pixelsPerBit );        
+          ctx.fillRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
         }
       }
 
@@ -571,24 +630,24 @@ var Region = {
         }
 
         ctx.beginPath();
-        ctx.moveTo( x,y-Region.pixelsReceptiveField );
-        ctx.lineTo( x,y+Region.pixelsReceptiveField );
-        ctx.moveTo( x-Region.pixelsReceptiveField,y );
-        ctx.lineTo( x+Region.pixelsReceptiveField,y );
+        ctx.moveTo( x0 + x,                              y0 + y -Region.pixelsReceptiveField );
+        ctx.lineTo( x0 + x,                              y0 + y +Region.pixelsReceptiveField );
+        ctx.moveTo( x0 + x -Region.pixelsReceptiveField, y0 + y );
+        ctx.lineTo( x0 + x +Region.pixelsReceptiveField, y0 + y );
         ctx.stroke();   
       }
     }
 
     // paint selected input bits
     ctx.strokeStyle = "#FF0000";
-    for( var i = 0; i < Region.selectedRight.length; ++i ) {
-      var offset = Region.selectedRight[ i ];
+    for( var i = 0; i < selectedInput.length; ++i ) {
+      var offset = selectedInput[ i ];
       var x = Math.floor( offset % w );
       var y = Math.floor( offset / w );
       var cx = x * Region.pixelsPerBit;
       var cy = y * Region.pixelsPerBit;
       
-      ctx.strokeRect( cx, cy, Region.pixelsPerBit, Region.pixelsPerBit );        
+      ctx.strokeRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
     }
   },
 

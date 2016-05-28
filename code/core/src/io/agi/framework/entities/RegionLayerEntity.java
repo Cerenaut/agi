@@ -43,14 +43,22 @@ public class RegionLayerEntity extends Entity {
 
     public static final String ENTITY_TYPE = "region-layer";
 
-    public static final String FF_INPUT     = "ff-input";
-    public static final String FF_INPUT_OLD = "ff-input-old";
+    public static final String FF_INPUT_1     = "ff-input-1";
+    public static final String FF_INPUT_1_OLD = "ff-input-1-old";
+    public static final String FF_INPUT_2     = "ff-input-2";
+    public static final String FF_INPUT_2_OLD = "ff-input-2-old";
     public static final String FB_INPUT     = "fb-input";
     public static final String FB_INPUT_OLD = "fb-input-old";
-    public static final String FB_OUTPUT_UNFOLDED_ACTIVITY_RAW   = "fb-output-unfolded-activity-raw";
-    public static final String FB_OUTPUT_UNFOLDED_ACTIVITY       = "fb-output-unfolded-activity";
-    public static final String FB_OUTPUT_UNFOLDED_PREDICTION_RAW = "fb-output-unfolded-prediction-raw";
-    public static final String FB_OUTPUT_UNFOLDED_PREDICTION     = "fb-output-unfolded-prediction";
+
+    public static final String FB_OUTPUT_1_UNFOLDED_ACTIVITY_RAW   = "fb-output-1-unfolded-activity-raw";
+    public static final String FB_OUTPUT_1_UNFOLDED_ACTIVITY       = "fb-output-1-unfolded-activity";
+    public static final String FB_OUTPUT_1_UNFOLDED_PREDICTION_RAW = "fb-output-1-unfolded-prediction-raw";
+    public static final String FB_OUTPUT_1_UNFOLDED_PREDICTION     = "fb-output-1-unfolded-prediction";
+
+    public static final String FB_OUTPUT_2_UNFOLDED_ACTIVITY_RAW   = "fb-output-2-unfolded-activity-raw";
+    public static final String FB_OUTPUT_2_UNFOLDED_ACTIVITY       = "fb-output-2-unfolded-activity";
+    public static final String FB_OUTPUT_2_UNFOLDED_PREDICTION_RAW = "fb-output-2-unfolded-prediction-raw";
+    public static final String FB_OUTPUT_2_UNFOLDED_PREDICTION     = "fb-output-2-unfolded-prediction";
 
     public static final String ACTIVITY_OLD = "activity-old";
     public static final String ACTIVITY_NEW = "activity-new";
@@ -62,6 +70,7 @@ public class RegionLayerEntity extends Entity {
 
     public static final String PREDICTION_FP = "prediction-fp";
     public static final String PREDICTION_FN = "prediction-fn";
+    public static final String PREDICTION_INHIBITION = "prediction-inhibition";
 
     public static final String PREDICTOR_CONTEXTS = "predictor-contexts";
     public static final String PREDICTOR_WEIGHTS = "predictor-weights";
@@ -84,30 +93,40 @@ public class RegionLayerEntity extends Entity {
     }
 
     public void getInputAttributes( Collection< String > attributes ) {
-        attributes.add( FF_INPUT );
-        attributes.add( FB_INPUT );
+        attributes.add( FF_INPUT_1 );
+        attributes.add( FF_INPUT_2 );
+        attributes.add( FB_INPUT   );
+        attributes.add( PREDICTION_INHIBITION );
     }
 
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
 
         attributes.add( LOG_FN_COUNT );
 
-        attributes.add( FB_OUTPUT_UNFOLDED_ACTIVITY_RAW );
-        attributes.add( FB_OUTPUT_UNFOLDED_ACTIVITY );
-        attributes.add( FB_OUTPUT_UNFOLDED_PREDICTION_RAW );
-        attributes.add( FB_OUTPUT_UNFOLDED_PREDICTION );
+        attributes.add( FB_OUTPUT_1_UNFOLDED_ACTIVITY_RAW );
+        attributes.add( FB_OUTPUT_1_UNFOLDED_ACTIVITY );
+        attributes.add( FB_OUTPUT_1_UNFOLDED_PREDICTION_RAW );
+        attributes.add( FB_OUTPUT_1_UNFOLDED_PREDICTION );
 
-        flags.putFlag( FB_OUTPUT_UNFOLDED_ACTIVITY, DataFlags.FLAG_PERSIST_ONLY ); // never read
-        flags.putFlag( FB_OUTPUT_UNFOLDED_PREDICTION, DataFlags.FLAG_PERSIST_ONLY ); // never read
+        attributes.add( FB_OUTPUT_2_UNFOLDED_ACTIVITY_RAW );
+        attributes.add( FB_OUTPUT_2_UNFOLDED_ACTIVITY );
+        attributes.add( FB_OUTPUT_2_UNFOLDED_PREDICTION_RAW );
+        attributes.add( FB_OUTPUT_2_UNFOLDED_PREDICTION );
 
-        flags.putFlag( FB_OUTPUT_UNFOLDED_ACTIVITY, DataFlags.FLAG_SPARSE_BINARY );
-        flags.putFlag( FB_OUTPUT_UNFOLDED_PREDICTION, DataFlags.FLAG_SPARSE_BINARY );
+        flags.putFlag( FB_OUTPUT_1_UNFOLDED_ACTIVITY, DataFlags.FLAG_PERSIST_ONLY ); // never read
+        flags.putFlag( FB_OUTPUT_2_UNFOLDED_ACTIVITY, DataFlags.FLAG_SPARSE_BINARY );
+
+        flags.putFlag( FB_OUTPUT_1_UNFOLDED_PREDICTION, DataFlags.FLAG_PERSIST_ONLY ); // never read
+        flags.putFlag( FB_OUTPUT_2_UNFOLDED_PREDICTION, DataFlags.FLAG_SPARSE_BINARY );
 
         attributes.add( FB_INPUT_OLD );
-        attributes.add( FF_INPUT_OLD );
+        attributes.add( FF_INPUT_1_OLD );
+        attributes.add( FF_INPUT_2_OLD );
 
-        flags.putFlag( FF_INPUT_OLD, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( FF_INPUT_OLD, DataFlags.FLAG_SPARSE_BINARY );
+        flags.putFlag( FF_INPUT_1_OLD, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( FF_INPUT_2_OLD, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( FF_INPUT_1_OLD, DataFlags.FLAG_SPARSE_BINARY );
+        flags.putFlag( FF_INPUT_2_OLD, DataFlags.FLAG_SPARSE_BINARY );
 
         flags.putFlag( FB_INPUT_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( FB_INPUT_OLD, DataFlags.FLAG_SPARSE_BINARY );
@@ -227,10 +246,11 @@ public class RegionLayerEntity extends Entity {
     protected void doUpdateSelf() {
 
         // Do nothing unless the input is defined
-        Data ffInput = getData( FF_INPUT );
+        Data ffInput1 = getData( FF_INPUT_1 );
+        Data ffInput2 = getData( FF_INPUT_2 );
         Data fbInput = getData( FB_INPUT );
 
-        if( ( ffInput == null ) || ( fbInput == null ) ) {
+        if( ( ffInput2 == null ) || ( ffInput1 == null ) || ( fbInput == null ) ) {
             return; // can't update yet.
         }
 
@@ -243,14 +263,18 @@ public class RegionLayerEntity extends Entity {
         //int randomSeed = 1;
 
         // Feedforward size
-        Point ffInputSize = Data2d.getSize( ffInput );
-        Point fbInputSize = Data2d.getSize( fbInput );
+        Point ffInput1Size = Data2d.getSize( ffInput1 );
+        Point ffInput2Size = Data2d.getSize( ffInput2 );
+        Point fbInputSize  = Data2d.getSize( fbInput  );
 
-        int inputWidth = ffInputSize.x;
-        int inputHeight = ffInputSize.y;
+        int input1Width  = ffInput1Size.x;
+        int input1Height = ffInput1Size.y;
+
+        int input2Width  = ffInput2Size.x;
+        int input2Height = ffInput2Size.y;
 
         // Feedback size
-        int feedbackWidthCells = fbInputSize.x;
+        int feedbackWidthCells  = fbInputSize.x;
         int feedbackHeightCells = fbInputSize.y;
 
 
@@ -272,11 +296,12 @@ public class RegionLayerEntity extends Entity {
 
         RegionLayer r = rf.create(
                 om, regionLayerName, getRandom(),
-                inputWidth, inputHeight,
+                input1Width, input1Height,
+                input2Width, input2Height,
                 feedbackWidthCells, feedbackHeightCells,
                 config.organizerWidthCells, config.organizerHeightCells,
                 config.classifierWidthCells, config.classifierHeightCells, config.classifierDepthCells,
-                config.receptiveFieldsTrainingSamples, config.classifiersPerBit, //config.receptiveFieldSize,
+                config.receptiveFieldsTrainingSamples, config.defaultPredictionInhibition, config.classifiersPerBit, //config.receptiveFieldSize,
                 config.organizerLearningRate, config.organizerLearningRateNeighbours, config.organizerNoiseMagnitude, config.organizerEdgeMaxAge, config.organizerStressLearningRate, config.organizerStressThreshold, config.organizerGrowthInterval,
                 config.classifierLearningRate, config.classifierLearningRateNeighbours, config.classifierNoiseMagnitude, config.classifierEdgeMaxAge, config.classifierStressLearningRate, classifierStressThreshold, config.classifierGrowthInterval,
                 config.predictorLearningRate );
@@ -321,14 +346,19 @@ public class RegionLayerEntity extends Entity {
     protected void copyDataFromPersistence( RegionLayer r ) {
 
         // The region itself
-        r._ffInput = getData( FF_INPUT );
-        r._ffInputOld = getDataLazyResize( FF_INPUT_OLD, r._ffInput._dataSize );
+        r._ffInput1 = getData( FF_INPUT_1 );
+        r._ffInput2 = getData( FF_INPUT_2 );
+        r._ffInput1Old = getDataLazyResize( FF_INPUT_1_OLD, r._ffInput1._dataSize );
+        r._ffInput2Old = getDataLazyResize( FF_INPUT_2_OLD, r._ffInput2._dataSize );
         r._fbInput = getData( FB_INPUT );
         r._fbInputOld = getDataLazyResize( FB_INPUT_OLD, r._fbInput._dataSize );
 
         // copy the raw unfolded data back in
-        r._outputUnfoldedActivityRaw   = getDataLazyResize( FB_OUTPUT_UNFOLDED_ACTIVITY_RAW  , r._ffInput._dataSize );
-        r._outputUnfoldedPredictionRaw = getDataLazyResize( FB_OUTPUT_UNFOLDED_PREDICTION_RAW, r._ffInput._dataSize );
+        r._output1UnfoldedActivityRaw   = getDataLazyResize( FB_OUTPUT_1_UNFOLDED_ACTIVITY_RAW, r._ffInput1._dataSize );
+        r._output1UnfoldedPredictionRaw = getDataLazyResize( FB_OUTPUT_1_UNFOLDED_PREDICTION_RAW, r._ffInput1._dataSize );
+
+        r._output2UnfoldedActivityRaw   = getDataLazyResize( FB_OUTPUT_2_UNFOLDED_ACTIVITY_RAW  , r._ffInput2._dataSize );
+        r._output2UnfoldedPredictionRaw = getDataLazyResize( FB_OUTPUT_2_UNFOLDED_PREDICTION_RAW, r._ffInput2._dataSize );
 
         Point organizerSize = r._rc.getOrganizerSizeCells();
         Point classifierSize = r._rc.getClassifierSizeCells();
@@ -349,22 +379,22 @@ public class RegionLayerEntity extends Entity {
         r._regionActivityNew = getDataLazyResize( ACTIVITY_NEW, dataSizeRegion );
         r._regionActivity    = getDataLazyResize( ACTIVITY,     dataSizeRegion );
 
-        r._regionPredictionOld = getDataLazyResize( PREDICTION_OLD, dataSizeRegion );
-        r._regionPredictionNew = getDataLazyResize( PREDICTION_NEW, dataSizeRegion );
-
-        r._regionPredictionFP = getDataLazyResize( PREDICTION_FP, dataSizeRegion );
-        r._regionPredictionFN = getDataLazyResize( PREDICTION_FN, dataSizeRegion );
+        r._regionPredictionOld        = getDataLazyResize( PREDICTION_OLD       , dataSizeRegion );
+        r._regionPredictionNew        = getDataLazyResize( PREDICTION_NEW       , dataSizeRegion );
+        r._regionPredictionFP         = getDataLazyResize( PREDICTION_FP        , dataSizeRegion );
+        r._regionPredictionFN         = getDataLazyResize( PREDICTION_FN        , dataSizeRegion );
+        r._regionPredictionInhibition = getDataLazyResize( PREDICTION_INHIBITION, dataSizeRegion );
 
         // The organizer
-        Data organizerInput = new Data( DataSize.create( Region.RECEPTIVE_FIELD_DIMENSIONS ) );
+        Data organizerInput = new Data( DataSize.create( 2 * 2 ) );
         copyDataFromPersistence( RegionConfig.SUFFIX_ORGANIZER, r._organizer, organizerWidthCells, organizerHeightCells, organizerInput );
 
         // The classifiers
         // 1. Copy packed data from persistence
-        Data classifierInput = r._ffInput;
+//        Data classifierInput = r._ffInput;
         int nbrClassifiers = organizerSize.x * organizerSize.y;
         int areaCells = classifierWidthCells * classifierHeightCells;
-        int inputs = classifierInput.getSize();
+        int inputs = r._ffInput1.getSize() + r._ffInput2.getSize(); //classifierInput.getSize();
         DataSize dataSizeWeights = DataSize.create( classifierWidthCells, classifierHeightCells, inputs );
         DataSize dataSizeCells   = DataSize.create( classifierWidthCells, classifierHeightCells );
         DataSize dataSizeEdges   = DataSize.create( areaCells, areaCells );
@@ -399,7 +429,7 @@ public class RegionLayerEntity extends Entity {
                 int edgesOffset = edgesSize * regionOffset;
 
                 // .copyRange( that, offsetThis, offsetThat, range );
-                classifier._inputValues = classifierInput;
+//                classifier._inputValues = classifierInput;
                 classifier._cellWeights   .copyRange( _classifierCellWeights   , 0, weightsOffset, weightsSize );
                 classifier._cellErrors    .copyRange( _classifierCellErrors    , 0, cellsOffset, cellsSize );
                 classifier._cellActivity  .copyRange( _classifierCellActivity  , 0, cellsOffset, cellsSize );
@@ -456,26 +486,33 @@ public class RegionLayerEntity extends Entity {
     protected void copyDataToPersistence( RegionLayer r ) {
 
         // The region itself
-        setData( FF_INPUT,     r._ffInput );
-        setData( FF_INPUT_OLD, r._ffInputOld );
+        setData( FF_INPUT_1,     r._ffInput1 );
+        setData( FF_INPUT_1_OLD, r._ffInput1Old );
+        setData( FF_INPUT_2,     r._ffInput2 );
+        setData( FF_INPUT_2_OLD, r._ffInput2Old );
         setData( FB_INPUT,     r._fbInput );
         setData( FB_INPUT_OLD, r._fbInputOld );
 
-        setData( FB_OUTPUT_UNFOLDED_ACTIVITY_RAW,   r._outputUnfoldedActivityRaw );
-        setData( FB_OUTPUT_UNFOLDED_ACTIVITY,       r._outputUnfoldedActivity );
-        setData( FB_OUTPUT_UNFOLDED_PREDICTION_RAW, r._outputUnfoldedPredictionRaw );
-        setData( FB_OUTPUT_UNFOLDED_PREDICTION,     r._outputUnfoldedPrediction );
+        setData( FB_OUTPUT_1_UNFOLDED_ACTIVITY_RAW,   r._output1UnfoldedActivityRaw );
+        setData( FB_OUTPUT_1_UNFOLDED_ACTIVITY,       r._output1UnfoldedActivity );
+        setData( FB_OUTPUT_1_UNFOLDED_PREDICTION_RAW, r._output1UnfoldedPredictionRaw );
+        setData( FB_OUTPUT_1_UNFOLDED_PREDICTION,     r._output1UnfoldedPrediction );
+
+        setData( FB_OUTPUT_2_UNFOLDED_ACTIVITY_RAW,   r._output2UnfoldedActivityRaw );
+        setData( FB_OUTPUT_2_UNFOLDED_ACTIVITY,       r._output2UnfoldedActivity );
+        setData( FB_OUTPUT_2_UNFOLDED_PREDICTION_RAW, r._output2UnfoldedPredictionRaw );
+        setData( FB_OUTPUT_2_UNFOLDED_PREDICTION,     r._output2UnfoldedPrediction );
 
         setData( ACTIVITY_OLD, r._regionActivityOld );
         setData( ACTIVITY_NEW, r._regionActivityNew );
         setData( ACTIVITY,     r._regionActivity );
 
-        setData( PREDICTION_OLD, r._regionPredictionOld );
-        setData( PREDICTION_NEW, r._regionPredictionNew );
-        setData( PREDICTION_RAW, r._regionPredictionRaw );
-
-        setData( PREDICTION_FP, r._regionPredictionFP );
-        setData( PREDICTION_FN, r._regionPredictionFN );
+        setData( PREDICTION_OLD       , r._regionPredictionOld );
+        setData( PREDICTION_NEW       , r._regionPredictionNew );
+        setData( PREDICTION_RAW       , r._regionPredictionRaw );
+        setData( PREDICTION_FP        , r._regionPredictionFP  );
+        setData( PREDICTION_FN        , r._regionPredictionFN  );
+        setData( PREDICTION_INHIBITION, r._regionPredictionInhibition );
 
         // The organizer
         copyDataToPersistence( RegionConfig.SUFFIX_ORGANIZER, r._organizer );

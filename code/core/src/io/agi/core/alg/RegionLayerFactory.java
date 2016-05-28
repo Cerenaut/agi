@@ -42,8 +42,11 @@ public class RegionLayerFactory {
             Random random,
 
             // Feedforward input size
-            int inputWidth,
-            int inputHeight,
+            int input1Width,
+            int input1Height,
+
+            int input2Width,
+            int input2Height,
 
             // Feedback input size
             int feedbackWidthCells,
@@ -61,6 +64,7 @@ public class RegionLayerFactory {
 
             // Organizer training
             float receptiveFieldsTrainingSamples,
+            float defaultPredictionInhibition,
             int classifiersPerBit,
             float organizerLearningRate,
             float organizerLearningRateNeighbours,
@@ -85,13 +89,11 @@ public class RegionLayerFactory {
         RegionLayerConfig rc = new RegionLayerConfig();
 
         // Computed or fixed parameters
-        int classifierInputs = inputWidth * inputHeight;
+        int input1Area = input1Width * input1Height;
+        int input2Area = input2Width * input2Height;
+        int classifierInputs = input1Area + input2Area;
         int feedbackAreaCells = feedbackWidthCells * feedbackHeightCells;
-//        int regionAreaCells = regionWidthColumns * classifierWidthCells * regionHeightColumns * classifierHeightCells;
-//        int predictorInputs = regionAreaCells + feedbackAreaCells;
-//        int predictorOutputs = regionAreaCells;
-//        int predictorLayers = Region.PREDICTOR_LAYERS;
-        int organizerInputs = Region.RECEPTIVE_FIELD_DIMENSIONS;
+        int organizerInputs = 2 * 2;
 
         GrowingNeuralGasConfig organizerConfig = new GrowingNeuralGasConfig();
         organizerConfig.setup(
@@ -107,7 +109,7 @@ public class RegionLayerFactory {
                 classifierLearningRate, classifierLearningRateNeighbours, classifierNoiseMagnitude,
                 classifierEdgeMaxAge, classifierStressLearningRate, classifierStressThreshold, classifierGrowthInterval );
 
-        rc.setup( om, regionName, random, organizerConfig, classifierConfig, inputWidth, inputHeight, feedbackAreaCells, predictorLearningRate, receptiveFieldsTrainingSamples, classifiersPerBit, classifierDepthCells );
+        rc.setup( om, regionName, random, organizerConfig, classifierConfig, input1Width, input1Height, input2Width, input2Height, feedbackAreaCells, predictorLearningRate, receptiveFieldsTrainingSamples, defaultPredictionInhibition, classifiersPerBit, classifierDepthCells );
 
         this.setup( rc );
 

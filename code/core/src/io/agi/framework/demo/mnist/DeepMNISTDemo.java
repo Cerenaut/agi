@@ -75,6 +75,8 @@ public class DeepMNISTDemo {
         int trainingBatches = 1;
         boolean terminateByAge = true;
 //        boolean terminateByAge = false;
+        float defaultPredictionInhibition = 1.f; // random image classification only experiments
+//        float defaultPredictionInhibition = 0.f; // where you use prediction
 
         // Define some entities
         String experimentName = "experiment";
@@ -107,22 +109,25 @@ public class DeepMNISTDemo {
         // a) Image to image region, and decode
         Framework.SetDataReference( imageEncoderName, EncoderEntity.DATA_INPUT, mnistName, MnistEntity.OUTPUT_IMAGE );
 
-        Framework.SetDataReference( region1FfName, RegionLayerEntity.FF_INPUT, imageEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
+        Framework.SetDataReference( region1FfName, RegionLayerEntity.FF_INPUT_1, imageEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
+        Framework.SetDataReference( region1FfName, RegionLayerEntity.FF_INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
         Framework.SetDataReference( region1FfName, RegionLayerEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT ); // feedback to this region is just a constant
 
-        Framework.SetDataReference( region2FfName, RegionLayerEntity.FF_INPUT, region1FfName, RegionLayerEntity.PREDICTION_FN );
+        Framework.SetDataReference( region2FfName, RegionLayerEntity.FF_INPUT_1, region1FfName, RegionLayerEntity.PREDICTION_FN );
+        Framework.SetDataReference( region2FfName, RegionLayerEntity.FF_INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
         Framework.SetDataReference( region2FfName, RegionLayerEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT ); // feedback to this region is just a constant
 
-        Framework.SetDataReference( activityImageDecoderName, DecoderEntity.DATA_INPUT_ENCODED, region1FfName, RegionLayerEntity.FB_OUTPUT_UNFOLDED_ACTIVITY );
-        Framework.SetDataReference( predictedImageDecoderName, DecoderEntity.DATA_INPUT_ENCODED, region1FfName, RegionLayerEntity.FB_OUTPUT_UNFOLDED_PREDICTION );
+        Framework.SetDataReference(  activityImageDecoderName, DecoderEntity.DATA_INPUT_ENCODED, region1FfName, RegionLayerEntity.FB_OUTPUT_1_UNFOLDED_ACTIVITY );
+        Framework.SetDataReference( predictedImageDecoderName, DecoderEntity.DATA_INPUT_ENCODED, region1FfName, RegionLayerEntity.FB_OUTPUT_1_UNFOLDED_PREDICTION );
 
         // a) Class to class region, and decode
         Framework.SetDataReference( classEncoderName, EncoderEntity.DATA_INPUT, mnistName, MnistEntity.OUTPUT_CLASSIFICATION );
-        Framework.SetDataReference( classRegionName, RegionLayerEntity.FF_INPUT, classEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
+        Framework.SetDataReference( classRegionName, RegionLayerEntity.FF_INPUT_1, classEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
+        Framework.SetDataReference( classRegionName, RegionLayerEntity.FF_INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
 
         Framework.SetDataReference( classRegionName, RegionLayerEntity.FB_INPUT, region1FfName, RegionLayerEntity.ACTIVITY_NEW ); // get current state from the region to be used to predict
 
-        Framework.SetDataReference( classDecoderName, DecoderEntity.DATA_INPUT_ENCODED, classRegionName, RegionLayerEntity.FB_OUTPUT_UNFOLDED_PREDICTION ); // the prediction of the next state
+        Framework.SetDataReference( classDecoderName, DecoderEntity.DATA_INPUT_ENCODED, classRegionName, RegionLayerEntity.FB_OUTPUT_1_UNFOLDED_PREDICTION ); // the prediction of the next state
         Framework.SetDataReference( mnistName, MnistEntity.INPUT_CLASSIFICATION, classDecoderName, DecoderEntity.DATA_OUTPUT_DECODED ); // the (decoded) prediction of the next state
 
 
@@ -178,8 +183,8 @@ public class DeepMNISTDemo {
         Framework.SetConfig( classDecoderName, "numbers", "1" );
 
         // image region config
-        setRegionLayerConfig( region1FfName );
-        setRegionLayerConfig( region2FfName );
+        setRegionLayerConfig( region1FfName, defaultPredictionInhibition );
+        setRegionLayerConfig( region2FfName, defaultPredictionInhibition );
 
         // class region config
         Framework.SetConfig( classRegionName, "predictorLearningRate", "100" );
@@ -209,10 +214,11 @@ public class DeepMNISTDemo {
         Framework.SetConfig( classRegionName, "classifierStressLearningRate", "0.1" );
     }
 
-    public static void setRegionLayerConfig( String regionLayerName ) {
+    public static void setRegionLayerConfig( String regionLayerName, float defaultPredictionInhibition ) {
 
         Framework.SetConfig( regionLayerName, "predictorLearningRate", "100" );
         Framework.SetConfig( regionLayerName, "receptiveFieldsTrainingSamples", "0.1" );
+        Framework.SetConfig( regionLayerName, "defaultPredictionInhibition", String.valueOf( defaultPredictionInhibition ) );
         Framework.SetConfig( regionLayerName, "classifiersPerBit", "5" );
 
         Framework.SetConfig( regionLayerName, "organizerStressThreshold", "0.0" );
