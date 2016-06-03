@@ -24,8 +24,7 @@ import io.agi.framework.Framework;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
 import io.agi.framework.entities.DiscreteRandomEntity;
-import io.agi.framework.entities.DynamicSelfOrganizingMapEntity;
-import io.agi.framework.entities.GrowingNeuralGasEntity;
+import io.agi.framework.entities.ParameterLessSelfOrganizingMapEntity;
 import io.agi.framework.entities.RandomVectorEntity;
 import io.agi.framework.factories.CommonEntityFactory;
 import io.agi.framework.persistence.Persistence;
@@ -73,12 +72,13 @@ public class ClassifierDemo {
         String classifierName = "classifier";
 
         Framework.CreateEntity( modelName, DiscreteRandomEntity.ENTITY_TYPE, n.getName(), null );
-        Framework.CreateEntity( classifierName, GrowingNeuralGasEntity.ENTITY_TYPE, n.getName(), modelName );
+//        Framework.CreateEntity( classifierName, GrowingNeuralGasEntity.ENTITY_TYPE, n.getName(), modelName );
+        Framework.CreateEntity( classifierName, ParameterLessSelfOrganizingMapEntity.ENTITY_TYPE, n.getName(), modelName );
 
         // Connect the entities
         Persistence p = n.getPersistence();
 
-        Framework.SetDataReference( classifierName, DynamicSelfOrganizingMapEntity.INPUT, modelName, RandomVectorEntity.OUTPUT );
+        Framework.SetDataReference( classifierName, ParameterLessSelfOrganizingMapEntity.INPUT, modelName, RandomVectorEntity.OUTPUT );
 
         // Set a property:
         Framework.SetConfig( modelName, "elements", "2" );

@@ -102,6 +102,7 @@ var CompetitiveLearning = {
 
         plotOptions: {
             scatter: {
+                lineWidth: 1,
                 animation: false,
                 marker: {
                     radius: 5,

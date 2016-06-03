@@ -20,7 +20,9 @@
 package io.agi.core.alg;
 
 import io.agi.core.ann.NetworkConfig;
+import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMapConfig;
 import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
+import io.agi.core.ann.unsupervised.ParameterLessSelfOrganizingMapConfig;
 import io.agi.core.data.Data2d;
 import io.agi.core.orm.ObjectMap;
 
@@ -43,6 +45,7 @@ public class RegionLayerConfig extends NetworkConfig {
     public static final String RECEPTIVE_FIELDS_TRAINING_SAMPLES = "receptive-fields-training-samples";
 //    public static final String RECEPTIVE_FIELD_SIZE = "receptive-field-size";
     public static final String CLASSIFIERS_PER_BIT = "classifiers-per-bit";
+    public static final String ORGANIZER_TRAIN_ON_CHANGE = "organizer-train-on-change";
     public static final String PREDICTOR_LEARNING_RATE = "predictor-learning-rate";
     public static final String DEPTH_CELLS = "depth-cells";
     public static final String DEFAULT_PREDICTION_INHIBITION = "default-prediction-inhibition";
@@ -52,7 +55,8 @@ public class RegionLayerConfig extends NetworkConfig {
     public static final String SUFFIX_PREDICTOR = "predictor";
 
     public GrowingNeuralGasConfig _classifierConfig;
-    public GrowingNeuralGasConfig _organizerConfig;
+//    public GrowingNeuralGasConfig _organizerConfig;
+    public ParameterLessSelfOrganizingMapConfig _organizerConfig;
 
     public RegionLayerConfig() {
     }
@@ -61,7 +65,8 @@ public class RegionLayerConfig extends NetworkConfig {
             ObjectMap om,
             String name,
             Random r,
-            GrowingNeuralGasConfig organizerConfig,
+//            DynamicSelfOrganizingMapConfig organizerConfig,
+            ParameterLessSelfOrganizingMapConfig organizerConfig,
             GrowingNeuralGasConfig classifierConfig,
             int ffInput1Width,
             int ffInput1Height,
@@ -71,6 +76,7 @@ public class RegionLayerConfig extends NetworkConfig {
             float predictorLearningRate,
             float receptiveFieldsTrainingSamples,
             float defaultPredictionInhibition,
+            boolean organizerTrainOnChange,
             int classifiersPerBit,
             int depthCells ) {
         super.setup( om, name, r );
@@ -78,6 +84,7 @@ public class RegionLayerConfig extends NetworkConfig {
         _organizerConfig = organizerConfig;
         _classifierConfig = classifierConfig;
 
+        setOrganizerTrainOnChange( organizerTrainOnChange );
         setPredictorLearningRate( predictorLearningRate );
         setReceptiveFieldsTrainingSamples( receptiveFieldsTrainingSamples );
 //        setReceptiveFieldSize( receptiveFieldSize );
@@ -143,6 +150,15 @@ public class RegionLayerConfig extends NetworkConfig {
 
     public void setFbInputArea( int fbInputArea ) {
         _om.put( getKey( FB_INPUTS ), fbInputArea );
+    }
+
+    public boolean getOrganizerTrainOnChange() {
+        boolean b = _om.getBoolean( getKey( ORGANIZER_TRAIN_ON_CHANGE ) );
+        return b;
+    }
+
+    public void setOrganizerTrainOnChange( boolean b ) {
+        _om.put( getKey( ORGANIZER_TRAIN_ON_CHANGE ), b );
     }
 
     public float getPredictorLearningRate() {

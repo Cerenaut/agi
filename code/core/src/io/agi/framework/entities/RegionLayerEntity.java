@@ -20,7 +20,9 @@
 package io.agi.framework.entities;
 
 import io.agi.core.alg.*;
+import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMap;
 import io.agi.core.ann.unsupervised.GrowingNeuralGas;
+import io.agi.core.ann.unsupervised.ParameterLessSelfOrganizingMap;
 import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
 import io.agi.core.data.DataSize;
@@ -75,6 +77,8 @@ public class RegionLayerEntity extends Entity {
     public static final String PREDICTOR_CONTEXTS = "predictor-contexts";
     public static final String PREDICTOR_WEIGHTS = "predictor-weights";
 
+    public static final String ORGANIZER_BOUNDS = "organizer-bounds";
+
     public static final String LOG_FN_COUNT = "log-fn-count";
 
     protected Data _classifierCellWeights;
@@ -95,8 +99,8 @@ public class RegionLayerEntity extends Entity {
     public void getInputAttributes( Collection< String > attributes ) {
         attributes.add( FF_INPUT_1 );
         attributes.add( FF_INPUT_2 );
-        attributes.add( FB_INPUT   );
-        attributes.add( PREDICTION_INHIBITION );
+        attributes.add( FB_INPUT );
+//        attributes.add( PREDICTION_INHIBITION );
     }
 
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
@@ -161,6 +165,7 @@ public class RegionLayerEntity extends Entity {
 
         attributes.add( PREDICTION_FP );
         attributes.add( PREDICTION_FN );
+        attributes.add( PREDICTION_INHIBITION );
 
         flags.putFlag( PREDICTION_FP, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( PREDICTION_FN, DataFlags.FLAG_NODE_CACHE );
@@ -181,6 +186,8 @@ public class RegionLayerEntity extends Entity {
 
         // The organizer
         getClassifierOutputKeys( attributes, flags, RegionConfig.SUFFIX_ORGANIZER );//, false );
+
+        attributes.add( ORGANIZER_BOUNDS );
 
         // The classifiers
         RegionLayerEntityConfig config = ( RegionLayerEntityConfig ) _config;
@@ -265,7 +272,7 @@ public class RegionLayerEntity extends Entity {
         // Feedforward size
         Point ffInput1Size = Data2d.getSize( ffInput1 );
         Point ffInput2Size = Data2d.getSize( ffInput2 );
-        Point fbInputSize  = Data2d.getSize( fbInput  );
+//        Point fbInputSize  = //Data2d.getSize( fbInput  );
 
         int input1Width  = ffInput1Size.x;
         int input1Height = ffInput1Size.y;
@@ -274,8 +281,8 @@ public class RegionLayerEntity extends Entity {
         int input2Height = ffInput2Size.y;
 
         // Feedback size
-        int feedbackWidthCells  = fbInputSize.x;
-        int feedbackHeightCells = fbInputSize.y;
+        int feedbackWidthCells  = fbInput.getSize(); //fbInputSize.x; // we dont care about the shape of the feedback.
+        int feedbackHeightCells = 1;//fbInputSize.y;
 
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -301,14 +308,24 @@ public class RegionLayerEntity extends Entity {
                 feedbackWidthCells, feedbackHeightCells,
                 config.organizerWidthCells, config.organizerHeightCells,
                 config.classifierWidthCells, config.classifierHeightCells, config.classifierDepthCells,
-                config.receptiveFieldsTrainingSamples, config.defaultPredictionInhibition, config.classifiersPerBit, //config.receptiveFieldSize,
-                config.organizerLearningRate, config.organizerLearningRateNeighbours, config.organizerNoiseMagnitude, config.organizerEdgeMaxAge, config.organizerStressLearningRate, config.organizerStressThreshold, config.organizerGrowthInterval,
+                config.organizerTrainOnChange, config.receptiveFieldsTrainingSamples, config.defaultPredictionInhibition, config.classifiersPerBit, //config.receptiveFieldSize,
+                config.organizerNeighbourhoodRange, //config.organizerLearningRate, config.organizerElasticity, //config.organizerLearningRateNeighbours, config.organizerNoiseMagnitude, config.organizerEdgeMaxAge, config.organizerStressLearningRate, config.organizerStressThreshold, config.organizerGrowthInterval,
                 config.classifierLearningRate, config.classifierLearningRateNeighbours, config.classifierNoiseMagnitude, config.classifierEdgeMaxAge, config.classifierStressLearningRate, classifierStressThreshold, config.classifierGrowthInterval,
                 config.predictorLearningRate );
 
+        r._organizerIntervalsInput1X = config.organizerIntervalsInput1X;
+        r._organizerIntervalsInput2X = config.organizerIntervalsInput2X;
+        r._organizerIntervalsInput1Y = config.organizerIntervalsInput1Y;
+        r._organizerIntervalsInput2Y = config.organizerIntervalsInput2Y;
+
         // Load data, overwriting the default setup.
         copyDataFromPersistence( r );
-
+if( !this.getName().equals( "class-region" )) {
+    if( r._regionPredictionInhibition.sum() < r._regionPredictionInhibition.getSize() ) {
+        int g = 0;
+        g++;
+    }
+}
         // Update the region-layer, including optional reset and learning on/off switch
         if( config.reset ) {
             r.reset();
@@ -319,6 +336,13 @@ public class RegionLayerEntity extends Entity {
         // update data logging
         int fnCount = r._regionPredictionFN.indicesMoreThan( 0.f ).size();
         updateDataLog( LOG_FN_COUNT, (float)fnCount );
+
+        if( !this.getName().equals( "class-region" )) {
+            if( r._regionPredictionInhibition.sum() < r._regionPredictionInhibition.getSize() ) {
+                int g = 0;
+                g++;
+            }
+        }
 
         // Save data
         copyDataToPersistence( r );
@@ -389,6 +413,10 @@ public class RegionLayerEntity extends Entity {
         Data organizerInput = new Data( DataSize.create( 2 * 2 ) );
         copyDataFromPersistence( RegionConfig.SUFFIX_ORGANIZER, r._organizer, organizerWidthCells, organizerHeightCells, organizerInput );
 
+        int organizerInputs = 2 * 2;
+        int boundsSize = r._organizer._c.getBoundsSize( organizerInputs );
+        r._organizer._inputBounds = getDataLazyResize( ORGANIZER_BOUNDS, DataSize.create( boundsSize ) );
+
         // The classifiers
         // 1. Copy packed data from persistence
 //        Data classifierInput = r._ffInput;
@@ -449,6 +477,25 @@ public class RegionLayerEntity extends Entity {
         int hebbianPredictorWeights = r._rc.getHebbianPredictorWeightsSizeRegion( predictorWeightsSize );
         r._regionPredictorContext = getDataLazyResize( PREDICTOR_CONTEXTS, DataSize.create( hebbianPredictorContext ) );
         r._regionPredictorWeights = getDataLazyResize( PREDICTOR_WEIGHTS , DataSize.create( hebbianPredictorWeights ) );
+    }
+
+    protected void copyDataFromPersistence( String prefix, ParameterLessSelfOrganizingMap dsom, int widthCells, int heightCells, Data input ) {
+        int areaCells = widthCells * heightCells;
+        int inputs = input.getSize();
+
+        DataSize dataSizeWeights = DataSize.create( widthCells, heightCells, inputs );
+        DataSize dataSizeCells   = DataSize.create( widthCells, heightCells );
+
+        Data weights  = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), dataSizeWeights );
+        Data errors   = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ), dataSizeCells ); // deep copies the size so they each own a copy
+        Data activity = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), dataSizeCells ); // deep copies the size so they each own a copy
+        Data mask     = getDataLazyResize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), dataSizeCells ); // deep copies the size so they each own a copy
+
+        dsom._inputValues = input;
+        dsom._cellWeights = weights;
+        dsom._cellErrors = errors;
+        dsom._cellActivity = activity;
+        dsom._cellMask = mask;
     }
 
     protected void copyDataFromPersistence( String prefix, GrowingNeuralGas gng, int widthCells, int heightCells, Data input ) {
@@ -517,6 +564,8 @@ public class RegionLayerEntity extends Entity {
         // The organizer
         copyDataToPersistence( RegionConfig.SUFFIX_ORGANIZER, r._organizer );
 
+        setData( ORGANIZER_BOUNDS, r._organizer._inputBounds );
+
         // The classifiers
         // 1. Pack the data.
         Point p = r._rc.getOrganizerSizeCells();
@@ -563,6 +612,20 @@ public class RegionLayerEntity extends Entity {
         // Predictor:
         setData( PREDICTOR_CONTEXTS, r._regionPredictorContext );
         setData( PREDICTOR_WEIGHTS, r._regionPredictorWeights );
+    }
+
+    protected void copyDataToPersistence( String prefix, ParameterLessSelfOrganizingMap dsom ) {
+        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), dsom._cellWeights );
+        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ), dsom._cellErrors );
+        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), dsom._cellActivity );
+        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), dsom._cellMask );
+    }
+
+    protected void copyDataToPersistence( String prefix, DynamicSelfOrganizingMap dsom ) {
+        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), dsom._cellWeights );
+        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ), dsom._cellErrors );
+        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), dsom._cellActivity );
+        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), dsom._cellMask );
     }
 
     protected void copyDataToPersistence( String prefix, GrowingNeuralGas gng ) {

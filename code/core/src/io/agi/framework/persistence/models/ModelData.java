@@ -80,7 +80,7 @@ public class ModelData {
                 String[] splitKeys = this.refKeys.split( "," );
 
                 for( int i = 0; i < splitKeys.length; ++i ) {
-                    String key = splitKeys[ i ];
+                    String key = splitKeys[ i ].trim();
                     refKeys.add( key );
                 }
             }

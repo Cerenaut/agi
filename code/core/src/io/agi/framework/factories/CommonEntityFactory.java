@@ -73,8 +73,8 @@ public class CommonEntityFactory implements EntityFactory {
             return new DiscreteRandomEntity( objectMap, _n, modelEntity );
         }
 
-        if( entityType.equals( DynamicSelfOrganizingMapEntity.ENTITY_TYPE ) ) {
-            return new DynamicSelfOrganizingMapEntity( objectMap, _n, modelEntity );
+        if( entityType.equals( ParameterLessSelfOrganizingMapEntity.ENTITY_TYPE ) ) {
+            return new ParameterLessSelfOrganizingMapEntity( objectMap, _n, modelEntity );
         }
 
         if( entityType.equals( GrowingNeuralGasEntity.ENTITY_TYPE ) ) {

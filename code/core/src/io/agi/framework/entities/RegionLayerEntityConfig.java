@@ -26,8 +26,13 @@ import io.agi.framework.EntityConfig;
  */
 public class RegionLayerEntityConfig extends EntityConfig {
 
-    int organizerWidthCells = 10;
-    int organizerHeightCells = 10;
+    int organizerWidthCells = 6;
+    int organizerHeightCells = 4;
+
+    int organizerIntervalsInput1X = 3; // 3 * 2 = 6
+    int organizerIntervalsInput2X = 2; // 3 * 2 = 6   by 4 * 1 = 4
+    int organizerIntervalsInput1Y = 4;
+    int organizerIntervalsInput2Y = 1;
 
     // Column Sizing
     int classifierWidthCells = 6;
@@ -35,17 +40,20 @@ public class RegionLayerEntityConfig extends EntityConfig {
     int classifierDepthCells = 2;
 
     // Organizer training
+    boolean organizerTrainOnChange = false;
     float receptiveFieldsTrainingSamples = 0.1f;//12;
     float defaultPredictionInhibition = 0.f; // don't inhibit
     int classifiersPerBit = 5;
 
-    float organizerLearningRate = 0.02f;
-    float organizerLearningRateNeighbours = 0.01f;
+    float organizerNeighbourhoodRange = 2.f;//5.f;//10.f; too volatile @ 10
+/*    float organizerLearningRate = 0.02f;
+    float organizerElasticity = 1.f;
+/*    float organizerLearningRateNeighbours = 0.01f;
     float organizerNoiseMagnitude = 0.0f;
     int organizerEdgeMaxAge = 200;
     float organizerStressLearningRate = 0.01f;
     float organizerStressThreshold = 0.1f;
-    int organizerGrowthInterval = 100;
+    int organizerGrowthInterval = 100;*/
 
     // Classifier training
     float classifierLearningRate = 0.02f;

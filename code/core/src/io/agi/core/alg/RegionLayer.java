@@ -19,7 +19,9 @@
 
 package io.agi.core.alg;
 
+import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMap;
 import io.agi.core.ann.unsupervised.GrowingNeuralGas;
+import io.agi.core.ann.unsupervised.ParameterLessSelfOrganizingMap;
 import io.agi.core.ann.unsupervised.SparseHebbianLearning;
 import io.agi.core.data.*;
 import io.agi.core.math.Geometry;
@@ -90,7 +92,9 @@ public class RegionLayer extends NamedObject {
     public RegionLayerFactory _rf;
     public RegionLayerConfig _rc;
 
-    public GrowingNeuralGas _organizer;
+//    public GrowingNeuralGas _organizer;
+//    public DynamicSelfOrganizingMap _organizer;
+    public ParameterLessSelfOrganizingMap _organizer;
     public HashMap< Integer, GrowingNeuralGas > _classifiers = new HashMap< Integer, GrowingNeuralGas >();
     public SparseHebbianLearning _predictor; // actually this one object stands in for one predictor per column, because the columns may update asynchronously
 
@@ -218,7 +222,8 @@ public class RegionLayer extends NamedObject {
         _transient = new RegionLayerTransient(); // this replaces all the transient data structures, ensuring they are truly transient
 
         updateSparseInput(); // region wide sparse input
-        updateOrganizer(); // does nothing if input unchanged
+//        updateOrganizer(); // does nothing if input unchanged
+        updateOrganizerUniform();
 
         // update all the classifiers and thus the set of active cells in the region
         _regionActivity.set( 0.f ); // clear
@@ -227,8 +232,11 @@ public class RegionLayer extends NamedObject {
 
         updateClassifiers(); // adds to _transient._regionActiveCells, _transient._columnActiveCells, and _regionActivity
 
-        _ffInput1Old.copy( _ffInput1 );
-        _ffInput2Old.copy( _ffInput2 );
+        boolean inputChanged = hasFfInputChanged();
+        if( !inputChanged ) {
+            _ffInput1Old.copy( _ffInput1 );
+            _ffInput2Old.copy( _ffInput2 );
+        }
 
         boolean classificationChanged = hasClassificationChanged(); // based on current value of _regionActivityNew
         if( classificationChanged ) {
@@ -351,6 +359,60 @@ public class RegionLayer extends NamedObject {
         _transient._fbInputActive = _fbInput.indicesMoreThan( 0.f ); // find all the active bits.
     }
 
+    public    int _organizerIntervalsInput1X = 3; // 3 * 2 = 6
+    public    int _organizerIntervalsInput2X = 2; // 3 * 2 = 6   by 4 * 1 = 4
+    public    int _organizerIntervalsInput1Y = 4;
+    public    int _organizerIntervalsInput2Y = 1;
+
+    protected void updateOrganizerUniform() {
+
+//        Point input1Size = Data2d.getSize( _ffInput1 );
+//        Point input2Size = Data2d.getSize( _ffInput2 );
+
+        _organizer._cellMask.set( 1.f );
+
+        // input 1          input 2
+        // _1_1_1_          _1_  = 0.5
+        // 0.25, 0.5, 0.75
+        // = 1/(n+1)
+        int w1 = _organizerIntervalsInput1X;
+        int w2 = _organizerIntervalsInput2X;
+        int h1 = _organizerIntervalsInput1Y;
+        int h2 = _organizerIntervalsInput2Y;
+
+        float x1Span = 1.f / (float)( w1+1 );
+        float x2Span = 1.f / (float)( w2+1 );
+        float y1Span = 1.f / (float)( h1+1 );
+        float y2Span = 1.f / (float)( h2+1 );
+
+        Point p = _rc.getOrganizerSizeCells();
+        int stride = 2 * 2; // dimensions * inputs
+
+        for( int y = 0; y < p.y; ++y ) {
+            for( int x = 0; x < p.x; ++x ) {
+                int classifierOffset = _rc.getOrganizerOffset( x, y );
+                int organizerOffset = classifierOffset * stride;//RegionLayerConfig.RECEPTIVE_FIELD_DIMENSIONS;
+
+                // sparsely changing:
+                int x1 = x / w2; // e.g. if w2 = 3, 0,1,2 = 0, 3,4,5=1,
+                int y1 = y / h2;
+
+                int x2 = x % w2;
+                int y2 = y % h2;
+
+                float x1u = ( x1 + 1 ) * x1Span;
+                float y1u = ( y1 + 1 ) * y1Span;
+                float x2u = ( x2 + 1 ) * x2Span;
+                float y2u = ( y2 + 1 ) * y2Span;
+
+                _organizer._cellWeights._values[ organizerOffset + 0 ] = x1u;
+                _organizer._cellWeights._values[ organizerOffset + 1 ] = y1u;
+                _organizer._cellWeights._values[ organizerOffset + 2 ] = x2u;
+                _organizer._cellWeights._values[ organizerOffset + 3 ] = y2u;
+            }
+        }
+    }
+
     /**
      * Trains the receptive fields of the classifiers via a specified number of samples.
      */
@@ -368,20 +430,52 @@ public class RegionLayer extends NamedObject {
             return; // don't do anything.
         }
 
-        int nbrActiveInput1 = _transient._ffInput1Active.size();
-        int nbrActiveInput2 = _transient._ffInput2Active.size();
+        HashSet< Integer > ffInputActive1 = _transient._ffInput1Active;
+        HashSet< Integer > ffInputActive2 = _transient._ffInput2Active;
+
+        // If we only train on change, remove any bits that WERE already active.
+        if( _rc.getOrganizerTrainOnChange() ) {
+            HashSet< Integer > remove1 = new HashSet< Integer >();
+
+            for( Integer i : ffInputActive1 ) {
+                float old = _ffInput1Old._values[ i ];
+                if( old > 0.f ) {
+                    remove1.add( i );
+                }
+            }
+
+            for( Integer i : remove1 ) {
+                ffInputActive1.remove( i );
+            }
+
+            HashSet< Integer > remove2 = new HashSet< Integer >();
+
+            for( Integer i : ffInputActive2 ) {
+                float old = _ffInput2Old._values[ i ];
+                if( old > 0.f ) {
+                    remove2.add( i );
+                }
+            }
+
+            for( Integer i : remove2 ) {
+                ffInputActive2.remove( i );
+            }
+        }
+
+        int nbrActiveInput1 = ffInputActive1.size();
+        int nbrActiveInput2 = ffInputActive2.size();
         int nbrActiveInput = nbrActiveInput1 + nbrActiveInput2;
         if( nbrActiveInput == 0 ) {
             return; // can't train, ignore blank patterns.
         }
 
-        Object[] activeInput1 = _transient._ffInput1Active.toArray();
-        Object[] activeInput2 = _transient._ffInput2Active.toArray();
+        Object[] activeInput1 = ffInputActive1.toArray();
+        Object[] activeInput2 = ffInputActive2.toArray();
 
         Data inputValues = _organizer.getInput();
 
         Point input1Size = Data2d.getSize( _ffInput1 );
-        Point input2Size = Data2d.getSize( _ffInput1 );
+        Point input2Size = Data2d.getSize( _ffInput2 );
 
         // randomly sample a fixed number of input bits.
         float samplesFraction = _rc.getReceptiveFieldsTrainingSamples();

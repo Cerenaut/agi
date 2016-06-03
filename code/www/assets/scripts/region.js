@@ -492,14 +492,14 @@ var Region = {
     var x0 = 0;
     var y0 = 0;
 
-    Region.paintInputData( ctx, x0, y0, w1, h1, data1, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, cd, Region.selectedRight1, Region.selectedLeft, classifierInputStride );
+    Region.paintInputData( ctx, x0, y0, w1, h1, 0, data1, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, cd, Region.selectedRight1, Region.selectedLeft, classifierInputStride );
 
     y0 = y0 + h1 * Region.pixelsPerBit + Region.pixelsMargin;
 
-    Region.paintInputData( ctx, x0, y0, w2, h2, data2, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, cd, Region.selectedRight2, Region.selectedLeft, classifierInputStride );
+    Region.paintInputData( ctx, x0, y0, w2, h2, 1, data2, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, cd, Region.selectedRight2, Region.selectedLeft, classifierInputStride );
   },
 
-  paintInputData : function( ctx, x0, y0, w, h, dataInput, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, cd, selectedInput, selectedCells, classifierInputStride ) {
+  paintInputData : function( ctx, x0, y0, w, h, inputIndex, dataInput, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, cd, selectedInput, selectedCells, classifierInputStride ) {
 
     for( var y = 0; y < h; ++y ) {
       for( var x = 0; x < w; ++x ) {
@@ -603,9 +603,13 @@ var Region = {
           continue; // dead, don't paint
         }
 
-        offset = oy * ( ow * 2 ) + ( ox * 2 );
-        var xWeight = dataOrganizerOutputWeights.elements.elements[ offset +0 ];
-        var yWeight = dataOrganizerOutputWeights.elements.elements[ offset +1 ];
+        var organizerDimensions = 2;
+        var organizerInputs = 2;
+        var organizerStride = organizerDimensions * organizerInputs;
+        var organizerWeightsOffset = offset * organizerStride + inputIndex * organizerDimensions;
+
+        var xWeight = dataOrganizerOutputWeights.elements.elements[ organizerWeightsOffset +0 ];
+        var yWeight = dataOrganizerOutputWeights.elements.elements[ organizerWeightsOffset +1 ];
 
         var x = w * xWeight * Region.pixelsPerBit;
         var y = h * yWeight * Region.pixelsPerBit;
