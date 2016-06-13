@@ -167,6 +167,8 @@ public class GrowingNeuralGas extends CompetitiveLearning {
 
         _ageSinceGrowth._values[ 0 ] = ( float ) ageSinceGrowth;
 
+        reduceStress();
+
         //System.out.println( "best: " + _bestCellA + " population: " + _cellMask.sum() + " age since growth: " + _ageSinceGrowth._values[ 0 ] );
     }
 
@@ -342,6 +344,8 @@ public class GrowingNeuralGas extends CompetitiveLearning {
             float weightW  = _cellWeights._values[ offsetW ];
             float weightW2 = _cellWeights._values[ offsetW2 ];
             float weightF  = ( weightW + weightW2 ) * 0.5f;
+            float noise = getNoiseSample();
+            weightF = weightF + noise;
             _cellWeights._values[ offsetF ] = weightF;
         }
 
@@ -352,7 +356,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         // Create edges: worst, free; worst2, free;
         // remove edges: worst, worst2
         int offsetWW2 = getEdgeOffset( worstCell , worstCell2 );
-        int offsetWF  = getEdgeOffset( worstCell , freeCell );
+        int offsetWF  = getEdgeOffset( worstCell, freeCell );
         int offsetW2F = getEdgeOffset( worstCell2, freeCell );
 
         _edgesAges._values[ offsetWW2 ] = 0.f; // this one was just used
@@ -366,15 +370,27 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         // reset stress of all cells.
         // Note, this means I mustn't add any new cells until the new stresses
         // have had time to work out
-        _cellStress.set( 0.f ); // give it time to accumulate
+//        _cellStress.set( 0.f ); // give it time to accumulate
+        float stressWorst1 = _cellStress._values[ worstCell  ];
+        float stressWorst2 = _cellStress._values[ worstCell2 ];
+        float stressFreeNew = ( stressWorst1 + stressWorst2 ) * 0.5f;
+
+        float cellStressSplitLearningRate = _c.getStressSplitLearningRate();
+        float stressWorst1New = stressWorst1 - (stressWorst1 * cellStressSplitLearningRate );
+        float stressWorst2New = stressWorst2 - (stressWorst2 * cellStressSplitLearningRate );
+
+        _cellStress._values[ worstCell  ] = stressWorst1New;
+        _cellStress._values[ worstCell2 ] = stressWorst2New;
+        _cellStress._values[ freeCell ] = stressFreeNew;
     }
 
     /**
      * Stress is defined as the sum of errors for the input, over a moving recent average.
+     * http://www.demogng.de/JavaPaper/node19.html  - cumulative forever, not an average.
      * @param bestCell
      */
     public void updateStress( int bestCell ) {
-        float cellStressAlpha = 1.f - _c.getStressLearningRate();
+//        float cellStressAlpha = 1.f - _c.getStressLearningRate();
         float bestSumSqError = _cellErrors._values[ bestCell ]; // use abs errors instead of sq errors?
 //        float bestUnitError = ( float ) Math.sqrt( bestSumSqError );
 //              bestUnitError /= inputs; this makes the values too small
@@ -382,8 +398,17 @@ public class GrowingNeuralGas extends CompetitiveLearning {
 //            bestUnitError = 0.f;
 //        }
         float stressOld = _cellStress._values[ bestCell ];
-        float stressNew = ( float ) Unit.lerp( stressOld, bestSumSqError, cellStressAlpha );
+        float stressNew = stressOld + bestSumSqError; // ( float ) Unit.lerp( stressOld, bestSumSqError, cellStressAlpha );
         _cellStress._values[ bestCell ] = stressNew;
+    }
+
+    public void reduceStress() {
+        float cellStressLearningRate = _c.getStressLearningRate();
+        for( int i = 0; i < _cellStress._values.length; ++i ) {
+            float stressOld = _cellStress._values[ i ];
+            float stressNew = stressOld - (stressOld * cellStressLearningRate );
+            _cellStress._values[ i ] = stressNew;
+        }
     }
 
     public void trainCells( int bestCell ) {
@@ -450,14 +475,18 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         }
     }
 
-    protected void updateWeight( int cell, int inputs, int i, float inputValue, float cellLearningRate ) {
-        int offset = cell * inputs + i;
-
+    protected float getNoiseSample() {
         float magnitude = _c.getNoiseMagnitude();
         float noise = 0.f;
         if( magnitude > 0.f ) {
             noise = ( float ) ( ( _c._r.nextDouble() - 0.5 ) * magnitude );
         }
+        return noise;
+    }
+
+    protected void updateWeight( int cell, int inputs, int i, float inputValue, float cellLearningRate ) {
+        int offset = cell * inputs + i;
+        float noise = 0.f;//getNoiseSample();
         float weightOld = _cellWeights._values[ offset ];
         float weightNew = weightOld + cellLearningRate * ( inputValue - weightOld ) + noise;
         _cellWeights._values[ offset ] = weightNew;

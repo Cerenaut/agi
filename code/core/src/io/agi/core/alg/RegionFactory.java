@@ -110,14 +110,14 @@ public class RegionFactory {
                 om, RegionConfig.SUFFIX_ORGANIZER, random, // temp name
                 organizerInputs, regionWidthColumns, regionHeightColumns,
                 organizerLearningRate, organizerLearningRateNeighbours, organizerNoiseMagnitude,
-                organizerEdgeMaxAge, organizerStressLearningRate, organizerStressThreshold, organizerGrowthInterval );
+                organizerEdgeMaxAge, organizerStressLearningRate, 0.5f, organizerStressThreshold, organizerGrowthInterval );
 
         GrowingNeuralGasConfig classifierConfig = new GrowingNeuralGasConfig();
         classifierConfig.setup(
                 om, RegionConfig.SUFFIX_CLASSIFIER, random, // temp name
                 classifierInputs, classifierWidthCells, classifierHeightCells,
                 classifierLearningRate, classifierLearningRateNeighbours, classifierNoiseMagnitude,
-                classifierEdgeMaxAge, classifierStressLearningRate, classifierStressThreshold, classifierGrowthInterval );
+                classifierEdgeMaxAge, classifierStressLearningRate, 0.5f, classifierStressThreshold, classifierGrowthInterval );
 
 //        FeedForwardNetworkConfig predictorConfig = new FeedForwardNetworkConfig();
 //        predictorConfig.setup(

@@ -308,9 +308,10 @@ public class RegionLayerEntity extends Entity {
                 feedbackWidthCells, feedbackHeightCells,
                 config.organizerWidthCells, config.organizerHeightCells,
                 config.classifierWidthCells, config.classifierHeightCells, config.classifierDepthCells,
-                config.organizerTrainOnChange, config.receptiveFieldsTrainingSamples, config.defaultPredictionInhibition, config.classifiersPerBit, //config.receptiveFieldSize,
+                config.organizerTrainOnChange, config.emitUnchangedCells,
+                config.receptiveFieldsTrainingSamples, config.defaultPredictionInhibition, config.classifiersPerBit, //config.receptiveFieldSize,
                 config.organizerNeighbourhoodRange, //config.organizerLearningRate, config.organizerElasticity, //config.organizerLearningRateNeighbours, config.organizerNoiseMagnitude, config.organizerEdgeMaxAge, config.organizerStressLearningRate, config.organizerStressThreshold, config.organizerGrowthInterval,
-                config.classifierLearningRate, config.classifierLearningRateNeighbours, config.classifierNoiseMagnitude, config.classifierEdgeMaxAge, config.classifierStressLearningRate, classifierStressThreshold, config.classifierGrowthInterval,
+                config.classifierLearningRate, config.classifierLearningRateNeighbours, config.classifierNoiseMagnitude, config.classifierEdgeMaxAge, config.classifierStressLearningRate, config.classifierStressSplitLearningRate, classifierStressThreshold, config.classifierGrowthInterval,
                 config.predictorLearningRate );
 
         r._organizerIntervalsInput1X = config.organizerIntervalsInput1X;
@@ -320,12 +321,7 @@ public class RegionLayerEntity extends Entity {
 
         // Load data, overwriting the default setup.
         copyDataFromPersistence( r );
-if( !this.getName().equals( "class-region" )) {
-    if( r._regionPredictionInhibition.sum() < r._regionPredictionInhibition.getSize() ) {
-        int g = 0;
-        g++;
-    }
-}
+
         // Update the region-layer, including optional reset and learning on/off switch
         if( config.reset ) {
             r.reset();
@@ -336,13 +332,6 @@ if( !this.getName().equals( "class-region" )) {
         // update data logging
         int fnCount = r._regionPredictionFN.indicesMoreThan( 0.f ).size();
         updateDataLog( LOG_FN_COUNT, (float)fnCount );
-
-        if( !this.getName().equals( "class-region" )) {
-            if( r._regionPredictionInhibition.sum() < r._regionPredictionInhibition.getSize() ) {
-                int g = 0;
-                g++;
-            }
-        }
 
         // Save data
         copyDataToPersistence( r );

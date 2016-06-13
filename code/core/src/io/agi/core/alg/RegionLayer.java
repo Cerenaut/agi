@@ -873,6 +873,8 @@ public class RegionLayer extends NamedObject {
 
         int stride = organizerSizeCells.x * columnSizeCells.x;
 
+        boolean emitUnchangedCells = _rc.getEmitUnchangedCells();
+
         for( int yClassifier = 0; yClassifier < organizerSizeCells.y; ++yClassifier ) {
             for( int xClassifier = 0; xClassifier < organizerSizeCells.x; ++xClassifier ) {
 
@@ -882,6 +884,22 @@ public class RegionLayer extends NamedObject {
                 boolean unchanged = _transient._unchangedClassifiers.contains( classifierOffset );
 
                 if( unchanged ) {
+                    if( emitUnchangedCells ) {
+                        continue; // leave FP/FN unchanged
+                    }
+
+                    // else:
+                    for( int yc = 0; yc < columnSizeCells.y; ++yc ) {
+                        for( int xc = 0; xc < columnSizeCells.x; ++xc ) {
+                            int xr = ( xClassifier * columnSizeCells.x ) + xc;
+                            int yr = ( yClassifier * columnSizeCells.y ) + yc;
+                            int regionOffset = Data2d.getOffset( stride, xr, yr );
+
+                            _regionPredictionFP._values[ regionOffset ] = 0.f;
+                            _regionPredictionFN._values[ regionOffset ] = 0.f;
+                        }
+                    }
+
                     continue; // leave FP/FN unchanged
                 }
 

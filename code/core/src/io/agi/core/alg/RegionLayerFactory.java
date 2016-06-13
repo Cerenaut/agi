@@ -63,6 +63,7 @@ public class RegionLayerFactory {
 
             // Organizer training
             boolean organizerTrainOnChange,
+            boolean emitUnchangedCells,
             float receptiveFieldsTrainingSamples,
             float defaultPredictionInhibition,
             int classifiersPerBit,
@@ -82,6 +83,7 @@ public class RegionLayerFactory {
             float classifierNoiseMagnitude,
             int classifierEdgeMaxAge,
             float classifierStressLearningRate,
+            float classifierStressSplitLearningRate,
             float classifierStressThreshold,
             int classifierGrowthInterval,
 
@@ -115,9 +117,9 @@ public class RegionLayerFactory {
                 om, RegionLayerConfig.SUFFIX_CLASSIFIER, random, // temp name
                 classifierInputs, classifierWidthCells, classifierHeightCells,
                 classifierLearningRate, classifierLearningRateNeighbours, classifierNoiseMagnitude,
-                classifierEdgeMaxAge, classifierStressLearningRate, classifierStressThreshold, classifierGrowthInterval );
+                classifierEdgeMaxAge, classifierStressLearningRate, classifierStressSplitLearningRate, classifierStressThreshold, classifierGrowthInterval );
 
-        rc.setup( om, regionName, random, organizerConfig, classifierConfig, input1Width, input1Height, input2Width, input2Height, feedbackAreaCells, predictorLearningRate, receptiveFieldsTrainingSamples, defaultPredictionInhibition, organizerTrainOnChange, classifiersPerBit, classifierDepthCells );
+        rc.setup( om, regionName, random, organizerConfig, classifierConfig, input1Width, input1Height, input2Width, input2Height, feedbackAreaCells, predictorLearningRate, receptiveFieldsTrainingSamples, defaultPredictionInhibition, organizerTrainOnChange, emitUnchangedCells, classifiersPerBit, classifierDepthCells );
 
         this.setup( rc );
 

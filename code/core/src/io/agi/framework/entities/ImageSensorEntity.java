@@ -34,11 +34,14 @@ import io.agi.framework.Node;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
+import java.util.HashMap;
 
 public class ImageSensorEntity extends Entity {
 
     public static final String ENTITY_TYPE = "image-sensor";
     public static final String IMAGE_DATA = "image-data";
+
+    protected static HashMap< String, BufferedImageSource > PathBufferedImageSource = new HashMap< String, BufferedImageSource >();
 
     public ImageSensorEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
@@ -62,9 +65,14 @@ public class ImageSensorEntity extends Entity {
 
         ImageSensorEntityConfig config = ( ImageSensorEntityConfig ) _config;
 
-        BufferedImageSource bufferedImageSource = BufferedImageSourceFactory.create(
-                config.sourceType,
-                config.sourceFilesPath );
+        BufferedImageSource bufferedImageSource = PathBufferedImageSource.get( config.sourceFilesPath );
+
+        if( bufferedImageSource == null ) {
+            bufferedImageSource = BufferedImageSourceFactory.create(
+                    config.sourceType,
+                    config.sourceFilesPath );
+            PathBufferedImageSource.put( config.sourceFilesPath, bufferedImageSource );
+        }
 
         ImageScreenScraper imageScreenScraper = new ImageScreenScraper();
 

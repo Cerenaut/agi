@@ -56,6 +56,7 @@ public class GrowingNeuralGasTest implements UnitTest, Callback {
         float learningRateNeighbours = 0.01f;
         int edgeMaxAge = 400;
         float stressLearningRate = 0.1f;
+        float stressSplitLearningRate = 0.5f;
         float stressThreshold = 0.03f;
         int growthInterval = 5;
 
@@ -65,7 +66,7 @@ public class GrowingNeuralGasTest implements UnitTest, Callback {
         GrowingNeuralGasConfig gngc = new GrowingNeuralGasConfig();
 
         gngc.setup(
-                om, GNG, random, inputs, widthCells, heightCells, learningRate, learningRateNeighbours, noiseMagnitude, edgeMaxAge, stressLearningRate, stressThreshold, growthInterval );
+                om, GNG, random, inputs, widthCells, heightCells, learningRate, learningRateNeighbours, noiseMagnitude, edgeMaxAge, stressLearningRate, stressSplitLearningRate, stressThreshold, growthInterval );
 
         GrowingNeuralGas cl = new GrowingNeuralGas( GNG, om );
         cl.setup( gngc );

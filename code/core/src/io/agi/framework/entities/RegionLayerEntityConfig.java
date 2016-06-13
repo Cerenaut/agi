@@ -41,6 +41,7 @@ public class RegionLayerEntityConfig extends EntityConfig {
 
     // Organizer training
     boolean organizerTrainOnChange = false;
+    boolean emitUnchangedCells = true; // default, assists temporal pooling by remembering the state of other cols
     float receptiveFieldsTrainingSamples = 0.1f;//12;
     float defaultPredictionInhibition = 0.f; // don't inhibit
     int classifiersPerBit = 5;
@@ -60,7 +61,8 @@ public class RegionLayerEntityConfig extends EntityConfig {
     float classifierLearningRateNeighbours = 0.01f;
     float classifierNoiseMagnitude = 0.0f;
     int classifierEdgeMaxAge = 200;
-    float classifierStressLearningRate = 0.01f;
+    float classifierStressLearningRate = 0.0005f;
+    float classifierStressSplitLearningRate = 0.5f;
     float classifierStressThreshold = 0.1f;
     int classifierGrowthInterval = 100;
 

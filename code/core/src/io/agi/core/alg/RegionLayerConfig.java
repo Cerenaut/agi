@@ -49,6 +49,7 @@ public class RegionLayerConfig extends NetworkConfig {
     public static final String PREDICTOR_LEARNING_RATE = "predictor-learning-rate";
     public static final String DEPTH_CELLS = "depth-cells";
     public static final String DEFAULT_PREDICTION_INHIBITION = "default-prediction-inhibition";
+    public static final String EMIT_UNCHANGED_CELLS = "emit-unchanged-cells";
 
     public static final String SUFFIX_ORGANIZER = "organizer";
     public static final String SUFFIX_CLASSIFIER = "classifier";
@@ -77,6 +78,7 @@ public class RegionLayerConfig extends NetworkConfig {
             float receptiveFieldsTrainingSamples,
             float defaultPredictionInhibition,
             boolean organizerTrainOnChange,
+            boolean emitUnchangedCells,
             int classifiersPerBit,
             int depthCells ) {
         super.setup( om, name, r );
@@ -85,6 +87,7 @@ public class RegionLayerConfig extends NetworkConfig {
         _classifierConfig = classifierConfig;
 
         setOrganizerTrainOnChange( organizerTrainOnChange );
+        setEmitUnchangedCells( emitUnchangedCells );
         setPredictorLearningRate( predictorLearningRate );
         setReceptiveFieldsTrainingSamples( receptiveFieldsTrainingSamples );
 //        setReceptiveFieldSize( receptiveFieldSize );
@@ -159,6 +162,15 @@ public class RegionLayerConfig extends NetworkConfig {
 
     public void setOrganizerTrainOnChange( boolean b ) {
         _om.put( getKey( ORGANIZER_TRAIN_ON_CHANGE ), b );
+    }
+
+    public boolean getEmitUnchangedCells() {
+        boolean b = _om.getBoolean( getKey( EMIT_UNCHANGED_CELLS ) );
+        return b;
+    }
+
+    public void setEmitUnchangedCells( boolean b ) {
+        _om.put( getKey( EMIT_UNCHANGED_CELLS ), b );
     }
 
     public float getPredictorLearningRate() {

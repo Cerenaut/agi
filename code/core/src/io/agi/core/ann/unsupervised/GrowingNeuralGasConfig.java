@@ -32,11 +32,12 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
 
     public static final String LEARNING_RATE = "learning-rate";
     public static final String LEARNING_RATE_NEIGHBOURS = "learning-rate-neighbours";
-    public static final String NOISE_MAGNITUDE = "noise-magnitude";
-    public static final String EDGE_MAX_AGE = "edge-max-age";
     public static final String STRESS_LEARNING_RATE = "stress-learning-rate";
+    public static final String STRESS_SPLIT_LEARNING_RATE = "stress-split-learning-rate";
     public static final String STRESS_THRESHOLD = "stress-threshold";
     public static final String GROWTH_INTERVAL = "growth-interval";
+    public static final String EDGE_MAX_AGE = "edge-max-age";
+    public static final String NOISE_MAGNITUDE = "noise-magnitude";
 
     public GrowingNeuralGasConfig() {
     }
@@ -53,6 +54,7 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
             float noiseMagnitude,
             int edgeMaxAge,
             float stressLearningRate,
+            float stressSplitLearningRate,
             float stressThreshold,
             int growthInterval ) {
         super.setup( om, name, r, inputs, w, h );
@@ -62,6 +64,7 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
         setNoiseMagnitude( noiseMagnitude );
         setEdgeMaxAge( edgeMaxAge );
         setStressLearningRate( stressLearningRate );
+        setStressSplitLearningRate( stressSplitLearningRate );
         setStressThreshold( stressThreshold );
         setGrowthInterval( growthInterval );
     }
@@ -76,6 +79,7 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
         setNoiseMagnitude( c.getNoiseMagnitude() );
         setEdgeMaxAge( c.getEdgeMaxAge() );
         setStressLearningRate( c.getStressLearningRate() );
+        setStressSplitLearningRate( c.getStressSplitLearningRate() );
         setStressThreshold( c.getStressThreshold() );
         setGrowthInterval( c.getGrowthInterval() );
     }
@@ -98,6 +102,10 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
 
     public void setStressLearningRate( float r ) {
         _om.put( getKey( STRESS_LEARNING_RATE ), r );
+    }
+
+    public void setStressSplitLearningRate( float r ) {
+        _om.put( getKey( STRESS_SPLIT_LEARNING_RATE ), r );
     }
 
     public void setStressThreshold( float r ) {
@@ -130,6 +138,11 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
 
     public float getStressLearningRate() {
         Float r = _om.getFloat( getKey( STRESS_LEARNING_RATE ) );
+        return r.floatValue();
+    }
+
+    public float getStressSplitLearningRate() {
+        Float r = _om.getFloat( getKey( STRESS_SPLIT_LEARNING_RATE ) );
         return r.floatValue();
     }
 
