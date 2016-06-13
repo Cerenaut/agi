@@ -46,6 +46,9 @@ var Vector = {
 
     var chartType = $( "#type" ).val();
     var window = $( "#window" ).val();
+    var userMaxValue = $( "#max" ).val();
+
+    var maxValue = 0.0;
 
     for( var d = 0; d < datas.length; ++d ) {
       var data = datas[ d ]; // TODO generalize to multiple responses.
@@ -79,8 +82,6 @@ var Vector = {
         dataElements.elements = values2;
       }
 
-      var maxValue = 0.0;
-
       if( normalize ) {
         for( var i = 0; i < elements; ++i ) {
           var value = dataElements.elements[ i ];
@@ -88,7 +89,7 @@ var Vector = {
         }
       }
       else {
-        maxValue = 1.0;
+        maxValue = parseFloat( userMaxValue );
       }
 
       var i = 0;
@@ -177,6 +178,12 @@ var Vector = {
     }
     else if( key == "start" ) {
       Vector.resume();
+    }
+    else if( key == "max" ) {
+      $("#max").val( value ); 
+    }
+    else if( key == "type" ) {
+      $("#type").val( value ); 
     }
   },
 

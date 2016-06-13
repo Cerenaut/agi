@@ -1,5 +1,5 @@
 // based on http://bl.ocks.org/mbostock/1153292
-function AgiGraph( elementId, nodes, links, typesArray ) {
+function AgiGraph( elementId, nodes, links, typesArray, _width, _height, _arrows ) {
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   // Variables
@@ -28,7 +28,7 @@ function AgiGraph( elementId, nodes, links, typesArray ) {
     self.text.attr( "transform", self.transform );
   };
 
-  this.setup = function( elementId, nodes, links, typesArray ) {
+  this.setup = function( elementId, nodes, links, typesArray, width, height ) {
 
     // remove any existing graph:
     $( elementId ).html( "" );
@@ -36,8 +36,12 @@ function AgiGraph( elementId, nodes, links, typesArray ) {
     self.elementId = elementId;
     self.nodes = nodes;
 
-    var width = screen.height * 0.7;
-    var height = screen.height * 0.5;
+    if( !width ) {
+      width = screen.height * 0.7;
+    }
+    if( !height ) {
+      height = screen.height * 0.5;
+    }
 
     self.force = d3.layout.force()
       .nodes( d3.values( self.nodes ) )
@@ -55,6 +59,11 @@ function AgiGraph( elementId, nodes, links, typesArray ) {
                .attr("height", height );
 
     // Per-type markers, as they don't inherit styles.
+    var arrowPath = "";
+    if( _arrows ) {
+      arrowPath = "M0,-5L10,0L0,5";
+    }
+            
     svg.append("defs")
        .selectAll("marker")
        .data( typesArray )
@@ -68,20 +77,27 @@ function AgiGraph( elementId, nodes, links, typesArray ) {
                .attr("markerHeight", 12)
                .attr("orient", "auto")
        .append("path")
-       .attr("d", "M0,-5L10,0L0,5");
+       .attr("d", arrowPath );
+
 
     self.path = svg.append("g").selectAll("path")
                    .data( self.force.links() )
                    .enter().append("path")
-                           .attr("class", function(d) { return "link " + d.type; })
+                           .attr("class", function(d) { return "link " + d.classValue; })
+                           .style("stroke-width", function(d) { return d.strokeWidth; })
                            .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
 
     self.circle = svg.append("g")
                      .selectAll("circle")
                      .data( self.force.nodes() )
                      .enter().append("circle")
-                             .attr("r", 12)
+                             .attr("r", function(d) { if( d.value ){ return d.value; } else { return 12; } } )
+                             .style( "stroke", function(d) { return d.strokeStyle; } )
+                             .style( "fill", function(d) { return d.fillStyle; } )
                              .call( self.force.drag );
+//                             .attr("r", 12 )
+//                             .style( "stroke", function(d) { return d.strokeStyle; } )
+//                             .style( "fill", function(d) { return d.fillStyle; } )
 
     self.text = svg.append("g")
                    .selectAll("text")
@@ -93,6 +109,6 @@ function AgiGraph( elementId, nodes, links, typesArray ) {
 
   };
 
-  self.setup( elementId, nodes, links, typesArray );
+  self.setup( elementId, nodes, links, typesArray, _width, _height, _arrows );
 }
 

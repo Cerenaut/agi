@@ -32,9 +32,9 @@ var Region = {
   pixelsPerBit : 8,
   prefix : "",
 
-  selectedLeft : [  ],
-  selectedRight1 : [  ],
-  selectedRight2 : [  ],
+  selectedCells : [  ],
+  selectedInput1 : [  ],
+  selectedInput2 : [  ],
 
 //  classifierSuffixes : [ "-classifier-output-weights", "-classifier-output-mask" ],
 //  classifierSuffixes : [ "-output-mask" ],
@@ -48,6 +48,223 @@ var Region = {
 
   setStatus : function( status ) {
     $( "#status" ).html( status );
+  },
+
+  selectText : function() {
+    var value = $( "#sel-cells" ).val();
+    var values = value.split( "," );
+
+    Region.selectedCells = [];
+
+    for( var i = 0; i < values.length; ++i ) {
+      var value = values[ i ];
+      if( value.length < 1 ) {
+        continue;
+      }
+
+      var cell = parseInt( value );
+      Region.selectedCells.push( cell );
+    }
+
+    Region.updateSelection( "sel-cells", Region.selectedCells );
+    Region.repaint();
+  },
+  selectActive : function() {
+    var dataActivityNew = Region.findData( "-activity-new" );
+    if( !dataActivityNew ) {
+      return; // can't paint
+    }
+    var dataActivityOld = Region.findData( "-activity-old" );
+    if( !dataActivityOld ) {
+      return; // can't paint
+    }
+
+    Region.selectedCells = [];
+    for( var i = 0; i < dataActivityNew.elements.elements.length; ++i ) {
+      var valueNew = dataActivityNew.elements.elements[ i ];
+      var valueOld = dataActivityOld.elements.elements[ i ];
+      if( ( valueNew > 0.5 ) && ( valueOld < 0.5 ) ) {
+        Region.selectedCells.push( i );
+      }
+    }
+
+    Region.updateSelection( "sel-cells", Region.selectedCells );
+    Region.repaint();
+  },
+  selectPredicted : function() {
+    var dataPredictionNew = Region.findData( "-prediction-new" );
+    if( !dataPredictionNew ) {
+      return; // can't paint
+    }
+
+    Region.selectedCells = [];
+    for( var i = 0; i < dataPredictionNew.elements.elements.length; ++i ) {
+      var valueNew = dataPredictionNew.elements.elements[ i ];
+      if( ( valueNew > 0.5 ) ) {
+        Region.selectedCells.push( i );
+      }
+    }
+
+    Region.updateSelection( "sel-cells", Region.selectedCells );
+    Region.repaint();
+  },
+
+  toggleSelectCell : function( offset ) {
+    Region.toggleSelection( Region.selectedCells, offset );
+    Region.updateSelection( "sel-cells", Region.selectedCells );
+  },
+  toggleSelectInput1 : function( offset ) {
+    Region.toggleSelection( Region.selectedInput1, offset );
+    Region.updateSelection( "sel-input-1", Region.selectedInput1 );
+  },
+  toggleSelectInput2 : function( offset ) {
+    Region.toggleSelection( Region.selectedInput2, offset );
+    Region.updateSelection( "sel-input-2", Region.selectedInput2 );
+  },
+
+  selectThreshold : function() {
+    Region.selectedInput1 = [];
+    Region.selectedInput2 = [];
+
+    var data1 = Region.findData( "-ff-input-1" );
+    if( !data1 ) {
+      return; // can't paint
+    }
+
+    var dataSize1 = Framework.getDataSize( data1 );
+    var w1 = dataSize1.w;
+    var h1 = dataSize1.h;
+
+    if( ( w1 == 0 ) || ( h1 == 0 ) ) {
+      return;
+    }
+
+    var data2 = Region.findData( "-ff-input-2" );
+    if( !data2 ) {
+      return; // can't paint
+    }
+
+    var dataSize2 = Framework.getDataSize( data2 );
+    var w2 = dataSize2.w;
+    var h2 = dataSize2.h;
+
+    if( ( w2 == 0 ) || ( h2 == 0 ) ) {
+      return;
+    }
+
+    var dataActivityNew = Region.findData( "-activity-new" );
+    if( !dataActivityNew ) {
+      return; // can't paint
+    }
+
+    var dataOrganizerOutputMask = Region.findData( "-organizer-output-mask" );
+    if( !dataOrganizerOutputMask ) {
+      return; // can't paint
+    }
+
+    var organizerDataSize = Framework.getDataSize( dataOrganizerOutputMask );
+    var ow = organizerDataSize.w;
+    var oh = organizerDataSize.h;
+
+    if( ( ow == 0 ) || ( oh == 0 ) ) {
+      return;
+    }
+
+    var regionDataSize = Framework.getDataSize( dataActivityNew );
+    var rw = regionDataSize.w;
+    var rh = regionDataSize.h;
+    var cw = rw / ow;
+    var ch = rh / oh;
+    var cd = Region.config.classifierDepthCells;
+
+    var classifierInputStride = w1 * h1 + w2 * h2;
+    var classifierInputOffset = 0;
+
+    Region.selectThresholdForInput( 0, Region.selectedInput1, w1, h1, rw, rh, cw, ch, cd, ow, oh, classifierInputStride, classifierInputOffset );
+
+    classifierInputOffset = w1 * h1;
+
+    Region.selectThresholdForInput( 1, Region.selectedInput2, w2, h2, rw, rh, cw, ch, cd, ow, oh, classifierInputStride, classifierInputOffset );
+
+    Region.updateSelection( "sel-input-1", Region.selectedInput1 );
+    Region.updateSelection( "sel-input-2", Region.selectedInput2 );
+    Region.repaint();
+  },
+
+  selectThresholdForInput : function( inputIndex, selectedInput, w, h, rw, rh, cw, ch, cd, ow, oh, classifierInputStride, classifierInputOffset ) {
+    var threshold = $( "#threshold" ).val();
+
+    var dataClassifierOutputWeights = Region.findData( "-classifier-output-weights" );
+
+    for( var c = 0; c < Region.selectedCells.length; ++c ) {
+      var regionOffset = Region.selectedCells[ c ];
+
+      if( !dataClassifierOutputWeights ) {
+        continue; // can't paint
+      }
+
+      var rx = Math.floor( regionOffset % rw );
+      var ry = Math.floor( regionOffset / rw );
+
+      var ox = Math.floor( rx / cw ); // coordinates of column in grid (region).
+      var oy = Math.floor( ry / ch );    
+
+      var cx = rx - ( ox * cw ); // coordinates in column.
+      var cy = ry - ( oy * ch );    
+
+      var classifierHeight = ( ch / cd );
+      var classifierY = cy - ( classifierHeight * Math.floor( cy / classifierHeight ) );
+      var classifierOffset = ( ( classifierY * cw ) + cx ) * classifierInputStride;
+
+      var classifierSize = cw * classifierHeight * classifierInputStride; // Each classifier has this number of cells. 
+      var classifierIndex = oy * ow + ox;
+      var packedOffset = classifierIndex * classifierSize;
+
+      // examine each input:
+      for( var y = 0; y < h; ++y ) {
+        for( var x = 0; x < w; ++x ) {
+          var inputOffset = y * w + x;
+          var weightsOffset = packedOffset + classifierOffset + inputOffset;
+
+          var value = dataClassifierOutputWeights.elements.elements[ weightsOffset ];
+          if( value < threshold ) { // if less than this frac of max weight, don't bother drawing
+            continue;
+          }
+
+          selectedInput.push( inputOffset );
+        }
+      }
+
+    }    
+  },
+
+  updateSelection : function( id, list ) {
+    var values = "";
+    for( var i = 0; i < list.length; ++i ) {
+      var selected = list[ i ];
+      if( i > 0 ) {
+        values = values + ",";
+      }
+      values = values + selected;
+    }    
+    $( "#"+id ).val( values );
+  },
+
+  toggleSelection : function( list, item ) {
+    var found = false;
+
+    for( var i = 0; i < list.length; ++i ) {
+      var selected = list[ i ];
+      if( selected == item ) { 
+        found = true;
+        list.splice( i, 1 ); // remove selection
+        break;
+      }
+    }
+ 
+    if( !found ) {
+      list.push( item );
+    }
   },
 
   // info about mouse actions
@@ -115,8 +332,8 @@ var Region = {
 
     var offset = ry * rw + rx;
 
-    Region.setMouseLeft( "Col.: " + ox + "," + oy + " Cell: " + cx + ", " + cy );
-    Region.toggleSelection( Region.selectedLeft, offset );
+    Region.setMouseLeft( "Column: [" + ox + ", " + oy + "] Cell: [" + cx + ", " + cy + "] Region: [" + rx + ", " + ry + "]" );
+    Region.toggleSelectCell( offset );
     Region.repaint();
   },
 
@@ -162,7 +379,7 @@ var Region = {
       }      
 
       var offset = iy * iw1 + ix;
-      Region.toggleSelection( Region.selectedRight1, offset );
+      Region.toggleSelectInput1( offset );
     }
     else { // maybe 2nd FF input
       if( ix >= iw2 ) {
@@ -173,31 +390,13 @@ var Region = {
       iy = Math.floor( my / Region.pixelsPerBit );
  
       var offset = iy * iw2 + ix;
-      Region.toggleSelection( Region.selectedRight2, offset );
+      Region.toggleSelectInput2( offset );
 
       i = 2;
     }
 
-    Region.setMouseRight( "Bit: I" + i + ":" + ix + "," + iy );
+    Region.setMouseRight( "Bit: I#" + i + ": [" + ix + "," + iy + "]" );
     Region.repaint();
-  },
-
-  toggleSelection : function( list, item ) {
-    var found = false;
-
-    for( var i = 0; i < list.length; ++i ) {
-      var selected = list[ i ];
-      if( selected == item ) { 
-        // remove selection
-        found = true;
-        list.splice( i );
-        break;
-      }
-    }
- 
-    if( !found ) {
-      list.push( item );
-    }
   },
 
   repaint : function() {
@@ -404,8 +603,8 @@ var Region = {
 
     // paint selections
     ctx.strokeStyle = "#FFFF00";
-    for( var i = 0; i < Region.selectedLeft.length; ++i ) {
-      var offset = Region.selectedLeft[ i ];
+    for( var i = 0; i < Region.selectedCells.length; ++i ) {
+      var offset = Region.selectedCells[ i ];
       var rx = Math.floor( offset % rw );
       var ry = Math.floor( offset / rw );
 
@@ -488,18 +687,20 @@ var Region = {
     ctx.fillRect( 0, 0, c.width, c.height );
 
     var classifierInputStride = w1 * h1 + w2 * h2;
+    var classifierInputOffset = 0;
 
     var x0 = 0;
     var y0 = 0;
 
-    Region.paintInputData( ctx, x0, y0, w1, h1, 0, data1, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, cd, Region.selectedRight1, Region.selectedLeft, classifierInputStride );
+    Region.paintInputData( ctx, x0, y0, w1, h1, 0, data1, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, cd, Region.selectedInput1, Region.selectedCells, classifierInputStride, classifierInputOffset );
 
     y0 = y0 + h1 * Region.pixelsPerBit + Region.pixelsMargin;
+    classifierInputOffset = w1 * h1;
 
-    Region.paintInputData( ctx, x0, y0, w2, h2, 1, data2, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, cd, Region.selectedRight2, Region.selectedLeft, classifierInputStride );
+    Region.paintInputData( ctx, x0, y0, w2, h2, 1, data2, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, cd, Region.selectedInput2, Region.selectedCells, classifierInputStride, classifierInputOffset );
   },
 
-  paintInputData : function( ctx, x0, y0, w, h, inputIndex, dataInput, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, cd, selectedInput, selectedCells, classifierInputStride ) {
+  paintInputData : function( ctx, x0, y0, w, h, inputIndex, dataInput, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, cd, selectedInput, selectedCells, classifierInputStride, classifierInputOffset ) {
 
     for( var y = 0; y < h; ++y ) {
       for( var x = 0; x < w; ++x ) {
@@ -519,7 +720,7 @@ var Region = {
 
         if( selectedInput.length > 0 ) {
           if( selectedInput[ 0 ] == offset ) { // select one at a time
-            ctx.strokeStyle = "#FF0000";
+            ctx.strokeStyle = "#00FFFF";
           }
         }
 
@@ -562,7 +763,7 @@ var Region = {
       for( var y = 0; y < h; ++y ) {
         for( var x = 0; x < w; ++x ) {
           var inputOffset = y * w + x;
-          var weightsOffset = packedOffset + classifierOffset + inputOffset;
+          var weightsOffset = packedOffset + classifierOffset + inputOffset + classifierInputOffset;
 
           var value = dataClassifierOutputWeights.elements.elements[ weightsOffset ];
           if( value > maxWeight ) {
@@ -577,7 +778,7 @@ var Region = {
       for( var y = 0; y < h; ++y ) {
         for( var x = 0; x < w; ++x ) {
           var inputOffset = y * w + x;
-          var weightsOffset = packedOffset + classifierOffset + inputOffset;
+          var weightsOffset = packedOffset + classifierOffset + inputOffset + classifierInputOffset;
 
           var value = dataClassifierOutputWeights.elements.elements[ weightsOffset ];
           value = value / maxWeight;
@@ -616,8 +817,8 @@ var Region = {
 
         ctx.strokeStyle = "rgb(0,255,0)";
 
-        for( var i = 0; i < Region.selectedLeft.length; ++i ) {
-          var regionOffset = Region.selectedLeft[ i ]; // a cell within the region     
+        for( var i = 0; i < Region.selectedCells.length; ++i ) {
+          var regionOffset = Region.selectedCells[ i ]; // a cell within the region     
 
           var rx = Math.floor( regionOffset % rw );
           var ry = Math.floor( regionOffset / rw );
@@ -643,7 +844,7 @@ var Region = {
     }
 
     // paint selected input bits
-    ctx.strokeStyle = "#FF0000";
+    ctx.strokeStyle = "#0000ff";
     for( var i = 0; i < selectedInput.length; ++i ) {
       var offset = selectedInput[ i ];
       var x = Math.floor( offset % w );

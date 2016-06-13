@@ -1,19 +1,35 @@
 
 var Search = {
 
-  getNodes : function() {
+  type : null,
+
+  start : function() {
     Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
-    Framework.getNodes( Search.onGetObjects );    
+
+    if( Search.type == "entities" ) {
+      Framework.getEntities( Search.onGetObjects );    
+    }
+    else if( Search.type == "data" ) {
+      Framework.getDataNames( Search.onGetObjects );        
+    }
+    else if( Search.type == "nodes" ) {
+      Framework.getNodes( Search.onGetObjects );    
+    }
+  },
+  
+  getNodes : function() {
+    Search.type = "nodes";
+    Search.start();
   },
 
   getData : function() {
-    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
-    Framework.getDataNames( Search.onGetObjects );    
+    Search.type = "data";
+    Search.start();
   },
 
   getEntities : function() {
-    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
-    Framework.getEntities( Search.onGetObjects );    
+    Search.type = "entities";
+    Search.start();
   },
 
   onGetObjects : function( json ) {
@@ -24,6 +40,8 @@ var Search = {
     if( json.status != 200 ) {
       return;
     }
+
+    var filter = $("#search-text").val();
 
     var html = "";
     var objects = JSON.parse( json.responseText );
@@ -36,7 +54,24 @@ var Search = {
           objectValue = objectValue + " <b style='color:#ff0000'>(Root)</b>";
         }
       }
-      html = html + "<tr><td style='text-align:left;'>" + objectValue + "</td></tr>";
+
+      if( filter.length > 0 ) {
+        if( objectName.indexOf( filter ) < 0 ) {
+          continue;
+        }
+      }
+
+      var linksValue = "";
+
+      if( Search.type == "entities" ) {
+        linksValue = "<a href='config.html?entity="+ objectName + "' title='Open config' target='_blank'>Config</a>";
+      }
+      else if( Search.type == "data" ) {
+        linksValue = "<a href='matrix.html?data="+ objectName + "' title='Open as Matrix' target='_blank'>Matrix</a> / "
+                   + "<a href='vector.html?data="+ objectName + "' title='Open as Vector' target='_blank'>Vector</a>";
+      }
+
+      html = html + "<tr><td style='text-align:left;'>" + objectValue + "</td><td>" + linksValue + "</td></tr>";
     }
 
     $( "#table-body" ).html( html );
@@ -50,8 +85,21 @@ var Search = {
     Framework.update( entity, Search.updateCallback );
   },
 
-  setup : function() {
+  onParameter : function( key, value ) {
+    if( key == "type" ) {
+      Search.type = value;      
+    }
+    if( key == "filter" ) {
+      $("#search-text").val( value ); 
+    }
+  },
 
+  setup : function() {
+    Parameters.extract( Search.onParameter );
+
+    if( Search.type != null ) {
+      Search.start();
+    }
   }
 
 };
