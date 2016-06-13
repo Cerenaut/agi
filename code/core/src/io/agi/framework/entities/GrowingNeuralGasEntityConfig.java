@@ -33,7 +33,8 @@ public class GrowingNeuralGasEntityConfig extends EntityConfig {
     float learningRateNeighbours = 0.05f;
     float noiseMagnitude = 0.005f;
     int edgeMaxAge = 200;
-    float stressLearningRate = 0.15f;
+    float stressLearningRate = 0.01f;
+    float stressSplitLearningRate = 0.5f;
     float stressThreshold = 0.01f;
     int growthInterval = 2;
 

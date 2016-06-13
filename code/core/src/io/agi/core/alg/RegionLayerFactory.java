@@ -19,8 +19,7 @@
 
 package io.agi.core.alg;
 
-import io.agi.core.ann.unsupervised.GrowingNeuralGas;
-import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
+import io.agi.core.ann.unsupervised.*;
 import io.agi.core.orm.ObjectMap;
 
 import java.util.Random;
@@ -42,8 +41,11 @@ public class RegionLayerFactory {
             Random random,
 
             // Feedforward input size
-            int inputWidth,
-            int inputHeight,
+            int input1Width,
+            int input1Height,
+
+            int input2Width,
+            int input2Height,
 
             // Feedback input size
             int feedbackWidthCells,
@@ -60,15 +62,20 @@ public class RegionLayerFactory {
             int classifierDepthCells,
 
             // Organizer training
+            boolean organizerTrainOnChange,
+            boolean emitUnchangedCells,
             float receptiveFieldsTrainingSamples,
+            float defaultPredictionInhibition,
             int classifiersPerBit,
-            float organizerLearningRate,
-            float organizerLearningRateNeighbours,
-            float organizerNoiseMagnitude,
-            int organizerEdgeMaxAge,
-            float organizerStressLearningRate,
-            float organizerStressThreshold,
-            int organizerGrowthInterval,
+            float organizerNeighbourhoodRange,
+//            float organizerLearningRate,
+//            float organizerElasticity,
+//            float organizerLearningRateNeighbours,
+//            float organizerNoiseMagnitude,
+//            int organizerEdgeMaxAge,
+//            float organizerStressLearningRate,
+//            float organizerStressThreshold,
+//            int organizerGrowthInterval,
 
             // Classifier training
             float classifierLearningRate,
@@ -76,6 +83,7 @@ public class RegionLayerFactory {
             float classifierNoiseMagnitude,
             int classifierEdgeMaxAge,
             float classifierStressLearningRate,
+            float classifierStressSplitLearningRate,
             float classifierStressThreshold,
             int classifierGrowthInterval,
 
@@ -85,29 +93,33 @@ public class RegionLayerFactory {
         RegionLayerConfig rc = new RegionLayerConfig();
 
         // Computed or fixed parameters
-        int classifierInputs = inputWidth * inputHeight;
+        int input1Area = input1Width * input1Height;
+        int input2Area = input2Width * input2Height;
+        int classifierInputs = input1Area + input2Area;
         int feedbackAreaCells = feedbackWidthCells * feedbackHeightCells;
-//        int regionAreaCells = regionWidthColumns * classifierWidthCells * regionHeightColumns * classifierHeightCells;
-//        int predictorInputs = regionAreaCells + feedbackAreaCells;
-//        int predictorOutputs = regionAreaCells;
-//        int predictorLayers = Region.PREDICTOR_LAYERS;
-        int organizerInputs = Region.RECEPTIVE_FIELD_DIMENSIONS;
+        int organizerInputs = 2 * 2;
 
-        GrowingNeuralGasConfig organizerConfig = new GrowingNeuralGasConfig();
+        ParameterLessSelfOrganizingMapConfig organizerConfig = new ParameterLessSelfOrganizingMapConfig();
         organizerConfig.setup(
                 om, RegionLayerConfig.SUFFIX_ORGANIZER, random, // temp name
                 organizerInputs, regionWidthColumns, regionHeightColumns,
-                organizerLearningRate, organizerLearningRateNeighbours, organizerNoiseMagnitude,
-                organizerEdgeMaxAge, organizerStressLearningRate, organizerStressThreshold, organizerGrowthInterval );
+                organizerNeighbourhoodRange );
+//                organizerLearningRate, organizerElasticity );
+//        GrowingNeuralGasConfig organizerConfig = new GrowingNeuralGasConfig();
+//        organizerConfig.setup(
+//                om, RegionLayerConfig.SUFFIX_ORGANIZER, random, // temp name
+//                organizerInputs, regionWidthColumns, regionHeightColumns,
+//                organizerLearningRate, organizerLearningRateNeighbours, organizerNoiseMagnitude,
+//                organizerEdgeMaxAge, organizerStressLearningRate, organizerStressThreshold, organizerGrowthInterval );
 
         GrowingNeuralGasConfig classifierConfig = new GrowingNeuralGasConfig();
         classifierConfig.setup(
                 om, RegionLayerConfig.SUFFIX_CLASSIFIER, random, // temp name
                 classifierInputs, classifierWidthCells, classifierHeightCells,
                 classifierLearningRate, classifierLearningRateNeighbours, classifierNoiseMagnitude,
-                classifierEdgeMaxAge, classifierStressLearningRate, classifierStressThreshold, classifierGrowthInterval );
+                classifierEdgeMaxAge, classifierStressLearningRate, classifierStressSplitLearningRate, classifierStressThreshold, classifierGrowthInterval );
 
-        rc.setup( om, regionName, random, organizerConfig, classifierConfig, inputWidth, inputHeight, feedbackAreaCells, predictorLearningRate, receptiveFieldsTrainingSamples, classifiersPerBit, classifierDepthCells );
+        rc.setup( om, regionName, random, organizerConfig, classifierConfig, input1Width, input1Height, input2Width, input2Height, feedbackAreaCells, predictorLearningRate, receptiveFieldsTrainingSamples, defaultPredictionInhibition, organizerTrainOnChange, emitUnchangedCells, classifiersPerBit, classifierDepthCells );
 
         this.setup( rc );
 
@@ -129,16 +141,40 @@ public class RegionLayerFactory {
         return r;
     }
 
-    public GrowingNeuralGas createOrganizer( RegionLayer r ) {
+//    public GrowingNeuralGas createOrganizer( RegionLayer r ) {
+//
+//        String name = r.getKey( RegionLayerConfig.SUFFIX_ORGANIZER );
+//        GrowingNeuralGasConfig c = new GrowingNeuralGasConfig();
+//        c.copyFrom( _rc._organizerConfig, name );
+//
+//        GrowingNeuralGas gng = new GrowingNeuralGas( c._name, c._om );
+//        gng.setup( c );
+//
+//        return gng;
+//    }
+//
+//    public DynamicSelfOrganizingMap createOrganizer( RegionLayer r ) {
+//
+//        String name = r.getKey( RegionLayerConfig.SUFFIX_ORGANIZER );
+//        DynamicSelfOrganizingMapConfig c = new DynamicSelfOrganizingMapConfig();
+//        c.copyFrom( _rc._organizerConfig, name );
+//
+//        DynamicSelfOrganizingMap dsom = new DynamicSelfOrganizingMap( c._name, c._om );
+//        dsom.setup( c );
+//
+//        return dsom;
+//    }
+
+    public ParameterLessSelfOrganizingMap createOrganizer( RegionLayer r ) {
 
         String name = r.getKey( RegionLayerConfig.SUFFIX_ORGANIZER );
-        GrowingNeuralGasConfig c = new GrowingNeuralGasConfig();
+        ParameterLessSelfOrganizingMapConfig c = new ParameterLessSelfOrganizingMapConfig();
         c.copyFrom( _rc._organizerConfig, name );
 
-        GrowingNeuralGas gng = new GrowingNeuralGas( c._name, c._om );
-        gng.setup( c );
+        ParameterLessSelfOrganizingMap som = new ParameterLessSelfOrganizingMap( c._name, c._om );
+        som.setup( c );
 
-        return gng;
+        return som;
     }
 
     public GrowingNeuralGas createClassifier( RegionLayer r ) {

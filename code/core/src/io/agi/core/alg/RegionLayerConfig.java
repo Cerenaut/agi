@@ -20,7 +20,9 @@
 package io.agi.core.alg;
 
 import io.agi.core.ann.NetworkConfig;
+import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMapConfig;
 import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
+import io.agi.core.ann.unsupervised.ParameterLessSelfOrganizingMapConfig;
 import io.agi.core.data.Data2d;
 import io.agi.core.orm.ObjectMap;
 
@@ -32,24 +34,30 @@ import java.util.Random;
  */
 public class RegionLayerConfig extends NetworkConfig {
 
-    public static final int RECEPTIVE_FIELD_DIMENSIONS = 2;
+//    public static final int RECEPTIVE_FIELD_DIMENSIONS = 2;
 
-    public static final String FF_INPUT_WIDTH = "ff-input-width";
-    public static final String FF_INPUT_HEIGHT = "ff-input-height";
+    public static final String FF_INPUT_1_WIDTH = "ff-input-1-width";
+    public static final String FF_INPUT_1_HEIGHT = "ff-input-1-height";
+    public static final String FF_INPUT_2_WIDTH = "ff-input-2-width";
+    public static final String FF_INPUT_2_HEIGHT = "ff-input-2-height";
     public static final String FB_INPUTS = "fb-inputs";
 
     public static final String RECEPTIVE_FIELDS_TRAINING_SAMPLES = "receptive-fields-training-samples";
 //    public static final String RECEPTIVE_FIELD_SIZE = "receptive-field-size";
     public static final String CLASSIFIERS_PER_BIT = "classifiers-per-bit";
+    public static final String ORGANIZER_TRAIN_ON_CHANGE = "organizer-train-on-change";
     public static final String PREDICTOR_LEARNING_RATE = "predictor-learning-rate";
     public static final String DEPTH_CELLS = "depth-cells";
+    public static final String DEFAULT_PREDICTION_INHIBITION = "default-prediction-inhibition";
+    public static final String EMIT_UNCHANGED_CELLS = "emit-unchanged-cells";
 
     public static final String SUFFIX_ORGANIZER = "organizer";
     public static final String SUFFIX_CLASSIFIER = "classifier";
     public static final String SUFFIX_PREDICTOR = "predictor";
 
     public GrowingNeuralGasConfig _classifierConfig;
-    public GrowingNeuralGasConfig _organizerConfig;
+//    public GrowingNeuralGasConfig _organizerConfig;
+    public ParameterLessSelfOrganizingMapConfig _organizerConfig;
 
     public RegionLayerConfig() {
     }
@@ -58,13 +66,19 @@ public class RegionLayerConfig extends NetworkConfig {
             ObjectMap om,
             String name,
             Random r,
-            GrowingNeuralGasConfig organizerConfig,
+//            DynamicSelfOrganizingMapConfig organizerConfig,
+            ParameterLessSelfOrganizingMapConfig organizerConfig,
             GrowingNeuralGasConfig classifierConfig,
-            int ffInputWidth,
-            int ffInputHeight,
+            int ffInput1Width,
+            int ffInput1Height,
+            int ffInput2Width,
+            int ffInput2Height,
             int fbInputArea,
             float predictorLearningRate,
             float receptiveFieldsTrainingSamples,
+            float defaultPredictionInhibition,
+            boolean organizerTrainOnChange,
+            boolean emitUnchangedCells,
             int classifiersPerBit,
             int depthCells ) {
         super.setup( om, name, r );
@@ -72,32 +86,57 @@ public class RegionLayerConfig extends NetworkConfig {
         _organizerConfig = organizerConfig;
         _classifierConfig = classifierConfig;
 
+        setOrganizerTrainOnChange( organizerTrainOnChange );
+        setEmitUnchangedCells( emitUnchangedCells );
         setPredictorLearningRate( predictorLearningRate );
         setReceptiveFieldsTrainingSamples( receptiveFieldsTrainingSamples );
 //        setReceptiveFieldSize( receptiveFieldSize );
         setClassifiersPerBit( classifiersPerBit );
-        setFfInputSize( ffInputWidth, ffInputHeight );
+        setFfInput1Size( ffInput1Width, ffInput1Height );
+        setFfInput2Size( ffInput2Width, ffInput2Height );
         setFbInputArea( fbInputArea );
         setDepthCells( depthCells );
+        setDefaultPredictionInhibition( defaultPredictionInhibition );
     }
 
     public Random getRandom() {
         return _r;
     }
 
-    public Point getFfInputSize() {
-        int inputWidth = _om.getInteger( getKey( FF_INPUT_WIDTH ) );
-        int inputHeight = _om.getInteger( getKey( FF_INPUT_HEIGHT ) );
+    public Point getFfInput1Size() {
+        int inputWidth = _om.getInteger( getKey( FF_INPUT_1_WIDTH ) );
+        int inputHeight = _om.getInteger( getKey( FF_INPUT_1_HEIGHT ) );
         return new Point( inputWidth, inputHeight );
     }
 
-    public void setFfInputSize( int ffInputWidth, int ffInputHeight ) {
-        _om.put( getKey( FF_INPUT_WIDTH ), ffInputWidth );
-        _om.put( getKey( FF_INPUT_HEIGHT ), ffInputHeight );
+    public Point getFfInput2Size() {
+        int inputWidth = _om.getInteger( getKey( FF_INPUT_2_WIDTH ) );
+        int inputHeight = _om.getInteger( getKey( FF_INPUT_2_HEIGHT ) );
+        return new Point( inputWidth, inputHeight );
+    }
+
+    public void setFfInput1Size( int ffInputWidth, int ffInputHeight ) {
+        _om.put( getKey( FF_INPUT_1_WIDTH ), ffInputWidth );
+        _om.put( getKey( FF_INPUT_1_HEIGHT ), ffInputHeight );
+    }
+
+    public void setFfInput2Size( int ffInputWidth, int ffInputHeight ) {
+        _om.put( getKey( FF_INPUT_2_WIDTH ), ffInputWidth );
+        _om.put( getKey( FF_INPUT_2_HEIGHT ), ffInputHeight );
     }
 
     public int getFfInputArea() {
-        Point p = getFfInputSize();
+        return getFfInput1Area() + getFfInput2Area();
+    }
+
+    public int getFfInput1Area() {
+        Point p = getFfInput1Size();
+        int inputArea = p.x * p.y;
+        return inputArea;
+    }
+
+    public int getFfInput2Area() {
+        Point p = getFfInput2Size();
         int inputArea = p.x * p.y;
         return inputArea;
     }
@@ -114,6 +153,24 @@ public class RegionLayerConfig extends NetworkConfig {
 
     public void setFbInputArea( int fbInputArea ) {
         _om.put( getKey( FB_INPUTS ), fbInputArea );
+    }
+
+    public boolean getOrganizerTrainOnChange() {
+        boolean b = _om.getBoolean( getKey( ORGANIZER_TRAIN_ON_CHANGE ) );
+        return b;
+    }
+
+    public void setOrganizerTrainOnChange( boolean b ) {
+        _om.put( getKey( ORGANIZER_TRAIN_ON_CHANGE ), b );
+    }
+
+    public boolean getEmitUnchangedCells() {
+        boolean b = _om.getBoolean( getKey( EMIT_UNCHANGED_CELLS ) );
+        return b;
+    }
+
+    public void setEmitUnchangedCells( boolean b ) {
+        _om.put( getKey( EMIT_UNCHANGED_CELLS ), b );
     }
 
     public float getPredictorLearningRate() {
@@ -178,6 +235,15 @@ public class RegionLayerConfig extends NetworkConfig {
 
     public void setReceptiveFieldsTrainingSamples( float receptiveFieldsTrainingSamples ) {
         _om.put( getKey( RECEPTIVE_FIELDS_TRAINING_SAMPLES ), receptiveFieldsTrainingSamples );
+    }
+
+    public float getDefaultPredictionInhibition() {
+        float r = _om.getFloat( getKey( DEFAULT_PREDICTION_INHIBITION ) );
+        return r;
+    }
+
+    public void setDefaultPredictionInhibition( float r ) {
+        _om.put( getKey( DEFAULT_PREDICTION_INHIBITION ), r );
     }
 
     public int getOrganizerOffset( int xClassifier, int yClassifier ) {

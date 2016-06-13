@@ -21,6 +21,8 @@ package io.agi.framework.entities;
 
 import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMap;
 import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMapConfig;
+import io.agi.core.ann.unsupervised.ParameterLessSelfOrganizingMap;
+import io.agi.core.ann.unsupervised.ParameterLessSelfOrganizingMapConfig;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.orm.Keys;
@@ -35,20 +37,21 @@ import java.util.Collection;
 /**
  * Created by dave on 12/03/16.
  */
-public class DynamicSelfOrganizingMapEntity extends Entity {
+public class ParameterLessSelfOrganizingMapEntity extends Entity {
 
-    public static final String ENTITY_TYPE = "dsom";
+    public static final String ENTITY_TYPE = "plsom";
 
-    public static final String IMPL_NAME = "dsom";
+    public static final String IMPL_NAME = "plsom";
 
     public static final String INPUT = "input";
 
+    public static final String OUTPUT_BOUNDS = "output-bounds";
     public static final String OUTPUT_WEIGHTS = "output-weights";
     public static final String OUTPUT_MASK = "output-mask";
     public static final String OUTPUT_ERROR = "output-error";
     public static final String OUTPUT_ACTIVE = "output-active";
 
-    public DynamicSelfOrganizingMapEntity( ObjectMap om, Node n, ModelEntity model ) {
+    public ParameterLessSelfOrganizingMapEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
     }
 
@@ -57,6 +60,7 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
     }
 
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
+        attributes.add( OUTPUT_BOUNDS );
         attributes.add( OUTPUT_WEIGHTS );
         attributes.add( OUTPUT_MASK );
         attributes.add( OUTPUT_ERROR );
@@ -65,7 +69,7 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
 
     @Override
     public Class getConfigClass() {
-        return DynamicSelfOrganizingMapConfig.class;
+        return ParameterLessSelfOrganizingMapEntityConfig.class;
     }
 
     protected void doUpdateSelf() {
@@ -83,25 +87,30 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
         String implName = getName() + Keys.DELIMITER + IMPL_NAME; // the name of the object that implements
 
         // Create the config object:
-        DynamicSelfOrganizingMapEntityConfig config = ( DynamicSelfOrganizingMapEntityConfig ) _config;
+        ParameterLessSelfOrganizingMapEntityConfig config = ( ParameterLessSelfOrganizingMapEntityConfig ) _config;
 
-        DynamicSelfOrganizingMapConfig dsomc = new DynamicSelfOrganizingMapConfig();
-        dsomc.setup( _om, implName, getRandom(), inputs, config.widthCells, config.heightCells, config.learningRate, config.elasticity );
+        ParameterLessSelfOrganizingMapConfig c = new ParameterLessSelfOrganizingMapConfig();
+        c.setup( _om, implName, getRandom(), inputs, config.widthCells, config.heightCells, config.neighbourhoodRange );//, config.inputDiameter );
 
         // Create the implementing object itself, and copy data from persistence into it:
-        DynamicSelfOrganizingMap dsom = new DynamicSelfOrganizingMap( implName, _om );
-        dsom._c = dsomc;
+        ParameterLessSelfOrganizingMap dsom = new ParameterLessSelfOrganizingMap( implName, _om );
+        dsom._c = c;
         dsom._inputValues = input;
 
+        int boundsSize = c.getBoundsSize( inputs );
+
+        DataSize dataSizeBounds = DataSize.create( boundsSize );
         DataSize dataSizeWeights = DataSize.create( config.widthCells, config.heightCells, inputs );
         DataSize dataSizeCells = DataSize.create( config.widthCells, config.heightCells );
 
+        Data bounds = getDataLazyResize( OUTPUT_BOUNDS, dataSizeBounds );
         Data weights = getDataLazyResize( OUTPUT_WEIGHTS, dataSizeWeights );
         Data errors = getDataLazyResize( OUTPUT_ERROR, dataSizeCells ); // deep copies the size so they each own a copy
         Data activity = getDataLazyResize( OUTPUT_ACTIVE, dataSizeCells ); // deep copies the size so they each own a copy
         Data mask = getDataLazyResize( OUTPUT_MASK, dataSizeCells ); // deep copies the size so they each own a copy
 
         dsom._inputValues = input;
+        dsom._inputBounds = bounds;
         dsom._cellWeights = weights;
         dsom._cellErrors = errors;
         dsom._cellActivity = activity;
@@ -113,6 +122,7 @@ public class DynamicSelfOrganizingMapEntity extends Entity {
 
         dsom.update();
 
+        setData( OUTPUT_BOUNDS, bounds );
         setData( OUTPUT_WEIGHTS, weights );
         setData( OUTPUT_ERROR, errors );
         setData( OUTPUT_ACTIVE, activity );

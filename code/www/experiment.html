@@ -33,18 +33,30 @@ update interval
 show flush, show age. -->
        <img src="assets/images/logo-inverse-brown.png" style="width:50px;display:inline;"/><h1 style="display:inline;">Experiment Control Panel</h1>
        <p>
-       <label for="host">Node</label>
-       <input type="text" id="host" style="" class="" placeholder="Host" value="localhost"/>
-       <input type="number" id="port" style="width:5em;" class="" placeholder="Port" value="8491"/>
+        <label for="host">Node</label>
+        <input type="text" id="host" style="" class="" placeholder="Host" value="localhost"/>
+        <input type="number" id="port" style="width:5em;" class="" placeholder="Port" value="8491"/>
+        <label for="entity">Entity</label>
+        <input type="text" id="entity" style="" class="" placeholder="Entity name"/>
+        <small>
+         <i>Type</i> <span id="entity-type">?</span>
+         <i>Age</i> <span id="entity-age">?</span>
+         <i>Seed</i> <span id="entity-seed">?</span>
+        </small>
        </p>
-       <p>
-       <label for="entity">Entity</label>
-       <input type="text" id="entity" style="" class="" placeholder="Entity name"/>
-       <small>
-       <i>Type</i> <span id="entity-type">?</span>
-       <i>Age</i> <span id="entity-age">?</span>
-       <i>Seed</i> <span id="entity-seed">?</span>
-       </small>
+       <p class="well">
+       <label for="update">Update</label>
+       <input type="button" id="update" class="btn btn-sm btn-danger" style="" onclick="Experiment.update()" value="Once"/>
+        <input type="button" id="pause" class="btn btn-sm btn-danger" style="" onclick="Loop.togglePause()" value="Resume"/>
+        <label for="interval">every (ms)</label>
+        <input type="number" id="interval" style="display:inline;width:5em;" class="" placeholder="Update interval" value="50"/>
+       <span class="well">
+        <label for="flush">Flush</label>
+        <input id="flush" type="checkbox" name="flush" checked />
+        <label for="reset">Reset</label>
+        <input id="reset" type="checkbox" name="reset" />
+        <input type="button" id="pause" class="btn btn-sm btn-success" style="" onclick="Experiment.setFlushAndReset()" value="Set"/>
+       </span>
        </p>
        <form id="import-form" method="POST" enctype="multipart/form-data" >
        <p>
@@ -61,20 +73,6 @@ show flush, show age. -->
        <input type="button" id="exportData" class="btn btn-sm btn-primary" style="" onclick="Experiment.exportData()" value="Export Data"/>
        </p>
        </form>
-       <p class="well">
-       <label for="update">Update</label>
-       <input type="button" id="update" class="btn btn-sm btn-danger" style="" onclick="Experiment.update()" value="Update"/>
-        <input type="button" id="pause" class="btn btn-sm btn-danger" style="" onclick="Loop.togglePause()" value="Resume"/>
-        <label for="interval">every (ms)</label>
-        <input type="number" id="interval" style="display:inline;width:5em;" class="" placeholder="Update interval" value="50"/>
-       <span class="well">
-        <label for="flush">Flush</label>
-        <input id="flush" type="checkbox" name="flush" checked />
-        <label for="reset">Reset</label>
-        <input id="reset" type="checkbox" name="reset" checked />
-        <input type="button" id="pause" class="btn btn-sm btn-success" style="" onclick="Experiment.setFlushAndReset()" value="Set"/>
-       </span>
-       </p>
        <div class="" style="text-align:left;width:100%;">
          <p style="color:#aaaaaa;">Update:<br> <span id="update-result" style="color:#aaaaaa">-</span></p>
          <p style="color:#aaaaaa;">Config:<br> <span id="config-result" style="color:#aaaaaa">-</span></p>

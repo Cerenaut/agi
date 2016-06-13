@@ -41,16 +41,16 @@ public class DynamicSelfOrganizingMapTest implements UnitTest {
     public void test( String[] args ) {
 
         // Test parameters
-        int epochs = 100;
+        int epochs = 500;
         int batch = 100;
         int randomSeed = 1;
         int inputs = 2; // x and y.
-        int widthCells = 6;
-        int heightCells = 6;
-        float meanErrorThreshold = 0.01f;
+        int widthCells = 20;
+        int heightCells = 20;
+        float meanErrorThreshold = 0.005f;
 
         // Algorithm specific parameters
-        float learningRate = 0.25f;
+        float learningRate = 0.1f;
         float elasticity = 1.f;
 
         RandomInstance.setSeed( randomSeed ); // make the tests repeatable
@@ -157,7 +157,7 @@ public class DynamicSelfOrganizingMapTest implements UnitTest {
         float x = input._values[ 0 ];
         float y = input._values[ 1 ];
 
-        System.out.println( "Input: " + x + "," + y + " Error: " + errorValue );
+//        System.out.println( "Input: " + x + "," + y + " Error: " + errorValue );
 
         return errorValue;
     }

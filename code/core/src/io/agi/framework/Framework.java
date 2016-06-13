@@ -21,6 +21,7 @@ package io.agi.framework;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import io.agi.core.orm.AbstractPair;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.util.FileUtil;
 import io.agi.framework.coordination.http.HttpExportHandler;
@@ -61,6 +62,26 @@ public class Framework {
         String inputKey = NamedObject.GetKey( inputEntity, inputSuffix );
         String refKey = NamedObject.GetKey( referenceEntity, referenceSuffix );
         SetDataReference( inputKey, refKey );
+    }
+
+    public static void SetDataReferences(
+            String inputEntity,
+            String inputSuffix,
+            ArrayList< AbstractPair< String, String > > referenceEntitySuffixes ) {
+        String inputKey = NamedObject.GetKey( inputEntity, inputSuffix );
+        String refKeys = "";
+
+        for( AbstractPair< String, String > ap : referenceEntitySuffixes ) {
+            String referenceEntity = ap._first;
+            String referenceSuffix = ap._second;
+            String refKey = NamedObject.GetKey( referenceEntity, referenceSuffix );
+            if( refKeys.length() > 0 ) {
+                refKeys = refKeys + ", ";
+            }
+            refKeys = refKeys + refKey;
+        }
+
+        SetDataReference( inputKey, refKeys );
     }
 
     /**

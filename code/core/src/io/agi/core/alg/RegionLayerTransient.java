@@ -35,7 +35,8 @@ import java.util.TreeMap;
  */
 public class RegionLayerTransient {
 
-    public HashSet< Integer > _ffInputActive;
+    public HashSet< Integer > _ffInput1Active;
+    public HashSet< Integer > _ffInput2Active;
     public HashSet< Integer > _fbInputActive;
 
     public ArrayList< Integer > _regionActiveCells = new ArrayList< Integer >();

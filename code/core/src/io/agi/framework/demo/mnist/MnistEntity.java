@@ -32,6 +32,7 @@ import io.agi.framework.entities.ImageSensorEntity;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
+import java.util.HashMap;
 
 /**
  * Has 2 sets of images, each being the contents of a folder, served serially:
@@ -108,6 +109,9 @@ public class MnistEntity extends Entity {
     public Class getConfigClass() {
         return MnistEntityConfig.class;
     }
+
+    static HashMap< Integer, Integer > _timeSinceLabel = new HashMap< Integer, Integer >();
+    static int _maxTimeSinceLabel = 10;
 
     public void doUpdateSelf() {
 
@@ -247,6 +251,18 @@ public class MnistEntity extends Entity {
 
             _logger.info( "Emitting image " + bis.getIdx() + " class. " + classification + " class.out: " + label + " class.in: " + classifiedLabel + " error: " + error );
         }
+
+        HashMap< Integer, Integer > timeSinceLabel = new HashMap< Integer, Integer >();
+
+        for( Integer l : _timeSinceLabel.keySet() ) {
+            Integer value = _timeSinceLabel.get( l );
+            timeSinceLabel.put( l, value +1 );
+            if( value > _maxTimeSinceLabel ) {
+                _maxTimeSinceLabel = value;
+            }
+        }
+        timeSinceLabel.put( label, 0 );
+        _timeSinceLabel = timeSinceLabel;
 
         outputError._values[ 0 ] = (float)error;
         outputClass._values[ 0 ] = (float)label;

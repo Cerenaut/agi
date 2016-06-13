@@ -24,11 +24,10 @@ import io.agi.framework.EntityConfig;
 /**
  * Created by dave on 2/04/16.
  */
-public class DynamicSelfOrganizingMapEntityConfig extends EntityConfig {
+public class ParameterLessSelfOrganizingMapEntityConfig extends EntityConfig {
 
-    boolean reset = false;
-    float learningRate = 0.5f;
-    float elasticity = 1.0f;
+    float neighbourhoodRange = 15.f;
+//    float inputDiameter = 0.f;
     int widthCells = 8;
     int heightCells = 8;
 

@@ -161,9 +161,11 @@ public class Data2d {
         int w = ( int ) Math.sqrt( volume );
         int h = w;
 
-        int sq = w * w;
-        if( sq < volume ) {
+        // expand the height til it fits.
+        int sq = w * h;
+        while( sq < volume ) {
             h = h + 1;
+            sq = w * h;
         }
 
         Point p = new Point( w, h );
