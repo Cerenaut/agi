@@ -10,10 +10,19 @@
 
 		    "parameter-sweeps": [
 		    {
-		      "parameter-path": "param-name1",
+		      "entity-name": "image-sensor",
+		      "parameter-path": "receptiveField.receptiveFieldX",
 		      "val-type" : "numeric",
-		      "val-begin": 10,
-		      "val-end": 11,
+		      "val-begin": 60,
+		      "val-end": 66,
+		      "val-inc": 2
+		    },
+		    {
+		      "entity-name": "experiment",
+		      "parameter-path": "terminationAge",
+		      "val-type" : "numeric",
+		      "val-begin": 200,
+		      "val-end": 202,
 		      "val-inc": 1
 		    }
 		  ]

@@ -1,6 +1,7 @@
 import json
 import boto3
 import subprocess
+import dpath.util
 
 ########################################################################
 # This runs sync-experiment.sh, which relies on this line
@@ -31,14 +32,14 @@ def close_aws():
 def run_experiment(task_name):
     print "....... Run Experiment"
 
-    print "....... syncing files to ecs via s3"
+    print "....... syncing files to ec2 container instance"
     subprocess.call(["../aws-ecs/ecs-sync-experiment.sh"])
 
     print "....... running task on ecs "
     client = boto3.client('ecs')
     response = client.run_task(
         cluster='default',
-        taskDefinition=task_name,               # <----- global constant
+        taskDefinition=task_name,
         count=1,
         startedBy='pyScript'
     )
@@ -46,17 +47,45 @@ def run_experiment(task_name):
     if log : print "LOG: run task: ", response
 
     # wait for the task to finish
-    # do this by polling an API or one of the config params             <-------------  ********* To Be Implemented on the Java side **********
+    # do this by polling an API or one of the config params
+    #  -------- TODO             <-------------  ********* To Be Implemented on the Java side **********
 
 
-def modify_param(file_entities, param_path, val):
+def modify_param(file_entities, entity_name, param_path, val):
+
     print "Modify Param: ", file_entities, param_path, val
 
     # open the json
-    
+    with open(file_entities) as data_file:    
+        data = json.load(data_file)
+
+    # get the first element in the array with dictionary field "entity-name" = entity_name
+    entity = dict()
+    for entity_i in data :
+        if not entity_i["name"] == entity_name : continue
+
+        entity = entity_i
+        break;
+
+    # get the config field, and turn it into valid JSON
+    configStr = entity["config"]
+    configStr = configStr.replace("\\\"","\"")
+    config = json.loads(configStr)
+
+    if log : print "LOG: config(t)   = ", config, '\n'
+
     # modify the param
-    
+    if log : print "param_path, val", param_path, val, '\n'
+
+    dpath.util.set(config, param_path, val, '.')
+    if log : print "LOG: config(t+1) = ", config, '\n'
+
+    # put the escape characters back in the config str and write back to file
+    #  -------- TODO
+
     # write to json
+    print "++++++++++++++++++++++++++++\n", data
+
 
 
 if __name__ == '__main__':
@@ -89,7 +118,7 @@ if __name__ == '__main__':
 
     if args.expFile:
 
-        setup_aws(instanceId)
+        # setup_aws(instanceId)
 
         with open(args.expFile) as data_file:    
             data = json.load(data_file)
@@ -104,18 +133,19 @@ if __name__ == '__main__':
             file_entities = import_files["file-entities"]
 
             for param_sweep in experiments["parameter-sweeps"]:
-                param_path = param_sweep["parameter-path"]
-                exp_type   = param_sweep["val-type"]
-                val_begin  = param_sweep["val-begin"]
-                val_end    = param_sweep["val-end"]
-                val_inc    = param_sweep["val-inc"]
+                entity_name = param_sweep["entity-name"]
+                param_path  = param_sweep["parameter-path"]
+                exp_type    = param_sweep["val-type"]
+                val_begin   = param_sweep["val-begin"]
+                val_end     = param_sweep["val-end"]
+                val_inc     = param_sweep["val-inc"]
 
                 if log:
                     print "LOG: Parameter Sweep Dictionary"
                     print "LOG: ", param_sweep
 
                 for val in xrange(val_begin, val_end, val_inc):
-                    modify_param(file_entities, param_path, val)
-                    run_experiment(task_name)
+                    modify_param(file_entities, entity_name , param_path, val)
+                    #run_experiment(task_name)
 
         if not dont_close_aws: close_aws()
