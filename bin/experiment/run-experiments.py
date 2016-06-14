@@ -69,7 +69,7 @@ def modify_param(file_entities, entity_name, param_path, val):
 
     # get the config field, and turn it into valid JSON
     configStr = entity["config"]
-    configStr = configStr.replace("\\\"","\"")
+    configStr = configStr.replace("\\\"", "\"")
     config = json.loads(configStr)
 
     if log : print "LOG: config(t)   = ", config, '\n'
@@ -81,11 +81,13 @@ def modify_param(file_entities, entity_name, param_path, val):
     if log : print "LOG: config(t+1) = ", config, '\n'
 
     # put the escape characters back in the config str and write back to file
-    #  -------- TODO
+    configStr = json.dumps(config)
+    configStr = configStr.replace("\"", "\\\"")
+    entity["config"] = configStr
 
-    # write to json
-    print "++++++++++++++++++++++++++++\n", data
-
+    # write back to file
+    with open(file_entities, 'w') as data_file:    
+        data_file.write(json.dumps(data))
 
 
 if __name__ == '__main__':
