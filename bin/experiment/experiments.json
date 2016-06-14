@@ -12,22 +12,8 @@
 		    {
 		      "parameter-path": "param-name1",
 		      "val-type" : "numeric",
-		      "val-begin": 0,
-		      "val-end": 10,
-		      "val-inc": 1
-		    },
-		    {
-		      "parameter-path": "param-name2",
-		      "val-type" : "numeric",
-		      "val-begin": 0,
-		      "val-end": 16,
-		      "val-inc": 2
-		    },
-		    {
-		      "parameter-path": "param-name3",
-		      "val-type" : "numeric",
-		      "val-begin": 0,
-		      "val-end": 2,
+		      "val-begin": 10,
+		      "val-end": 11,
 		      "val-inc": 1
 		    }
 		  ]
