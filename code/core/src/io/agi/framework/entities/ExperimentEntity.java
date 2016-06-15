@@ -72,6 +72,10 @@ public class ExperimentEntity extends Entity {
 
         _logger.info( getName() + " experiment age: " + _config.age + " terminationAge: " + ( ( ExperimentEntityConfig ) _config ).terminationAge );
 
+        if( config.terminating ) {
+            config.terminated = true; // it already updated after starting to terminate.
+        }
+
         // reset if age == 0
         if( config.age == 0 ) {
             _logger.info( getName() + " experiment enabling reset because age is 0." );
@@ -119,8 +123,13 @@ public class ExperimentEntity extends Entity {
         if( config.reset ) {
             _logger.info( getName() + " experiment undoing termination condition due to reset event." );
             config.terminate = false;
+            config.terminating = false;
+            config.terminated = false;
         }
 
+        if( config.terminate ) {
+            config.terminating = true;
+        }
     }
 
     protected void afterUpdate() {
@@ -128,7 +137,7 @@ public class ExperimentEntity extends Entity {
 
         ExperimentEntityConfig config = ( ExperimentEntityConfig ) _config;
 
-        if( ( !config.terminate ) && ( !config.pause ) ) {
+        if( ( !config.terminated ) && ( !config.pause ) ) {
             _logger.info( getName() + " experiment requesting another update." );
             _n.requestUpdate( getName() ); // queue another update.
         }

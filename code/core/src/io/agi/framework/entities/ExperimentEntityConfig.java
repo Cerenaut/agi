@@ -28,7 +28,9 @@ public class ExperimentEntityConfig extends EntityConfig {
 
     //    public int interval; do we actually want this? No, it's slow enough already..!
     public boolean pause = false;
-    public boolean terminate = false;
+    public boolean terminate = false; // you can change this, an instruction to terminate
+    public boolean terminating = false; // notices the terminate flag
+    public boolean terminated = false; // set when the has terminated and update finished.
     public String terminationEntityName;
     public String terminationConfigPath;
     public int terminationAge = -1; // if negative, then never terminates unless via termination condition.
