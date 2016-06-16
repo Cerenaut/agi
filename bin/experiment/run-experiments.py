@@ -2,12 +2,27 @@ import json
 import boto3
 import subprocess
 import dpath.util
+import requests
 
-########################################################################
-# This runs sync-experiment.sh, which relies on this line
-# ssh ec2-user@c.x.agi.io    ssh-ing into the desired ec2 instance
-# the same instance, for which the id needs to be specified here (hard coded currently, but should be command line or otherwise)
-#
+help_generic = """ 
+Run an experiment using AGIEF on AWS (including ability to specify a parameter sweep).
+Uses the version of code in $AGI_HOME and the experiment 'run' folder specified in $AGI_RUN_HOME
+See README.md for installation instructions.
+
+The script does the following:
+- launch ec2 container instance
+- sync $AGI_HOME folder (excluding source), and $AGI_RUN_HOME folder to the ec2 instance
+- sweep parameters as specified in experiment input file, and for each parameter value,
+- run the ecs task, which launches the framework, but does not run the experiment
+- imports the experiment from the data files located in $AGI_RUN_HOME (*to implement*)
+- runs the experiment until termination (*to implement*)
+- exports the experiment to $AGI_RUN_HOME (*to implement*)
+
+The script runs sync-experiment.sh, which relies on the ssh alias ec2-user to ssh into the desired ec2 instance. 
+The instanceId of the same ec2 instance needs to be specified as a parameter when running the script (there is a default value). 
+--> these must match  (to be improved in the future)
+"""
+
 
 
 def setup_aws(instanceId):
@@ -43,6 +58,8 @@ def run_experiment(task_name):
         count=1,
         startedBy='pyScript'
     )
+
+
 
     if log : print "LOG: run task: ", response
 
@@ -92,14 +109,14 @@ def modify_param(file_entities, entity_name, param_path, val):
 
 if __name__ == '__main__':
     import argparse
-    parser = argparse.ArgumentParser(
-	description='Run an AGIEF experiment, potentially with parameter sweep.')
+    from argparse import RawTextHelpFormatter
+    parser = argparse.ArgumentParser(description = help_generic, formatter_class=RawTextHelpFormatter)
     parser.add_argument('--inputFile', dest='expFile', required=True,
-            help='filename, in json format, that contains a list of params to sweep, with a range.')
-    parser.add_argument('--instancdId', dest='instanceId', required=False,
-            help='Instance ID of the ec2 container instance.')
+            help='Filename that defines the scope of experiment (json format).')
+    parser.add_argument('--instanceId', dest='instanceId', required=False,
+            help='Instance ID of the ec2 container instance (default=%(default)s).')
     parser.add_argument('--taskName', dest='task_name', required=False,
-            help='The name of the ecs task.')
+            help='The name of the ecs task (default=%(default)s).')
     parser.add_argument('--dont_close_aws', dest='dont_close_aws', action='store_true',
             help='Shut down aws setup when finished (at the moment just ec2)')
     parser.add_argument('--logging', dest='logging', action='store_true', help='Turn logging on.')
@@ -120,7 +137,7 @@ if __name__ == '__main__':
 
     if args.expFile:
 
-        # setup_aws(instanceId)
+        setup_aws(instanceId)
 
         with open(args.expFile) as data_file:    
             data = json.load(data_file)
@@ -148,6 +165,6 @@ if __name__ == '__main__':
 
                 for val in xrange(val_begin, val_end, val_inc):
                     modify_param(file_entities, entity_name , param_path, val)
-                    #run_experiment(task_name)
+                    run_experiment(task_name)
 
         if not dont_close_aws: close_aws()
