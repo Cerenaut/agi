@@ -21,5 +21,5 @@ source $(dirname $0)/../$variables_file
 ########################################################
 
 
-rsync -ave ssh $AGI_HOME ecs-ec2:~/agief-project/agi/ --exclude={"*.git/*",*/src/*}
-rsync -ave ssh $AGI_RUN_HOME ecs-ec2:~/agief-project/run/ --exclude={"*.git/*"}
+rsync -ave ssh $AGI_HOME/ ecs-ec2:~/agief-project/agi --exclude={"*.git/*",*/src/*}
+rsync -ave ssh $AGI_RUN_HOME/ ecs-ec2:~/agief-project/run --exclude={"*.git/*"}
