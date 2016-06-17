@@ -197,7 +197,7 @@ if __name__ == '__main__':
     parser.set_defaults(host="c.x.agi.io")
     parser.set_defaults(port="8491")
     parser.set_defaults(instanceid="i-06d6a791")
-    parser.set_defaults(task_name="mnist-spatial-task:4")
+    parser.set_defaults(task_name="mnist-spatial-task:8")
     args = parser.parse_args()
 
     global log 

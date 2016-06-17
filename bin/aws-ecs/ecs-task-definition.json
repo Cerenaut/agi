@@ -60,7 +60,7 @@
       ],
       "mountPoints": [
         {
-          "containerPath": "/dev/bin",
+          "containerPath": "/dev/agi/bin",
           "sourceVolume": "agief-project-bin"
         },
         {
@@ -81,7 +81,7 @@
       "readonlyRootFilesystem": null,
       "image": "httpd:2.4",
       "command": [
-        "/bin/sh -c \"cat /dev/bin/www/httpd.conf.end >> conf/httpd.conf && mkdir -p /var/log/apache2 && httpd-foreground\""
+        "/bin/sh -c \"cat /dev/agi/bin/www/httpd.conf.end >> conf/httpd.conf && mkdir -p /var/log/apache2 && httpd-foreground\""
       ],
       "user": null,
       "dockerLabels": null,
@@ -99,13 +99,13 @@
     },
     {
       "host": {
-        "sourcePath": "/home/ec2-user/agief-project/bin"
+        "sourcePath": "/home/ec2-user/agief-project/agi/bin"
       },
       "name": "agief-project-bin"
     },
     {
       "host": {
-        "sourcePath": "/home/ec2-user/agief-project/code/www"
+        "sourcePath": "/home/ec2-user/agief-project/agi/code/www"
       },
       "name": "agief-project-www"
     }
