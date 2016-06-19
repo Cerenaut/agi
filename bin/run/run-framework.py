@@ -32,7 +32,7 @@ def setup_aws(instanceId):
     instance = ec2.Instance(instanceId)
     response = instance.start()
 
-    if log: print "LOG: Start respones: ", response
+    if log: print "LOG: Start response: ", response
 
     instance.wait_until_running()
 
@@ -73,11 +73,15 @@ def wait_framwork_up(baseurl):
     print "....... wait till framework has started"
 
     while True:
-        response = requests.get(baseurl + '/entities')
-        print response.status_code
-        if response.status_code == 200:
+        try:
+            response = requests.get(baseurl + '/entities')
+            if log:
+                print "LOG: response = ", response
             break
-        time.sleep(1)
+        except requests.ConnectionError:
+            time.sleep(1)
+            print "  - no connection yet ......"
+
 
 
 def experiments_aws_setup(task_name):
@@ -104,7 +108,7 @@ def wait_till_param(baseurl, entity_name, param_path, value):
     parameter = '';
     while parameter != value:
         response = requests.get(baseurl + '/config', params={'entity': entity_name})
-        parameter = dpath.util.get(response, param_path, '.')
+        parameter = dpath.util.get(response.json(), "value." + param_path, '.')
         time.sleep(2)  # sleep for n seconds
 
 
@@ -112,16 +116,19 @@ def run_experiment(baseurl):
     print "....... Run Experiment"
 
     # import experiment files (entities.json and data.json)
+    # TODO import
 
     # start the experiment
     payload = {'entity': 'experiment', 'event': 'update'}
-    r = requests.get(baseurl + '/update', params=payload)
+    response = requests.get(baseurl + '/update', params=payload)
+    if log:
+        print "LOG: response = ", response
 
     # wait for the task to finish
     wait_till_param(baseurl, 'experiment', 'terminated', True)      # poll API for 'Terminated' config param
 
     # export experiment files
-
+    # TODO export
 
 def modify_parameters(file_entities, entity_name, param_path, val):
     print "Modify Parameters: ", file_entities, param_path, val
@@ -133,10 +140,10 @@ def modify_parameters(file_entities, entity_name, param_path, val):
     # get the first element in the array with dictionary field "entity-name" = entity_name
     entity = dict()
     for entity_i in data:
-        if not entity_i["name"] == entity_name: continue
-
+        if not entity_i["name"] == entity_name:
+            continue
         entity = entity_i
-        break;
+        break
 
     # get the config field, and turn it into valid JSON
     configStr = entity["config"]
@@ -163,6 +170,8 @@ def modify_parameters(file_entities, entity_name, param_path, val):
 # run experiments defined in exps_file
 def run_experiments(exps_file, baseurl):
 
+    # TODO should open file relative to $AGI_RUN_HOME
+
     with open(exps_file) as data_file:
         data = json.load(data_file)
 
@@ -186,6 +195,8 @@ def run_experiments(exps_file, baseurl):
             if log:
                 print "LOG: Parameter Sweep Dictionary"
                 print "LOG: ", param_sweep
+
+            # TODO different types of data, not just integers
 
             for val in xrange(val_begin, val_end, val_inc):
                 modify_parameters(file_entities, entity_name, param_path, val)
