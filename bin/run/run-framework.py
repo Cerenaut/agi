@@ -1,4 +1,7 @@
 import json
+import json
+import os
+
 import boto3
 import subprocess
 import dpath.util
@@ -60,7 +63,6 @@ def launch_framework_aws(task_name, baseurl):
 # launch AGIEF on locally
 # hang till framwork is up and running
 def launch_framework_local(baseurl):
-
     print "....... launching framework locally"
     output = subprocess.Popen(["../node_coordinator/run.sh"],
                               stdin=subprocess.PIPE,
@@ -81,7 +83,6 @@ def wait_framwork_up(baseurl):
         except requests.ConnectionError:
             time.sleep(1)
             print "  - no connection yet ......"
-
 
 
 def experiments_aws_setup(task_name):
@@ -112,29 +113,54 @@ def wait_till_param(baseurl, entity_name, param_path, value):
         time.sleep(2)  # sleep for n seconds
 
 
-def run_experiment(baseurl):
+def run_experiment(baseurl, entity_filepath, data_filepath):
     print "....... Run Experiment"
 
     # import experiment files (entities.json and data.json)
-    # TODO import
+    payload = {'entity-file': entity_filepath, 'data-file': data_filepath}
+    response = requests.get(baseurl + '/import', params=payload)
+    if log:
+        print "LOG: Import entity file, response = ", response
+        print "LOG: url: ", response.url
+        print "LOG: raw: ", response.raw
+        print "LOG: json string: ", json.dump(response.json())
 
     # start the experiment
     payload = {'entity': 'experiment', 'event': 'update'}
     response = requests.get(baseurl + '/update', params=payload)
     if log:
-        print "LOG: response = ", response
+        print "LOG: Start experiment, response = ", response
 
     # wait for the task to finish
-    wait_till_param(baseurl, 'experiment', 'terminated', True)      # poll API for 'Terminated' config param
+    wait_till_param(baseurl, 'experiment', 'terminated', True)  # poll API for 'Terminated' config param
 
     # export experiment files
-    # TODO export
+    payload = {'entity': 'experiment', type: 'entity'}
+    response = requests.get(baseurl + '/export', params=payload)
+    if log:
+        print "LOG: Export entity file, response = ", response
 
-def modify_parameters(file_entities, entity_name, param_path, val):
-    print "Modify Parameters: ", file_entities, param_path, val
+    # write back to file
+    entity_json = response.json()
+    with open("output-" + entity_filepath, 'w') as data_entity_file:
+        data_entity_file.write(json.dumps(entity_json))
+
+    payload = {'entity': 'experiment', type: 'data'}
+    response = requests.get(baseurl + '/export', params=payload)
+    if log:
+        print "LOG: Export data file, response = ", response
+
+    # write back to file
+    data_json = response.json()
+    with open("output-" + data_filepath, 'w') as data_data_file:
+        data_data_file.write(json.dumps(data_json))
+
+
+def modify_parameters(entity_filepath, entity_name, param_path, val):
+    print "Modify Parameters: ", entity_filepath, param_path, val
 
     # open the json
-    with open(file_entities) as data_file:
+    with open(entity_filepath) as data_file:
         data = json.load(data_file)
 
     # get the first element in the array with dictionary field "entity-name" = entity_name
@@ -163,17 +189,26 @@ def modify_parameters(file_entities, entity_name, param_path, val):
     entity["config"] = configStr
 
     # write back to file
-    with open(file_entities, 'w') as data_file:
+    with open(entity_filepath, 'w') as data_file:
         data_file.write(json.dumps(data))
 
 
 # run experiments defined in exps_file
-def run_experiments(exps_file, baseurl):
+def experiment_file_fullpath(filename, path_env):
+    variables_file = os.getenv('VARIABLES_FILE', 'variables.sh')
+    subprocess.call(["source ../" + variables_file], shell=True)
 
-    # TODO should open file relative to $AGI_RUN_HOME
+    cmd = "source ../" + variables_file + " && echo $" + path_env
+    output, error = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
 
-    with open(exps_file) as data_file:
-        data = json.load(data_file)
+    path_from_env = output.strip()
+    filepath = os.path.join(path_from_env, filename)
+    return filepath
+
+
+def run_experiments(baseurl, exps_file):
+    with open(exps_file) as data_exps_file:
+        data = json.load(data_exps_file)
 
     for experiments in data["experiments"]:
         import_files = experiments["import-files"]  # import files dictionary
@@ -182,12 +217,24 @@ def run_experiments(exps_file, baseurl):
             print "LOG: Import Files Dictionary = "
             print "LOG: ", import_files
 
-        file_entities = import_files["file-entities"]
+        # get experiment filenames, and expand to full path
+        entity_file = import_files["file-entities"]
+        data_file = import_files["file-data"]
+
+        entity_filepath = experiment_file_fullpath(filename=entity_file, path_env='AGI_RUN_HOME')
+        data_filepath = experiment_file_fullpath(filename=data_file, path_env='AGI_HOME')
+
+        if log:
+            print "LOG: Entity file full path = " + entity_filepath
+
+        if not os.path.isfile(entity_filepath):
+            print "ERROR: The entity file " + entity_file + ", at path " + entity_filepath + ", does not exist.\nCANNOT CONTINUE."
+            exit()
 
         for param_sweep in experiments["parameter-sweeps"]:
             entity_name = param_sweep["entity-name"]
             param_path = param_sweep["parameter-path"]
-            exp_type = param_sweep["val-type"]
+            # exp_type = param_sweep["val-type"]
             val_begin = param_sweep["val-begin"]
             val_end = param_sweep["val-end"]
             val_inc = param_sweep["val-inc"]
@@ -196,15 +243,16 @@ def run_experiments(exps_file, baseurl):
                 print "LOG: Parameter Sweep Dictionary"
                 print "LOG: ", param_sweep
 
-            # TODO different types of data, not just integers
-
-            for val in xrange(val_begin, val_end, val_inc):
-                modify_parameters(file_entities, entity_name, param_path, val)
-                run_experiment(baseurl)
+            val = val_begin
+            while val <= val_end:
+                val += val_inc
+                modify_parameters(entity_filepath, entity_name, param_path, val)
+                run_experiment(baseurl, entity_filepath, data_filepath)
 
 
 def getbaseurl(host, port):
     return 'http://' + host + ':' + port
+
 
 if __name__ == '__main__':
     import argparse
@@ -267,7 +315,7 @@ if __name__ == '__main__':
         launch_framework_local(baseurl)
 
     if args.exps_file:
-        run_experiments(args.exps_file, baseurl)
+        run_experiments(baseurl, args.exps_file)
 
     if args.aws and not args.aws_keep_running:
         close_aws(args.instanceid)

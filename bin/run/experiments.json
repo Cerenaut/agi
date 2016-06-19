@@ -3,7 +3,6 @@
 		{
 			"import-files":
 			{
-				"run-folder": "",
 				"file-entities": "entities.json",
 				"file-data": "data.json"
 			},
