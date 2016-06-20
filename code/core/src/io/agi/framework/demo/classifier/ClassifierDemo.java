@@ -24,6 +24,7 @@ import io.agi.framework.Framework;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
 import io.agi.framework.entities.DiscreteRandomEntity;
+import io.agi.framework.entities.ExperimentEntity;
 import io.agi.framework.entities.ParameterLessSelfOrganizingMapEntity;
 import io.agi.framework.entities.RandomVectorEntity;
 import io.agi.framework.factories.CommonEntityFactory;
@@ -47,19 +48,11 @@ public class ClassifierDemo {
 
         // Create custom entities and references
         if( args.length > 1 ) {
-            Framework.LoadEntities( args[ 1 ] );
+            if( args[ 1 ].equalsIgnoreCase( "create" ) ) {
+                // Programmatic hook to create entities and references..
+                createEntities( m._n );
+            }
         }
-
-        if( args.length > 2 ) {
-            Framework.LoadDataReferences( args[ 2 ] );
-        }
-
-        if( args.length > 3 ) {
-            Framework.LoadConfigs( args[ 3 ] );
-        }
-
-        // Programmatic hook to create entities and references..
-        createEntities( m._n );
 
         // Start the system
         m.run();
@@ -71,14 +64,29 @@ public class ClassifierDemo {
         String modelName = "model";
         String classifierName = "classifier";
 
-        Framework.CreateEntity( modelName, DiscreteRandomEntity.ENTITY_TYPE, n.getName(), null );
+        String experimentName = "experiment";
+        Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
+
+        Framework.CreateEntity( modelName, DiscreteRandomEntity.ENTITY_TYPE, n.getName(), experimentName );
 //        Framework.CreateEntity( classifierName, GrowingNeuralGasEntity.ENTITY_TYPE, n.getName(), modelName );
         Framework.CreateEntity( classifierName, ParameterLessSelfOrganizingMapEntity.ENTITY_TYPE, n.getName(), modelName );
 
-        // Connect the entities
-        Persistence p = n.getPersistence();
-
         Framework.SetDataReference( classifierName, ParameterLessSelfOrganizingMapEntity.INPUT, modelName, RandomVectorEntity.OUTPUT );
+
+        boolean terminateByAge = true;
+        int terminationAge = 2;
+
+        // Experiment config
+        if( !terminateByAge ) {
+            Framework.SetConfig( experimentName, "terminationEntityName", modelName );
+            Framework.SetConfig( experimentName, "terminationConfigPath", "terminate" );
+            Framework.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
+        }
+        else {
+            Framework.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
+        }
+
+
 
         // Set a property:
         Framework.SetConfig( modelName, "elements", "2" );

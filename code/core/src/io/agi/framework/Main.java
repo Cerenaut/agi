@@ -144,7 +144,7 @@ public class Main {
 
         // Create a Node
         if( args.length == 0 ) {
-            System.err.println( "Must specify node .properties file as first argument." );
+            System.err.println( "Must specify node.properties file as first argument." );
             help();
             System.exit( -1 );
         }

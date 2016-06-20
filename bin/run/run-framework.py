@@ -8,6 +8,7 @@ import dpath.util
 import requests
 import time
 
+
 help_generic = """ 
 Run an experiment using AGIEF on AWS (including ability to specify a parameter sweep).
 Uses the version of code in $AGI_HOME and the experiment 'run' folder specified in $AGI_RUN_HOME
@@ -26,6 +27,11 @@ The script runs sync-experiment.sh, which relies on the ssh alias ec2-user to ss
 The instanceId of the same ec2 instance needs to be specified as a parameter when running the script
 (there is a default value).
 --> these must match  (to be improved in the future)
+
+Assumptions:
+- Experiment entity exists, with 'terminated' field.
+- The 'variables.sh' system is used, as in the bash scripts.
+
 """
 
 
@@ -64,10 +70,9 @@ def launch_framework_aws(task_name, baseurl):
 # hang till framwork is up and running
 def launch_framework_local(baseurl):
     print "....... launching framework locally"
-    output = subprocess.Popen(["../node_coordinator/run.sh"],
-                              stdin=subprocess.PIPE,
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT)
+    subprocess.Popen(["../node_coordinator/run.sh"],
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.STDOUT)
     wait_framwork_up(baseurl)
 
 
@@ -108,24 +113,30 @@ def experiments_aws_setup(task_name):
 def wait_till_param(baseurl, entity_name, param_path, value):
     parameter = '';
     while parameter != value:
-        response = requests.get(baseurl + '/config', params={'entity': entity_name})
-        parameter = dpath.util.get(response.json(), "value." + param_path, '.')
+        try:
+            r = requests.get(baseurl + '/config', params={'entity': entity_name})
+            parameter = dpath.util.get(r.json(), "value." + param_path, '.')
+        except requests.exceptions.ConnectionError:
+            print "Oops, ConnectionError exception"
+        except requests.exceptions.RequestException:
+            print "Oops, request exception"
+
+        print "experiment.terminated != false,    wait 2s and try again ........"
         time.sleep(2)  # sleep for n seconds
 
 
-def run_experiment(baseurl, entity_filepath, data_filepath):
-    print "....... Run Experiment"
+def agief_import(entity_filepath=None, data_filepath=None):
+    with open(entity_filepath, 'rb') as entity_data_file:
+        with open(data_filepath, 'rb') as data_data_file:
+            files = {'entity-file': entity_data_file, 'data-file': data_data_file}
+            response = requests.post(baseurl + '/import', files=files)
+            if log:
+                print "LOG: Import entity file, response = ", response
+                print "LOG: response: ", response.text
+                print "LOG: url: ", response.url
 
-    # import experiment files (entities.json and data.json)
-    payload = {'entity-file': entity_filepath, 'data-file': data_filepath}
-    response = requests.get(baseurl + '/import', params=payload)
-    if log:
-        print "LOG: Import entity file, response = ", response
-        print "LOG: url: ", response.url
-        print "LOG: raw: ", response.raw
-        print "LOG: json string: ", json.dump(response.json())
 
-    # start the experiment
+def agief_run_experiment():
     payload = {'entity': 'experiment', 'event': 'update'}
     response = requests.get(baseurl + '/update', params=payload)
     if log:
@@ -134,26 +145,29 @@ def run_experiment(baseurl, entity_filepath, data_filepath):
     # wait for the task to finish
     wait_till_param(baseurl, 'experiment', 'terminated', True)  # poll API for 'Terminated' config param
 
-    # export experiment files
-    payload = {'entity': 'experiment', type: 'entity'}
+
+def agief_export_rootentity(filepath, root_entity):
+    payload = {'entity': root_entity, type: 'entity'}
     response = requests.get(baseurl + '/export', params=payload)
     if log:
         print "LOG: Export entity file, response = ", response
 
     # write back to file
     entity_json = response.json()
-    with open("output-" + entity_filepath, 'w') as data_entity_file:
-        data_entity_file.write(json.dumps(entity_json))
+    with open("output-" + filepath, 'w') as data_file:
+        data_file.write(json.dumps(entity_json))
 
-    payload = {'entity': 'experiment', type: 'data'}
-    response = requests.get(baseurl + '/export', params=payload)
-    if log:
-        print "LOG: Export data file, response = ", response
 
-    # write back to file
-    data_json = response.json()
-    with open("output-" + data_filepath, 'w') as data_data_file:
-        data_data_file.write(json.dumps(data_json))
+def agief_export_experiment(entity_filepath=None, data_filepath=None):
+    agief_export_rootentity(entity_filepath, 'experiment')
+    agief_export_rootentity(data_filepath, 'experiment')
+
+
+def run_experiment(baseurl, entity_filepath, data_filepath):
+    print "....... Run Experiment"
+    agief_import(entity_filepath, data_filepath)
+    agief_run_experiment()
+    agief_export_experiment(entity_filepath, data_filepath)
 
 
 def modify_parameters(entity_filepath, entity_name, param_path, val):
@@ -170,6 +184,12 @@ def modify_parameters(entity_filepath, entity_name, param_path, val):
             continue
         entity = entity_i
         break
+
+    if not entity:
+        print "ERROR: the experiment file (" + entity_filepath + ") did not contain matching entity name (" \
+              + entity_name + ") and entity file name in field 'file-entities'."
+        print "CANNOT CONTINUE"
+        exit()
 
     # get the config field, and turn it into valid JSON
     configStr = entity["config"]
@@ -222,7 +242,7 @@ def run_experiments(baseurl, exps_file):
         data_file = import_files["file-data"]
 
         entity_filepath = experiment_file_fullpath(filename=entity_file, path_env='AGI_RUN_HOME')
-        data_filepath = experiment_file_fullpath(filename=data_file, path_env='AGI_HOME')
+        data_filepath = experiment_file_fullpath(filename=data_file, path_env='AGI_RUN_HOME')
 
         if log:
             print "LOG: Entity file full path = " + entity_filepath
