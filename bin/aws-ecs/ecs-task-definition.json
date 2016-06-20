@@ -59,7 +59,14 @@
         "-c"
       ],
       "mountPoints": [
-        
+        {
+          "containerPath": "/dev/agi/bin",
+          "sourceVolume": "agief-project-bin"
+        },
+        {
+          "containerPath": "/var/www",
+          "sourceVolume": "agief-project-www"
+        }
       ],
       "name": "simple-app",
       "ulimits": null,
@@ -74,7 +81,7 @@
       "readonlyRootFilesystem": null,
       "image": "httpd:2.4",
       "command": [
-        "/bin/sh -c \"echo '<html> <head> <title>Amazon ECS Sample App</title> <style>body {margin-top: 40px; background-color: #333;} </style> </head><body> <div style=color:white;text-align:center> <h1>Amazon ECS Sample App</h1> <h2>Congratulations!</h2> <p>Your application is now running on a container in Amazon ECS.</p> </div></body></html>' >  /usr/local/apache2/htdocs/index.html && httpd-foreground\""
+        "/bin/sh -c \"cat /dev/agi/bin/www/httpd.conf.end >> conf/httpd.conf && mkdir -p /var/log/apache2 && httpd-foreground\""
       ],
       "user": null,
       "dockerLabels": null,
@@ -89,6 +96,18 @@
         "sourcePath": "/home/ec2-user/agief-project"
       },
       "name": "agief-project"
+    },
+    {
+      "host": {
+        "sourcePath": "/home/ec2-user/agief-project/agi/bin"
+      },
+      "name": "agief-project-bin"
+    },
+    {
+      "host": {
+        "sourcePath": "/home/ec2-user/agief-project/agi/code/www"
+      },
+      "name": "agief-project-www"
     }
   ],
   "family": "mnist-spatial-task"

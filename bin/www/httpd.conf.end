@@ -1,0 +1,22 @@
+
+<VirtualHost *:80>
+    # Comment to respond to any request
+    # ServerName your-domain.com
+    DocumentRoot /var/www
+    #SetEnv SOME_VAR some-value
+    <Directory "/">
+        Order allow,deny
+        Deny from all
+        Require all denied
+        </Directory>
+    <Directory /var/www/>
+        AllowOverride all
+        Require all granted
+    	Order allow,deny
+    	Allow from all
+    </Directory>
+
+    CustomLog /var/log/apache2/your-domain.com-access.log combined
+    ErrorLog /var/log/apache2/your-domain.com-error.log
+    ServerSignature Off
+</VirtualHost>

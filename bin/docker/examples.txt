@@ -1,0 +1,7 @@
+################################################
+# Run an apache docker container to host Web UI
+
+docker run -p 8080:80 -i -d -v $AGI_HOME/code/www:/var/www -v $AGI_HOME/bin:/dev/bin  httpd /bin/sh -c "cat /dev/bin/www/httpd.conf.end >> conf/httpd.conf && mkdir -p /var/log/apache2 && httpd-foreground"
+
+# on aws
+docker run -p 80:80 -i -d -v /home/ec2-user/agief-project/agi/code/www:/var/www -v /home/ec2-user/agief-project/agi/bin:/dev/bin  httpd:2.4 /bin/sh -c "cat /dev/bin/www/httpd.conf.end >> conf/httpd.conf && mkdir -p /var/log/apache2 && httpd-foreground"

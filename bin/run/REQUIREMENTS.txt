@@ -1,0 +1,3 @@
+dpath
+boto3
+requests

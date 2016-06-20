@@ -14,7 +14,7 @@
 ./ec2-sync-experiment.sh		# sync local files to the container instance
 
 # run task
-aws ecs run-task --cluster default --task-definition mnist-spatial-task:3 			# replace with desired task definition
+aws ecs run-task --cluster default --task-definition mnist-spatial-task:4 			# replace with desired task definition
 
 # stop task
 aws ecs stop-task --cluster default --task 33732b27-cc1e-4cee-97e4-a4931dafbeef		# replace with taskID
