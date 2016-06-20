@@ -74,6 +74,7 @@ public class DeepMNISTDemo {
         String testingPath = "/home/dave/workspace/agi.io/data/mnist/5k_test";
 //        String trainingPath = "./training";
 //        String testingPath = "./testing";
+//        int terminationAge = 10;//9000;
         int terminationAge = 9000;
         int trainingBatches = 1;
         int layers = 3;
@@ -89,6 +90,7 @@ public class DeepMNISTDemo {
         String imageEncoderName = "image-encoder";
         String classEncoderName = "class-encoder";
         String classDecoderName = "class-decoder";
+        String labelEncoderName = "label-encoder";
         String constantName = "constant";
         String region1FfName = "image-region-1-ff";
         String region2FfName = "image-region-2-ff";
@@ -100,7 +102,8 @@ public class DeepMNISTDemo {
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         Framework.CreateEntity( mnistName, MnistEntity.ENTITY_TYPE, n.getName(), experimentName );
         Framework.CreateEntity( classEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), mnistName );
-        Framework.CreateEntity( imageEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), classEncoderName );
+        Framework.CreateEntity( labelEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), classEncoderName );
+        Framework.CreateEntity( imageEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), labelEncoderName );
         Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), imageEncoderName ); // ok all input to the regions is ready
 
         Framework.CreateEntity( region1FfName, RegionLayerEntity.ENTITY_TYPE, n.getName(), constantName );
@@ -136,7 +139,8 @@ public class DeepMNISTDemo {
 
         if( layers > 2 ) {
             Framework.SetDataReference( region3FfName, RegionLayerEntity.FF_INPUT_1, region2FfName, RegionLayerEntity.PREDICTION_FN );
-            Framework.SetDataReference( region3FfName, RegionLayerEntity.FF_INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
+//            Framework.SetDataReference( region3FfName, RegionLayerEntity.FF_INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
+            Framework.SetDataReference( region3FfName, RegionLayerEntity.FF_INPUT_2, labelEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
             Framework.SetDataReference( region3FfName, RegionLayerEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT ); // feedback to this region is just a constant
         }
 
@@ -144,6 +148,7 @@ public class DeepMNISTDemo {
         Framework.SetDataReference( predictedImageDecoderName, DecoderEntity.DATA_INPUT_ENCODED, region1FfName, RegionLayerEntity.FB_OUTPUT_1_UNFOLDED_PREDICTION );
 
         // a) Class to class region, and decode
+        Framework.SetDataReference( labelEncoderName, EncoderEntity.DATA_INPUT, mnistName, MnistEntity.OUTPUT_IMAGE_LABEL );
         Framework.SetDataReference( classEncoderName, EncoderEntity.DATA_INPUT, mnistName, MnistEntity.OUTPUT_CLASSIFICATION );
         Framework.SetDataReference( classRegionName, RegionLayerEntity.FF_INPUT_1, classEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
         Framework.SetDataReference( classRegionName, RegionLayerEntity.FF_INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
@@ -222,6 +227,11 @@ public class DeepMNISTDemo {
         }
 
         // class encoder config
+        Framework.SetConfig( labelEncoderName, "encoderType", NumberEncoder.class.getSimpleName() );
+        Framework.SetConfig( labelEncoderName, "digits", "2" );
+        Framework.SetConfig( labelEncoderName, "numbers", "1" );
+
+        // class encoder config
         Framework.SetConfig( classEncoderName, "encoderType", NumberEncoder.class.getSimpleName() );
         Framework.SetConfig( classEncoderName, "digits", "2" );
         Framework.SetConfig( classEncoderName, "numbers", "1" );
@@ -232,21 +242,29 @@ public class DeepMNISTDemo {
         Framework.SetConfig( classDecoderName, "numbers", "1" );
 
         // image region config
-        int classifiersPerBit = 5;
-        int classifierWidth = 5;
-        int classifierHeight = 6;
-        int organizerWidth = 8;
-        int organizerHeight = 8;
-        setRegionLayerConfig( region1FfName, defaultPredictionInhibition, emitUnchangedCells, classifiersPerBit, classifierWidth, classifierHeight, organizerWidth, organizerHeight );
-        classifiersPerBit = 11;//7;
+        int edgeMaxAge = 500;
+        int classifierWidth = 5;//5
+        int classifierHeight = 5;
+        int organizerWidth = 9;//8;
+        int organizerHeight = 9;//8;
+        int classifiersPerBit1 = 4;//5;
+        int classifiersPerBit2 = 1;
+        setRegionLayerConfig( region1FfName, defaultPredictionInhibition, emitUnchangedCells, classifiersPerBit1, classifiersPerBit2, classifierWidth, classifierHeight, organizerWidth, organizerHeight, edgeMaxAge );
+        classifiersPerBit1 = 5;//9;//11;//7; revert to 5
         classifierWidth = 7; // 5+2 = 7 (significant increase)
-        classifierHeight = 6;
-        if( layers > 1 ) setRegionLayerConfig( region2FfName, defaultPredictionInhibition, emitUnchangedCells, classifiersPerBit, classifierWidth, classifierHeight, organizerWidth, organizerHeight );
-        organizerWidth = 2;
-        organizerHeight = 2; // wide coverage
+        classifierHeight = 7;
+        organizerWidth = 7;
+        organizerHeight = 7;
+//        edgeMaxAge = 900;
+        classifiersPerBit2 = 1;
+        if( layers > 1 ) setRegionLayerConfig( region2FfName, defaultPredictionInhibition, emitUnchangedCells, classifiersPerBit1, classifiersPerBit2, classifierWidth, classifierHeight, organizerWidth, organizerHeight, edgeMaxAge );
+        organizerWidth = 6;
+        organizerHeight = 6; // wide coverage
         classifierWidth = 8; // 5+2 = 7 (significant increase)
         classifierHeight = 8;
-        if( layers > 2 ) setRegionLayerConfig( region3FfName, defaultPredictionInhibition, emitUnchangedCells, classifiersPerBit, classifierWidth, classifierHeight, organizerWidth, organizerHeight );
+        classifiersPerBit1 = 5;
+        classifiersPerBit2 = organizerWidth * organizerHeight; // i.e. input 2 innervates all columns
+        if( layers > 2 ) setRegionLayerConfig( region3FfName, defaultPredictionInhibition, emitUnchangedCells, classifiersPerBit1, classifiersPerBit2, classifierWidth, classifierHeight, organizerWidth, organizerHeight, edgeMaxAge );
 
         // class region config
 //        Framework.SetConfig( classRegionName, "predictorLearningRate", "100" );
@@ -293,7 +311,7 @@ public class DeepMNISTDemo {
         Framework.SetConfig( classRegionName, "classifierNoiseMagnitude", "0.1" );
     }
 
-    public static void setRegionLayerConfig( String regionLayerName, float defaultPredictionInhibition, boolean emitUnchangedCells, int classifiersPerBit, int classifierWidth, int classifierHeight, int organizerWidth, int organizerHeight ) {
+    public static void setRegionLayerConfig( String regionLayerName, float defaultPredictionInhibition, boolean emitUnchangedCells, int classifiersPerBit1, int classifiersPerBit2, int classifierWidth, int classifierHeight, int organizerWidth, int organizerHeight, int edgeMaxAge ) {
 
 //        Framework.SetConfig( regionLayerName, "organizerTrainOnChange", String.valueOf( organizerTrainOnChange ) );
         Framework.SetConfig( regionLayerName, "emitUnchangedCells", String.valueOf( emitUnchangedCells ) );
@@ -301,7 +319,8 @@ public class DeepMNISTDemo {
         Framework.SetConfig( regionLayerName, "receptiveFieldsTrainingSamples", "0.1" );
         Framework.SetConfig( regionLayerName, "defaultPredictionInhibition", String.valueOf( defaultPredictionInhibition ) );
 //        Framework.SetConfig( regionLayerName, "classifiersPerBit", "5" );
-        Framework.SetConfig( regionLayerName, "classifiersPerBit", String.valueOf( classifiersPerBit ) );
+        Framework.SetConfig( regionLayerName, "classifiersPerBit1", String.valueOf( classifiersPerBit1 ) );
+        Framework.SetConfig( regionLayerName, "classifiersPerBit2", String.valueOf( classifiersPerBit2 ) );
 
 //        Framework.SetConfig( regionLayerName, "organizerStressThreshold", "0.0" );
 //        Framework.SetConfig( regionLayerName, "organizerGrowthInterval", "1" );
@@ -330,7 +349,9 @@ public class DeepMNISTDemo {
 //        Framework.SetConfig( regionLayerName, "classifierStressThreshold", "0.5" );
         Framework.SetConfig( regionLayerName, "classifierStressThreshold", "0.0" );
 
-        Framework.SetConfig( regionLayerName, "classifierLearningRate", "0.05" );
+//        Framework.SetConfig( regionLayerName, "classifierLearningRate", "0.05" );
+//        Framework.SetConfig( regionLayerName, "classifierLearningRate", "0.01" );
+        Framework.SetConfig( regionLayerName, "classifierLearningRate", "0.03" );
         Framework.SetConfig( regionLayerName, "classifierLearningRateNeighbours", "0.001" );
         Framework.SetConfig( regionLayerName, "classifierStressLearningRate", "0.001" );
         Framework.SetConfig( regionLayerName, "classifierStressSplitLearningRate", "0.5" );
@@ -339,11 +360,8 @@ public class DeepMNISTDemo {
 //        Framework.SetConfig( regionLayerName, "classifierEdgeMaxAge", "100" );
 //        Framework.SetConfig( regionLayerName, "classifierEdgeMaxAge", "250" );
 //        Framework.SetConfig( regionLayerName, "classifierEdgeMaxAge", "400" );
-        Framework.SetConfig( regionLayerName, "classifierEdgeMaxAge", "600" );
+        Framework.SetConfig( regionLayerName, "classifierEdgeMaxAge", String.valueOf( edgeMaxAge ) );//"600" );
 //        Framework.SetConfig( regionLayerName, "classifierNoiseMagnitude", "0.1" );
     }
 
 }
-//integrate dsom then test pred layer 2 only.
-
-//only train pred on new bits

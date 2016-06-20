@@ -309,7 +309,7 @@ public class RegionLayerEntity extends Entity {
                 config.organizerWidthCells, config.organizerHeightCells,
                 config.classifierWidthCells, config.classifierHeightCells, config.classifierDepthCells,
                 config.organizerTrainOnChange, config.emitUnchangedCells,
-                config.receptiveFieldsTrainingSamples, config.defaultPredictionInhibition, config.classifiersPerBit, //config.receptiveFieldSize,
+                config.receptiveFieldsTrainingSamples, config.defaultPredictionInhibition, config.classifiersPerBit1, config.classifiersPerBit2, //config.receptiveFieldSize,
                 config.organizerNeighbourhoodRange, //config.organizerLearningRate, config.organizerElasticity, //config.organizerLearningRateNeighbours, config.organizerNoiseMagnitude, config.organizerEdgeMaxAge, config.organizerStressLearningRate, config.organizerStressThreshold, config.organizerGrowthInterval,
                 config.classifierLearningRate, config.classifierLearningRateNeighbours, config.classifierNoiseMagnitude, config.classifierEdgeMaxAge, config.classifierStressLearningRate, config.classifierStressSplitLearningRate, classifierStressThreshold, config.classifierGrowthInterval,
                 config.predictorLearningRate );
