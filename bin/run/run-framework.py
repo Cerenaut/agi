@@ -152,6 +152,8 @@ def agief_export_rootentity(filepath, root_entity):
     if log:
         print "LOG: Export entity file, response = ", response
 
+    #TODO make the 'output' string precede the filename, not the whole path
+
     # write back to file
     entity_json = response.json()
     with open("output-" + filepath, 'w') as data_file:
