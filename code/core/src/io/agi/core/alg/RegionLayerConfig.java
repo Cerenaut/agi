@@ -44,7 +44,8 @@ public class RegionLayerConfig extends NetworkConfig {
 
     public static final String RECEPTIVE_FIELDS_TRAINING_SAMPLES = "receptive-fields-training-samples";
 //    public static final String RECEPTIVE_FIELD_SIZE = "receptive-field-size";
-    public static final String CLASSIFIERS_PER_BIT = "classifiers-per-bit";
+    public static final String CLASSIFIERS_PER_BIT_1 = "classifiers-per-bit-1";
+    public static final String CLASSIFIERS_PER_BIT_2 = "classifiers-per-bit-2";
     public static final String ORGANIZER_TRAIN_ON_CHANGE = "organizer-train-on-change";
     public static final String PREDICTOR_LEARNING_RATE = "predictor-learning-rate";
     public static final String DEPTH_CELLS = "depth-cells";
@@ -79,7 +80,8 @@ public class RegionLayerConfig extends NetworkConfig {
             float defaultPredictionInhibition,
             boolean organizerTrainOnChange,
             boolean emitUnchangedCells,
-            int classifiersPerBit,
+            int classifiersPerBit1,
+            int classifiersPerBit2,
             int depthCells ) {
         super.setup( om, name, r );
 
@@ -91,7 +93,8 @@ public class RegionLayerConfig extends NetworkConfig {
         setPredictorLearningRate( predictorLearningRate );
         setReceptiveFieldsTrainingSamples( receptiveFieldsTrainingSamples );
 //        setReceptiveFieldSize( receptiveFieldSize );
-        setClassifiersPerBit( classifiersPerBit );
+        setClassifiersPerBit1( classifiersPerBit1 );
+        setClassifiersPerBit2( classifiersPerBit2 );
         setFfInput1Size( ffInput1Width, ffInput1Height );
         setFfInput2Size( ffInput2Width, ffInput2Height );
         setFbInputArea( fbInputArea );
@@ -210,13 +213,21 @@ public class RegionLayerConfig extends NetworkConfig {
 //        _om.put( getKey( RECEPTIVE_FIELD_SIZE ), receptiveFieldSize );
 //    }
 
-    public int getClassifiersPerBit() {
-        int n = _om.getInteger( getKey( CLASSIFIERS_PER_BIT ) );
+    public int getClassifiersPerBit1() {
+        int n = _om.getInteger( getKey( CLASSIFIERS_PER_BIT_1 ) );
         return n;
     }
 
-    public void setClassifiersPerBit( int depthCells ) {
-        _om.put( getKey( CLASSIFIERS_PER_BIT ), depthCells );
+    public int getClassifiersPerBit2() {
+        int n = _om.getInteger( getKey( CLASSIFIERS_PER_BIT_2 ) );
+        return n;
+    }
+
+    public void setClassifiersPerBit1( int n ) {
+        _om.put( getKey( CLASSIFIERS_PER_BIT_1 ), n );
+    }
+    public void setClassifiersPerBit2( int n ) {
+        _om.put( getKey( CLASSIFIERS_PER_BIT_2 ), n );
     }
 
     public int getDepthCells() {

@@ -44,7 +44,8 @@ public class RegionLayerEntityConfig extends EntityConfig {
     boolean emitUnchangedCells = true; // default, assists temporal pooling by remembering the state of other cols
     float receptiveFieldsTrainingSamples = 0.1f;//12;
     float defaultPredictionInhibition = 0.f; // don't inhibit
-    int classifiersPerBit = 5;
+    int classifiersPerBit1 = 5;
+    int classifiersPerBit2 = 5;
 
     float organizerNeighbourhoodRange = 2.f;//5.f;//10.f; too volatile @ 10
 /*    float organizerLearningRate = 0.02f;

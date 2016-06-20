@@ -629,13 +629,21 @@ public class RegionLayer extends NamedObject {
 
     protected void updateClassifierInput() {
 
-        int classifiersPerBit = _rc.getClassifiersPerBit();
+        int classifiersPerBit1 = _rc.getClassifiersPerBit1();
+        int classifiersPerBit2 = _rc.getClassifiersPerBit2();
         boolean max = false; // ie min [distance]
-        int maxRank = classifiersPerBit;
 
-//        for( Integer inputBit : _transient._ffInput1Active ) {
+        int inputOffset1 = 0;
+        int inputOffset2 = _ffInput1.getSize();
+
         Set< Integer > activeInputBits = _transient._activeInputClassifierRanking.keySet();
         for( Integer inputBit : activeInputBits ) {
+
+            // pick the right spread of input through the region depending on which input it is from
+            int maxRank = classifiersPerBit1;
+            if( inputBit >= inputOffset2 ) {
+                maxRank = classifiersPerBit2;
+            }
 
             TreeMap< Float, ArrayList< Integer > > activeInputRanking = _transient.getRankingLazy( _transient._activeInputClassifierRanking, inputBit );
 

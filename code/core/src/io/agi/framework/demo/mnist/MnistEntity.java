@@ -79,6 +79,7 @@ public class MnistEntity extends Entity {
     public static final String INPUT_CLASSIFICATION = "input-class";
     public static final String OUTPUT_IMAGE = "output-image";
     public static final String OUTPUT_CLASSIFICATION = "output-class";
+    public static final String OUTPUT_IMAGE_LABEL = "output-image-label";
     public static final String OUTPUT_ERROR = "output-error";
     public static final String OUTPUT_ERROR_SERIES = "output-error-series";
     public static final String OUTPUT_TRUTH_SERIES = "output-truth-series";
@@ -99,6 +100,7 @@ public class MnistEntity extends Entity {
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
         attributes.add( OUTPUT_IMAGE );
         attributes.add( OUTPUT_CLASSIFICATION );
+        attributes.add( OUTPUT_IMAGE_LABEL );
         attributes.add( OUTPUT_ERROR );
         attributes.add( OUTPUT_ERROR_SERIES );
         attributes.add( OUTPUT_TRUTH_SERIES );
@@ -199,18 +201,20 @@ public class MnistEntity extends Entity {
         String imageFileName = bis.getImageFileName();
         Integer classification = getClassification( imageFileName );//, config.sourceFilesPrefix );
 
-        Data  inputClass = getDataLazyResize( INPUT_CLASSIFICATION, DataSize.create( 1 ) ); // an external attempt to classify
+        Data  inputClass = getDataLazyResize( INPUT_CLASSIFICATION , DataSize.create( 1 ) ); // an external attempt to classify
         Data outputClass = getDataLazyResize( OUTPUT_CLASSIFICATION, DataSize.create( 1 ) ); // the true classification
         Data outputError = getDataLazyResize( OUTPUT_ERROR         , DataSize.create( 1 ) ); // error in classification (0,1)
+        Data outputLabel = getDataLazyResize( OUTPUT_IMAGE_LABEL   , DataSize.create( 1 ) ); // the true classification
+
         Data outputErrorSeries = getData( OUTPUT_ERROR_SERIES ); // error in classification (0,1)
         if( outputErrorSeries == null ) {
             outputErrorSeries = new Data( DataSize.create( 1 ) );
         }
-        Data outputTruthSeries = getData( OUTPUT_TRUTH_SERIES ); // error in classification (0,1)
+        Data outputTruthSeries = getData( OUTPUT_TRUTH_SERIES );
         if( outputTruthSeries == null ) {
             outputTruthSeries = new Data( DataSize.create( 1 ) );
         }
-        Data outputClassSeries = getData( OUTPUT_CLASS_SERIES ); // error in classification (0,1)
+        Data outputClassSeries = getData( OUTPUT_CLASS_SERIES );
         if( outputClassSeries == null ) {
             outputClassSeries = new Data( DataSize.create( 1 ) );
         }
@@ -225,17 +229,18 @@ public class MnistEntity extends Entity {
         // t+3       i+1         c(i+1)
         // t+4  -I-- i+2 ------  10      -------------------------
         // t+5       i+2         c(i+2)
-        int label = -1;
+        int classLabel = -1;
+        int imageLabel = classification;
         int error = 0;
 
         if( config.imageStep ) {
-            label = NO_CLASSIFICATION;
-            _logger.info( "Emitting image " + bis.getIdx() + " class. " + classification + " class.out: " + label );
+            classLabel = NO_CLASSIFICATION;
+            _logger.info( "Emitting image " + bis.getIdx() + " class. " + classification + " class.out: " + classLabel );
         }
         else { // classification step
-            label = classification;
+            classLabel = classification;
             int classifiedLabel = (int)inputClass._values[ 0 ];
-            if( classifiedLabel != label ) {
+            if( classifiedLabel != classLabel ) {
                 error = 1;
             }
 //            else {
@@ -246,10 +251,10 @@ public class MnistEntity extends Entity {
 //            }
             //System.err.println( "Input class: " + inputDigit + " correct: " + digit  + " err : " + error );
             outputErrorSeries = updateErrorSeries( outputErrorSeries, (float)error );
-            outputTruthSeries = updateErrorSeries( outputTruthSeries, (float)label );
+            outputTruthSeries = updateErrorSeries( outputTruthSeries, (float)classLabel );
             outputClassSeries = updateErrorSeries( outputClassSeries, (float)classifiedLabel );
 
-            _logger.info( "Emitting image " + bis.getIdx() + " class. " + classification + " class.out: " + label + " class.in: " + classifiedLabel + " error: " + error );
+            _logger.info( "Emitting image " + bis.getIdx() + " class. " + classification + " class.out: " + classLabel + " class.in: " + classifiedLabel + " error: " + error );
         }
 
         HashMap< Integer, Integer > timeSinceLabel = new HashMap< Integer, Integer >();
@@ -261,11 +266,12 @@ public class MnistEntity extends Entity {
                 _maxTimeSinceLabel = value;
             }
         }
-        timeSinceLabel.put( label, 0 );
+        timeSinceLabel.put( classLabel, 0 );
         _timeSinceLabel = timeSinceLabel;
 
         outputError._values[ 0 ] = (float)error;
-        outputClass._values[ 0 ] = (float)label;
+        outputClass._values[ 0 ] = (float)classLabel;
+        outputLabel._values[ 0 ] = (float)imageLabel;
 
         // Update the experiment:
         if( !config.imageStep ) {
@@ -278,10 +284,13 @@ public class MnistEntity extends Entity {
         // write outputs back to persistence
         setData( OUTPUT_CLASSIFICATION, outputClass );
         setData( OUTPUT_ERROR, outputError );
+        setData( OUTPUT_IMAGE, image );
+        setData( OUTPUT_IMAGE_LABEL, outputLabel );
+
+        // long-term series:
         setData( OUTPUT_ERROR_SERIES, outputErrorSeries );
         setData( OUTPUT_TRUTH_SERIES, outputTruthSeries );
         setData( OUTPUT_CLASS_SERIES, outputClassSeries );
-        setData( OUTPUT_IMAGE, image );
     }
 
     protected Data updateErrorSeries( Data errorSeries1, float error ) {
