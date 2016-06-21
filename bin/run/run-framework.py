@@ -10,27 +10,27 @@ import time
 
 
 help_generic = """ 
-Run an experiment using AGIEF on AWS (including ability to specify a parameter sweep).
+Launch and run experiments (including parameter sweep) using AGIEF.
 Uses the version of code in $AGI_HOME and the experiment 'run' folder specified in $AGI_RUN_HOME
 See README.md for installation instructions.
 
 The script does the following:
-- launch ec2 container instance
-- sync $AGI_HOME folder (excluding source), and $AGI_RUN_HOME folder to the ec2 instance
-- sweep parameters as specified in experiment input file, and for each parameter value,
-- run the ecs task, which launches the framework, but does not run the experiment
-- imports the experiment from the data files located in $AGI_RUN_HOME (*to implement*)
-- runs the experiment until termination (*to implement*)
-- exports the experiment to $AGI_RUN_HOME (*to implement*)
-
-The script runs sync-experiment.sh, which relies on the ssh alias ec2-user to ssh into the desired ec2 instance. 
-The instanceId of the same ec2 instance needs to be specified as a parameter when running the script
-(there is a default value).
---> these must match  (to be improved in the future)
+- (for aws) launch ec2 container instance
+- (for aws) sync $AGI_HOME folder (excluding source), and $AGI_RUN_HOME folder to the ec2 instance
+- launch framework
+- (for aws) run the ecs task, which launches the framework, but does not run the experiment
+- sweep parameters as specified in experiment input file, and for each parameter value
+- imports the experiment from the data files located in $AGI_RUN_HOME
+- update the experiment (it will run till termination)
+- exports the experiment to $AGI_RUN_HOME
 
 Assumptions:
 - Experiment entity exists, with 'terminated' field.
 - The 'variables.sh' system is used, as in the bash scripts.
+- The script runs sync-experiment.sh, which relies on the ssh alias ec2-user to ssh into the desired ec2 instance.
+The instanceId of the same ec2 instance needs to be specified as a parameter when running the script
+(there is a default value).
+--> these must match  (TODO: to be improved in the future)
 
 """
 
