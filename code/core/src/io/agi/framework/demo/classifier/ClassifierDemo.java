@@ -74,7 +74,7 @@ public class ClassifierDemo {
         Framework.SetDataReference( classifierName, ParameterLessSelfOrganizingMapEntity.INPUT, modelName, RandomVectorEntity.OUTPUT );
 
         boolean terminateByAge = true;
-        int terminationAge = 2;
+        int terminationAge = 20;
 
         // Experiment config
         if( !terminateByAge ) {

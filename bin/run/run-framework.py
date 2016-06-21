@@ -77,7 +77,7 @@ def launch_framework_local(baseurl):
 
 
 def wait_framwork_up(baseurl):
-    print "....... wait till framework has started"
+    print "....... wait till framework has started - using http://host:port = " + baseurl
 
     while True:
         try:
@@ -88,6 +88,8 @@ def wait_framwork_up(baseurl):
         except requests.ConnectionError:
             time.sleep(1)
             print "  - no connection yet ......"
+
+    print "  - framework is up"
 
 
 def experiments_aws_setup(task_name):
@@ -111,18 +113,23 @@ def experiments_aws_setup(task_name):
 # return when the the config parameter has achieved the value specified
 # entity = name of entity, param_path = path to parameter, delimited by '.'
 def wait_till_param(baseurl, entity_name, param_path, value):
-    parameter = '';
-    while parameter != value:
+
+    while True:
         try:
             r = requests.get(baseurl + '/config', params={'entity': entity_name})
             parameter = dpath.util.get(r.json(), "value." + param_path, '.')
+            if parameter == value:
+                if log:
+                    print "LOG: ... parameter: " + entity_name + "." + param_path + ", has achieved value: " + str(value) + "."
+                break
         except requests.exceptions.ConnectionError:
             print "Oops, ConnectionError exception"
         except requests.exceptions.RequestException:
             print "Oops, request exception"
 
-        print "experiment.terminated != false,    wait 2s and try again ........"
-        time.sleep(2)  # sleep for n seconds
+        if log:
+            print "LOG: ... parameter: " + entity_name + "." + param_path + ", has not achieved value: " + str(value) + ",   wait 2s and try again ........"
+        time.sleep(2)  # sleep for n seconds)
 
 
 def agief_import(entity_filepath=None, data_filepath=None):
@@ -132,7 +139,7 @@ def agief_import(entity_filepath=None, data_filepath=None):
             response = requests.post(baseurl + '/import', files=files)
             if log:
                 print "LOG: Import entity file, response = ", response
-                print "LOG: response: ", response.text
+                print "LOG: response text = ", response.text
                 print "LOG: url: ", response.url
 
 
@@ -145,24 +152,27 @@ def agief_run_experiment():
     # wait for the task to finish
     wait_till_param(baseurl, 'experiment', 'terminated', True)  # poll API for 'Terminated' config param
 
-
-def agief_export_rootentity(filepath, root_entity):
-    payload = {'entity': root_entity, type: 'entity'}
+# type can be 'entity' or 'data'
+def agief_export_rootentity(filepath, root_entity, type):
+    payload = {'entity': root_entity, 'type': type}
     response = requests.get(baseurl + '/export', params=payload)
     if log:
         print "LOG: Export entity file, response = ", response
 
     #TODO make the 'output' string precede the filename, not the whole path
 
+    if log:
+        print "Response Text = " + response.text
+
     # write back to file
     entity_json = response.json()
-    with open("output-" + filepath, 'w') as data_file:
+    with open(filepath + "-output", 'w') as data_file:
         data_file.write(json.dumps(entity_json))
 
 
 def agief_export_experiment(entity_filepath=None, data_filepath=None):
-    agief_export_rootentity(entity_filepath, 'experiment')
-    agief_export_rootentity(data_filepath, 'experiment')
+    agief_export_rootentity(entity_filepath, 'experiment', 'entity')
+    agief_export_rootentity(data_filepath, 'experiment', 'data')
 
 
 def run_experiment(baseurl, entity_filepath, data_filepath):
