@@ -65,6 +65,9 @@ public class RegionLayerEntity extends Entity {
     public static final String ACTIVITY_OLD = "activity-old";
     public static final String ACTIVITY_NEW = "activity-new";
     public static final String ACTIVITY     = "activity";
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//    public static final String ACTIVITY_1   = "activity-1";
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static final String PREDICTION_OLD = "prediction-old";
     public static final String PREDICTION_NEW = "prediction-new";
@@ -146,6 +149,10 @@ public class RegionLayerEntity extends Entity {
         flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( ACTIVITY,     DataFlags.FLAG_SPARSE_BINARY );
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//        attributes.add( ACTIVITY_1 );
+//        flags.putFlag( ACTIVITY_1, DataFlags.FLAG_SPARSE_BINARY );
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_LAZY_PERSIST );
         flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_LAZY_PERSIST );
@@ -391,6 +398,9 @@ public class RegionLayerEntity extends Entity {
         r._regionActivityOld = getDataLazyResize( ACTIVITY_OLD, dataSizeRegion );
         r._regionActivityNew = getDataLazyResize( ACTIVITY_NEW, dataSizeRegion );
         r._regionActivity    = getDataLazyResize( ACTIVITY,     dataSizeRegion );
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//        r._regionActivity1   = getDataLazyResize( ACTIVITY_1,   dataSizeRegion );
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         r._regionPredictionOld        = getDataLazyResize( PREDICTION_OLD       , dataSizeRegion );
         r._regionPredictionNew        = getDataLazyResize( PREDICTION_NEW       , dataSizeRegion );
@@ -542,6 +552,10 @@ public class RegionLayerEntity extends Entity {
         setData( ACTIVITY_OLD, r._regionActivityOld );
         setData( ACTIVITY_NEW, r._regionActivityNew );
         setData( ACTIVITY,     r._regionActivity );
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//        setData( ACTIVITY_1,     r._regionActivity1 );
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         setData( PREDICTION_OLD       , r._regionPredictionOld );
         setData( PREDICTION_NEW       , r._regionPredictionNew );

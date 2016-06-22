@@ -158,6 +158,11 @@ public class DeepMNISTDemo {
 //        if( layers > 1 ) referenceEntitySuffixes.add( new AbstractPair< String, String >( region2FfName, RegionLayerEntity.PREDICTION_FN ) );
         if( layers > 2 ) referenceEntitySuffixes.add( new AbstractPair< String, String >( region3FfName, RegionLayerEntity.PREDICTION_FN ) );
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//        // Special test of accuracy in static classification:
+//        referenceEntitySuffixes.add( new AbstractPair< String, String >( region3FfName, RegionLayerEntity.ACTIVITY_1 ) );
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         Framework.SetDataReferences( classRegionName, RegionLayerEntity.FB_INPUT, referenceEntitySuffixes ); // get current state from the region to be used to predict
 
         Framework.SetDataReference( classDecoderName, DecoderEntity.DATA_INPUT_ENCODED, classRegionName, RegionLayerEntity.FB_OUTPUT_1_UNFOLDED_PREDICTION ); // the prediction of the next state
