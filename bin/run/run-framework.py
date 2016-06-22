@@ -8,24 +8,30 @@ import dpath.util
 import requests
 import time
 
+
 help_generic = """ 
-Run an experiment using AGIEF on AWS (including ability to specify a parameter sweep).
+Launch and run experiments (including parameter sweep) using AGIEF.
 Uses the version of code in $AGI_HOME and the experiment 'run' folder specified in $AGI_RUN_HOME
 See README.md for installation instructions.
 
 The script does the following:
-- launch ec2 container instance
-- sync $AGI_HOME folder (excluding source), and $AGI_RUN_HOME folder to the ec2 instance
-- sweep parameters as specified in experiment input file, and for each parameter value,
-- run the ecs task, which launches the framework, but does not run the experiment
-- imports the experiment from the data files located in $AGI_RUN_HOME (*to implement*)
-- runs the experiment until termination (*to implement*)
-- exports the experiment to $AGI_RUN_HOME (*to implement*)
+- (for aws) launch ec2 container instance
+- (for aws) sync $AGI_HOME folder (excluding source), and $AGI_RUN_HOME folder to the ec2 instance
+- launch framework
+- (for aws) run the ecs task, which launches the framework, but does not run the experiment
+- sweep parameters as specified in experiment input file, and for each parameter value
+- imports the experiment from the data files located in $AGI_RUN_HOME
+- update the experiment (it will run till termination)
+- exports the experiment to $AGI_RUN_HOME
 
-The script runs sync-experiment.sh, which relies on the ssh alias ec2-user to ssh into the desired ec2 instance. 
+Assumptions:
+- Experiment entity exists, with 'terminated' field.
+- The 'variables.sh' system is used, as in the bash scripts.
+- The script runs sync-experiment.sh, which relies on the ssh alias ec2-user to ssh into the desired ec2 instance.
 The instanceId of the same ec2 instance needs to be specified as a parameter when running the script
 (there is a default value).
---> these must match  (to be improved in the future)
+--> these must match  (TODO: to be improved in the future)
+
 """
 
 
@@ -64,15 +70,14 @@ def launch_framework_aws(task_name, baseurl):
 # hang till framwork is up and running
 def launch_framework_local(baseurl):
     print "....... launching framework locally"
-    output = subprocess.Popen(["../node_coordinator/run.sh"],
-                              stdin=subprocess.PIPE,
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT)
+    subprocess.Popen(["../node_coordinator/run.sh"],
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.STDOUT)
     wait_framwork_up(baseurl)
 
 
 def wait_framwork_up(baseurl):
-    print "....... wait till framework has started"
+    print "....... wait till framework has started - using http://host:port = " + baseurl
 
     while True:
         try:
@@ -83,6 +88,8 @@ def wait_framwork_up(baseurl):
         except requests.ConnectionError:
             time.sleep(1)
             print "  - no connection yet ......"
+
+    print "  - framework is up"
 
 
 def experiments_aws_setup(task_name):
@@ -106,26 +113,37 @@ def experiments_aws_setup(task_name):
 # return when the the config parameter has achieved the value specified
 # entity = name of entity, param_path = path to parameter, delimited by '.'
 def wait_till_param(baseurl, entity_name, param_path, value):
-    parameter = '';
-    while parameter != value:
-        response = requests.get(baseurl + '/config', params={'entity': entity_name})
-        parameter = dpath.util.get(response.json(), "value." + param_path, '.')
-        time.sleep(2)  # sleep for n seconds
+
+    while True:
+        try:
+            r = requests.get(baseurl + '/config', params={'entity': entity_name})
+            parameter = dpath.util.get(r.json(), "value." + param_path, '.')
+            if parameter == value:
+                if log:
+                    print "LOG: ... parameter: " + entity_name + "." + param_path + ", has achieved value: " + str(value) + "."
+                break
+        except requests.exceptions.ConnectionError:
+            print "Oops, ConnectionError exception"
+        except requests.exceptions.RequestException:
+            print "Oops, request exception"
+
+        if log:
+            print "LOG: ... parameter: " + entity_name + "." + param_path + ", has not achieved value: " + str(value) + ",   wait 2s and try again ........"
+        time.sleep(2)  # sleep for n seconds)
 
 
-def run_experiment(baseurl, entity_filepath, data_filepath):
-    print "....... Run Experiment"
+def agief_import(entity_filepath=None, data_filepath=None):
+    with open(entity_filepath, 'rb') as entity_data_file:
+        with open(data_filepath, 'rb') as data_data_file:
+            files = {'entity-file': entity_data_file, 'data-file': data_data_file}
+            response = requests.post(baseurl + '/import', files=files)
+            if log:
+                print "LOG: Import entity file, response = ", response
+                print "LOG: response text = ", response.text
+                print "LOG: url: ", response.url
 
-    # import experiment files (entities.json and data.json)
-    payload = {'entity-file': entity_filepath, 'data-file': data_filepath}
-    response = requests.get(baseurl + '/import', params=payload)
-    if log:
-        print "LOG: Import entity file, response = ", response
-        print "LOG: url: ", response.url
-        print "LOG: raw: ", response.raw
-        print "LOG: json string: ", json.dump(response.json())
 
-    # start the experiment
+def agief_run_experiment():
     payload = {'entity': 'experiment', 'event': 'update'}
     response = requests.get(baseurl + '/update', params=payload)
     if log:
@@ -134,26 +152,34 @@ def run_experiment(baseurl, entity_filepath, data_filepath):
     # wait for the task to finish
     wait_till_param(baseurl, 'experiment', 'terminated', True)  # poll API for 'Terminated' config param
 
-    # export experiment files
-    payload = {'entity': 'experiment', type: 'entity'}
+# type can be 'entity' or 'data'
+def agief_export_rootentity(filepath, root_entity, type):
+    payload = {'entity': root_entity, 'type': type}
     response = requests.get(baseurl + '/export', params=payload)
     if log:
         print "LOG: Export entity file, response = ", response
 
+    #TODO make the 'output' string precede the filename, not the whole path
+
+    if log:
+        print "Response Text = " + response.text
+
     # write back to file
     entity_json = response.json()
-    with open("output-" + entity_filepath, 'w') as data_entity_file:
-        data_entity_file.write(json.dumps(entity_json))
+    with open(filepath + "-output", 'w') as data_file:
+        data_file.write(json.dumps(entity_json))
 
-    payload = {'entity': 'experiment', type: 'data'}
-    response = requests.get(baseurl + '/export', params=payload)
-    if log:
-        print "LOG: Export data file, response = ", response
 
-    # write back to file
-    data_json = response.json()
-    with open("output-" + data_filepath, 'w') as data_data_file:
-        data_data_file.write(json.dumps(data_json))
+def agief_export_experiment(entity_filepath=None, data_filepath=None):
+    agief_export_rootentity(entity_filepath, 'experiment', 'entity')
+    agief_export_rootentity(data_filepath, 'experiment', 'data')
+
+
+def run_experiment(baseurl, entity_filepath, data_filepath):
+    print "....... Run Experiment"
+    agief_import(entity_filepath, data_filepath)
+    agief_run_experiment()
+    agief_export_experiment(entity_filepath, data_filepath)
 
 
 def modify_parameters(entity_filepath, entity_name, param_path, val):
@@ -170,6 +196,12 @@ def modify_parameters(entity_filepath, entity_name, param_path, val):
             continue
         entity = entity_i
         break
+
+    if not entity:
+        print "ERROR: the experiment file (" + entity_filepath + ") did not contain matching entity name (" \
+              + entity_name + ") and entity file name in field 'file-entities'."
+        print "CANNOT CONTINUE"
+        exit()
 
     # get the config field, and turn it into valid JSON
     configStr = entity["config"]
@@ -222,7 +254,7 @@ def run_experiments(baseurl, exps_file):
         data_file = import_files["file-data"]
 
         entity_filepath = experiment_file_fullpath(filename=entity_file, path_env='AGI_RUN_HOME')
-        data_filepath = experiment_file_fullpath(filename=data_file, path_env='AGI_HOME')
+        data_filepath = experiment_file_fullpath(filename=data_file, path_env='AGI_RUN_HOME')
 
         if log:
             print "LOG: Entity file full path = " + entity_filepath
