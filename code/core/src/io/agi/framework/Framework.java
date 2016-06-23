@@ -37,6 +37,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Functions used throughout the experimental framework, i.e. not specific to Entity or Node.
@@ -367,13 +368,28 @@ public class Framework {
         }
     }
 
-    protected static String GetEntityDataSubtree( String entityName ) {
+    protected static String GetEntityDataSubtree( String entityName, boolean onlyDataRefs ) {
         Gson gson = new Gson();
-        Collection< ModelData > modelData = new ArrayList<>();
+        Collection< ModelData > modelDatas = new ArrayList<>();
 
-        GetEntityDataSubtree( entityName, modelData );
+        GetEntityDataSubtree( entityName, modelDatas );
 
-        String export = gson.toJson( modelData );
+        if ( onlyDataRefs ) {
+
+            // Collection< ModelData > modelDatasFiltered = modelDatas.stream().filter( modelData -> modelData.isReference() ).collect( Collectors.toCollection( ArrayList::new ) );
+
+            Collection< ModelData > modelDatasFiltered = new ArrayList<>( );
+            for ( ModelData modelData : modelDatas ) {
+                if (modelData.isReference()) {
+                    modelData.zeroData();
+                    modelDatasFiltered.add( modelData );
+                }
+            }
+
+            modelDatas = modelDatasFiltered;
+        }
+
+        String export = gson.toJson( modelDatas );
         return export;
     }
 
@@ -402,10 +418,15 @@ public class Framework {
         Entity entity = node.getEntityFactory().create( node.getObjectMap(), modelEntity );
         entity._config = entity.createConfig();
 
-        Collection< String > attributes = new ArrayList<>();
+        Collection< String > attributesOut = new ArrayList<>();
+        Collection< String > attributesIn = new ArrayList<>();
         DataFlags dataFlags = new DataFlags();
-        entity.getOutputAttributes( attributes, dataFlags );
+        entity.getOutputAttributes( attributesOut, dataFlags );
+        entity.getInputAttributes( attributesIn );
 
+        Collection< String > attributes = new ArrayList<>(  );
+        attributes.addAll( attributesIn );
+        attributes.addAll( attributesOut );
         for( String attribute : attributes ) {
             String outputKey = entity.getKey( attribute );
             ModelData modelData = node.getPersistence().fetchData( outputKey );
@@ -417,7 +438,7 @@ public class Framework {
     }
 
     protected static String GetEntitySubtree( String entityName ) {
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         Collection< ModelEntity > modelEntities = new ArrayList<>();
         AddEntitySubtree( entityName, modelEntities );
         String export = gson.toJson( modelEntities );
@@ -448,6 +469,7 @@ public class Framework {
      * to view or resume.
      *
      * @param entityName the parent of the subtree
+     * @param type the type of export, it can be 'data' or 'entity'
      * @return serialised form of subtree
      */
     public static String ExportSubtree( String entityName, String type ) {
@@ -456,9 +478,10 @@ public class Framework {
         if( type.equalsIgnoreCase( HttpExportHandler.TYPE_ENTITY ) ) {
             entitiesExport = GetEntitySubtree( entityName );
         } else if( type.equalsIgnoreCase( HttpExportHandler.TYPE_DATA ) ) {
-            entitiesExport = GetEntityDataSubtree( entityName );
+            entitiesExport = GetEntityDataSubtree( entityName, false );
+        } else if( type.equalsIgnoreCase( HttpExportHandler.TYPE_DATA_REFS ) ) {
+            entitiesExport = GetEntityDataSubtree( entityName, true );
         }
-
         return entitiesExport;
     }
 
