@@ -77,6 +77,12 @@ var Experiment = {
     Framework.exportEntity( entityName, Framework.exportTypeData );
   },
 
+  exportDataRefs : function() {
+    var entityName = $( "#entity" ).val();
+    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
+    Framework.exportEntity( entityName, Framework.exportTypeDataRefs );
+  },
+
   importEntity : function() {
     var entityName = $( "#entity" ).val();
     Framework.setup( $( "#host" ).val(), $( "#port" ).val() );

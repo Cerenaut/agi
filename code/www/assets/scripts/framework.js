@@ -25,6 +25,7 @@ var Framework = {
 
   exportTypeEntity : "entity",  
   exportTypeData : "data",  
+  exportTypeDataRefs : "data-refs",
 
 
   update : function( entity, callback ) {

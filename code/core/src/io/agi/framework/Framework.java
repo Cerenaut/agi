@@ -369,7 +369,7 @@ public class Framework {
     }
 
     protected static String GetEntityDataSubtree( String entityName, boolean onlyDataRefs ) {
-        Gson gson = new Gson();
+
         Collection< ModelData > modelDatas = new ArrayList<>();
 
         GetEntityDataSubtree( entityName, modelDatas );
@@ -387,6 +387,14 @@ public class Framework {
             }
 
             modelDatas = modelDatasFiltered;
+        }
+
+        Gson gson;
+        if ( onlyDataRefs ) {
+            gson = new GsonBuilder().setPrettyPrinting().create();
+        }
+        else {
+            gson = new Gson();
         }
 
         String export = gson.toJson( modelDatas );
