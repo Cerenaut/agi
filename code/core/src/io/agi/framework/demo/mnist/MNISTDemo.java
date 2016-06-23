@@ -25,7 +25,6 @@ import io.agi.framework.Framework;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
 import io.agi.framework.entities.*;
-import io.agi.framework.factories.CommonEntityFactory;
 
 /**
  * Created by gideon on 14/03/2016.

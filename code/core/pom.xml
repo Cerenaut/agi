@@ -50,7 +50,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>io.agi.framework.demo.mnist.MNISTDemo</mainClass>
+                            <mainClass>io.agi.framework.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
