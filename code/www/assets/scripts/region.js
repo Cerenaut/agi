@@ -224,7 +224,7 @@ var Region = {
       for( var y = 0; y < h; ++y ) {
         for( var x = 0; x < w; ++x ) {
           var inputOffset = y * w + x;
-          var weightsOffset = packedOffset + classifierOffset + inputOffset;
+          var weightsOffset = packedOffset + classifierOffset + classifierInputOffset + inputOffset;
 
           var value = dataClassifierOutputWeights.elements.elements[ weightsOffset ];
           if( value < threshold ) { // if less than this frac of max weight, don't bother drawing

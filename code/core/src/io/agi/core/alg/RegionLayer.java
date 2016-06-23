@@ -73,6 +73,9 @@ public class RegionLayer extends NamedObject {
     public Data _regionActivityOld;
     public Data _regionActivityNew;
     public Data _regionActivity;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//    public Data _regionActivity1;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public Data _regionPredictionOld;
     public Data _regionPredictionNew;
@@ -174,6 +177,9 @@ public class RegionLayer extends NamedObject {
         _regionActivityOld = new Data( dataSizeRegion );
         _regionActivityNew = new Data( dataSizeRegion );
         _regionActivity = new Data( dataSizeRegion );
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//        _regionActivity1 = new Data( dataSizeRegion );
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         _regionPredictionOld = new Data( dataSizeRegion );
         _regionPredictionNew = new Data( dataSizeRegion );
@@ -229,6 +235,10 @@ public class RegionLayer extends NamedObject {
         _regionActivity.set( 0.f ); // clear
 //        _transient._regionActiveCells = new ArrayList< Integer >(); // clear
 //        _transient._columnActiveCells.clear();
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//        _regionActivity1.set( 0.f );
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         updateClassifiers(); // adds to _transient._regionActiveCells, _transient._columnActiveCells, and _regionActivity
 
@@ -719,6 +729,46 @@ public class RegionLayer extends NamedObject {
         else { // do classification on input
             boolean learn = _rc.getLearn();
             classifier._c.setLearn( learn );
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// additional classification with ff input 1 only. - START
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*            int input1Size = _ffInput1.getSize();
+            ArrayList< Integer > liveCells = classifier.createCellList( classifier._c, classifier._cellMask );
+            ArrayList< Integer > sparseUnitInput = new ArrayList< Integer >();
+            for( Integer i : activeInput ) {
+                if( i < input1Size ) {
+                    sparseUnitInput.add( i ); // only add form ff-input-1
+                }
+            }
+            if( !sparseUnitInput.isEmpty() ) {
+                classifier.sumSqErrorSparseUnit( classifier._c, liveCells, sparseUnitInput, classifier._cellWeights, classifier._cellErrors );
+
+                // Get the top 2 cells, A and B
+                int maxRank = 2;
+                boolean findMaxima = false; // find minima
+                TreeMap< Float, ArrayList< Integer > > ranking = new TreeMap< Float, ArrayList< Integer > >();
+                classifier._cellActivity.set( 0.f );
+                classifier.findBestNCells( classifier._c, classifier._cellMask, classifier._cellErrors, classifier._cellActivity, maxRank, findMaxima, ranking );
+                ArrayList< Integer > bestValues = Ranking.getBestValues( ranking, findMaxima, maxRank );
+                int bestCell1 = 0;
+                if( bestValues.size() > 0 ) {
+                    bestCell1 = bestValues.get( 0 );
+                }
+
+                // Now deal with the best cell in the column:
+                int bestColumnCellX = Data2d.getX( columnSizeCells.x, bestCell1 );
+                int bestColumnCellY = Data2d.getY( columnSizeCells.x, bestCell1 );
+
+                int regionX = classifierOrigin.x + bestColumnCellX;
+                int regionY = classifierOrigin.y + bestColumnCellY;
+                int regionOffset = _rc.getRegionOffset( regionX, regionY );
+
+                _regionActivity1._values[ regionOffset ] = 1.f;
+            }*/
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// additional classification with ff input 1 only. - END
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
             classifier.setSparseUnitInput( activeInput );
             classifier.update(); // trains with this sparse input.
 
