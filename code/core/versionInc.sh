@@ -2,9 +2,10 @@
 
 ####################################################################################
 # Based on discussion here:
-#
 # http://stackoverflow.com/questions/3545292/how-to-get-maven-project-version-to-the-bash-command-line
 #
+# NOTE: At the moment, this cannot cope with versions that contain a git commit, they must be of the format:
+# X.Y.Z-STRING
 ####################################################################################
 
 
