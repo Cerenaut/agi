@@ -22,6 +22,7 @@ var Framework = {
   contextUpdate : "update",
   contextImport : "import",
   contextExport : "export",
+  contextVersion : "version",
 
   exportTypeEntity : "entity",  
   exportTypeData : "data",  
@@ -156,6 +157,11 @@ var Framework = {
   setConfig : function( entityName, configValue, callback ) {
     var suffix = Framework.contextConfig + "?entity=" + entityName + "&config=" + configValue;
     Framework.doAjaxJson( suffix, callback, "POST" );
+  },
+
+  version : function( callback ) {
+    var suffix = Framework.contextVersion;
+    Framework.doAjaxJson( suffix, callback, "GET" );  
   },
 
   getUrl : function( suffix ) {

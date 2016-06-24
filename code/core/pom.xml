@@ -24,7 +24,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.agi.core</groupId>
-    <artifactId>io-agi-core</artifactId>
+    <artifactId>agief</artifactId>
     <version>1.0.0</version>
 
     <build>
@@ -41,7 +41,20 @@
                     <target>${jdk.version}</target>
                 </configuration>
             </plugin>
-
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-jar-plugin</artifactId>
+              <configuration>
+                <archive>
+                  <manifest>
+                    <mainClass>${main-class}</mainClass>
+                    <addDefaultImplementationEntries>
+                      true
+                    </addDefaultImplementationEntries>
+                  </manifest>
+                </archive>
+              </configuration>
+            </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
@@ -50,8 +63,11 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>io.agi.framework.Main</mainClass>
-                        </manifest>
+                            <mainClass>${main-class}</mainClass>
+                            <addDefaultImplementationEntries>
+                              true
+                            </addDefaultImplementationEntries>
+                        </manifest>                        
                     </archive>
                 </configuration>
                 <executions>
@@ -136,6 +152,7 @@
     </repositories>
     <properties>
         <jdk.version>1.8</jdk.version>
+        <main-class>io.agi.framework.Main</main-class>
     </properties>
 
 </project>
