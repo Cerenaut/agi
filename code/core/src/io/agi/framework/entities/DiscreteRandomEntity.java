@@ -74,7 +74,7 @@ public class DiscreteRandomEntity extends Entity {
         float perLevel = 1.f / ( float ) ( config.levels + 1 );
         float range = config.max - config.min;
 
-        for( int i = 0; i < config.elements; ++i ) {
+            for( int i = 0; i < config.elements; ++i ) {
 
             int n = r.nextInt( config.levels ) + 1; // so will be 0 -> n-1
             float x = ( float ) n * perLevel;

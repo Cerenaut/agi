@@ -81,6 +81,10 @@ public class CommonEntityFactory implements EntityFactory {
             return new GrowingNeuralGasEntity( objectMap, _n, modelEntity );
         }
 
+        if( entityType.equals( NeuralGasEntity.ENTITY_TYPE ) ) {
+            return new NeuralGasEntity( objectMap, _n, modelEntity );
+        }
+
         if( entityType.equals( ImageSensorEntity.ENTITY_TYPE ) ) {
             return new ImageSensorEntity( objectMap, _n, modelEntity );
         }
