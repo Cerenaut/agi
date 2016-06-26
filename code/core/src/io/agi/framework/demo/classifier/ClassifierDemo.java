@@ -25,7 +25,6 @@ import io.agi.framework.Main;
 import io.agi.framework.Node;
 import io.agi.framework.entities.*;
 import io.agi.framework.factories.CommonEntityFactory;
-import io.agi.framework.persistence.Persistence;
 
 /**
  * Code to demonstrate a DSOM Entity on a simple test problem.
@@ -75,7 +74,7 @@ public class ClassifierDemo {
         }
 //        Framework.CreateEntity( classifierName, GrowingNeuralGasEntity.ENTITY_TYPE, n.getName(), modelName );
 //        Framework.CreateEntity( classifierName, ParameterLessSelfOrganizingMapEntity.ENTITY_TYPE, n.getName(), modelName );
-        Framework.CreateEntity( classifierName, NeuralGasEntity.ENTITY_TYPE, n.getName(), modelName );
+        Framework.CreateEntity( classifierName, PlasticNeuralGasEntity.ENTITY_TYPE, n.getName(), modelName );
 
         Framework.SetDataReference( classifierName, ParameterLessSelfOrganizingMapEntity.INPUT, modelName, RandomVectorEntity.OUTPUT );
 

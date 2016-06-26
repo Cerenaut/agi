@@ -19,10 +19,8 @@
 
 package io.agi.framework.entities;
 
-import io.agi.core.ann.unsupervised.GrowingNeuralGas;
-import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
-import io.agi.core.ann.unsupervised.NeuralGas;
-import io.agi.core.ann.unsupervised.NeuralGasConfig;
+import io.agi.core.ann.unsupervised.PlasticNeuralGas;
+import io.agi.core.ann.unsupervised.PlasticNeuralGasConfig;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.orm.Keys;
@@ -33,11 +31,12 @@ import io.agi.framework.Node;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
+import java.util.Random;
 
 /**
  * Created by dave on 12/03/16.
  */
-public class NeuralGasEntity extends Entity {
+public class PlasticNeuralGasEntity extends Entity {
 
     public static final String ENTITY_TYPE = "neural-gas";
 
@@ -52,7 +51,7 @@ public class NeuralGasEntity extends Entity {
     public static final String OUTPUT_AGES = "output-ages";
     public static final String OUTPUT_STRESS = "output-stress";
 
-    public NeuralGasEntity( ObjectMap om, Node n, ModelEntity model ) {
+    public PlasticNeuralGasEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
     }
 
@@ -71,7 +70,7 @@ public class NeuralGasEntity extends Entity {
 
     @Override
     public Class getConfigClass() {
-        return NeuralGasEntityConfig.class;
+        return PlasticNeuralGasEntityConfig.class;
     }
 
     protected void doUpdateSelf() {
@@ -84,18 +83,21 @@ public class NeuralGasEntity extends Entity {
         }
 
         // Get all the parameters:
-        NeuralGasEntityConfig config = ( NeuralGasEntityConfig ) _config;
+        PlasticNeuralGasEntityConfig config = ( PlasticNeuralGasEntityConfig ) _config;
 
         int inputs = input.getSize();
 
         String implName = getName() + Keys.DELIMITER + IMPL_NAME; // the name of the object that implements
 
         // Create the config object:
-        NeuralGasConfig c = new NeuralGasConfig();
-        c.setup( _om, implName, getRandom(), inputs, config.widthCells, config.heightCells, config.learningRate, config.noiseMagnitude, config.neighbourhoodRange, config.minDistance, config.maxAge );
+        PlasticNeuralGasConfig c = new PlasticNeuralGasConfig();
+        c.setup(
+            _om, implName, getRandom(), inputs, config.widthCells, config.heightCells,
+            config.stressLearningRate, config.rankLearningRate, config.rankScale,
+            config.ageMax, config.ageDecay, config.ageScale );
 
         // Create the implementing object itself, and copy data from persistence into it:
-        NeuralGas ng = new NeuralGas( implName, _om );
+        PlasticNeuralGas ng = new PlasticNeuralGas( implName, _om );
         ng._c = c;
         ng._inputValues = input;
 
