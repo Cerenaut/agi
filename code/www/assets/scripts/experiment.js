@@ -77,6 +77,12 @@ var Experiment = {
     Framework.exportEntity( entityName, Framework.exportTypeData );
   },
 
+  exportDataRefs : function() {
+    var entityName = $( "#entity" ).val();
+    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
+    Framework.exportEntity( entityName, Framework.exportTypeDataRefs );
+  },
+
   importEntity : function() {
     var entityName = $( "#entity" ).val();
     Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
@@ -102,6 +108,25 @@ var Experiment = {
 
   onSetFlushAndReset : function( response ) {
     console.log( "Response from POST config: " + JSON.stringify( response ) );
+  },
+
+  version : function() {
+    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
+    Framework.version( Experiment.onGetVersion )
+  },
+
+  onGetVersion : function( response ) {
+    if( response.length == 0 ) {
+        return;
+    }
+
+    if  ( response.status != 200 ) {
+      return;
+    }
+
+    var versionObject = JSON.parse( response.responseText );
+    var version = versionObject.version;
+    $( "#version-label" ).html( version )
   },
 
   update : function() {

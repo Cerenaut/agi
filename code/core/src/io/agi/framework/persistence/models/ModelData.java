@@ -315,4 +315,9 @@ public class ModelData {
         String propertyValue = json.substring( i2 + 1, i3 );
         return propertyValue;
     }
+
+    public void zeroData() {
+        sizes = null;
+        elements = null;
+    }
 }

@@ -41,6 +41,7 @@ public class HttpExportHandler implements HttpHandler {
     public static final String PARAMETER_TYPE = "type";
 
     public static final String TYPE_DATA = "data";
+    public static final String TYPE_DATA_REFS = "data-refs";
     public static final String TYPE_ENTITY = "entity";
 
     public HttpExportHandler() {

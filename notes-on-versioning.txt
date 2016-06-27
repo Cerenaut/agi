@@ -1,0 +1,22 @@
+create a properties file in resources
+get maven to copy specific variables to it
+load in the properties at run time
+http://stackoverflow.com/questions/11740618/is-there-a-way-to-use-maven-property-in-java-class-during-compilation
+
+down side - duplication
+
+
+
+access the pom.properties file in /META-INF/maven/..../pom.properties
+http://stackoverflow.com/questions/11500533/in-java-code-how-to-access-maven-properties-defined-in-pom
+
+down side - can't figure out how load this properties file
+
+
+
+get maven to write ImplementationVersion
+it adds it to the Manifest
+you can get package version with Java API
+http://stackoverflow.com/questions/2712970/get-maven-artifact-version-at-runtime
+
+down side - duplication, use of manifest

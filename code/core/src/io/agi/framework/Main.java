@@ -30,8 +30,15 @@ import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.couchbase.CouchbasePersistence;
 import io.agi.framework.persistence.jdbc.JdbcPersistence;
 import io.agi.framework.persistence.models.ModelNode;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 /**
  * NOTE: Run with the following virtual machine (VM) arguments:
@@ -61,7 +68,8 @@ public class Main {
     public Node _n;
 
     public Main() {
-
+        String version = Main.getPackageVersion();
+        System.out.println( "---------- AGIEF Package version = " + version + "------------" );
     }
 
     public void setup( String propertiesFile, ObjectMap om, EntityFactory ef ) {
@@ -133,6 +141,18 @@ public class Main {
             logger.error( e.getStackTrace() );
             System.exit( -1 );
         }
+    }
+
+    public static String getPackageVersion() {
+        String version = Main.class.getPackage().getImplementationVersion();
+
+        if ( version == null )
+        {
+            System.out.println("Error: could not load properties file.");
+            version = "no version found";
+        }
+
+        return version;
     }
 
     /**
