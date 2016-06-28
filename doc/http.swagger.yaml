@@ -30,7 +30,7 @@ paths:
               $ref: '#/definitions/configModel'
         '400':
           description: Invalid request
-          
+
     post:
       summary: Sets the configuration of a specific Entity
       description: "Sets the configuration of a specific Entity. Either set individual properties with the path and value parameters, or set the entire config in one go with the config parameter.\n"
@@ -64,7 +64,7 @@ paths:
           description: OK
         '400':
           description: Invalid request
-          
+
   /update:
     get:
       summary: TODOO
@@ -94,7 +94,7 @@ paths:
               $ref: '#/definitions/eventModel'
         '400':
           description: Invalid request
-          
+
   /data:
     get:
       summary: Retrieves a list of all Data names, or a complete specific Data if named
@@ -114,7 +114,7 @@ paths:
               $ref: '#/definitions/dataModel'
         '400':
           description: Invalid request
-          
+
   /entities:
     get:
       summary: Retrieves a list of all Entities in the system, or a specific Entity if named.
@@ -134,8 +134,7 @@ paths:
               $ref: '#/definitions/entityModel'
         '400':
           description: Invalid request
-          
-          
+
   /export:
     get:
       summary: Exports a subtree of entities to a JSON file.
@@ -193,49 +192,25 @@ paths:
               $ref: '#/definitions/nodeModel'
         '400':
           description: Invalid request
-  /blah:
+  /version:
     get:
-      summary: Retrieves the contents of a table or view.
-      description: >
-        Returns the content of a table or view as a JSON Array of rows. Each row
-        is a JSON Object. An arbitrary number of column arguments may be
-        specified, where field is the name of a column in the table or view. The
-        value of the column arguments should be an operator and a value, as
-        defined in github.com/begriffs/postgrest/wiki/Routing
-      tags:
-        - Data
-      parameters:
-        - name: id
-          in: query
-          description: id of record
-          required: false
-          type: integer
-        - name: name
-          in: query
-          description: name of node
-          required: false
-          type: string
-        - name: host
-          in: query
-          description: name of host
-          required: false
-          type: string
-        - name: port
-          in: query
-          description: port number
-          required: false
-          type: integer          
+      summary: Retrieves the running AGIEF version
+      description: "Retrieves the running AGIEF version\n"
       responses:
         '200':
-          description: successful operation
+          description: OK
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/nodeModel'
+            $ref: '#/definitions/versionModel'
         '400':
-          description: Invalid status value
+          description: Invalid request
 
 definitions:
+
+  versionModel:
+    type: object
+    properties:
+      version:
+        type: string
 
   configModel:
     type: object
