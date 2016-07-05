@@ -1,0 +1,3 @@
+Gotchas
+
+* The node.properties node name should match node name in json input files.

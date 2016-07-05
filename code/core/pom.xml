@@ -25,7 +25,7 @@
 
     <groupId>io.agi.core</groupId>
     <artifactId>agief</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.4(2077a10)</version>
 
     <build>
         <sourceDirectory>src</sourceDirectory>
@@ -41,6 +41,22 @@
                     <target>${jdk.version}</target>
                 </configuration>
             </plugin>
+            <plugin>
+              <artifactId>exec-maven-plugin</artifactId>
+              <groupId>org.codehaus.mojo</groupId>
+              <executions>
+                <execution><!-- Run our version calculation script -->
+                  <id>Version Calculation</id>
+                  <phase>generate-sources</phase>
+                  <goals>
+                    <goal>exec</goal>
+                  </goals>
+                  <configuration>
+                    <executable>${basedir}/src/scripts/update-version.sh</executable>
+                  </configuration>
+                </execution>
+              </executions>
+            </plugin>            
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-jar-plugin</artifactId>
