@@ -40,7 +40,7 @@ import io.agi.core.data.FloatArray;
  * <p/>
  * Created by dave on 3/01/16.
  */
-public abstract class ActivationFunction {
+public abstract class TransferFunction {
 
     /**
      * Returns a nonlinear scalar function of r.
@@ -83,38 +83,38 @@ public abstract class ActivationFunction {
      */
     public abstract double df( double r );
 
-    public static ActivationFunction createLogisticSigmoid() {
-        return new ActivationFunction() {
+    public static TransferFunction createLogisticSigmoid() {
+        return new TransferFunction() {
             public double f( double r ) {
-                return ActivationFunction.logisticSigmoid( r );
+                return TransferFunction.logisticSigmoid( r );
             }
 
             public double df( double r ) {
-                return ActivationFunction.logisticSigmoidDerivative( r );
+                return TransferFunction.logisticSigmoidDerivative( r );
             }
         };
     }
 
-    public static ActivationFunction createTanh() {
-        return new ActivationFunction() {
+    public static TransferFunction createTanh() {
+        return new TransferFunction() {
             public double f( double r ) {
-                return ActivationFunction.tanh( r );
+                return TransferFunction.tanh( r );
             }
 
             public double df( double r ) {
-                return ActivationFunction.tanhDerivative( r );
+                return TransferFunction.tanhDerivative( r );
             }
         };
     }
 
-    public static ActivationFunction createSoftmax() {
-        return new ActivationFunction() {
+    public static TransferFunction createSoftmax() {
+        return new TransferFunction() {
             public void f( FloatArray weightedSums, FloatArray outputs ) {
                 softmax( weightedSums, outputs );
             }
 
             public double df( double r ) {
-                return ActivationFunction.softmaxDerivative( r );
+                return TransferFunction.softmaxDerivative( r );
             }
         };
     }
@@ -158,7 +158,7 @@ public abstract class ActivationFunction {
     }
 
     public static double tanhDerivative( double x ) {
-        double r = ActivationFunction.tanh( x );
+        double r = TransferFunction.tanh( x );
         double d = 1.0 - ( r * r ); // equation 3.6
         return d;
     }
