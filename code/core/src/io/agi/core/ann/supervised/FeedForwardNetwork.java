@@ -195,13 +195,13 @@ public class FeedForwardNetwork extends NamedObject {
         for( int layer = L; layer >= 0; --layer ) {
 
             NetworkLayer nl = _layers.get( layer );
-            ActivationFunction af = nl.getActivationFunction();
+            TransferFunction af = nl.getActivationFunction();
             if( layer == L ) {
                 String lossFunction = _c.getLossFunction();
-                BackPropagation.externalErrorGradient( nl._weightedSums, nl._outputs, _ideals, nl._errorGradients, af, lossFunction, l2R, sumSqWeights );
+                BackPropagation.OutputErrorGradient( nl._weightedSums, nl._outputs, _ideals, nl._errorGradients, af, lossFunction, l2R, sumSqWeights );
             } else { // layer < L
                 NetworkLayer nl2 = _layers.get( layer + 1 );
-                BackPropagation.internalErrorGradient( nl._weightedSums, nl._errorGradients, nl2._weights, nl2._errorGradients, af, l2R );
+                BackPropagation.ErrorGradient( nl._weightedSums, nl._errorGradients, nl2._weights, nl2._errorGradients, af, l2R );
             }
 
             nl.train( l2R ); // using the error gradients, d

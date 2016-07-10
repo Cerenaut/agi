@@ -73,15 +73,24 @@ public abstract class TransferFunction {
         return 0.0;
     }
 
-    ;
-
     /**
      * Returns the derivative of r.
      *
      * @param r
      * @return
      */
-    public abstract double df( double r );
+    public abstract double fDerivative( double r );
+
+    public static TransferFunction createLinear() {
+        return new TransferFunction() {
+            public double f( double r ) {
+                return r;
+            }
+            public double fDerivative( double r ) {
+                return 1.0;
+            }
+        };
+    }
 
     public static TransferFunction createLogisticSigmoid() {
         return new TransferFunction() {
@@ -89,7 +98,7 @@ public abstract class TransferFunction {
                 return TransferFunction.logisticSigmoid( r );
             }
 
-            public double df( double r ) {
+            public double fDerivative( double r ) {
                 return TransferFunction.logisticSigmoidDerivative( r );
             }
         };
@@ -101,7 +110,7 @@ public abstract class TransferFunction {
                 return TransferFunction.tanh( r );
             }
 
-            public double df( double r ) {
+            public double fDerivative( double r ) {
                 return TransferFunction.tanhDerivative( r );
             }
         };
@@ -113,7 +122,7 @@ public abstract class TransferFunction {
                 softmax( weightedSums, outputs );
             }
 
-            public double df( double r ) {
+            public double fDerivative( double r ) {
                 return TransferFunction.softmaxDerivative( r );
             }
         };

@@ -30,15 +30,15 @@ public class ActivationFunctionFactory {
     public static final String TAN_H = "tan-h";
     public static final String SOFTMAX = "softmax";
 
-    public ActivationFunction create( String function ) {
+    public TransferFunction create( String function ) {
         if( function.equals( LOG_SIGMOID ) ) {
-            return ActivationFunction.createLogisticSigmoid();
+            return TransferFunction.createLogisticSigmoid();
         }
         if( function.equals( TAN_H ) ) {
-            return ActivationFunction.createTanh();
+            return TransferFunction.createTanh();
         }
         if( function.equals( SOFTMAX ) ) {
-            return ActivationFunction.createSoftmax();
+            return TransferFunction.createSoftmax();
         }
         return null;
     }
