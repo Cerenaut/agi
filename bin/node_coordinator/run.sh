@@ -25,12 +25,13 @@ log_config="log4j2.xml"
 
 main_class="io.agi.framework.Main"
 
+echo "Run home = $AGI_RUN_HOME"
 cd $AGI_RUN_HOME
 pwd
 
 
 # run coordinator
-cmd="$JAVA_HOME/bin/java -Dfile.encoding=UTF-8 -Dlog4j.configurationFile=file:$log_config \
+cmd="$JAVA_HOME/bin/java -Xmx6000m -Dfile.encoding=UTF-8 -Dlog4j.configurationFile=file:$log_config \
 -cp \
 $AGI_HOME/code/core/target/agief-1.0.0-jar-with-dependencies.jar $main_class \
 $node_properties $entity_file $data_file"
