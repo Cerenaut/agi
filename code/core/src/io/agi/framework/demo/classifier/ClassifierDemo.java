@@ -63,7 +63,8 @@ public class ClassifierDemo {
         String experimentName = "experiment";
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
 
-        boolean discrete = false;
+//        boolean discrete = false;
+        boolean discrete = true;
 
         if( discrete ) {
             Framework.CreateEntity( modelName, DiscreteRandomEntity.ENTITY_TYPE, n.getName(), experimentName );
