@@ -68,7 +68,7 @@ public class RegionLayerFactory {
             float defaultPredictionInhibition,
             int classifiersPerBit1,
             int classifiersPerBit2,
-            float organizerNeighbourhoodRange,
+//            float organizerNeighbourhoodRange,
 //            float organizerLearningRate,
 //            float organizerElasticity,
 //            float organizerLearningRateNeighbours,
@@ -87,6 +87,12 @@ public class RegionLayerFactory {
             float classifierStressSplitLearningRate,
             float classifierStressThreshold,
             int classifierGrowthInterval,
+//            float classifierStressLearningRate,
+//            float classifierRankLearningRate,
+//            float classifierRankScale,
+//            int classifierAgeMax,
+//            float classifierAgeDecay,
+//            float classifierAgeScale,
 
             // Predictor
             float predictorLearningRate ) {
@@ -99,6 +105,7 @@ public class RegionLayerFactory {
         int classifierInputs = input1Area + input2Area;
         int feedbackAreaCells = feedbackWidthCells * feedbackHeightCells;
         int organizerInputs = 2 * 2;
+        float organizerNeighbourhoodRange = 2.f; // TODO: Remove this.
 
         ParameterLessSelfOrganizingMapConfig organizerConfig = new ParameterLessSelfOrganizingMapConfig();
         organizerConfig.setup(
@@ -119,6 +126,13 @@ public class RegionLayerFactory {
                 classifierInputs, classifierWidthCells, classifierHeightCells,
                 classifierLearningRate, classifierLearningRateNeighbours, classifierNoiseMagnitude,
                 classifierEdgeMaxAge, classifierStressLearningRate, classifierStressSplitLearningRate, classifierStressThreshold, classifierGrowthInterval );
+
+//        PlasticNeuralGasConfig classifierConfig = new PlasticNeuralGasConfig();
+//        classifierConfig.setup(
+//                om, RegionLayerConfig.SUFFIX_CLASSIFIER, random, // temp name
+//                classifierInputs, classifierWidthCells, classifierHeightCells,
+//                classifierStressLearningRate, classifierRankLearningRate, classifierRankScale,
+//                classifierAgeMax, classifierAgeDecay, classifierAgeScale );
 
         rc.setup( om, regionName, random, organizerConfig, classifierConfig, input1Width, input1Height, input2Width, input2Height, feedbackAreaCells, predictorLearningRate, receptiveFieldsTrainingSamples, defaultPredictionInhibition, organizerTrainOnChange, emitUnchangedCells, classifiersPerBit1, classifiersPerBit2, classifierDepthCells );
 
@@ -189,4 +203,16 @@ public class RegionLayerFactory {
 
         return gng;
     }
+
+//    public PlasticNeuralGas createClassifier( RegionLayer r ) {
+//
+//        String name = r.getKey( RegionLayerConfig.SUFFIX_CLASSIFIER );
+//        PlasticNeuralGasConfig cc = new PlasticNeuralGasConfig();
+//        cc.copyFrom( _rc._classifierConfig, name );
+//
+//        PlasticNeuralGas c = new PlasticNeuralGas( cc._name, cc._om );
+//        c.setup( cc );
+//
+//        return c;
+//    }
 }

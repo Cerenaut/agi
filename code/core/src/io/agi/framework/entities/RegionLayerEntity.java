@@ -20,9 +20,10 @@
 package io.agi.framework.entities;
 
 import io.agi.core.alg.*;
-import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMap;
+//import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMap;
 import io.agi.core.ann.unsupervised.GrowingNeuralGas;
 import io.agi.core.ann.unsupervised.ParameterLessSelfOrganizingMap;
+//import io.agi.core.ann.unsupervised.PlasticNeuralGas;
 import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
 import io.agi.core.data.DataSize;
@@ -217,13 +218,13 @@ public class RegionLayerEntity extends Entity {
 
         // These can be sparse:
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), DataFlags.FLAG_SPARSE_BINARY );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), DataFlags.FLAG_SPARSE_BINARY );
+//        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), DataFlags.FLAG_SPARSE_BINARY );
 
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), DataFlags.FLAG_SPARSE_REAL );
+//        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), DataFlags.FLAG_SPARSE_REAL );
 
         // These rarely change:
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), DataFlags.FLAG_LAZY_PERSIST );
+//        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), DataFlags.FLAG_LAZY_PERSIST );
 
         // These are written by only me, so can be cached, avoiding the read.
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), DataFlags.FLAG_NODE_CACHE );
@@ -306,7 +307,7 @@ public class RegionLayerEntity extends Entity {
         // since each classifier is given config.receptiveFieldSize inputs, the max error is 1 * config.receptiveFieldSize
         // (i.e. all the inputs are wrong). Actually this isn't strictly true - there might be no overlap between the
         // actual bits of the column and the current input bits, so say it is 2 * config.receptiveFieldSize
-        float classifierStressThreshold = config.classifierStressThreshold; // sum
+//        float classifierStressThreshold = config.classifierStressThreshold; // sum
 
         RegionLayer r = rf.create(
                 om, regionLayerName, getRandom(),
@@ -317,8 +318,9 @@ public class RegionLayerEntity extends Entity {
                 config.classifierWidthCells, config.classifierHeightCells, config.classifierDepthCells,
                 config.organizerTrainOnChange, config.emitUnchangedCells,
                 config.receptiveFieldsTrainingSamples, config.defaultPredictionInhibition, config.classifiersPerBit1, config.classifiersPerBit2, //config.receptiveFieldSize,
-                config.organizerNeighbourhoodRange, //config.organizerLearningRate, config.organizerElasticity, //config.organizerLearningRateNeighbours, config.organizerNoiseMagnitude, config.organizerEdgeMaxAge, config.organizerStressLearningRate, config.organizerStressThreshold, config.organizerGrowthInterval,
-                config.classifierLearningRate, config.classifierLearningRateNeighbours, config.classifierNoiseMagnitude, config.classifierEdgeMaxAge, config.classifierStressLearningRate, config.classifierStressSplitLearningRate, classifierStressThreshold, config.classifierGrowthInterval,
+//                config.organizerNeighbourhoodRange, //config.organizerLearningRate, config.organizerElasticity, //config.organizerLearningRateNeighbours, config.organizerNoiseMagnitude, config.organizerEdgeMaxAge, config.organizerStressLearningRate, config.organizerStressThreshold, config.organizerGrowthInterval,
+                config.classifierLearningRate, config.classifierLearningRateNeighbours, config.classifierNoiseMagnitude, config.classifierEdgeMaxAge, config.classifierStressLearningRate, config.classifierStressSplitLearningRate, config.classifierStressThreshold, config.classifierGrowthInterval,
+//                config.classifierStressLearningRate, config.classifierRankLearningRate, config.classifierRankScale, config.classifierAgeMax, config.classifierAgeDecay, config.classifierAgeScale,
                 config.predictorLearningRate );
 
         r._organizerIntervalsInput1X = config.organizerIntervalsInput1X;
@@ -446,6 +448,7 @@ public class RegionLayerEntity extends Entity {
             for( int x = 0; x < organizerSize.x; ++x ) {
                 int regionOffset = r._rc.getOrganizerOffset( x, y );
                 GrowingNeuralGas classifier = r._classifiers.get( regionOffset );
+//                PlasticNeuralGas classifier = r._classifiers.get( regionOffset );
 
                 int weightsSize = dataSizeWeights.getVolume();
                 int cellsSize = dataSizeCells.getVolume();
@@ -577,6 +580,7 @@ public class RegionLayerEntity extends Entity {
             for( int x = 0; x < p.x; ++x ) {
                 int regionOffset = r._rc.getOrganizerOffset( x, y );
                 GrowingNeuralGas classifier = r._classifiers.get( regionOffset );
+//                PlasticNeuralGas classifier = r._classifiers.get( regionOffset );
 
                 int weightsSize = classifier._cellWeights.getSize();
                 int cellsSize = classifier._cellErrors.getSize();
@@ -623,13 +627,13 @@ public class RegionLayerEntity extends Entity {
         setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), dsom._cellActivity );
         setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), dsom._cellMask );
     }
-
-    protected void copyDataToPersistence( String prefix, DynamicSelfOrganizingMap dsom ) {
-        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), dsom._cellWeights );
-        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ), dsom._cellErrors );
-        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), dsom._cellActivity );
-        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), dsom._cellMask );
-    }
+//
+//    protected void copyDataToPersistence( String prefix, DynamicSelfOrganizingMap dsom ) {
+//        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), dsom._cellWeights );
+//        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ), dsom._cellErrors );
+//        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), dsom._cellActivity );
+//        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), dsom._cellMask );
+//    }
 
     protected void copyDataToPersistence( String prefix, GrowingNeuralGas gng ) {
         setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), gng._cellWeights );

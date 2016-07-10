@@ -47,7 +47,7 @@ public class RegionLayerEntityConfig extends EntityConfig {
     int classifiersPerBit1 = 5;
     int classifiersPerBit2 = 5;
 
-    float organizerNeighbourhoodRange = 2.f;//5.f;//10.f; too volatile @ 10
+//    float organizerNeighbourhoodRange = 2.f;//5.f;//10.f; too volatile @ 10
 /*    float organizerLearningRate = 0.02f;
     float organizerElasticity = 1.f;
 /*    float organizerLearningRateNeighbours = 0.01f;
@@ -66,10 +66,20 @@ public class RegionLayerEntityConfig extends EntityConfig {
     float classifierStressSplitLearningRate = 0.5f;
     float classifierStressThreshold = 0.1f;
     int classifierGrowthInterval = 100;
+//
+//    float classifierNeighbouhoodRange = 2.f;//5.f;//10.f; too volatile @ 10
+//    float classifierMinDistance = 0.01f;//5.f;//10.f; too volatile @ 10
+
+//    float classifierStressLearningRate = 0.01f;
+//    float classifierRankLearningRate = 0.05f;
+//    float classifierRankScale = 10.0f;
+//    int classifierAgeMax = 500;
+//    float classifierAgeDecay = 0.7f;
+//    float classifierAgeScale = 12.0f;
 
     // Predictor
 //    float predictorHiddenLayerScaleFactor = 0.1f; // Note, this assumes that the input data can be easily modelled by a few causes
-    float predictorLearningRate = 100.0f;
+    float predictorLearningRate = 0.01f;//100.0f;
 //    float predictorRegularization = 0.0f;
 
 }

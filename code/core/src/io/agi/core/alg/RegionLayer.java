@@ -19,10 +19,7 @@
 
 package io.agi.core.alg;
 
-import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMap;
-import io.agi.core.ann.unsupervised.GrowingNeuralGas;
-import io.agi.core.ann.unsupervised.ParameterLessSelfOrganizingMap;
-import io.agi.core.ann.unsupervised.SparseHebbianLearning;
+import io.agi.core.ann.unsupervised.*;
 import io.agi.core.data.*;
 import io.agi.core.math.Geometry;
 import io.agi.core.orm.NamedObject;
@@ -99,6 +96,7 @@ public class RegionLayer extends NamedObject {
 //    public DynamicSelfOrganizingMap _organizer;
     public ParameterLessSelfOrganizingMap _organizer;
     public HashMap< Integer, GrowingNeuralGas > _classifiers = new HashMap< Integer, GrowingNeuralGas >();
+//    public HashMap< Integer, PlasticNeuralGas > _classifiers = new HashMap< Integer, PlasticNeuralGas >();
     public SparseHebbianLearning _predictor; // actually this one object stands in for one predictor per column, because the columns may update asynchronously
 
     public RegionLayer( String name, ObjectMap om ) {
@@ -123,6 +121,7 @@ public class RegionLayer extends NamedObject {
         for( int y = 0; y < organizerSizeCells.y; ++y ) {
             for( int x = 0; x < organizerSizeCells.x; ++x ) {
                 GrowingNeuralGas classifier = _rf.createClassifier( this );
+//                PlasticNeuralGas classifier = _rf.createClassifier( this );
                 int regionOffset = _rc.getOrganizerOffset( x, y );
                 _classifiers.put( regionOffset, classifier );
             }
@@ -216,6 +215,7 @@ public class RegionLayer extends NamedObject {
             for( int x = 0; x < p.x; ++x ) {
                 int regionOffset = _rc.getOrganizerOffset( x, y );
                 GrowingNeuralGas classifier = _classifiers.get( regionOffset );
+//                PlasticNeuralGas classifier = _classifiers.get( regionOffset );
                 classifier.reset();
             }
         }
@@ -342,6 +342,7 @@ public class RegionLayer extends NamedObject {
             // TODO dont unfold unchanged columns (in activity, with prediction, cant tell)?
             int organizerOffset = _rc.getOrganizerOffset( xyOrganizer.x, xyOrganizer.y );
             GrowingNeuralGas classifier = _classifiers.get( organizerOffset );
+//            PlasticNeuralGas classifier = _classifiers.get( organizerOffset );
 
             int cell = classifier._c.getCell( xyClassifier.x, xyClassifier.y );
 
@@ -673,6 +674,7 @@ public class RegionLayer extends NamedObject {
 
         ArrayList< Integer > activeInput = _transient.getClassifierActiveInput( classifierOffset );//_classifierActiveInput.get( classifierOffset );
         GrowingNeuralGas classifier = _classifiers.get( classifierOffset );
+//        PlasticNeuralGas classifier = _classifiers.get( classifierOffset );
 
         Integer currentColumnCell = null; // in column
         Integer currentColumnCellX = null; // in column
@@ -729,46 +731,6 @@ public class RegionLayer extends NamedObject {
         else { // do classification on input
             boolean learn = _rc.getLearn();
             classifier._c.setLearn( learn );
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// additional classification with ff input 1 only. - START
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*            int input1Size = _ffInput1.getSize();
-            ArrayList< Integer > liveCells = classifier.createCellList( classifier._c, classifier._cellMask );
-            ArrayList< Integer > sparseUnitInput = new ArrayList< Integer >();
-            for( Integer i : activeInput ) {
-                if( i < input1Size ) {
-                    sparseUnitInput.add( i ); // only add form ff-input-1
-                }
-            }
-            if( !sparseUnitInput.isEmpty() ) {
-                classifier.sumSqErrorSparseUnit( classifier._c, liveCells, sparseUnitInput, classifier._cellWeights, classifier._cellErrors );
-
-                // Get the top 2 cells, A and B
-                int maxRank = 2;
-                boolean findMaxima = false; // find minima
-                TreeMap< Float, ArrayList< Integer > > ranking = new TreeMap< Float, ArrayList< Integer > >();
-                classifier._cellActivity.set( 0.f );
-                classifier.findBestNCells( classifier._c, classifier._cellMask, classifier._cellErrors, classifier._cellActivity, maxRank, findMaxima, ranking );
-                ArrayList< Integer > bestValues = Ranking.getBestValues( ranking, findMaxima, maxRank );
-                int bestCell1 = 0;
-                if( bestValues.size() > 0 ) {
-                    bestCell1 = bestValues.get( 0 );
-                }
-
-                // Now deal with the best cell in the column:
-                int bestColumnCellX = Data2d.getX( columnSizeCells.x, bestCell1 );
-                int bestColumnCellY = Data2d.getY( columnSizeCells.x, bestCell1 );
-
-                int regionX = classifierOrigin.x + bestColumnCellX;
-                int regionY = classifierOrigin.y + bestColumnCellY;
-                int regionOffset = _rc.getRegionOffset( regionX, regionY );
-
-                _regionActivity1._values[ regionOffset ] = 1.f;
-            }*/
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// additional classification with ff input 1 only. - END
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
             classifier.setSparseUnitInput( activeInput );
             classifier.update(); // trains with this sparse input.
 
@@ -807,6 +769,7 @@ public class RegionLayer extends NamedObject {
     }
 
     protected int findLeastInhibitedColumnCell( GrowingNeuralGas classifier, int classifierOffset, int currentColumnCell ) {
+//    protected int findLeastInhibitedColumnCell( PlasticNeuralGas classifier, int classifierOffset, int currentColumnCell ) {
 //        Point classifierSizeCells = _rc.getClassifierSizeCells();
         Point columnSizeCells = _rc.getColumnSizeCells();
         int depth = _rc.getDepthCells();
