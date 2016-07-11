@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>agi.io | Region</title>
+    <link rel="icon" href="assets/images/favicon.png">
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+    <link rel="stylesheet" href="assets/css/agief.css">
+    <link rel="stylesheet" href="assets/css/region2.css">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body style="background-color:#222222;">
+
+    <div id="region-info" class="" style="">
+     <div class="" style="">
+      <div class="" style="text-align:center;background-color:#dddddd;">
+
+<!-- import, export, update/resume, flush toggle.
+update interval
+show flush, show age. -->
+       <img src="assets/images/logo-inverse-brown.png" style="width:50px;display:inline;margin-top:1em;margin-bottom:1em;"/><h1 style="display:inline;">Region-Layer</h1>
+       <p>
+       <label for="host">Node</label>
+       <input type="text" id="host" style="" class="" placeholder="Host" value="localhost"/>
+       <input type="number" id="port" style="width:5em;" class="" placeholder="Port" value="8491"/>
+        <label for="root-entity">Root Entity</label>
+        <input type="text" id="root-entity" style="" class="" placeholder="Update Entity name"/>
+        <input type="button" id="update" class="btn btn-sm btn-danger" style="" onclick="Region.update()" value="Update"/>
+        <label for="host">Region Entity</label>
+        <input type="text" id="entity" style="" class="" placeholder="Entity name"/>
+        <input type="button" id="refresh" class="btn btn-sm btn-danger" style="" onclick="Region.refresh()" value="Refresh"/>
+        <b>Status:</b> <span id="status">?</span>
+       </p>
+        <div class="well" style="background:#111111;color:#777777;margin-bottom:0;border:0;padding-bottom:2px;border-radius:0;">
+         <b>Legend &nbsp;&nbsp;&nbsp;TP <span style="color:#00FF00;">&#9632;&nbsp;&nbsp;&nbsp;</span> TN <span style="color:#000000;">&#9632;&nbsp;&nbsp;&nbsp;</span> FP <span style="color:#FF00FF;">&#9632;&nbsp;&nbsp;&nbsp;</span> FN <span style="color:#FF0000;">&#9632;&nbsp;&nbsp;&nbsp;</span> P(t+1) <span style="color:#FFFF00;">&#9633;&nbsp;&nbsp;&nbsp;</span> A(t), idle <span style="color:#444400;">&#9632;&nbsp;&nbsp;&nbsp;</span> P(t), idle <span style="color:#440044;">&#9632;&nbsp;&nbsp;&nbsp;</span></b>        
+         <label for="size">Px/Bit</label>
+         <input type="number" id="size" style="width:3em;" class="" placeholder="" title="Pixels per Bit" value="12"/>
+         <input type="text" id="sel-cells" style="width:10em;" class="" placeholder="Cell Selections" />
+         <input type="button" id="select-text" class="btn btn-sm btn-primary" style="" onclick="Region.selectText()" value="Select"/>
+         <input type="button" id="select-active" class="btn btn-sm btn-primary" style="" onclick="Region.selectActive()" value="Sel. A"/>
+         <input type="button" id="select-predicted" class="btn btn-sm btn-primary" style="" onclick="Region.selectPredicted()" value="Sel. P"/>
+         <label for="threshold">Weight threshold</label> <input type="number" id="threshold" name="threshold" min="0.0" max="1.0" step="0.01" value="0.5" style="width:3em;" />
+         <input type="button" id="select-threshold" class="btn btn-sm btn-primary" style="" onclick="Region.selectThreshold()" value="Invert"/>
+         <b>Selected input:</b> <input type="text" id="sel-input-1" style="width:6em;" class="" placeholder="#1" />
+         <input type="text" id="sel-input-2" style="width:6em;" class="" placeholder="#2" />
+         <br>
+         <small><span id="mouse-left"></span> &#9668;&#9644;&#9658; <span id="mouse-right"></span></small>
+        </div>
+      </div><!-- /.row -->
+     </div><!-- /.row -->
+    </div><!-- /.container -->
+
+    <div id="region-data" class="viewport" style="border:0;">
+       <div id="region-data-left" class="column" style="border-color:#333333;">
+        <canvas id="left-canvas" class="column-canvas" >
+        </canvas>
+       </div>
+       <div id="region-data-left" class="column" style="border-color:#333333;">
+        <canvas id="centre-canvas" class="column-canvas" >
+        </canvas>
+       </div>
+       <div id="region-data-right" class="column" style="border-color:#333333;">
+        <canvas id="right-canvas" class="column-canvas">
+        </canvas>
+       </div>
+    </div><!-- viewport -->
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+    <!-- D3 visuals - hosted version http://d3js.org/ -->
+<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>-->
+
+    <!-- Our stuff -->
+    <script src="assets/scripts/framework.js"></script>
+    <script src="assets/scripts/parameters.js"></script>
+    <script src="assets/scripts/region.js"></script>
+
+  </body>
+</html>

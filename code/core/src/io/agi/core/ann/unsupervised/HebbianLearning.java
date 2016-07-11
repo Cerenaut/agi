@@ -37,7 +37,7 @@ public class HebbianLearning {
     public Data _statePredictedRaw;
     public Data _weights;
 
-    public float _learningRate = 100; // e.g. moves 1 part in 100 each step. Max value is 99, min is 0, giving 100 intervals.
+    public float _learningRate = 0.01f; // e.g. moves 1 part in 100 each step. Max value is 99, min is 0, giving 100 intervals.
 
     public void setup( int states, float learningRate ) {
 
@@ -136,8 +136,6 @@ public class HebbianLearning {
 
         int states = stateOld.getSize();
 
-        int maxValue = ( ( int ) _learningRate ) - 1; // e.g. 0..99
-
         for( int s1 = 0; s1 < states; ++s1 ) {
 
             // old state - train only from old active states to all new states
@@ -149,23 +147,17 @@ public class HebbianLearning {
 
             for( int s2 = 0; s2 < states; ++s2 ) {
 
-                int delta = -1;
+                float delta = 0.f;
 
                 float active2 = stateNew._values[ s2 ];
-
-                if( active2 > 0.5f ) {
-                    delta = 1;
+                if( active2 != 0f ) {
+                    delta = 1.f;
                 }
 
                 int offset = s1 * states + s2; // the weight from state s1, to state s2.
 
                 float oldWeight = _weights._values[ offset ];
-
-                int newValue = ( int ) ( oldWeight ) + delta; // force integer updates.
-                newValue = Math.max( 0, newValue );
-                newValue = Math.min( maxValue, newValue );
-
-                float newWeight = ( float ) newValue;
+                float newWeight = delta * _learningRate + ( 1.f - _learningRate ) * oldWeight;
 
                 _weights._values[ offset ] = newWeight;
             }

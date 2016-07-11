@@ -31,22 +31,19 @@
 <!-- import, export, update/resume, flush toggle.
 update interval
 show flush, show age. -->
-       <img src="assets/images/logo-inverse-brown.png" style="width:50px;display:inline;"/><h1 style="display:inline;">Experiment Control Panel</h1>
-       <p>
+       <img src="assets/images/logo-inverse-brown.png" style="width:50px;display:inline;margin-bottom:1em;"/><h1 style="display:inline;">Experiment Control Panel</h1>
+       <p class="well">
         <label for="host">Node</label>
         <input type="text" id="host" style="" class="" placeholder="Host" value="localhost"/>
         <input type="number" id="port" style="width:5em;" class="" placeholder="Port" value="8491"/>
+        <input type="button" id="version" class="btn btn-sm btn-default" style="" onclick="Experiment.version()" value="File version"/>
+        <span id="version-label">?</span>
+       </p>
+       <p style="margin-top:1.5em;margin-bottom:1.5em;">
         <label for="entity">Entity</label>
         <input type="text" id="entity" style="" class="" placeholder="Entity name"/>
-        <small>
-         <i>Type</i> <span id="entity-type">?</span>
-         <i>Age</i> <span id="entity-age">?</span>
-         <i>Seed</i> <span id="entity-seed">?</span>
-        </small>
-       </p>
-       <p class="well">
-       <label for="update">Update</label>
-       <input type="button" id="update" class="btn btn-sm btn-danger" style="" onclick="Experiment.update()" value="Once"/>
+        <label for="update">Update</label>
+        <input type="button" id="update" class="btn btn-sm btn-danger" style="" onclick="Experiment.update()" value="Once"/>
         <input type="button" id="pause" class="btn btn-sm btn-danger" style="" onclick="Loop.togglePause()" value="Resume"/>
         <label for="interval">every (ms)</label>
         <input type="number" id="interval" style="display:inline;width:5em;" class="" placeholder="Update interval" value="50"/>
@@ -55,9 +52,20 @@ show flush, show age. -->
         <input id="flush" type="checkbox" name="flush" checked />
         <label for="reset">Reset</label>
         <input id="reset" type="checkbox" name="reset" />
+        <label for="learn">Learn</label>
+        <input id="learn" type="checkbox" name="learn" />
         <input type="button" id="pause" class="btn btn-sm btn-success" style="" onclick="Experiment.setFlushAndReset()" value="Set"/>
        </span>
+        &nbsp;<small>
+         <i>Type</i> <span id="entity-type">?</span>
+         <i>Age</i> <span id="entity-age">?</span>
+         <i>Seed</i> <span id="entity-seed">?</span>
+         <i>Reset</i> <span id="entity-reset">?</span>
+         <i>Flush</i> <span id="entity-flush">?</span>
+         <i>Learn</i> <span id="entity-learn">?</span>
+        </small>
        </p>
+       <div class="well">
        <form id="import-form" method="POST" enctype="multipart/form-data" >
        <p>
        <label for="entity-file">Entity file</label>
@@ -72,11 +80,9 @@ show flush, show age. -->
        <input type="button" id="exportEntity" class="btn btn-sm btn-primary" style="" onclick="Experiment.exportEntity()" value="Export Entities"/>
        <input type="button" id="exportData" class="btn btn-sm btn-primary" style="" onclick="Experiment.exportData()" value="Export Data"/>
        <input type="button" id="exportDataRefs" class="btn btn-sm btn-primary" style="" onclick="Experiment.exportDataRefs()" value="Export Data Refs"/>
-       <br><br>
-       <input type="button" id="version" class="btn btn-sm btn-secondary" style="" onclick="Experiment.version()" value="Version"/>
-       <label id="version-label">ver</label>
        </p>
        </form>
+       </div>
        <div class="" style="text-align:left;width:100%;">
          <p style="color:#aaaaaa;">Update:<br> <span id="update-result" style="color:#aaaaaa">-</span></p>
          <p style="color:#aaaaaa;">Config:<br> <span id="config-result" style="color:#aaaaaa">-</span></p>

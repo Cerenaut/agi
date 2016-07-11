@@ -23,6 +23,7 @@ import io.agi.core.orm.ObjectMap;
 import io.agi.framework.Entity;
 import io.agi.framework.EntityFactory;
 import io.agi.framework.Node;
+import io.agi.framework.demo.mnist.Mnist2Entity;
 import io.agi.framework.demo.mnist.MnistEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.persistence.models.ModelEntity;
@@ -73,6 +74,10 @@ public class CommonEntityFactory implements EntityFactory {
             return new DiscreteRandomEntity( objectMap, _n, modelEntity );
         }
 
+        if( entityType.equals( ClassFeaturesEntity.ENTITY_TYPE ) ) {
+            return new ClassFeaturesEntity( objectMap, _n, modelEntity );
+        }
+
         if( entityType.equals( ParameterLessSelfOrganizingMapEntity.ENTITY_TYPE ) ) {
             return new ParameterLessSelfOrganizingMapEntity( objectMap, _n, modelEntity );
         }
@@ -115,6 +120,10 @@ public class CommonEntityFactory implements EntityFactory {
 
         if( entityType.equals( MnistEntity.ENTITY_TYPE ) ) {
             return new MnistEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( Mnist2Entity.ENTITY_TYPE ) ) {
+            return new Mnist2Entity( objectMap, _n, modelEntity );
         }
 
         return null;

@@ -30,9 +30,10 @@ public class ClassFeaturesEntityConfig extends EntityConfig {
     public String classConfigPath;
     public int classes = 0;
 
-    public int onlineMaxCount = 500; // if online learning mode, then count can't exceed this value.
     public boolean onlineLearning = false;
+    public float onlineLearningRate = 0.001f;
 
+    // output:
     public int classPredicted = 0; // the predicted class given the input features
     public int classError = 0; // 1 if the prediction didn't match the input class
     public int classTruth = 0; // the value that was taken as input
