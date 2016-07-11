@@ -52,6 +52,10 @@ public class NumberEncoder implements SparseDistributedEncoder {
      * Create a suitably sized output structure for the given input.
      */
     public Data createEncodingOutput( Data encodingInput ) {
+        if( encodingInput == null ) {
+            return null;
+        }
+
         int numbers = encodingInput.getSize(); // vector
 
         int base = _base;
@@ -84,6 +88,10 @@ public class NumberEncoder implements SparseDistributedEncoder {
      * @param encodingOutput
      */
     public void encode( Data encodingInput, Data encodingOutput ) {
+
+        if( encodingInput == null ) {
+            return;
+        }
 
         HashSet< Integer > activeBits = new HashSet< Integer >();
 

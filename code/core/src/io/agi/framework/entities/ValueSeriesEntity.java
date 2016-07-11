@@ -63,31 +63,48 @@ public class ValueSeriesEntity extends Entity {
         // Get all the parameters:
         ValueSeriesEntityConfig config = ( ValueSeriesEntityConfig ) _config;
 
-        Data output = getDataLazyResize( OUTPUT, DataSize.create( config.period ) );
-
         Persistence p = _n.getPersistence();
 
         String stringValue = Framework.GetConfig( config.entityName, config.configPath );
         Float newValue = Float.valueOf( stringValue );
 
+        // default missing values to 0
         if( newValue == null ) {
             newValue = 0.f;
         }
 
-        // shift all the old values 1 place
-        for( int i1 = 0; i1 < config.period; ++i1 ) {
+        Data output;
 
-            int i2 = i1 + 1;
-            if( i2 >= config.period ) {
-                continue;
+        if( config.period < 0 ) {
+            // infinite length
+            Data input = getDataLazyResize( OUTPUT, DataSize.create( 1 ) );
+            int oldLength = input.getSize();
+            output = new Data( DataSize.create( oldLength +1 ) );
+            for( int i = 0; i < oldLength; ++i ) {
+                output._values[ i ] = input._values[ i ];
+            }
+            output._values[ oldLength ] = newValue;
+        }
+        else {
+            // rolling window
+            output = getDataLazyResize( OUTPUT, DataSize.create( config.period ) );
+
+            // shift all the old values 1 place
+            for( int i1 = config.period -2; i1 >= 0; --i1 ) {
+
+                int i2 = i1 + 1;
+                if( i2 >= config.period ) {
+                    continue;
+                }
+
+                float x1 = output._values[ i1 ];
+                output._values[ i2 ] = x1;
             }
 
-            float x1 = output._values[ i1 ];
-            output._values[ i2 ] = x1;
+            output._values[ 0 ] = newValue;
         }
 
-        output._values[ 0 ] = newValue;
-        //output.setRandom();
         setData( OUTPUT, output );
     }
+
 }

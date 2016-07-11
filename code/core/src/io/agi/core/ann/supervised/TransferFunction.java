@@ -40,7 +40,7 @@ import io.agi.core.data.FloatArray;
  * <p/>
  * Created by dave on 3/01/16.
  */
-public abstract class ActivationFunction {
+public abstract class TransferFunction {
 
     /**
      * Returns a nonlinear scalar function of r.
@@ -73,48 +73,57 @@ public abstract class ActivationFunction {
         return 0.0;
     }
 
-    ;
-
     /**
      * Returns the derivative of r.
      *
      * @param r
      * @return
      */
-    public abstract double df( double r );
+    public abstract double fDerivative( double r );
 
-    public static ActivationFunction createLogisticSigmoid() {
-        return new ActivationFunction() {
+    public static TransferFunction createLinear() {
+        return new TransferFunction() {
             public double f( double r ) {
-                return ActivationFunction.logisticSigmoid( r );
+                return r;
             }
-
-            public double df( double r ) {
-                return ActivationFunction.logisticSigmoidDerivative( r );
+            public double fDerivative( double r ) {
+                return 1.0;
             }
         };
     }
 
-    public static ActivationFunction createTanh() {
-        return new ActivationFunction() {
+    public static TransferFunction createLogisticSigmoid() {
+        return new TransferFunction() {
             public double f( double r ) {
-                return ActivationFunction.tanh( r );
+                return TransferFunction.logisticSigmoid( r );
             }
 
-            public double df( double r ) {
-                return ActivationFunction.tanhDerivative( r );
+            public double fDerivative( double r ) {
+                return TransferFunction.logisticSigmoidDerivative( r );
             }
         };
     }
 
-    public static ActivationFunction createSoftmax() {
-        return new ActivationFunction() {
+    public static TransferFunction createTanh() {
+        return new TransferFunction() {
+            public double f( double r ) {
+                return TransferFunction.tanh( r );
+            }
+
+            public double fDerivative( double r ) {
+                return TransferFunction.tanhDerivative( r );
+            }
+        };
+    }
+
+    public static TransferFunction createSoftmax() {
+        return new TransferFunction() {
             public void f( FloatArray weightedSums, FloatArray outputs ) {
                 softmax( weightedSums, outputs );
             }
 
-            public double df( double r ) {
-                return ActivationFunction.softmaxDerivative( r );
+            public double fDerivative( double r ) {
+                return TransferFunction.softmaxDerivative( r );
             }
         };
     }
@@ -158,7 +167,7 @@ public abstract class ActivationFunction {
     }
 
     public static double tanhDerivative( double x ) {
-        double r = ActivationFunction.tanh( x );
+        double r = TransferFunction.tanh( x );
         double d = 1.0 - ( r * r ); // equation 3.6
         return d;
     }

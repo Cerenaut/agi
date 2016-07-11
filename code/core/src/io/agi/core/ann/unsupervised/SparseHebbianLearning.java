@@ -50,7 +50,43 @@ public class SparseHebbianLearning {
     public Data _context;
     public Data _weights;
 
-    public float _learningRate = 100; // e.g. moves 1 part in 100 each step. Max value is 99, min is 0, giving 100 intervals.
+    public float _learningRate = 0.01f;//100; // e.g. moves 1 part in 100 each step. Max value is 99, min is 0, giving 100 intervals.
+
+    public void test( String[] args ) {
+
+        // Testing various methods of computing the correlation as integer and float
+        float y = 0.f;
+        int n = 99999999;
+        int i = 0;
+        float a = 0.0001f;
+
+        while( i < n ) {
+            ++i;
+            float s = 0.f;
+            if( Math.random() > 0.3 ) {
+                s = 1.f;
+            }
+
+            y = s * a + ( 1.f - a ) * y;
+
+            System.err.println( "y: " + y );
+        }
+
+        int x = 0;
+        i = 0;
+
+        while( i < n ) {
+            ++i;
+            if( Math.random() > 0.3 ) {
+                x = x + 1;
+            } else {
+                x = x - 1;
+            }
+            x = Math.min( 500, x );
+            x = Math.max( 0, x );
+            System.err.println( "x: " + x + " u: " + ( ( float ) x / 500.f ) );
+        }
+    }
 
     public void setup( int states, int context, float learningRate ) {
 
@@ -221,9 +257,9 @@ public class SparseHebbianLearning {
             for( Integer c : activeContext ) { // don't train for context bits that were not present.. we don't have any opinion on their influence.
                 for( int s2 = 0; s2 < states; ++s2 ) {
 
-                    int delta = -1;
+                    float delta = 0.f;//-1;
                     if( s2 == s2Best ) {
-                        delta = 1;
+                        delta = 1.f;
                     }
 
                     int offset = s1 * contexts * states
@@ -233,11 +269,12 @@ public class SparseHebbianLearning {
                     float oldWeight = _weights._values[ offset ];
 //                    float newWeight = Unit.lerp( observation, oldWeight, _learningRate );
 
-                    int newValue = ( int ) ( oldWeight ) + delta; // force integer updates.
-                    newValue = Math.max( 0, newValue );
-                    newValue = Math.min( maxValue, newValue );
-
-                    float newWeight = ( float ) newValue;
+//                    int newValue = ( int ) ( oldWeight ) + delta; // force integer updates.
+//                    newValue = Math.max( 0, newValue );
+//                    newValue = Math.min( maxValue, newValue );
+//
+//                    float newWeight = ( float ) newValue;
+                    float newWeight = delta * _learningRate + ( 1.f - _learningRate ) * oldWeight;
 
                     _weights._values[ offset ] = newWeight;
                 }

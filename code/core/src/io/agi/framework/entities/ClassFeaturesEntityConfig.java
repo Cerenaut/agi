@@ -22,12 +22,19 @@ package io.agi.framework.entities;
 import io.agi.framework.EntityConfig;
 
 /**
- * Created by dave on 2/04/16.
+ * Created by dave on 9/07/16.
  */
-public class ValueSeriesEntityConfig extends EntityConfig {
+public class ClassFeaturesEntityConfig extends EntityConfig {
 
-    public int period = 100; // number of samples before it wraps. -1 for infinite
-    public String entityName;
-    public String configPath;
+    public String classEntityName;
+    public String classConfigPath;
+    public int classes = 0;
+
+    public int onlineMaxCount = 500; // if online learning mode, then count can't exceed this value.
+    public boolean onlineLearning = false;
+
+    public int classPredicted = 0; // the predicted class given the input features
+    public int classError = 0; // 1 if the prediction didn't match the input class
+    public int classTruth = 0; // the value that was taken as input
 
 }

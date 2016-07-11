@@ -17,17 +17,28 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.entities;
+package io.agi.core.alg;
 
-import io.agi.framework.EntityConfig;
+import java.util.HashSet;
 
 /**
- * Created by dave on 2/04/16.
+ * Created by dave on 6/07/16.
  */
-public class ValueSeriesEntityConfig extends EntityConfig {
+public class AutoRegionLayerTransient {
 
-    public int period = 100; // number of samples before it wraps. -1 for infinite
-    public String entityName;
-    public String configPath;
+    public HashSet< Integer > _input1Active;
+    public HashSet< Integer > _input2Active;
 
+    public HashSet< Integer > _contextFreeActive;
+    public HashSet< Integer > _contextFreeActiveNew;
+    public HashSet< Integer > _contextFreeActiveOld;
+
+    public HashSet< Integer > _contextualActive;
+    public HashSet< Integer > _contextualActiveNew;
+    public HashSet< Integer > _contextualActiveOld;
+
+    public HashSet< Integer > _contextualPredictionFP;
+    public HashSet< Integer > _contextualPredictionFN;
+
+    public HashSet< Integer > _contextualOutput;
 }

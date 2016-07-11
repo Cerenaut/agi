@@ -23,6 +23,7 @@ import io.agi.core.ann.NetworkConfig;
 import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMapConfig;
 import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
 import io.agi.core.ann.unsupervised.ParameterLessSelfOrganizingMapConfig;
+import io.agi.core.ann.unsupervised.PlasticNeuralGasConfig;
 import io.agi.core.data.Data2d;
 import io.agi.core.orm.ObjectMap;
 
@@ -56,6 +57,7 @@ public class RegionLayerConfig extends NetworkConfig {
     public static final String SUFFIX_CLASSIFIER = "classifier";
     public static final String SUFFIX_PREDICTOR = "predictor";
 
+//    public PlasticNeuralGasConfig _classifierConfig;
     public GrowingNeuralGasConfig _classifierConfig;
 //    public GrowingNeuralGasConfig _organizerConfig;
     public ParameterLessSelfOrganizingMapConfig _organizerConfig;
@@ -70,6 +72,7 @@ public class RegionLayerConfig extends NetworkConfig {
 //            DynamicSelfOrganizingMapConfig organizerConfig,
             ParameterLessSelfOrganizingMapConfig organizerConfig,
             GrowingNeuralGasConfig classifierConfig,
+//            PlasticNeuralGasConfig classifierConfig,
             int ffInput1Width,
             int ffInput1Height,
             int ffInput2Width,

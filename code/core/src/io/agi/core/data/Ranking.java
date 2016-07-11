@@ -243,14 +243,18 @@ public class Ranking {
     }
 
     public static ArrayList< Integer > getBestValues( TreeMap< Float, ArrayList< Integer > > ranking, boolean max, int maxRank ) {
+        ArrayList< Integer > bestValues = new ArrayList< Integer >();
+        getBestValues( ranking, max, maxRank, bestValues );
+        return bestValues;
+    }
+
+    public static void getBestValues( TreeMap< Float, ArrayList< Integer > > ranking, boolean max, int maxRank, Collection< Integer > bestValues ) {
         Iterator i = null;
         if( max ) { // rank max first
             i = ranking.descendingKeySet().iterator(); // maxima first
         } else { // rank min first
             i = ranking.keySet().iterator(); // ascending values
         }
-
-        ArrayList< Integer > bestValues = new ArrayList< Integer >();
 
         while( i.hasNext() ) {
 
@@ -261,12 +265,10 @@ public class Ranking {
                 bestValues.add( n );
 
                 if( bestValues.size() >= maxRank ) {
-                    return bestValues;
+                    return;
                 }
             }
         }
-
-        return bestValues;
     }
 
     public static Integer getRank( TreeMap< Float, ArrayList< Integer > > ranking, boolean max, int value ) {

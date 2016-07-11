@@ -28,16 +28,11 @@ import java.util.Collection;
 import java.util.TreeMap;
 
 /**
- * Growing Neural Gas algorithm (online unsupervised learning).
- * <p/>
- * Input can be provided as a dense Data structure, or as a sparse Array of values. In the latter case it is assumed
- * the values are all '1' and therefore the values of the sparse input are used as indices.
- * <p/>
- * http://sund.de/netze/applets/gng/full/tex/DemoGNG/node17.html#SECTION00074300000000000000
+ * Basic concept:
  *
- *   weight(i) = weight(i) + d
- *   d = eps(t) * h() * (best - weight(i))
- * <p/>
+ * 1. Relate cell mobility / motility to age (how long it is disused)
+ * 2. Pull mobile cells towards the most under-represented areas
+ *
  * Created by dave on 29/12/15.
  */
 public class PlasticNeuralGas extends CompetitiveLearning {

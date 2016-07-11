@@ -100,9 +100,9 @@ public class NetworkLayer extends NamedObject {
      *
      * @return
      */
-    public ActivationFunction getActivationFunction() {
+    public TransferFunction getActivationFunction() {
         String costFunction = _c.getActivationFunction();
-        ActivationFunction af = _aff.create( costFunction );
+        TransferFunction af = _aff.create( costFunction );
         return af;
     }
 
@@ -110,7 +110,7 @@ public class NetworkLayer extends NamedObject {
      * Compute the forward output of the layer.
      */
     public void feedForward() {
-        ActivationFunction af = getActivationFunction();
+        TransferFunction af = getActivationFunction();
 //        BackPropagation.feedForward(_weights, _inputs, _biases, _weightedSums, af, _outputs);
         WeightedSum( _weights, _inputs, _biases, _weightedSums );
         Activate( _weightedSums, af, _outputs );
@@ -158,7 +158,7 @@ public class NetworkLayer extends NamedObject {
      * @param af
      * @param outputs
      */
-    public static void Activate( FloatArray weightedSums, ActivationFunction af, FloatArray outputs ) {
+    public static void Activate( FloatArray weightedSums, TransferFunction af, FloatArray outputs ) {
         af.f( weightedSums, outputs );
     }
 
@@ -167,6 +167,6 @@ public class NetworkLayer extends NamedObject {
      */
     public void train( float l2R ) {
         float learningRate = _c.getLearningRate();
-        BackPropagation.train( _inputs, _weights, _biases, _errorGradients, learningRate, l2R );
+//        BackPropagation.train( _inputs, _weights, _biases, _errorGradients, learningRate, l2R );
     }
 }
