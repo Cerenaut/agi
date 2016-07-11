@@ -28,7 +28,7 @@ pwd
 # run coordinator
 cmd="$JAVA_HOME/bin/java -Dfile.encoding=UTF-8 -Dlog4j.configurationFile=file:$log_config \
 -cp \
-$AGI_HOME/code/core/target/agief-1.0.0-jar-with-dependencies.jar $main_class \
+$AGI_HOME/code/core/target/agief-jar-with-dependencies.jar $main_class \
 $node_properties create"
 
 echo $cmd;
