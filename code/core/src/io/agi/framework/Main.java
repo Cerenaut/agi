@@ -144,12 +144,12 @@ public class Main {
     }
 
     public static String getPackageVersion() {
+
         String version = Main.class.getPackage().getImplementationVersion();
 
-        if ( version == null )
-        {
-            System.out.println("Error: could not load properties file.");
-            version = "no version found";
+        if( version == null ) {
+            logger.error( "Could not load properties file to query version." );
+            version = "No version found.";
         }
 
         return version;

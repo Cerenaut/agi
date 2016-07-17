@@ -95,6 +95,10 @@ public class ClassFeaturesEntity extends Entity {
         Data featureClassCount = getDataLazyResize( FEATURE_CLASS_COUNT, dataSizeFeatures );
         Data classPrediction = getDataLazyResize( CLASS_PREDICTION, DataSize.create( config.classes ) );
 
+        if( config.reset ) {
+            featureClassCount.set( 0.f );
+        }
+
         // update counts
         if( config.learn ) {
             for( int i = 0; i < features; ++i ) {
@@ -106,7 +110,7 @@ public class ClassFeaturesEntity extends Entity {
                 if( config.onlineLearning ) {
                     // adjust all classes based on the most recent observation
                     for( int c = 0; c < config.classes; ++c ) {
-                        float delta = -1.f;
+                        float delta = 0.f;
                         if( c == classValue ) {
                             delta = 1.f;
                         }
@@ -114,14 +118,7 @@ public class ClassFeaturesEntity extends Entity {
                         int offset = i * config.classes + c;
 
                         float oldCount = featureClassCount._values[ offset ];
-                        float newCount = oldCount + delta;
-                        newCount = Math.max( 0, newCount );
-                        newCount = Math.min( config.onlineMaxCount, newCount );
-
-//-bug in hebbian predictor:
-//if frequency < 0.5 then will tend to zero
-//if frequency > 0.5 then will tend to max
-//this couldve badly affected results.
+                        float newCount = delta * config.onlineLearningRate + ( 1.f - config.onlineLearningRate ) * oldCount;
 
                         featureClassCount._values[ offset ] = newCount;
                     }
@@ -129,7 +126,7 @@ public class ClassFeaturesEntity extends Entity {
                 else {
                     int offset = i * config.classes + classValue;
 
-                    featureClassCount._values[ offset ] += 1;
+                    featureClassCount._values[ offset ] += 1.f;
                 }
             }
 
@@ -137,7 +134,7 @@ public class ClassFeaturesEntity extends Entity {
         }
 
         // predict:
-        int activeFeatures = 0;
+  //      int activeFeatures = 0;
 
         classPrediction.set( 0.f );
 
@@ -148,7 +145,7 @@ public class ClassFeaturesEntity extends Entity {
             }
 
             // active feature: so what does it vote for?
-            ++activeFeatures;
+//            ++activeFeatures;
 
             for( int c = 0; c < config.classes; ++c ) {
                 int offset = i * config.classes + c;

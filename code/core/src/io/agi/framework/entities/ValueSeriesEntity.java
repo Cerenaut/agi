@@ -76,8 +76,12 @@ public class ValueSeriesEntity extends Entity {
         Data output;
 
         if( config.period < 0 ) {
+            Data input = getData( OUTPUT ); // error in classification (0,1)
+            if( input == null ) {
+                input = new Data( DataSize.create( 1 ) );
+            }
+
             // infinite length
-            Data input = getDataLazyResize( OUTPUT, DataSize.create( 1 ) );
             int oldLength = input.getSize();
             output = new Data( DataSize.create( oldLength +1 ) );
             for( int i = 0; i < oldLength; ++i ) {

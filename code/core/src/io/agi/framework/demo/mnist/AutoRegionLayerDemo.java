@@ -77,90 +77,66 @@ public class AutoRegionLayerDemo {
         float defaultPredictionInhibition = 1.f; // random image classification only experiments
 //        float defaultPredictionInhibition = 0.f; // where you use prediction
         boolean encodeZero = false;
-        int layers = 3;
+        int layers = 1;
 
         // Define some entities
         String experimentName = "experiment";
         String mnistName = "mnist";
-        String imageEncoderName = "image-encoder";
-        String classEncoderName = "class-encoder";
-        String classDecoderName = "class-decoder";
-        String labelEncoderName = "label-encoder";
         String constantName = "constant";
         String region1FfName = "image-region-1-ff";
-//        String region2FfName = "image-region-2-ff";
-//        String region3FfName = "image-region-3-ff";
-//        String classRegionName = "class-region";
-        String activityImageDecoderName = "activity-image-decoder";
-        String predictedImageDecoderName = "predicted-image-decoder";
+        String region2FfName = "image-region-2-ff";
+        String region3FfName = "image-region-3-ff";
+        String imageEncoderName = "image-encoder";
+        String classFeaturesName = "class-features";
+
+        String valueSeriesPredictedName = "value-series-predicted";
+        String valueSeriesErrorName = "value-series-error";
+        String valueSeriesTruthName = "value-series-truth";
 
 //create a classifier entity based on most associated class.
-/*
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
-        Framework.CreateEntity( mnistName, MnistEntity.ENTITY_TYPE, n.getName(), experimentName );
-        Framework.CreateEntity( classEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), mnistName );
-        Framework.CreateEntity( labelEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), classEncoderName );
-        Framework.CreateEntity( imageEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), labelEncoderName );
+        Framework.CreateEntity( mnistName, Mnist2Entity.ENTITY_TYPE, n.getName(), experimentName );
+        Framework.CreateEntity( imageEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), mnistName );
         Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), imageEncoderName ); // ok all input to the regions is ready
 
-        Framework.CreateEntity( region1FfName, RegionLayerEntity.ENTITY_TYPE, n.getName(), constantName );
+        Framework.CreateEntity( region1FfName, AutoRegionLayerEntity.ENTITY_TYPE, n.getName(), constantName );
         String topLayerName = region1FfName;
         if( layers > 1 ) {
-            Framework.CreateEntity( region2FfName, RegionLayerEntity.ENTITY_TYPE, n.getName(), region1FfName );
+            Framework.CreateEntity( region2FfName, AutoRegionLayerEntity.ENTITY_TYPE, n.getName(), region1FfName );
             topLayerName = region2FfName;
         }
         if( layers > 2 ) {
-            Framework.CreateEntity( region3FfName, RegionLayerEntity.ENTITY_TYPE, n.getName(), region2FfName );
+            Framework.CreateEntity( region3FfName, AutoRegionLayerEntity.ENTITY_TYPE, n.getName(), region2FfName );
             topLayerName = region3FfName;
         }
 
-        Framework.CreateEntity( classRegionName, RegionLayerEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
-
-        Framework.CreateEntity( classDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), classRegionName ); // produce the predicted classification for inspection by mnist next time
-        Framework.CreateEntity( activityImageDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), classRegionName );
-        Framework.CreateEntity( predictedImageDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), classRegionName );
+        Framework.CreateEntity( classFeaturesName, ClassFeaturesEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
+        Framework.CreateEntity( valueSeriesPredictedName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), classFeaturesName ); // 2nd, class region updates after first to get its feedback
+        Framework.CreateEntity( valueSeriesErrorName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), classFeaturesName ); // 2nd, class region updates after first to get its feedback
+        Framework.CreateEntity( valueSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), classFeaturesName ); // 2nd, class region updates after first to get its feedback
 
         // Connect the entities' data
         // a) Image to image region, and decode
         Framework.SetDataReference( imageEncoderName, EncoderEntity.DATA_INPUT, mnistName, MnistEntity.OUTPUT_IMAGE );
 
-        Framework.SetDataReference( region1FfName, RegionLayerEntity.FF_INPUT_1, imageEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
-        Framework.SetDataReference( region1FfName, RegionLayerEntity.FF_INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
-        Framework.SetDataReference( region1FfName, RegionLayerEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT ); // feedback to this region is just a constant
+        Framework.SetDataReference( region1FfName, AutoRegionLayerEntity.INPUT_1, imageEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
+        Framework.SetDataReference( region1FfName, AutoRegionLayerEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
 
         if( layers > 1 ) {
-            Framework.SetDataReference( region2FfName, RegionLayerEntity.FF_INPUT_1, region1FfName, RegionLayerEntity.PREDICTION_FN );
-            Framework.SetDataReference( region2FfName, RegionLayerEntity.FF_INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
-            Framework.SetDataReference( region2FfName, RegionLayerEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT ); // feedback to this region is just a constant
+            Framework.SetDataReference( region2FfName, AutoRegionLayerEntity.INPUT_1, region1FfName, AutoRegionLayerEntity.CONTEXTUAL_OUTPUT );
+            Framework.SetDataReference( region2FfName, AutoRegionLayerEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
         }
 
         if( layers > 2 ) {
-            Framework.SetDataReference( region3FfName, RegionLayerEntity.FF_INPUT_1, region2FfName, RegionLayerEntity.PREDICTION_FN );
-            Framework.SetDataReference( region3FfName, RegionLayerEntity.FF_INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
-// Option to provide class-label directly to layer 3 for inclusion in classification
-//            Framework.SetDataReference( region3FfName, RegionLayerEntity.FF_INPUT_2, labelEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
-            Framework.SetDataReference( region3FfName, RegionLayerEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT ); // feedback to this region is just a constant
+            Framework.SetDataReference( region3FfName, AutoRegionLayerEntity.INPUT_1, region2FfName, AutoRegionLayerEntity.CONTEXTUAL_OUTPUT );
+            Framework.SetDataReference( region3FfName, AutoRegionLayerEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
         }
 
-        Framework.SetDataReference(  activityImageDecoderName, DecoderEntity.DATA_INPUT_ENCODED, region1FfName, RegionLayerEntity.FB_OUTPUT_1_UNFOLDED_ACTIVITY );
-        Framework.SetDataReference( predictedImageDecoderName, DecoderEntity.DATA_INPUT_ENCODED, region1FfName, RegionLayerEntity.FB_OUTPUT_1_UNFOLDED_PREDICTION );
-
-        // a) Class to class region, and decode
-        Framework.SetDataReference( labelEncoderName, EncoderEntity.DATA_INPUT, mnistName, MnistEntity.OUTPUT_IMAGE_LABEL );
-        Framework.SetDataReference( classEncoderName, EncoderEntity.DATA_INPUT, mnistName, MnistEntity.OUTPUT_CLASSIFICATION );
-        Framework.SetDataReference( classRegionName, RegionLayerEntity.FF_INPUT_1, classEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
-        Framework.SetDataReference( classRegionName, RegionLayerEntity.FF_INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
-
-        ArrayList< AbstractPair< String, String > > referenceEntitySuffixes = new ArrayList< AbstractPair< String, String > >();
-        referenceEntitySuffixes.add( new AbstractPair< String, String >( region1FfName, RegionLayerEntity.PREDICTION_FN ) );
-//        if( layers > 1 ) referenceEntitySuffixes.add( new AbstractPair< String, String >( region2FfName, RegionLayerEntity.PREDICTION_FN ) );
-        if( layers > 2 ) referenceEntitySuffixes.add( new AbstractPair< String, String >( region3FfName, RegionLayerEntity.PREDICTION_FN ) );
-
-        Framework.SetDataReferences( classRegionName, RegionLayerEntity.FB_INPUT, referenceEntitySuffixes ); // get current state from the region to be used to predict
-
-        Framework.SetDataReference( classDecoderName, DecoderEntity.DATA_INPUT_ENCODED, classRegionName, RegionLayerEntity.FB_OUTPUT_1_UNFOLDED_PREDICTION ); // the prediction of the next state
-        Framework.SetDataReference( mnistName, MnistEntity.INPUT_CLASSIFICATION, classDecoderName, DecoderEntity.DATA_OUTPUT_DECODED ); // the (decoded) prediction of the next state
-
+        ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList< AbstractPair< String, String > >();
+        if( layers > 0 ) featureDatas.add( new AbstractPair< String, String >( region1FfName, AutoRegionLayerEntity.CONTEXTUAL_OUTPUT ) );
+        if( layers > 1 ) featureDatas.add( new AbstractPair< String, String >( region2FfName, AutoRegionLayerEntity.CONTEXTUAL_OUTPUT ) );
+        if( layers > 2 ) featureDatas.add( new AbstractPair< String, String >( region3FfName, AutoRegionLayerEntity.CONTEXTUAL_OUTPUT ) );
+        Framework.SetDataReferences( classFeaturesName, ClassFeaturesEntity.FEATURES, featureDatas ); // get current state from the region to be used to predict
 
         // Experiment config
         if( !terminateByAge ) {
@@ -189,79 +165,101 @@ public class AutoRegionLayerDemo {
 
         // constant config
         if( encodeZero ) {
-
             // image encoder config
             Framework.SetConfig( imageEncoderName, "density", "1" );
             Framework.SetConfig( imageEncoderName, "bits", "2" );
             Framework.SetConfig( imageEncoderName, "encodeZero", "true" );
-
-            // image decoder config x2
-            Framework.SetConfig( activityImageDecoderName, "density", "1" );
-            Framework.SetConfig( activityImageDecoderName, "bits", "2" );
-            Framework.SetConfig( activityImageDecoderName, "encodeZero", "true" );
-
-            Framework.SetConfig( predictedImageDecoderName, "density", "1" );
-            Framework.SetConfig( predictedImageDecoderName, "bits", "2" );
-            Framework.SetConfig( predictedImageDecoderName, "encodeZero", "true" );
         }
         else {
-
             // image encoder config
             Framework.SetConfig( imageEncoderName, "density", "1" );
             Framework.SetConfig( imageEncoderName, "bits", "1" );
             Framework.SetConfig( imageEncoderName, "encodeZero", "false" );
-
-            // image decoder config x2
-            Framework.SetConfig( activityImageDecoderName, "density", "1" );
-            Framework.SetConfig( activityImageDecoderName, "bits", "1" );
-            Framework.SetConfig( activityImageDecoderName, "encodeZero", "false" );
-
-            Framework.SetConfig( predictedImageDecoderName, "density", "1" );
-            Framework.SetConfig( predictedImageDecoderName, "bits", "1" );
-            Framework.SetConfig( predictedImageDecoderName, "encodeZero", "false" );
         }
 
-        // class encoder config
-        Framework.SetConfig( labelEncoderName, "encoderType", NumberEncoder.class.getSimpleName() );
-        Framework.SetConfig( labelEncoderName, "digits", "2" );
-        Framework.SetConfig( labelEncoderName, "numbers", "1" );
-
-        // class encoder config
-        Framework.SetConfig( classEncoderName, "encoderType", NumberEncoder.class.getSimpleName() );
-        Framework.SetConfig( classEncoderName, "digits", "2" );
-        Framework.SetConfig( classEncoderName, "numbers", "1" );
-
-        // class decoder config
-        Framework.SetConfig( classDecoderName, "encoderType", NumberEncoder.class.getSimpleName() );
-        Framework.SetConfig( classDecoderName, "digits", "2" );
-        Framework.SetConfig( classDecoderName, "numbers", "1" );
-
         // image region config
+        int widthCells = 20;
+        int heightCells = 20;
+        int ageMin = 0;
+        int ageMax = 1000;
+        float sparseLearningRate = 0.1f;
 
-        setPlasticRegionLayerConfig(
-                region1FfName, defaultPredictionInhibition, emitUnchangedCells, organizerWidth, organizerHeight,
-                classifiersPerBit1, classifiersPerBit2, classifierWidth, classifierHeight, classifierDepth,
-                classifierStressLearningRate, classifierRankLearningRate, classifierRankScale,
-                classifierAgeMax, classifierAgeDecay, classifierAgeScale, predictorLearningRate );
+        float cells = (float)( widthCells * heightCells );
+        float sparsityMin = cells * 0.05f;
+        float sparsityMax = cells * 0.25f;
+        float sparsityOutput = sparsityMin * 2.f;
 
-        if( layers > 1 )
-            setPlasticRegionLayerConfig(
-                    region2FfName, defaultPredictionInhibition, emitUnchangedCells, organizerWidth, organizerHeight,
-                    classifiersPerBit1, classifiersPerBit2, classifierWidth, classifierHeight, classifierDepth,
-                    classifierStressLearningRate, classifierRankLearningRate, classifierRankScale,
-                    classifierAgeMax, classifierAgeDecay, classifierAgeScale, predictorLearningRate );
+//        float sparsityCells = 0.f; // determined by age
+        float sparsityFactor = 1.f;
+        float predictorLearningRate = 0.001f;
 
+        setRegionLayerConfig(
+            region1FfName,
+            widthCells, heightCells,
+            ageMin, ageMax,
+            sparseLearningRate, sparsityMin, sparsityMax, sparsityFactor, sparsityOutput,
+            defaultPredictionInhibition, predictorLearningRate );
 
-        if( layers > 2 )
-            setPlasticRegionLayerConfig(
-                    region3FfName, defaultPredictionInhibition, emitUnchangedCells, organizerWidth, organizerHeight,
-                    classifiersPerBit1, classifiersPerBit2, classifierWidth,classifierHeight, classifierDepth,
-                    classifierStressLearningRate, classifierRankLearningRate, classifierRankScale,
-                    classifierAgeMax, classifierAgeDecay, classifierAgeScale, predictorLearningRate );
-*/
+        // feature-class config
+        Framework.SetConfig( classFeaturesName, "classEntityName", mnistName );
+        Framework.SetConfig( classFeaturesName, "classConfigPath", "imageClass" );
+        Framework.SetConfig( classFeaturesName, "classes", "10" );
+        Framework.SetConfig( classFeaturesName, "onlineLearning", "true" );
+        Framework.SetConfig( classFeaturesName, "onlineLearningRate", "0.001" );
+
+        // data series logging
+        Framework.SetConfig( valueSeriesPredictedName, "period", "-1" ); // log forever
+        Framework.SetConfig( valueSeriesErrorName, "period", "-1" );
+        Framework.SetConfig( valueSeriesTruthName, "period", "-1" );
+
+        Framework.SetConfig( valueSeriesPredictedName, "entityName", classFeaturesName ); // log forever
+        Framework.SetConfig( valueSeriesErrorName, "entityName", classFeaturesName );
+        Framework.SetConfig( valueSeriesTruthName, "entityName", classFeaturesName );
+
+        Framework.SetConfig( valueSeriesPredictedName, "configPath", "classPredicted" ); // log forever
+        Framework.SetConfig( valueSeriesErrorName, "configPath", "classError" );
+        Framework.SetConfig( valueSeriesTruthName, "configPath", "classTruth" );
     }
 
-    public static void setRegionLayerConfig( String regionLayerName, float defaultPredictionInhibition, boolean emitUnchangedCells, int classifiersPerBit1, int classifiersPerBit2, int classifierWidth, int classifierHeight, int organizerWidth, int organizerHeight, int edgeMaxAge ) {
+    public static void setRegionLayerConfig(
+            String regionLayerName,
+            int widthCells,
+            int heightCells,
+            int ageMin,
+            int ageMax,
+            float sparseLearningRate,
+            float sparsityMin,
+            float sparsityMax,
+//            float sparsityCells,
+            float sparsityFactor,
+            float sparsityOutput,
+            float defaultPredictionInhibition,
+            float predictorLearningRate ) {
+
+        Framework.SetConfig( regionLayerName, "contextFreeLearningRate", String.valueOf( sparseLearningRate ) );
+        Framework.SetConfig( regionLayerName, "contextFreeWidthCells", String.valueOf( widthCells ) );
+        Framework.SetConfig( regionLayerName, "contextFreeHeightCells", String.valueOf( heightCells ) );
+        Framework.SetConfig( regionLayerName, "contextFreeSparsity", String.valueOf( 0 ) );
+        Framework.SetConfig( regionLayerName, "contextFreeSparsityOutput", String.valueOf( sparsityFactor ) );
+        Framework.SetConfig( regionLayerName, "contextFreeSparsityMin", String.valueOf( sparsityMin ) );
+        Framework.SetConfig( regionLayerName, "contextFreeSparsityMax", String.valueOf( sparsityMax ) );
+        Framework.SetConfig( regionLayerName, "contextFreeAgeMin", String.valueOf( ageMin ) );
+        Framework.SetConfig( regionLayerName, "contextFreeAgeMax", String.valueOf( ageMax ) );
+        Framework.SetConfig( regionLayerName, "contextFreeAge", String.valueOf( 0 ) );
+        Framework.SetConfig( regionLayerName, "contextualLearningRate", String.valueOf( sparseLearningRate ) );
+        Framework.SetConfig( regionLayerName, "contextualWidthCells", String.valueOf( widthCells ) );
+        Framework.SetConfig( regionLayerName, "contextualHeightCells", String.valueOf( heightCells ) );
+        Framework.SetConfig( regionLayerName, "contextualSparsity", String.valueOf( 0 ) );
+        Framework.SetConfig( regionLayerName, "contextualSparsityOutput", String.valueOf( sparsityFactor ) );
+        Framework.SetConfig( regionLayerName, "contextualSparsityMin", String.valueOf( sparsityMin ) );
+        Framework.SetConfig( regionLayerName, "contextualSparsityMax", String.valueOf( sparsityMax ) );
+        Framework.SetConfig( regionLayerName, "contextualAgeMin", String.valueOf( ageMin ) );
+        Framework.SetConfig( regionLayerName, "contextualAgeMax", String.valueOf( ageMax ) );
+        Framework.SetConfig( regionLayerName, "contextualAge", String.valueOf( 0 ) );
+        Framework.SetConfig( regionLayerName, "outputSparsity", String.valueOf( sparsityOutput ) );
+        Framework.SetConfig( regionLayerName, "defaultPredictionInhibition", String.valueOf( defaultPredictionInhibition ) );
+        Framework.SetConfig( regionLayerName, "predictorLearningRate", String.valueOf( predictorLearningRate ) );
+
     }
 
 }

@@ -67,8 +67,8 @@ public class DeepMNISTDemo {
 //how to plumb up the fb pathway?
 //inverted region - gets FN errors from above
 //use the state of the inverted region to read out the predictions?
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle_twin";
@@ -77,12 +77,12 @@ public class DeepMNISTDemo {
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle_deep";
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/all_train";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/all_t10k";
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
-//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/5k_test";
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
+        String testingPath = "/home/dave/workspace/agi.io/data/mnist/5k_test";
 //        String trainingPath = "./training";
 //        String testingPath = "./testing";
-//        int terminationAge = 10;//9000;
-        int terminationAge = 25;
+        int terminationAge = 9000;
+//        int terminationAge = 25;
         int trainingBatches = 1;
         int layers = 3;
         boolean terminateByAge = true;
@@ -163,9 +163,9 @@ public class DeepMNISTDemo {
         Framework.SetDataReference( classRegionName, RegionLayerEntity.FF_INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
 
         ArrayList< AbstractPair< String, String > > referenceEntitySuffixes = new ArrayList< AbstractPair< String, String > >();
-        referenceEntitySuffixes.add( new AbstractPair< String, String >( region1FfName, RegionLayerEntity.PREDICTION_FN ) );
-//        if( layers > 1 ) referenceEntitySuffixes.add( new AbstractPair< String, String >( region2FfName, RegionLayerEntity.PREDICTION_FN ) );
-        if( layers > 2 ) referenceEntitySuffixes.add( new AbstractPair< String, String >( region3FfName, RegionLayerEntity.PREDICTION_FN ) );
+//        referenceEntitySuffixes.add( new AbstractPair< String, String >( region1FfName, RegionLayerEntity.PREDICTION_FN ) );
+        if( layers > 1 ) referenceEntitySuffixes.add( new AbstractPair< String, String >( region2FfName, RegionLayerEntity.PREDICTION_FN ) );
+//        if( layers > 2 ) referenceEntitySuffixes.add( new AbstractPair< String, String >( region3FfName, RegionLayerEntity.PREDICTION_FN ) );
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //        // Special test of accuracy in static classification:
@@ -270,6 +270,7 @@ public class DeepMNISTDemo {
 
 //        int predictorLearningRate = 500;
         float predictorLearningRate = 0.001f;
+//        float predictorLearningRate = 0.01f;
         int edgeMaxAge = 400;
         int classifierGrowthInterval = 120;
 
