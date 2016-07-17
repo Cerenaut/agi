@@ -68,11 +68,11 @@ public class ClassFeaturesEntity extends Entity {
         attributes.add( CLASS_PREDICTION );
     }
 
-    @Override
     public Class getConfigClass() {
         return ClassFeaturesEntityConfig.class;
     }
 
+    @Override
     protected void doUpdateSelf() {
 
         ClassFeaturesEntityConfig config = ( ClassFeaturesEntityConfig ) _config;

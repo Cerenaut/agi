@@ -105,6 +105,7 @@ public class DeepMNISTDemo {
         String classRegionName = "class-region";
         String activityImageDecoderName = "activity-image-decoder";
         String predictedImageDecoderName = "predicted-image-decoder";
+        String svmName = "svm-entity";
 
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         Framework.CreateEntity( mnistName, MnistEntity.ENTITY_TYPE, n.getName(), experimentName );
@@ -112,6 +113,7 @@ public class DeepMNISTDemo {
         Framework.CreateEntity( labelEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), classEncoderName );
         Framework.CreateEntity( imageEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), labelEncoderName );
         Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), imageEncoderName ); // ok all input to the regions is ready
+        Framework.CreateEntity( svmName, SVMEntity.ENTITY_TYPE, n.getName(), experimentName ); // ok all input to the regions is ready
 
         Framework.CreateEntity( region1FfName, RegionLayerEntity.ENTITY_TYPE, n.getName(), constantName );
         String topLayerName = region1FfName;
