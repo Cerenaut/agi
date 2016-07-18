@@ -43,7 +43,7 @@ var Matrix = {
     var stride = $( "#stride" ).val();
     if( stride > 0 ) {
       w = stride;
-      h = dataElements.length / w;
+      h = Math.floor( dataElements.length / w );
     }
 
     var xCategories = [];
