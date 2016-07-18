@@ -49,9 +49,11 @@ var Search = {
       var object = objects[ i ];
       var objectName = object.name;
       var objectValue = objectName;
+      var root = false;
       if( "parent" in object ) {
         if( object.parent == "null" ) {
           objectValue = objectValue + " <b style='color:#ff0000'>(Root)</b>";
+          root = true;
         }
       }
 
@@ -65,6 +67,11 @@ var Search = {
 
       if( Search.type == "entities" ) {
         linksValue = "<a href='config.html?entity="+ objectName + "' title='Open config' target='_blank'>Config</a>";
+        if( root ) {
+          linksValue = linksValue 
+                     + " / <a href='graph.html?entity="+ objectName + "' title='Open as Graph' target='_blank'>Graph</a>"
+                     + " / <a href='experiment.html?entity="+ objectName + "' title='Open as Experiment' target='_blank'>Experiment</a>";
+        }
       }
       else if( Search.type == "data" ) {
         linksValue = "<a href='matrix.html?data="+ objectName + "' title='Open as Matrix' target='_blank'>Matrix</a> / "
@@ -100,6 +107,9 @@ var Search = {
 
     if( Search.type != null ) {
       Search.start();
+    }
+    else {
+      Search.getEntities();
     }
   }
 
