@@ -20,7 +20,6 @@
 package io.agi.framework.demo.mnist;
 
 import io.agi.core.orm.AbstractPair;
-import io.agi.core.sdr.NumberEncoder;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
@@ -94,7 +93,7 @@ public class AutoRegionLayerDemo {
         String valueSeriesTruthName = "value-series-truth";
 
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
-        Framework.CreateEntity( mnistName, Mnist2Entity.ENTITY_TYPE, n.getName(), experimentName );
+        Framework.CreateEntity( mnistName, ImageClassEntity.ENTITY_TYPE, n.getName(), experimentName );
         Framework.CreateEntity( imageEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), mnistName );
         Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), imageEncoderName ); // ok all input to the regions is ready
 

@@ -27,6 +27,7 @@ import java.util.Map;
 
 /**
  * http://stackoverflow.com/questions/3732109/simple-http-server-in-java-using-only-java-se-api
+ *
  * Created by dave on 19/02/16.
  */
 public class HttpCoordinationHandler implements HttpHandler {

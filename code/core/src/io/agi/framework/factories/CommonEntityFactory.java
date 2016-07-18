@@ -23,7 +23,7 @@ import io.agi.core.orm.ObjectMap;
 import io.agi.framework.Entity;
 import io.agi.framework.EntityFactory;
 import io.agi.framework.Node;
-import io.agi.framework.demo.mnist.Mnist2Entity;
+import io.agi.framework.demo.mnist.ImageClassEntity;
 import io.agi.framework.demo.mnist.MnistEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.persistence.models.ModelEntity;
@@ -122,8 +122,8 @@ public class CommonEntityFactory implements EntityFactory {
             return new MnistEntity( objectMap, _n, modelEntity );
         }
 
-        if( entityType.equals( Mnist2Entity.ENTITY_TYPE ) ) {
-            return new Mnist2Entity( objectMap, _n, modelEntity );
+        if( entityType.equals( ImageClassEntity.ENTITY_TYPE ) ) {
+            return new ImageClassEntity( objectMap, _n, modelEntity );
         }
 
         return null;

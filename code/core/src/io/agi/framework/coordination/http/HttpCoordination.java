@@ -50,6 +50,10 @@ public class HttpCoordination implements Coordination {
 
     }
 
+    public Node getNode() {
+        return _n;
+    }
+
     public void setNode( Node n ) {
         _n = n;
     }
@@ -80,6 +84,7 @@ public class HttpCoordination implements Coordination {
         HttpExportHandler exh = new HttpExportHandler();
         HttpConfigHandler ch = new HttpConfigHandler( _n.getPersistence() );
         HttpVersionHandler vh = new HttpVersionHandler();
+        HttpStopHandler sh = new HttpStopHandler( _n );
 
         HttpUtil.AddHandler( _s, HttpConfigHandler.CONTEXT, ph );
         HttpUtil.AddHandler( _s, HttpDataHandler.CONTEXT, dh );
@@ -89,6 +94,7 @@ public class HttpCoordination implements Coordination {
         HttpUtil.AddHandler( _s, HttpExportHandler.CONTEXT, exh );
         HttpUtil.AddHandler( _s, HttpConfigHandler.CONTEXT, ch );
         HttpUtil.AddHandler( _s, HttpVersionHandler.CONTEXT, vh );
+        HttpUtil.AddHandler( _s, HttpStopHandler.CONTEXT, vh );
     }
 
     /**
