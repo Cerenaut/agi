@@ -34,6 +34,7 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
     public static final String SPARSITY_MAX = "sparsity-max";
     public static final String SPARSITY_MIN = "sparsity-min";
     public static final String SPARSITY_OUTPUT = "sparsity-output";
+    public static final String BINARY_OUTPUT = "binary-output";
     public static final String AGE_MIN = "age-min";
     public static final String AGE_MAX = "age-max";
     public static final String AGE = "age";
@@ -66,6 +67,7 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
             int w,
             int h,
             float learningRate,
+            boolean binaryOutput,
             float sparsityOutput,
             int sparsity,
             int sparsityMin,
@@ -77,6 +79,7 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
         super.setup( om, name, r, inputs, w, h );
 
         setLearningRate( learningRate );
+        setBinaryOutput( binaryOutput );
         setSparsityOutput( sparsityOutput );
         setSparsity( sparsity );
         setSparsityMin( sparsityMin );
@@ -92,6 +95,7 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
         KSparseAutoencoderConfig c = ( KSparseAutoencoderConfig ) nc;
 
         setLearningRate( c.getLearningRate() );
+        setBinaryOutput( c.getBinaryOutput() );
         setSparsityOutput( c.getSparsityOutput() );
         setSparsity( c.getSparsity() );
         setSparsityMin( c.getSparsityMin() );
@@ -103,6 +107,10 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
 
     public void setLearningRate( float r ) {
         _om.put( getKey( LEARNING_RATE ), r );
+    }
+
+    public void setBinaryOutput( boolean b ) {
+        _om.put( getKey( BINARY_OUTPUT ), b );
     }
 
     public void setSparsityOutput( float r ) {
@@ -136,6 +144,11 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
     public float getLearningRate() {
         Float r = _om.getFloat( getKey( LEARNING_RATE ) );
         return r.floatValue();
+    }
+
+    public boolean getBinaryOutput() {
+        Boolean b = _om.getBoolean( getKey( BINARY_OUTPUT ) );
+        return b.booleanValue();
     }
 
     public float getSparsityOutput() {

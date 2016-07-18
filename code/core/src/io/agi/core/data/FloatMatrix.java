@@ -224,7 +224,7 @@ public class FloatMatrix {
         FloatArray m3 = new FloatArray( size );
         for( int y = 0; y < rows1; ++y ) {
             for( int x = 0; x < cols1; ++x ) {
-                int offset1 = getOffset( rows1, cols1, y, x );
+                int offset1 = getOffset( rows1, cols1, y, x ); // rows, cols, row, col
                 float value = m1._values[ offset1 ];//y * cols1 + x ];
                 int offset2 = getOffset( rows2, cols2, x, y );
                 m3._values[ offset2 ] = value;//x * rows1 + y ] = value;

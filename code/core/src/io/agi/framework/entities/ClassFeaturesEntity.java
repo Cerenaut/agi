@@ -118,7 +118,8 @@ public class ClassFeaturesEntity extends Entity {
                         int offset = i * config.classes + c;
 
                         float oldCount = featureClassCount._values[ offset ];
-                        float newCount = delta * config.onlineLearningRate + ( 1.f - config.onlineLearningRate ) * oldCount;
+                        float newCount = delta * config.onlineLearningRate
+                                       + ( 1.f - config.onlineLearningRate ) * oldCount;
 
                         featureClassCount._values[ offset ] = newCount;
                     }

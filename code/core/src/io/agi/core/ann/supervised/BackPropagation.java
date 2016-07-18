@@ -165,6 +165,7 @@ public abstract class BackPropagation {
     /**
      * Trains by gradient descent towards a local minima. A single layer is trained.
      *
+     * @param m Mask of the live cells in the layer (0 = dead)
      * @param d The derivative of the cost function with respect to the weighted sum z
      * @param w The weights of the layer
      * @param b The biases of the layer
@@ -172,6 +173,7 @@ public abstract class BackPropagation {
      * @param learningRate
      */
     public static void StochasticGradientDescent(
+            FloatArray m,
             FloatArray d,
             FloatArray w,
             FloatArray b,
@@ -189,6 +191,12 @@ public abstract class BackPropagation {
 
         for( int j = 0; j < J; ++j ) {
 
+            float mask = m._values[ j ];
+
+            if( mask == 0.f ) {
+                continue;
+            }
+
             float change = d._values[ j ];
 
             for( int k = 0; k < K; ++k ) {
@@ -197,7 +205,22 @@ public abstract class BackPropagation {
 
                 float a = i._values[ k ];
                 float wOld = w._values[ offset ];
-                float wNew = wOld - learningRate * change * a;
+
+                float wDelta = learningRate * change * a;
+                float wNew = wOld - wDelta;//learningRate * change * a;
+
+                //if( Math.abs( wNew ) > 100.f ) {
+                //    int g = 0;
+                //    g++;
+                //}
+                //if( Float.isInfinite( wNew ) ) {
+                //    int g = 0;
+                //    g++;
+                //}
+                //if( Float.isNaN( wNew ) ) {
+                //    int g = 0;
+                //    g++;
+                //}
 
                 w._values[ offset ] = wNew;
             }
