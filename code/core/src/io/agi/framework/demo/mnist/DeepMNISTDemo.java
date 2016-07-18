@@ -81,7 +81,7 @@ public class DeepMNISTDemo {
         String testingPath = "/home/dave/workspace/agi.io/data/mnist/5k_test";
 //        String trainingPath = "./training";
 //        String testingPath = "./testing";
-        int terminationAge = 9000;
+        int terminationAge = 25000;
 //        int terminationAge = 25;
         int trainingBatches = 1;
         int layers = 3;
@@ -163,7 +163,7 @@ public class DeepMNISTDemo {
         ArrayList< AbstractPair< String, String > > referenceEntitySuffixes = new ArrayList< AbstractPair< String, String > >();
 //        referenceEntitySuffixes.add( new AbstractPair< String, String >( region1FfName, RegionLayerEntity.PREDICTION_FN ) );
         if( layers > 1 ) referenceEntitySuffixes.add( new AbstractPair< String, String >( region2FfName, RegionLayerEntity.PREDICTION_FN ) );
-//        if( layers > 2 ) referenceEntitySuffixes.add( new AbstractPair< String, String >( region3FfName, RegionLayerEntity.PREDICTION_FN ) );
+        if( layers > 2 ) referenceEntitySuffixes.add( new AbstractPair< String, String >( region3FfName, RegionLayerEntity.PREDICTION_FN ) );
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //        // Special test of accuracy in static classification:
@@ -267,7 +267,8 @@ public class DeepMNISTDemo {
 //        float classifierAgeScale = 12.0f;
 
 //        int predictorLearningRate = 500;
-        float predictorLearningRate = 0.001f;
+//        float predictorLearningRate = 0.001f;
+        float predictorLearningRate = 0.005f;
 //        float predictorLearningRate = 0.01f;
         int edgeMaxAge = 400;
         int classifierGrowthInterval = 120;
@@ -301,9 +302,11 @@ public class DeepMNISTDemo {
 //        classifierRankScale = 10.0f;//25.0f;//7.f;//100.f;//15.f;//10.0f;
         organizerWidth = 7;
         organizerHeight = 7;
-        classifiersPerBit1 = 4;
-        classifierWidth = 5;
-        classifierHeight = 5;
+        classifiersPerBit1 = 3;//4;
+//        classifierWidth = 5;
+//        classifierHeight = 5;
+        classifierWidth = 6;
+        classifierHeight = 6;
 
         if( layers > 1 ) {
 //            setPlasticRegionLayerConfig(
@@ -336,7 +339,7 @@ public class DeepMNISTDemo {
 //        classifierHeight = 9;
         organizerWidth = 2;
         organizerHeight = 2;
-        classifiersPerBit1 = 5;
+        classifiersPerBit1 = 3;
         classifierWidth = 8;
         classifierHeight = 8;
 
