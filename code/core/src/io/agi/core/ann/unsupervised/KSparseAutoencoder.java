@@ -112,7 +112,7 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         //        show (see the exercise below) that zz has a Gaussian distribution with mean 00 and standard deviation
         //        3/2−−−√=1.22…3/2=1.22…. This is much more sharply peaked than before, so much so that even the graph
         //        below understates the situation, since I've had to rescale the vertical axis, when compared to the earlier graph:
-        
+
         //        _cellWeights.random( _c._r );
         //        _cellBiases1.random( _c._r );
         //        _cellBiases2.random( _c._r );
