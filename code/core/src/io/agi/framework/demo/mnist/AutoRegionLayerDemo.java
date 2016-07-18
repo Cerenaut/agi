@@ -80,7 +80,7 @@ public class AutoRegionLayerDemo {
 
         // Define some entities
         String experimentName = "experiment";
-        String mnistName = "mnist";
+        String imageClassName = "image-class";
         String constantName = "constant";
         String region1FfName = "image-region-1-ff";
         String region2FfName = "image-region-2-ff";
@@ -93,8 +93,8 @@ public class AutoRegionLayerDemo {
         String valueSeriesTruthName = "value-series-truth";
 
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
-        Framework.CreateEntity( mnistName, ImageClassEntity.ENTITY_TYPE, n.getName(), experimentName );
-        Framework.CreateEntity( imageEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), mnistName );
+        Framework.CreateEntity( imageClassName, ImageClassEntity.ENTITY_TYPE, n.getName(), experimentName );
+        Framework.CreateEntity( imageEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), imageClassName );
         Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), imageEncoderName ); // ok all input to the regions is ready
 
         Framework.CreateEntity( region1FfName, AutoRegionLayerEntity.ENTITY_TYPE, n.getName(), constantName );
@@ -115,7 +115,7 @@ public class AutoRegionLayerDemo {
 
         // Connect the entities' data
         // a) Image to image region, and decode
-        Framework.SetDataReference( imageEncoderName, EncoderEntity.DATA_INPUT, mnistName, MnistEntity.OUTPUT_IMAGE );
+        Framework.SetDataReference( imageEncoderName, EncoderEntity.DATA_INPUT, imageClassName, ImageClassEntity.OUTPUT_IMAGE );
 
         Framework.SetDataReference( region1FfName, AutoRegionLayerEntity.INPUT_1, imageEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
         Framework.SetDataReference( region1FfName, AutoRegionLayerEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
@@ -138,7 +138,7 @@ public class AutoRegionLayerDemo {
 
         // Experiment config
         if( !terminateByAge ) {
-            Framework.SetConfig( experimentName, "terminationEntityName", mnistName );
+            Framework.SetConfig( experimentName, "terminationEntityName", imageClassName );
             Framework.SetConfig( experimentName, "terminationConfigPath", "terminate" );
             Framework.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
         }
@@ -147,19 +147,19 @@ public class AutoRegionLayerDemo {
         }
 
         // Mnist config
-        Framework.SetConfig( mnistName, "receptiveField.receptiveFieldX", "0" );
-        Framework.SetConfig( mnistName, "receptiveField.receptiveFieldY", "0" );
-        Framework.SetConfig( mnistName, "receptiveField.receptiveFieldW", "28" );
-        Framework.SetConfig( mnistName, "receptiveField.receptiveFieldH", "28" );
-        Framework.SetConfig( mnistName, "resolution.resolutionX", "28" );
-        Framework.SetConfig( mnistName, "resolution.resolutionY", "28" );
-        Framework.SetConfig( mnistName, "greyscale", "true" );
-        Framework.SetConfig( mnistName, "invert", "true" );
-        Framework.SetConfig( mnistName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
-        Framework.SetConfig( mnistName, "sourceFilesPrefix", "postproc" );
-        Framework.SetConfig( mnistName, "sourceFilesPathTraining", trainingPath );
-        Framework.SetConfig( mnistName, "sourceFilesPathTesting", testingPath );
-        Framework.SetConfig( mnistName, "trainingBatches", String.valueOf( trainingBatches ) );
+        Framework.SetConfig( imageClassName, "receptiveField.receptiveFieldX", "0" );
+        Framework.SetConfig( imageClassName, "receptiveField.receptiveFieldY", "0" );
+        Framework.SetConfig( imageClassName, "receptiveField.receptiveFieldW", "28" );
+        Framework.SetConfig( imageClassName, "receptiveField.receptiveFieldH", "28" );
+        Framework.SetConfig( imageClassName, "resolution.resolutionX", "28" );
+        Framework.SetConfig( imageClassName, "resolution.resolutionY", "28" );
+        Framework.SetConfig( imageClassName, "greyscale", "true" );
+        Framework.SetConfig( imageClassName, "invert", "true" );
+        Framework.SetConfig( imageClassName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
+        Framework.SetConfig( imageClassName, "sourceFilesPrefix", "postproc" );
+        Framework.SetConfig( imageClassName, "sourceFilesPathTraining", trainingPath );
+        Framework.SetConfig( imageClassName, "sourceFilesPathTesting", testingPath );
+        Framework.SetConfig( imageClassName, "trainingBatches", String.valueOf( trainingBatches ) );
 
         // constant config
         if( encodeZero ) {
@@ -204,7 +204,7 @@ public class AutoRegionLayerDemo {
             defaultPredictionInhibition, predictorLearningRate );
 
         // feature-class config
-        Framework.SetConfig( classFeaturesName, "classEntityName", mnistName );
+        Framework.SetConfig( classFeaturesName, "classEntityName", imageClassName );
         Framework.SetConfig( classFeaturesName, "classConfigPath", "imageClass" );
         Framework.SetConfig( classFeaturesName, "classes", "10" );
         Framework.SetConfig( classFeaturesName, "onlineLearning", "true" );
