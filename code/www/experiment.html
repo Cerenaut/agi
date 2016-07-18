@@ -31,7 +31,7 @@
 <!-- import, export, update/resume, flush toggle.
 update interval
 show flush, show age. -->
-       <img src="assets/images/logo-inverse-brown.png" style="width:50px;display:inline;margin-bottom:1em;"/><h1 style="display:inline;">Experiment Control Panel</h1>
+       <a href="/index.html" target="_blank"><img src="assets/images/logo-inverse-brown.png" style="width:50px;display:inline;margin-bottom:1em;"/></a><h1 style="display:inline;">Experiment Control Panel</h1>
        <p class="well">
         <label for="host">Node</label>
         <input type="text" id="host" style="" class="" placeholder="Host" value="localhost"/>
@@ -66,7 +66,7 @@ show flush, show age. -->
         </small>
        </p>
        <div class="well">
-       <form id="import-form" method="POST" enctype="multipart/form-data" >
+       <form id="import-form" method="POST" enctype="multipart/form-data" target="result" >
        <p>
        <label for="entity-file">Entity file</label>
        <input type="file" name="entity-file" id="entity-file" style="display:inline;" class="btn btn-sm" placeholder="Entity file name"/>
@@ -84,6 +84,7 @@ show flush, show age. -->
        </form>
        </div>
        <div class="" style="text-align:left;width:100%;">
+         <iframe width="100%" height="60px;" name="result" id="result" style="border:0;"></iframe>
          <p style="color:#aaaaaa;">Update:<br> <span id="update-result" style="color:#aaaaaa">-</span></p>
          <p style="color:#aaaaaa;">Config:<br> <span id="config-result" style="color:#aaaaaa">-</span></p>
        </div><!-- /.row -->
