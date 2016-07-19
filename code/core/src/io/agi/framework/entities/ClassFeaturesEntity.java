@@ -52,8 +52,8 @@ public class ClassFeaturesEntity extends Entity {
     public static final String ENTITY_TYPE = "class-features";
 
     public static final String FEATURES = "features";
-    public static final String FEATURE_CLASS_COUNT = "feature-class-count";
-    public static final String CLASS_PREDICTION = "class-prediction";
+    public static final String FEATURE_CLASS_COUNT = "feature-class-count";     // count of each of the features for a class
+    public static final String CLASS_PREDICTION = "class-prediction";           // z
 
     public ClassFeaturesEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
