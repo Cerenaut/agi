@@ -31,19 +31,34 @@ import io.agi.framework.persistence.models.ModelEntity;
 import java.util.Collection;
 
 /**
+ * Used to perform an unsupervised test of the classification utility of some features.
  * Associates bits in a binary vector with classifications.
  *
  * Inputs:
  *
- * - Class: A Data containing a Scalar integer value representing the current class
+ * - Class: A config property containing a Scalar integer value representing the current class
  * - Features: A Data containing a set of binary features (1 = present, 0 = absent)
  *
  * Outputs:
  *
+ *  2 Data:
  *  - ClassFeatures (A Data containing the frequencies of all features x all classes.)
+ *  - ClassPrediction (A Data containing a score for each class, where higher values = more likely.)
  *
+ *  3 Config properties:
+ *  - classTruth: The true class label at the current time
+ *  - classPredicted: The most likely class label given the model
+ *  - classError: 1 if the truth and predicted don't match, else 0
  *
- * Options are online learning or all-time learning.
+ * Options are online learning or all-time learning. The online learning has a forgetting factor which means it only
+ * considers recent samples when associating features with class labels. This is useful when the input features are still
+ * being learnt, as old feature associations may be inaccurate or misleading. However, once feature learning is complete,
+ * this same class can be used to test the final configuration over all samples in the training set, and then to predict
+ * over all samples in the testing set. Simply switch online learning off, to accumulate the count of all the features'
+ * frequencies over the whole training set, then turn learning off in this entity to do the testing.
+ *
+ * The predicted class values are always available, just ignore them when you're not testing (unless you want to monitor
+ * the learning process).
  *
  * Created by dave on 8/07/16.
  */
@@ -118,7 +133,8 @@ public class ClassFeaturesEntity extends Entity {
                         int offset = i * config.classes + c;
 
                         float oldCount = featureClassCount._values[ offset ];
-                        float newCount = delta * config.onlineLearningRate + ( 1.f - config.onlineLearningRate ) * oldCount;
+                        float newCount = delta * config.onlineLearningRate
+                                       + ( 1.f - config.onlineLearningRate ) * oldCount;
 
                         featureClassCount._values[ offset ] = newCount;
                     }
@@ -134,8 +150,6 @@ public class ClassFeaturesEntity extends Entity {
         }
 
         // predict:
-  //      int activeFeatures = 0;
-
         classPrediction.set( 0.f );
 
         for( int i = 0; i < features; ++i ) {
@@ -143,9 +157,6 @@ public class ClassFeaturesEntity extends Entity {
             if( r == 0.f ) {
                 continue;
             }
-
-            // active feature: so what does it vote for?
-//            ++activeFeatures;
 
             for( int c = 0; c < config.classes; ++c ) {
                 int offset = i * config.classes + c;

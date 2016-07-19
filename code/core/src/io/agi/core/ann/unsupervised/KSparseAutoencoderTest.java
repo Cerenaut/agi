@@ -51,6 +51,7 @@ public class KSparseAutoencoderTest implements UnitTest {
 
         // Algorithm specific parameters
         float learningRate = 0.001f;
+        boolean binaryOutput = false;
         float sparsityOutput = 1.5f;
         int sparsity = 0; // 3 x 3 = 9 possible inputs, * 2 (sparsity) = 18, 25 cells available
         int sparsityMin = 2;
@@ -66,7 +67,7 @@ public class KSparseAutoencoderTest implements UnitTest {
         c.setup(
             om, NAME, random,
             inputs, widthCells, heightCells,
-            learningRate, sparsityOutput, sparsity, sparsityMin, sparsityMax, ageMin, ageMax, age );
+            learningRate, binaryOutput, sparsityOutput, sparsity, sparsityMin, sparsityMax, ageMin, ageMax, age );
 
         KSparseAutoencoder ae = new KSparseAutoencoder( NAME, om );
         ae.setup( c );

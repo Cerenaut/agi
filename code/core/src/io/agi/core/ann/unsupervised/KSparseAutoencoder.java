@@ -28,6 +28,20 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 /**
+ * An implementation of K-Sparse Autoencoders by Alireza Makhzani and Brendan Frey
+ *
+ * Full paper at: http://arxiv.org/abs/1312.5663
+ *
+ * One small difference: I saw in a later paper the authors set the gradients to zero to implement the sparsening. But,
+ * in this paper I wasn't sure. Emailed them, and Ali says:
+ *
+ * "The implementation is only one line of code, just like dropout. In dropout, you randomly set hidden units to zero,
+ * in k-sparse autoencoder you set the k largest units to zero in the forward pass. If you set the activation to zero,
+ * then the gradient doesn't go back through that hidden unit. So you only need to modify the forward pass.
+ *
+ * Also, I bumped into Eric Laukien on the internet and he said he had better results setting the hidden activation of
+ * the k hidden cells to a unit value, so I've added that as an option but it isn't tested yet.
+ *
  * Created by dave on 1/07/16.
  */
 public class KSparseAutoencoder extends CompetitiveLearning {
@@ -67,11 +81,15 @@ public class KSparseAutoencoder extends CompetitiveLearning {
     }
 
     public void reset() {
+
+        // Better initialization of the weights:
         // http://neuralnetworksanddeeplearning.com/chap3.html
         // init weights to SD = 1/ sqrt( n ) where n is number of inputs.
+        int inputs = _inputValues.getSize(); //875.f;
+        float sqRtInputs = (float)Math.sqrt( (float)inputs );
         for( int i = 0; i < _cellWeights.getSize(); ++i ) {
             double r = _c._r.nextGaussian(); // mean: 0, SD: 1
-            _cellWeights._values[ i ] = (float)r;
+            _cellWeights._values[ i ] = (float)r / sqRtInputs;
         }
 
         for( int i = 0; i < _cellBiases1.getSize(); ++i ) {
@@ -83,6 +101,21 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             double r = _c._r.nextGaussian(); // mean: 0, SD: 1
             _cellBiases2._values[ i ] = (float)r;
         }
+
+        // From the textbook:
+        //        Then we shall initialize those weights as Gaussian random variables with mean 00 and standard deviation 1/nin−−−√1/nin.
+        //        That is, we'll squash the Gaussians down, making it less likely that our neuron will saturate.
+        //        We'll continue to choose the bias as a Gaussian with mean 00 and standard deviation 11, for reasons
+        //        I'll return to in a moment. With these choices, the weighted sum z=∑jwjxj+bz=∑jwjxj+b will again be a
+        //        Gaussian random variable with mean 00, but it'll be much more sharply peaked than it was before.
+        //        Suppose, as we did earlier, that 500500 of the inputs are zero and 500500 are 11. Then it's easy to
+        //        show (see the exercise below) that zz has a Gaussian distribution with mean 00 and standard deviation
+        //        3/2−−−√=1.22…3/2=1.22…. This is much more sharply peaked than before, so much so that even the graph
+        //        below understates the situation, since I've had to rescale the vertical axis, when compared to the earlier graph:
+
+        //        _cellWeights.random( _c._r );
+        //        _cellBiases1.random( _c._r );
+        //        _cellBiases2.random( _c._r );
 
         _c.setAge( 0 );
     }
@@ -124,6 +157,12 @@ public class KSparseAutoencoder extends CompetitiveLearning {
     }
 
     public void update() {
+        // don't go any further unless learning is enabled
+        boolean learn = _c.getLearn();
+        update( learn );
+    }
+
+    public void update( boolean learn ) {
 
         // have declining sparsity
         // z = W^T x  +b
@@ -139,7 +178,8 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         // mean sq err is quadratic cost function http://neuralnetworksanddeeplearning.com/chap1.html
         float learningRate = _c.getLearningRate();
         int k = updateSparsity();
-        float sparsityOutput = _c.getSparsityOutput();
+        float sparsityOutput = _c.getSparsityOutput(); // alpha
+        boolean binaryOutput = _c.getBinaryOutput();
         int k2 = (int)( (float)k * sparsityOutput );
 
         int inputs = _c.getNbrInputs();
@@ -151,6 +191,10 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         int rowsT = inputs; // major
         int colsT = cells; // minor
         FloatArray weightsT = FloatMatrix.transpose( _cellWeights, rows, cols );
+
+        for( int i = 0; i < inputs; ++i ) {
+            _inputValues._values[ i ] = Math.max( 0.001f, _inputValues._values[ i ] );
+        }
 
         // Hidden layer (forward pass)
         _cellActivity.set( 0.f );
@@ -200,7 +244,11 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         ArrayList< Integer > activeCells = Ranking.getBestValues( ranking, findMaxima, maxRank );
 
         for( Integer c : activeCells ) {
-            cellResponseTruncated._values[ c ] = _cellResponse._values[ c ]; // otherwise zero
+            float activeValue = 1.f;
+            if( !binaryOutput ) {
+                activeValue = _cellResponse._values[ c ]; // otherwise zero
+            }
+            cellResponseTruncated._values[ c ] = activeValue;
         }
 
         // Output layer (forward pass)
@@ -230,8 +278,10 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             _inputReconstruction._values[ i ] = sum;
         }
 
+        // TODO seems like I should test for a classification change here, to prevent overlearning a constant sample
+
         // don't go any further unless learning is enabled
-        if( !_c.getLearn() ) {
+        if( !learn ) {
             return;
         }
 
@@ -256,15 +306,22 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         FloatArray dHidden = new FloatArray( cells );
 
         // d output layer
+        float totalError = 0.f;
+
         for( int i = 0; i < inputs; ++i ) {
             float target = _inputValues._values[ i ]; // y
             float output = _inputReconstruction._values[ i ]; // a
             float error = output - target; // == d^L
 
             dOutput._values[ i ] = error;
+
+            totalError += ( error * error );
         }
 
+        System.err.println( "Total error: " + totalError );
+
         FloatArray iHidden = _inputValues;
+//        FloatArray iOutput = _cellResponse;//cellResponseTruncated; // input reconstructed as output
         FloatArray iOutput = cellResponseTruncated; // input reconstructed as output
 
         FloatArray bHidden = _cellBiases1;
@@ -274,8 +331,18 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         FloatArray wOutput = weightsT;
 
         // normally z is the weighted sum + bias, but in this case the transfer function is linear so it is the same as the post-transfer (output) value
+//        FloatArray zHidden = _cellResponse;//cellResponseTruncated; // i.e. these are mostly zeros
         FloatArray zHidden = cellResponseTruncated; // i.e. these are mostly zeros
         FloatArray zOutput = _inputReconstruction;
+
+        FloatArray mOutput = new FloatArray( inputs );
+        mOutput.set( 1.f );
+
+        FloatArray mHidden = new FloatArray( cells );
+        mHidden.set( 0.f );
+        for( Integer c : _activeCells ) {
+            mHidden._values[ c ] = 1.f;
+        }
 
         TransferFunction f = TransferFunction.createLinear();
 
@@ -284,16 +351,16 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         BackPropagation.ErrorGradient( zHidden, dHidden, wOutput, dOutput, f, l2R );
 
         // Mask out the gradients for the inactive cells.
-        for( int c = 0; c < cells; ++c ) {
-            if( activeCells.contains( c ) ) {
-                continue;
-            }
-
-            dHidden._values[ c ] = 0.f;
-        }
+//        for( int c = 0; c < cells; ++c ) {
+//            if( activeCells.contains( c ) ) {
+//                continue;
+//            }
+//
+//            dHidden._values[ c ] = 0.f;
+//        }
 
         // This will back propagate to any inputs that were nonzero, because inputs to the cell layer that are zero won't be adjusted
-        BackPropagation.StochasticGradientDescent( dOutput, wOutput, bOutput, iOutput, learningRate );
+        BackPropagation.StochasticGradientDescent( mOutput, dOutput, wOutput, bOutput, iOutput, learningRate );
 
         // Since we've modified the weights, we need to transpose them and copy before we can modify them again
         FloatArray weightsUnT = FloatMatrix.transpose( wOutput, rowsT, colsT );
@@ -302,7 +369,7 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         // Don't need to calculate the error gradient for the input layer, as it has no weights
         //BackPropagation.ErrorGradient( zInput, dInput, wHidden, dHidden, f, l2R ); // not required
 
-        BackPropagation.StochasticGradientDescent( dHidden, wHidden, bHidden, iHidden, learningRate );
+        BackPropagation.StochasticGradientDescent( mHidden, dHidden, wHidden, bHidden, iHidden, learningRate );
     }
 
 }

@@ -1,4 +1,9 @@
 
+//       new & old   new,old,pred,fp,fn     
+// input contextfree contextual
+// input contextfree contextual
+// input contextfree contextual
+
 function getScrollbarWidth() {
   var outer = document.createElement("div");
   outer.style.visibility = "hidden";
@@ -30,14 +35,14 @@ var Region = {
   pixelsColumnGap : 3,
   pixelsMargin : 4,
   pixelsPerBit : 8,
+  pixelsPerGap : 4,
   prefix : "",
 
-  selectedContextFreeCells : [  ],
-  selectedContextualCells : [  ],
+  selectedCells : [  ],
   selectedInput1 : [  ],
   selectedInput2 : [  ],
 
-  regionSuffixes : [ "-input-1", "-input-2", "-context-free-activity-new", "-context-free-activity-old", "-contextual-activity-new", "-contextual-activity-old", "-contextual-activity-fp", "-contextual-activity-fn", "-contextual-prediction-old", "-contextual-prediction-new", "-contextual-output", "-contextual-output-age" ],
+  regionSuffixes : [ "-input-1", "-input-2", "-context-free-response", "-context-free-weights", "-context-free-biases-2", "-context-free-activity-new", "-context-free-activity-old", "-prediction-fp", "-prediction-fn", "-prediction-old", "-prediction-new-real", "-prediction-new", "-output", "-output-age" ],
   regionSuffixIdx : 0,
   dataMap : {
   },
@@ -46,8 +51,14 @@ var Region = {
     $( "#status" ).html( status );
   },
 
+  selectClear : function() {
+    Region.selectedCells = [];
+    Region.updateSelection( "sel-cells", Region.selectedCells );
+    Region.repaint();
+  },
+
   selectText : function() {
-/*    var value = $( "#sel-cells" ).val();
+    var value = $( "#sel-cells" ).val();
     var values = value.split( "," );
 
     Region.selectedCells = [];
@@ -62,64 +73,58 @@ var Region = {
       Region.selectedCells.push( cell );
     }
 
-    Region.updateSelection( "sel-cells", Region.selectedCells );*/
+    Region.updateSelection( "sel-cells", Region.selectedCells );
     Region.repaint();
   },
-  selectActive : function() {
-/*    var dataActivityNew = Region.findData( "-activity-new" );
-    if( !dataActivityNew ) {
-      return; // can't paint
-    }
-    var dataActivityOld = Region.findData( "-activity-old" );
-    if( !dataActivityOld ) {
+
+  selectCells : function( dataSuffix ) {
+    var data = Region.findData( dataSuffix );
+    if( !data ) {
       return; // can't paint
     }
 
     Region.selectedCells = [];
-    for( var i = 0; i < dataActivityNew.elements.elements.length; ++i ) {
-      var valueNew = dataActivityNew.elements.elements[ i ];
-      var valueOld = dataActivityOld.elements.elements[ i ];
-      if( ( valueNew > 0.5 ) && ( valueOld < 0.5 ) ) {
+
+    for( var i = 0; i < data.elements.elements.length; ++i ) {
+      var value = data.elements.elements[ i ];
+      if( value > 0.5 ) {
         Region.selectedCells.push( i );
       }
     }
 
-    Region.updateSelection( "sel-cells", Region.selectedCells );*/
+    Region.updateSelection( "sel-cells", Region.selectedCells );
     Region.repaint();
+  },
+
+  selectPrevious : function() {
+    Region.selectCells( "-context-free-activity-old" );
+  },
+
+  selectActive : function() {
+    Region.selectCells( "-context-free-activity-new" );
   },
   selectPredicted : function() {
-/*    var dataPredictionNew = Region.findData( "-prediction-new" );
-    if( !dataPredictionNew ) {
-      return; // can't paint
-    }
-
-    Region.selectedCells = [];
-    for( var i = 0; i < dataPredictionNew.elements.elements.length; ++i ) {
-      var valueNew = dataPredictionNew.elements.elements[ i ];
-      if( ( valueNew > 0.5 ) ) {
-        Region.selectedCells.push( i );
-      }
-    }
-
-    Region.updateSelection( "sel-cells", Region.selectedCells );*/
-    Region.repaint();
+    Region.selectCells( "-prediction-new" );
   },
 
   toggleSelectCell : function( offset ) {
-//    Region.toggleSelection( Region.selectedCells, offset );
-//    Region.updateSelection( "sel-cells", Region.selectedCells );
+    Region.toggleSelection( Region.selectedCells, offset );
+    Region.updateSelection( "sel-cells", Region.selectedCells );
+    Region.repaint();
   },
   toggleSelectInput1 : function( offset ) {
-//    Region.toggleSelection( Region.selectedInput1, offset );
-//    Region.updateSelection( "sel-input-1", Region.selectedInput1 );
+    Region.toggleSelection( Region.selectedInput1, offset );
+    Region.updateSelection( "sel-input-1", Region.selectedInput1 );
+    Region.repaint();
   },
   toggleSelectInput2 : function( offset ) {
-//    Region.toggleSelection( Region.selectedInput2, offset );
+    Region.toggleSelection( Region.selectedInput2, offset );
     Region.updateSelection( "sel-input-2", Region.selectedInput2 );
+    Region.repaint();
   },
 
   selectThreshold : function() {
-    Region.selectedInput1 = [];
+/*    Region.selectedInput1 = [];
     Region.selectedInput2 = [];
 
     var data1 = Region.findData( "-ff-input-1" );
@@ -183,12 +188,12 @@ var Region = {
     Region.selectThresholdForInput( 1, Region.selectedInput2, w2, h2, rw, rh, cw, ch, cd, ow, oh, classifierInputStride, classifierInputOffset );
 
     Region.updateSelection( "sel-input-1", Region.selectedInput1 );
-    Region.updateSelection( "sel-input-2", Region.selectedInput2 );
+    Region.updateSelection( "sel-input-2", Region.selectedInput2 );*/
     Region.repaint();
   },
 
   selectThresholdForInput : function( inputIndex, selectedInput, w, h, rw, rh, cw, ch, cd, ow, oh, classifierInputStride, classifierInputOffset ) {
-    var threshold = $( "#threshold" ).val();
+/*    var threshold = $( "#threshold" ).val();
 
     var dataClassifierOutputWeights = Region.findData( "-classifier-output-weights" );
 
@@ -231,7 +236,7 @@ var Region = {
         }
       }
 
-    }    
+    }    */
   },
 
   updateSelection : function( id, list ) {
@@ -265,81 +270,58 @@ var Region = {
 
   // info about mouse actions
   setMouseLeft : function( status ) {
-    $( "#mouse-left" ).html( status );
+//    $( "#mouse-left" ).html( status );
   },
   setMouseRight : function( status ) {
-    $( "#mouse-right" ).html( status );
+//    $( "#mouse-right" ).html( status );
   },
 
   onMouseMoveLeft : function( e, mx, my ) {
+  },
+  onMouseMoveCentre : function( e, mx, my ) {
   },
   onMouseMoveRight : function( e, mx, my ) {
   },
 
   onMouseClickLeft : function( e, mx, my ) {
-    var dataActivityNew = Region.findData( "-activity-new" );
-    if( !dataActivityNew ) {
+    Region.onMouseClickCentre( e, mx, my );
+  },
+
+  onMouseClickCentre : function( e, mx, my ) {
+
+    var dataNew = Region.findData( "-context-free-activity-new" );
+    if( !dataNew ) {
       return; // can't paint
     }
 
-    var dataOrganizerOutputMask = Region.findData( "-organizer-output-mask" );
-    if( !dataOrganizerOutputMask ) {
-      return; // can't paint
-    }
+    var dataSize = Framework.getDataSize( dataNew );
+    var w = dataSize.w;
+    var h = dataSize.h;
 
-    // rw = RegionWidth
-    // ow = OrganizerWidth
-    // cw = Column or Classifier Width
-    var regionDataSize = Framework.getDataSize( dataActivityNew );
-    var rw = regionDataSize.w;
-    var rh = regionDataSize.h;
-
-    var organizerDataSize = Framework.getDataSize( dataOrganizerOutputMask );
-    var ow = organizerDataSize.w;
-    var oh = organizerDataSize.h;
-
-    // computer classifier size (column size)
-    if( ( rw == 0 ) || ( rh == 0 ) ) {
+    if( ( w == 0 ) || ( h == 0 ) ) {
       return;
     }
 
-    if( ( ow == 0 ) || ( oh == 0 ) ) {
-      return;
-    }
-    
-    var cw = rw / ow;
-    var ch = rh / oh; // this is column not classifier
+    var cx = Math.floor( mx / ( Region.pixelsPerBit ) );
+    var cy = Math.floor( my / ( Region.pixelsPerBit ) );
 
-    var ox = Math.floor( mx / ( cw * Region.pixelsPerBit + Region.pixelsColumnGap ) );
-    var oy = Math.floor( my / ( ch * Region.pixelsPerBit + Region.pixelsColumnGap ) );
+    var offset = cy * w + cx;
 
-    var cx = mx - ( ox * ( cw * Region.pixelsPerBit + Region.pixelsColumnGap ) );
-    var cy = my - ( oy * ( ch * Region.pixelsPerBit + Region.pixelsColumnGap ) );
-
-    cx = Math.floor( cx / Region.pixelsPerBit );    
-    cy = Math.floor( cy / Region.pixelsPerBit );    
-
-    if( ( cx < 0 ) || ( cy < 0 ) || ( cx >= cw ) || ( cy >= ch ) ) {
-      return; // may be in the gap
-    }
-
-    var rx = ox * cw + cx;
-    var ry = oy * ch + cy;
-
-    var offset = ry * rw + rx;
-
-    Region.setMouseLeft( "Column: [" + ox + ", " + oy + "] Cell: [" + cx + ", " + cy + "] Region: [" + rx + ", " + ry + "]" );
     Region.toggleSelectCell( offset );
-    Region.repaint();
+    //Region.toggleSelection( Region.selectedCells, offset );
+    //Region.updateSelection( "sel-cells", Region.selectedCells );
+
+    //Region.
+    //Region.repaint();
   },
 
   onMouseClickRight : function( e, mx, my ) {
-    var data1 = Region.findData( "-ff-input-1" );
+    var data1 = Region.findData( "-input-1" );
     if( !data1 ) {
       return; // can't paint
     }
 
-    var data2 = Region.findData( "-ff-input-2" );
+    var data2 = Region.findData( "-input-2" );
     if( !data2 ) {
       return; // can't paint
     }
@@ -396,20 +378,49 @@ var Region = {
   },
 
   repaint : function() {
-    console.log( "repaint cells" );
-    Region.repaintCells();
-    console.log( "repaint input" );
+    Region.repaintContextual();
+    Region.repaintContextFree();
     Region.repaintInput();
   },
 
-  repaintCells : function() {
-    var dataActivityNew = Region.findData( "-activity-new" );
-    if( !dataActivityNew ) {
+  repaintContextFree : function() {
+    var dataNew = Region.findData( "-context-free-activity-new" );
+    if( !dataNew ) {
       return; // can't paint
     }
 
-    var dataActivityOld = Region.findData( "-activity-old" );
-    if( !dataActivityOld ) {
+    var dataOld = Region.findData( "-context-free-activity-old" );
+    if( !dataOld ) {
+      return; // can't paint
+    }
+
+    var canvasDataSize = Region.resizeCanvas( "#centre-canvas", dataNew, 1, 1 );
+    if( !canvasDataSize ) {
+      return; // can't paint
+    }
+
+    var x0 = 0;
+    var y0 = 0;
+
+    Region.fillDataRgbBinary( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataNew, null, dataOld );//, null );
+    Region.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#00ffff" );
+  },
+
+  repaintContextual : function() {
+    var c = $( "#left-canvas" )[ 0 ];
+
+    var dataNew = Region.findData( "-context-free-activity-new" );
+    if( !dataNew ) {
+      return; // can't paint
+    }
+
+    var dataFp = Region.findData( "-prediction-fp" );
+    if( !dataFp ) {
+      return; // can't paint
+    }
+
+    var dataFn = Region.findData( "-prediction-fn" );
+    if( !dataFn ) {
       return; // can't paint
     }
 
@@ -423,202 +434,231 @@ var Region = {
       return; // can't paint
     }
 
-    var dataOrganizerOutputMask = Region.findData( "-organizer-output-mask" );
-    if( !dataOrganizerOutputMask ) {
+    var dataPredictionNewReal = Region.findData( "-prediction-new-real" );
+    if( !dataPredictionNewReal ) {
       return; // can't paint
     }
 
-    // rw = RegionWidth
-    // ow = OrganizerWidth
-    // cw = Column or Classifier Width
-    var regionDataSize = Framework.getDataSize( dataActivityNew );
-    var rw = regionDataSize.w;
-    var rh = regionDataSize.h;
-
-    var organizerDataSize = Framework.getDataSize( dataOrganizerOutputMask );
-    var ow = organizerDataSize.w;
-    var oh = organizerDataSize.h;
-
-    // computer classifier size (column size)
-    if( ( rw == 0 ) || ( rh == 0 ) ) {
-      return;
+    var dataOutput = Region.findData( "-output" );
+    if( !dataOutput ) {
+      return; // can't paint
     }
 
-    if( ( ow == 0 ) || ( oh == 0 ) ) {
-      return;
-    }
-    
-    var cw = rw / ow;
-    var ch = rh / oh;
-    var cd = Region.config.classifierDepthCells;
-    var classifierHeight = ( ch / cd );
-
-    // draw the data
-    var half = Region.pixelsPerBit * 0.5;
-    var c = $( "#left-canvas" )[ 0 ];
-    c.width  = rw * Region.pixelsPerBit + (ow-1) * Region.pixelsColumnGap;
-    c.height = rh * Region.pixelsPerBit + (oh-1) * Region.pixelsColumnGap;
-
-    var ctx = c.getContext( "2d" );
-    ctx.fillStyle = "#808080";
-    ctx.fillRect( 0, 0, c.width, c.height );
-
-    for( var oy = 0; oy < oh; ++oy ) {
-      for( var ox = 0; ox < ow; ++ox ) {
-
-        // now mark dead cells so we can ignore them
-//        var dataName = Region.getClassifierDataName( ox, oy, "-output-mask" );
-//        var dataClassifierOutputMask = Region.findData( dataName );
-        var dataClassifierOutputMask = Region.findData( "-classifier-output-mask" );
-        if( !dataClassifierOutputMask ) {
-          continue;
-        }
-
-        var classifierSize = cw * ( ch / cd ); // Each classifier has this number of cells. 
-        var classifierIndex = oy * ow + ox;
-        var packedOffset = classifierIndex * classifierSize;
-
-        var classifierUnchanged = false;
-
-        for( var cy = 0; cy < ch; ++cy ) {
-          for( var cx = 0; cx < cw; ++cx ) {
-            var rx = cx + ox * cw;
-            var ry = cy + oy * ch;
-
-            var offset = ry * rw + rx;
-            var activityNew   = dataActivityNew  .elements.elements[ offset ];
-            var activityOld   = dataActivityOld  .elements.elements[ offset ];
-
-            if( ( activityNew > 0.5 ) && ( activityOld > 0.5 ) ) {
-              classifierUnchanged = true;
-              cx = cw;
-              cy = ch; // break loops
-            }
-          }
-        }
-
-        for( var cy = 0; cy < ch; ++cy ) {
-          for( var cx = 0; cx < cw; ++cx ) {
-
-            var x = cx * Region.pixelsPerBit + ox * cw * Region.pixelsPerBit + (ox) * Region.pixelsColumnGap;
-            var y = cy * Region.pixelsPerBit + oy * ch * Region.pixelsPerBit + (oy) * Region.pixelsColumnGap;
-
-            var rx = cx + ox * cw;
-            var ry = cy + oy * ch;
-
-            var offset = ry * rw + rx;
-            var activityNew   = dataActivityNew  .elements.elements[ offset ];
-            var activityOld   = dataActivityOld  .elements.elements[ offset ];
-            var predictionOld = dataPredictionOld.elements.elements[ offset ];
-            var predictionNew = dataPredictionNew.elements.elements[ offset ];
-        
-            if( activityNew > 0.5 ) {
-              if( classifierUnchanged ) {
-                ctx.fillStyle = "#444400";
-              }
-              else if( predictionOld > 0.5 ) {
-                ctx.fillStyle = "#00FF00";
-              }
-              else { // active, unpredicted
-                ctx.fillStyle = "#FF0000";
-              }
-            }
-            else { // inactive now
-              if( predictionOld > 0.5 ) {
-                if( classifierUnchanged ) {
-                  ctx.fillStyle = "#440044";
-                }
-                else {
-                  ctx.fillStyle = "#FF00FF";
-                }
-              }
-              else { // inactive, unpredicted
-                ctx.fillStyle = "#000000";
-              }
-            }
-
-            ctx.fillRect( x, y, Region.pixelsPerBit, Region.pixelsPerBit );        
-            ctx.fill();
-
-            ctx.strokeStyle = "#808080";
-            ctx.strokeRect( x, y, Region.pixelsPerBit, Region.pixelsPerBit );        
-
-//            offset = packedOffset + ( cy * cw + cx );
-//            var classifierY = cy - ( cd * Math.floor( cy / cd ) );
-            var classifierY = cy - ( classifierHeight * Math.floor( cy / classifierHeight ) );
-            offset = packedOffset + ( ( classifierY * cw ) + cx );
-   
-            var maskValue = dataClassifierOutputMask.elements.elements[ offset ];
-            if( maskValue < 0.5 ) {
-              ctx.strokeRect( x, y, half, half );        
-//              ctx.moveTo( x, y ); KILLS chrome renderer, insanely slow.
-//              ctx.lineTo( x + Region.pixelsPerBit, y + Region.pixelsPerBit );        
-            }
-
-            if( predictionNew > 0.5 ) {
-              ctx.strokeStyle = "#FFFF00";
-              ctx.strokeRect( x+half, y, half, half );        
-            }
-
-          }
-        }
-      }
-
-      // paint depth boundaries
-      ctx.strokeStyle = "#0000AA";
-      var w = ow * cw * Region.pixelsPerBit + (ow) * Region.pixelsColumnGap;
-      for( var d = 1; d < cd; ++d ) {
-        var yd = d * classifierHeight * Region.pixelsPerBit + oy * ch * Region.pixelsPerBit + (oy) * Region.pixelsColumnGap;
-        ctx.beginPath();
-        ctx.moveTo( 0, yd );
-        ctx.lineTo( w, yd );
-        ctx.stroke();
-      }
-
+    var dataOutputAge = Region.findData( "-output-age" );
+    if( !dataOutputAge ) {
+      return; // can't paint
     }
 
-    // mark dead columns (classifiers)
-    var w = Region.pixelsPerBit * cw + Region.pixelsColumnGap;
-    var h = Region.pixelsPerBit * ch + Region.pixelsColumnGap;
-    ctx.fillStyle = "rgba( 255,255,0, 0.5 )";
-
-    for( var oy = 0; oy < oh; ++oy ) {
-      for( var ox = 0; ox < ow; ++ox ) {
-        var offset = oy * ow + ox;
-        var mask = dataOrganizerOutputMask.elements.elements[ offset ];
-        if( mask != 0 ) {
-          continue; // live, don't paint
-        }
-
-        var x = ox * w;
-        var y = oy * h;
-
-        ctx.fillRect( x, y, w, h );        
-      }
+    var canvasDataSize = Region.resizeCanvas( "#left-canvas", dataNew, 1, 3 );
+    if( !canvasDataSize ) {
+      return; // can't paint
     }
 
-    // paint selections
-    ctx.strokeStyle = "#FFFF00";
-    for( var i = 0; i < Region.selectedCells.length; ++i ) {
-      var offset = Region.selectedCells[ i ];
-      var rx = Math.floor( offset % rw );
-      var ry = Math.floor( offset / rw );
+    var x0 = 0;
+    var y0 = 0;
 
-      var ox = Math.floor( rx / cw );    
-      var oy = Math.floor( ry / ch );    
-      var cx = rx - ( ox * cw );    
-      var cy = ry - ( oy * ch );    
+    //       Fill         Hilight    Select
+    // top:  TP/TN/FP/FN  Pred-new     Outline yellow
+    // mid:  Pred-raw     Pred-new     Outline yellow
+    // bot:  Output-Age   Output       Outline yellow
 
-      var x = cx * Region.pixelsPerBit + ox * cw * Region.pixelsPerBit + (ox) * Region.pixelsColumnGap;
-      var y = cy * Region.pixelsPerBit + oy * ch * Region.pixelsPerBit + (oy) * Region.pixelsColumnGap;
+    // Red: Active-new Green: Active-new Blue: Pred-old
+    // TP: white
+    // TN: black
+    // FP: Yellow
+    // FN: Blue
+    Region.fillDataRgbBinary( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataPredictionOld, dataNew, null );//, null );
+    Region.strokeDataBinary( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataPredictionNew, "#0000ff", true );
+
+    y0 += ( Region.pixelsPerBit * canvasDataSize.h ); 
+    y0 += ( Region.pixelsPerGap );
+ 
+    Region.fillDataRgba( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataPredictionNewReal, 255,0,0, false );
+    Region.strokeDataBinary( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataPredictionNew, "#0000ff", true );
+
+    y0 += ( Region.pixelsPerBit * canvasDataSize.h ); 
+    y0 += ( Region.pixelsPerGap );
+
+    Region.fillDataRgba( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataOutputAge, 255,0,0, true );
+    Region.strokeDataBinary( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataOutput, "#00ffff", true );
+  },
+
+  strokeElements : function( ctx, x0, y0, w, h, elements, strokeStyle ) {
+
+    ctx.strokeStyle = strokeStyle;
+
+    for( var i = 0; i < elements.length; ++i ) {
+      var offset = elements[ i ];
+      var xs = Math.floor( offset % w );
+      var ys = Math.floor( offset / w );
+
+      var x = x0 + xs * Region.pixelsPerBit;
+      var y = y0 + ys * Region.pixelsPerBit;
       
       ctx.strokeRect( x, y, Region.pixelsPerBit, Region.pixelsPerBit );        
     }
+  },
 
+  strokeDataBinary : function( ctx, x0, y0, w, h, data, strokeStyle, small ) {
+
+    var dx = 0;
+    var size = Region.pixelsPerBit;
+
+    if( small ) {
+      size = Region.pixelsPerBit * 0.5;
+      dx = size;
+    }
+
+    ctx.strokeStyle = strokeStyle;
+
+    for( var y = 0; y < h; ++y ) {
+      for( var x = 0; x < w; ++x ) {
+        var cx = x0 + x * Region.pixelsPerBit;
+        var cy = y0 + y * Region.pixelsPerBit;
+        var offset = y * w + x;
+//        var valueR = 0.0;
+//        var valueG = 0.0;
+//        var valueB = 0.0;
+
+//        if( dataR ) valueR = dataR.elements.elements[ offset ];
+//        if( dataG ) valueG = dataG.elements.elements[ offset ];
+//        if( dataB ) valueB = dataB.elements.elements[ offset ];
+  
+        var value = data.elements.elements[ offset ];
+        if( value > 0.5 ) {
+          ctx.strokeRect( cx+dx, cy, size, size );        
+        }
+       
+//        ctx.strokeStyle = Region.getStyleRgb( valueR, valueG, valueB );
+      }
+    }
+  },
+
+  getStyleRgb : function( r, g, b ) {
+    var style = "#";
+    if( r > 0.5 ) {
+      style += "FF";
+    }
+    else {
+      style += "00";
+    }
+    if( g > 0.5 ) {
+      style += "FF";
+    }
+    else {
+      style += "00";
+    }
+    if( b > 0.5 ) {
+      style += "FF";
+    }
+    else {
+      style += "00";
+    }
+    return style;
+  },
+
+  fillDataRgbBinary : function( ctx, x0, y0, w, h, dataR, dataG, dataB ) {
+
+    for( var y = 0; y < h; ++y ) {
+      for( var x = 0; x < w; ++x ) {
+        var cx = x * Region.pixelsPerBit;
+        var cy = y * Region.pixelsPerBit;
+        var offset = y * w + x;
+        var valueR = 0.0;
+        var valueG = 0.0;
+        var valueB = 0.0;
+
+        if( dataR ) valueR = dataR.elements.elements[ offset ];
+        if( dataG ) valueG = dataG.elements.elements[ offset ];
+        if( dataB ) valueB = dataB.elements.elements[ offset ];
+         
+        ctx.fillStyle = Region.getStyleRgb( valueR, valueG, valueB );
+        ctx.fillRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
+        ctx.fill();
+
+        ctx.strokeStyle = "#808080";
+
+/*        if( selectedElements ) {
+          for( var i = 0; i < selectedElements.length; ++i ) {
+            if( selectedElements[ i ] == offset ) { // select one at a time
+              ctx.strokeStyle = "#FFFFFF";
+            }
+          }
+        }*/
+
+        ctx.strokeRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
+      }
+    }
+  },
+
+  fillDataRgba : function( ctx, x0, y0, w, h, data, r,g,b, scale ) {
+
+    var maxValue = 0.01;
+
+    for( var y = 0; y < h; ++y ) {
+      for( var x = 0; x < w; ++x ) {
+        var offset = y * w + x;
+        maxValue = Math.max( maxValue, data.elements.elements[ offset ] );
+      }
+    }
+
+    ctx.fillStyle = "#000000";
+    ctx.fillRect( x0, y0, Region.pixelsPerBit * w, Region.pixelsPerBit * h );        
+
+    var fillStyle1 = "rgba("+r+","+g+","+b+",";
+
+    for( var y = 0; y < h; ++y ) {
+      for( var x = 0; x < w; ++x ) {
+        var cx = x * Region.pixelsPerBit;
+        var cy = y * Region.pixelsPerBit;
+        var offset = y * w + x;
+        var value = data.elements.elements[ offset ];
+        if( scale ) {
+          value = value / maxValue; 
+        }
+        ctx.fillStyle = fillStyle1 + value.toFixed( 3 ) + ")";
+        ctx.fillRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
+        ctx.fill();
+
+        ctx.strokeStyle = "#808080";
+        ctx.strokeRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
+      }
+    }
+  },
+
+  resizeCanvas : function( canvasSelector, data, repeatX, repeatY ) {
+    var dataSize = Framework.getDataSize( data );
+    var w = dataSize.w;
+    var h = dataSize.h;
+
+    if( ( w == 0 ) || ( h == 0 ) ) {
+      return null;
+    }
+
+    if( !repeatX ) repeatX = 1;
+    if( !repeatY ) repeatY = 1;
+
+    var c = $( canvasSelector )[ 0 ];
+    c.width  = ( w * Region.pixelsPerBit ) * repeatX + Region.pixelsPerGap * (repeatX -1);
+    c.height = ( h * Region.pixelsPerBit ) * repeatY + Region.pixelsPerGap * (repeatY -1);
+
+    var ctx = c.getContext( "2d" );
+    ctx.fillStyle = "#505050";
+    ctx.fillRect( 0, 0, c.width, c.height );
+    
+    var size = {
+      w: w,
+      h: h,
+      ctx: ctx
+    };
+
+    return size;
   },
 
   repaintInput : function() {
-    var data1 = Region.findData( "-ff-input-1" );
+    var c = $( "#right-canvas" )[ 0 ];
+
+    var data1 = Region.findData( "-input-1" );
     if( !data1 ) {
       return; // can't paint
     }
@@ -631,7 +671,7 @@ var Region = {
       return;
     }
 
-    var data2 = Region.findData( "-ff-input-2" );
+    var data2 = Region.findData( "-input-2" );
     if( !data2 ) {
       return; // can't paint
     }
@@ -644,59 +684,203 @@ var Region = {
       return;
     }
 
-    var dataActivityNew = Region.findData( "-activity-new" );
-    if( !dataActivityNew ) {
-      return; // can't paint
-    }
-
-    var dataOrganizerOutputMask = Region.findData( "-organizer-output-mask" );
-    if( !dataOrganizerOutputMask ) {
-      return; // can't paint
-    }
-
-    var organizerDataSize = Framework.getDataSize( dataOrganizerOutputMask );
-    var ow = organizerDataSize.w;
-    var oh = organizerDataSize.h;
-
-    if( ( ow == 0 ) || ( oh == 0 ) ) {
-      return;
-    }
-
-    var regionDataSize = Framework.getDataSize( dataActivityNew );
-    var rw = regionDataSize.w;
-    var rh = regionDataSize.h;
-    var cw = rw / ow;
-    var ch = rh / oh;
-    var cd = Region.config.classifierDepthCells;
-
-    var dataOrganizerOutputWeights = Region.findData( "-organizer-output-weights" );
-    if( !dataOrganizerOutputWeights ) {
-      return; // can't paint
-    }
-
-    var c = $( "#right-canvas" )[ 0 ];
     c.width  = w1 * Region.pixelsPerBit;
     c.height = h1 * Region.pixelsPerBit + Region.pixelsMargin + h2 * Region.pixelsPerBit;
 
     var ctx = c.getContext( "2d" );
-    ctx.fillStyle = "#808080";
+    ctx.fillStyle = "#505050";
     ctx.fillRect( 0, 0, c.width, c.height );
 
-    var classifierInputStride = w1 * h1 + w2 * h2;
-    var classifierInputOffset = 0;
+    var dataWeights = Region.findData( "-context-free-weights" );
+    if( !dataWeights ) {
+      return; // can't paint
+    }
+
+    var dataBiases = Region.findData( "-context-free-biases-2" );
+    if( !dataBiases ) {
+      return; // can't paint
+    }
+
+    var dataResponse = Region.findData( "-context-free-response" );
+    if( !dataResponse ) {
+      return; // can't paint
+    }
+
+    var gain = $( "#gain" ).val();
+
+    var dataSizeW = Framework.getDataSize( dataWeights );
+    var weightsSize = dataSizeW.w * dataSizeW.h;
+    var weightsStride = w1 * h1 + w2 * h2;
 
     var x0 = 0;
     var y0 = 0;
 
-    Region.paintInputData( ctx, x0, y0, w1, h1, 0, data1, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, cd, Region.selectedInput1, Region.selectedCells, classifierInputStride, classifierInputOffset );
+    var inputOffset = 0;
+
+    Region.paintInputData( ctx, x0, y0, w1, h1, data1, Region.selectedInput1 );
+    Region.paintInputWeights( ctx, x0, y0, w1, h1, inputOffset, data1, weightsSize, weightsStride, dataWeights, dataBiases, dataResponse, Region.selectedCells, gain );
 
     y0 = y0 + h1 * Region.pixelsPerBit + Region.pixelsMargin;
-    classifierInputOffset = w1 * h1;
+    inputOffset = w1 * h1;
 
-    Region.paintInputData( ctx, x0, y0, w2, h2, 1, data2, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, cd, Region.selectedInput2, Region.selectedCells, classifierInputStride, classifierInputOffset );
+    Region.paintInputData( ctx, x0, y0, w2, h2, data2, Region.selectedInput2 );
+    Region.paintInputWeights( ctx, x0, y0, w2, h2, inputOffset, data2, weightsSize, weightsStride, dataWeights, dataBiases, dataResponse, Region.selectedCells, gain );
+
   },
 
-  paintInputData : function( ctx, x0, y0, w, h, inputIndex, dataInput, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, cd, selectedInput, selectedCells, classifierInputStride, classifierInputOffset ) {
+  paintInputWeights : function( ctx, x0, y0, w, h, inputOffset, dataInput, weightsSize, weightsStride, dataWeights, dataBiases, dataResponse, selectedElements, gain ) {
+
+    if( selectedElements.length < 1 ) {
+      return;
+    }
+
+    for( var y = 0; y < h; ++y ) {
+      for( var x = 0; x < w; ++x ) {
+        var inputBit = y * w + x;
+
+        var sumWeight = 0.0;
+
+        for( var i = 0; i < selectedElements.length; ++i ) {
+          var e = selectedElements[ i ];
+
+          //var r = dataResponse.elements.elements[ e ];
+	  var r = gain;
+//          if( e <= 0.0 ) {
+//            r = 0.0;
+//          }
+
+          var weightsOffset = weightsStride * e 
+                            + inputOffset 
+                            + inputBit;//*/
+
+/*          var weightsOffset = weightsStride * e 
+                            + inputOffset 
+                            + inputBit;//*/
+//          var weightsOffset = ( inputOffset + inputBit ) * weightsSize + e;
+
+          var weight = dataWeights.elements.elements[ weightsOffset ];
+//          if( weight > 0.0 ) {
+////            sumMaxWeight += weight;//Math.min( minWeight, weight );
+//console.log( "weight: " + weight );
+//          }
+//          else {
+//           sumMinWeight += Math.abs( weight );//Math.max( maxWeight, weight );
+//          }
+          sumWeight += ( weight * r ); // * 1, which doesn't matter
+  
+//          minWeight = Math.min( weight, minWeight );
+//          maxWeight = Math.max( weight, maxWeight );
+        }
+ 
+        var biasesOffset = inputOffset + inputBit;
+        var bias = dataBiases.elements.elements[ biasesOffset ];
+        sumWeight += bias;      
+//        minWeight = minWeight / minWeightGlobal;        
+//        maxWeight = maxWeight / maxWeightGlobal;        
+//        var meanWeight = sumWeight / selectedElements.length;
+//        var maxWeight = maxWeight / weightScale;
+//        var minWeight = minWeight / weightScale;
+
+//sumWeight = sumWeight * 0.5;
+
+        sumWeight = Math.min(  1.0, sumWeight );
+        sumWeight = Math.max( -1.0, sumWeight );
+
+        var cx = x * Region.pixelsPerBit;
+        var cy = y * Region.pixelsPerBit;
+
+        if( sumWeight > 0.0 ) {
+          ctx.fillStyle = "rgba(255,0,0,"+sumWeight+")";
+          ctx.fillRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
+        }
+        else {
+          ctx.fillStyle = "rgba(0,0,255,"+Math.abs( sumWeight )+")";
+        }
+
+        ctx.fillRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
+        ctx.fill();
+      }
+    }
+
+/*    var minWeightGlobal = 0.0;
+    var maxWeightGlobal = 0.0;
+//var maxWeightAt = 0;
+
+    for( var j = 0; j < selectedElements.length; ++j ) {
+//    for( var e = 0; e < weightsSize; ++e ) {
+      var e = selectedElements[ j ];
+
+      for( var i = 0; i < weightsStride; ++i ) {
+        var weightsOffset = weightsStride * e + i;
+        var weight = dataWeights.elements.elements[ weightsOffset ];
+//if( weight > maxWeightGlobal ) maxWeightAt = e;
+        minWeightGlobal = Math.min( minWeightGlobal, weight );
+        maxWeightGlobal = Math.max( maxWeightGlobal, weight );
+      }
+    }
+
+    minWeightLimit = 0.01;
+
+    var weightScale = Math.max( minWeightLimit, maxWeightGlobal );
+        weightScale = Math.max( weightScale,   -minWeightGlobal );
+
+//    if( minWeightGlobal > -minWeightLimit ) minWeightGlobal = -minWeightLimit;
+//    if( maxWeightGlobal <  minWeightLimit ) maxWeightGlobal =  minWeightLimit;
+
+    for( var y = 0; y < h; ++y ) {
+      for( var x = 0; x < w; ++x ) {
+        var inputBit = y * w + x;
+
+        var cx = x * Region.pixelsPerBit;
+        var cy = y * Region.pixelsPerBit;
+        
+//        var sumMinWeight = 0.0;
+//        var sumMaxWeight = 0.0;
+        var maxWeight = 0.0;
+        var minWeight = 0.0;
+
+        for( var i = 0; i < selectedElements.length; ++i ) {
+          var e = selectedElements[ i ];
+          var weightsOffset = weightsStride * e 
+                            + inputOffset 
+                            + inputBit;
+//          var weightsOffset = inputBit * weightsSize + e;
+
+          var weight = dataWeights.elements.elements[ weightsOffset ];
+//          if( weight > 0.0 ) {
+////            sumMaxWeight += weight;//Math.min( minWeight, weight );
+//console.log( "weight: " + weight );
+//          }
+//          else {
+//           sumMinWeight += Math.abs( weight );//Math.max( maxWeight, weight );
+//          }
+//          sumWeight += weight;
+  
+          minWeight = Math.min( weight, minWeight );
+          maxWeight = Math.max( weight, maxWeight );
+        }
+
+//        minWeight = minWeight / minWeightGlobal;        
+//        maxWeight = maxWeight / maxWeightGlobal;        
+//        var meanWeight = sumWeight / selectedElements.length;
+        var maxWeight = maxWeight / weightScale;
+        var minWeight = minWeight / weightScale;
+
+//        if( unitWeight > 0.0 ) {
+          ctx.fillStyle = "rgba(255,0,0,"+maxWeight+")";
+          ctx.fillRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
+//        }
+//        else {
+          ctx.fillStyle = "rgba(0,0,255,"+Math.abs( minWeight )+")";
+//        }
+
+        ctx.fillRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
+        ctx.fill();
+      }
+    }*/
+  },
+
+  paintInputData : function( ctx, x0, y0, w, h, dataInput, selectedElements ) {
 
     for( var y = 0; y < h; ++y ) {
       for( var x = 0; x < w; ++x ) {
@@ -714,141 +898,14 @@ var Region = {
 
         ctx.strokeStyle = "#808080";
 
-        if( selectedInput.length > 0 ) {
-          if( selectedInput[ 0 ] == offset ) { // select one at a time
-            ctx.strokeStyle = "#00FFFF";
+        for( var i = 0; i < selectedElements.length; ++i ) {
+          if( selectedElements[ i ] == offset ) { // select one at a time
+            ctx.strokeStyle = "#FFFFFF";
           }
         }
 
         ctx.strokeRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
       }
-    }
-
-    // paint organizer receptive field centroids
-    var rw = ow * cw;
-//    var inputArea = w * h;
-
-    // paint weights of selected cells
-    for( var i = 0; i < selectedCells.length; ++i ) {
-      var regionOffset = selectedCells[ i ]; // a cell within the region     
-      var rx = Math.floor( regionOffset % rw );
-      var ry = Math.floor( regionOffset / rw );
-
-      var ox = Math.floor( rx / cw ); // coordinates of column in grid (region).
-      var oy = Math.floor( ry / ch );    
-
-      var dataClassifierOutputWeights = Region.findData( "-classifier-output-weights" );
-      if( !dataClassifierOutputWeights ) {
-        continue; // can't paint
-      }
-
-      var cx = rx - ( ox * cw ); // coordinates in column.
-      var cy = ry - ( oy * ch );    
-
-      var classifierHeight = ( ch / cd );
-      var classifierY = cy - ( classifierHeight * Math.floor( cy / classifierHeight ) );
-      var classifierOffset = ( ( classifierY * cw ) + cx ) * classifierInputStride;
-
-      var classifierSize = cw * classifierHeight * classifierInputStride; // Each classifier has this number of cells. 
-      var classifierIndex = oy * ow + ox;
-      var packedOffset = classifierIndex * classifierSize;
-
-      // find max input
-      maxWeight = 0.0;
-
-      for( var y = 0; y < h; ++y ) {
-        for( var x = 0; x < w; ++x ) {
-          var inputOffset = y * w + x;
-          var weightsOffset = packedOffset + classifierOffset + inputOffset + classifierInputOffset;
-
-          var value = dataClassifierOutputWeights.elements.elements[ weightsOffset ];
-          if( value > maxWeight ) {
-            maxWeight = value;
-          }
-        }
-      }
-
-      var minWeight = 0.01;
-      if( maxWeight < minWeight ) maxWeight = minWeight;
-      // examine each input:
-      for( var y = 0; y < h; ++y ) {
-        for( var x = 0; x < w; ++x ) {
-          var inputOffset = y * w + x;
-          var weightsOffset = packedOffset + classifierOffset + inputOffset + classifierInputOffset;
-
-          var value = dataClassifierOutputWeights.elements.elements[ weightsOffset ];
-          value = value / maxWeight;
-          if( value < minWeight ) { // if less than this frac of max weight, don't bother drawing
-            continue;
-          }
-
-          ctx.fillStyle = "rgba(255,0,0,"+value.toFixed( 3 ) + ")";
-          var cx = x * Region.pixelsPerBit;
-          var cy = y * Region.pixelsPerBit;
-       
-          ctx.fillRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
-        }
-      }
-
-    }
-
-    for( var oy = 0; oy < oh; ++oy ) {
-      for( var ox = 0; ox < ow; ++ox ) {
-        var offset = oy * ow + ox;
-        var mask = dataOrganizerOutputMask.elements.elements[ offset ];
-        if( mask == 0 ) {
-          continue; // dead, don't paint
-        }
-
-        var organizerDimensions = 2;
-        var organizerInputs = 2;
-        var organizerStride = organizerDimensions * organizerInputs;
-        var organizerWeightsOffset = offset * organizerStride + inputIndex * organizerDimensions;
-
-        var xWeight = dataOrganizerOutputWeights.elements.elements[ organizerWeightsOffset +0 ];
-        var yWeight = dataOrganizerOutputWeights.elements.elements[ organizerWeightsOffset +1 ];
-
-        var x = w * xWeight * Region.pixelsPerBit;
-        var y = h * yWeight * Region.pixelsPerBit;
-
-        ctx.strokeStyle = "rgb(0,255,0)";
-
-        for( var i = 0; i < Region.selectedCells.length; ++i ) {
-          var regionOffset = Region.selectedCells[ i ]; // a cell within the region     
-
-          var rx = Math.floor( regionOffset % rw );
-          var ry = Math.floor( regionOffset / rw );
-
-          var oxSelected = Math.floor( rx / cw ); // coordinates of column in grid (region).
-          var oySelected = Math.floor( ry / ch );    
-
-          if( ( oxSelected == ox ) && ( oySelected == oy ) ) {
-            ctx.strokeStyle = "rgb(255,255,0)";
-            //console.log( "selected col is : " + ox + ", " + oy );
-
-            break;
-          }
-        }
-
-        ctx.beginPath();
-        ctx.moveTo( x0 + x,                              y0 + y -Region.pixelsReceptiveField );
-        ctx.lineTo( x0 + x,                              y0 + y +Region.pixelsReceptiveField );
-        ctx.moveTo( x0 + x -Region.pixelsReceptiveField, y0 + y );
-        ctx.lineTo( x0 + x +Region.pixelsReceptiveField, y0 + y );
-        ctx.stroke();   
-      }
-    }
-
-    // paint selected input bits
-    ctx.strokeStyle = "#0000ff";
-    for( var i = 0; i < selectedInput.length; ++i ) {
-      var offset = selectedInput[ i ];
-      var x = Math.floor( offset % w );
-      var y = Math.floor( offset / w );
-      var cx = x * Region.pixelsPerBit;
-      var cy = y * Region.pixelsPerBit;
-      
-      ctx.strokeRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
     }
   },
 
@@ -859,21 +916,14 @@ var Region = {
   },
 
   onGotData : function() {
-
     Region.setStatus( "Getting config... " );
     var entity = $( "#entity" ).val();
     Framework.getConfig( entity, Region.onGetRegionConfig );
-
-//    Region.setStatus( "Got all region data, getting classifier data... " );
-//    //Region.repaint();    
-//    Region.getClassifierData();
   },
 
   onGetRegionConfig : function( json ) {
-
     var entityConfig = JSON.parse( json.responseText );
     Region.config = entityConfig.value;
-
     Region.setStatus( "Repainting... " );
     Region.repaint();    
     Region.setStatus( "Ready." );
@@ -889,7 +939,6 @@ var Region = {
     var dataName = Region.prefix + Region.regionSuffixes[ Region.regionSuffixIdx ];
 
     Region.setStatus( "Getting " + Region.regionSuffixIdx + " of " + Region.regionSuffixes.length + ", name: " + dataName );
-
     Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
     Region.regionSuffixIdx = Region.regionSuffixIdx +1; // get next
     Framework.getData( dataName, Region.onGetData );
@@ -914,9 +963,8 @@ var Region = {
     var dataElement = $( "#region-data" )[ 0 ];
     var infoElement = $( "#region-info" )[ 0 ];
     var infoArea = infoElement.getBoundingClientRect();
-    var height = window.innerHeight - infoArea.height -getScrollbarWidth() -1;
-    $( "#region-data-left" ).css( "height", height );
-    $( "#region-data-right" ).css( "height", height );
+    var height = window.innerHeight - infoArea.height -1;// -getScrollbarWidth() -1;
+    $( ".column" ).css( "height", height );
   },
 
   update : function() {
@@ -963,17 +1011,21 @@ var Region = {
     $( "#left-canvas" )[ 0 ].addEventListener( 'mousemove', function( e ) {
       Region.onMouseMoveLeft( e, e.offsetX, e.offsetY );
     } );
+    $( "#centre-canvas" )[ 0 ].addEventListener( 'mousemove', function( e ) {
+      Region.onMouseMoveCentre( e, e.offsetX, e.offsetY );
+    } );
     $( "#right-canvas" )[ 0 ].addEventListener( 'mousemove', function( e ) {
       Region.onMouseMoveRight( e, e.offsetX, e.offsetY );
     } );
 
     $( "#left-canvas" )[ 0 ].addEventListener( 'click', function( e ) {
       Region.onMouseClickLeft( e, e.offsetX, e.offsetY );
-//      Region.onMouseClickLeft( e, e.clientX, e.clientY );
+    } );
+    $( "#centre-canvas" )[ 0 ].addEventListener( 'click', function( e ) {
+      Region.onMouseClickCentre( e, e.offsetX, e.offsetY );
     } );
     $( "#right-canvas" )[ 0 ].addEventListener( 'click', function( e ) {
       Region.onMouseClickRight( e, e.offsetX, e.offsetY );
-//      Region.onMouseClickRight( e, e.clientX, e.clientY );
     } );
   }
 

@@ -21,9 +21,11 @@ package io.agi.core.ann.unsupervised;
 
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
+import io.agi.core.data.Ranking;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.TreeMap;
 
 /**
  * Converges on the relative frequency of transitions between sets of states.
@@ -34,7 +36,7 @@ public class HebbianLearning {
 
 //    public Data _state;
     public Data _statePredicted;
-    public Data _statePredictedRaw;
+    public Data _statePredictedReal;
     public Data _weights;
 
     public float _learningRate = 0.01f; // e.g. moves 1 part in 100 each step. Max value is 99, min is 0, giving 100 intervals.
@@ -47,7 +49,7 @@ public class HebbianLearning {
 
 //        _state = new Data( DataSize.create( states ) );
         _statePredicted = new Data( DataSize.create( states ) );
-        _statePredictedRaw = new Data( DataSize.create( states ) );
+        _statePredictedReal = new Data( DataSize.create( states ) );
         _weights = new Data( DataSize.create( weights ) );
     }
 
@@ -66,24 +68,31 @@ public class HebbianLearning {
     /**
      * Generates a new prediction based on the current state and context bits.
      */
-    public void predict( Data state ) {
-        predict( state, _weights, _statePredicted, _statePredictedRaw );
+    public void predict( Data state, int density ) {
+        predict( state, _weights, _statePredicted, _statePredictedReal, density );
     }
 
-    public static void predict( Data state, Data weights, Data statePredicted, Data statePredictedRaw ) {
+    /**
+     * Predict which bits will be active next. Threshold at rank = density.
+     *
+     * @param state
+     * @param weights
+     * @param statePredicted
+     * @param statePredictedRaw
+     * @param density
+     */
+    public static void predict( Data state, Data weights, Data statePredicted, Data statePredictedRaw, int density ) {
 
         int states = state.getSize();
 
 //        int s1 = state.maxAt().offset();
-
         statePredicted.set( 0.f );
 
         // One weight for each state s1, to each state s2, from each context bit.
         // w = P( s2=1 | s1=1, w_n=1 )
         // S_1 * W * S_2
 
-        int s2Best = 0;
-        float wMeanBest = 0.f;
+        TreeMap< Float, ArrayList< Integer > > ranking = new TreeMap< Float, ArrayList< Integer > >();
 
         for( int s2 = 0; s2 < states; ++s2 ) {
 
@@ -112,15 +121,19 @@ public class HebbianLearning {
                 wMean = wSum / wCount;
             }
 
-            if( wMean > wMeanBest ) {
-                wMeanBest = wMean;
-                s2Best = s2;
-            }
+            Ranking.add( ranking, wMean, s2 );
 
             statePredictedRaw._values[ s2 ] = wMean;
         }
 
-        statePredicted._values[ s2Best ] = 1.f;
+        int maxRank = density;
+        boolean findMaxima = true; // keep the youngest
+        HashSet< Integer > mostPredicted = new HashSet< Integer >();
+        Ranking.getBestValues( ranking, findMaxima, maxRank, mostPredicted );
+
+        for( Integer s2 : mostPredicted ) {
+            statePredicted._values[ s2 ] = 1.f;
+        }
     }
 
     /**

@@ -50,6 +50,12 @@ var Region = {
     $( "#status" ).html( status );
   },
 
+  selectClear : function() {
+    Region.selectedCells = [];
+    Region.updateSelection( "sel-cells", Region.selectedCells );
+    Region.repaint();
+  },
+
   selectText : function() {
     var value = $( "#sel-cells" ).val();
     var values = value.split( "," );

@@ -48,14 +48,18 @@ public class AutoRegionLayerEntity extends Entity {
     public static final String CONTEXT_FREE_ACTIVITY_OLD = "context-free-activity-old";
     public static final String CONTEXT_FREE_ACTIVITY_NEW = "context-free-activity-new";
 
-    public static final String CONTEXTUAL_ACTIVITY     = "contextual-activity";
-    public static final String CONTEXTUAL_ACTIVITY_OLD = "contextual-activity-old";
-    public static final String CONTEXTUAL_ACTIVITY_NEW = "contextual-activity-new";
-    public static final String CONTEXTUAL_ACTIVITY_FP  = "contextual-activity-fp";
-    public static final String CONTEXTUAL_ACTIVITY_FN  = "contextual-activity-fn";
-    public static final String CONTEXTUAL_PREDICTION_INHIBITION = "contextual-prediction-inhibition";
-    public static final String CONTEXTUAL_OUTPUT = "contextual-output";
-    public static final String CONTEXTUAL_OUTPUT_AGE = "contextual-output-age";
+//    public static final String CONTEXTUAL_ACTIVITY     = "contextual-activity";
+//    public static final String CONTEXTUAL_ACTIVITY_OLD = "contextual-activity-old";
+//    public static final String CONTEXTUAL_ACTIVITY_NEW = "contextual-activity-new";
+    public static final String PREDICTION_FP  = "prediction-fp";
+    public static final String PREDICTION_FN  = "prediction-fn";
+    public static final String PREDICTION_OLD = "prediction-old";
+    public static final String PREDICTION_NEW = "prediction-new";
+    public static final String PREDICTION_NEW_REAL = "prediction-new-real";
+    public static final String PREDICTION_INHIBITION = "prediction-inhibition";
+
+    public static final String OUTPUT = "output";
+    public static final String OUTPUT_AGE = "output-age";
 
     public static final String PREDICTOR_WEIGHTS = "predictor-weights";
 
@@ -66,12 +70,12 @@ public class AutoRegionLayerEntity extends Entity {
     public static final String CONTEXT_FREE_RESPONSE = "context-free-response";
     public static final String CONTEXT_FREE_RECONSTRUCTION = "context-free-reconstruction";
 
-    public static final String CONTEXTUAL_WEIGHTS = "contextual-weights";
-    public static final String CONTEXTUAL_BIASES_1 = "contextual-biases-1";
-    public static final String CONTEXTUAL_BIASES_2 = "contextual-biases-2";
-    public static final String CONTEXTUAL_ERRORS = "contextual-errors";
-    public static final String CONTEXTUAL_RESPONSE = "contextual-response";
-    public static final String CONTEXTUAL_RECONSTRUCTION = "contextual-reconstruction";
+//    public static final String CONTEXTUAL_WEIGHTS = "contextual-weights";
+//    public static final String CONTEXTUAL_BIASES_1 = "contextual-biases-1";
+//    public static final String CONTEXTUAL_BIASES_2 = "contextual-biases-2";
+//    public static final String CONTEXTUAL_ERRORS = "contextual-errors";
+//    public static final String CONTEXTUAL_RESPONSE = "contextual-response";
+//    public static final String CONTEXTUAL_RECONSTRUCTION = "contextual-reconstruction";
 
     public AutoRegionLayerEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
@@ -88,15 +92,19 @@ public class AutoRegionLayerEntity extends Entity {
         attributes.add( CONTEXT_FREE_ACTIVITY_OLD );
         attributes.add( CONTEXT_FREE_ACTIVITY_NEW );
 
-        attributes.add( CONTEXTUAL_ACTIVITY );
-        attributes.add( CONTEXTUAL_ACTIVITY_OLD );
-        attributes.add( CONTEXTUAL_ACTIVITY_NEW );
+//        attributes.add( CONTEXTUAL_ACTIVITY );
+//        attributes.add( CONTEXTUAL_ACTIVITY_OLD );
+//        attributes.add( CONTEXTUAL_ACTIVITY_NEW );
 
-        attributes.add( CONTEXTUAL_ACTIVITY_FP );
-        attributes.add( CONTEXTUAL_ACTIVITY_FN );
-        attributes.add( CONTEXTUAL_PREDICTION_INHIBITION );
-        attributes.add( CONTEXTUAL_OUTPUT );
-        attributes.add( CONTEXTUAL_OUTPUT_AGE );
+        attributes.add( PREDICTION_FP );
+        attributes.add( PREDICTION_FN );
+        attributes.add( PREDICTION_OLD );
+        attributes.add( PREDICTION_NEW );
+        attributes.add( PREDICTION_NEW_REAL );
+        attributes.add( PREDICTION_INHIBITION );
+
+        attributes.add( OUTPUT );
+        attributes.add( OUTPUT_AGE );
 
         attributes.add( PREDICTOR_WEIGHTS );
 
@@ -107,12 +115,12 @@ public class AutoRegionLayerEntity extends Entity {
         attributes.add( CONTEXT_FREE_RESPONSE );
         attributes.add( CONTEXT_FREE_RECONSTRUCTION );
 
-        attributes.add( CONTEXTUAL_WEIGHTS );
-        attributes.add( CONTEXTUAL_BIASES_1 );
-        attributes.add( CONTEXTUAL_BIASES_2 );
-        attributes.add( CONTEXTUAL_ERRORS );
-        attributes.add( CONTEXTUAL_RESPONSE );
-        attributes.add( CONTEXTUAL_RECONSTRUCTION );
+//        attributes.add( CONTEXTUAL_WEIGHTS );
+//        attributes.add( CONTEXTUAL_BIASES_1 );
+//        attributes.add( CONTEXTUAL_BIASES_2 );
+//        attributes.add( CONTEXTUAL_ERRORS );
+//        attributes.add( CONTEXTUAL_RESPONSE );
+//        attributes.add( CONTEXTUAL_RECONSTRUCTION );
     }
 
     @Override
@@ -161,21 +169,21 @@ public class AutoRegionLayerEntity extends Entity {
         KSparseAutoencoderConfig  contextualConfig = new KSparseAutoencoderConfig();
 
         String contextFreeName = getKey( AutoRegionLayerConfig.SUFFIX_CONTEXT_FREE );
-        String contextualName  = getKey( AutoRegionLayerConfig.SUFFIX_CONTEXTUAL );
+  //      String contextualName  = getKey( AutoRegionLayerConfig.SUFFIX_CONTEXTUAL );
 
         contextFreeConfig.setup(
                 om, contextFreeName, _r,
                 inputArea, config.contextFreeWidthCells, config.contextFreeHeightCells, config.contextFreeLearningRate,
-                config.contextFreeSparsityOutput, config.contextFreeSparsity, config.contextFreeSparsityMin, config.contextFreeSparsityMax, config.contextFreeAgeMin, config.contextFreeAgeMax, config.contextFreeAge );
+                config.contextFreeBinaryOutput, config.contextFreeSparsityOutput, config.contextFreeSparsity, config.contextFreeSparsityMin, config.contextFreeSparsityMax, config.contextFreeAgeMin, config.contextFreeAgeMax, config.contextFreeAge );
 
-        int contextFreeCellArea = config.contextFreeWidthCells * config.contextFreeHeightCells;
-        int contextualInputArea = contextFreeCellArea * 2;
+//        int contextFreeCellArea = config.contextFreeWidthCells * config.contextFreeHeightCells;
+//        int contextualInputArea = contextFreeCellArea * 2;
 //        int contextualCellArea = config.contextualWidthCells * config.contextualHeightCells;
 
-        contextualConfig.setup(
-                om, contextualName, _r,
-                contextualInputArea, config.contextualWidthCells, config.contextualHeightCells, config.contextualLearningRate,
-                config.contextualSparsityOutput, config.contextualSparsity, config.contextualSparsityMin, config.contextualSparsityMax, config.contextualAgeMin, config.contextualAgeMax, config.contextualAge );
+//        contextualConfig.setup(
+//                om, contextualName, _r,
+//                contextualInputArea, config.contextualWidthCells, config.contextualHeightCells, config.contextualLearningRate,
+//                config.contextualSparsityOutput, config.contextualSparsity, config.contextualSparsityMin, config.contextualSparsityMax, config.contextualAgeMin, config.contextualAgeMax, config.contextualAge );
 
         AutoRegionLayerConfig rlc = new AutoRegionLayerConfig();
         rlc.setup(
@@ -197,9 +205,16 @@ public class AutoRegionLayerEntity extends Entity {
         }
 
         rl._rc.setLearn( config.learn );
-        rl.update(); // 120-150ms. The rest of doUpdateSelf() is maybe 50ms.
+//        for( int i = 0; i < 100; ++i ) {
+            rl.update(); // 120-150ms. The rest of doUpdateSelf() is maybe 50ms.
+//        }
 
         // Save data
+        config.contextFreeSparsity = contextFreeConfig.getSparsity();
+//        config.contextualSparsity = contextualConfig.getSparsity();
+
+        config.contextFreeAge = contextFreeConfig.getAge();
+//        config.contextualAge = contextualConfig.getAge();
         copyDataToPersistence( rl );
     }
 
@@ -212,14 +227,18 @@ public class AutoRegionLayerEntity extends Entity {
         rl._contextFreeActivityOld = getDataLazyResize( CONTEXT_FREE_ACTIVITY_OLD, rl._contextFreeActivityOld._dataSize );
         rl._contextFreeActivityNew = getDataLazyResize( CONTEXT_FREE_ACTIVITY_NEW, rl._contextFreeActivityNew._dataSize );
 
-        rl._contextualActivity = getDataLazyResize( CONTEXTUAL_ACTIVITY, rl._contextualActivity._dataSize );
-        rl._contextualActivityOld = getDataLazyResize( CONTEXTUAL_ACTIVITY_OLD, rl._contextualActivityOld._dataSize );
-        rl._contextualActivityNew = getDataLazyResize( CONTEXTUAL_ACTIVITY_NEW, rl._contextualActivityNew._dataSize );
-        rl._contextualActivityFP = getDataLazyResize( CONTEXTUAL_ACTIVITY_FP, rl._contextualActivityFP._dataSize );
-        rl._contextualActivityFN = getDataLazyResize( CONTEXTUAL_ACTIVITY_FN, rl._contextualActivityFN._dataSize );
-        rl._contextualPredictionInhibition = getDataLazyResize( CONTEXTUAL_PREDICTION_INHIBITION, rl._contextualPredictionInhibition._dataSize );
-        rl._contextualOutput = getDataLazyResize( CONTEXTUAL_OUTPUT, rl._contextualOutput._dataSize );
-        rl._contextualOutputAge = getDataLazyResize( CONTEXTUAL_OUTPUT_AGE, rl._contextualOutputAge._dataSize );
+//        rl._contextualActivity = getDataLazyResize( CONTEXTUAL_ACTIVITY, rl._contextualActivity._dataSize );
+//        rl._contextualActivityOld = getDataLazyResize( CONTEXTUAL_ACTIVITY_OLD, rl._contextualActivityOld._dataSize );
+//        rl._contextualActivityNew = getDataLazyResize( CONTEXTUAL_ACTIVITY_NEW, rl._contextualActivityNew._dataSize );
+        rl._predictionFP = getDataLazyResize( PREDICTION_FP, rl._predictionFP._dataSize );
+        rl._predictionFN = getDataLazyResize( PREDICTION_FN, rl._predictionFN._dataSize );
+        rl._predictionOld = getDataLazyResize( PREDICTION_OLD, rl._predictionOld._dataSize );
+        rl._predictionNew = getDataLazyResize( PREDICTION_NEW, rl._predictionNew._dataSize );
+        rl._predictionNewReal = getDataLazyResize( PREDICTION_NEW_REAL, rl._predictionNewReal._dataSize );
+        rl._predictionInhibition = getDataLazyResize( PREDICTION_INHIBITION, rl._predictionInhibition._dataSize );
+
+        rl._output = getDataLazyResize( OUTPUT, rl._output._dataSize );
+        rl._outputAge = getDataLazyResize( OUTPUT_AGE, rl._outputAge._dataSize );
 
         rl._predictor._weights = getDataLazyResize( PREDICTOR_WEIGHTS, rl._predictor._weights._dataSize );
 
@@ -230,12 +249,12 @@ public class AutoRegionLayerEntity extends Entity {
         rl._contextFreeClassifier._cellResponse = getDataLazyResize( CONTEXT_FREE_RESPONSE, rl._contextFreeClassifier._cellResponse._dataSize );
         rl._contextFreeClassifier._inputReconstruction = getDataLazyResize( CONTEXT_FREE_RECONSTRUCTION, rl._contextFreeClassifier._inputReconstruction._dataSize );
 
-        rl._contextualClassifier._cellWeights = getDataLazyResize( CONTEXTUAL_WEIGHTS, rl._contextualClassifier._cellWeights._dataSize );
-        rl._contextualClassifier._cellBiases1 = getDataLazyResize( CONTEXTUAL_BIASES_1, rl._contextualClassifier._cellBiases1._dataSize );
-        rl._contextualClassifier._cellBiases2 = getDataLazyResize( CONTEXTUAL_BIASES_2, rl._contextualClassifier._cellBiases2._dataSize );
-        rl._contextualClassifier._cellErrors = getDataLazyResize( CONTEXTUAL_ERRORS, rl._contextualClassifier._cellErrors._dataSize );
-        rl._contextualClassifier._cellResponse = getDataLazyResize( CONTEXTUAL_RESPONSE, rl._contextualClassifier._cellResponse._dataSize );
-        rl._contextualClassifier._inputReconstruction = getDataLazyResize( CONTEXTUAL_RECONSTRUCTION, rl._contextualClassifier._inputReconstruction._dataSize );
+//        rl._contextualClassifier._cellWeights = getDataLazyResize( CONTEXTUAL_WEIGHTS, rl._contextualClassifier._cellWeights._dataSize );
+//        rl._contextualClassifier._cellBiases1 = getDataLazyResize( CONTEXTUAL_BIASES_1, rl._contextualClassifier._cellBiases1._dataSize );
+//        rl._contextualClassifier._cellBiases2 = getDataLazyResize( CONTEXTUAL_BIASES_2, rl._contextualClassifier._cellBiases2._dataSize );
+//        rl._contextualClassifier._cellErrors = getDataLazyResize( CONTEXTUAL_ERRORS, rl._contextualClassifier._cellErrors._dataSize );
+//        rl._contextualClassifier._cellResponse = getDataLazyResize( CONTEXTUAL_RESPONSE, rl._contextualClassifier._cellResponse._dataSize );
+//        rl._contextualClassifier._inputReconstruction = getDataLazyResize( CONTEXTUAL_RECONSTRUCTION, rl._contextualClassifier._inputReconstruction._dataSize );
     }
 
     protected void copyDataToPersistence( AutoRegionLayer rl ) {
@@ -244,14 +263,18 @@ public class AutoRegionLayerEntity extends Entity {
         setData( CONTEXT_FREE_ACTIVITY_OLD, rl._contextFreeActivityOld );
         setData( CONTEXT_FREE_ACTIVITY_NEW, rl._contextFreeActivityNew );
 
-        setData( CONTEXTUAL_ACTIVITY, rl._contextualActivity );
-        setData( CONTEXTUAL_ACTIVITY_OLD, rl._contextualActivityOld );
-        setData( CONTEXTUAL_ACTIVITY_NEW, rl._contextualActivityNew );
-        setData( CONTEXTUAL_ACTIVITY_FP, rl._contextualActivityFP );
-        setData( CONTEXTUAL_ACTIVITY_FN, rl._contextualActivityFN );
-        setData( CONTEXTUAL_PREDICTION_INHIBITION, rl._contextualPredictionInhibition );
-        setData( CONTEXTUAL_OUTPUT, rl._contextualOutput );
-        setData( CONTEXTUAL_OUTPUT_AGE, rl._contextualOutputAge );
+//        setData( CONTEXTUAL_ACTIVITY, rl._contextualActivity );
+//        setData( CONTEXTUAL_ACTIVITY_OLD, rl._contextualActivityOld );
+//        setData( CONTEXTUAL_ACTIVITY_NEW, rl._contextualActivityNew );
+        setData( PREDICTION_FP, rl._predictionFP );
+        setData( PREDICTION_FN, rl._predictionFN );
+        setData( PREDICTION_OLD, rl._predictionOld );
+        setData( PREDICTION_NEW, rl._predictionNew );
+        setData( PREDICTION_NEW_REAL, rl._predictionNewReal );
+        setData( PREDICTION_INHIBITION, rl._predictionInhibition );
+
+        setData( OUTPUT, rl._output );
+        setData( OUTPUT_AGE, rl._outputAge );
 
         setData( PREDICTOR_WEIGHTS, rl._predictor._weights );
 
@@ -262,12 +285,12 @@ public class AutoRegionLayerEntity extends Entity {
         setData( CONTEXT_FREE_RESPONSE, rl._contextFreeClassifier._cellResponse );
         setData( CONTEXT_FREE_RECONSTRUCTION, rl._contextFreeClassifier._inputReconstruction );
 
-        setData( CONTEXTUAL_WEIGHTS, rl._contextualClassifier._cellWeights );
-        setData( CONTEXTUAL_BIASES_1, rl._contextualClassifier._cellBiases1 );
-        setData( CONTEXTUAL_BIASES_2, rl._contextualClassifier._cellBiases2 );
-        setData( CONTEXTUAL_ERRORS, rl._contextualClassifier._cellErrors );
-        setData( CONTEXTUAL_RESPONSE, rl._contextualClassifier._cellResponse );
-        setData( CONTEXTUAL_RECONSTRUCTION, rl._contextualClassifier._inputReconstruction );
+//        setData( CONTEXTUAL_WEIGHTS, rl._contextualClassifier._cellWeights );
+//        setData( CONTEXTUAL_BIASES_1, rl._contextualClassifier._cellBiases1 );
+//        setData( CONTEXTUAL_BIASES_2, rl._contextualClassifier._cellBiases2 );
+//        setData( CONTEXTUAL_ERRORS, rl._contextualClassifier._cellErrors );
+//        setData( CONTEXTUAL_RESPONSE, rl._contextualClassifier._cellResponse );
+//        setData( CONTEXTUAL_RECONSTRUCTION, rl._contextualClassifier._inputReconstruction );
 
     }
 

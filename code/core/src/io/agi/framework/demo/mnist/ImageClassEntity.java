@@ -20,7 +20,6 @@
 package io.agi.framework.demo.mnist;
 
 import io.agi.core.data.Data;
-import io.agi.core.data.DataSize;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceImageFile;
 import io.agi.core.util.images.ImageScreenScraper;
@@ -32,27 +31,26 @@ import io.agi.framework.entities.ImageSensorEntity;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
-import java.util.HashMap;
 
 /**
+ * A generic setup for a source of images that can be classified.
+ * We have one set of training images and one set of testing images.
+ *
+ * We perform N passes over the training images and then one pass over the testing images.
+ *
+ * At each step, one image is emitted (as a Data structure) and one class label (as a config property).
+ *
+ * This entity can terminate an experiment when the images are all processed, or it can loop around and process forever.
+ *
  * Created by dave on 8/07/16.
  */
-public class Mnist2Entity extends Entity {
+public class ImageClassEntity extends Entity {
 
-//               ---> image   --> fn --> class/feat ---> error
-//     mnist     ---> class   --------->            \-->
-//               --->
-//
-//    mnist: produces image (data) and class (config)
-//    fn: takes image produces features (data)
-//    class x feat: takes [features and class] and produces configs: [predicted, error?, truth]
-//    vec entity takes scalar configs, produces: pred-series, error-series,truth-series
+    public static final String ENTITY_TYPE = "image-class";
 
-    public static final String ENTITY_TYPE = "mnist2";
+    public static final String OUTPUT_IMAGE = "output-image";
 
-    public static final String OUTPUT_DIGIT_IMAGE = "output-image";
-
-    public Mnist2Entity( ObjectMap om, Node n, ModelEntity model ) {
+    public ImageClassEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
     }
 
@@ -62,18 +60,18 @@ public class Mnist2Entity extends Entity {
 
     @Override
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
-        attributes.add( OUTPUT_DIGIT_IMAGE );
+        attributes.add( OUTPUT_IMAGE );
     }
 
     @Override
     public Class getConfigClass() {
-       return Mnist2EntityConfig.class;
+       return ImageClassEntityConfig.class;
     }
 
     public void doUpdateSelf() {
 
         // Check for a reset (to start of sequence and re-train)
-        Mnist2EntityConfig config = (Mnist2EntityConfig) _config;
+        ImageClassEntityConfig config = (ImageClassEntityConfig ) _config;
 
         if( config.reset ) {
             config.imageIndex = 0;
@@ -108,7 +106,7 @@ public class Mnist2Entity extends Entity {
                 config.imageIndex = 0; // reset the index to allow further updates:
                 config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
                 _logger.info( "MNIST dataset complete." );
-                return;
+//                return; // continue to emit images
             }
         }
 
@@ -162,7 +160,7 @@ public class Mnist2Entity extends Entity {
         config.imageIndex = config.imageIndex +1; // set to fetch next image
 
         // write outputs back to persistence
-        setData( OUTPUT_DIGIT_IMAGE, image );
+        setData( OUTPUT_IMAGE, image );
 
         // write classification
         config.imageClass = imageClass;

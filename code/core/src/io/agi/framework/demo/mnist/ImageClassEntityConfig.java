@@ -26,7 +26,7 @@ import java.awt.*;
 /**
  * Created by dave on 10/07/16.
  */
-public class Mnist2EntityConfig extends EntityConfig {
+public class ImageClassEntityConfig extends EntityConfig {
 
     public class ReceptiveField {
         int receptiveFieldX;

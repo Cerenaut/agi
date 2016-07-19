@@ -30,6 +30,7 @@ public class AutoRegionLayerEntityConfig extends EntityConfig {
     float contextFreeLearningRate = 0.1f;
     int contextFreeWidthCells = 15;
     int contextFreeHeightCells = 15;
+    boolean contextFreeBinaryOutput = true;
     int contextFreeSparsity = 0; // current value, computed
     int contextFreeSparsityOutput = 0;
     int contextFreeSparsityMin = 0;
@@ -38,16 +39,16 @@ public class AutoRegionLayerEntityConfig extends EntityConfig {
     int contextFreeAgeMax = 0;
     int contextFreeAge = 0; // current value, computed
 
-    float contextualLearningRate = 0.1f;
-    int contextualWidthCells = 20;
-    int contextualHeightCells = 20;
-    int contextualSparsity = 0; // current value, computed
-    int contextualSparsityOutput = 0;
-    int contextualSparsityMin = 0;
-    int contextualSparsityMax = 0;
-    int contextualAgeMin = 0;
-    int contextualAgeMax = 0;
-    int contextualAge = 0; // current value, computed
+//    float contextualLearningRate = 0.1f;
+//    int contextualWidthCells = 20;
+//    int contextualHeightCells = 20;
+//    int contextualSparsity = 0; // current value, computed
+//    int contextualSparsityOutput = 0;
+//    int contextualSparsityMin = 0;
+//    int contextualSparsityMax = 0;
+//    int contextualAgeMin = 0;
+//    int contextualAgeMax = 0;
+//    int contextualAge = 0; // current value, computed
 
     int outputSparsity = 0;
 

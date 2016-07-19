@@ -61,6 +61,15 @@ public class Node {
     }
 
     /**
+     * Stops the Node. TODO: Make it check nothing is happening (e.g. no pending updates to complete?)
+     *
+     */
+    public void stop() {
+        logger.info( "Stopping process on request." );
+        System.exit( 0 );
+    }
+
+    /**
      * Sets up the interfaces, which cannot be modified afterwards.
      */
     public void setup(

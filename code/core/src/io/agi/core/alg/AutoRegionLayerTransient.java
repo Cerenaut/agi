@@ -33,12 +33,17 @@ public class AutoRegionLayerTransient {
     public HashSet< Integer > _contextFreeActiveNew;
     public HashSet< Integer > _contextFreeActiveOld;
 
-    public HashSet< Integer > _contextualActive;
-    public HashSet< Integer > _contextualActiveNew;
-    public HashSet< Integer > _contextualActiveOld;
+    public HashSet< Integer > _predictionFP;
+    public HashSet< Integer > _predictionFN;
 
-    public HashSet< Integer > _contextualPredictionFP;
-    public HashSet< Integer > _contextualPredictionFN;
+    public HashSet< Integer > _output;
 
-    public HashSet< Integer > _contextualOutput;
+//    public HashSet< Integer > _contextualActive;
+//    public HashSet< Integer > _contextualActiveNew;
+//    public HashSet< Integer > _contextualActiveOld;
+//
+//    public HashSet< Integer > _contextualPredictionFP;
+//    public HashSet< Integer > _contextualPredictionFN;
+//
+//    public HashSet< Integer > _contextualOutput;
 }

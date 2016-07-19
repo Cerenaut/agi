@@ -22,6 +22,7 @@ package io.agi.core.alg;
 import io.agi.core.ann.unsupervised.*;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
+import io.agi.core.data.FloatArray;
 import io.agi.core.data.Ranking;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
@@ -46,10 +47,11 @@ import java.util.TreeMap;
  *
  * 1. A context-free classifier, that takes external input and replaces it with a sparse distributed binary representation.
  *    The representation is based only on the current input. If the context-free classification does not change, neither
- *    does anything else in the Region-Layer.
+ *    does anything else in the Region-Layer. This classification effectively finds the distinct transition boundaries
+ *    in a continuously changing input.
  *
  * 2. A contextual classifier. This is identical to the first component but also takes the previous context-free class-
- *    -ification into account as part of its input. The purpose of this is to generate a 2nd-order sequential model so
+ *    -ification into account as part of its input. The purpose of this is to generate a 1st-order sequential model so
  *    that additional instances of the Region-Layer will have the benefit of short proto-sequences to build on, which
  *    means that given enough instances, higher order sequences can be discovered. If the contextual classification does
  *    not change, neither does the output.
@@ -88,22 +90,30 @@ public class AutoRegionLayer extends NamedObject {
     public Data _contextFreeActivity;
     public Data _contextFreeActivityOld;
     public Data _contextFreeActivityNew;
+//    public Data _contextFreePredictionOld;
+//    public Data _contextFreePredictionNew;
 
-    public Data _contextualActivity;
-    public Data _contextualActivityOld;
-    public Data _contextualActivityNew;
-    public Data _contextualActivityFP;
-    public Data _contextualActivityFN;
-    public Data _contextualPredictionInhibition;
-    public Data _contextualOutput;
-    public Data _contextualOutputAge;
+//    public Data _contextualActivity;
+//    public Data _contextualActivityOld;
+//    public Data _contextualActivityNew;
+
+    public Data _predictionFP;
+    public Data _predictionFN;
+    public Data _predictionNew;
+    public Data _predictionNewReal;
+    public Data _predictionOld;
+    public Data _predictionInhibition;
+
+    public Data _output;
+    public Data _outputAge;
 
     // Member objects
     public AutoRegionLayerConfig _rc;
     public AutoRegionLayerTransient _transient = null;
 
+//    public KSparseAutoencoder _classifier; tried to reduce to one classifier
     public KSparseAutoencoder _contextFreeClassifier;
-    public KSparseAutoencoder _contextualClassifier;
+//    public KSparseAutoencoder _contextualClassifier;
     public HebbianLearning _predictor; // actually this one object stands in for one predictor per column, because the columns may update asynchronously
 
     public AutoRegionLayer( String name, ObjectMap om ) {
@@ -114,13 +124,14 @@ public class AutoRegionLayer extends NamedObject {
         _rc = rc;
 
         _contextFreeClassifier = new KSparseAutoencoder( getKey( AutoRegionLayerConfig.SUFFIX_CONTEXT_FREE ), _rc._om );
-         _contextualClassifier = new KSparseAutoencoder( getKey( AutoRegionLayerConfig.SUFFIX_CONTEXTUAL   ), _rc._om );
+//         _contextualClassifier = new KSparseAutoencoder( getKey( AutoRegionLayerConfig.SUFFIX_CONTEXTUAL   ), _rc._om );
 
         _contextFreeClassifier.setup( _rc._contextFreeConfig );
-         _contextualClassifier.setup( _rc._contextualConfig );
+//         _contextualClassifier.setup( _rc._contextualConfig );
 
         // Predictor
-        int predictorStates = _rc._contextualConfig.getNbrCells();
+//        int predictorStates = _rc._contextualConfig.getNbrCells();
+        int predictorStates = _rc._contextFreeConfig.getNbrCells();
         float predictorLearningRate = rc.getPredictorLearningRate();
 
         _predictor = new HebbianLearning();
@@ -134,7 +145,7 @@ public class AutoRegionLayer extends NamedObject {
         DataSize dataSizeInput2 = DataSize.create( input2Size.x, input2Size.y );
 
         DataSize dataSizeContextFree = DataSize.create( _rc._contextFreeConfig.getWidthCells(), _rc._contextFreeConfig.getHeightCells() );
-        DataSize dataSizeContextual  = DataSize.create( _rc._contextualConfig .getWidthCells(), _rc._contextualConfig .getHeightCells() );
+//        DataSize dataSizeContextual  = DataSize.create( _rc._contextualConfig .getWidthCells(), _rc._contextualConfig .getHeightCells() );
 
         _input1 = new Data( dataSizeInput1 );
         _input2 = new Data( dataSizeInput2 );
@@ -142,33 +153,55 @@ public class AutoRegionLayer extends NamedObject {
         _contextFreeActivity    = new Data( dataSizeContextFree );
         _contextFreeActivityOld = new Data( dataSizeContextFree );
         _contextFreeActivityNew = new Data( dataSizeContextFree );
+//        _contextFreePredictionOld = new Data( dataSizeContextFree );
+//        _contextFreePredictionNew = new Data( dataSizeContextFree );
 
-        _contextualActivity = new Data( dataSizeContextual );
-        _contextualActivityOld = new Data( dataSizeContextual );
-        _contextualActivityNew = new Data( dataSizeContextual );
-        _contextualActivityFP = new Data( dataSizeContextual );
-        _contextualActivityFN = new Data( dataSizeContextual );
-        _contextualPredictionInhibition = new Data( dataSizeContextual );
-        _contextualOutput = new Data( dataSizeContextual );
-        _contextualOutputAge = new Data( dataSizeContextual );
+//        _contextualActivity = new Data( dataSizeContextual );
+//        _contextualActivityOld = new Data( dataSizeContextual );
+//        _contextualActivityNew = new Data( dataSizeContextual );
+//        _contextualActivityFP = new Data( dataSizeContextual );
+//        _contextualActivityFN = new Data( dataSizeContextual );
+//        _contextualPredictionNew = new Data( dataSizeContextual );
+//        _contextualPredictionOld = new Data( dataSizeContextual );
+//        _contextualPredictionReal = new Data( dataSizeContextual );
+//        _contextualPredictionInhibition = new Data( dataSizeContextual );
+//        _contextualOutput = new Data( dataSizeContextual );
+//        _contextualOutputAge = new Data( dataSizeContextual );
+        _predictionFP = new Data( dataSizeContextFree );
+        _predictionFN = new Data( dataSizeContextFree );
+        _predictionNew = new Data( dataSizeContextFree );
+        _predictionOld = new Data( dataSizeContextFree );
+        _predictionNewReal = new Data( dataSizeContextFree );
+        _predictionInhibition = new Data( dataSizeContextFree );
+        _output = new Data( dataSizeContextFree );
+        _outputAge = new Data( dataSizeContextFree );
     }
 
     public void reset() {
         _transient = null;
         _contextFreeClassifier.reset();
-        _contextualClassifier.reset();
+//        _contextualClassifier.reset();
         _predictor.reset();
 
         float defaultPredictionInhibition = _rc.getDefaultPredictionInhibition();
-        _contextualPredictionInhibition.set( defaultPredictionInhibition );
+        _predictionInhibition.set( defaultPredictionInhibition );
 
-        _contextualActivityFP.set( 0.f );
-        _contextualActivityFN.set( 0.f );
-        _contextualOutputAge.set( 0.f );
-        _contextualOutput.set( 0.f );
+        _predictionFP.set( 0.f );
+        _predictionFN.set( 0.f );
+
+        _outputAge.set( 0.f );
+        _output.set( 0.f );
     }
 
     public void update() {
+
+        // copy new values to the contextual classifier
+        // update the active hidden cells (without learning)
+        // if the active hidden cells have changed
+        // update with learning
+        // copy the new values to the "old" section.
+        // etc.
+
         // 1. update context-free classification
         updateContextFreeClassification();
 
@@ -177,13 +210,15 @@ public class AutoRegionLayer extends NamedObject {
             return;
         }
 
-        // 3. Form the input to the contextual classifier from the new and previous context-free classification
-        updateContextualClassification();
+        onClassificationChanged();
 
-        // 4. If contextual classification unchanged, do nothing else
-        if( !contextualClassificationChanged() ) {
-            return;
-        }
+        // 3. Form the input to the contextual classifier from the new and previous context-free classification
+//        updateContextualClassification();
+//
+//        // 4. If contextual classification unchanged, do nothing else
+//        if( !contextualClassificationChanged() ) {
+//            return;
+//        }
 
         // 5. Update the region output with incorrectly predicted bits. Remove old predicted bits until the desired
         //    output sparsity is achieved.
@@ -192,6 +227,21 @@ public class AutoRegionLayer extends NamedObject {
         // 6. Update & train the prediction of the next contextual classification, given old and new bits.
         updatePrediction();
     }
+
+//    protected void updateClassification() {
+
+        // if all the old bits were unpredicted and all the new bits, then if the output density is 2x
+        // then we can represent the edge old->new as a continuous input.
+
+        // old input  new     class:
+        //   0001    0001      1000
+        // input changes:
+        //   0001    0010      ????
+        // class changes:
+        //   0001    0010      0100
+        // copy old to new
+        //   0010    ????      0100
+        // maybe use overlap to transition to a new state?
 
     protected void updateContextFreeClassification() {
         _transient = new AutoRegionLayerTransient();
@@ -223,58 +273,65 @@ public class AutoRegionLayer extends NamedObject {
         return changed;
     }
 
-    protected void updateContextualClassification() {
-
+    protected void onClassificationChanged() {
         _contextFreeActivityOld.copy( _contextFreeActivityNew );
         _contextFreeActivityNew.copy( _contextFreeActivity    );
 
         _transient._contextFreeActiveOld = _transient._contextFreeActiveNew;
         _transient._contextFreeActiveNew = _transient._contextFreeActive;
-
-        _contextualClassifier._inputValues.set( 0.f );
-
-        for( Integer i : _transient._contextFreeActiveOld ) {
-            _contextualClassifier._inputValues._values[ i ] = 1.f;
-        }
-
-        int offset = _contextFreeActivityNew.getSize();
-
-        for( Integer i : _transient._contextFreeActiveNew ) {
-            _contextualClassifier._inputValues._values[ offset + i ] = 1.f;
-        }
-
-        _contextualClassifier.update();
-        _contextualActivity.copy( _contextualClassifier._cellActivity );
-
-        _transient._contextualActive    = _contextualActivity   .indicesMoreThan( 0.5f );
-        _transient._contextualActiveNew = _contextualActivityNew.indicesMoreThan( 0.5f );
-        _transient._contextualActiveOld = _contextualActivityOld.indicesMoreThan( 0.5f );
     }
 
-    protected boolean contextualClassificationChanged() {
-        boolean changed = !_transient._contextualActive.equals( _transient._contextualActiveNew );
-        return changed;
-    }
+//    protected void updateContextualClassification() {
+//
+//        _contextFreeActivityOld.copy( _contextFreeActivityNew );
+//        _contextFreeActivityNew.copy( _contextFreeActivity    );
+//
+//        _transient._contextFreeActiveOld = _transient._contextFreeActiveNew;
+//        _transient._contextFreeActiveNew = _transient._contextFreeActive;
+//
+//        _contextualClassifier._inputValues.set( 0.f );
+//
+//        for( Integer i : _transient._contextFreeActiveOld ) {
+//            _contextualClassifier._inputValues._values[ i ] = 1.f;
+//        }
+//
+//        int offset = _contextFreeActivityNew.getSize();
+//
+//        for( Integer i : _transient._contextFreeActiveNew ) {
+//            _contextualClassifier._inputValues._values[ offset + i ] = 1.f;
+//        }
+//
+//        _contextualClassifier.update();
+//        _contextualActivity.copy( _contextualClassifier._cellActivity );
+//
+//        _transient._contextualActive    = _contextualActivity   .indicesMoreThan( 0.5f );
+//        _transient._contextualActiveNew = _contextualActivityNew.indicesMoreThan( 0.5f );
+//        _transient._contextualActiveOld = _contextualActivityOld.indicesMoreThan( 0.5f );
+//    }
+//
+//    protected boolean contextualClassificationChanged() {
+//        boolean changed = !_transient._contextualActive.equals( _transient._contextualActiveNew );
+//        return changed;
+//    }
 
     protected void updateOutput() {
+        updateOutput( _transient._contextFreeActiveNew );
+    }
 
-        _contextualActivityOld.copy( _contextualActivityNew );
-        _contextualActivityNew.copy( _contextualActivity    );
-
-        _transient._contextualActiveOld = _transient._contextualActiveNew;
-        _transient._contextualActiveNew = _transient._contextualActive;
+    protected void updateOutput( HashSet< Integer > activeNew ) {
 
         // 1. Set FP / FN status of all currently active bits.
-        _contextualActivityFP.set( 0.f );
-        _contextualActivityFN.set( 0.f );
+        _predictionFP.set( 0.f );
+        _predictionFN.set( 0.f );
 
-        _transient._contextualPredictionFP = new HashSet< Integer >();
-        _transient._contextualPredictionFN = new HashSet< Integer >();
+        _transient._predictionFP = new HashSet< Integer >();
+        _transient._predictionFN = new HashSet< Integer >();
 
-        for( Integer i : _transient._contextualActiveNew ) {
+        // calculate FP and FN errors
+        for( Integer i : activeNew ) {
 
-            float prediction           = _predictor._statePredicted._values[ i ];
-            float predictionInhibition = _contextualPredictionInhibition._values[ i ];
+            float prediction           = _predictionNew._values[ i ]; // most recent prediction, which hasn't been updated yet.
+            float predictionInhibition = _predictionInhibition._values[ i ];
 
             boolean error = false;
 
@@ -286,56 +343,55 @@ public class AutoRegionLayer extends NamedObject {
             }
 
             if( error ) {
-                _transient._contextualPredictionFN.add( i );
-                _contextualActivityFN._values[ i ] = 1.f;
+                _transient._predictionFN.add( i );
+                _predictionFN._values[ i ] = 1.f;
             }
         }
 
-        HashSet< Integer > contextualPredictions = _predictor._statePredicted.indicesMoreThan( 0.5f );
-
-        for( Integer p : contextualPredictions ) {
+        HashSet< Integer > predictions = _predictionNew.indicesMoreThan( 0.5f ); //_predictor._statePredicted.indicesMoreThan( 0.5f );
+        for( Integer p : predictions ) {
 
             boolean error = false;
 
-            if( !_transient._contextualActiveNew.contains( p ) ) {
+            if( !activeNew.contains( p ) ) {
                 error = true; // predicted, but not active
             }
 
             if( error ) {
-                _transient._contextualPredictionFP.add( p );
-                _contextualActivityFP._values[ p ] = 1.f;
+                _transient._predictionFP.add( p );
+                _predictionFP._values[ p ] = 1.f;
             }
         }
 
         // 2. Increase age of current output:
-        int outputBits = _contextualOutput.getSize();
+        int outputBits = _output.getSize();
 
-        _transient._contextualOutput = new HashSet< Integer >();
+        _transient._output = new HashSet< Integer >();
 
         for( int i = 0; i < outputBits; ++i ) {
-            float age = _contextualOutputAge._values[ i ];
+            float age = _outputAge._values[ i ];
 
             if( age == 0.f ) {
                 continue;
             }
 
             age += 1.f;
-            _contextualOutputAge._values[ i ] = age;
-            _transient._contextualOutput.add( i );
+            _outputAge._values[ i ] = age;
+            _transient._output.add( i );
         }
 
         // 2. Set all new active FN bits in output to age = 1.
-        for( Integer i : _transient._contextualPredictionFN ) {
-            _contextualOutput   ._values[ i ] = 1.f;
-            _contextualOutputAge._values[ i ] = 1.f;
-            _transient._contextualOutput.add( i );
+        for( Integer i : _transient._predictionFN ) {
+            _output   ._values[ i ] = 1.f;
+            _outputAge._values[ i ] = 1.f;
+            _transient._output.add( i );
         }
 
         // 3. Rank all active bits in output (including historic) by age.
         TreeMap< Float, ArrayList< Integer > > ranking = new TreeMap< Float, ArrayList< Integer > >();
 
-        for( Integer i : _transient._contextualOutput ) {
-            float age = _contextualOutputAge._values[ i ];
+        for( Integer i : _transient._output ) {
+            float age = _outputAge._values[ i ];
             Ranking.add( ranking, age, i );
         }
 
@@ -346,20 +402,29 @@ public class AutoRegionLayer extends NamedObject {
         HashSet< Integer > youngOutput = new HashSet< Integer >();
         Ranking.getBestValues( ranking, findMaxima, maxRank, youngOutput );
 
-        for( Integer i : _transient._contextualOutput ) {
+        for( Integer i : _transient._output ) {
 
             if( youngOutput.contains( i ) ) {
                 continue; // young enough to keep
             }
 
             // turn it off:
-            _contextualOutput   ._values[ i ] = 0.f;
-            _contextualOutputAge._values[ i ] = 0.f;
+            _output   ._values[ i ] = 0.f;
+            _outputAge._values[ i ] = 0.f;
         }
     }
 
     protected void updatePrediction() {
-        _predictor.train( _contextualActivityOld, _contextualActivityNew );
-        _predictor.predict( _contextualActivityNew );
+//        int density = _contextualClassifier._c.getSparsity();
+//        updatePrediction( _contextualActivityOld, _contextualActivityNew, density );
+        int density = _contextFreeClassifier._c.getSparsity();
+        updatePrediction( _contextFreeActivityOld, _contextFreeActivityNew, density );
+    }
+    protected void updatePrediction( Data activityOld, Data activityNew, int density ) {
+        _predictor.train( activityOld, activityNew );
+        _predictor.predict( activityNew, density );
+        _predictionOld .copy( _predictionNew ); // the old prediction
+        _predictionNew .copy( _predictor._statePredicted ); // copy the new prediction
+        _predictionNewReal.copy( _predictor._statePredictedReal );
     }
 }
