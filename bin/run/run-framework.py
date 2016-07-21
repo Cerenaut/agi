@@ -10,15 +10,16 @@ import time
 
 
 help_generic = """ 
-Launch and run experiments (including parameter sweep) using AGIEF.
-Uses the version of code in $AGI_HOME and the experiment 'run' folder specified in $AGI_RUN_HOME
-See README.md for installation instructions.
+Launch AGIEF. Optionally run experiments (including parameter sweep) and optionally run on AWS ECS.
+- Uses the version of code in $AGI_HOME
+- Uses the experiment 'run' folder specified in $AGI_RUN_HOME
+- See README.md for installation instructions
 
-The script does the following:
-- (for aws) launch ec2 container instance
-- (for aws) sync $AGI_HOME folder (excluding source), and $AGI_RUN_HOME folder to the ec2 instance
+The script does the following (lines marked AWS are relevant for operation on AWS):
+- (AWS) launch ec2 container instance
+- (AWS) sync $AGI_HOME folder (excluding source), and $AGI_RUN_HOME folder to the ec2 instance
 - launch framework
-- (for aws) run the ecs task, which launches the framework, but does not run the experiment
+- (AWS) run the ECS task, which launches the framework, but does not run the experiment
 - sweep parameters as specified in experiment input file, and for each parameter value
 - imports the experiment from the data files located in $AGI_RUN_HOME
 - update the experiment (it will run till termination)
@@ -77,7 +78,7 @@ def launch_framework_local(baseurl):
 
 
 def wait_framwork_up(baseurl):
-    print "....... wait till framework has started - using http://host:port = " + baseurl
+    print "....... wait till framework has started at = " + baseurl
 
     while True:
         try:
@@ -90,6 +91,14 @@ def wait_framwork_up(baseurl):
             print "  - no connection yet ......"
 
     print "  - framework is up"
+
+
+def terminate_framework():
+    print "...... terminate framework"
+    response = requests.get(baseurl + '/stop')
+
+    if log:
+        print "LOG: response text = ", response.text
 
 
 def experiments_aws_setup(task_name):
@@ -286,6 +295,7 @@ def getbaseurl(host, port):
     return 'http://' + host + ':' + port
 
 
+
 if __name__ == '__main__':
     import argparse
     from argparse import RawTextHelpFormatter
@@ -318,7 +328,7 @@ if __name__ == '__main__':
     parser.set_defaults(logging=False)
     parser.set_defaults(aws=False)
     parser.set_defaults(aws_keep_running=False)
-    parser.set_defaults(host="c.x.agi.io")
+    parser.set_defaults(host="localhost")   # c.x.agi.io
     parser.set_defaults(port="8491")
     parser.set_defaults(instanceid="i-06d6a791")
     parser.set_defaults(task_name="mnist-spatial-task:8")
@@ -348,6 +358,8 @@ if __name__ == '__main__':
 
     if args.exps_file:
         run_experiments(baseurl, args.exps_file)
+
+    terminate_framework()
 
     if args.aws and not args.aws_keep_running:
         close_aws(args.instanceid)
