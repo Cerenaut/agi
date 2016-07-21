@@ -8,8 +8,7 @@ import dpath.util
 import requests
 import time
 
-
-help_generic = """ 
+help_generic = """
 Launch AGIEF. Optionally run experiments (including parameter sweep) and optionally run on AWS ECS.
 - Uses the version of code in $AGI_HOME
 - Uses the experiment 'run' folder specified in $AGI_RUN_HOME
@@ -72,8 +71,8 @@ def launch_framework_aws(task_name, baseurl):
 def launch_framework_local(baseurl):
     print "....... launching framework locally"
     subprocess.Popen(["../node_coordinator/run.sh"],
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.STDOUT)
+                     stdout=subprocess.PIPE,
+                     stderr=subprocess.STDOUT)
     wait_framwork_up(baseurl)
 
 
@@ -122,14 +121,14 @@ def experiments_aws_setup(task_name):
 # return when the the config parameter has achieved the value specified
 # entity = name of entity, param_path = path to parameter, delimited by '.'
 def wait_till_param(baseurl, entity_name, param_path, value):
-
     while True:
         try:
             r = requests.get(baseurl + '/config', params={'entity': entity_name})
             parameter = dpath.util.get(r.json(), "value." + param_path, '.')
             if parameter == value:
                 if log:
-                    print "LOG: ... parameter: " + entity_name + "." + param_path + ", has achieved value: " + str(value) + "."
+                    print "LOG: ... parameter: " + entity_name + "." + param_path + ", has achieved value: " + str(
+                        value) + "."
                 break
         except requests.exceptions.ConnectionError:
             print "Oops, ConnectionError exception"
@@ -137,7 +136,8 @@ def wait_till_param(baseurl, entity_name, param_path, value):
             print "Oops, request exception"
 
         if log:
-            print "LOG: ... parameter: " + entity_name + "." + param_path + ", has not achieved value: " + str(value) + ",   wait 2s and try again ........"
+            print "LOG: ... parameter: " + entity_name + "." + param_path + ", has not achieved value: " + str(
+                value) + ",   wait 2s and try again ........"
         time.sleep(2)  # sleep for n seconds)
 
 
@@ -161,6 +161,7 @@ def agief_run_experiment():
     # wait for the task to finish
     wait_till_param(baseurl, 'experiment', 'terminated', True)  # poll API for 'Terminated' config param
 
+
 # type can be 'entity' or 'data'
 def agief_export_rootentity(filepath, root_entity, type):
     payload = {'entity': root_entity, 'type': type}
@@ -168,7 +169,7 @@ def agief_export_rootentity(filepath, root_entity, type):
     if log:
         print "LOG: Export entity file, response = ", response
 
-    #TODO make the 'output' string precede the filename, not the whole path
+    # TODO make the 'output' string precede the filename, not the whole path
 
     if log:
         print "Response Text = " + response.text
@@ -295,7 +296,6 @@ def getbaseurl(host, port):
     return 'http://' + host + ':' + port
 
 
-
 if __name__ == '__main__':
     import argparse
     from argparse import RawTextHelpFormatter
@@ -316,9 +316,9 @@ if __name__ == '__main__':
     # run on aws, keep it running or shut it down afterwards
     parser.add_argument('--aws', dest='aws', action='store_true',
                         help='Use this flag to run on AWS. Then InstanceId and Task need to be specified')
-    parser.add_argument('--aws_keep_running', dest='aws_keep_running', action='store_true',
-                        help='Use this flag to run on AWS, and do NOT shut down the virtual machines and tasks.'
-                             ' Then InstanceId and Task need to be specified')
+    parser.add_argument('--keep_running', dest='keep_running', action='store_true',
+                        help='Use this flag to keep the framework running (and AWS instances and ecs tasks if running '
+                             'remotely)')
     parser.add_argument('--instanceid', dest='instanceid', required=False,
                         help='Instance ID of the ec2 container instance (default=%(default)s).')
     parser.add_argument('--task_name', dest='task_name', required=False,
@@ -328,7 +328,7 @@ if __name__ == '__main__':
     parser.set_defaults(logging=False)
     parser.set_defaults(aws=False)
     parser.set_defaults(aws_keep_running=False)
-    parser.set_defaults(host="localhost")   # c.x.agi.io
+    parser.set_defaults(host="localhost")  # c.x.agi.io
     parser.set_defaults(port="8491")
     parser.set_defaults(instanceid="i-06d6a791")
     parser.set_defaults(task_name="mnist-spatial-task:8")
@@ -350,7 +350,7 @@ if __name__ == '__main__':
     # import pdb
     # pdb.set_trace()
 
-    if args.aws or args.aws_keep_running:
+    if args.aws:
         setup_aws(args.instanceid)
         launch_framework_aws(args.task_name, baseurl)
     else:
@@ -359,7 +359,8 @@ if __name__ == '__main__':
     if args.exps_file:
         run_experiments(baseurl, args.exps_file)
 
-    terminate_framework()
+    if not args.keep_running:
+        terminate_framework()
 
-    if args.aws and not args.aws_keep_running:
-        close_aws(args.instanceid)
+        if args.aws:
+            close_aws(args.instanceid)
