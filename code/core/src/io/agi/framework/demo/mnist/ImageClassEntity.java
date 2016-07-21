@@ -105,7 +105,7 @@ public class ImageClassEntity extends Entity {
             else {
                 config.imageIndex = 0; // reset the index to allow further updates:
                 config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
-                _logger.info( "MNIST dataset complete." );
+                _logger.info( "image dataset complete." );
 //                return; // continue to emit images
             }
         }
@@ -121,7 +121,7 @@ public class ImageClassEntity extends Entity {
         if( !inRange ) { // occurs if no testing images
             config.imageIndex = 0; // reset the index to allow further updates:
             config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
-            _logger.info( "MNIST dataset complete." );
+            _logger.info( "image dataset complete." );
         }
 
         // set learning status of entities
