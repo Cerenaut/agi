@@ -28,22 +28,26 @@ import io.agi.framework.persistence.models.ModelEntity;
 import java.util.Collection;
 
 /**
+ *
+ * This entity will write
+ *
+ *
  * Created by gideon on 17/07/2016.
  */
-public class EvaluationEntity extends Entity {
+public class LogfileEntity extends Entity {
 
-    public static final String ENTITY_TYPE = "eval-entity";
+    public static final String ENTITY_TYPE = "logfile-entity";
     public static final String FEATURES = "features";
-    public static final String CLASSIFICATION = "classification";
 
-    public EvaluationEntity( ObjectMap om, Node n, ModelEntity model ) {
+
+    public LogfileEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
     }
 
     @Override
     public void getInputAttributes( Collection< String > attributes ) {
         attributes.add( FEATURES );
-        attributes.add( CLASSIFICATION );
+
     }
 
     @Override
@@ -53,7 +57,7 @@ public class EvaluationEntity extends Entity {
 
     @Override
     public Class getConfigClass() {
-        return EvaluationEntityConfig.class;
+        return LogfileEntityConfig.class;
     }
 
 

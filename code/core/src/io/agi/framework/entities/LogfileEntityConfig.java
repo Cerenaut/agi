@@ -24,5 +24,5 @@ import io.agi.framework.EntityConfig;
 /**
  * Created by gideon on 17/07/2016.
  */
-public class EvaluationEntityConfig extends EntityConfig {
+public class LogfileEntityConfig extends EntityConfig {
 }
