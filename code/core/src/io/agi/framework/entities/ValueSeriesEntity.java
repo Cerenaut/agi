@@ -63,8 +63,6 @@ public class ValueSeriesEntity extends Entity {
         // Get all the parameters:
         ValueSeriesEntityConfig config = ( ValueSeriesEntityConfig ) _config;
 
-        Persistence p = _n.getPersistence();
-
         String stringValue = Framework.GetConfig( config.entityName, config.configPath );
         Float newValue = Float.valueOf( stringValue );
 

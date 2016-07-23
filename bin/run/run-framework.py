@@ -12,6 +12,7 @@ help_generic = """
 Launch AGIEF. Optionally run experiments (including parameter sweep) and optionally run on AWS ECS.
 - Uses the version of code in $AGI_HOME
 - Uses the experiment 'run' folder specified in $AGI_RUN_HOME
+- Exports the experiment data (if running an experiment)
 - See README.md for installation instructions
 
 The script does the following (lines marked AWS are relevant for operation on AWS):
