@@ -71,12 +71,12 @@ public class AutoRegionLayerDemo {
 //        String testingPath = "./testing";
 //        int terminationAge = 10;//9000;
         int terminationAge = 25000;
-        int trainingBatches = 1;
+        int trainingBatches = 8;
         boolean terminateByAge = true;
-        float defaultPredictionInhibition = 0.f; // random image classification only experiments
+        float defaultPredictionInhibition = 1.f; // random image classification only experiments
 //        float defaultPredictionInhibition = 0.f; // where you use prediction
         boolean encodeZero = false;
-        int layers = 1;
+        int layers = 2;
 
         // Define some entities
         String experimentName = "experiment";
@@ -131,7 +131,7 @@ public class AutoRegionLayerDemo {
         }
 
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList< AbstractPair< String, String > >();
-        if( layers > 0 ) featureDatas.add( new AbstractPair< String, String >( region1FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
+//        if( layers > 0 ) featureDatas.add( new AbstractPair< String, String >( region1FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
         if( layers > 1 ) featureDatas.add( new AbstractPair< String, String >( region2FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
         if( layers > 2 ) featureDatas.add( new AbstractPair< String, String >( region3FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
         Framework.SetDataReferences( classFeaturesName, ClassFeaturesEntity.FEATURES, featureDatas ); // get current state from the region to be used to predict
@@ -176,23 +176,26 @@ public class AutoRegionLayerDemo {
         }
 
         // image region config
-        int widthCells = 32;
+        int widthCells = 32; // from the paper, this was optimal on MNIST
         int heightCells = 32;
         int ageMin = 0;
-        int ageMax = 3000;//1000;
+        int ageMax = 500;//1000;
 //        float sparseLearningRate = 0.000001f;
 //        float sparseLearningRate = 0.00001f;
 //        float sparseLearningRate = 0.0001f;
         float sparseLearningRate = 0.001f; // * best
 //        float sparseLearningRate = 0.01f;
 //        float sparseLearningRate = 0.1f;
+
+        sparseLearningRate = 0.001f; // test
+
         //float cells = (float)( widthCells * heightCells );
-        float sparsityMin = 25;//cells * 0.02f;
-        float sparsityMax = 150;//cells * 0.1f;
-        float sparsityOutput = sparsityMin * 2.f;
+        float sparsityMin = 30;//25;//cells * 0.02f;
+        float sparsityMax = (int)( (widthCells * heightCells) * 0.9f );
+        float sparsityOutput = 1f;//2.f; // temporal pooling, off if 1f
 
 //        float sparsityCells = 0.f; // determined by age
-        float sparsityFactor = 3.f;//1.f;
+        float sparsityFactor = 1.f;//1.f; // the "alpha" term in the paper
 //        float predictorLearningRate = 0.001f;
         float predictorLearningRate = 0.01f;
 
@@ -202,6 +205,22 @@ public class AutoRegionLayerDemo {
             ageMin, ageMax,
             sparseLearningRate, sparsityMin, sparsityMax, sparsityFactor, sparsityOutput,
             defaultPredictionInhibition, predictorLearningRate );
+
+        // smaller region
+        widthCells = 20;
+        heightCells = 20;
+        ageMin = ageMax;
+        ageMax = ageMax * 3;
+        sparsityMin = 10;//25;//cells * 0.02f;
+        sparsityMax = ( (widthCells * heightCells) * 0.9f );
+        sparsityOutput = 1f;//2.f; // temporal pooling, off if 1f
+
+        setRegionLayerConfig(
+                region2FfName,
+                widthCells, heightCells,
+                ageMin, ageMax,
+                sparseLearningRate, sparsityMin, sparsityMax, sparsityFactor, sparsityOutput,
+                defaultPredictionInhibition, predictorLearningRate );
 
         // feature-class config
         Framework.SetConfig( classFeaturesName, "classEntityName", imageClassName );
@@ -242,6 +261,7 @@ public class AutoRegionLayerDemo {
         Framework.SetConfig( regionLayerName, "contextFreeLearningRate", String.valueOf( sparseLearningRate ) );
         Framework.SetConfig( regionLayerName, "contextFreeWidthCells", String.valueOf( widthCells ) );
         Framework.SetConfig( regionLayerName, "contextFreeHeightCells", String.valueOf( heightCells ) );
+        Framework.SetConfig( regionLayerName, "contextFreeBinaryOutput", String.valueOf( true ) );
         Framework.SetConfig( regionLayerName, "contextFreeSparsity", String.valueOf( 0 ) );
         Framework.SetConfig( regionLayerName, "contextFreeSparsityOutput", String.valueOf( sparsityFactor ) );
         Framework.SetConfig( regionLayerName, "contextFreeSparsityMin", String.valueOf( sparsityMin ) );

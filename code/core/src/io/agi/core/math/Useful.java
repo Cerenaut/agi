@@ -39,4 +39,34 @@ public class Useful {
         }
         return sets;
     }
+
+    public static void IsBad( float r ) {
+        boolean breakpoint = false;
+        if( Float.isInfinite( r ) ) {
+            breakpoint = true;
+        }
+        if( Float.isNaN( r ) ) {
+            breakpoint = true;
+        }
+
+        if( breakpoint ) {
+            int g = 0;
+            g++;
+        }
+    }
+
+    public static void IsBad( double r ) {
+        boolean breakpoint = false;
+        if( Double.isInfinite( r ) ) {
+            breakpoint = true;
+        }
+        if( Double.isNaN( r ) ) {
+            breakpoint = true;
+        }
+
+        if( breakpoint ) {
+            int g = 0;
+            g++;
+        }
+    }
 }

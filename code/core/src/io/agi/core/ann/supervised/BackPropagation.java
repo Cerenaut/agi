@@ -20,6 +20,7 @@
 package io.agi.core.ann.supervised;
 
 import io.agi.core.data.FloatArray;
+import io.agi.core.math.Useful;
 
 /**
  * This class puts all the math associated with the backpropagation algorithm in one place.
@@ -209,18 +210,12 @@ public abstract class BackPropagation {
                 float wDelta = learningRate * change * a;
                 float wNew = wOld - wDelta;//learningRate * change * a;
 
-                //if( Math.abs( wNew ) > 100.f ) {
-                //    int g = 0;
-                //    g++;
-                //}
-                //if( Float.isInfinite( wNew ) ) {
-                //    int g = 0;
-                //    g++;
-                //}
-                //if( Float.isNaN( wNew ) ) {
-                //    int g = 0;
-                //    g++;
-                //}
+// weight clipping
+//                float wMax = 1.f;
+//                if( wNew > wMax ) wNew = wMax;
+//                if( wNew < -wMax ) wNew = -wMax;
+
+                Useful.IsBad( wNew );
 
                 w._values[ offset ] = wNew;
             }
@@ -264,6 +259,9 @@ public abstract class BackPropagation {
                 float w = w_l2._values[ offset ];
                 float d = d_l2._values[ j ]; // d_j i.e. partial derivative of loss fn with respect to the activation of j
                 float product = d * w + ( l2R * w );
+
+                Useful.IsBad( product );
+
                 sum += product;
             }
 

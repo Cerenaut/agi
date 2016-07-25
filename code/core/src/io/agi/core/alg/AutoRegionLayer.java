@@ -201,6 +201,7 @@ public class AutoRegionLayer extends NamedObject {
         // update with learning
         // copy the new values to the "old" section.
         // etc.
+        _contextFreeClassifier._c.setLearn( _rc.getLearn() );
 
         // 1. update context-free classification
         updateContextFreeClassification();
@@ -396,7 +397,9 @@ public class AutoRegionLayer extends NamedObject {
         }
 
         // 4. Prune output by age (removing oldest) until desired sparsity is reached.
-        int maxRank = _rc.getOutputSparsity();
+        float outputSparsityFactor = _rc.getOutputSparsity();
+        float currentSparsity = _contextFreeClassifier._c.getSparsity();
+        int maxRank = (int)( outputSparsityFactor * currentSparsity );
         boolean findMaxima = false; // keep the youngest
 
         HashSet< Integer > youngOutput = new HashSet< Integer >();
