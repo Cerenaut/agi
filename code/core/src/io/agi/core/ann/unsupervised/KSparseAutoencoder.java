@@ -50,6 +50,7 @@ public class KSparseAutoencoder extends CompetitiveLearning {
     public KSparseAutoencoderConfig _c;
     public ArrayList< Integer > _sparseUnitInput;
     public Data _inputValues;
+    public Data _inputReconstructionWeightedSum;
     public Data _inputReconstruction;
     public Data _cellWeights;
     public Data _cellBiases1;
@@ -57,6 +58,7 @@ public class KSparseAutoencoder extends CompetitiveLearning {
     public Data _cellErrors;
     public Data _cellWeightedSum;
     public Data _cellTransfer;
+    public Data _cellTransferTopK;
     public Data _cellActivity;
 
     protected boolean _ageLearn = true;
@@ -75,6 +77,7 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         int h = c.getHeightCells();
 
         _inputValues = new Data( inputs );
+        _inputReconstructionWeightedSum = new Data( inputs );
         _inputReconstruction = new Data( inputs );
         _cellWeights = new Data( w, h, inputs );
         _cellBiases1 = new Data( w, h );
@@ -82,6 +85,7 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         _cellErrors = new Data( w, h );
         _cellWeightedSum = new Data( w, h );
         _cellTransfer = new Data( w, h );
+        _cellTransferTopK = new Data( w, h );
         _cellActivity = new Data( w, h );
     }
 
@@ -185,6 +189,7 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         // https://en.wikipedia.org/wiki/Backpropagation
         // for encoding, activate alpha * k largest activations
         // mean sq err is quadratic cost function http://neuralnetworksanddeeplearning.com/chap1.html
+        float noiseMagnitude = 0.001f; // small magnitude
         float learningRate = _c.getLearningRate();
         int k = updateSparsity();
         float sparsityOutput = _c.getSparsityOutput(); // alpha
@@ -203,7 +208,7 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
         // add a small amount of noise to the inputs
         for( int i = 0; i < inputs; ++i ) {
-            float noise = this._c._r.nextFloat() * 0.001f; // small magnitude
+            float noise = _c._r.nextFloat() * noiseMagnitude;
             _inputValues._values[ i ] = Math.max( noise, _inputValues._values[ i ] );
         }
 
@@ -217,9 +222,6 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
             for( int i = 0; i < inputs; ++i ) {
 
-//                int row = c;
-//                int col = i;
-//                int offset = FloatMatrix.getOffset( rows, cols, row, col );
                 int offset = c * inputs +i;
 
                 float input = _inputValues._values[ i ];
@@ -232,9 +234,14 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
             sum += bias;
 
-            _cellResponse._values[ c ] = sum;
+            _cellWeightedSum._values[ c ] = sum;
 
-            Ranking.add( ranking, sum, c );
+            float transfer = (float)TransferFunction.logisticSigmoid( sum );
+
+            _cellTransfer._values[ c ] = transfer;
+
+//            Ranking.add( ranking, sum, c );
+            Ranking.add( ranking, transfer, c ); // this is the new output
         }
 
         // Hidden Layer Nonlinearity: Make all except top k cells zero.
@@ -251,16 +258,13 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         // now restrict to just k:
         maxRank = k;
 
-        FloatArray cellResponseTruncated = new FloatArray( cells );
-
         ArrayList< Integer > activeCells = Ranking.getBestValues( ranking, findMaxima, maxRank );
 
+        _cellTransferTopK.set( 0f );
+
         for( Integer c : activeCells ) {
-            float activeValue = 1.f;
-//            if( !binaryOutput ) {
-                activeValue = _cellResponse._values[ c ]; // otherwise zero
-//            }
-            cellResponseTruncated._values[ c ] = activeValue;
+            float transfer = _cellTransfer._values[ c ]; // otherwise zero
+            _cellTransferTopK._values[ c ] = transfer;
         }
 
         // Output layer (forward pass)
@@ -270,17 +274,10 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
             for( int c = 0; c < cells; ++c ) {
 
-//                float active = _cellActivity._values[ c ];
-                float response = cellResponseTruncated._values[ c ];
-//                float responseActive = response * active; // i.e. 0 if not in k support set
+                float response = _cellTransferTopK._values[ c ];
 
-//                int rowT = i;
-//                int colT = c;
-//                int offset = FloatMatrix.getOffset( rowsT, colsT, rowT, colT );
                 int offset = c * inputs +i;
-
                 float weight = _cellWeights._values[ offset ];
-//                float weight = weightsT._values[ offset ];
                 float product = response * weight;
                 sum += product;
             }
@@ -289,10 +286,12 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
             sum += bias;
 
-            _inputReconstruction._values[ i ] = sum;
-        }
+            _inputReconstructionWeightedSum._values[ i ] = sum;
 
-        // TODO seems like I should test for a classification change here, to prevent overlearning a constant sample
+            float transfer = (float)TransferFunction.logisticSigmoid( sum );
+
+            _inputReconstruction._values[ i ] = transfer;
+        }
 
         // don't go any further unless learning is enabled
         if( !learn ) {
@@ -317,7 +316,7 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 //        FloatArray weightsNew = null;
 
         FloatArray dOutput = new FloatArray( inputs );
-        FloatArray dHidden = new FloatArray( cells );
+        FloatArray dHidden = new FloatArray( cells ); // zeroes
 
         // d output layer
         float totalError = 0.f;
@@ -327,9 +326,12 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             float output = _inputReconstruction._values[ i ]; // a
             float error = output - target; // == d^L
 
-            dOutput._values[ i ] = error;
+            float weightedSum = _inputReconstructionWeightedSum._values[ i ]; // z
+            float derivative = (float)TransferFunction.logisticSigmoidDerivative( weightedSum );
 
-            totalError += ( error * error );
+            dOutput._values[ i ] = error * derivative; // eqn 30
+
+            totalError += ( error * error ); // fyi only
         }
 
         System.err.println( "Total error: " + totalError );
@@ -338,9 +340,12 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         for( int c = 0; c < cells; ++c ) { // computing error for each "input"
             float sum = 0.f;
 
-            float response = cellResponseTruncated._values[ c ];
+//            float response = cellResponseTruncated._values[ c ];
+            float transferTopK = _cellTransferTopK._values[ c ];
+            float weightedSum = _cellWeightedSum._values[ c ];
+            float derivative = (float)TransferFunction.logisticSigmoidDerivative( weightedSum );
 
-            if( response > 0f ) {
+            if( transferTopK > 0f ) {
                 for( int i = 0; i < inputs; ++i ) {
                     //int offset = j * K + k; // K = inputs, storage is all inputs adjacent
                     int offset = c * inputs + i;
@@ -352,7 +357,11 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
                     sum += product;
                 }
+
+                // with linear neurons, derivative is 1, but here it is nonlinear now
+                sum *= derivative;  // eqn (BP2)
             }
+            // else: derivative is zero when filtered
 
             dHidden._values[ c ] = sum;
         }
@@ -366,14 +375,14 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
                 int offset = c * inputs + i;
 
-                float a = cellResponseTruncated._values[ c ];
+                float a = _cellTransferTopK._values[ c ];
                 float wOld = _cellWeights._values[ offset ];
                 float wDelta = learningRate * errorGradient * a;
                 float wNew = wOld - wDelta;
 
-                float wMax = 1.f;
-                if( wNew > wMax ) wNew = wMax;
-                if( wNew < -wMax ) wNew = -wMax;
+//                float wMax = 1.f;
+//                if( wNew > wMax ) wNew = wMax;
+//                if( wNew < -wMax ) wNew = -wMax;
 
                 Useful.IsBad( wNew );
 
@@ -401,9 +410,9 @@ public class KSparseAutoencoder extends CompetitiveLearning {
                 float wDelta = learningRate * errorGradient * a;
                 float wNew = wOld - wDelta;
 
-                float wMax = 1.f;
-                if( wNew > wMax ) wNew = wMax;
-                if( wNew < -wMax ) wNew = -wMax;
+//                float wMax = 1.f;
+//                if( wNew > wMax ) wNew = wMax;
+//                if( wNew < -wMax ) wNew = -wMax;
 
                 Useful.IsBad( wNew );
 

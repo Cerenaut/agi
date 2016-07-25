@@ -240,13 +240,13 @@ public class AutoRegionLayerEntity extends Entity {
         rl._output = getDataLazyResize( OUTPUT, rl._output._dataSize );
         rl._outputAge = getDataLazyResize( OUTPUT_AGE, rl._outputAge._dataSize );
 
-        rl._predictor._weights = getDataLazyResize( PREDICTOR_WEIGHTS, rl._predictor._weights._dataSize );
+//        rl._predictor._weights = getDataLazyResize( PREDICTOR_WEIGHTS, rl._predictor._weights._dataSize );
 
         rl._contextFreeClassifier._cellWeights = getDataLazyResize( CONTEXT_FREE_WEIGHTS, rl._contextFreeClassifier._cellWeights._dataSize );
         rl._contextFreeClassifier._cellBiases1 = getDataLazyResize( CONTEXT_FREE_BIASES_1, rl._contextFreeClassifier._cellBiases1._dataSize );
         rl._contextFreeClassifier._cellBiases2 = getDataLazyResize( CONTEXT_FREE_BIASES_2, rl._contextFreeClassifier._cellBiases2._dataSize );
         rl._contextFreeClassifier._cellErrors = getDataLazyResize( CONTEXT_FREE_ERRORS, rl._contextFreeClassifier._cellErrors._dataSize );
-        rl._contextFreeClassifier._cellResponse = getDataLazyResize( CONTEXT_FREE_RESPONSE, rl._contextFreeClassifier._cellResponse._dataSize );
+        rl._contextFreeClassifier._cellTransferTopK = getDataLazyResize( CONTEXT_FREE_RESPONSE, rl._contextFreeClassifier._cellTransferTopK._dataSize );
         rl._contextFreeClassifier._inputReconstruction = getDataLazyResize( CONTEXT_FREE_RECONSTRUCTION, rl._contextFreeClassifier._inputReconstruction._dataSize );
 
 //        rl._contextualClassifier._cellWeights = getDataLazyResize( CONTEXTUAL_WEIGHTS, rl._contextualClassifier._cellWeights._dataSize );
@@ -276,13 +276,13 @@ public class AutoRegionLayerEntity extends Entity {
         setData( OUTPUT, rl._output );
         setData( OUTPUT_AGE, rl._outputAge );
 
-        setData( PREDICTOR_WEIGHTS, rl._predictor._weights );
+//        setData( PREDICTOR_WEIGHTS, rl._predictor._weights );
 
         setData( CONTEXT_FREE_WEIGHTS, rl._contextFreeClassifier._cellWeights );
         setData( CONTEXT_FREE_BIASES_1, rl._contextFreeClassifier._cellBiases1 );
         setData( CONTEXT_FREE_BIASES_2, rl._contextFreeClassifier._cellBiases2 );
         setData( CONTEXT_FREE_ERRORS, rl._contextFreeClassifier._cellErrors );
-        setData( CONTEXT_FREE_RESPONSE, rl._contextFreeClassifier._cellResponse );
+        setData( CONTEXT_FREE_RESPONSE, rl._contextFreeClassifier._cellTransferTopK );
         setData( CONTEXT_FREE_RECONSTRUCTION, rl._contextFreeClassifier._inputReconstruction );
 
 //        setData( CONTEXTUAL_WEIGHTS, rl._contextualClassifier._cellWeights );
