@@ -71,7 +71,7 @@ public class AutoRegionLayerDemo {
 //        String testingPath = "./testing";
 //        int terminationAge = 10;//9000;
         int terminationAge = 25000;
-        int trainingBatches = 8;
+        int trainingBatches = 80;
         boolean terminateByAge = true;
         float defaultPredictionInhibition = 1.f; // random image classification only experiments
 //        float defaultPredictionInhibition = 0.f; // where you use prediction
@@ -179,7 +179,9 @@ public class AutoRegionLayerDemo {
         int widthCells = 32; // from the paper, this was optimal on MNIST
         int heightCells = 32;
         int ageMin = 0;
-        int ageMax = 500;//1000;
+        int ageMax = 700;//1000;
+        float ageScale = 17f;
+
 //        float sparseLearningRate = 0.000001f;
 //        float sparseLearningRate = 0.00001f;
 //        float sparseLearningRate = 0.0001f;
@@ -187,10 +189,11 @@ public class AutoRegionLayerDemo {
 //        float sparseLearningRate = 0.01f;
 //        float sparseLearningRate = 0.1f;
 
-        sparseLearningRate = 0.001f; // test
+        sparseLearningRate = 0.01f;//0.001f; // test
+//        sparseLearningRate = 0.05f; // test saturated at 0.6
 
         //float cells = (float)( widthCells * heightCells );
-        float sparsityMin = 30;//25;//cells * 0.02f;
+        float sparsityMin = 30;//30;//25;//cells * 0.02f;
         float sparsityMax = (int)( (widthCells * heightCells) * 0.9f );
         float sparsityOutput = 1f;//2.f; // temporal pooling, off if 1f
 
@@ -199,26 +202,28 @@ public class AutoRegionLayerDemo {
 //        float predictorLearningRate = 0.001f;
         float predictorLearningRate = 0.01f;
 
+        // todo try weight regularization?
+
         setRegionLayerConfig(
             region1FfName,
             widthCells, heightCells,
-            ageMin, ageMax,
+            ageMin, ageMax, ageScale,
             sparseLearningRate, sparsityMin, sparsityMax, sparsityFactor, sparsityOutput,
             defaultPredictionInhibition, predictorLearningRate );
 
         // smaller region
-        widthCells = 20;
-        heightCells = 20;
-        ageMin = ageMax;
-        ageMax = ageMax * 3;
-        sparsityMin = 10;//25;//cells * 0.02f;
+        widthCells = 30;
+        heightCells = 30;
+        //ageMin = ageMax;
+        //ageMax = ageMax * 3;
+        sparsityMin = 12;//10;//25;//cells * 0.02f;
         sparsityMax = ( (widthCells * heightCells) * 0.9f );
         sparsityOutput = 1f;//2.f; // temporal pooling, off if 1f
 
         setRegionLayerConfig(
                 region2FfName,
                 widthCells, heightCells,
-                ageMin, ageMax,
+                ageMin, ageMax, ageScale,
                 sparseLearningRate, sparsityMin, sparsityMax, sparsityFactor, sparsityOutput,
                 defaultPredictionInhibition, predictorLearningRate );
 
@@ -249,6 +254,7 @@ public class AutoRegionLayerDemo {
             int heightCells,
             int ageMin,
             int ageMax,
+            float ageScale,
             float sparseLearningRate,
             float sparsityMin,
             float sparsityMax,
@@ -269,6 +275,7 @@ public class AutoRegionLayerDemo {
         Framework.SetConfig( regionLayerName, "contextFreeAgeMin", String.valueOf( ageMin ) );
         Framework.SetConfig( regionLayerName, "contextFreeAgeMax", String.valueOf( ageMax ) );
         Framework.SetConfig( regionLayerName, "contextFreeAge", String.valueOf( 0 ) );
+        Framework.SetConfig( regionLayerName, "contextFreeAgeScale", String.valueOf( ageScale ) );
 //        Framework.SetConfig( regionLayerName, "contextualLearningRate", String.valueOf( sparseLearningRate ) );
 //        Framework.SetConfig( regionLayerName, "contextualWidthCells", String.valueOf( widthCells ) );
 //        Framework.SetConfig( regionLayerName, "contextualHeightCells", String.valueOf( heightCells ) );

@@ -26,6 +26,7 @@ import io.agi.core.math.Useful;
 import io.agi.core.orm.ObjectMap;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.TreeMap;
 
 /**
@@ -60,6 +61,8 @@ public class KSparseAutoencoder extends CompetitiveLearning {
     public Data _cellTransfer;
     public Data _cellTransferTopK;
     public Data _cellActivity;
+    public Data _cellAges; // age is zero when active, otherwise incremented
+    public Data _cellPromotion; // idle cells are promoted until they are used
 
     protected boolean _ageLearn = true;
 
@@ -87,6 +90,8 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         _cellTransfer = new Data( w, h );
         _cellTransferTopK = new Data( w, h );
         _cellActivity = new Data( w, h );
+        _cellAges = new Data( w, h );
+        _cellPromotion = new Data( w, h );
     }
 
     public void reset() {
@@ -133,35 +138,87 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         update();
     }
 
+    public void updatePromotion() {
+
+        // as cells age, their weight is promoted
+        // when very old, they become hypersensitive
+        // This is used to rank them higher for learning
+        // They will eventually out-compete other cells and become winners in their own right
+        // At this point the promotion is removed.
+
+        float ageScale = _c.getAgeScale();//17f;//12f; // affects the slope of the function
+        float maxAge = (float)_c.getAgeMax();
+        int cells = _c.getNbrCells();
+
+        for( int c = 0; c < cells; ++c ) {
+            float age = _cellAges._values[ c ];
+            float unitAge = age / (float)maxAge; // 1 iff max age
+//            unitAge = Math.min( 1f, unitAge ); // clip at 1  (not doing this because why not increase promotion beyond 2x?
+
+            if( unitAge > 0.5 ) {
+                int g = 0;
+                g++;
+            }
+            // 0 = in regular use
+            // 1 = never used
+            // > 1 = ever increasing promotion
+            // http://www.wolframalpha.com/input/?i=plot+e%5E(-17(1-x))+for+x+%3D+0.6+to+1.05
+            float factor = (float)( Math.exp( -ageScale * ( 1.0f - unitAge ) ) ); // 1 if old, zero if young
+            float promotion = 1f + factor; // ie don't reduce any
+
+            _cellPromotion._values[ c ] = promotion;
+        }
+    }
+
+    public void updateAges( Collection< Integer > activeCells, float ageFactor ) {
+        int cells = _c.getNbrCells();
+
+        // increment all ages
+        for( int c = 0; c < cells; ++c ) {
+            float age = _cellAges._values[ c ];
+            age += 1f;
+            _cellAges._values[ c ] = age;
+        }
+
+        // zero the ages of active cells
+        for( Integer c : activeCells ) {
+            float age = _cellAges._values[ c ];
+            age *= ageFactor;
+            _cellAges._values[ c ] = age;
+        }
+    }
+
     public int updateSparsity() {
         int kMin = _c.getSparsityMin();
-        int kMax = _c.getSparsityMax();
-        int ageMin = _c.getAgeMin();
-        int ageMax = _c.getAgeMax();
+//        int kMax = _c.getSparsityMax();
+//        int ageMin = _c.getAgeMin();
+//        int ageMax = _c.getAgeMax();
         int age = _c.getAge();
 
-        _ageLearn = true;
-
-        int k = 0;
-        if( age < ageMin ) {
-            k = kMax;
-            _ageLearn = false;
-        }
-        else if( k > ageMax ){
-            k = kMin;
-        }
-        else {
-            int age2 = age - ageMin;
-            int ageRange = ageMax - ageMin;
-            float relativeAge = (float)age2 / (float)ageRange;
-            relativeAge = Math.min( 1.f, relativeAge );
-            relativeAge = 1.f - relativeAge;
-            int kRange = kMax - kMin;
-            int kRel = (int)( (float)kRange * relativeAge );
-            k = kMin + kRel;
-        }
-
-        //System.err.println( "Age: " + age + " Sparsity: " + k );
+//        _ageLearn = true;
+//
+//        int k = 0;
+//        if( age < ageMin ) {
+//            k = kMax;
+//            _ageLearn = false;
+//        }
+//        else if( k > ageMax ){
+//            k = kMin;
+//        }
+//        else {
+//            int age2 = age - ageMin;
+//            int ageRange = ageMax - ageMin;
+//            float relativeAge = (float)age2 / (float)ageRange;
+//            relativeAge = Math.min( 1.f, relativeAge );
+//            relativeAge = 1.f - relativeAge;
+//            int kRange = kMax - kMin;
+//            int kRel = (int)( (float)kRange * relativeAge );
+//            k = kMin + kRel;
+//        }
+//
+//        //System.err.println( "Age: " + age + " Sparsity: " + k );
+//        _c.setAge( age +1 );
+        int k = kMin;
         _c.setSparsity( k );
         _c.setAge( age +1 );
 
@@ -189,8 +246,10 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         // https://en.wikipedia.org/wiki/Backpropagation
         // for encoding, activate alpha * k largest activations
         // mean sq err is quadratic cost function http://neuralnetworksanddeeplearning.com/chap1.html
+        float ageFactor = 0.5f; // halve the age each time it fires
         float noiseMagnitude = 0.001f; // small magnitude
         float learningRate = _c.getLearningRate();
+        updatePromotion();
         int k = updateSparsity();
         float sparsityOutput = _c.getSparsityOutput(); // alpha
         boolean binaryOutput = false;//_c.getBinaryOutput();
@@ -216,6 +275,7 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         _cellActivity.set( 0.f );
 
         TreeMap< Float, ArrayList< Integer > > ranking = new TreeMap< Float, ArrayList< Integer > >();
+        TreeMap< Float, ArrayList< Integer > > rankingWithPromotion = new TreeMap< Float, ArrayList< Integer > >();
 
         for( int c = 0; c < cells; ++c ) {
             float sum = 0.f;
@@ -242,9 +302,14 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
 //            Ranking.add( ranking, sum, c );
             Ranking.add( ranking, transfer, c ); // this is the new output
+
+            float promotion = _cellPromotion._values[ c ];
+            float transferPromoted = transfer * promotion;
+            Ranking.add( rankingWithPromotion, transferPromoted, c ); // this is the new output
         }
 
         // Hidden Layer Nonlinearity: Make all except top k cells zero.
+        // First, the loose filtering (for more robust hidden set)
         int maxRank = k2;
         boolean findMaxima = true;
         //Ranking.truncate( ranking, maxRank, findMaxima );
@@ -255,17 +320,25 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             _cellActivity._values[ c ] = 1.f;
         }
 
-        // now restrict to just k:
+        // now restrict to just k. This set is used for learning.
+        // Hence, we now swap to the "promoted" scores
         maxRank = k;
 
-        ArrayList< Integer > activeCells = Ranking.getBestValues( ranking, findMaxima, maxRank );
+//        ArrayList< Integer > activeCells = Ranking.getBestValues( ranking, findMaxima, maxRank );
+        ArrayList< Integer > activeCells = Ranking.getBestValues( rankingWithPromotion, findMaxima, maxRank );
 
         _cellTransferTopK.set( 0f );
 
+        // NOTE: Use the *non* promoted transfer value for forward and backward passes
         for( Integer c : activeCells ) {
             float transfer = _cellTransfer._values[ c ]; // otherwise zero
             _cellTransferTopK._values[ c ] = transfer;
         }
+
+        // NOTE: Update ages with the *non* promoted ranking, to require a "natural" win indicating the weights have learned to be useful to zero the age
+        // NOTE: I tried the above, but it just got fixated. Seems like you have to learn it once, then remove the promotion.
+        updateAges( activeCells, ageFactor );
+        //updateAges( _activeCells );
 
         // Output layer (forward pass)
         // dont really need to do this if not learning.

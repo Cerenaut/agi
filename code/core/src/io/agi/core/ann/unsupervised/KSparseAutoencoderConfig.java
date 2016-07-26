@@ -38,6 +38,7 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
     public static final String AGE_MIN = "age-min";
     public static final String AGE_MAX = "age-max";
     public static final String AGE = "age";
+    public static final String AGE_SCALE = "age-scale";
 
     public KSparseAutoencoderConfig() {
     }
@@ -74,7 +75,8 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
             int sparsityMax,
             int ageMin,
             int ageMax,
-            int age ){
+            int age,
+            float ageScale ){
 
         super.setup( om, name, r, inputs, w, h );
 
@@ -87,6 +89,7 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
         setAgeMin( ageMin );
         setAgeMax( ageMax );
         setAge( age );
+        setAgeScale( ageScale );
     }
 
     public void copyFrom( NetworkConfig nc, String name ) {
@@ -103,6 +106,7 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
         setAgeMin( c.getAgeMin() );
         setAgeMax( c.getAgeMax() );
         setAge( c.getAge() );
+        setAgeScale( c.getAgeScale() );
     }
 
     public void setLearningRate( float r ) {
@@ -139,6 +143,10 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
 
     public void setAge( int n ) {
         _om.put( getKey( AGE ), n );
+    }
+
+    public void setAgeScale( float r ) {
+        _om.put( getKey( AGE_SCALE ), r );
     }
 
     public float getLearningRate() {
@@ -185,4 +193,10 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
         Integer n = _om.getInteger( getKey( AGE ) );
         return n.intValue();
     }
+
+    public float getAgeScale() {
+        Float r = _om.getFloat( getKey( AGE_SCALE ) );
+        return r.floatValue();
+    }
+
 }
