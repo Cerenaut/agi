@@ -20,7 +20,6 @@
 package io.agi.framework.demo.mnist;
 
 import io.agi.core.orm.AbstractPair;
-import io.agi.core.sdr.NumberEncoder;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
