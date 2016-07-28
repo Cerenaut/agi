@@ -25,7 +25,7 @@
 
     <groupId>io.agi.core</groupId>
     <artifactId>agief</artifactId>
-    <version>1.0.6(f36f2e6)</version>
+    <version>1.0.11(024bd7d)</version>
 
     <build>
         <sourceDirectory>src</sourceDirectory>
@@ -155,6 +155,11 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>tw.edu.ntu.csie</groupId>
+            <artifactId>libsvm</artifactId>
+            <version>3.17</version>
         </dependency>
 
     </dependencies>

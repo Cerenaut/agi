@@ -48,16 +48,11 @@ public class HttpStopHandler implements HttpHandler {
         String response = "Bad request.";
         int status = 400;
 
-        try {
-            _n.stop();
-
-            status = 200;
-            response = "Stopping node...";
-        }
-        catch( Exception e ) {
-            logger.error( e.getStackTrace() );
-        }
+        status = 200;
+        response = "Stopping node...";
 
         HttpUtil.SendResponse( t, status, response );
+
+        _n.stop();
     }
 }

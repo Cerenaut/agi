@@ -27,7 +27,6 @@ import io.agi.framework.persistence.models.ModelEntity;
 import libsvm.*;
 
 import java.util.Collection;
-import java.util.StringTokenizer;
 import java.util.Vector;
 
 /**

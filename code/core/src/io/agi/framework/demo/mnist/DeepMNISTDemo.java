@@ -20,7 +20,6 @@
 package io.agi.framework.demo.mnist;
 
 import io.agi.core.orm.AbstractPair;
-import io.agi.core.sdr.NumberEncoder;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
@@ -276,11 +275,11 @@ public class DeepMNISTDemo {
         Framework.SetConfig( valueSeriesErrorName, "period", "-1" );
         Framework.SetConfig( valueSeriesTruthName, "period", "-1" );
 
-        Framework.SetConfig( valueSeriesPredictedName, "entityName", classFeaturesName ); // log forever
+        Framework.SetConfig( valueSeriesPredictedName, "entityName", classFeaturesName );
         Framework.SetConfig( valueSeriesErrorName, "entityName", classFeaturesName );
         Framework.SetConfig( valueSeriesTruthName, "entityName", classFeaturesName );
 
-        Framework.SetConfig( valueSeriesPredictedName, "configPath", "classPredicted" ); // log forever
+        Framework.SetConfig( valueSeriesPredictedName, "configPath", "classPredicted" );
         Framework.SetConfig( valueSeriesErrorName, "configPath", "classError" );
         Framework.SetConfig( valueSeriesTruthName, "configPath", "classTruth" );
 

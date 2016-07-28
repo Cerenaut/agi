@@ -94,7 +94,7 @@ public class HttpCoordination implements Coordination {
         HttpUtil.AddHandler( _s, HttpExportHandler.CONTEXT, exh );
         HttpUtil.AddHandler( _s, HttpConfigHandler.CONTEXT, ch );
         HttpUtil.AddHandler( _s, HttpVersionHandler.CONTEXT, vh );
-        HttpUtil.AddHandler( _s, HttpStopHandler.CONTEXT, vh );
+        HttpUtil.AddHandler( _s, HttpStopHandler.CONTEXT, sh );
     }
 
     /**

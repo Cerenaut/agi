@@ -1,29 +1,48 @@
 #!/bin/bash
 
 #######################################################
-## RUN EXPERIMENT defined by input json files
+## RUN AGIEF EXPERIMENT with various options
 #######################################################
-
 
 variables_file=${VARIABLES_FILE:-"variables.sh"}
 echo "Using variables file = \"$variables_file\""
 source $(dirname $0)/../$variables_file
 
+usage="Usage: `basename $0` NODE_PROPERTIES ENTITIES_FILE(optional) DATA_FILE(optional)"
+ 
+while getopts ":p:e:d:l:m:" opt; do
+  case $opt in
+    p)	# name of properties file (optional, there is a default)
+      opt_p=$OPTARG
+      ;;
+	l)	# name of log4j2 xml file (optional, there is a default)
+      opt_l=$OPTARG
+      ;;
+	m)	# name of main class (optional, there is a default)
+      opt_m=$OPTARG
+      ;;
+	d)	# name of input file for data (optional, can be unspecified)
+      opt_d=$OPTARG
+      ;;
+	e)	# name of input file for entity (optional, can be unspecified)
+      opt_e=$OPTARG
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+  esac
+done
 
-if [ "$1" == "-h" -o "$1" == "--help" ]; then
-  echo "Usage: `basename $0` NODE_PROPERTIES ENTITIES_FILE(optional) DATA_FILE(optional)"
-  echo "If entities file is specified, load it, if entities and data file are specified, load them both."
-  echo "All arguments are optional."
-  exit 0
-fi
-
-node_properties=${1:-node.properties}
-entity_file=$2
-data_file=$3
-
-log_config="log4j2.xml"
-
-main_class="io.agi.framework.Main"
+node_properties=${opt_p:-node.properties}
+entity_file=$opt_e			# if it was not defined, that is ok, it is not passed into the runtime
+data_file=$opt_d			# if it was not defined, that is ok, it is not passed into the runtime
+log_config=${opt_l:-log4j2.xml}
+main_class=${opt_m:-io.agi.framework.Main}
 
 echo "Run home = $AGI_RUN_HOME"
 cd $AGI_RUN_HOME
