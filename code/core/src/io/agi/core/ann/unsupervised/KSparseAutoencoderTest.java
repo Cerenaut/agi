@@ -60,7 +60,7 @@ public class KSparseAutoencoderTest implements UnitTest {
         int ageMax = 1000;
         int age = 0;
         float ageScale = 15f;
-        
+
         RandomInstance.setSeed( randomSeed ); // make the tests repeatable
         Random random = RandomInstance.getInstance();
         ObjectMap om = ObjectMap.GetInstance();

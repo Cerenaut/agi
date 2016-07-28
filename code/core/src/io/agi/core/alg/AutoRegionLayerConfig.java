@@ -62,7 +62,7 @@ public class AutoRegionLayerConfig extends NetworkConfig {
             int input1Height,
             int input2Width,
             int input2Height,
-            int outputSparsity,
+            float outputSparsity,
             float predictorLearningRate,
             float defaultPredictionInhibition ) {
         super.setup( om, name, r );
@@ -99,13 +99,13 @@ public class AutoRegionLayerConfig extends NetworkConfig {
         _om.put( getKey( DEFAULT_PREDICTION_INHIBITION ), r );
     }
 
-    public int getOutputSparsity() {
-        int n = _om.getInteger( getKey( OUTPUT_SPARSITY ) );
-        return n;
+    public float getOutputSparsity() {
+        float r = _om.getFloat( getKey( OUTPUT_SPARSITY ) );
+        return r;
     }
 
-    public void setOutputSparsity( int n ) {
-        _om.put( getKey( OUTPUT_SPARSITY ), n );
+    public void setOutputSparsity( float r ) {
+        _om.put( getKey( OUTPUT_SPARSITY ), r );
     }
 
     public int getInputArea() {

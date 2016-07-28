@@ -26,7 +26,4 @@ import io.agi.framework.EntityConfig;
  */
 public class DataSeriesEntityConfig extends EntityConfig {
 
-    public int period = 100; // number of samples before it wraps. -1 for infinite
-
-
 }

@@ -67,6 +67,8 @@ public class AutoRegionLayerEntity extends Entity {
     public static final String CONTEXT_FREE_BIASES_1 = "context-free-biases-1";
     public static final String CONTEXT_FREE_BIASES_2 = "context-free-biases-2";
     public static final String CONTEXT_FREE_ERRORS = "context-free-errors";
+    public static final String CONTEXT_FREE_WEIGHTED_SUM = "context-free-weighted-sum";
+    public static final String CONTEXT_FREE_TRANSFER = "context-free-transfer";
     public static final String CONTEXT_FREE_RESPONSE = "context-free-response";
     public static final String CONTEXT_FREE_RECONSTRUCTION = "context-free-reconstruction";
     public static final String CONTEXT_FREE_AGES = "context-free-ages";
@@ -136,7 +138,9 @@ public class AutoRegionLayerEntity extends Entity {
         attributes.add( CONTEXT_FREE_BIASES_1 );
         attributes.add( CONTEXT_FREE_BIASES_2 );
         attributes.add( CONTEXT_FREE_ERRORS );
+        attributes.add( CONTEXT_FREE_TRANSFER );
         attributes.add( CONTEXT_FREE_RESPONSE );
+        attributes.add( CONTEXT_FREE_WEIGHTED_SUM );
         attributes.add( CONTEXT_FREE_RECONSTRUCTION );
         attributes.add( CONTEXT_FREE_AGES );
         attributes.add( CONTEXT_FREE_PROMOTION );
@@ -145,6 +149,7 @@ public class AutoRegionLayerEntity extends Entity {
         flags.putFlag( CONTEXT_FREE_BIASES_1, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( CONTEXT_FREE_BIASES_2, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( CONTEXT_FREE_ERRORS, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( CONTEXT_FREE_TRANSFER, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( CONTEXT_FREE_RESPONSE, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( CONTEXT_FREE_RECONSTRUCTION, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( CONTEXT_FREE_AGES, DataFlags.FLAG_NODE_CACHE );
@@ -281,6 +286,8 @@ public class AutoRegionLayerEntity extends Entity {
         rl._contextFreeClassifier._cellBiases1 = getDataLazyResize( CONTEXT_FREE_BIASES_1, rl._contextFreeClassifier._cellBiases1._dataSize );
         rl._contextFreeClassifier._cellBiases2 = getDataLazyResize( CONTEXT_FREE_BIASES_2, rl._contextFreeClassifier._cellBiases2._dataSize );
         rl._contextFreeClassifier._cellErrors = getDataLazyResize( CONTEXT_FREE_ERRORS, rl._contextFreeClassifier._cellErrors._dataSize );
+        rl._contextFreeClassifier._cellWeightedSum = getDataLazyResize( CONTEXT_FREE_WEIGHTED_SUM, rl._contextFreeClassifier._cellWeightedSum._dataSize );
+        rl._contextFreeClassifier._cellTransfer = getDataLazyResize( CONTEXT_FREE_TRANSFER, rl._contextFreeClassifier._cellTransfer._dataSize );
         rl._contextFreeClassifier._cellTransferTopK = getDataLazyResize( CONTEXT_FREE_RESPONSE, rl._contextFreeClassifier._cellTransferTopK._dataSize );
         rl._contextFreeClassifier._inputReconstruction = getDataLazyResize( CONTEXT_FREE_RECONSTRUCTION, rl._contextFreeClassifier._inputReconstruction._dataSize );
         rl._contextFreeClassifier._cellAges = getDataLazyResize( CONTEXT_FREE_AGES, rl._contextFreeClassifier._cellAges._dataSize );
@@ -319,6 +326,8 @@ public class AutoRegionLayerEntity extends Entity {
         setData( CONTEXT_FREE_BIASES_1, rl._contextFreeClassifier._cellBiases1 );
         setData( CONTEXT_FREE_BIASES_2, rl._contextFreeClassifier._cellBiases2 );
         setData( CONTEXT_FREE_ERRORS, rl._contextFreeClassifier._cellErrors );
+        setData( CONTEXT_FREE_WEIGHTED_SUM, rl._contextFreeClassifier._cellWeightedSum );
+        setData( CONTEXT_FREE_TRANSFER, rl._contextFreeClassifier._cellTransfer );
         setData( CONTEXT_FREE_RESPONSE, rl._contextFreeClassifier._cellTransferTopK );
         setData( CONTEXT_FREE_RECONSTRUCTION, rl._contextFreeClassifier._inputReconstruction );
         setData( CONTEXT_FREE_AGES, rl._contextFreeClassifier._cellAges );

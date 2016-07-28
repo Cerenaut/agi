@@ -31,9 +31,9 @@ import io.agi.framework.persistence.models.ModelEntity;
 import java.util.Collection;
 
 /**
- * Creates a rolling window of Data from a property, captured over time. The window is updated every update() with a
- * new value from the property. The oldest value is discarded.
- * <p/>
+ * Creates an ever increasing log of new Data vectors, concatenated into a matrix.
+ * Size is history length x input vector elements
+ *
  * Created by gideon on 23/07/16.
  */
 public class DataSeriesEntity extends Entity {
@@ -60,53 +60,49 @@ public class DataSeriesEntity extends Entity {
     }
 
     /**
-     * get the new copy of the Data and append it to the Data series
+     * Get the new copy of the input Data and append it to the Data series
      * dataSeries = dataSeries + data
      */
     protected void doUpdateSelf() {
 
-        // Get all the parameters:
         DataSeriesEntityConfig config = ( DataSeriesEntityConfig ) _config;
 
-        // get the new Data object to add to the series, and the other information that will be needed
-        Data data = getData( INPUT );
-        DataSize dataSize = data._dataSize;
-        int dimensions = dataSize.getDimensions();
+        Data dataInput = getData( INPUT );
 
-        // get the output (the existing data series), to append to it
-        Data dataSeries = getData( OUTPUT );
+        int inputs = dataInput.getSize();
 
-        // if Data series doesn't exist, create it
-        if ( dataSeries == null ) {
-            // (create a new Data object, with one more dimension, for the time series of Data)
-            DataSize dataSeriesSize = new DataSize( dimensions + 1 );
-            dataSeries = new Data( dataSeriesSize );
-        }
-        // if it did exist, we need to allocate additional memory for the appended values
-        else {
-            // what is the best way to allocate an additional block of memory of the size of 'data'
-                // Data.setSize wipes out all data
-                // it should be possible to use setSize together with Data.copy() .....
+        Data dataSeriesOld = getData( OUTPUT );
+
+        // work out the size of the existing series output
+        int seriesLength = 0;
+
+        if( config.reset ) {
+            dataSeriesOld = null; // reset by forgetting all old data
         }
 
-        // set a coordinate to point to the beginning of the new memory allocated in 'data series'
-        int seriesDimensions  = dataSeries._dataSize.getDimensions();
-        int lastDimensionSize = dataSeries._dataSize.getSize( seriesDimensions );
-
-        Coordinate dataSeriesCoord = dataSeries.begin();
-        dataSeriesCoord.set( seriesDimensions, lastDimensionSize - 1 );
-
-        // iterate over data and
-        // set the value in the corresponding position in the data series
-        Coordinate newDataCoord = data.begin();
-        float value;
-        while( newDataCoord.next() ) {
-            value = data.get( newDataCoord );
-            dataSeriesCoord.next();
-            dataSeries.set( dataSeriesCoord, value );
+        if( dataSeriesOld != null ) {
+            int volume = dataSeriesOld.getSize();
+            seriesLength = volume / inputs;
         }
 
-        setData( OUTPUT, dataSeries );
+        // create a new buffer which is +inputs larger than the last one
+        // input is stored contiguously
+        Data dataSeriesNew = new Data( DataSize.create( inputs, seriesLength +1 ) );
+
+        // copy old values:
+        int offsetThis = 0;
+        int offsetThat = 0;
+
+        if( seriesLength > 0 ) {
+            int range = inputs * seriesLength;
+            dataSeriesNew.copyRange( dataSeriesOld, offsetThis, offsetThat, range );
+            offsetThis += range;
+        }
+
+        // copy new values
+        dataSeriesNew.copyRange( dataInput, offsetThis, offsetThat, inputs );
+
+        setData( OUTPUT, dataSeriesNew );
     }
 
 }

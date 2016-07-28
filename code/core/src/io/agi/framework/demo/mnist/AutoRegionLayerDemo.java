@@ -70,8 +70,8 @@ public class AutoRegionLayerDemo {
 //        String trainingPath = "./training";
 //        String testingPath = "./testing";
 //        int terminationAge = 10;//9000;
-        int terminationAge = 25000;
-        int trainingBatches = 80;
+        int terminationAge = 50000;//25000;
+        int trainingBatches = 80; // good for up to 80k
         boolean terminateByAge = true;
         float defaultPredictionInhibition = 1.f; // random image classification only experiments
 //        float defaultPredictionInhibition = 0.f; // where you use prediction
@@ -180,7 +180,7 @@ public class AutoRegionLayerDemo {
         int heightCells = 32;
         int ageMin = 0;
         int ageMax = 700;//1000;
-        float ageScale = 17f;
+        float ageScale = 12f;//17f;//15f; // maybe try 12 or 17
 
 //        float sparseLearningRate = 0.000001f;
 //        float sparseLearningRate = 0.00001f;
@@ -189,20 +189,19 @@ public class AutoRegionLayerDemo {
 //        float sparseLearningRate = 0.01f;
 //        float sparseLearningRate = 0.1f;
 
-        sparseLearningRate = 0.01f;//0.001f; // test
+//        sparseLearningRate = 0.01f;//0.001f; // test
 //        sparseLearningRate = 0.05f; // test saturated at 0.6
+        sparseLearningRate = 0.05f; // test saturated at 0.6, but now with improved output
 
         //float cells = (float)( widthCells * heightCells );
-        float sparsityMin = 30;//30;//25;//cells * 0.02f;
+        float sparsityMin = 25;//30;//25;//cells * 0.02f;
         float sparsityMax = (int)( (widthCells * heightCells) * 0.9f );
-        float sparsityOutput = 1f;//2.f; // temporal pooling, off if 1f
+        float sparsityOutput = 3.0f;//2.f; // temporal pooling, off if 1f
 
 //        float sparsityCells = 0.f; // determined by age
-        float sparsityFactor = 1.f;//1.f; // the "alpha" term in the paper
+        float sparsityFactor = 3.0f;//1.f; // the "alpha" term in the paper
 //        float predictorLearningRate = 0.001f;
         float predictorLearningRate = 0.01f;
-
-        // todo try weight regularization?
 
         setRegionLayerConfig(
             region1FfName,
@@ -212,13 +211,30 @@ public class AutoRegionLayerDemo {
             defaultPredictionInhibition, predictorLearningRate );
 
         // smaller region
-        widthCells = 30;
-        heightCells = 30;
+        widthCells = 20;
+        heightCells = 20;
         //ageMin = ageMax;
         //ageMax = ageMax * 3;
-        sparsityMin = 12;//10;//25;//cells * 0.02f;
+        sparsityMin = 12;//12;//10;//25;//cells * 0.02f;
         sparsityMax = ( (widthCells * heightCells) * 0.9f );
         sparsityOutput = 1f;//2.f; // temporal pooling, off if 1f
+
+        // look at weight decay, l2 norm, momentum, batches
+        // TODO LIST:
+        // - better weight randomization (see email for log-sigmoid specific fn)
+        // - L2 weight regularization?
+        // - Weight decay
+        // - Momentum
+        // - Batch gradient calc
+        // - k * a output - tested, got 0.7 so far, so a bump of 10% due to this feature
+        //    Try: 1.5, 2.25, 3.0
+        // - k >= 0.9k output set (anything n% of best score): This looks less promising looking at the distributions, need to see the transfer unfiltered
+        // - otsu output set (with min max bounds): Not looking viable from weighted sum
+        // - test pred with both levels
+        // - try adding more cells to L2
+        // - Alan's idea: Iteratively feed in the output (without learning) until the classification stabilizes. Or interact with next layer to see what it finds
+        // NB the UI active includes the extra x active cells, not the set used for training
+        // NB log-sigmoid saturates at 5.
 
         setRegionLayerConfig(
                 region2FfName,

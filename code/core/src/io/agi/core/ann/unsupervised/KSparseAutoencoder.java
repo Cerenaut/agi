@@ -131,6 +131,17 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         //        _cellBiases1.random( _c._r );
         //        _cellBiases2.random( _c._r );
 
+        // http://deeplearning.net/tutorial/mlp.html
+        // "The initial values for the weights of a hidden layer i should be uniformly sampled from a symmetric interval that depends on the activation function."
+        // ..."where fan_{in} is the number of units in the (i-1)-th layer, and fan_{out} is the number of units in the i-th layer"
+        // For sigmoid: [-4\sqrt{\frac{6}{fan_{in}+fan_{out}}},4\sqrt{\frac{6}{fan_{in}+fan_{out}}}].
+        // -x : +x
+        // where x = 4 * sqrt( 6 / ( fan_in + fan_out ) )
+/*        for( int i = 0; i < _cellWeights.getSize(); ++i ) {
+            double r = _c._r.nextFloat();  // mean: 0, SD: 1
+            _cellWeights._values[ i ] = (float)r / sqRtInputs;
+        }*/
+
         _c.setAge( 0 );
     }
 
@@ -309,7 +320,6 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         }
 
         // Hidden Layer Nonlinearity: Make all except top k cells zero.
-        // First, the loose filtering (for more robust hidden set)
         int maxRank = k2;
         boolean findMaxima = true;
         //Ranking.truncate( ranking, maxRank, findMaxima );
