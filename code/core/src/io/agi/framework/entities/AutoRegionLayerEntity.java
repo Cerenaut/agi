@@ -66,6 +66,11 @@ public class AutoRegionLayerEntity extends Entity {
     public static final String CONTEXT_FREE_WEIGHTS = "context-free-weights";
     public static final String CONTEXT_FREE_BIASES_1 = "context-free-biases-1";
     public static final String CONTEXT_FREE_BIASES_2 = "context-free-biases-2";
+
+//    public static final String CONTEXT_FREE_WEIGHTS_VELOCITY = "context-free-weights-velocity";
+//    public static final String CONTEXT_FREE_BIASES_1_VELOCITY = "context-free-biases-1-velocity";
+//    public static final String CONTEXT_FREE_BIASES_2_VELOCITY = "context-free-biases-2-velocity";
+
     public static final String CONTEXT_FREE_ERRORS = "context-free-errors";
     public static final String CONTEXT_FREE_WEIGHTED_SUM = "context-free-weighted-sum";
     public static final String CONTEXT_FREE_TRANSFER = "context-free-transfer";
@@ -137,6 +142,11 @@ public class AutoRegionLayerEntity extends Entity {
         attributes.add( CONTEXT_FREE_WEIGHTS );
         attributes.add( CONTEXT_FREE_BIASES_1 );
         attributes.add( CONTEXT_FREE_BIASES_2 );
+
+//        attributes.add( CONTEXT_FREE_WEIGHTS_VELOCITY );
+//        attributes.add( CONTEXT_FREE_BIASES_1_VELOCITY );
+//        attributes.add( CONTEXT_FREE_BIASES_2_VELOCITY );
+
         attributes.add( CONTEXT_FREE_ERRORS );
         attributes.add( CONTEXT_FREE_TRANSFER );
         attributes.add( CONTEXT_FREE_RESPONSE );
@@ -148,6 +158,11 @@ public class AutoRegionLayerEntity extends Entity {
         flags.putFlag( CONTEXT_FREE_WEIGHTS, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( CONTEXT_FREE_BIASES_1, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( CONTEXT_FREE_BIASES_2, DataFlags.FLAG_NODE_CACHE );
+
+//        flags.putFlag( CONTEXT_FREE_WEIGHTS_VELOCITY, DataFlags.FLAG_NODE_CACHE );
+//        flags.putFlag( CONTEXT_FREE_BIASES_1_VELOCITY, DataFlags.FLAG_NODE_CACHE );
+//        flags.putFlag( CONTEXT_FREE_BIASES_2_VELOCITY, DataFlags.FLAG_NODE_CACHE );
+
         flags.putFlag( CONTEXT_FREE_ERRORS, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( CONTEXT_FREE_TRANSFER, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( CONTEXT_FREE_RESPONSE, DataFlags.FLAG_NODE_CACHE );
@@ -285,6 +300,11 @@ public class AutoRegionLayerEntity extends Entity {
         rl._contextFreeClassifier._cellWeights = getDataLazyResize( CONTEXT_FREE_WEIGHTS, rl._contextFreeClassifier._cellWeights._dataSize );
         rl._contextFreeClassifier._cellBiases1 = getDataLazyResize( CONTEXT_FREE_BIASES_1, rl._contextFreeClassifier._cellBiases1._dataSize );
         rl._contextFreeClassifier._cellBiases2 = getDataLazyResize( CONTEXT_FREE_BIASES_2, rl._contextFreeClassifier._cellBiases2._dataSize );
+
+//        rl._contextFreeClassifier._cellWeightsVelocity = getDataLazyResize( CONTEXT_FREE_WEIGHTS_VELOCITY, rl._contextFreeClassifier._cellWeightsVelocity._dataSize );
+//        rl._contextFreeClassifier._cellBiases1Velocity = getDataLazyResize( CONTEXT_FREE_BIASES_1_VELOCITY, rl._contextFreeClassifier._cellBiases1Velocity._dataSize );
+//        rl._contextFreeClassifier._cellBiases2Velocity = getDataLazyResize( CONTEXT_FREE_BIASES_2_VELOCITY, rl._contextFreeClassifier._cellBiases2Velocity._dataSize );
+
         rl._contextFreeClassifier._cellErrors = getDataLazyResize( CONTEXT_FREE_ERRORS, rl._contextFreeClassifier._cellErrors._dataSize );
         rl._contextFreeClassifier._cellWeightedSum = getDataLazyResize( CONTEXT_FREE_WEIGHTED_SUM, rl._contextFreeClassifier._cellWeightedSum._dataSize );
         rl._contextFreeClassifier._cellTransfer = getDataLazyResize( CONTEXT_FREE_TRANSFER, rl._contextFreeClassifier._cellTransfer._dataSize );
@@ -325,6 +345,11 @@ public class AutoRegionLayerEntity extends Entity {
         setData( CONTEXT_FREE_WEIGHTS, rl._contextFreeClassifier._cellWeights );
         setData( CONTEXT_FREE_BIASES_1, rl._contextFreeClassifier._cellBiases1 );
         setData( CONTEXT_FREE_BIASES_2, rl._contextFreeClassifier._cellBiases2 );
+
+//        setData( CONTEXT_FREE_WEIGHTS_VELOCITY, rl._contextFreeClassifier._cellWeightsVelocity );
+//        setData( CONTEXT_FREE_BIASES_1_VELOCITY, rl._contextFreeClassifier._cellBiases1Velocity );
+//        setData( CONTEXT_FREE_BIASES_2_VELOCITY, rl._contextFreeClassifier._cellBiases2Velocity );
+
         setData( CONTEXT_FREE_ERRORS, rl._contextFreeClassifier._cellErrors );
         setData( CONTEXT_FREE_WEIGHTED_SUM, rl._contextFreeClassifier._cellWeightedSum );
         setData( CONTEXT_FREE_TRANSFER, rl._contextFreeClassifier._cellTransfer );

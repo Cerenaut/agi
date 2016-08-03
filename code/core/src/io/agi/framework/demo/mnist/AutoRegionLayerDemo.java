@@ -19,6 +19,7 @@
 
 package io.agi.framework.demo.mnist;
 
+import io.agi.core.ann.unsupervised.KSparseAutoencoder;
 import io.agi.core.orm.AbstractPair;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.framework.Framework;
@@ -203,12 +204,14 @@ public class AutoRegionLayerDemo {
 //        float predictorLearningRate = 0.001f;
         float predictorLearningRate = 0.01f;
 
+//        KSparseAutoencoder.REGULARIZATION = 0.001f;
+
         setRegionLayerConfig(
-            region1FfName,
-            widthCells, heightCells,
-            ageMin, ageMax, ageScale,
-            sparseLearningRate, sparsityMin, sparsityMax, sparsityFactor, sparsityOutput,
-            defaultPredictionInhibition, predictorLearningRate );
+                region1FfName,
+                widthCells, heightCells,
+                ageMin, ageMax, ageScale,
+                sparseLearningRate, sparsityMin, sparsityMax, sparsityFactor, sparsityOutput,
+                defaultPredictionInhibition, predictorLearningRate );
 
         // smaller region
         widthCells = 20;
@@ -217,22 +220,28 @@ public class AutoRegionLayerDemo {
         //ageMax = ageMax * 3;
         sparsityMin = 12;//12;//10;//25;//cells * 0.02f;
         sparsityMax = ( (widthCells * heightCells) * 0.9f );
-        sparsityOutput = 1f;//2.f; // temporal pooling, off if 1f
+        sparsityOutput = 2.25f;//2.f; // temporal pooling, off if 1f
+        sparsityFactor = sparsityOutput; // added was missing
 
         // look at weight decay, l2 norm, momentum, batches
         // TODO LIST:
-        // - better weight randomization (see email for log-sigmoid specific fn)
-        // - L2 weight regularization?
-        // - Weight decay
-        // - Momentum
+        //   try changing the time constant of the classifier (it measures better with 0.01 than 0.001): Better with shorter, i.e. otherwise affected by learning.
+        //   better weight randomization (see email for log-sigmoid specific fn): Helped a lot.
+        //   L2 weight regularization?
+        //    Weight decay =a technique sometimes known as weight decay or L2 regularization
+        //    the regularization term doesn't include the biases. : no benefit
+        //   Momentum: No clear benefit from tests.
         // - Batch gradient calc
-        // - k * a output - tested, got 0.7 so far, so a bump of 10% due to this feature
+        //   k * a output - tested, got 0.7 so far, so a bump of 10% due to this feature
         //    Try: 1.5, 2.25, 3.0
         // - k >= 0.9k output set (anything n% of best score): This looks less promising looking at the distributions, need to see the transfer unfiltered
-        // - otsu output set (with min max bounds): Not looking viable from weighted sum
+        // - otsu output set (with min max bounds): Not looking viable from weighted sum: Much worse
+        //   otsu weighted sum. : Much worse.
         // - test pred with both levels
-        // - try adding more cells to L2
-        // - Alan's idea: Iteratively feed in the output (without learning) until the classification stabilizes. Or interact with next layer to see what it finds
+        //*   - try adding more cells to L2
+        //* - Alan's idea: Iteratively feed in the output (without learning) until the classification stabilizes. Or interact with next layer to see what it finds
+        // - train with labels half the time? Or 2 regions feeding into another. Even if this is only worth 5% it's good.
+        //
         // NB the UI active includes the extra x active cells, not the set used for training
         // NB log-sigmoid saturates at 5.
 
@@ -248,7 +257,8 @@ public class AutoRegionLayerDemo {
         Framework.SetConfig( classFeaturesName, "classConfigPath", "imageClass" );
         Framework.SetConfig( classFeaturesName, "classes", "10" );
         Framework.SetConfig( classFeaturesName, "onlineLearning", "true" );
-        Framework.SetConfig( classFeaturesName, "onlineLearningRate", "0.001" );
+//        Framework.SetConfig( classFeaturesName, "onlineLearningRate", "0.001" );
+        Framework.SetConfig( classFeaturesName, "onlineLearningRate", "0.01" );
 
         // data series logging
         Framework.SetConfig( valueSeriesPredictedName, "period", "-1" ); // log forever

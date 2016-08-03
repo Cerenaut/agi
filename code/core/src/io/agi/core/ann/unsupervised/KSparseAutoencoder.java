@@ -48,6 +48,8 @@ import java.util.TreeMap;
  */
 public class KSparseAutoencoder extends CompetitiveLearning {
 
+//    public static float REGULARIZATION = 0.001f;
+
     public KSparseAutoencoderConfig _c;
     public ArrayList< Integer > _sparseUnitInput;
     public Data _inputValues;
@@ -56,6 +58,9 @@ public class KSparseAutoencoder extends CompetitiveLearning {
     public Data _cellWeights;
     public Data _cellBiases1;
     public Data _cellBiases2;
+//    public Data _cellWeightsVelocity;
+//    public Data _cellBiases1Velocity;
+//    public Data _cellBiases2Velocity;
     public Data _cellErrors;
     public Data _cellWeightedSum;
     public Data _cellTransfer;
@@ -85,6 +90,9 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         _cellWeights = new Data( w, h, inputs );
         _cellBiases1 = new Data( w, h );
         _cellBiases2 = new Data( inputs );
+//        _cellWeightsVelocity = new Data( w, h, inputs );
+//        _cellBiases1Velocity = new Data( w, h );
+//        _cellBiases2Velocity = new Data( inputs );
         _cellErrors = new Data( w, h );
         _cellWeightedSum = new Data( w, h );
         _cellTransfer = new Data( w, h );
@@ -101,10 +109,10 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         // init weights to SD = 1/ sqrt( n ) where n is number of inputs.
         int inputs = _inputValues.getSize(); //875.f;
         float sqRtInputs = (float)Math.sqrt( (float)inputs );
-        for( int i = 0; i < _cellWeights.getSize(); ++i ) {
+/*        for( int i = 0; i < _cellWeights.getSize(); ++i ) {
             double r = _c._r.nextGaussian(); // mean: 0, SD: 1
             _cellWeights._values[ i ] = (float)r / sqRtInputs;
-        }
+        }*/
 
         for( int i = 0; i < _cellBiases1.getSize(); ++i ) {
             double r = _c._r.nextGaussian(); // mean: 0, SD: 1
@@ -115,6 +123,10 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             double r = _c._r.nextGaussian(); // mean: 0, SD: 1
             _cellBiases2._values[ i ] = (float)r;
         }
+
+//        _cellWeightsVelocity.set( 0f );
+//        _cellBiases1Velocity.set( 0f );
+//        _cellBiases2Velocity.set( 0f );
 
         // From the textbook:
         //        Then we shall initialize those weights as Gaussian random variables with mean 00 and standard deviation 1/nin−−−√1/nin.
@@ -137,10 +149,13 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         // For sigmoid: [-4\sqrt{\frac{6}{fan_{in}+fan_{out}}},4\sqrt{\frac{6}{fan_{in}+fan_{out}}}].
         // -x : +x
         // where x = 4 * sqrt( 6 / ( fan_in + fan_out ) )
-/*        for( int i = 0; i < _cellWeights.getSize(); ++i ) {
-            double r = _c._r.nextFloat();  // mean: 0, SD: 1
-            _cellWeights._values[ i ] = (float)r / sqRtInputs;
-        }*/
+        int cells = _c.getNbrCells();
+        float randomScale = 4.f * (float)Math.sqrt( 6.f / ( inputs + cells ) );
+
+        for( int i = 0; i < _cellWeights.getSize(); ++i ) {
+            float r = ( _c._r.nextFloat() * randomScale * 2.f ) -randomScale;
+            _cellWeights._values[ i ] = r;
+        }
 
         _c.setAge( 0 );
     }
@@ -257,6 +272,7 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         // https://en.wikipedia.org/wiki/Backpropagation
         // for encoding, activate alpha * k largest activations
         // mean sq err is quadratic cost function http://neuralnetworksanddeeplearning.com/chap1.html
+//        float friction = 0.2f;
         float ageFactor = 0.5f; // halve the age each time it fires
         float noiseMagnitude = 0.001f; // small magnitude
         float learningRate = _c.getLearningRate();
@@ -324,11 +340,8 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         boolean findMaxima = true;
         //Ranking.truncate( ranking, maxRank, findMaxima );
 
-        _activeCells = Ranking.getBestValues( ranking, findMaxima, maxRank );
-
-        for( Integer c : _activeCells ) {
-            _cellActivity._values[ c ] = 1.f;
-        }
+//        findActiveHiddenCellsOtsu();
+        findActiveHiddenCellsRank( ranking, findMaxima, maxRank );
 
         // now restrict to just k. This set is used for learning.
         // Hence, we now swap to the "promoted" scores
@@ -454,6 +467,10 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
             float errorGradient = dOutput._values[ i ];
 
+//            if( errorGradient == 0f ) {
+//                continue;
+//            }
+
             for( int c = 0; c < cells; ++c ) { // computing error for each "input"
 
                 int offset = c * inputs + i;
@@ -461,8 +478,19 @@ public class KSparseAutoencoder extends CompetitiveLearning {
                 float a = _cellTransferTopK._values[ c ];
                 float wOld = _cellWeights._values[ offset ];
                 float wDelta = learningRate * errorGradient * a;
+
+                // Normal
                 float wNew = wOld - wDelta;
 
+                // Momentum
+//                float vOld = _cellWeightsVelocity._values[ offset ];
+//                float vNew = ( vOld * friction ) - wDelta;
+//                float wNew = wOld + vNew;
+                // Weight decay / L2 regularization
+//                float regularization = learningRate * REGULARIZATION * wOld;
+//                float wNew = wOld - wDelta - regularization;
+
+                // Weight clipping
 //                float wMax = 1.f;
 //                if( wNew > wMax ) wNew = wMax;
 //                if( wNew < -wMax ) wNew = -wMax;
@@ -470,19 +498,28 @@ public class KSparseAutoencoder extends CompetitiveLearning {
                 Useful.IsBad( wNew );
 
                 _cellWeights._values[ offset ] = wNew;
+//                _cellWeightsVelocity._values[ offset ] = vNew;
             }
 
             float bOld = _cellBiases2._values[ i ];
             float bDelta = learningRate * errorGradient;
             float bNew = bOld - bDelta;
+//            float vOld = _cellBiases2Velocity._values[ i ];
+//            float vNew = ( vOld * friction ) - bDelta;
+//            float bNew = bOld + vNew;
 
             _cellBiases2._values[ i ] = bNew;
+//            _cellBiases2Velocity._values[ i ] = vNew;
         }
 
         // now gradient descent in the input->hidden layer
         for( int c = 0; c < cells; ++c ) { // computing error for each "input"
 
             float errorGradient = dHidden._values[ c ];
+
+//            if( errorGradient == 0f ) {
+//                continue;
+//            }
 
             for( int i = 0; i < inputs; ++i ) {
 
@@ -491,8 +528,20 @@ public class KSparseAutoencoder extends CompetitiveLearning {
                 float a = _inputValues._values[ i ];
                 float wOld = _cellWeights._values[ offset ];
                 float wDelta = learningRate * errorGradient * a;
+
+                // Normal
                 float wNew = wOld - wDelta;
 
+                // Momentum
+//                float vOld = _cellWeightsVelocity._values[ offset ];
+//                float vNew = ( vOld * friction ) - wDelta;
+//                float wNew = wOld + vNew;
+
+                // Weight decay / L2 regularization
+//                float regularization = learningRate * REGULARIZATION * wOld;
+//                float wNew = wOld - wDelta - regularization;
+
+                // Weight clipping
 //                float wMax = 1.f;
 //                if( wNew > wMax ) wNew = wMax;
 //                if( wNew < -wMax ) wNew = -wMax;
@@ -500,13 +549,18 @@ public class KSparseAutoencoder extends CompetitiveLearning {
                 Useful.IsBad( wNew );
 
                 _cellWeights._values[ offset ] = wNew;
+//                _cellWeightsVelocity._values[ offset ] = vNew;
             }
 
             float bOld = _cellBiases1._values[ c ];
             float bDelta = learningRate * errorGradient;
             float bNew = bOld - bDelta;
+//            float vOld = _cellBiases1Velocity._values[ c ];
+//            float vNew = ( vOld * friction ) - bDelta;
+//            float bNew = bOld + vNew;
 
             _cellBiases1._values[ c ] = bNew;
+//            _cellBiases1Velocity._values[ c ] = vNew;
         }
 
 //        - investigate k sparse weights view : they look good in reconstruction - due to vaRYING MAGS
@@ -570,4 +624,23 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 //        BackPropagation.StochasticGradientDescent( mHidden, dHidden, wHidden, bHidden, iHidden, learningRate );
     }
 
+    protected void findActiveHiddenCellsOtsu() {
+
+        // Rank based:
+        int precision = 100; // 0.01 intervals of sigmoid activation
+//        Otsu.apply( _cellTransfer, _cellActivity, precision, 0f, 1f );
+        FloatArray weightedSum = new FloatArray( _cellWeightedSum );
+        weightedSum.scaleRange( 0f, 1f );
+        Otsu.apply( weightedSum, _cellActivity, precision, 0f, 1f );
+
+        _activeCells = new ArrayList< Integer >( _cellActivity.indicesMoreThan( 0f ) );
+    }
+
+    protected void findActiveHiddenCellsRank( TreeMap< Float, ArrayList< Integer > > ranking, boolean findMaxima, int maxRank ) {
+        _activeCells = Ranking.getBestValues( ranking, findMaxima, maxRank );
+
+        for( Integer c : _activeCells ) {
+            _cellActivity._values[ c ] = 1.f;
+        }
+    }
 }
