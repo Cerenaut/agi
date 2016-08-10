@@ -35,23 +35,36 @@ import java.util.ArrayList;
  */
 public class AutoRegionLayerDemo {
 
+    /**
+     * Usage: Expects some arguments. These are:
+     * 0: node.properties file
+     * 1 to n: 'create' flag and/or 'prefix' flag
+     * @param args
+     */
     public static void main( String[] args ) {
 
         // Create a Node
         Main m = new Main();
         m.setup( args[ 0 ], null, new CommonEntityFactory() );
 
-        // Create custom entities and references
-        if( args.length > 1 ) {
-            if( args[ 1 ].equalsIgnoreCase( "create" ) ) {
-                // Programmatic hook to create entities and references..
+        // Optionally set a global prefix for entities
+        for( int i = 1; i < args.length; ++i ) {
+            String arg = args[ i ];
+            if( arg.equalsIgnoreCase( "prefix" ) ) {
+                Framework.SetEntityNamePrefixDateTime();
+            }
+        }
+
+        // Optionally create custom entities and references
+        for( int i = 1; i < args.length; ++i ) {
+            String arg = args[ i ];
+            if( arg.equalsIgnoreCase( "create" ) ) {
                 createEntities( m._n );
             }
         }
 
         // Start the system
         m.run();
-
     }
 
     public static void createEntities( Node n ) {
@@ -80,18 +93,17 @@ public class AutoRegionLayerDemo {
         int layers = 2;
 
         // Define some entities
-        String experimentName = "experiment";
-        String imageClassName = "image-class";
-        String constantName = "constant";
-        String region1FfName = "image-region-1-ff";
-        String region2FfName = "image-region-2-ff";
-        String region3FfName = "image-region-3-ff";
-        String imageEncoderName = "image-encoder";
-        String classFeaturesName = "class-features";
-
-        String valueSeriesPredictedName = "value-series-predicted";
-        String valueSeriesErrorName = "value-series-error";
-        String valueSeriesTruthName = "value-series-truth";
+        String experimentName           = Framework.GetEntityName( "experiment" );
+        String imageClassName           = Framework.GetEntityName( "image-class" );
+        String constantName             = Framework.GetEntityName( "constant" );
+        String region1FfName            = Framework.GetEntityName( "image-region-1-ff" );
+        String region2FfName            = Framework.GetEntityName( "image-region-2-ff" );
+        String region3FfName            = Framework.GetEntityName( "image-region-3-ff" );
+        String imageEncoderName         = Framework.GetEntityName( "image-encoder" );
+        String classFeaturesName        = Framework.GetEntityName( "class-features" );
+        String valueSeriesPredictedName = Framework.GetEntityName( "value-series-predicted" );
+        String valueSeriesErrorName     = Framework.GetEntityName( "value-series-error" );
+        String valueSeriesTruthName     = Framework.GetEntityName( "value-series-truth" );
 
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         Framework.CreateEntity( imageClassName, ImageClassEntity.ENTITY_TYPE, n.getName(), experimentName );
@@ -180,7 +192,7 @@ public class AutoRegionLayerDemo {
         int widthCells = 32; // from the paper, this was optimal on MNIST
         int heightCells = 32;
         int ageMin = 0;
-        int ageMax = 700;//1000;
+        int ageMax = 1400;//700;//1000;
         float ageScale = 12f;//17f;//15f; // maybe try 12 or 17
 
 //        float sparseLearningRate = 0.000001f;
@@ -191,16 +203,17 @@ public class AutoRegionLayerDemo {
 //        float sparseLearningRate = 0.1f;
 
 //        sparseLearningRate = 0.01f;//0.001f; // test
-//        sparseLearningRate = 0.05f; // test saturated at 0.6
-        sparseLearningRate = 0.05f; // test saturated at 0.6, but now with improved output
+//        sparseLearningRate = 0.05f; // test saturated at 0.6, but now with improved output
+//        sparseLearningRate = 0.1f; //
+        sparseLearningRate = 0.01f;
 
         //float cells = (float)( widthCells * heightCells );
         float sparsityMin = 25;//30;//25;//cells * 0.02f;
         float sparsityMax = (int)( (widthCells * heightCells) * 0.9f );
-        float sparsityOutput = 3.0f;//2.f; // temporal pooling, off if 1f
+        float sparsityOutput = 2.5f;//2.f; // temporal pooling, off if 1f
 
 //        float sparsityCells = 0.f; // determined by age
-        float sparsityFactor = 3.0f;//1.f; // the "alpha" term in the paper
+        float sparsityFactor = sparsityOutput;//1.f; // the "alpha" term in the paper
 //        float predictorLearningRate = 0.001f;
         float predictorLearningRate = 0.01f;
 
@@ -229,7 +242,7 @@ public class AutoRegionLayerDemo {
         //   better weight randomization (see email for log-sigmoid specific fn): Helped a lot.
         //   L2 weight regularization?
         //    Weight decay =a technique sometimes known as weight decay or L2 regularization
-        //    the regularization term doesn't include the biases. : no benefit
+        //    the regularization term does't include the biases. : no benefit
         //   Momentum: No clear benefit from tests.
         // - Batch gradient calc
         //   k * a output - tested, got 0.7 so far, so a bump of 10% due to this feature
@@ -239,6 +252,8 @@ public class AutoRegionLayerDemo {
         //   otsu weighted sum. : Much worse.
         // - test pred with both levels
         //*   - try adding more cells to L2
+        //*   - much higher learning rate (+momentum?)
+        // * longer max age
         //* - Alan's idea: Iteratively feed in the output (without learning) until the classification stabilizes. Or interact with next layer to see what it finds
         // - train with labels half the time? Or 2 regions feeding into another. Even if this is only worth 5% it's good.
         //

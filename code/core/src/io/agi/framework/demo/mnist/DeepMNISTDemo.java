@@ -37,13 +37,20 @@ public class DeepMNISTDemo {
 
         // Create a Node
         Main m = new Main();
-//        m.setup( args[ 0 ], null, new CommonEntityFactory() );
         m.setup( args[ 0 ], null, new MnistEntityFactory() );
 
-        // Create custom entities and references
-        if( args.length > 1 ) {
-            if( args[ 1 ].equalsIgnoreCase( "create" ) ) {
-                // Programmatic hook to create entities and references..
+        // Optionally set a global prefix for entities
+        for( int i = 1; i < args.length; ++i ) {
+            String arg = args[ i ];
+            if( arg.equalsIgnoreCase( "prefix" ) ) {
+                Framework.SetEntityNamePrefixDateTime();
+            }
+        }
+
+        // Optionally create custom entities and references
+        for( int i = 1; i < args.length; ++i ) {
+            String arg = args[ i ];
+            if( arg.equalsIgnoreCase( "create" ) ) {
                 createEntities( m._n );
             }
         }
@@ -91,30 +98,24 @@ public class DeepMNISTDemo {
         boolean encodeZero = false;
 
         // Define some entities' names
-        String experimentName = "experiment";
-        String imageClassName = "image-class";
-        String imageEncoderName = "image-encoder";
-//        String classEncoderName = "class-encoder";
-//        String classDecoderName = "class-decoder";
-//        String labelEncoderName = "label-encoder";
-        String constantName = "constant";
-        String region1FfName = "image-region-1-ff";
-        String region2FfName = "image-region-2-ff";
-        String region3FfName = "image-region-3-ff";
-//        String classRegionName = "class-region";
-        String classFeaturesName = "class-features";
-        String activityImageDecoderName = "activity-image-decoder";
-        String predictedImageDecoderName = "predicted-image-decoder";
-        String svmName = "svm-entity";
-        String valueSeriesPredictedName = "value-series-predicted";
-        String valueSeriesErrorName = "value-series-error";
-        String valueSeriesTruthName = "value-series-truth";
+        String experimentName            = Framework.GetEntityName( "experiment" );
+        String imageClassName            = Framework.GetEntityName( "image-class" );
+        String imageEncoderName          = Framework.GetEntityName( "image-encoder" );
+        String constantName              = Framework.GetEntityName( "constant" );
+        String region1FfName             = Framework.GetEntityName( "image-region-1-ff" );
+        String region2FfName             = Framework.GetEntityName( "image-region-2-ff" );
+        String region3FfName             = Framework.GetEntityName( "image-region-3-ff" );
+        String classFeaturesName         = Framework.GetEntityName( "class-features" );
+        String activityImageDecoderName  = Framework.GetEntityName( "activity-image-decoder" );
+        String predictedImageDecoderName = Framework.GetEntityName( "predicted-image-decoder" );
+        String svmName                   = Framework.GetEntityName( "svm-entity" );
+        String valueSeriesPredictedName  = Framework.GetEntityName( "value-series-predicted" );
+        String valueSeriesErrorName      = Framework.GetEntityName( "value-series-error" );
+        String valueSeriesTruthName      = Framework.GetEntityName( "value-series-truth" );
 
         // Create Entities
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         Framework.CreateEntity( imageClassName, ImageClassEntity.ENTITY_TYPE, n.getName(), experimentName );
-//        Framework.CreateEntity( classEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), mnistName );
-//        Framework.CreateEntity( labelEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), classEncoderName );
         Framework.CreateEntity( imageEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), imageClassName );
         Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), imageEncoderName ); // ok all input to the regions is ready
         Framework.CreateEntity( svmName, SVMEntity.ENTITY_TYPE, n.getName(), experimentName ); // ok all input to the regions is ready <-- DAVE 2 GIDS: Shouldn't this be AFTER the algorithm has run?

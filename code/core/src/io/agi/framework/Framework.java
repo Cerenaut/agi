@@ -22,6 +22,7 @@ package io.agi.framework;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import io.agi.core.orm.AbstractPair;
+import io.agi.core.orm.Keys;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.util.FileUtil;
 import io.agi.framework.coordination.http.HttpExportHandler;
@@ -34,9 +35,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.math.BigInteger;
+import java.security.SecureRandom;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -46,6 +48,46 @@ import java.util.stream.Collectors;
 public class Framework {
 
     protected static final Logger logger = LogManager.getLogger();
+
+    public static final String ENTITY_NAME_PREFIX_DELIMITER = "/";
+
+    protected static String entityNamePrefix;
+    protected static SecureRandom entityNameRandom;
+
+    public static String GetEntityName( String entityNameSuffix ) {
+        String prefix = GetEntityNamePrefix();
+        String name = prefix + ENTITY_NAME_PREFIX_DELIMITER + entityNameSuffix;
+        return name;
+    }
+
+    public static String GetEntityNamePrefix() {
+        return Framework.entityNamePrefix;
+    }
+
+    public static String SetEntityNamePrefixRandom() {
+        // http://stackoverflow.com/questions/41107/how-to-generate-a-random-alpha-numeric-string
+        if( entityNameRandom == null ) {
+            entityNameRandom = new SecureRandom();
+        }
+
+        int bits = 130;
+        int base = 32;
+        String prefix = new BigInteger( bits, entityNameRandom ).toString( base ) + ENTITY_NAME_PREFIX_DELIMITER;
+
+        return SetEntityNamePrefix( prefix );
+    }
+
+    public static String SetEntityNamePrefixDateTime() {
+        Date now = Calendar.getInstance().getTime();
+        SimpleDateFormat formatter = new SimpleDateFormat( "yyyy-MM-dd-hh:mm:ss" );
+        String prefix = formatter.format( now );
+        return SetEntityNamePrefix( prefix );
+    }
+
+    public static String SetEntityNamePrefix( String entityNamePrefix ) {
+        Framework.entityNamePrefix = entityNamePrefix;
+        return Framework.entityNamePrefix;
+    }
 
     /**
      * Modifies the database to make the reference _entityName-suffix Data a reference input to the input _entityName-suffix.
