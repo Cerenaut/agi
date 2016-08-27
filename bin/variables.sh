@@ -9,13 +9,13 @@
 # ----------------------------------------
 # AGI Home 
 # ---------------------------------------
-#export AGI_HOME=~/Development/ProjectAGI/AGIEF/agi
-export AGI_HOME=/home/dave/workspace/agi.io/agi
+export AGI_HOME=~/Development/ProjectAGI/AGIEF/agi
+#export AGI_HOME=/home/dave/workspace/agi.io/agi
 
 # RUN Home
 # export AGI_RUN_HOME=~/Development/ProjectAGI/AGIEF/runFolders/runImage 
-#export AGI_RUN_HOME=~/Development/ProjectAGI/AGIEF/experiments/classifier
-export AGI_RUN_HOME=/home/dave/workspace/agi.io/agi/resources/run-empty
+export AGI_RUN_HOME=~/Development/ProjectAGI/AGIEF/experiment-definitions/classifier
+#export AGI_RUN_HOME=/home/dave/workspace/agi.io/agi/resources/run-empty
 
 # Database
 export DB_PORT=5432
