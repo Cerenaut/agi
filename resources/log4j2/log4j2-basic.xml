@@ -6,11 +6,15 @@
         </Console>
         <File name="MyFile" fileName="all.log" immediateFlush="false" append="false">
             <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
-        </File>        
+        </File>
+        <LogglyAppender name="LogglyAppender"
+                        endpointUrl="https://logs-01.loggly.com/bulk/66f0d3a1-37a5-4317-89ad-fd50af09ed19">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+        </LogglyAppender>
     </Appenders>
     <Loggers>
         <!-- Show only error level as default -->
-        <Root level="error">
+        <Root level="info">
             <AppenderRef ref="Console"/>
         </Root>
         <!-- show the following at the desired level -->
