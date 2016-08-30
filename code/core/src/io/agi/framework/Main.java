@@ -32,15 +32,9 @@ import io.agi.framework.persistence.PersistenceFactory;
 import io.agi.framework.persistence.couchbase.CouchbasePersistence;
 import io.agi.framework.persistence.jdbc.JdbcPersistence;
 import io.agi.framework.persistence.models.ModelNode;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 /**
  * NOTE: Run with the following virtual machine (VM) arguments:
