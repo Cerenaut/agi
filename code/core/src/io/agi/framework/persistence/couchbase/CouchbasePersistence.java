@@ -33,10 +33,7 @@ import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
 import io.agi.framework.persistence.models.ModelNode;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Note: http://docs.couchbase.com/developer/java-2.0/querying-n1ql.html
@@ -77,10 +74,10 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
     Cluster _c;
     Bucket _b;
 
-    public static CouchbasePersistence Create( String propertiesFile ) {
-        String cluster = PropertiesUtil.get( propertiesFile, PROPERTY_CLUSTER, "localhost" );
-        String bucket = PropertiesUtil.get( propertiesFile, PROPERTY_BUCKET, "default" );
-        String password = PropertiesUtil.get( propertiesFile, PROPERTY_PASSWORD, "password" );
+    public static CouchbasePersistence Create( Properties properties ) {
+        String cluster = PropertiesUtil.get( properties, PROPERTY_CLUSTER, "localhost" );
+        String bucket = PropertiesUtil.get( properties, PROPERTY_BUCKET, "default" );
+        String password = PropertiesUtil.get( properties, PROPERTY_PASSWORD, "password" );
 
         CouchbasePersistence p = new CouchbasePersistence();
 

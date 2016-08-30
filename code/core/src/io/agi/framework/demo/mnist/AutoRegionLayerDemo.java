@@ -21,6 +21,7 @@ package io.agi.framework.demo.mnist;
 
 import io.agi.core.ann.unsupervised.KSparseAutoencoder;
 import io.agi.core.orm.AbstractPair;
+import io.agi.core.util.PropertiesUtil;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
@@ -29,6 +30,7 @@ import io.agi.framework.entities.*;
 import io.agi.framework.factories.CommonEntityFactory;
 
 import java.util.ArrayList;
+import java.util.Properties;
 
 /**
  * Created by dave on 8/07/16.
@@ -45,7 +47,8 @@ public class AutoRegionLayerDemo {
 
         // Create a Node
         Main m = new Main();
-        m.setup( args[ 0 ], null, new CommonEntityFactory() );
+        Properties p = PropertiesUtil.load( args[ 0 ] );
+        m.setup( p, null, new CommonEntityFactory() );
 
         // Optionally set a global prefix for entities
         for( int i = 1; i < args.length; ++i ) {

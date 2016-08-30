@@ -19,6 +19,7 @@
 
 package io.agi.framework.demo.region;
 
+import io.agi.core.util.PropertiesUtil;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.framework.Entity;
 import io.agi.framework.Framework;
@@ -29,6 +30,8 @@ import io.agi.framework.entities.ImageSensorEntity;
 import io.agi.framework.entities.RegionEntity;
 import io.agi.framework.factories.CommonEntityFactory;
 import io.agi.framework.persistence.Persistence;
+
+import java.util.Properties;
 
 /**
  * Created by dave on 26/03/16.
@@ -47,7 +50,8 @@ public class RegionDemo {
 
         // Create a Node
         Main m = new Main();
-        m.setup( args[ 0 ], null, ef );
+        Properties p = PropertiesUtil.load( args[ 0 ] );
+        m.setup( p, null, ef );
 
         // Create custom entities and references
         if( args.length > 1 ) {
