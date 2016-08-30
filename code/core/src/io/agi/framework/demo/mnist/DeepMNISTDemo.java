@@ -20,6 +20,7 @@
 package io.agi.framework.demo.mnist;
 
 import io.agi.core.orm.AbstractPair;
+import io.agi.core.util.PropertiesUtil;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
@@ -27,6 +28,7 @@ import io.agi.framework.Node;
 import io.agi.framework.entities.*;
 
 import java.util.ArrayList;
+import java.util.Properties;
 
 /**
  * Created by gideon on 14/03/2016.
@@ -37,7 +39,8 @@ public class DeepMNISTDemo {
 
         // Create a Node
         Main m = new Main();
-        m.setup( args[ 0 ], null, new MnistEntityFactory() );
+        Properties p = PropertiesUtil.load( args[ 0 ] );
+        m.setup( p, null, new MnistEntityFactory() );
 
         // Optionally set a global prefix for entities
         for( int i = 1; i < args.length; ++i ) {

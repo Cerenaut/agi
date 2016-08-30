@@ -19,8 +19,11 @@
 
 package io.agi.framework.demo.light;
 
+import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
+
+import java.util.Properties;
 
 /**
  * A simple interaction between two entities.
@@ -36,7 +39,8 @@ public class LightDemo {
 
         // Create a Node
         Main m = new Main();
-        m.setup( args[ 0 ], null, ef );
+        Properties p = PropertiesUtil.load( args[ 0 ] );
+        m.setup( p, null, ef );
 
         // Create custom entities and references
         if( args.length > 1 ) {

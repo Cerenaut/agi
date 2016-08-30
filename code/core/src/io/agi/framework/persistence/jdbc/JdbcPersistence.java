@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Properties;
 
 /**
  * Created by dave on 16/02/16.
@@ -56,11 +57,11 @@ public class JdbcPersistence implements Persistence {
     public JdbcPersistence() {
     }
 
-    public static JdbcPersistence Create( String propertiesFile ) {
-        String databaseUser = PropertiesUtil.get( propertiesFile, JdbcPersistence.PROPERTY_DATABASE_USER, "agiu" );
-        String databasePassword = PropertiesUtil.get( propertiesFile, JdbcPersistence.PROPERTY_DATABASE_PASSWORD, "password" );
-        String databaseUrl = PropertiesUtil.get( propertiesFile, JdbcPersistence.PROPERTY_DATABASE_URL, "jdbc:postgresql://localhost:5432/agidb" );
-        String databaseDriverClass = PropertiesUtil.get( propertiesFile, JdbcPersistence.PROPERTY_DATABASE_DRIVER_CLASS, JdbcPersistence.DRIVER_POSTGRESQL );
+    public static JdbcPersistence Create( Properties properties ) {
+        String databaseUser = PropertiesUtil.get( properties, JdbcPersistence.PROPERTY_DATABASE_USER, "agiu" );
+        String databasePassword = PropertiesUtil.get( properties, JdbcPersistence.PROPERTY_DATABASE_PASSWORD, "password" );
+        String databaseUrl = PropertiesUtil.get( properties, JdbcPersistence.PROPERTY_DATABASE_URL, "jdbc:postgresql://localhost:5432/agidb" );
+        String databaseDriverClass = PropertiesUtil.get( properties, JdbcPersistence.PROPERTY_DATABASE_DRIVER_CLASS, JdbcPersistence.DRIVER_POSTGRESQL );
 
         JdbcPersistence p = new JdbcPersistence();
 

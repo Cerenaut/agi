@@ -22,11 +22,13 @@ package io.agi.framework;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.coordination.Coordination;
+import io.agi.framework.coordination.CoordinationFactory;
 import io.agi.framework.coordination.http.HttpCoordination;
 import io.agi.framework.coordination.monolithic.SingleProcessCoordination;
 import io.agi.framework.factories.CommonEntityFactory;
 import io.agi.framework.persistence.NodeMemoryPersistence;
 import io.agi.framework.persistence.Persistence;
+import io.agi.framework.persistence.PersistenceFactory;
 import io.agi.framework.persistence.couchbase.CouchbasePersistence;
 import io.agi.framework.persistence.jdbc.JdbcPersistence;
 import io.agi.framework.persistence.models.ModelNode;
@@ -55,9 +57,6 @@ public class Main {
     public static final String PROPERTY_NODE_HOST = "node-host";
     public static final String PROPERTY_NODE_PORT = "node-port";
 
-    public static final String PROPERTY_PERSISTENCE_TYPE = "persistence-type";
-    public static final String PROPERTY_COORDINATION_TYPE = "coordination-type";
-
     public ModelNode _modelNode;
 
 
@@ -72,7 +71,7 @@ public class Main {
         System.out.println( "---------- AGIEF Package version = " + version + "------------" );
     }
 
-    public void setup( String propertiesFile, ObjectMap om, EntityFactory ef ) {
+    public void setup( Properties properties, ObjectMap om, EntityFactory ef ) {
         _ef = ef;
 
         if( om == null ) {
@@ -82,12 +81,13 @@ public class Main {
         _om = om;
 
         // Create persistence & Node now so you can Create entities in code that are hosted and persisted on the Node.
-        _p = createPersistence( propertiesFile );
-        _c = createCoordination( propertiesFile );
+        _p =  PersistenceFactory.createPersistence ( properties );
+        _c = CoordinationFactory.createCoordination( properties );
 
-        String nodeName = PropertiesUtil.get( propertiesFile, PROPERTY_NODE_NAME, "node-1" );
-        String nodeHost = PropertiesUtil.get( propertiesFile, PROPERTY_NODE_HOST, "localhost" );
-        int nodePort = Integer.valueOf( PropertiesUtil.get( propertiesFile, PROPERTY_NODE_PORT, "8491" ) );
+        // Create Node object
+        String nodeName = PropertiesUtil.get( properties, PROPERTY_NODE_NAME, "node-1" );
+        String nodeHost = PropertiesUtil.get( properties, PROPERTY_NODE_HOST, "localhost" );
+        int nodePort = Integer.valueOf( PropertiesUtil.get( properties, PROPERTY_NODE_PORT, "8491" ) );
         _modelNode = new ModelNode( nodeName, nodeHost, nodePort );
 
         // The persistent description of this Node
@@ -98,35 +98,27 @@ public class Main {
         ef.setNode( node );
     }
 
-    public Coordination createCoordination( String propertiesFile ) {
-        String type = PropertiesUtil.get( propertiesFile, PROPERTY_COORDINATION_TYPE, "http" );
-        Coordination c = null;
-        if( type.equals( "http" ) ) {
-            logger.info( "Distributed coordination." );
-            c = new HttpCoordination();
-        } else {
-            logger.info( "Monolithic coordination." );
-            c = new SingleProcessCoordination();
-        }
-        return c;
-    }
+    public static Properties createProperties( String propertiesFile, Properties overrides ) {
+        // Load all properties from file
+        Properties properties = new Properties();
 
-    public Persistence createPersistence( String propertiesFile ) {
-        String type = PropertiesUtil.get( propertiesFile, PROPERTY_PERSISTENCE_TYPE, "couchbase" );
-        Persistence p = null;
-        if( type.equals( "couchbase" ) ) {
-            logger.info( "Using Couchbase for persistence." );
-            p = CouchbasePersistence.Create( propertiesFile );
+        try {
+            properties.load( new FileInputStream( propertiesFile ) );
         }
-        else if( type.equals( "jdbc" ) ) {
-            logger.info( "Using JDBC (SQL) for persistence." );
-            p = JdbcPersistence.Create( propertiesFile );
+        catch( Exception e ) {
+            System.err.println( "Error reading properties for Persistence from: " + propertiesFile );
+            e.printStackTrace();
+            System.exit( -1 );
         }
-        else if( type.equals( "node" ) ) {
-            logger.info( "Using Node memory for persistence (note: You mustn't have more than one node in this configuration)." );
-            p = new NodeMemoryPersistence();
+
+        // apply overrides
+        for( Object o : overrides.keySet() ) {
+            String key = (String)o;
+            String value = overrides.getProperty( key );
+            properties.setProperty( key, value );
         }
-        return p;
+
+        return properties;
     }
 
     public void run() {
@@ -148,7 +140,7 @@ public class Main {
         String version = Main.class.getPackage().getImplementationVersion();
 
         if( version == null ) {
-            logger.error( "Could not load properties file to query version." );
+            logger.error( "Could not load package properties file to query code version." );
             version = "No version found.";
         }
 
@@ -175,27 +167,61 @@ public class Main {
         }
 
         String nodePropertiesFile = args[ 0 ];
+        String entityJson = getArg( args, 1 );
+        String dataJson   = getArg( args, 2 );
+        String configJson = getArg( args, 3 );
+
+        Properties overrides = getPropertyArgs( args, 4 );
 
         Main m = new Main();
-        m.setup( nodePropertiesFile, null, new CommonEntityFactory() );
+
+        Properties properties = createProperties( nodePropertiesFile, overrides );
+        EntityFactory ef = new CommonEntityFactory();
+        ObjectMap om = null;
+
+        m.setup( properties, om, ef );
 
         // Create custom entities and references
-        if( args.length > 1 ) {
-            Framework.LoadEntities( args[ 1 ] );
+        if( entityJson != null ) {
+            Framework.LoadEntities( entityJson );
         }
-        if( args.length > 2 ) {
-            Framework.LoadData( args[ 2 ] );
+        if( dataJson != null ) {
+            Framework.LoadData( dataJson );
         }
-        if( args.length > 3 ) {
-            Framework.LoadConfigs( args[ 3 ] ); // apply a delta config patch to loaded entities
+        if( configJson != null ) {
+            Framework.LoadConfigs( configJson ); // apply a delta config patch to loaded entities
         }
 
         // Start the system
         m.run();
     }
 
+    public static String getArg( String[] args, int index ) {
+        if( index < args.length ) {
+            return args[ index ];
+        }
+        return null;
+    }
+
+    public static Properties getPropertyArgs( String[] args, int firstIndex ) {
+        Properties properties = new Properties();
+
+        int index = firstIndex;
+
+        while( index < args.length ) {
+
+            String arg1 = args[ index    ]; // key
+            String arg2 = args[ index +1 ]; // value
+            properties.setProperty( arg1, arg2 );
+
+            index += 2;
+        }
+
+        return properties;
+    }
+
     public static void help() {
-        System.out.println( "Arguments: node.properties [entities.json] [data.json] [configs.json]" );
+        System.out.println( "Arguments: node.properties [entities.json] [data.json] [configs.json] [property-key] [property-value] ... " );
         System.out.println( "The first argument is mandatory. The other arguments are optional." );
         System.out.println( "Entities and data JSON files may be empty JSON arrays." );
     }

@@ -29,6 +29,20 @@ import java.util.Properties;
  */
 public class PropertiesUtil {
 
+    public static Properties load( String file ) {
+        Properties p = new Properties();
+
+        try {
+            p.load( new FileInputStream( file ) );
+        }
+        catch( Exception e ) {
+            System.err.println( "Error reading properties from file: " + file );
+            e.printStackTrace();
+        }
+
+        return p;
+    }
+
     /**
      * A quick and easy convenience interface for getting individual properties from .properties files.
      * It hides the exceptions to avoid you having to handle them. This assumes you'll resolve these issues at debug time.
@@ -42,17 +56,28 @@ public class PropertiesUtil {
         try {
             Properties p = new Properties();
             p.load( new FileInputStream( file ) );
-
-            if( p.containsKey( key ) ) {
-                String value = p.getProperty( key );
-                return value;
-            }
-            return defaultValue;
+            return PropertiesUtil.get( p, key, defaultValue );
         }
         catch( Exception e ) {
-            System.err.println( "Error reading properties for Node: " );
+            System.err.println( "Error reading properties from file: " + file );
             e.printStackTrace();
             return defaultValue;
         }
+    }
+
+    /**
+     * Gets the specified property, if present, or returns the default. Makes a if statement a one-liner in your code.
+     *
+     * @param p
+     * @param key
+     * @param defaultValue
+     * @return
+     */
+    public static String get( Properties p, String key, String defaultValue ) {
+        if( p.containsKey( key ) ) {
+            String value = p.getProperty( key );
+            return value;
+        }
+        return defaultValue;
     }
 }

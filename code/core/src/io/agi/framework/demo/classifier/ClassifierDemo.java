@@ -19,12 +19,15 @@
 
 package io.agi.framework.demo.classifier;
 
+import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
 import io.agi.framework.entities.*;
 import io.agi.framework.factories.CommonEntityFactory;
+
+import java.util.Properties;
 
 /**
  * Code to demonstrate a DSOM Entity on a simple test problem.
@@ -40,7 +43,8 @@ public class ClassifierDemo {
 
         // Create a Node
         Main m = new Main();
-        m.setup( args[ 0 ], null, ef );
+        Properties p = PropertiesUtil.load( args[ 0 ] );
+        m.setup( p, null, ef );
 
         // Create custom entities and references
         if( args.length > 1 ) {
