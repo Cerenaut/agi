@@ -358,7 +358,7 @@ def aws_sync_experiment(host):
 
     # code
     filepath = filepath_from_env_variable("", "AGI_HOME")
-    cmd = "rsync -ave 'ssh -i " + keyfilepath + "' " + filepath + " ec2-user@" + host + ":~/agief-project/agi --exclude={\"*.git/*\",*/src/*}"
+    cmd = "rsync -ave 'ssh -i " + keyfilepath + "  -o \"StrictHostKeyChecking no\" ' " + filepath + " ec2-user@" + host + ":~/agief-project/agi --exclude={\"*.git/*\",*/src/*}"
     if log:
         print cmd
     output, error = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
@@ -368,7 +368,7 @@ def aws_sync_experiment(host):
 
     # experiments
     filepath = filepath_from_env_variable("", "AGI_RUN_HOME")
-    cmd = "rsync -ave 'ssh -i " + keyfilepath + "' " + filepath + " ec2-user@" + host + ":~/agief-project/run --exclude={\"*.git/*\"}"
+    cmd = "rsync -ave 'ssh -i " + keyfilepath + "  -o \"StrictHostKeyChecking no\" ' " + filepath + " ec2-user@" + host + ":~/agief-project/run --exclude={\"*.git/*\"}"
     if log:
         print cmd
     output, error = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
@@ -423,7 +423,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--logging', dest='logging', action='store_true', help='Turn logging on.')
 
-    parser.set_defaults(host="localhost")  # c.x.agi.io
+    parser.set_defaults(host="localhost")
     parser.set_defaults(port="8491")
     parser.set_defaults(instanceid="i-057e0487")
     parser.set_defaults(task_name="mnist-spatial-task:8")
