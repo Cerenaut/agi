@@ -1,11 +1,11 @@
 import json
-import os, errno
-
-import boto3
+import os
+import errno
 import subprocess
 import dpath.util
 import requests
 import time
+import boto3
 
 help_generic = """
 Launch AGIEF. Optionally run experiments (including parameter sweep) and optionally run on AWS ECS.
