@@ -110,6 +110,7 @@ def terminate_framework():
     if log:
         print "LOG: response text = ", response.text
 
+
 # Run ecs task
 def aws_runtask(task_name):
 
@@ -125,19 +126,34 @@ def aws_runtask(task_name):
     if log:
         print "LOG: ", response
 
+    length = len(response["failures"])
+    if length > 0:
+        print "ERROR: could not initiate task on AWS."
+        print "reason = " + response["failures"][0]["reason"]
+        print " ----- exiting -------"
+        exit(1)
+
 
 # Return when the the config parameter has achieved the value specified
 # entity = name of entity, param_path = path to parameter, delimited by '.'
 def agief_wait_till_param(baseurl, entity_name, param_path, value):
     while True:
         try:
-            r = requests.get(baseurl + '/config', params={'entity': entity_name})
-            parameter = dpath.util.get(r.json(), "value." + param_path, '.')
-            if parameter == value:
-                if log:
-                    print "LOG: ... parameter: " + entity_name + "." + param_path + ", has achieved value: " + str(
-                        value) + "."
-                break
+            param_dic = {'entity': entity_name}
+            r = requests.get(baseurl + '/config', params=param_dic)
+
+            if log:
+                print "LOG: /config with params " + json.dumps(param_dic) + ", response = ", r
+                print "LOG: response text = ", r.text
+                print "LOG: url: ", r.url
+
+            if r.json()["value"] is not None:
+                parameter = dpath.util.get(r.json(), "value." + param_path, '.')
+                if parameter == value:
+                    if log:
+                        print "LOG: ... parameter: " + entity_name + "." + param_path + ", has achieved value: " + str(
+                            value) + "."
+                    break
         except requests.exceptions.ConnectionError:
             print "Oops, ConnectionError exception"
         except requests.exceptions.RequestException:
@@ -351,14 +367,12 @@ def generate_input_files_locally():
 
 
 # assumes there exists a private key for the given ec2 instance, at ~/.ssh/ecs-key
-def aws_sync_experiment(host):
+def aws_sync_experiment(host, keypath):
     print "....... syncing code to ec2 container instance"
-
-    keyfilepath = filepath_from_env_variable(".ssh/ecs-key", "HOME")
 
     # code
     filepath = filepath_from_env_variable("", "AGI_HOME")
-    cmd = "rsync -ave 'ssh -i " + keyfilepath + "  -o \"StrictHostKeyChecking no\" ' " + filepath + " ec2-user@" + host + ":~/agief-project/agi --exclude={\"*.git/*\",*/src/*}"
+    cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + filepath + " ec2-user@" + host + ":~/agief-project/agi --exclude={\"*.git/*\",*/src/*}"
     if log:
         print cmd
     output, error = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
@@ -368,7 +382,7 @@ def aws_sync_experiment(host):
 
     # experiments
     filepath = filepath_from_env_variable("", "AGI_RUN_HOME")
-    cmd = "rsync -ave 'ssh -i " + keyfilepath + "  -o \"StrictHostKeyChecking no\" ' " + filepath + " ec2-user@" + host + ":~/agief-project/run --exclude={\"*.git/*\"}"
+    cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + filepath + " ec2-user@" + host + ":~/agief-project/run --exclude={\"*.git/*\"}"
     if log:
         print cmd
     output, error = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
@@ -420,6 +434,8 @@ if __name__ == '__main__':
                         help='Instance ID of the ec2 container instance (default=%(default)s).')
     parser.add_argument('--task_name', dest='task_name', required=False,
                         help='The name of the ecs task (default=%(default)s).')
+    parser.add_argument('--ec2_keypath', dest='ec2_keypath', required=False,
+                        help='Path to the private key for the ecs ec2 instance, used for syncing over ssh (default=%(default)s).')
 
     parser.add_argument('--logging', dest='logging', action='store_true', help='Turn logging on.')
 
@@ -427,6 +443,7 @@ if __name__ == '__main__':
     parser.set_defaults(port="8491")
     parser.set_defaults(instanceid="i-057e0487")
     parser.set_defaults(task_name="mnist-spatial-task:8")
+    parser.set_defaults(ec2_keypath=filepath_from_env_variable(".ssh/ecs-key", "HOME"))
 
     args = parser.parse_args()
 
@@ -459,7 +476,7 @@ if __name__ == '__main__':
         if not args.aws:
             print "ERROR: Syncing is meaningless unless you're running aws (use param --step_aws)"
             exit()
-        aws_sync_experiment(host)
+        aws_sync_experiment(host, args.ec2_keypath)
 
     # 4) Launch framework (on AWS or locally)
     if args.launch_framework:
