@@ -48,15 +48,17 @@ while getopts ":p:e:d:l:m:k:v:c:" opt; do
 done
 
 node_properties=${opt_p:-node.properties}
-entity_file=$opt_e			# if it was not defined, that is ok, it is not passed into the runtime
-data_file=$opt_d			# if it was not defined, that is ok, it is not passed into the runtime
-config_file=$opt_c			# if it was not defined, that is ok, it is not passed into the runtime
+entity_file=${opt_e:-null}			# if it was not defined, that is ok, it is not passed into the runtime
+data_file=${opt_d:-null}	   		# if it was not defined, that is ok, it is not passed into the runtime
+config_file=${opt_c:-null}			# if it was not defined, that is ok, it is not passed into the runtime
 log_config=${opt_l:-log4j2.xml}
 main_class=${opt_m:-io.agi.framework.Main}
 
+dburl_default="jdbc:postgresql://$DB_HOST:$DB_PORT/agidb"
+
 # e.g. key: database-url value: jdbc:postgresql://localhost:5432/agidb
-p_key=$opt_p_key                        # if it was not defined, that is ok, it is not passed into the runtime
-p_val=$opt_p_val                        # if it was not defined, that is ok, it is not passed into the runtime
+p_key=${opt_p_key:-database-url}          	# if it was not defined, that is ok, it is not passed into the runtime
+p_val=${opt_p_val:-$dburl_default} 		    # if it was not defined, that is ok, it is not passed into the runtime
 
 echo "Run home = $AGI_RUN_HOME"
 cd $AGI_RUN_HOME

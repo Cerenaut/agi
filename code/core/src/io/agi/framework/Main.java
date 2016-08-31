@@ -179,13 +179,13 @@ public class Main {
         m.setup( properties, om, ef );
 
         // Create custom entities and references
-        if( entityJson != null ) {
+        if( entityJson != null && !entityJson.toLowerCase().equals( "null" ) ) {
             Framework.LoadEntities( entityJson );
         }
-        if( dataJson != null ) {
+        if( dataJson != null  && !entityJson.toLowerCase().equals( "null" ) ) {
             Framework.LoadData( dataJson );
         }
-        if( configJson != null ) {
+        if( configJson != null && !entityJson.toLowerCase().equals( "null" ) ) {
             Framework.LoadConfigs( configJson ); // apply a delta config patch to loaded entities
         }
 

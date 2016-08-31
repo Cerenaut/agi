@@ -34,8 +34,8 @@ export POSTGREST_BIN=$AGI_HOME/experimental-framework/bin/node_db/postgrest/linu
 export MAVEN_BIN=/home/dave/workspace/maven/apache-maven-3.3.3/bin/mvn
 
 # Java
-#export JAVA_HOME=`/usr/libexec/java_home -v 1.8`
-export JAVA_HOME=/home/dave/workspace/agi.io/java/jdk1.8.0_60
+export JAVA_HOME=`/usr/libexec/java_home -v 1.8`
+#export JAVA_HOME=/home/dave/workspace/agi.io/java/jdk1.8.0_60
 
 
 # ----------------------------------------
