@@ -35,22 +35,25 @@ The instanceId of the same ec2 instance needs to be specified as a parameter whe
 """
 
 # run the chosen instance specified by instanceId
-def aws_setup(instanceId):
+def aws_run_ec2(instanceId):
     print "....... starting ec2"
     ec2 = boto3.resource('ec2')
     instance = ec2.Instance(instanceId)
     response = instance.start()
 
-    if log: print "LOG: Start response: ", response
+    if log:
+        print "LOG: Start response: ", response
 
-    instance_ip = instance.public_ip_address
+    ip_public = instance.public_ip_address
+    ip_private = instance.private_ip_address
 
     instance.wait_until_running()
 
     print "Instance is up and running."
-    print "Instance public IP address is: ", instance_ip
+    print "Instance public IP address is: ", ip_public
+    print "Instance private IP address is: ", ip_private
 
-    return instance_ip
+    return {"ip_public": ip_public, "ip_private": ip_private}
 
 
 def aws_close(instanceid):
@@ -413,16 +416,6 @@ if __name__ == '__main__':
     parser.add_argument('--step_shutdown', dest='shutdown', action='store_true',
                         help='If set, shutdown instances and framework after other stages.')
 
-
-    # experiment details
-    # parser.add_argument('--code_dir', dest='code_dir', required=False,
-    #                     help='Filename within exps_dir that defines the experiments to run in json format (default=%(default)s).')
-
-    # parser.add_argument('--exps_input_dir', dest='exps_input_dir', required=False,
-    #                     help='Subfolder relative to exps_dir, that holds the input files (default=%(default)s).')
-    # parser.add_argument('--exps_output_dir', dest='exps_output_dir', required=False,
-    #                     help='Subfolder relative to exps_dir, that holds the output files (default=%(default)s).')
-
     # how to reach the framework
     parser.add_argument('--host', dest='host', required=False,
                         help='Host where the framework will be running (default=%(default)s). THIS IS IGNORED IF RUNNING ON AWS (in which case the IP of the instance specified by the instanceId is used)')
@@ -436,12 +429,15 @@ if __name__ == '__main__':
                         help='The name of the ecs task (default=%(default)s).')
     parser.add_argument('--ec2_keypath', dest='ec2_keypath', required=False,
                         help='Path to the private key for the ecs ec2 instance, used for syncing over ssh (default=%(default)s).')
+    parser.add_argument('--pg_instance_id', dest='pg_instanceid', required=False,
+                        help='Instance ID of the Postgres ec2 instance (default=%(default)s).')
 
     parser.add_argument('--logging', dest='logging', action='store_true', help='Turn logging on.')
 
     parser.set_defaults(host="localhost")
     parser.set_defaults(port="8491")
     parser.set_defaults(instanceid="i-057e0487")
+    parser.set_defaults(pg_instanceid="i-b1d1bd33")
     parser.set_defaults(task_name="mnist-spatial-task:8")
     parser.set_defaults(ec2_keypath=filepath_from_env_variable(".ssh/ecs-key", "HOME"))
 
@@ -467,9 +463,13 @@ if __name__ == '__main__':
                   "and ECS Task Name (--task_name) to run on AWS."
             exit()
 
-        host = aws_setup(args.instanceid)
+        ips = aws_run_ec2(args.instanceid)
+        ips_pg = aws_run_ec2(args.pg_instanceid)
 
-    baseurl = getbaseurl(host, args.port)  # re-define baseurl with aws host if relevant
+    baseurl = getbaseurl(ips["ip_public"], args.port)  # re-define baseurl with aws host if relevant
+
+    # set the DB_HOST environment variable, which
+    os.putenv("DB_HOST", ips_pg["ip_private"])
 
     # 3) Sync code and run-home
     if args.sync:

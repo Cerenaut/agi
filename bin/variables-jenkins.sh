@@ -16,4 +16,4 @@ export AGI_RUN_HOME=$WORKSPACE/experiment-definitions/classifier
 
 # Database
 export DB_PORT=5432
-export DB_HOST=localhost
+# export DB_HOST=localhost		# IMPORTANT!!!  DO NOT DEFINE THIS VARIABLE.   It will be defined by scripts at runtime, and we don't want it to get defined by sourcing this file
