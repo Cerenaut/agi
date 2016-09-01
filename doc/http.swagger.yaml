@@ -160,7 +160,7 @@ paths:
         '400':
           description: Invalid request
   /import:
-    get:
+    post:
       summary: Import a subtree of entities and/or data to the framework.
       description: "Import a subtree of entities and/or data to the framework. N.B. file type not supported. https://github.com/OAI/OpenAPI-Specification/issues/260\n"
       parameters:

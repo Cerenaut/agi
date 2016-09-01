@@ -34,6 +34,7 @@ The instanceId of the same ec2 instance needs to be specified as a parameter whe
 
 """
 
+
 # run the chosen instance specified by instanceId
 def aws_run_ec2(instanceId):
     print "....... starting ec2"
@@ -53,7 +54,7 @@ def aws_run_ec2(instanceId):
     print "Instance public IP address is: ", ip_public
     print "Instance private IP address is: ", ip_private
 
-    return {"ip_public": ip_public, "ip_private": ip_private}
+    return {'ip_public': ip_public, 'ip_private': ip_private}
 
 
 def aws_close(instanceid):
@@ -77,7 +78,9 @@ def launch_framework_aws(task_name, baseurl):
 # hang till framework is up and running
 def launch_framework_local(baseurl, main_class=""):
     print "....... launching framework locally"
-    cmd = "../node_coordinator/run.sh -m " + main_class;
+    cmd = "../node_coordinator/run.sh "
+    if main_class is not "":
+        cmd = "../node_coordinator/run-demo.sh -m " + main_class
     subprocess.Popen(cmd,
                      shell=True,
                      stdout=subprocess.PIPE,
@@ -178,6 +181,7 @@ def agief_import(entity_filepath=None, data_filepath=None):
                 print "LOG: Import entity file, response = ", response
                 print "LOG: response text = ", response.text
                 print "LOG: url: ", response.url
+                print "LOG: post body = ", files
 
 
 def agief_run_experiment():
@@ -205,6 +209,7 @@ def agief_export_rootentity(filepath, root_entity, export_type):
     response = requests.get(baseurl + '/export', params=payload)
     if log:
         print "LOG: Export entity file, response text = ", response.text
+        print "LOG: resonse url = ", response.url
 
     # write back to file
     output_json = response.json()
@@ -362,8 +367,6 @@ def getbaseurl(host, port):
 
 
 def generate_input_files_locally():
-    launch_framework_local(baseurl, args.main_class)
-
     entity_filepath = experiment_inputfile("entity.json")
     data_filepath = experiment_inputfile("data.json")
     agief_export_experiment(entity_filepath, data_filepath)
@@ -401,14 +404,17 @@ if __name__ == '__main__':
 
     # generate input files from the java experiment description
     parser.add_argument('--step_gen_input', dest='main_class', required=False,
-                        help='If provided, generate input files for experiments, then exit. The value is the Main class to run, that defines the '
+                        help='If provided, generate input files for experiments, '
+                             'then exit. The value is the Main class to run, that defines the '
                              'experiment, before exporting the experimental input files entities.json and data.json. ')
 
     # main program flow
     parser.add_argument('--step_aws', dest='aws', action='store_true',
                         help='If set, run AWS instances to run framework. Then InstanceId and Task need to be specified.')
     parser.add_argument('--step_exps', dest='exps_file', required=False,
-                        help='If provided, run experimewnts. Filename within AGI_RUN_HOME that defines the experiments to run in json format (default=%(default)s).')
+                        help='If provided, run experimewnts. '
+                             'Filename within AGI_RUN_HOME that defines the '
+                             'experiments to run in json format (default=%(default)s).')
     parser.add_argument('--step_sync', dest='sync', action='store_true',
                         help='If set, sync the code and run folder. Then you need to set --code_dir and --step_exps')
     parser.add_argument('--step_agief', dest='launch_framework', action='store_true',
@@ -418,7 +424,9 @@ if __name__ == '__main__':
 
     # how to reach the framework
     parser.add_argument('--host', dest='host', required=False,
-                        help='Host where the framework will be running (default=%(default)s). THIS IS IGNORED IF RUNNING ON AWS (in which case the IP of the instance specified by the instanceId is used)')
+                        help='Host where the framework will be running (default=%(default)s). '
+                             'THIS IS IGNORED IF RUNNING ON AWS (in which case the IP of the instance '
+                             'specified by the instanceId is used)')
     parser.add_argument('--port', dest='port', required=False,
                         help='Port where the framework will be running (default=%(default)s).')
 
@@ -428,16 +436,19 @@ if __name__ == '__main__':
     parser.add_argument('--task_name', dest='task_name', required=False,
                         help='The name of the ecs task (default=%(default)s).')
     parser.add_argument('--ec2_keypath', dest='ec2_keypath', required=False,
-                        help='Path to the private key for the ecs ec2 instance, used for syncing over ssh (default=%(default)s).')
-    parser.add_argument('--pg_instance_id', dest='pg_instanceid', required=False,
-                        help='Instance ID of the Postgres ec2 instance (default=%(default)s).')
+                        help='Path to the private key for the ecs ec2 instance, '
+                             'used for syncing over ssh (default=%(default)s).')
+    parser.add_argument('--pg_instance', dest='pg_instance', required=False,
+                        help='Instance ID of the Postgres ec2 instance (default=%(default)s). '
+                             'If you want to use a running postgres instance, just specify the host (e.g. localhost). '
+                             'WARNING: assumes that if the string starts with "i-", then it is an Instance ID')
 
     parser.add_argument('--logging', dest='logging', action='store_true', help='Turn logging on.')
 
     parser.set_defaults(host="localhost")
     parser.set_defaults(port="8491")
     parser.set_defaults(instanceid="i-057e0487")
-    parser.set_defaults(pg_instanceid="i-b1d1bd33")
+    parser.set_defaults(pg_instance="i-b1d1bd33")
     parser.set_defaults(task_name="mnist-spatial-task:8")
     parser.set_defaults(ec2_keypath=filepath_from_env_variable(".ssh/ecs-key", "HOME"))
 
@@ -452,11 +463,18 @@ if __name__ == '__main__':
 
     # 1) Generate input files
     if args.main_class:
+
+        if args.launch_framework:
+            launch_framework_local(baseurl, args.main_class)
+
         generate_input_files_locally()
         exit()
 
     # 2) Setup Infrastructure (on AWS or nothing to do locally)
-    host = args.host
+    ips = {'ip_public': args.host}
+    if args.pg_instance[:2] is not 'i-':
+        ips_pg = {'ip_private': args.pg_instance}
+
     if args.aws:
         if not args.instanceid and not args.task_name:
             print "ERROR: You must specify an EC2 Instance ID (--instanceid) " \
@@ -464,9 +482,11 @@ if __name__ == '__main__':
             exit()
 
         ips = aws_run_ec2(args.instanceid)
-        ips_pg = aws_run_ec2(args.pg_instanceid)
 
-    baseurl = getbaseurl(ips["ip_public"], args.port)  # re-define baseurl with aws host if relevant
+        if args.pg_instance[:2] is 'i-':
+            ips_pg = aws_run_ec2(args.pg_instance)
+
+    baseurl = getbaseurl(ips['ip_public'], args.port)  # re-define baseurl with aws host if relevant
 
     # set the DB_HOST environment variable, which
     os.putenv("DB_HOST", ips_pg["ip_private"])
@@ -476,7 +496,7 @@ if __name__ == '__main__':
         if not args.aws:
             print "ERROR: Syncing is meaningless unless you're running aws (use param --step_aws)"
             exit()
-        aws_sync_experiment(host, args.ec2_keypath)
+        aws_sync_experiment(ips["ip_public"], args.ec2_keypath)
 
     # 4) Launch framework (on AWS or locally)
     if args.launch_framework:

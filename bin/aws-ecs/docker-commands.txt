@@ -3,7 +3,6 @@
 #### upload Docker image to AWS repo
 ################################################
 
-
 # get login
 aws ecr get-login --region us-west-2
 
@@ -19,10 +18,32 @@ docker push 702057836183.dkr.ecr.us-west-2.amazonaws.com/[AWS_REPO_NAME]:latest
 docker push 702057836183.dkr.ecr.us-west-2.amazonaws.com/agief:latest
 
 
-
 ################################################
 #### Task definitions
 ################################################
 
 # register a task definition
 aws ecs register-task-definition --cli-input-json file://$AGI_HOME/bin/aws-ecs/ecs-task-definition.json
+
+
+################################################
+# Run an Apache docker container to host Web UI
+################################################
+
+docker run -p 8080:80 -i -d -v $AGI_HOME/code/www:/var/www -v $AGI_HOME/bin:/dev/bin  httpd /bin/sh -c "cat /dev/bin/www/httpd.conf.end >> conf/httpd.conf && mkdir -p /var/log/apache2 && httpd-foreground"
+
+# AWS
+
+docker run -p 80:80 -i -d -v /home/ec2-user/agief-project/agi/code/www:/var/www -v /home/ec2-user/agief-project/agi/bin:/dev/bin  httpd:2.4 /bin/sh -c "cat /dev/bin/www/httpd.conf.end >> conf/httpd.conf && mkdir -p /var/log/apache2 && httpd-foreground"
+
+
+################################################
+# Run node on AWS ECS EC2 instance
+################################################
+
+docker run -v /home/ec2-user/agief-project:/root/dev -p 8491:8491 -p 5432:5432 -i -d gkowadlo/agief:latest
+
+
+
+
+

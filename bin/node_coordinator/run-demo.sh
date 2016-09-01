@@ -17,10 +17,9 @@ if [ "$1" == "-h" -o "$1" == "--help" ]; then
 fi
 
 node_properties=${1:-node.properties}
+main_class=${2:-io.agi.framework.demo.classifier.ClassifierDemo}
 
 log_config="log4j2.xml"
-
-main_class="io.agi.framework.demo.mnist.MNISTDemo"
 
 cd $AGI_RUN_HOME
 pwd

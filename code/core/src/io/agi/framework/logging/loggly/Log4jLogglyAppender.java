@@ -36,7 +36,7 @@ import org.apache.logging.log4j.core.layout.PatternLayout;
 public class Log4jLogglyAppender extends AbstractAppender {
 
 	String endpointUrl;
-	LogglyThreadPool logglyThreadPool = new LogglyThreadPool(50);;
+	LogglyThreadPool logglyThreadPool = new LogglyThreadPool(50);
 
 	public Log4jLogglyAppender(final String name, final Filter filter, final Layout<? extends Serializable> layout,
 			final String endpointUrl, final boolean ignoreExceptions) {

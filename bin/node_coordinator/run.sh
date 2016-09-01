@@ -70,7 +70,6 @@ echo "Run home = $AGI_RUN_HOME"
 cd $AGI_RUN_HOME
 pwd
 
-
 # run coordinator
 cmd="$JAVA_HOME/bin/java -Xmx6000m -Dfile.encoding=UTF-8 -Dlog4j.configurationFile=file:$log_config \
 -cp \

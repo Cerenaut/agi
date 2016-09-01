@@ -24,6 +24,20 @@ Each step can be performed individually.
 pip install -r REQUIREMENTS.txt
 ```
 
-
+##############################
 ### Examples
-python ~/Development/ProjectAGI/AGIEF/agi/bin/run/run-framework.py --logging --step_aws --step_exps experiments.json --step_sync --step_agief --step_shutdown --host localhost --pg_instance_id  -port 8491 --task_name mnist-spatial-task:8 --ec2_keypath /Users/gideon/.ssh/nextpair.pem
+##############################
+
+### aws ec2 and postgres 
+
+python ~/Development/ProjectAGI/AGIEF/agi/bin/run/run-framework.py --logging --step_aws --step_exps experiments.json --step_sync --step_agief --step_shutdown --host localhost --port 8491 --task_name mnist-spatial-task:8 --ec2_keypath /Users/gideon/.ssh/nextpair.pem
+
+
+### local agief and local postgres
+
+python ~/Development/ProjectAGI/AGIEF/agi/bin/run/run-framework.py --logging --step_exps experiments.json --step_agief --step_shutdown --host localhost --pg_instance localhost --port 8491
+
+
+### generate input files
+
+--step_gen_input io.agi.framework.demo.classifier.ClassifierDemo
