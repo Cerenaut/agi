@@ -25,7 +25,7 @@
 
     <groupId>io.agi.core</groupId>
     <artifactId>agief</artifactId>
-    <version>1.0.15(fbb07e8)</version>
+    <version>1.0.20(b908265)</version>
 
     <build>
         <sourceDirectory>src</sourceDirectory>
@@ -42,8 +42,9 @@
                 </configuration>
             </plugin>
             <plugin>
-              <artifactId>exec-maven-plugin</artifactId>
               <groupId>org.codehaus.mojo</groupId>
+              <artifactId>exec-maven-plugin</artifactId>
+              <version>1.5.0</version>
               <executions>
                 <execution><!-- Run our version calculation script -->
                   <id>Version Calculation</id>
@@ -60,6 +61,7 @@
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-jar-plugin</artifactId>
+              <version>3.0.2</version>
               <configuration>
                 <finalName>agief</finalName>
                 <archive>
@@ -150,11 +152,6 @@
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <version>2.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.1</version>
         </dependency>
         <dependency>
             <groupId>tw.edu.ntu.csie</groupId>
