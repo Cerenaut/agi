@@ -108,17 +108,21 @@ public class HttpImportHandler implements HttpHandler {
                     Framework.ImportEntities( value );
                     status = 200;
                     response = response + "Imported Entities from: " + fi.getName() + "\n";
+
+                    logger.info( "Import: entities file: " + fi.getName() );
                 }
                 else if( fieldName.equalsIgnoreCase( "data-file" ) ) {
                     Framework.ImportData( value );
                     status = 200;
                     response = response + "Imported Data from: " + fi.getName() + "\n";
+
+                    logger.info( "Import: data file: " + fi.getName() );
                 }
             }
 
         }
         catch( Exception e ) {
-            logger.error( e.getStackTrace() );
+            logger.error( "Unable to import entities/data. The stack trace is: \n" + e.getStackTrace() );
         }
 
         HttpUtil.SendResponse( t, status, response );

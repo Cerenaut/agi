@@ -28,9 +28,9 @@ pip install -r REQUIREMENTS.txt
 ### Examples
 ##############################
 
-### aws ec2 and postgres 
+### aws esc and aws postgres 
 
-python ~/Development/ProjectAGI/AGIEF/agi/bin/run/run-framework.py --logging --step_aws --step_exps experiments.json --step_sync --step_agief --step_shutdown --host localhost --port 8491 --task_name mnist-spatial-task:8 --ec2_keypath /Users/gideon/.ssh/nextpair.pem
+python ~/Development/ProjectAGI/AGIEF/agi/bin/run/run-framework.py --logging --step_aws --step_exps experiments.json --step_sync --step_agief --step_shutdown --instanceid i-06d6a791 --port 8491 --pg_instance i-b1d1bd33 --task_name mnist-spatial-task:8 --ec2_keypath /Users/gideon/.ssh/nextpair.pem
 
 
 ### local agief and local postgres

@@ -8,30 +8,19 @@ import time
 import boto3
 
 help_generic = """
-Launch AGIEF. Optionally run experiments (including parameter sweep) and optionally run on AWS ECS.
-- Uses the version of code in $AGI_HOME
-- Uses the experiment 'run' folder specified in $AGI_RUN_HOME
-- Exports the experiment data (if running an experiment)
-- See README.md for installation instructions
+run-framework.py allows you to run each step of the AGIEF (AGI Experimental Framework), locally and on AWS.
+Each step can be toggled with a parameter prefixed with 'step'. See parameter list for description of parameters.
+As with all scripts that are part of AGIEF, the environment variables in VARIABLES_FILES are used.
+The main ones being $AGI_HOME (code) and $AGI_RUN_HOME (experiment definitions).
 
-The script does the following (lines marked AWS are relevant for operation on AWS):
-- (AWS) launch ec2 container instance
-- (AWS) sync $AGI_HOME folder (excluding source), and $AGI_RUN_HOME folder to the ec2 instance
-- launch framework
-- (AWS) run the ECS task, which launches the framework, but does not run the experiment
-- sweep parameters as specified in experiment input file, and for each parameter value
-- imports the experiment from the data files located in $AGI_RUN_HOME
-- update the experiment (it will run till termination)
-- exports the experiment to $AGI_RUN_HOME
+Note that script runs the experiment by updating the Experiment Entity until termination.
+The script imports input files to set up the experiment, and exports experimental results for archive.
+
+See README.md for installation instructions and longer explanation of the end-to-end AGIEF system.
 
 Assumptions:
-- Experiment entity exists, with 'terminated' field.
-- The 'variables.sh' system is used, as in the bash scripts.
-- The script runs sync-experiment.sh, which relies on the ssh alias ec2-user to ssh into the desired ec2 instance.
-The instanceId of the same ec2 instance needs to be specified as a parameter when running the script
-(there is a default value).
---> these must match  (TODO: to be improved in the future)
-
+- Experiment entity exists, with 'terminated' field
+- The VARIABLES_FILE is used for env variables
 """
 
 
@@ -361,7 +350,6 @@ def run_experiments(exps_file):
                 exp_export(output_entity_filepath, output_data_filepath)
 
 
-
 def getbaseurl(host, port):
     return 'http://' + host + ':' + port
 
@@ -404,29 +392,30 @@ if __name__ == '__main__':
 
     # generate input files from the java experiment description
     parser.add_argument('--step_gen_input', dest='main_class', required=False,
-                        help='If provided, generate input files for experiments, '
-                             'then exit. The value is the Main class to run, that defines the '
-                             'experiment, before exporting the experimental input files entities.json and data.json. ')
+                        help='Generate input files for experiments, then exit. '
+                             'The value is the Main class to run, that defines the experiment, '
+                             'before exporting the experimental input files entities.json and data.json. ')
 
     # main program flow
     parser.add_argument('--step_aws', dest='aws', action='store_true',
-                        help='If set, run AWS instances to run framework. Then InstanceId and Task need to be specified.')
+                        help='Run AWS instances to run framework. Then InstanceId and Task need to be specified.')
     parser.add_argument('--step_exps', dest='exps_file', required=False,
-                        help='If provided, run experimewnts. '
-                             'Filename within AGI_RUN_HOME that defines the '
-                             'experiments to run in json format (default=%(default)s).')
+                        help='Run experiments, defined in the file that is set with this parameter.'
+                             'Filename is within AGI_RUN_HOME that defines the '
+                             'experiments to run (with parameter sweeps) in json format (default=%(default)s).')
     parser.add_argument('--step_sync', dest='sync', action='store_true',
-                        help='If set, sync the code and run folder. Then you need to set --code_dir and --step_exps')
+                        help='Sync the code and run folder (relevant for --step_aws).'
+                             'Requires setting key path with --ec2_keypath')
     parser.add_argument('--step_agief', dest='launch_framework', action='store_true',
-                        help='If set, launch the framework.')
+                        help='Launch the framework.')
     parser.add_argument('--step_shutdown', dest='shutdown', action='store_true',
-                        help='If set, shutdown instances and framework after other stages.')
+                        help='Shutdown instances and framework after other stages.')
 
     # how to reach the framework
     parser.add_argument('--host', dest='host', required=False,
                         help='Host where the framework will be running (default=%(default)s). '
                              'THIS IS IGNORED IF RUNNING ON AWS (in which case the IP of the instance '
-                             'specified by the instanceId is used)')
+                             'specified by the Instance ID is used)')
     parser.add_argument('--port', dest='port', required=False,
                         help='Port where the framework will be running (default=%(default)s).')
 
@@ -508,7 +497,8 @@ if __name__ == '__main__':
     # 5) run experiments
     if args.exps_file:
         if not args.launch_framework:
-            print "WARNING: Running experiment is meaningless unless you're already running framework (use param --step_launch_framework)"
+            print "WARNING: Running experiment is meaningless unless you're already running framework " \
+                  "(use param --step_agief)"
         filepath = filepath_from_env_variable(args.exps_file, "AGI_RUN_HOME")
         run_experiments(filepath)
 
@@ -519,3 +509,6 @@ if __name__ == '__main__':
         # Shutdown Infrastructure
         if args.aws:
             aws_close(args.instanceid)
+
+            if args.pg_instance[:2] is 'i-':
+                aws_close(args.pg_instance)
