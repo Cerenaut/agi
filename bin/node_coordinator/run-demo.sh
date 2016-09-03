@@ -11,7 +11,7 @@ source $(dirname $0)/../$variables_file
 
 
 if [ "$1" == "-h" -o "$1" == "--help" ]; then
-  echo "Usage: `basename $0` NODE_PROPERTIES"
+  echo "Usage: `basename $0` NODE_PROPERTIES MAIN_CLASS"
   echo "All arguments are optional."
   exit 0
 fi

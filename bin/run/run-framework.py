@@ -452,10 +452,7 @@ if __name__ == '__main__':
 
     # 1) Generate input files
     if args.main_class:
-
-        if args.launch_framework:
-            launch_framework_local(baseurl, args.main_class)
-
+        launch_framework_local(baseurl, args.main_class)
         generate_input_files_locally()
         exit()
 
