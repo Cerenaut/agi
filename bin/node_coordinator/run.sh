@@ -22,26 +22,26 @@ while getopts ":p:e:d:l:m:k:v:c:" opt; do
       opt_p=$OPTARG
       ;;
     l)	# name of log4j2 xml file (optional, there is a default)
-        opt_l=$OPTARG
-        ;;
+      opt_l=$OPTARG
+      ;;
     m)	# name of main class (optional, there is a default)
-        opt_m=$OPTARG
-        ;;
+      opt_m=$OPTARG
+      ;;
     d)	# name of input file for data (optional, default is null)
-        opt_d=$OPTARG
+      opt_d=$OPTARG
         ;;
     e)	# name of input file for entity (optional, default is null)
-        opt_e=$OPTARG
-        ;;
+      opt_e=$OPTARG
+      ;;
     c)	# name of input file for config (optional, default is null)
-        opt_c=$OPTARG
-        ;;
+      opt_c=$OPTARG
+      ;;
     k)	# property key (optional, there is default)
-        opt_p_key=$OPTARG
-        ;;
+      opt_p_key=$OPTARG
+      ;;
     v)	# property value (optional, there is default)
-        opt_p_val=$OPTARG
-        ;;
+      opt_p_val=$OPTARG
+      ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
       exit 1
