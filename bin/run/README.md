@@ -1,4 +1,6 @@
-## End to end 
+############################################################
+### End to end 
+############################################################
 
 - pull code (git pull)
 - build code (mvn package)
@@ -17,6 +19,10 @@ Each step can be performed individually.
 
 
 
+############################################################
+### Installation of run-framework.py
+############################################################
+
 ## run-framework.py
 
 ### Installation
@@ -24,9 +30,10 @@ Each step can be performed individually.
 pip install -r REQUIREMENTS.txt
 ```
 
-##############################
+
+############################################################
 ### Examples
-##############################
+############################################################
 
 ### aws esc and aws postgres 
 

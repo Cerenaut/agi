@@ -41,5 +41,4 @@ export JAVA_HOME=`/usr/libexec/java_home -v 1.8`
 # ----------------------------------------
 # Set Path
 # ----------------------------------------
-export PATH=${MAVEN_HOME}/bin:${PATH}
 export PATH=${JAVA_HOME}/bin:${PATH}
