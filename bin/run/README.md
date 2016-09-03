@@ -1,6 +1,6 @@
 # End to end 
-NOTE: all scripts utilise variables.sh 
-You can modify that file, or create your own instead (place it in ```/bin``` and set the env variable VARIABLES_FILE to it - name only, no path).
+NOTE: all scripts utilise ```/bin/variables.sh```
+You can modify that file, or create your own instead (place it in ```/bin``` and set the ENV variable ```VARIABLES_FILE``` to it - name only, no path).
 
 Most steps are carried out with ```/bin/run/run-framework.py```
 Installation instructions below.
@@ -9,7 +9,7 @@ Installation instructions below.
 - get the latest [code](https://github.com/ProjectAGI/agi) and [experiment definitions](https://github.com/ProjectAGI/experiment-definitions) from github
 - setup python script (instructions in the next section)
 - build code (```/bin/node_coordinator/build.sh```)
-- ensure values in your ```VARIABLES_FILE``` are correct, in particular the location of code ```$AGI_HOME``` and the particular experiment ```$AGI_RUN_HOME```
+- ensure values in your variables file are correct, in specifically the location of code ```$AGI_HOME``` and the particular experiment ```$AGI_RUN_HOME```
 
 Note: ```$AGI_HOME``` should refer to the location of you repo 'agi', and ```$AGI_RUN_HOME``` should refer to the location of your specific experiment in 'experiment-definitions' (e.g. ```$AGI_RUN_HOME/classifier```).
 
