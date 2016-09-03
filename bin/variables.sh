@@ -25,10 +25,6 @@ export DB_PORT=5432
 # Dependencies
 # ---------------------------------------
 
-# POSTGRESQL
-#export POSTGRESQL_BIN=/Applications/Server.app/Contents/ServerRoot/usr/bin/psql
-export POSTGREST_BIN=$AGI_HOME/experimental-framework/bin/node_db/postgrest/linux/postgrest-0.2.11.1
-
 # MAVEN
 #export MAVEN_BIN=/usr/local/bin/mvn
 export MAVEN_BIN=/home/dave/workspace/maven/apache-maven-3.3.3/bin/mvn

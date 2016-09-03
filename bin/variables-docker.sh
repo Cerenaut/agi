@@ -19,7 +19,7 @@ export AGI_RUN_HOME=~/dev/run
 
 # Database 
 export DB_PORT=5432
-export DB_HOST=172.31.22.107		# IMPORTANT!!!  DO NOT DEFINE THIS VARIABLE.   It will be defined by scripts at runtime, and we don't want it to get defined by sourcing this file
+export DB_HOST=172.31.22.107		# for Task on ECS, we need the hardcoded value, because we can't go in and set an env variable before running the java process - this will need to be improved.
 
 # ---------------------------------------
 # Dependencies
