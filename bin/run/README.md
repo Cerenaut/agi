@@ -3,7 +3,7 @@ NOTE: all scripts utilise ```/bin/variables.sh```
 You can modify that file, or create your own instead (place it in ```/bin``` and set the ENV variable ```VARIABLES_FILE``` to it - name only, no path).
 
 Most steps are carried out with ```/bin/run/run-framework.py```
-Installation instructions below.
+[Installation Instructions](#markdown-header-intallation-instructions) below.
 
 ## Setup
 - get the latest [code](https://github.com/ProjectAGI/agi) and [experiment definitions](https://github.com/ProjectAGI/experiment-definitions) from github
@@ -37,7 +37,7 @@ The steps are:
 - shutdown framework
 - [aws] shutdown ec2 instances
 
-## Installation of run-framework.py
+## Installation Instructions
 - Install Python and Pip
 - Install dependencies
 ```pip install -r REQUIREMENTS.txt```

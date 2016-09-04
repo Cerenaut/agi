@@ -26,8 +26,8 @@ export DB_PORT=5432
 # ---------------------------------------
 
 # MAVEN
-#export MAVEN_BIN=/usr/local/bin/mvn
-export MAVEN_BIN=/home/dave/workspace/maven/apache-maven-3.3.3/bin/mvn
+export MAVEN_BIN=/usr/local/bin/mvn
+# export MAVEN_BIN=/home/dave/workspace/maven/apache-maven-3.3.3/bin/mvn
 
 # Java
 export JAVA_HOME=`/usr/libexec/java_home -v 1.8`
