@@ -25,7 +25,7 @@
 
     <groupId>io.agi.core</groupId>
     <artifactId>agief</artifactId>
-    <version>1.0.25()</version>
+    <version>1.0.28(6f32359)</version>
 
     <build>
         <sourceDirectory>src</sourceDirectory>
@@ -39,6 +39,7 @@
                 <configuration>
                     <source>${jdk.version}</source>
                     <target>${jdk.version}</target>
+                    <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
             <plugin>
