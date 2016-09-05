@@ -9,7 +9,8 @@ MAINTAINER Gideon Kowadlo <gideon@agi.io>
 RUN apt-get update && apt-get install -y \
 maven \ 
 openjdk-8-jdk \
-git -y 
+git \
+curl
 
 # Use docker specific variables.sh file (install of default at /bin/variables.sh)
 ENV VARIABLES_FILE variables-docker.sh
