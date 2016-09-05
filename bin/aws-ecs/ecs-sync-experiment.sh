@@ -4,10 +4,21 @@ variables_file=${VARIABLES_FILE:-"variables.sh"}
 echo "Using variables file = \"$variables_file\""
 source $(dirname $0)/../$variables_file
 
-########################################################
-# sync code and run folder with ecs instance (via S3)
-########################################################
+if [ "$1" == "-h" -o "$1" == "--help" -o "$1" == "" ]; then
+  echo "Usage: `basename $0` HOST KEY_FILE (default = ~/.ssh/ecs-key.pem)"
+  exit 0
+fi
 
+host=$1
+keyfile=${2:-$HOME/.ssh/ecs-key.pem}
+
+
+echo "Using keyfile = " $keyfile
+echo "Using host = " $host
+
+########################################################
+# sync code and run folder with ecs instance (via S3) - DEPRECATED APPROACH
+########################################################
 # # sync to S3
 # ./s3-sync-up.sh
 
@@ -15,10 +26,14 @@ source $(dirname $0)/../$variables_file
 # ssh ec2-user@c.x.agi.io 'bash -s' < $AGI_HOME/bin/aws-ecs/s3-sync-down.sh
 
 
-
 ########################################################
 # synch code and run folder with ecs instance
 ########################################################
 
-rsync -ave ssh $AGI_HOME/ ecs-ec2:~/agief-project/agi --exclude={"*.git/*",*/src/*}
-rsync -ave ssh $AGI_RUN_HOME/ ecs-ec2:~/agief-project/run --exclude={"*.git/*"}
+cmd="rsync -ave 'ssh -i $keyfile -o \"StrictHostKeyChecking no\"' $AGI_HOME/ ec2-user@${host}:~/agief-project/agi --exclude={\"*.git/*\",*/src/*}"
+echo $cmd
+eval $cmd
+
+cmd="rsync -ave 'ssh -i $keyfile -o \"StrictHostKeyChecking no\"' $AGI_RUN_HOME/ ec2-user@${host}:~/agief-project/run --exclude={\"*.git/*\"}"
+echo $cmd
+eval $cmd

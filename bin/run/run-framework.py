@@ -73,7 +73,8 @@ def launch_framework_local(baseurl, main_class=""):
     subprocess.Popen(cmd,
                      shell=True,
                      stdout=subprocess.PIPE,
-                     stderr=subprocess.STDOUT)
+                     stderr=subprocess.STDOUT,
+                     executable="/bin/bash")
     wait_framework_up(baseurl)
 
 
@@ -280,10 +281,13 @@ def experiment_outputfile(filename):
 
 def filepath_from_env_variable(filename, path_env):
     variables_file = os.getenv('VARIABLES_FILE', 'variables.sh')
-    subprocess.call(["source ../" + variables_file], shell=True)
 
     cmd = "source ../" + variables_file + " && echo $" + path_env
-    output, error = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+    output, error = subprocess.Popen(cmd,
+                                     shell=True,
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE,
+                                     executable="/bin/bash").communicate()
 
     path_from_env = output.strip()
     filepath = os.path.join(path_from_env, filename)
@@ -369,7 +373,11 @@ def aws_sync_experiment(host, keypath):
     cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + filepath + " ec2-user@" + host + ":~/agief-project/agi --exclude={\"*.git/*\",*/src/*}"
     if log:
         print cmd
-    output, error = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+    output, error = subprocess.Popen(cmd,
+                                     shell=True,
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE,
+                                     executable="/bin/bash").communicate()
     if log:
         print output
         print error
@@ -379,7 +387,11 @@ def aws_sync_experiment(host, keypath):
     cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + filepath + " ec2-user@" + host + ":~/agief-project/run --exclude={\"*.git/*\"}"
     if log:
         print cmd
-    output, error = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+    output, error = subprocess.Popen(cmd,
+                                     shell=True,
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE,
+                                     executable="/bin/bash").communicate()
     if log:
         print output
         print error
