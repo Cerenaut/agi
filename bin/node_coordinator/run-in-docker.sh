@@ -14,7 +14,6 @@
 # 
 ########################################################################################################
 
-
 variables_file=${VARIABLES_FILE:-"variables.sh"}
 echo "Using variables file = \"$variables_file\""
 source $(dirname $0)/../$variables_file
@@ -45,10 +44,17 @@ fi
 
 mkdir -p "$maven_cache_repo"
 
+if [ "`tty`" != "not a tty" ]; then
+        switch="-it"
+else
+        switch="-i"
+fi
+
 set -x
 
+
 # should use the script /docker/run.sh,  but thinking of deprecating, not worth maintaining another script that isn't that useful
-docker run -i \
+docker run "$switch" \
         -w /root/dev/agi/bin/node_coordinator \
         -e VARIABLES_FILE="variables-docker.sh" \
         -v $AGI_HOME:/root/dev/agi \
