@@ -48,7 +48,7 @@ mkdir -p "$maven_cache_repo"
 set -x
 
 # should use the script /docker/run.sh,  but thinking of deprecating, not worth maintaining another script that isn't that useful
-docker run -it \
+docker run -i \
         -w /root/dev/agi/bin/node_coordinator \
         -e VARIABLES_FILE="variables-docker.sh" \
         -v $AGI_HOME:/root/dev/agi \
