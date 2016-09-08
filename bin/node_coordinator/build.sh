@@ -5,8 +5,10 @@ echo "Using variables file = \"$variables_file\""
 source $(dirname $0)/../$variables_file
 
 
-echo "------- Build and install libs -------"
-./build-libs.sh
+### NOTE: temporarily deprecated until we split the project again
+# echo "------- Build and install libs -------"
+# ./build-libs.sh
+
 
 echo "------- Build the core and experimental framework -------"
 cd $AGI_HOME/code/core

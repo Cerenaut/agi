@@ -36,8 +36,8 @@ $ docker build -t agief -f Dockerfile ../../../
 Note: this creates a container with the name **agief-dev** or **agief** with the docker files in **bin/docker**
 
 ### Start the container
-The container has all pre requisites set up to dev (for agief-dev) or run (for agief) AGIEF. 
-The codebase is in the mapped folder and it should be built and run with the scripts in /bin as in the README documents.
+The container has all pre-requisites set up to dev (for agief-dev) or run (for agief) AGIEF. 
+The codebase is in the mapped folder and it should be built and run with the scripts in ```/run``` as in the README documents.
 
 This container uses a postgres database running in another container which you must run before you run this one. 
 --> MORE INFO on how to run it

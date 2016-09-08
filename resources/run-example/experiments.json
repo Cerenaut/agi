@@ -1,0 +1,28 @@
+{
+	"experiments": [
+		{
+			"import-files":
+			{
+				"file-entities": "experiment-entity.json",
+				"file-data": "experiment-data.json"
+			},
+
+		    "parameter-sweeps": [
+		    {
+		      "entity-name": "classifier",
+		      "parameter-path": "widthCells",
+		      "val-begin": 6,
+		      "val-end": 10,
+		      "val-inc": 2
+		    },
+		    {
+		      "entity-name": "experiment",
+		      "parameter-path": "terminationAge",
+		      "val-begin": 2,
+		      "val-end": 4,
+		      "val-inc": 1
+		    }
+		  ]
+		}
+	]
+}

@@ -19,6 +19,15 @@ docker push 702057836183.dkr.ecr.us-west-2.amazonaws.com/agief:latest
 
 
 ################################################
+#### Upload Docker Image to Docker Hub
+################################################
+
+docker tag agief gkowadlo/agief:2.1
+docker push gkowadlo/agief:2.1
+
+
+
+################################################
 #### Task definitions
 ################################################
 

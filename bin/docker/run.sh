@@ -18,7 +18,7 @@ image_name=${1:-agief}
 # give this container a name 
 if [ -z "$2" ]
 then
-    containter_name_cmd="";
+  containter_name_cmd="";
 else
 	containter_name_cmd="--name $2";		# --name AGI_NODE
 fi
@@ -26,7 +26,7 @@ fi
 # map port - for GUI to get access to coordinator
 if [ -z "$3" ]
 then
-    coord_map_port_cmd="";
+  coord_map_port_cmd="";
 else
 	coord_map_port_cmd="-p $3:$3";			# -p 8491:8491
 fi
@@ -34,7 +34,7 @@ fi
 # link containers (usually to link to postgres)
 if [ -z "$4" ]
 then
-    psql_container_cmd="";
+  psql_container_cmd="";
 else
 	psql_container_cmd="--link $4";			# --link postgres:db 
 fi
@@ -42,7 +42,7 @@ fi
 # map port - Database port
 if [ -z "$5" ]
 then
-    db_map_port_cmd="";
+  db_map_port_cmd="";
 else
 	db_map_port_cmd="-p $5:$5";
 fi
