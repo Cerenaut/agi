@@ -33,5 +33,5 @@ public class EntityConfig {
     public boolean flush = false;  // default
     public boolean learn = true;  // default
 
-    // TODO add last update date/time
+    // TODO add last update date/time?
 }

@@ -76,8 +76,8 @@ public class DeepMNISTDemo {
 //how to plumb up the fb pathway?
 //inverted region - gets FN errors from above
 //use the state of the inverted region to read out the predictions?
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle_twin";
@@ -86,19 +86,18 @@ public class DeepMNISTDemo {
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle_deep";
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/all_train";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/all_t10k";
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
-        String testingPath = "/home/dave/workspace/agi.io/data/mnist/5k_test";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/5k_test";
 //        String trainingPath = "./training";
 //        String testingPath = "./testing";
         int terminationAge = 25000;
-//        int terminationAge = 25;
-        int trainingBatches = 1;
-        int layers = 3;
-        boolean terminateByAge = true;
-//        boolean terminateByAge = false;
+        int trainingBatches = 2;
+        boolean terminateByAge = false;
         float defaultPredictionInhibition = 1.f; // random image classification only experiments
 //        float defaultPredictionInhibition = 0.f; // where you use prediction
         boolean encodeZero = false;
+        boolean classFeaturesOnline = false;
+        int layers = 3;
 
         // Define some entities' names
         String experimentName            = Framework.GetEntityName( "experiment" );
@@ -111,7 +110,7 @@ public class DeepMNISTDemo {
         String classFeaturesName         = Framework.GetEntityName( "class-features" );
         String activityImageDecoderName  = Framework.GetEntityName( "activity-image-decoder" );
         String predictedImageDecoderName = Framework.GetEntityName( "predicted-image-decoder" );
-        String svmName                   = Framework.GetEntityName( "svm-entity" );
+//        String svmName                   = Framework.GetEntityName( "svm-entity" );
         String valueSeriesPredictedName  = Framework.GetEntityName( "value-series-predicted" );
         String valueSeriesErrorName      = Framework.GetEntityName( "value-series-error" );
         String valueSeriesTruthName      = Framework.GetEntityName( "value-series-truth" );
@@ -121,7 +120,7 @@ public class DeepMNISTDemo {
         Framework.CreateEntity( imageClassName, ImageClassEntity.ENTITY_TYPE, n.getName(), experimentName );
         Framework.CreateEntity( imageEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), imageClassName );
         Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), imageEncoderName ); // ok all input to the regions is ready
-        Framework.CreateEntity( svmName, SVMEntity.ENTITY_TYPE, n.getName(), experimentName ); // ok all input to the regions is ready <-- DAVE 2 GIDS: Shouldn't this be AFTER the algorithm has run?
+//        Framework.CreateEntity( svmName, SVMEntity.ENTITY_TYPE, n.getName(), experimentName ); // ok all input to the regions is ready <-- DAVE 2 GIDS: Shouldn't this be AFTER the algorithm has run?
 
         Framework.CreateEntity( region1FfName, RegionLayerEntity.ENTITY_TYPE, n.getName(), constantName );
         String topLayerName = region1FfName;
@@ -153,10 +152,13 @@ public class DeepMNISTDemo {
         Framework.SetDataReference( region1FfName, RegionLayerEntity.FF_INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
         Framework.SetDataReference( region1FfName, RegionLayerEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT ); // feedback to this region is just a constant
 
+        String learningEntitiesAlgorithm = region1FfName;
+
         if( layers > 1 ) {
             Framework.SetDataReference( region2FfName, RegionLayerEntity.FF_INPUT_1, region1FfName, RegionLayerEntity.PREDICTION_FN );
             Framework.SetDataReference( region2FfName, RegionLayerEntity.FF_INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
             Framework.SetDataReference( region2FfName, RegionLayerEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT ); // feedback to this region is just a constant
+            learningEntitiesAlgorithm = learningEntitiesAlgorithm + "," + region2FfName;
         }
 
         if( layers > 2 ) {
@@ -165,6 +167,7 @@ public class DeepMNISTDemo {
 // Option to provide class-label directly to layer 3 for inclusion in classification
 //            Framework.SetDataReference( region3FfName, RegionLayerEntity.FF_INPUT_2, labelEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
             Framework.SetDataReference( region3FfName, RegionLayerEntity.FB_INPUT, constantName, ConstantMatrixEntity.OUTPUT ); // feedback to this region is just a constant
+            learningEntitiesAlgorithm = learningEntitiesAlgorithm + "," + region3FfName;
         }
 
         Framework.SetDataReference( activityImageDecoderName, DecoderEntity.DATA_INPUT_ENCODED, region1FfName, RegionLayerEntity.FB_OUTPUT_1_UNFOLDED_ACTIVITY );
@@ -219,6 +222,10 @@ public class DeepMNISTDemo {
         Framework.SetConfig( imageClassName, "sourceFilesPathTesting", testingPath );
         Framework.SetConfig( imageClassName, "trainingBatches", String.valueOf( trainingBatches ) );
 
+        String learningEntitiesAnalytics = classFeaturesName;
+        Framework.SetConfig( imageClassName, "learningEntitiesAlgorithm", String.valueOf( learningEntitiesAlgorithm ) );
+        Framework.SetConfig( imageClassName, "learningEntitiesAnalytics", String.valueOf( learningEntitiesAnalytics ) );
+
         // constant config
         if( encodeZero ) {
 
@@ -271,7 +278,7 @@ public class DeepMNISTDemo {
         Framework.SetConfig( classFeaturesName, "classEntityName", imageClassName );
         Framework.SetConfig( classFeaturesName, "classConfigPath", "imageClass" );
         Framework.SetConfig( classFeaturesName, "classes", "10" );
-        Framework.SetConfig( classFeaturesName, "onlineLearning", "true" );
+        Framework.SetConfig( classFeaturesName, "onlineLearning", String.valueOf( classFeaturesOnline ) );
         Framework.SetConfig( classFeaturesName, "onlineLearningRate", "0.001" );
 
         // data series logging

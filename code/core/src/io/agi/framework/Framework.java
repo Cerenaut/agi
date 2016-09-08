@@ -56,11 +56,22 @@ public class Framework {
 
     public static String GetEntityName( String entityNameSuffix ) {
         String prefix = GetEntityNamePrefix();
-        String name = prefix + ENTITY_NAME_PREFIX_DELIMITER + entityNameSuffix;
+        String name = entityNameSuffix;
+
+        if( prefix != null ) {
+            if( prefix.length() > 0 ) {
+                name = prefix + ENTITY_NAME_PREFIX_DELIMITER + name;
+            }
+        }
+
         return name;
     }
 
     public static String GetEntityNamePrefix() {
+        if( Framework.entityNamePrefix == null ) {
+            return "";
+        }
+
         return Framework.entityNamePrefix;
     }
 
