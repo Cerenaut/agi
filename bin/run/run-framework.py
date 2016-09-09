@@ -329,33 +329,42 @@ def run_experiments(exps_file):
             print "ERROR: The entity file " + entity_file + ", at path " + entity_filepath + ", does not exist.\nCANNOT CONTINUE."
             exit()
 
-        for param_sweep in experiments["parameter-sweeps"]:
-            entity_name = param_sweep["entity-name"]
-            param_path = param_sweep["parameter-path"]
-            # exp_type = param_sweep["val-type"]
-            val_begin = param_sweep["val-begin"]
-            val_end = param_sweep["val-end"]
-            val_inc = param_sweep["val-inc"]
-
+        if 'parameter-sweeps' not in experiments or len(experiments['parameter-sweeps']) == 0:
             if log:
-                print "LOG: Parameter Sweep Dictionary"
-                print "LOG: ", param_sweep
+                print "No parameters to sweep, just run once."
 
-            val = val_begin
-            while val <= val_end:
-                val += val_inc
-                modify_parameters(entity_filepath, entity_name, param_path, val)
+            output_entity_filepath = experiment_outputfile(entity_file)
+            output_data_filepath = experiment_outputfile(data_file)
+            exp_run(entity_filepath, data_filepath)
+            exp_export(output_entity_filepath, output_data_filepath)
+        else:
+            for param_sweep in experiments["parameter-sweeps"]:
+                entity_name = param_sweep["entity-name"]
+                param_path = param_sweep["parameter-path"]
+                # exp_type = param_sweep["val-type"]
+                val_begin = param_sweep["val-begin"]
+                val_end = param_sweep["val-end"]
+                val_inc = param_sweep["val-inc"]
 
-                short_descr = param_path + "=" + str(val)
+                if log:
+                    print "LOG: Parameter Sweep Dictionary"
+                    print "LOG: ", param_sweep
 
-                new_entity_file = append_before_ext(entity_file, short_descr)
-                output_entity_filepath = experiment_outputfile(new_entity_file)
+                val = val_begin
+                while val <= val_end:
+                    val += val_inc
+                    modify_parameters(entity_filepath, entity_name, param_path, val)
 
-                new_data_file = append_before_ext(data_file, short_descr)
-                output_data_filepath = experiment_outputfile(new_data_file)
+                    short_descr = param_path + "=" + str(val)
 
-                exp_run(entity_filepath, data_filepath)
-                exp_export(output_entity_filepath, output_data_filepath)
+                    new_entity_file = append_before_ext(entity_file, short_descr)
+                    output_entity_filepath = experiment_outputfile(new_entity_file)
+
+                    new_data_file = append_before_ext(data_file, short_descr)
+                    output_data_filepath = experiment_outputfile(new_data_file)
+
+                    exp_run(entity_filepath, data_filepath)
+                    exp_export(output_entity_filepath, output_data_filepath)
 
 
 def getbaseurl(host, port):
