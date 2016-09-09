@@ -28,6 +28,10 @@ import java.awt.*;
  */
 public class ImageClassEntityConfig extends EntityConfig {
 
+    public static final String PHASE_TRAIN_ALGORITHM = "train-algorithm";
+    public static final String PHASE_TRAIN_ANALYTICS = "train-analytics";
+    public static final String PHASE_TEST_ANALYTICS = "test-analytics";
+
     public class ReceptiveField {
         int receptiveFieldX;
         int receptiveFieldY;
@@ -45,17 +49,18 @@ public class ImageClassEntityConfig extends EntityConfig {
     boolean greyscale;
     boolean invert;
 
-    String learningEntityName;
-    String learningConfigPath;
+    String learningEntitiesAlgorithm = "";
+    String learningEntitiesAnalytics = "";
 
     String sourceFilesPathTraining;
     String sourceFilesPathTesting;
 
     int imageClass = 0;
     int imageIndex = 0;
-    int batch = 0;
+    int trainingBatch = 0;
     int trainingBatches = 1;
     boolean terminate = false;
+    String phase = PHASE_TRAIN_ALGORITHM;
 
     public Rectangle getReceptiveField() {
         Rectangle rectangle = new Rectangle( receptiveField.receptiveFieldX, receptiveField.receptiveFieldY, receptiveField.receptiveFieldW, receptiveField.receptiveFieldH );

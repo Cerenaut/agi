@@ -30,6 +30,7 @@ import io.agi.framework.Node;
 import io.agi.framework.entities.ImageSensorEntity;
 import io.agi.framework.persistence.models.ModelEntity;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -68,6 +69,14 @@ public class ImageClassEntity extends Entity {
        return ImageClassEntityConfig.class;
     }
 
+    public Collection< String > getEntityNames( String configValue ) {
+        String[] names = configValue.split( "," );
+        Collection< String > c = new ArrayList< String >();
+        for( String s : names ) {
+            c.add( s );
+        }
+        return c;
+    }
     public void doUpdateSelf() {
 
         // Check for a reset (to start of sequence and re-train)
@@ -76,7 +85,8 @@ public class ImageClassEntity extends Entity {
         if( config.reset ) {
             config.imageIndex = 0;
             config.terminate = false;
-            config.batch = 0;
+            config.trainingBatch = 0;
+            config.phase = ImageClassEntityConfig.PHASE_TRAIN_ALGORITHM;
         }
 
         // Load all files in training and testing folders.
@@ -87,60 +97,96 @@ public class ImageClassEntity extends Entity {
         int trainingImages = bisTraining.getNbrImages();
         int  testingImages = bisTesting .getNbrImages();
 
-        // Decide which image set to use
-        boolean training = true;
         bis = bisTraining;
-        if( config.batch == config.trainingBatches ) { // i.e. training has finished
-            training = false; // testing time
+        if( config.phase.equals( ImageClassEntityConfig.PHASE_TRAIN_ALGORITHM ) ) {
+        }
+        else if( config.phase.equals( ImageClassEntityConfig.PHASE_TRAIN_ANALYTICS ) ) {
+        }
+        else if( config.phase.equals( ImageClassEntityConfig.PHASE_TEST_ANALYTICS ) ) {
             bis = bisTesting;
         }
 
         // catch end of images before it happens:
         int images = bis.getNbrImages();
         if( config.imageIndex >= images ) {
-            if( config.batch < config.trainingBatches ) { // say batches = 3, then 0 1 2 for training, then 3 for testing
-                config.batch += 1;
-                config.imageIndex = 0;
+            _logger.info( "End of image dataset: Batch complete." );
+            config.trainingBatch += 1;
+            config.imageIndex = 0;
+
+            // check for phase change:
+            if( config.phase.equals( ImageClassEntityConfig.PHASE_TRAIN_ALGORITHM ) ) {
+                if( config.trainingBatch >= config.trainingBatches ) { // say batches = 3, then 0 1 2 for training, then 3 for testing
+                    config.phase = ImageClassEntityConfig.PHASE_TRAIN_ANALYTICS;
+                    config.trainingBatch = 0;
+                }
             }
-            else {
-                config.imageIndex = 0; // reset the index to allow further updates:
+            else if( config.phase.equals( ImageClassEntityConfig.PHASE_TRAIN_ANALYTICS ) ) {
+                config.phase = ImageClassEntityConfig.PHASE_TEST_ANALYTICS;
+                config.trainingBatch = 0;
+            }
+            else if( config.phase.equals( ImageClassEntityConfig.PHASE_TEST_ANALYTICS ) ) {
                 config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
-                _logger.info( "image dataset complete." );
-//                return; // continue to emit images
+                _logger.info( "=======> Terminating on end of test set. (1)" );
             }
         }
 
-        // may have changed from training to testing.
+        // Decide which image set to use via phase
+        // Also set learning status of entities
+        // May have changed from training to testing.
         // This can happen because above we may roll over into a new batch
-        if( config.batch == config.trainingBatches ) {
-            training = false; // testing time
+        _logger.info( "=======> Training set: " + trainingImages + " testing set: " + testingImages + " index: " + config.imageIndex + " phase " + config.phase );
+
+        bis = bisTraining;
+        boolean learnAlgorithm = false;
+        boolean learnAnalytics = false;
+
+        if( config.phase.equals( ImageClassEntityConfig.PHASE_TRAIN_ALGORITHM ) ) {
+            learnAlgorithm = true;
+        }
+        else if( config.phase.equals( ImageClassEntityConfig.PHASE_TRAIN_ANALYTICS ) ) {
+            learnAnalytics = true;
+        }
+        else if( config.phase.equals( ImageClassEntityConfig.PHASE_TEST_ANALYTICS ) ) {
             bis = bisTesting;
+        }
+
+        try {
+            Collection< String > entityNames = getEntityNames( config.learningEntitiesAlgorithm );
+            for( String entityName : entityNames ) {
+                Framework.SetConfig( entityName, "learn", String.valueOf( learnAlgorithm ) );
+            }
+        }
+        catch( Exception e ) {} // this is ok, the experiment is just not configured to have a learning flag
+
+        try {
+            Collection< String > entityNames = getEntityNames( config.learningEntitiesAnalytics );
+            for( String entityName : entityNames ) {
+                Framework.SetConfig( entityName, "learn", String.valueOf( learnAnalytics ) );
+            }
+        }
+        catch( Exception e ) {} // this is ok, the experiment is just not configured to have a learning flag
+
+        // detect finished one pass of test set:
+        if( config.phase.equals( ImageClassEntityConfig.PHASE_TEST_ANALYTICS ) ) {
+            if( config.trainingBatch > 0 ) {
+                config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
+                _logger.info( "=======> Terminating on end of test set. (2)" );
+            }
         }
 
         boolean inRange = bis.seek( config.imageIndex ); // next image
         if( !inRange ) { // occurs if no testing images
             config.imageIndex = 0; // reset the index to allow further updates:
             config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
-            _logger.info( "image dataset complete." );
+            _logger.info( "=======> Terminating on no more images to serve. (3)" );
         }
-
-        // set learning status of entities
-        try {
-            Framework.SetConfig( config.learningEntityName, config.learningConfigPath, String.valueOf( training ) );
-            _logger.info( "Setting learning flag entity: " + config.learningEntityName + " config path: " + config.learningConfigPath + " training? " + training );
-        }
-        catch( Exception e ) {
-            // this is ok, the experiment is just not configured to have a learning flag
-        }
-
-        _logger.info( "Training set: " + trainingImages + " testing set: " + testingImages + " index: " + config.imageIndex + " training? " + training );
 
         // Setup screen scraper
         ImageScreenScraper imageScreenScraper = new ImageScreenScraper();
 
         boolean receptiveFieldSet = ImageSensorEntity.isReceptiveFieldSet(
-                config.receptiveField.receptiveFieldX, config.receptiveField.receptiveFieldY,
-                config.receptiveField.receptiveFieldW, config.receptiveField.receptiveFieldH );
+            config.receptiveField.receptiveFieldX, config.receptiveField.receptiveFieldY,
+            config.receptiveField.receptiveFieldW, config.receptiveField.receptiveFieldH );
         if( receptiveFieldSet ) {
             imageScreenScraper.setup( bis, config.getReceptiveField(), config.getResolution(), config.greyscale, config.invert );
         }
