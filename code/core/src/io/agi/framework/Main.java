@@ -123,7 +123,7 @@ public class Main {
             }
         }
         catch( Exception e ) {
-            logger.error( "Could not run Main" );
+            logger.error( "Could not setup HttpCoordination in Main.run()" );
             logger.error( e.toString(), e );
             System.exit( -1 );
         }
