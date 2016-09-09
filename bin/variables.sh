@@ -14,8 +14,12 @@ export AGI_HOME=~/Development/ProjectAGI/AGIEF/agi
 
 # RUN Home
 # export AGI_RUN_HOME=~/Development/ProjectAGI/AGIEF/runFolders/runImage 
-export AGI_RUN_HOME=~/Development/ProjectAGI/AGIEF/experiment-definitions/classifier
+export AGI_RUN_HOME=~/Development/ProjectAGI/AGIEF/experiment-definitions/mnist-gng-v1
 #export AGI_RUN_HOME=/home/dave/workspace/agi.io/agi/resources/run-empty
+
+# DATA Home
+export AGI_DATA_HOME=~/Development/ProjectAGI/AGIEF/datasets/MNIST
+
 
 # Database
 export DB_PORT=5432

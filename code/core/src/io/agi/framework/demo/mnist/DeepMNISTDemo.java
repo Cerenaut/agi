@@ -111,7 +111,6 @@ public class DeepMNISTDemo {
         String classFeaturesName         = Framework.GetEntityName( "class-features" );
         String activityImageDecoderName  = Framework.GetEntityName( "activity-image-decoder" );
         String predictedImageDecoderName = Framework.GetEntityName( "predicted-image-decoder" );
-        String svmName                   = Framework.GetEntityName( "svm-entity" );
         String valueSeriesPredictedName  = Framework.GetEntityName( "value-series-predicted" );
         String valueSeriesErrorName      = Framework.GetEntityName( "value-series-error" );
         String valueSeriesTruthName      = Framework.GetEntityName( "value-series-truth" );
@@ -121,7 +120,6 @@ public class DeepMNISTDemo {
         Framework.CreateEntity( imageClassName, ImageClassEntity.ENTITY_TYPE, n.getName(), experimentName );
         Framework.CreateEntity( imageEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), imageClassName );
         Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), imageEncoderName ); // ok all input to the regions is ready
-        Framework.CreateEntity( svmName, SVMEntity.ENTITY_TYPE, n.getName(), experimentName ); // ok all input to the regions is ready <-- DAVE 2 GIDS: Shouldn't this be AFTER the algorithm has run?
 
         Framework.CreateEntity( region1FfName, RegionLayerEntity.ENTITY_TYPE, n.getName(), constantName );
         String topLayerName = region1FfName;

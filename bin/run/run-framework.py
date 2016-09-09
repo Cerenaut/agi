@@ -69,7 +69,11 @@ def launch_framework_local(baseurl, main_class=""):
     print "....... launching framework locally"
     cmd = "../node_coordinator/run.sh "
     if main_class is not "":
-        cmd = "../node_coordinator/run-demo.sh -m " + main_class
+        cmd = "../node_coordinator/run-demo.sh " + main_class
+
+    if log:
+        print "Running: " + cmd
+
     subprocess.Popen(cmd,
                      shell=True,
                      stdout=subprocess.PIPE,

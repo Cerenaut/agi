@@ -7,8 +7,10 @@ FROM ubuntu:15.04
 MAINTAINER Gideon Kowadlo <gideon@agi.io>
 
 RUN apt-get update && apt-get install -y \
-maven \ 
-openjdk-8-jdk \
+openjdk-8-jdk
+
+RUN apt-get update && apt-get install -y \
+maven \
 git \
 curl
 
