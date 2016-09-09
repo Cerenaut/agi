@@ -503,6 +503,7 @@ if __name__ == '__main__':
     if args.main_class:
         launch_framework_local(baseurl, args.main_class)
         generate_input_files_locally()
+        terminate_framework()
         exit()
 
     # 2) Setup Infrastructure (on AWS or nothing to do locally)
