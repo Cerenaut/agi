@@ -214,9 +214,13 @@ def agief_export_rootentity(filepath, root_entity, export_type):
 
 # Export the full experiment state from the running instance of AGIEF
 # that consists of entity graph and the data
-def agief_export_experiment(entity_filepath=None, data_filepath=None):
-    agief_export_rootentity(entity_filepath, 'experiment', 'entity')
-    agief_export_rootentity(data_filepath, 'experiment', 'data')
+def agief_export_experiment(root_entity, entity_filepath, data_filepath):
+
+    if log:
+        print "Exporting data for root entity: " + root_entity
+
+    agief_export_rootentity(entity_filepath, root_entity, 'entity')
+    agief_export_rootentity(data_filepath, root_entity, 'data')
 
 
 # Load AGIEF with the input files, then run the experiment
@@ -371,10 +375,30 @@ def getbaseurl(host, port):
     return 'http://' + host + ':' + port
 
 
+# return None if prefix.txt file does not exist
+def entityPrefix():
+    prefix_filepath = filepath_from_env_variable('prefix.txt', 'AGI_RUN_HOME')
+
+    if not os.path.isfile(prefix_filepath):
+        return None
+
+    with open(prefix_filepath, 'r') as myfile:
+        prefix = myfile.read()
+        return prefix
+
+
 def generate_input_files_locally():
     entity_filepath = experiment_inputfile("entity.json")
     data_filepath = experiment_inputfile("data.json")
-    agief_export_experiment(entity_filepath, data_filepath)
+
+    prefix = entityPrefix()
+    if prefix is None:
+        print "WARNING ****   no prefix.txt file could be found, using the default root entity name: 'experiment'"
+        prefix = 'experiment'
+    else:
+        prefix += "/experiment"
+
+    agief_export_experiment(prefix, entity_filepath, data_filepath)
 
 
 # assumes there exists a private key for the given ec2 instance, at ~/.ssh/ecs-key
