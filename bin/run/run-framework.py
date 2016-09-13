@@ -24,6 +24,50 @@ Assumptions:
 """
 
 
+class ValIncrementer:
+    min = 0
+    max = 0
+    delta = 0
+    val = 0
+    counting = False
+
+    # The class "constructor" - It's actually an initializer
+    def __init__(self, minv, maxv, deltav):
+        self.min = minv
+        self.max = maxv
+        self.delta = deltav
+        self.counting = False
+
+    def value(self):
+        return self.val
+
+    def reset(self):
+        self.val = self.min
+        self.counting = False
+
+    # return false if not started counting and therefore at minimum, or exceeded maximum
+    def increment(self):
+        if not self.counting:
+            self.val = min
+            self.counting = True
+        else:
+            self.val += self.delta
+            if self.val > self.max:
+                self.counting = False
+
+        return self.counting
+
+
+class Experiment:
+    prefix = ""
+
+    def __init__(self):
+        pass
+
+    def entity_with_prefix(self, entity_name):
+        return entity_name + "/" + self.prefix
+
+
 # run the chosen instance specified by instanceId
 def aws_run_ec2(instanceId):
     print "....... starting ec2"
@@ -236,7 +280,8 @@ def exp_export(output_entity_filepath, output_data_filepath):
     agief_export_experiment(output_entity_filepath, output_data_filepath)
 
 
-def modify_parameters(entity_filepath, entity_name, param_path, val):
+# Set parameter at 'param_path' in the input file specified by 'entity_filepath'
+def set_parameter(entity_filepath, entity_name, param_path, val):
     print "Modify Parameters: ", entity_filepath, param_path, val
 
     # open the json
@@ -312,16 +357,16 @@ def run_experiments(exps_file):
     with open(exps_file) as data_exps_file:
         data = json.load(data_exps_file)
 
-    for experiments in data["experiments"]:
-        import_files = experiments["import-files"]  # import files dictionary
+    for experiments in data['experiments']:
+        import_files = experiments['import-files']  # import files dictionary
 
         if log:
             print "LOG: Import Files Dictionary = "
             print "LOG: ", import_files
 
         # get experiment filenames, and expand to full path
-        entity_file = import_files["file-entities"]
-        data_file = import_files["file-data"]
+        entity_file = import_files['file-entities']
+        data_file = import_files['file-data']
 
         entity_filepath = experiment_inputfile(entity_file)
         data_filepath = experiment_inputfile(data_file)
@@ -342,33 +387,61 @@ def run_experiments(exps_file):
             exp_run(entity_filepath, data_filepath)
             exp_export(output_entity_filepath, output_data_filepath)
         else:
-            for param_sweep in experiments["parameter-sweeps"]:
-                entity_name = param_sweep["entity-name"]
-                param_path = param_sweep["parameter-path"]
-                # exp_type = param_sweep["val-type"]
-                val_begin = param_sweep["val-begin"]
-                val_end = param_sweep["val-end"]
-                val_inc = param_sweep["val-inc"]
+            for param_sweep in experiments['parameter-sweeps']:         # array of sweep definitions
 
                 if log:
                     print "LOG: Parameter Sweep Dictionary"
                     print "LOG: ", param_sweep
 
-                val = val_begin
-                while val <= val_end:
-                    val += val_inc
-                    modify_parameters(entity_filepath, entity_name, param_path, val)
+                # Sweep Param Set
+                # -------------------
+                # For each 'param', get details and setup counter
+                # Iterate through counters, incrementing each then running experiment
+                # First counter to reset, exits loop
 
-                    short_descr = param_path + "=" + str(val)
+                counters = {}
+                for param in param_sweep['parameter-set']:          # set of params for one 'sweep'
+                    entity_name = param['entity-name']
+                    param_path = param['parameter-path']
+                    # exp_type = param['val-type']
+                    val_begin = param['val-begin']
+                    val_end = param['val-end']
+                    val_inc = param['val-inc']
 
+                    entity_name = add_prefix(entity_name)
+
+                    key = entity_name + '.' + param_path
+                    counter = ValIncrementer(val_inc, val_end, val_inc)
+                    counters[key] = counter
+
+                sweeping = True
+                while sweeping:
+                    # inc all counters, and set parameter in entity file
+                    short_descr = ""
+                    for key in counters:
+                        counter = counters[key]
+                        is_counting = counter.increment()
+                        if is_counting is False:
+                            if log: print "Sweeping has concluded for this sweep-set, due to the parameter: " + key
+                            sweeping = False
+                            break
+
+                        val = counter.value()
+                        set_parameter(entity_filepath, entity_name, param_path, val)
+
+                        short_descr += ":" + param_path + "=" + str(val)
+
+                    # run experiment
                     new_entity_file = append_before_ext(entity_file, short_descr)
-                    output_entity_filepath = experiment_outputfile(new_entity_file)
-
                     new_data_file = append_before_ext(data_file, short_descr)
+
+                    output_entity_filepath = experiment_outputfile(new_entity_file)
                     output_data_filepath = experiment_outputfile(new_data_file)
 
-                    exp_run(entity_filepath, data_filepath)
-                    exp_export(output_entity_filepath, output_data_filepath)
+                    if log: print "Sweep set output entity file: " + output_entity_filepath
+
+                    # exp_run(entity_filepath, data_filepath)
+                    # exp_export(output_entity_filepath, output_data_filepath)
 
 
 def getbaseurl(host, port):
