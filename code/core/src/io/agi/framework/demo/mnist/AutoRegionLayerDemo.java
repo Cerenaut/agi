@@ -54,7 +54,9 @@ public class AutoRegionLayerDemo {
         for( int i = 1; i < args.length; ++i ) {
             String arg = args[ i ];
             if( arg.equalsIgnoreCase( "prefix" ) ) {
-                Framework.SetEntityNamePrefixDateTime();
+                String prefix = args[ i+1 ];
+                Framework.SetEntityNamePrefix( prefix );
+//                Framework.SetEntityNamePrefixDateTime();
             }
         }
 
