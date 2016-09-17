@@ -24,13 +24,9 @@ import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.coordination.Coordination;
 import io.agi.framework.coordination.CoordinationFactory;
 import io.agi.framework.coordination.http.HttpCoordination;
-import io.agi.framework.coordination.monolithic.SingleProcessCoordination;
 import io.agi.framework.factories.CommonEntityFactory;
-import io.agi.framework.persistence.NodeMemoryPersistence;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.PersistenceFactory;
-import io.agi.framework.persistence.couchbase.CouchbasePersistence;
-import io.agi.framework.persistence.jdbc.JdbcPersistence;
 import io.agi.framework.persistence.models.ModelNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -103,8 +99,8 @@ public class Main {
             properties.load( new FileInputStream( propertiesFile ) );
         }
         catch( Exception e ) {
-            System.err.println( "Error reading properties for Persistence from: " + propertiesFile );
-            e.printStackTrace();
+            logger.error( "Error reading properties for Persistence from: " + propertiesFile );
+            logger.error( e.toString(), e );
             System.exit( -1 );
         }
 
@@ -127,7 +123,8 @@ public class Main {
             }
         }
         catch( Exception e ) {
-            logger.error( e.getStackTrace() );
+            logger.error( "Could not setup HttpCoordination in Main.run()" );
+            logger.error( e.toString(), e );
             System.exit( -1 );
         }
     }
