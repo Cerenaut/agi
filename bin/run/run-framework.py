@@ -1,13 +1,13 @@
 import json
 import os
 import subprocess
+from enum import Enum
 
 from agief_experiment import agief
 from agief_experiment import aws
 from agief_experiment import experiment
 from agief_experiment import utils
 from agief_experiment import val_incrementer
-
 
 help_generic = """
 run-framework.py allows you to run each step of the AGIEF (AGI Experimental Framework), locally and on AWS.
@@ -31,7 +31,7 @@ Assumptions:
 def launch_framework_aws(task_name):
     print "....... launching framework on AWS"
     aws.run_task(task_name)
-    agief.wait_up()
+    fwk.wait_up()
 
 
 # launch AGIEF on locally
@@ -50,135 +50,147 @@ def launch_framework_local(main_class=""):
                      stdout=subprocess.PIPE,
                      stderr=subprocess.STDOUT,
                      executable="/bin/bash")
-    agief.wait_up()
+    fwk.wait_up()
+
+
+# Import, Run and Export experiment
+def run_exp(entity_file, data_file, param_description):
+
+    entity_file_path = exp.inputfile(entity_file)
+    data_file_path = exp.inputfile(data_file)
+
+    if log:
+        print "LOG: Entity file full path = " + entity_file_path
+
+    if not os.path.isfile(entity_file_path):
+        print "ERROR: The entity file " + entity_file + ", at path " + entity_file_path + \
+              ", does not exist.\nCANNOT CONTINUE."
+        exit()
+
+    print "....... Launch Framework"
+    launch_framework()
+
+    print "....... Import Experiment"
+    fwk.import_experiment(entity_file_path, data_file_path)
+
+    print "....... Run Experiment"
+    fwk.run_experiment()
+
+    print "....... Export Experiment"
+    new_entity_file = utils.append_before_ext(entity_file, param_description)
+    new_data_file = utils.append_before_ext(data_file, param_description)
+
+    fwk.export_experiment(exp.entity_with_prefix("experiment"),
+                          exp.outputfile(new_entity_file),
+                          exp.outputfile(new_data_file))
+
+    print "....... Terminate Framework"
+    fwk.terminate()
+
+
+# For each 'param' in a set, get details and setup counter
+# The result is an array of counters
+# Each counter represents one parameter
+def setup_parameter_sweep_counters(param_sweep, counters):
+    param_i = 0
+    for param in param_sweep['parameter-set']:  # set of params for one 'sweep'
+
+        if False:
+            print "LOG: Parameter sweep set part: " + str(param_i)
+            print json.dumps(param, indent=4)
+        param_i += 1
+
+        entity_name = param['entity-name']
+        param_path = param['parameter-path']
+        # exp_type = param['val-type']
+        val_begin = param['val-begin']
+        val_end = param['val-end']
+        val_inc = param['val-inc']
+
+        entity_name = exp.entity_with_prefix(entity_name)
+
+        incrementer = val_incrementer.Val_incrementer(val_begin, val_end, val_inc)
+
+        counter = {'incrementer': incrementer, 'entity-name': entity_name, 'param-path': param_path}
+        counters.append(counter)
+
+
+# Iterate through counters, incrementing each parameter in the set
+# Set the new values in the input file, and then run the experiment
+# First counter to reset, return False
+def sweep_parameters(entity_file, counters):
+    sweeping = True
+    while sweeping:
+        # inc all counters, and set parameter in entity file
+        param_description = ""
+        for counter in counters:
+            incrementer = counter['incrementer']
+            is_counting = incrementer.increment()
+            if is_counting is False:
+                if log:
+                    print "LOG: Sweeping has concluded for this sweep-set, due to the parameter: " + \
+                          counter['entity-name'] + '.' + counter['param-path']
+                sweeping = False
+                break
+
+            if sweeping is False:
+                break
+
+            val = incrementer.value()
+            entity_file_path = exp.inputfile(entity_file)
+            fwk.set_parameter(entity_file_path, counter['entity-name'], counter['param-path'], val)
+
+            param_description += "_" + counter['entity-name'] + "." + counter['param-path'] + "=" + str(val)
+
+    if log:
+        print "LOG: Parameter sweep of params/vals: " + param_description
+
+    return sweeping, param_description
 
 
 # Perform parameter sweeps, and run experiment
 def run_sweeps(exps_file):
-
     with open(exps_file) as data_exps_file:
         data = json.load(data_exps_file)
 
-    for experiments in data['experiments']:
-        import_files = experiments['import-files']  # import files dictionary
+    for exp_i in data['experiments']:
+        import_files = exp_i['import-files']  # import files dictionary
 
         if log:
             print "LOG: Import Files Dictionary = "
             print "LOG: ", import_files
 
-        # get experiment filenames, and expand to full path
+        # get experiment file-names, and expand to full path
         entity_file = import_files['file-entities']
         data_file = import_files['file-data']
 
-        entity_filepath = experiment.inputfile(entity_file)
-        data_filepath = experiment.inputfile(data_file)
-
-        if log:
-            print "LOG: Entity file full path = " + entity_filepath
-
-        if not os.path.isfile(entity_filepath):
-            print "ERROR: The entity file " + entity_file + ", at path " + entity_filepath + ", does not exist.\nCANNOT CONTINUE."
-            exit()
-
-        if 'parameter-sweeps' not in experiments or len(experiments['parameter-sweeps']) == 0:
+        if 'parameter-sweeps' not in exp_i or len(exp_i['parameter-sweeps']) == 0:
             if log:
                 print "No parameters to sweep, just run once."
 
-            print "....... Run Experiment"
-            agief.import_experiment(entity_filepath, data_filepath)
-            agief.run_experiment()
-
-            output_entity_filepath = experiment.outputfile(entity_file)
-            output_data_filepath = experiment.outputfile(data_file)
-            agief.exp_export(experiment.entity_with_prefix("experiment"),
-                             output_entity_filepath,
-                             output_data_filepath)
+            run_exp(entity_file, data_file, "")
         else:
-            param_sweep_i = 0
-            for param_sweep in experiments['parameter-sweeps']:         # array of sweep definitions
+            i = 0
+            for param_sweep in exp_i['parameter-sweeps']:  # array of sweep definitions
 
                 if False:
-                    print "LOG: Parameter sweep part: " + str(param_sweep_i)
+                    print "LOG: Parameter sweep part: " + str(i)
                     print "LOG: ", json.dumps(param_sweep, indent=4)
-                param_sweep_i += 1
-
-                # Sweep Param Set
-                # -------------------
-                # For each 'param', get details and setup counter
-                # Iterate through counters, incrementing each then running experiment
-                # First counter to reset, exits loop
+                i += 1
 
                 counters = []
-                param_i = 0
-                for param in param_sweep['parameter-set']:          # set of params for one 'sweep'
+                setup_parameter_sweep_counters(param_sweep, counters)
+                sweeping, param_description = sweep_parameters(entity_file, counters)
 
-                    if False:
-                        print "LOG: Parameter sweep set part: " + str(param_i)
-                        print json.dumps(param, indent=4)
-                    param_i += 1
-
-                    entity_name = param['entity-name']
-                    param_path = param['parameter-path']
-                    # exp_type = param['val-type']
-                    val_begin = param['val-begin']
-                    val_end = param['val-end']
-                    val_inc = param['val-inc']
-
-                    entity_name = experiment.entity_with_prefix(entity_name)
-
-                    incrementer = val_incrementer.Val_incrementer(val_begin, val_end, val_inc)
-
-                    counter = {'incrementer': incrementer, 'entity-name': entity_name, 'param-path': param_path}
-                    counters.append(counter)
-
-                sweeping = True
-                while sweeping:
-                    # inc all counters, and set parameter in entity file
-                    short_descr = ""
-                    for counter in counters:
-                        incrementer = counter['incrementer']
-                        is_counting = incrementer.increment()
-                        if is_counting is False:
-                            if log: print "LOG: Sweeping has concluded for this sweep-set, due to the parameter: " + counter['entity-name'] + '.' + counter['param-path']
-                            sweeping = False
-                            break
-
-                        val = incrementer.value()
-                        agief.set_parameter(entity_filepath, counter['entity-name'], counter['param-path'], val)
-
-                        short_descr += "_" + counter['entity-name'] + "." + counter['param-path'] + "=" + str(val)
-
-                    if sweeping is False:
-                        break
-
-                    if log: print "LOG: Parameter sweep of params/vals: " + short_descr
-
-                    # run experiment
-                    new_entity_file = utils.append_before_ext(entity_file, short_descr)
-                    new_data_file = utils.append_before_ext(data_file, short_descr)
-
-                    output_entity_filepath = experiment.outputfile(new_entity_file)
-                    output_data_filepath = experiment.outputfile(new_data_file)
-
-                    if log:
-                        print "LOG: Sweep set output entity file: " + output_entity_filepath
-
-                    print "....... Run Experiment"
-                    agief.import_experiment(entity_filepath, data_filepath)
-                    agief.run_experiment()
-
-                    print "....... Export Experiment"
-                    agief.export_experiment(experiment.entity_with_prefix("experiment"),
-                                            output_entity_filepath,
-                                            output_data_filepath)
+                run_exp(entity_file, data_file, param_description)
 
 
 def generate_input_files_locally():
-    entity_filepath = experiment.inputfile("entity.json")
-    data_filepath = experiment.inputfile("data.json")
+    entity_file_path = exp.inputfile("entity.json")
+    data_file_path = exp.inputfile("data.json")
 
-    root = experiment.entity_with_prefix("experiment")
-    agief.export_experiment(root, entity_filepath, data_filepath)
+    root = exp.entity_with_prefix("experiment")
+    fwk.export_experiment(root, entity_file_path, data_file_path)
 
 
 def setup_arg_parsing():
@@ -241,33 +253,48 @@ def setup_arg_parsing():
     return parser.parse_args()
 
 
+# launch framework locally or on aws
+def launch_framework():
+    if args.launch_framework:
+        if is_aws:
+            launch_framework_aws(args.task_name)
+        else:
+            launch_framework_local()
+
+
+class LaunchMode(Enum):
+    per_experiment = 1
+    per_session = 2
+
 if __name__ == '__main__':
 
     args = setup_arg_parsing()
 
     log = args.logging
-    global log
+    launch_mode = LaunchMode.per_experiment     # for now per experiment
+    is_aws = args.aws
 
     if log:
         print "LOG: Arguments: ", args
 
     exp = experiment.Experiment()
-    agief = agief.AGIEF(log, None)
+    fwk = agief.AGIEF(log, None)
 
     # 1) Generate input files
     if args.main_class:
-        agief.base_url = utils.getbaseurl(args.host, args.port)
+        fwk.base_url = utils.getbaseurl(args.host, args.port)
         launch_framework_local(args.main_class)
         generate_input_files_locally()
-        agief.terminate()
+        fwk.terminate()
         exit()
 
     # 2) Setup Infrastructure (on AWS or nothing to do locally)
-    ips = {'ip_public': args.host}
+    ips = {'ip_public': args.host, 'ip_private': None}
+    ips_pg = {'ip_public': args.host, 'ip_private': None}
     if args.pg_instance[:2] is not 'i-':
         ips_pg = {'ip_private': args.pg_instance}
 
-    if args.aws:
+    if is_aws:
         if not args.instanceid and not args.task_name:
             print "ERROR: You must specify an EC2 Instance ID (--instanceid) " \
                   "and ECS Task Name (--task_name) to run on AWS."
@@ -278,8 +305,7 @@ if __name__ == '__main__':
         if args.pg_instance[:2] is 'i-':
             ips_pg = aws.run_ec2(args.pg_instance)
 
-    agief.base_url = utils.getbaseurl(ips['ip_public'], args.port)  # define base_url, with aws host if relevant
-
+    fwk.base_url = utils.getbaseurl(ips['ip_public'], args.port)  # define base_url, with aws host if relevant
 
     # TEMPORARY HACK
     # set the DB_HOST environment variable
@@ -292,12 +318,9 @@ if __name__ == '__main__':
             exit()
         aws.sync_experiment(ips["ip_public"], args.ec2_keypath)
 
-    # 4) Launch framework (on AWS or locally)
-    if args.launch_framework:
-        if args.aws:
-            launch_framework_aws(args.task_name)
-        else:
-            launch_framework_local()
+    # 4) Launch framework (on AWS or locally) - *** IF Mode == 'Per Session' ***
+    if launch_mode is LaunchMode.per_session and args.launch_framework:
+        launch_framework(args.aws)
 
     # 5) Run experiments
     if args.exps_file:
@@ -309,7 +332,7 @@ if __name__ == '__main__':
 
     # 6) Shutdown framework
     if args.shutdown:
-        agief.terminate()
+        fwk.terminate()
 
         # Shutdown Infrastructure
         if args.aws:

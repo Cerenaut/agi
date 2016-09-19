@@ -116,47 +116,46 @@ class AGIEF:
         if self.log:
             print "LOG: response text = ", response.text
 
+    # Set parameter at 'param_path' for entity 'entity_name', in the input file specified by 'entity_filepath'
+    def set_parameter(self, entity_filepath, entity_name, param_path, val):
+        print "Modify Parameters: ", entity_name + "." + param_path + " = " + str(val)
+        print "LOG: in file: " + entity_filepath
 
-# Set parameter at 'param_path' for entity 'entity_name', in the input file specified by 'entity_filepath'
-def set_parameter(self, entity_filepath, entity_name, param_path, val):
-    print "Modify Parameters: ", entity_name + "." + param_path + " = " + str(val)
-    print "LOG: in file: " + entity_filepath
+        # open the json
+        with open(entity_filepath) as data_file:
+            data = json.load(data_file)
 
-    # open the json
-    with open(entity_filepath) as data_file:
-        data = json.load(data_file)
+        # get the first element in the array with dictionary field "entity-name" = entity_name
+        entity = dict()
+        for entity_i in data:
+            if not entity_i["name"] == entity_name:
+                continue
+            entity = entity_i
+            break
 
-    # get the first element in the array with dictionary field "entity-name" = entity_name
-    entity = dict()
-    for entity_i in data:
-        if not entity_i["name"] == entity_name:
-            continue
-        entity = entity_i
-        break
+        if not entity:
+            print "ERROR: the experiment file (" + entity_filepath + ") did not contain matching entity name (" \
+                  + entity_name + ") and entity file name in field 'file-entities'."
+            print "CANNOT CONTINUE"
+            exit()
 
-    if not entity:
-        print "ERROR: the experiment file (" + entity_filepath + ") did not contain matching entity name (" \
-              + entity_name + ") and entity file name in field 'file-entities'."
-        print "CANNOT CONTINUE"
-        exit()
+        # get the config field, and turn it into valid JSON
+        configStr = entity["config"]
+        configStr = configStr.replace("\\\"", "\"")
+        config = json.loads(configStr)
 
-    # get the config field, and turn it into valid JSON
-    configStr = entity["config"]
-    configStr = configStr.replace("\\\"", "\"")
-    config = json.loads(configStr)
+        if self.log:
+            print "LOG: config(t)   = ", config, '\n'
 
-    if self.log:
-        print "LOG: config(t)   = ", config, '\n'
+        dpath.util.set(config, param_path, val, '.')
+        if self.log:
+            print "LOG: config(t+1) = ", config, '\n'
 
-    dpath.util.set(config, param_path, val, '.')
-    if self.log:
-        print "LOG: config(t+1) = ", config, '\n'
+        # put the escape characters back in the config str and write back to file
+        configStr = json.dumps(config)
+        configStr = configStr.replace("\"", "\\\"")
+        entity["config"] = configStr
 
-    # put the escape characters back in the config str and write back to file
-    configStr = json.dumps(config)
-    configStr = configStr.replace("\"", "\\\"")
-    entity["config"] = configStr
-
-    # write back to file
-    with open(entity_filepath, 'w') as data_file:
-        data_file.write(json.dumps(data))
+        # write back to file
+        with open(entity_filepath, 'w') as data_file:
+            data_file.write(json.dumps(data))

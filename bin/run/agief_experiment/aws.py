@@ -61,7 +61,8 @@ def run_task(task_name):
         exit(1)
 
 
-# run the chosen instance specified by instanceId
+# run the chosen instance specified by instance_id
+# returns the aws public and private ip addresses
 def run_ec2(instance_id):
     print "....... starting ec2"
     ec2 = boto3.resource('ec2')
