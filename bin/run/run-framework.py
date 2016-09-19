@@ -1,11 +1,11 @@
 import json
-import os
-import errno
 import subprocess
-import dpath.util
-import requests
-import time
-import boto3
+import os
+
+import agief
+import experiment
+import utils
+import aws
 
 help_generic = """
 run-framework.py allows you to run each step of the AGIEF (AGI Experimental Framework), locally and on AWS.
@@ -24,115 +24,17 @@ Assumptions:
 """
 
 
-class ValIncrementer:
-    min = 0
-    max = 0
-    delta = 0
-    val = 0
-    counting = False
-
-    # The class "constructor" - It's actually an initializer
-    def __init__(self, minv, maxv, deltav):
-        self.min = minv
-        self.max = maxv
-        self.delta = deltav
-        self.counting = False
-
-    def value(self):
-        return self.val
-
-    def reset(self):
-        self.val = self.min
-        self.counting = False
-
-    # return false if not started counting and therefore at minimum, or exceeded maximum
-    def increment(self):
-        if not self.counting:
-            self.val = self.min
-            self.counting = True
-        else:
-            self.val += self.delta
-            if self.val > self.max:
-                self.counting = False
-
-        return self.counting
-
-
-class Experiment:
-    prefix = None
-
-    def __init__(self):
-        self.prefix = self.entity_prefix()
-
-    # return the full path to the inputfile specified by simple filename (AGI_RUN_HOME/input/filename)
-    def inputfile(self, filename):
-        return filepath_from_env_variable("input/" + filename, "AGI_RUN_HOME")
-
-    # return the full path to the output file specified by simple filename (AGI_RUN_HOME/output/filename)
-    def outputfile(self, filename):
-        return filepath_from_env_variable("output/" + filename, "AGI_RUN_HOME")
-
-    # return None if prefix.txt file does not exist
-    def entity_prefix(self):
-        prefix_filepath = filepath_from_env_variable('prefix.txt', 'AGI_RUN_HOME')
-
-        if not os.path.isfile(prefix_filepath):
-            print "WARNING ****   no prefix.txt file could be found, using the default root entity name: 'experiment'"
-            return None
-
-        with open(prefix_filepath, 'r') as myfile:
-            prefix = myfile.read()
-            return prefix
-
-    def entity_with_prefix(self, entity_name):
-        if self.prefix is None or self.prefix is "":
-            return entity_name
-        else:
-            return self.prefix + "/" + entity_name
-
-
-# run the chosen instance specified by instanceId
-def aws_run_ec2(instanceId):
-    print "....... starting ec2"
-    ec2 = boto3.resource('ec2')
-    instance = ec2.Instance(instanceId)
-    response = instance.start()
-
-    if log:
-        print "LOG: Start response: ", response
-
-    ip_public = instance.public_ip_address
-    ip_private = instance.private_ip_address
-
-    instance.wait_until_running()
-
-    print "Instance is up and running."
-    print "Instance public IP address is: ", ip_public
-    print "Instance private IP address is: ", ip_private
-
-    return {'ip_public': ip_public, 'ip_private': ip_private}
-
-
-def aws_close(instanceid):
-    ec2 = boto3.resource('ec2')
-    instance = ec2.Instance(instanceid)
-    response = instance.stop()
-
-    if log:
-        print "LOG: stop ec2: ", response
-
-
 # launch AGIEF on AWS
 # hang till framework is up and running
-def launch_framework_aws(task_name, baseurl):
+def launch_framework_aws(task_name):
     print "....... launching framework on AWS"
-    aws_runtask(task_name)
-    wait_framework_up(baseurl)
+    aws.run_task(task_name)
+    agief.wait_up()
 
 
 # launch AGIEF on locally
 # hang till framework is up and running
-def launch_framework_local(baseurl, main_class=""):
+def launch_framework_local(main_class=""):
     print "....... launching framework locally"
     cmd = "../node_coordinator/run.sh "
     if main_class is not "":
@@ -146,230 +48,14 @@ def launch_framework_local(baseurl, main_class=""):
                      stdout=subprocess.PIPE,
                      stderr=subprocess.STDOUT,
                      executable="/bin/bash")
-    wait_framework_up(baseurl)
+    agief.wait_up()
 
 
-def wait_framework_up(baseurl):
-    print "....... wait till framework has started at = " + baseurl
+# Perform parameter sweeps, and run experiment
+def run_sweeps(exps_file, experiment):
 
-    version = "** could not parse version number **"
-    while True:
-        try:
-            response = requests.get(baseurl + '/version')
-            if log:
-                print "LOG: response = ", response
+    import ValIncrementer
 
-            responseJson = response.json()
-            if 'version' in responseJson:
-                version = responseJson['version']
-            break
-        except requests.ConnectionError:
-            time.sleep(1)
-            print "  - no connection yet ......"
-
-    print "  - framework is up, running version: " + version
-
-
-def terminate_framework():
-    print "...... terminate framework"
-    response = requests.get(baseurl + '/stop')
-
-    if log:
-        print "LOG: response text = ", response.text
-
-
-# Run ecs task
-def aws_runtask(task_name):
-
-    print "....... running task on ecs "
-    client = boto3.client('ecs')
-    response = client.run_task(
-        cluster='default',
-        taskDefinition=task_name,
-        count=1,
-        startedBy='pyScript'
-    )
-
-    if log:
-        print "LOG: ", response
-
-    length = len(response["failures"])
-    if length > 0:
-        print "ERROR: could not initiate task on AWS."
-        print "reason = " + response["failures"][0]["reason"]
-        print " ----- exiting -------"
-        exit(1)
-
-
-# Return when the the config parameter has achieved the value specified
-# entity = name of entity, param_path = path to parameter, delimited by '.'
-def agief_wait_till_param(baseurl, entity_name, param_path, value):
-    while True:
-        try:
-            param_dic = {'entity': entity_name}
-            r = requests.get(baseurl + '/config', params=param_dic)
-
-            if log:
-                print "LOG: /config with params " + json.dumps(param_dic) + ", response = ", r
-                print "LOG: response text = ", r.text
-                print "LOG: url: ", r.url
-
-            if r.json()["value"] is not None:
-                parameter = dpath.util.get(r.json(), "value." + param_path, '.')
-                if parameter == value:
-                    if log:
-                        print "LOG: ... parameter: " + entity_name + "." + param_path + ", has achieved value: " + str(
-                            value) + "."
-                    break
-        except requests.exceptions.ConnectionError:
-            print "Oops, ConnectionError exception"
-        except requests.exceptions.RequestException:
-            print "Oops, request exception"
-
-        if log:
-            print "LOG: ... parameter: " + entity_name + "." + param_path + ", has not achieved value: " + str(
-                value) + ",   wait 2s and try again ........"
-        time.sleep(2)  # sleep for n seconds)
-
-
-# setup the running instance of AGIEF with the input files
-def agief_import(entity_filepath=None, data_filepath=None):
-    with open(entity_filepath, 'rb') as entity_data_file:
-        with open(data_filepath, 'rb') as data_data_file:
-            files = {'entity-file': entity_data_file, 'data-file': data_data_file}
-            response = requests.post(baseurl + '/import', files=files)
-            if log:
-                print "LOG: Import entity file, response = ", response
-                print "LOG: response text = ", response.text
-                print "LOG: url: ", response.url
-                print "LOG: post body = ", files
-
-
-def agief_run_experiment():
-    payload = {'entity': 'experiment', 'event': 'update'}
-    response = requests.get(baseurl + '/update', params=payload)
-    if log:
-        print "LOG: Start experiment, response = ", response
-
-    # wait for the task to finish
-    agief_wait_till_param(baseurl, 'experiment', 'terminated', True)  # poll API for 'Terminated' config param
-
-
-# export_type can be 'entity' or 'data'
-def create_folder(filepath):
-    if not os.path.exists(os.path.dirname(filepath)):
-        try:
-            os.makedirs(os.path.dirname(filepath))
-        except OSError as exc:  # Guard against race condition
-            if exc.errno != errno.EEXIST:
-                raise
-
-
-def agief_export_rootentity(filepath, root_entity, export_type):
-    payload = {'entity': root_entity, 'type': export_type}
-    response = requests.get(baseurl + '/export', params=payload)
-    if log:
-        print "LOG: Export entity file, response text = ", response.text
-        print "LOG: resonse url = ", response.url
-
-    # write back to file
-    output_json = response.json()
-    create_folder(filepath)
-    with open(filepath, 'w') as data_file:
-        data_file.write(json.dumps(output_json, indent=4))
-
-
-# Export the full experiment state from the running instance of AGIEF
-# that consists of entity graph and the data
-def agief_export_experiment(root_entity, entity_filepath, data_filepath):
-
-    if log:
-        print "Exporting data for root entity: " + root_entity
-
-    agief_export_rootentity(entity_filepath, root_entity, 'entity')
-    agief_export_rootentity(data_filepath, root_entity, 'data')
-
-
-# Load AGIEF with the input files, then run the experiment
-def exp_run(entity_filepath, data_filepath):
-    print "....... Run Experiment"
-    agief_import(entity_filepath, data_filepath)
-    agief_run_experiment()
-
-
-# Export the experiment
-def exp_export(root_entity, output_entity_filepath, output_data_filepath):
-    print "....... Export Experiment"
-    agief_export_experiment(root_entity, output_entity_filepath, output_data_filepath)
-
-
-# Set parameter at 'param_path' for entity 'entity_name', in the input file specified by 'entity_filepath'
-def set_parameter(entity_filepath, entity_name, param_path, val):
-    print "Modify Parameters: ", entity_name + "." + param_path + " = " + str(val)
-    print "LOG: in file: " + entity_filepath
-
-    # open the json
-    with open(entity_filepath) as data_file:
-        data = json.load(data_file)
-
-    # get the first element in the array with dictionary field "entity-name" = entity_name
-    entity = dict()
-    for entity_i in data:
-        if not entity_i["name"] == entity_name:
-            continue
-        entity = entity_i
-        break
-
-    if not entity:
-        print "ERROR: the experiment file (" + entity_filepath + ") did not contain matching entity name (" \
-              + entity_name + ") and entity file name in field 'file-entities'."
-        print "CANNOT CONTINUE"
-        exit()
-
-    # get the config field, and turn it into valid JSON
-    configStr = entity["config"]
-    configStr = configStr.replace("\\\"", "\"")
-    config = json.loads(configStr)
-
-    if log:
-        print "LOG: config(t)   = ", config, '\n'
-
-    dpath.util.set(config, param_path, val, '.')
-    if log:
-        print "LOG: config(t+1) = ", config, '\n'
-
-    # put the escape characters back in the config str and write back to file
-    configStr = json.dumps(config)
-    configStr = configStr.replace("\"", "\\\"")
-    entity["config"] = configStr
-
-    # write back to file
-    with open(entity_filepath, 'w') as data_file:
-        data_file.write(json.dumps(data))
-
-
-def filepath_from_env_variable(filename, path_env):
-    variables_file = os.getenv('VARIABLES_FILE', 'variables.sh')
-
-    cmd = "source ../" + variables_file + " && echo $" + path_env
-    output, error = subprocess.Popen(cmd,
-                                     shell=True,
-                                     stdout=subprocess.PIPE,
-                                     stderr=subprocess.PIPE,
-                                     executable="/bin/bash").communicate()
-
-    path_from_env = output.strip()
-    filepath = os.path.join(path_from_env, filename)
-    return filepath
-
-
-def append_before_ext(filename, text):
-    filesplit = os.path.splitext(filename)
-    new_filename = filesplit[0] + "_" + text + filesplit[1]
-    return new_filename
-
-
-def run_experiments(exps_file, experiment):
     with open(exps_file) as data_exps_file:
         data = json.load(data_exps_file)
 
@@ -398,13 +84,15 @@ def run_experiments(exps_file, experiment):
             if log:
                 print "No parameters to sweep, just run once."
 
-            exp_run(entity_filepath, data_filepath)
+            print "....... Run Experiment"
+            agief.import_experiment(entity_filepath, data_filepath)
+            agief.run_experiment()
 
             output_entity_filepath = experiment.outputfile(entity_file)
             output_data_filepath = experiment.outputfile(data_file)
-            exp_export( experiment.entity_with_prefix("experiment"),
-                        output_entity_filepath,
-                        output_data_filepath)
+            agief.exp_export(experiment.entity_with_prefix("experiment"),
+                             output_entity_filepath,
+                             output_data_filepath)
         else:
             param_sweep_i = 0
             for param_sweep in experiments['parameter-sweeps']:         # array of sweep definitions
@@ -456,7 +144,7 @@ def run_experiments(exps_file, experiment):
                             break
 
                         val = incrementer.value()
-                        set_parameter(entity_filepath, counter['entity-name'], counter['param-path'], val)
+                        agief.set_parameter(entity_filepath, counter['entity-name'], counter['param-path'], val)
 
                         short_descr += "_" + counter['entity-name'] + "." + counter['param-path'] + "=" + str(val)
 
@@ -466,64 +154,34 @@ def run_experiments(exps_file, experiment):
                     if log: print "LOG: Parameter sweep of params/vals: " + short_descr
 
                     # run experiment
-                    new_entity_file = append_before_ext(entity_file, short_descr)
-                    new_data_file = append_before_ext(data_file, short_descr)
+                    new_entity_file = utils.append_before_ext(entity_file, short_descr)
+                    new_data_file = utils.append_before_ext(data_file, short_descr)
 
                     output_entity_filepath = experiment.outputfile(new_entity_file)
                     output_data_filepath = experiment.outputfile(new_data_file)
 
-                    if log: print "LOG: Sweep set output entity file: " + output_entity_filepath
+                    if log:
+                        print "LOG: Sweep set output entity file: " + output_entity_filepath
 
-                    # exp_run(entity_filepath, data_filepath)
-                    # exp_export( experiment.entity_with_prefix("experiment"),
-                    #             output_entity_filepath,
-                    #             output_data_filepath)
+                    print "....... Run Experiment"
+                    agief.import_experiment(entity_filepath, data_filepath)
+                    agief.run_experiment()
+
+                    print "....... Export Experiment"
+                    agief.export_experiment(experiment.entity_with_prefix("experiment"),
+                                            output_entity_filepath,
+                                            output_data_filepath)
 
 
-def getbaseurl(host, port):
-    return 'http://' + host + ':' + port
-
-def generate_input_files_locally(experiment):
+def generate_input_files_locally():
     entity_filepath = experiment.inputfile("entity.json")
     data_filepath = experiment.inputfile("data.json")
 
     root = experiment.entity_with_prefix("experiment")
-    agief_export_experiment(root, entity_filepath, data_filepath)
+    agief.export_experiment(root, entity_filepath, data_filepath)
 
 
-# assumes there exists a private key for the given ec2 instance, at ~/.ssh/ecs-key
-def aws_sync_experiment(host, keypath):
-    print "....... syncing code to ec2 container instance"
-
-    # code
-    filepath = filepath_from_env_variable("", "AGI_HOME")
-    cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + filepath + " ec2-user@" + host + ":~/agief-project/agi --exclude={\"*.git/*\",*/src/*}"
-    if log:
-        print cmd
-    output, error = subprocess.Popen(cmd,
-                                     shell=True,
-                                     stdout=subprocess.PIPE,
-                                     stderr=subprocess.PIPE,
-                                     executable="/bin/bash").communicate()
-    if log:
-        print output
-        print error
-
-    # experiments
-    filepath = filepath_from_env_variable("", "AGI_RUN_HOME")
-    cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + filepath + " ec2-user@" + host + ":~/agief-project/run --exclude={\"*.git/*\"}"
-    if log:
-        print cmd
-    output, error = subprocess.Popen(cmd,
-                                     shell=True,
-                                     stdout=subprocess.PIPE,
-                                     stderr=subprocess.PIPE,
-                                     executable="/bin/bash").communicate()
-    if log:
-        print output
-        print error
-
-if __name__ == '__main__':
+def setup_arg_parsing():
     import argparse
     from argparse import RawTextHelpFormatter
 
@@ -578,24 +236,30 @@ if __name__ == '__main__':
     parser.set_defaults(instanceid="i-057e0487")
     parser.set_defaults(pg_instance="i-b1d1bd33")
     parser.set_defaults(task_name="mnist-spatial-task:8")
-    parser.set_defaults(ec2_keypath=filepath_from_env_variable(".ssh/ecs-key", "HOME"))
+    parser.set_defaults(ec2_keypath=utils.filepath_from_env_variable(".ssh/ecs-key", "HOME"))
 
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    global log
+
+if __name__ == '__main__':
+
+    args = setup_arg_parsing()
+
     log = args.logging
+    global log
+
     if log:
         print "LOG: Arguments: ", args
 
-    baseurl = getbaseurl(args.host, args.port)
-
-    exp = Experiment()
+    exp = experiment.Experiment()
+    agief = agief.AGIEF(log, None)
 
     # 1) Generate input files
     if args.main_class:
-        launch_framework_local(baseurl, args.main_class)
-        generate_input_files_locally(exp)
-        terminate_framework()
+        agief.base_url = utils.getbaseurl(args.host, args.port)
+        launch_framework_local(args.main_class)
+        generate_input_files_locally()
+        agief.terminate()
         exit()
 
     # 2) Setup Infrastructure (on AWS or nothing to do locally)
@@ -609,14 +273,16 @@ if __name__ == '__main__':
                   "and ECS Task Name (--task_name) to run on AWS."
             exit()
 
-        ips = aws_run_ec2(args.instanceid)
+        ips = aws.run_ec2(args.instanceid)
 
         if args.pg_instance[:2] is 'i-':
-            ips_pg = aws_run_ec2(args.pg_instance)
+            ips_pg = aws.run_ec2(args.pg_instance)
 
-    baseurl = getbaseurl(ips['ip_public'], args.port)  # re-define baseurl with aws host if relevant
+    agief.base_url = utils.getbaseurl(ips['ip_public'], args.port)  # define base_url, with aws host if relevant
 
-    # set the DB_HOST environment variable, which
+
+    # TEMPORARY HACK
+    # set the DB_HOST environment variable
     os.putenv("DB_HOST", ips_pg["ip_private"])
 
     # 3) Sync code and run-home
@@ -624,30 +290,30 @@ if __name__ == '__main__':
         if not args.aws:
             print "ERROR: Syncing is meaningless unless you're running aws (use param --step_aws)"
             exit()
-        aws_sync_experiment(ips["ip_public"], args.ec2_keypath)
+        aws.sync_experiment(ips["ip_public"], args.ec2_keypath)
 
     # 4) Launch framework (on AWS or locally)
     if args.launch_framework:
         if args.aws:
-            launch_framework_aws(args.task_name, baseurl)
+            launch_framework_aws(args.task_name)
         else:
-            launch_framework_local(baseurl)
+            launch_framework_local()
 
-    # 5) run experiments
+    # 5) Run experiments
     if args.exps_file:
         if not args.launch_framework:
             print "WARNING: Running experiment is meaningless unless you're already running framework " \
                   "(use param --step_agief)"
-        filepath = filepath_from_env_variable(args.exps_file, "AGI_RUN_HOME")
-        run_experiments(filepath, exp)
+        file_path = utils.filepath_from_env_variable(args.exps_file, "AGI_RUN_HOME")
+        run_sweeps(file_path, exp)
 
     # 6) Shutdown framework
     if args.shutdown:
-        terminate_framework()
+        agief.terminate()
 
         # Shutdown Infrastructure
         if args.aws:
-            aws_close(args.instanceid)
+            aws.close(args.instanceid)
 
             if args.pg_instance[:2] is 'i-':
-                aws_close(args.pg_instance)
+                aws.close(args.pg_instance)
