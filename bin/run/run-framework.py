@@ -1,11 +1,13 @@
 import json
-import subprocess
 import os
+import subprocess
 
-import agief
-import experiment
-import utils
-import aws
+from agief_experiment import agief
+from agief_experiment import aws
+from agief_experiment import experiment
+from agief_experiment import utils
+from agief_experiment import val_incrementer
+
 
 help_generic = """
 run-framework.py allows you to run each step of the AGIEF (AGI Experimental Framework), locally and on AWS.
@@ -52,9 +54,7 @@ def launch_framework_local(main_class=""):
 
 
 # Perform parameter sweeps, and run experiment
-def run_sweeps(exps_file, experiment):
-
-    import ValIncrementer
+def run_sweeps(exps_file):
 
     with open(exps_file) as data_exps_file:
         data = json.load(data_exps_file)
@@ -126,7 +126,7 @@ def run_sweeps(exps_file, experiment):
 
                     entity_name = experiment.entity_with_prefix(entity_name)
 
-                    incrementer = ValIncrementer(val_begin, val_end, val_inc)
+                    incrementer = val_incrementer.Val_incrementer(val_begin, val_end, val_inc)
 
                     counter = {'incrementer': incrementer, 'entity-name': entity_name, 'param-path': param_path}
                     counters.append(counter)
@@ -305,7 +305,7 @@ if __name__ == '__main__':
             print "WARNING: Running experiment is meaningless unless you're already running framework " \
                   "(use param --step_agief)"
         file_path = utils.filepath_from_env_variable(args.exps_file, "AGI_RUN_HOME")
-        run_sweeps(file_path, exp)
+        run_sweeps(file_path)
 
     # 6) Shutdown framework
     if args.shutdown:

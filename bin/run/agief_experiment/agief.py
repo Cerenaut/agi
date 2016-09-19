@@ -1,6 +1,4 @@
-import datetime
 import requests
-import errno
 import time
 import json
 import dpath.util
@@ -68,7 +66,7 @@ class AGIEF:
         # wait for the task to finish
         self.wait_till_param('experiment', 'terminated', True)  # poll API for 'Terminated' config param
 
-    def export_rootentity(self, filepath, root_entity, export_type):
+    def export_root_entity(self, filepath, root_entity, export_type):
         payload = {'entity': root_entity, 'type': export_type}
         response = requests.get(self.base_url + '/export', params=payload)
         if self.log:
@@ -88,8 +86,8 @@ class AGIEF:
         if self.log:
             print "Exporting data for root entity: " + root_entity
 
-        self.export_rootentity(entity_filepath, root_entity, 'entity')
-        self.export_rootentity(data_filepath, root_entity, 'data')
+        self.export_root_entity(entity_filepath, root_entity, 'entity')
+        self.export_root_entity(data_filepath, root_entity, 'data')
 
     def wait_up(self):
         print "....... wait till framework has started at = " + self.base_url

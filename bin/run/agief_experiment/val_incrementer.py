@@ -1,4 +1,5 @@
-class ValIncrementer:
+
+class Val_incrementer:
     min = 0
     max = 0
     delta = 0
