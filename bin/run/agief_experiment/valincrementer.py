@@ -1,5 +1,5 @@
 
-class Val_incrementer:
+class ValIncrementer:
     min = 0
     max = 0
     delta = 0
@@ -20,7 +20,9 @@ class Val_incrementer:
         self.val = self.min
         self.counting = False
 
-    # return false if not started counting and therefore at minimum, or exceeded maximum
+    # First call sets the counter value to the minimum
+    # Subsequent calls increment it
+    # If the value exceeds the maximum, then return false
     def increment(self):
         if not self.counting:
             self.val = self.min

@@ -49,7 +49,7 @@ public class Framework {
 
     protected static final Logger logger = LogManager.getLogger();
 
-    public static final String ENTITY_NAME_PREFIX_DELIMITER = "/";
+    public static final String ENTITY_NAME_PREFIX_DELIMITER = "^^";
 
     protected static String entityNamePrefix;
     protected static SecureRandom entityNameRandom;

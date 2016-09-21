@@ -1,6 +1,16 @@
 import subprocess
 import os
 import errno
+import fileinput
+
+
+def replace_in_file(src_string, dest_string, file_path):
+    # NOTE: cannot use context manager (i.e. 'with') with FileInput in 2.7
+    f = fileinput.FileInput(file_path, inplace=True)
+    for line in f:
+        line = line.replace(src_string, dest_string).rstrip()
+        print line
+    f.close()
 
 
 def filepath_from_env_variable(filename, path_env):
@@ -29,7 +39,7 @@ def create_folder(filepath):
 
 def append_before_ext(filename, text):
     file_split = os.path.splitext(filename)
-    new_filename = file_split[0] + "_" + text + file_split[1]
+    new_filename = file_split[0] + text + file_split[1]
     return new_filename
 
 
