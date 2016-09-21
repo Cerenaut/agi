@@ -78,8 +78,8 @@ public class DeepMNISTDemo {
 //how to plumb up the fb pathway?
 //inverted region - gets FN errors from above
 //use the state of the inverted region to read out the predictions?
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle_twin";
@@ -90,8 +90,8 @@ public class DeepMNISTDemo {
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/all_t10k";
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/5k_test";
-//        String trainingPath = "./training";
-//        String testingPath = "./testing";
+        String trainingPath = "./data/training";
+        String testingPath = "./data/testing";
         int terminationAge = 25000;
         int trainingBatches = 2;
         boolean terminateByAge = false;

@@ -99,9 +99,9 @@ class AGIEF:
                 if self.log:
                     print "LOG: response = ", response
 
-                responseJson = response.json()
-                if 'version' in responseJson:
-                    version = responseJson['version']
+                response_json = response.json()
+                if 'version' in response_json:
+                    version = response_json['version']
                 break
             except requests.ConnectionError:
                 time.sleep(1)
@@ -154,13 +154,13 @@ class AGIEF:
             exit()
 
         # get the config field, and turn it into valid JSON
-        configStr = entity["config"]
+        config_str = entity["config"]
 
         if log_debug:
-            print "LOG: Raw configStr   = " + configStr
+            print "LOG: Raw configStr   = " + config_str
 
         # configStr = configStr.replace("\\\"", "\"")       --> don't need this anymore, depends on python behaviour
-        config = json.loads(configStr)
+        config = json.loads(config_str)
 
         if self.log:
             print "LOG: config(t)   = " + json.dumps(config, indent=4)
@@ -171,13 +171,13 @@ class AGIEF:
             print "LOG: config(t+1) = " + json.dumps(config, indent=4)
 
         # put the escape characters back in the config str and write back to file
-        configStr = json.dumps(config)
+        config_str = json.dumps(config)
         # configStr = configStr.replace("\"", "\\\"")       --> don't need this anymore, depends on python behaviour
 
         if log_debug:
-            print "LOG: Modified configStr   = " + configStr
+            print "LOG: Modified configStr   = " + config_str
 
-        entity["config"] = configStr
+        entity["config"] = config_str
 
         # write back to file
         with open(entity_filepath, 'w') as data_file:

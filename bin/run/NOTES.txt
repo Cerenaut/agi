@@ -1,0 +1,15 @@
+This is stuff you need to know for running experiments.
+The gotcha's.
+
+
+DB Host
+---------------------
+DB_HOST env variable needs to be set in the shell environment of the python script
+If the script is run on one machine, and launches the task on AWS, then it must be done from outside of script. Therefore, it is in variables-docker.sh, but set by the python script explicitly by python script for local execution (which requires it to be commented out locally in variables.)
+
+
+Data
+---------------------
+Reference to data is not automated. You must manually set the relevant parameter in the appropriate entity, and make sure the data is at that location.
+The convention is to make a symbolic link to it in your experiment-definitions folder under /data, and hardcode to there in the Demo file.
+In future we can use $AGI_DATA_HOME and automate pulling down from S3, and setting the correct reference.
