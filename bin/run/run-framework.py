@@ -319,7 +319,7 @@ if __name__ == '__main__':
     launch_mode = LaunchMode.per_experiment     # for now per experiment
     is_aws = args.aws
     TEMPLATE_PREFIX = "SPAGHETTI"
-    PREFIX_DELIMITER = "^^"
+    PREFIX_DELIMITER = "^"
 
     if log:
         print "LOG: Arguments: ", args

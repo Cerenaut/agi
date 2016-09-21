@@ -24,9 +24,9 @@ class AGIEF:
                 r = requests.get(self.base_url + '/config', params=param_dic)
 
                 if self.log:
-                    print "LOG: /config with params " + json.dumps(param_dic) + ", response = ", r
-                    print "LOG: response text = ", r.text
-                    print "LOG: url: ", r.url
+                    print "LOG: Get config: /config with params " + json.dumps(param_dic) + ", response = ", r
+                    print "  LOG: response text = ", r.text
+                    print "  LOG: url: ", r.url
 
                 if r.json()["value"] is not None:
                     parameter = dpath.util.get(r.json(), "value." + param_path, '.')
@@ -41,9 +41,9 @@ class AGIEF:
                 print "Oops, request exception"
 
             if self.log:
-                print "LOG: ... parameter: " + entity_name + "." + param_path + ", has not achieved value: " + str(
-                    value) + ",   wait 2s and try again ........"
-            time.sleep(2)  # sleep for n seconds)
+                print "  LOG: ... parameter: " + entity_name + "." + param_path + ", has not achieved value: " + \
+                      str(value) + ",   wait 2s and try again ........"
+            time.sleep(2)  # sleep for n seconds
 
     # setup the running instance of AGIEF with the input files
     def import_experiment(self, entity_filepath=None, data_filepath=None):
@@ -53,9 +53,9 @@ class AGIEF:
                 response = requests.post(self.base_url + '/import', files=files)
                 if self.log:
                     print "LOG: Import entity file, response = ", response
-                    print "LOG: response text = ", response.text
-                    print "LOG: url: ", response.url
-                    print "LOG: post body = ", files
+                    print "  LOG: response text = ", response.text
+                    print "  LOG: url: ", response.url
+                    print "  LOG: post body = ", files
 
     def run_experiment(self, exp):
         payload = {'entity': exp.entity_with_prefix('experiment'), 'event': 'update'}
@@ -71,7 +71,7 @@ class AGIEF:
         response = requests.get(self.base_url + '/export', params=payload)
         if self.log:
             print "LOG: Export entity file, response text = ", response.text
-            print "LOG: response url = ", response.url
+            print "  LOG: response url = ", response.url
 
         # write back to file
         output_json = response.json()
@@ -116,12 +116,24 @@ class AGIEF:
         if self.log:
             print "LOG: response text = ", response.text
 
-    # Set parameter at 'param_path' for entity 'entity_name', in the input file specified by 'entity_filepath'
     def set_parameter(self, entity_filepath, entity_name, param_path, val):
+        """
+        Set parameter at 'param_path' for entity 'entity_name', in the input file specified by 'entity_filepath'
+        'entity_name' is the fully qualified name WITH the prefix
+
+        :param entity_filepath:
+        :param entity_name:
+        :param param_path:
+        :param val:
+        :return:
+        """
+
+        log_debug = False
+
         print "Modify Parameters: ", entity_name + "." + param_path + " = " + str(val)
         print "LOG: in file: " + entity_filepath
 
-        # open the json
+        # open the entity input file
         with open(entity_filepath) as data_file:
             data = json.load(data_file)
 
@@ -134,28 +146,39 @@ class AGIEF:
             break
 
         if not entity:
-            print "ERROR: the experiment file (" + entity_filepath + ") did not contain matching entity name (" \
-                  + entity_name + ") and entity file name in field 'file-entities'."
+            print "ERROR: Could not find an entity in the input file matching the entity name specified in the " \
+                  "experiment file in field 'file-entities'."
+            print "\tEntity input file: " + entity_filepath
+            print "\tEntity name: " + entity_name
             print "CANNOT CONTINUE"
             exit()
 
         # get the config field, and turn it into valid JSON
         configStr = entity["config"]
-        configStr = configStr.replace("\\\"", "\"")
+
+        if log_debug:
+            print "LOG: Raw configStr   = " + configStr
+
+        # configStr = configStr.replace("\\\"", "\"")       --> don't need this anymore, depends on python behaviour
         config = json.loads(configStr)
 
         if self.log:
-            print "LOG: config(t)   = ", config, '\n'
+            print "LOG: config(t)   = " + json.dumps(config, indent=4)
 
         dpath.util.set(config, param_path, val, '.')
+
         if self.log:
-            print "LOG: config(t+1) = ", config, '\n'
+            print "LOG: config(t+1) = " + json.dumps(config, indent=4)
 
         # put the escape characters back in the config str and write back to file
         configStr = json.dumps(config)
-        configStr = configStr.replace("\"", "\\\"")
+        # configStr = configStr.replace("\"", "\\\"")       --> don't need this anymore, depends on python behaviour
+
+        if log_debug:
+            print "LOG: Modified configStr   = " + configStr
+
         entity["config"] = configStr
 
         # write back to file
         with open(entity_filepath, 'w') as data_file:
-            data_file.write(json.dumps(data))
+            data_file.write(json.dumps(data, indent=4))

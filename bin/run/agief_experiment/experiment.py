@@ -3,6 +3,7 @@ import os
 import datetime
 import shutil
 
+
 class Experiment:
     prefix = None
     prefix_delimiter = None
@@ -38,7 +39,7 @@ class Experiment:
             with open(prefix_filepath, 'r') as myfile:
                 self.prefix = myfile.read()
         else:
-            self.prefix = datetime.datetime.now().strftime("%Y-%m-%d-%H_%M_%S")
+            self.prefix = datetime.datetime.now().strftime("%y%m%d-%H%M")
 
     def create_input_files(self, template_prefix, baseentity_filename, basedata_filename):
         """
@@ -61,5 +62,6 @@ class Experiment:
 
         # search replace contents for PREFIX and replace with 'prefix'
         utils.replace_in_file(template_prefix, self.prefix, self.inputfile(entity_filename))
+        utils.replace_in_file(template_prefix, self.prefix, self.inputfile(data_filename))
 
         return entity_filename, data_filename
