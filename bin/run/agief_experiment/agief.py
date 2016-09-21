@@ -57,21 +57,21 @@ class AGIEF:
                     print "LOG: url: ", response.url
                     print "LOG: post body = ", files
 
-    def run_experiment(self):
-        payload = {'entity': 'experiment', 'event': 'update'}
+    def run_experiment(self, exp):
+        payload = {'entity': exp.entity_with_prefix('experiment'), 'event': 'update'}
         response = requests.get(self.base_url + '/update', params=payload)
         if self.log:
             print "LOG: Start experiment, response = ", response
 
-        # wait for the task to finish
-        self.wait_till_param('experiment', 'terminated', True)  # poll API for 'Terminated' config param
+        # wait for the task to finish (poll API for 'Terminated' config param)
+        self.wait_till_param(exp.entity_with_prefix('experiment'), 'terminated', True)
 
     def export_root_entity(self, filepath, root_entity, export_type):
         payload = {'entity': root_entity, 'type': export_type}
         response = requests.get(self.base_url + '/export', params=payload)
         if self.log:
             print "LOG: Export entity file, response text = ", response.text
-            print "LOG: resonse url = ", response.url
+            print "LOG: response url = ", response.url
 
         # write back to file
         output_json = response.json()

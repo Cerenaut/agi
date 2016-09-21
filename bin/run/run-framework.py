@@ -97,7 +97,7 @@ def run_exp(entity_file, data_file, param_description):
     fwk.import_experiment(entity_file_path, data_file_path)
 
     print "....... Run Experiment"
-    fwk.run_experiment()
+    fwk.run_experiment(exp)
 
     print "....... Export Experiment"
     new_entity_file = utils.append_before_ext(entity_file, "___" + param_description)
