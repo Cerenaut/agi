@@ -154,6 +154,7 @@ def inc_parameter_set(entity_file, counters):
     :param entity_file:
     :param counters:
     :return: reset (True if any counter has reached above max), description of parameters (string)
+                            If reset is False, there MUST be a description of the parameters that have been set
     """
 
     # inc all counters, and set parameter in entity file
@@ -180,7 +181,15 @@ def inc_parameter_set(entity_file, counters):
             param_description += "_" + delta
 
     if log:
-        print "LOG: Parameter sweep of params/vals: " + param_description
+        if param_description is None:
+            print "LOG: inc_parameter_set(): no parameters were changed."
+        else:
+            print "LOG: Parameter sweep: " + param_description
+
+    if reset is False and param_description is None:
+        print "Error: inc_parameter_set() indeterminate state, reset is False, but parameter_description indicates no " \
+              "parameters have been modified. If there is no sweep to conduct, reset should be True."
+        exit()
 
     return reset, param_description
 

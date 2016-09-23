@@ -123,7 +123,7 @@ public class HttpImportHandler implements HttpHandler {
         }
         catch( Exception e ) {
             logger.error( "Unable to import entities/data.");
-            logger.error(e.toString(), e);
+            logger.error( e.toString(), e );
         }
 
         HttpUtil.SendResponse( t, status, response );

@@ -124,7 +124,8 @@ public class HttpEntitiesHandler implements HttpHandler {
             }
         }
         catch( Exception e ) {
-            logger.error( e.getStackTrace() );
+            logger.error( "Unable to return handle entities call.");
+            logger.error( e.toString(), e );
         }
 
         HttpUtil.SendResponse( t, status, response );

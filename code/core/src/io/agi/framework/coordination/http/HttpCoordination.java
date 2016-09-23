@@ -274,7 +274,8 @@ public class HttpCoordination implements Coordination {
 //        }
         }
         catch( MalformedURLException e ) {
-            e.printStackTrace();
+            logger.error( "Unable to handle HTTP Coordination - malformed URL.");
+            logger.error( e.toString(), e );
         }
     }
 }
