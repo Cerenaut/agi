@@ -24,6 +24,8 @@ def filepath_from_env_variable(filename, path_env):
                                      executable="/bin/bash").communicate()
 
     path_from_env = output.strip()
+    filename = filename.strip()
+    filename = filename.lstrip('/')
     file_path = os.path.join(path_from_env, filename)
     return file_path
 

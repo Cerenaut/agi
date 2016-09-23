@@ -96,6 +96,9 @@ def run_exp(entity_file, data_file, param_description):
     print "....... Import Experiment"
     fwk.import_experiment(entity_file_path, data_file_path)
 
+    print "....... Set Dataset"
+    set_dataset(exps_file)
+
     print "....... Run Experiment"
     fwk.run_experiment(exp)
 
@@ -172,7 +175,7 @@ def inc_parameter_set(entity_file, counters):
 
         val = incrementer.value()
         entity_file_path = exp.inputfile(entity_file)
-        fwk.set_parameter(entity_file_path, counter['entity-name'], counter['param-path'], val)
+        fwk.set_parameter_inputfile(entity_file_path, counter['entity-name'], counter['param-path'], val)
 
         delta = counter['entity-name'] + "." + counter['param-path'] + "=" + str(val)
         if param_description is None:
@@ -236,6 +239,29 @@ def run_sweeps(exps_file):
                         is_sweeping = False
                     else:
                         run_exp(entity_filename, data_filename, param_description)
+
+
+def set_dataset(exps_file):
+    '''
+    The dataset can be located in different locations on different machines. The location can be set in the
+    experiments definition file (experiments.json). This method parses that file, finds the parameters to set
+    relative to the AGI_DATA_HOME env variable, and sets the specified parameters.
+    :param exps_file:
+    :return:
+    '''
+
+    with open(exps_file) as data_exps_file:
+        data = json.load(data_exps_file)
+
+    for exp_i in data['experiments']:
+        for param in exp_i['dataset-parameters']:  # array of sweep definitions
+            entity_name = param['entity-name']
+            param_path = param['parameter-path']
+            value = param['value']
+
+            data_path = utils.filepath_from_env_variable(value, 'AGI_DATA_HOME')
+
+            fwk.set_parameter_db(exp.entity_with_prefix(entity_name), param_path, data_path)
 
 
 def generate_input_files_locally():
@@ -320,6 +346,7 @@ class LaunchMode(Enum):
     per_experiment = 1
     per_session = 2
 
+
 if __name__ == '__main__':
 
     args = setup_arg_parsing()
@@ -383,8 +410,9 @@ if __name__ == '__main__':
         if not args.launch_framework:
             print "WARNING: Running experiment is meaningless unless you're already running framework " \
                   "(use param --step_agief)"
-        file_path = utils.filepath_from_env_variable(args.exps_file, "AGI_RUN_HOME")
-        run_sweeps(file_path)
+
+        exps_file = utils.filepath_from_env_variable(args.exps_file, "AGI_RUN_HOME")
+        run_sweeps(exps_file)
 
     # 6) Shutdown framework
     if args.shutdown:

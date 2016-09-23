@@ -105,7 +105,8 @@ public class HttpConfigHandler implements HttpHandler {
             status = 200;
         }
         catch( Exception e ) {
-            logger.error( e.getStackTrace() );
+            logger.error( "Unable to handle config call.");
+            logger.error( e.toString(), e );
         }
 
         HttpUtil.SendResponse( t, status, response );

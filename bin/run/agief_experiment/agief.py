@@ -70,7 +70,8 @@ class AGIEF:
         payload = {'entity': root_entity, 'type': export_type}
         response = requests.get(self.base_url + '/export', params=payload)
         if self.log:
-            print "LOG: Export entity file, response text = ", response.text
+            # print "LOG: Export entity file, response text = ", response.text
+            print "  LOG: response = ", response
             print "  LOG: response url = ", response.url
 
         # write back to file
@@ -116,7 +117,18 @@ class AGIEF:
         if self.log:
             print "LOG: response text = ", response.text
 
-    def set_parameter(self, entity_filepath, entity_name, param_path, val):
+    def set_parameter_db(self, entity_name, param_path, value):
+        """
+        Set parameter at 'param_path' for entity 'entity_name', in the DB
+        'entity_name' is the fully qualified name WITH the prefix
+        """
+
+        payload = {'entity': entity_name, 'path': param_path, 'value': value}
+        response = requests.post(self.base_url + '/config', params=payload)
+        if self.log:
+            print "LOG: set_parameter, response = ", response
+
+    def set_parameter_inputfile(self, entity_filepath, entity_name, param_path, value):
         """
         Set parameter at 'param_path' for entity 'entity_name', in the input file specified by 'entity_filepath'
         'entity_name' is the fully qualified name WITH the prefix
@@ -124,13 +136,13 @@ class AGIEF:
         :param entity_filepath:
         :param entity_name:
         :param param_path:
-        :param val:
+        :param value:
         :return:
         """
 
         log_debug = False
 
-        print "Modify Parameters: ", entity_name + "." + param_path + " = " + str(val)
+        print "Modify Parameters: ", entity_name + "." + param_path + " = " + str(value)
         print "LOG: in file: " + entity_filepath
 
         # open the entity input file
@@ -165,7 +177,7 @@ class AGIEF:
         if self.log:
             print "LOG: config(t)   = " + json.dumps(config, indent=4)
 
-        dpath.util.set(config, param_path, val, '.')
+        dpath.util.set(config, param_path, value, '.')
 
         if self.log:
             print "LOG: config(t+1) = " + json.dumps(config, indent=4)
