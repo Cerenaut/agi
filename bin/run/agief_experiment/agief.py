@@ -174,12 +174,12 @@ class AGIEF:
         # configStr = configStr.replace("\\\"", "\"")       --> don't need this anymore, depends on python behaviour
         config = json.loads(config_str)
 
-        if self.log:
+        if log_debug:
             print "LOG: config(t)   = " + json.dumps(config, indent=4)
 
         dpath.util.set(config, param_path, value, '.')
 
-        if self.log:
+        if log_debug:
             print "LOG: config(t+1) = " + json.dumps(config, indent=4)
 
         # put the escape characters back in the config str and write back to file

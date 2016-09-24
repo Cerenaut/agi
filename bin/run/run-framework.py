@@ -110,8 +110,8 @@ def run_exp(entity_file, data_file, param_description):
                           exp.outputfile(new_entity_file),
                           exp.outputfile(new_data_file))
 
-    print "....... Terminate Framework"
-    fwk.terminate()
+    print "....... Shutdown Framework"
+    shutdown_framework()
 
 
 def setup_parameter_sweep_counters(param_sweep, counters):
@@ -342,6 +342,16 @@ def launch_framework():
             launch_framework_local()
 
 
+def shutdown_framework():
+    """ Close framework: terminate and then if running on AWS, stop the task. """
+
+    fwk.terminate()
+
+    if args.launch_framework:
+        if is_aws:
+            aws.stop_task(args.task_name)
+
+
 class LaunchMode(Enum):
     per_experiment = 1
     per_session = 2
@@ -374,7 +384,9 @@ if __name__ == '__main__':
     # 2) Setup infrastructure (on AWS or nothing to do locally)
     ips = {'ip_public': args.host, 'ip_private': None}
     ips_pg = {'ip_public': args.host, 'ip_private': None}
-    if args.pg_instance[:2] is not 'i-':
+    pg_str = args.pg_instance[:2]
+    is_pg_aws = pg_str == 'i-'
+    if not is_pg_aws:
         ips_pg = {'ip_private': args.pg_instance}
 
     if is_aws:
@@ -385,7 +397,7 @@ if __name__ == '__main__':
 
         ips = aws.run_ec2(args.instanceid)
 
-        if args.pg_instance[:2] is 'i-':
+        if is_pg_aws:
             ips_pg = aws.run_ec2(args.pg_instance)
 
     fwk.base_url = utils.getbaseurl(ips['ip_public'], args.port)  # define base_url, with aws host if relevant
@@ -402,7 +414,7 @@ if __name__ == '__main__':
         aws.sync_experiment(ips["ip_public"], args.ec2_keypath)
 
     # 4) Launch framework (on AWS or locally) - *** IF Mode == 'Per Session' ***
-    if launch_mode is LaunchMode.per_session and args.launch_framework:
+    if (launch_mode is LaunchMode.per_session) and args.launch_framework:
         launch_framework(args.aws)
 
     # 5) Run experiments
@@ -424,5 +436,5 @@ if __name__ == '__main__':
         if args.aws:
             aws.close(args.instanceid)
 
-            if args.pg_instance[:2] is 'i-':
+            if is_pg_aws:
                 aws.close(args.pg_instance)

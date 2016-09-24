@@ -4,6 +4,7 @@ import subprocess
 import utils
 
 log = False
+cluster = 'default'
 
 # assumes there exists a private key for the given ec2 instance, at ~/.ssh/ecs-key
 def sync_experiment(host, keypath):
@@ -44,7 +45,7 @@ def run_task(task_name):
     print "....... running task on ecs "
     client = boto3.client('ecs')
     response = client.run_task(
-        cluster='default',
+        cluster=cluster,
         taskDefinition=task_name,
         count=1,
         startedBy='pyScript'
@@ -61,6 +62,21 @@ def run_task(task_name):
         exit(1)
 
 
+def stop_task(task_name):
+
+    print "....... stopping task on ecs "
+    client = boto3.client('ecs')
+
+    response = client.stop_task(
+        cluster=cluster,
+        task=task_name,
+        reason='pyScript said so!'
+    )
+
+    if log:
+        print "LOG: ", response
+
+
 # run the chosen instance specified by instance_id
 # returns the aws public and private ip addresses
 def run_ec2(instance_id):
@@ -72,10 +88,10 @@ def run_ec2(instance_id):
     if log:
         print "LOG: Start response: ", response
 
+    instance.wait_until_running()
+
     ip_public = instance.public_ip_address
     ip_private = instance.private_ip_address
-
-    instance.wait_until_running()
 
     print "Instance is up and running."
     print "Instance public IP address is: ", ip_public
