@@ -39,8 +39,8 @@ def sync_experiment(host, keypath):
         print error
 
 
-# Run ecs task
 def run_task(task_name):
+    """ Run task 'task_name' and return the Task ARN """
 
     print "....... running task on ecs "
     client = boto3.client('ecs')
@@ -54,22 +54,29 @@ def run_task(task_name):
     if log:
         print "LOG: ", response
 
-    length = len(response["failures"])
+    length = len(response['failures'])
     if length > 0:
         print "ERROR: could not initiate task on AWS."
-        print "reason = " + response["failures"][0]["reason"]
+        print "reason = " + response['failures'][0]['reason']
         print " ----- exiting -------"
-        exit(1)
+        exit()
+
+    if len(response['tasks']) <= 0:
+        print "ERROR: could not retrieve task arn when initiating task on AWS - something has gone wrong."
+        exit()
+
+    task_arn = response['tasks'][0]['taskArn']
+    return task_arn
 
 
-def stop_task(task_name):
+def stop_task(task_arn):
 
     print "....... stopping task on ecs "
     client = boto3.client('ecs')
 
     response = client.stop_task(
         cluster=cluster,
-        task=task_name,
+        task=task_arn,
         reason='pyScript said so!'
     )
 

@@ -27,15 +27,16 @@ Assumptions:
 
 
 def launch_framework_aws(task_name):
-    """ Launch AGIEF on AWS. Hang till framework is up and running.
+    """ Launch AGIEF on AWS. Hang till framework is up and running. Return task arn.
 
     :param task_name:
     :return:
     """
 
     print "....... launching framework on AWS"
-    aws.run_task(task_name)
+    task_arn = aws.run_task(task_name)
     fwk.wait_up()
+    return task_arn
 
 
 def launch_framework_local(main_class=""):
@@ -91,7 +92,7 @@ def run_exp(entity_file, data_file, param_description):
         exit()
 
     print "....... Launch Framework"
-    launch_framework()
+    task_arn = launch_framework()
 
     print "....... Import Experiment"
     fwk.import_experiment(entity_file_path, data_file_path)
@@ -111,7 +112,7 @@ def run_exp(entity_file, data_file, param_description):
                           exp.outputfile(new_data_file))
 
     print "....... Shutdown Framework"
-    shutdown_framework()
+    shutdown_framework(task_arn)
 
 
 def setup_parameter_sweep_counters(param_sweep, counters):
@@ -333,23 +334,27 @@ def setup_arg_parsing():
 
 
 def launch_framework():
-    """ Launch framework locally or on AWS. """
+    """ Launch framework locally or on AWS. Return task arn if on AWS """
+
+    task_arn = None
 
     if args.launch_framework:
         if is_aws:
-            launch_framework_aws(args.task_name)
+            task_arn = launch_framework_aws(args.task_name)
         else:
             launch_framework_local()
 
+    return task_arn
 
-def shutdown_framework():
+
+def shutdown_framework(task_arn):
     """ Close framework: terminate and then if running on AWS, stop the task. """
 
     fwk.terminate()
 
     if args.launch_framework:
         if is_aws:
-            aws.stop_task(args.task_name)
+            aws.stop_task(task_arn)
 
 
 class LaunchMode(Enum):
