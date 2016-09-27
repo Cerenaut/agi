@@ -25,7 +25,7 @@
 
     <groupId>io.agi.core</groupId>
     <artifactId>agief</artifactId>
-    <version>1.0.35(7bf303a)</version>
+    <version>1.0.44(5be9695)</version>
 
     <build>
         <sourceDirectory>src</sourceDirectory>
@@ -75,31 +75,6 @@
                 </archive>
               </configuration>
             </plugin>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <finalName>agief</finalName>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <archive>
-                        <manifest>
-                            <mainClass>${main-class}</mainClass>
-                            <addDefaultImplementationEntries>
-                              true
-                            </addDefaultImplementationEntries>
-                        </manifest>                        
-                    </archive>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
@@ -132,12 +107,12 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.5</version>
+            <version>${log4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.5</version>
+            <version>${log4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -173,6 +148,7 @@
     </repositories>
     <properties>
         <jdk.version>1.8</jdk.version>
+        <log4j.version>2.6</log4j.version>
         <main-class>io.agi.framework.Main</main-class>
     </properties>
 

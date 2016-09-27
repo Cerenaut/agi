@@ -22,13 +22,18 @@ the_prefix=${3:-"THE_PREFIX"}
 
 log_config="log4j2.xml"
 
+echo "Create classpath file cp.txt"
+cd $AGI_HOME/code/core
+pwd
+cmd="mvn dependency:build-classpath -Dmdep.outputFile=$AGI_RUN_HOME/cp.txt"
+eval $cmd;
+
 cd $AGI_RUN_HOME
 pwd
 
 # run coordinator
 cmd="$JAVA_HOME/bin/java -Dfile.encoding=UTF-8 -Dlog4j.configurationFile=file:$log_config \
--cp \
-$AGI_HOME/code/core/target/agief-jar-with-dependencies.jar $main_class \
+-cp `cat cp.txt`:$AGI_HOME/code/core/target/agief.jar $main_class \
 $node_properties create prefix $the_prefix"
 
 echo $cmd;
