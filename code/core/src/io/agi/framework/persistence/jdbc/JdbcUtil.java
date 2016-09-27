@@ -62,24 +62,24 @@ public class JdbcUtil {
             c.close();
         }
         catch( SQLException se ) {
-            logger.error( se.getStackTrace() );
+            logger.error( se.toString(), se );
         }
         catch( Exception e ) {
-            logger.error( e.getStackTrace() );
+            logger.error( s.toString(), s );
         }
         finally {
             try {
                 if( s != null ) s.close();
             }
             catch( SQLException se2 ) {
-                logger.error( se2.getStackTrace() );
+                logger.error( se2.toString(), se2 );
             }
 
             try {
                 if( c != null ) c.close();
             }
             catch( SQLException se ) {
-                logger.error( se.getStackTrace() );
+                logger.error( se.toString(), se );
             }
 
         }
@@ -116,24 +116,24 @@ public class JdbcUtil {
             c.close();
         }
         catch( SQLException se ) {
-            logger.error( se.getStackTrace() );
+            logger.error( se.toString(), se );
         }
         catch( Exception e ) {
-            logger.error( e.getStackTrace() );
+            logger.error( s.toString(), s );
         }
         finally {
             try {
                 if( s != null ) s.close();
             }
             catch( SQLException se2 ) {
-                logger.error( se2.getStackTrace() );
+                logger.error( se2.toString(), se2 );
             }
 
             try {
                 if( c != null ) c.close();
             }
             catch( SQLException se ) {
-                logger.error( se.getStackTrace() );
+                logger.error( se.toString(), se );
             }
 
         }
@@ -160,7 +160,7 @@ public class JdbcUtil {
             return c;
         }
         catch( Exception e ) {
-            logger.error( e.getStackTrace() );
+            logger.error( e.toString(), e );
             return null;
         }
     }
