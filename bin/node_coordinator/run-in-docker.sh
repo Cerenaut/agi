@@ -42,6 +42,8 @@ else
         args="$@"
 fi
 
+set +e
+
 mkdir -p "$maven_cache_repo"
 
 if [ "`tty`" != "not a tty" ]; then
