@@ -12,7 +12,11 @@
 export AGI_HOME=$WORKSPACE/agi
 
 # RUN Home
-export AGI_RUN_HOME=$WORKSPACE/experiment-definitions/classifier
+export AGI_RUN_HOME=$WORKSPACE/experiment-definitions/mnist-gng-v1
+
+# DATA Home (set to the home of the data for the actual experiment - i.e. in the environment where they'll be running)
+# export AGI_DATA_HOME=~/Development/ProjectAGI/AGIEF/datasets/MNIST      # when running locally
+export AGI_DATA_HOME=/root/dev/data
 
 # Database
 export DB_PORT=5432
