@@ -63,4 +63,4 @@ docker run "$switch" \
         -v $AGI_RUN_HOME:/root/dev/run \
         -v "${maven_cache_repo}:/root/.m2/repository" \
         -p 8491:8491 -p 5432:5432 \
-        gkowadlo/agief:latest $cmd $args
+        gkowadlo/agief:2.1 $cmd $args
