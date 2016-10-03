@@ -111,7 +111,7 @@ class AGIEF:
         print "  - framework is up, running version: " + version
 
     def terminate(self):
-        print "...... terminate framework"
+        print "...... Terminate framework"
         response = requests.get(self.base_url + '/stop')
 
         if self.log:

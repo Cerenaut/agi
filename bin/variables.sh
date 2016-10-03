@@ -16,7 +16,7 @@ export AGI_HOME=/Users/gideon/Development/ProjectAGI/AGIEF/agi
 
 # RUN Home (set to the home of the experiment definitions - i.e. the environment where you are launching experiments from, which is not necessarily where they are being executed)
 # export AGI_RUN_HOME=~/Development/ProjectAGI/AGIEF/runFolders/runImage 
-export AGI_RUN_HOME=/Users/gideon/Development/ProjectAGI/AGIEF/experiment-definitions/mnist-gng-v1
+export AGI_RUN_HOME=/Users/gideon/Development/ProjectAGI/AGIEF/experiment-definitions/mnist-gng-v1	# mnist-autoencoder-v1
 #export AGI_RUN_HOME=/home/dave/workspace/agi.io/agi/resources/run-empty
 
 # DATA Home (set to the home of the data for the actual experiment - i.e. in the environment where they'll be running)

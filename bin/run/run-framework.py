@@ -308,6 +308,11 @@ def setup_arg_parsing():
     parser.add_argument('--port', dest='port', required=False,
                         help='Port where the framework will be running (default=%(default)s).')
 
+    # launch mode
+    parser.add_argument('--launch_per_session', dest='launch_per_session', action='store_true',
+                        help='Framework is launched once at the start (and shutdown at the end if you use '
+                             '--step_shutdown. Otherwise, it is launched and shut per experiment.')
+
     # aws details
     parser.add_argument('--instanceid', dest='instanceid', required=False,
                         help='Instance ID of the ec2 container instance (default=%(default)s).')
@@ -325,8 +330,7 @@ def setup_arg_parsing():
 
     parser.set_defaults(host="localhost")
     parser.set_defaults(port="8491")
-    parser.set_defaults(instanceid="i-057e0487")
-    parser.set_defaults(pg_instance="i-b1d1bd33")
+    parser.set_defaults(pg_instance="localhost")
     parser.set_defaults(task_name="mnist-spatial-task:8")
     parser.set_defaults(ec2_keypath=utils.filepath_from_env_variable(".ssh/ecs-key", "HOME"))
 
@@ -365,15 +369,18 @@ class LaunchMode(Enum):
 if __name__ == '__main__':
 
     args = setup_arg_parsing()
-
     log = args.logging
-    launch_mode = LaunchMode.per_experiment     # for now per experiment
+    if log:
+        print "LOG: Arguments: ", args
+
     is_aws = args.aws
     TEMPLATE_PREFIX = "SPAGHETTI"
     PREFIX_DELIMITER = "--"
 
-    if log:
-        print "LOG: Arguments: ", args
+    if args.launch_per_session:
+        launch_mode = LaunchMode.per_session
+    else:
+        launch_mode = LaunchMode.per_experiment
 
     exp = experiment.Experiment(TEMPLATE_PREFIX, PREFIX_DELIMITER)
     fwk = agief.AGIEF(log, None)
@@ -388,12 +395,9 @@ if __name__ == '__main__':
 
     # 2) Setup infrastructure (on AWS or nothing to do locally)
     ips = {'ip_public': args.host, 'ip_private': None}
-    ips_pg = {'ip_public': args.host, 'ip_private': None}
-    pg_str = args.pg_instance[:2]
-    is_pg_aws = pg_str == 'i-'
-    if not is_pg_aws:
-        ips_pg = {'ip_private': args.pg_instance}
+    ips_pg = {'ip_public': None, 'ip_private': None}
 
+    is_pg_ec2 = (args.pg_instance[:2] == 'i-')
     if is_aws:
         if not args.instanceid and not args.task_name:
             print "ERROR: You must specify an EC2 Instance ID (--instanceid) " \
@@ -402,25 +406,33 @@ if __name__ == '__main__':
 
         ips = aws.run_ec2(args.instanceid)
 
-        if is_pg_aws:
+        if is_pg_ec2:
             ips_pg = aws.run_ec2(args.pg_instance)
+        else:
+            ips_pg = {'ip_private': args.pg_instance}
+    else:
+        if is_pg_ec2:
+            print "ERROR: the pg instance is set to an ec2 instance id, but you are not running AWS."
+            exit()
+
+        ips_pg = {'ip_public': args.pg_instance, 'ip_private': args.pg_instance}
 
     fwk.base_url = utils.getbaseurl(ips['ip_public'], args.port)  # define base_url, with aws host if relevant
 
     # TEMPORARY HACK
     # Set the DB_HOST environment variable
-    os.putenv("DB_HOST", ips_pg["ip_private"])
+    os.putenv("DB_HOST", ips_pg['ip_private'])
 
     # 3) Sync code and run-home
     if args.sync:
         if not args.aws:
             print "ERROR: Syncing is meaningless unless you're running aws (use param --step_aws)"
             exit()
-        aws.sync_experiment(ips["ip_public"], args.ec2_keypath)
+        aws.sync_experiment(ips['ip_public'], args.ec2_keypath)
 
     # 4) Launch framework (on AWS or locally) - *** IF Mode == 'Per Session' ***
     if (launch_mode is LaunchMode.per_session) and args.launch_framework:
-        launch_framework(args.aws)
+        launch_framework()
 
     # 5) Run experiments
     if args.exps_file:
@@ -438,8 +450,8 @@ if __name__ == '__main__':
             fwk.terminate()
 
         # Shutdown infrastructure
-        if args.aws:
+        if is_aws:
             aws.close(args.instanceid)
 
-            if is_pg_aws:
+            if is_pg_ec2:
                 aws.close(args.pg_instance)

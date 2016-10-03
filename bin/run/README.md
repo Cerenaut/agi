@@ -56,5 +56,5 @@ python run-framework.py --logging --step_exps experiments.json --step_agief --st
 
 ### generate input files
 ```sh
-python run-framework.py --step_gen_input io.agi.framework.demo.classifier.ClassifierDemo
+python run-framework.py --step_gen_input io.agi.framework.demo.mnist.DeepMNISTDemo
 ```

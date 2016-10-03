@@ -87,7 +87,7 @@ def stop_task(task_arn):
 # run the chosen instance specified by instance_id
 # returns the aws public and private ip addresses
 def run_ec2(instance_id):
-    print "....... starting ec2"
+    print "....... starting ec2 (instance id " + instance_id + ")"
     ec2 = boto3.resource('ec2')
     instance = ec2.Instance(instance_id)
     response = instance.start()
