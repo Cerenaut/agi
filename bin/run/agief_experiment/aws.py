@@ -8,7 +8,7 @@ cluster = 'default'
 
 # assumes there exists a private key for the given ec2 instance, at ~/.ssh/ecs-key
 def sync_experiment(host, keypath):
-    print "....... syncing code to ec2 container instance"
+    print "....... Syncing code to ec2 container instance"
 
     # code
     file_path = utils.filepath_from_env_variable("", "AGI_HOME")
@@ -42,7 +42,7 @@ def sync_experiment(host, keypath):
 def run_task(task_name):
     """ Run task 'task_name' and return the Task ARN """
 
-    print "....... running task on ecs "
+    print "....... Running task on ecs "
     client = boto3.client('ecs')
     response = client.run_task(
         cluster=cluster,
@@ -71,7 +71,7 @@ def run_task(task_name):
 
 def stop_task(task_arn):
 
-    print "....... stopping task on ecs "
+    print "....... Stopping task on ecs "
     client = boto3.client('ecs')
 
     response = client.stop_task(
@@ -87,7 +87,7 @@ def stop_task(task_arn):
 # run the chosen instance specified by instance_id
 # returns the aws public and private ip addresses
 def run_ec2(instance_id):
-    print "....... starting ec2 (instance id " + instance_id + ")"
+    print "....... Starting ec2 (instance id " + instance_id + ")"
     ec2 = boto3.resource('ec2')
     instance = ec2.Instance(instance_id)
     response = instance.start()
@@ -108,8 +108,16 @@ def run_ec2(instance_id):
 
 
 def close(instance_id):
+    print "...... Closing ec2 instance (instance id " + instance_id + ")"
     ec2 = boto3.resource('ec2')
     instance = ec2.Instance(instance_id)
+
+    ip_public = instance.public_ip_address
+    ip_private = instance.private_ip_address
+
+    print "Instance public IP address is: ", ip_public
+    print "Instance private IP address is: ", ip_private
+
     response = instance.stop()
 
     if log:

@@ -33,7 +33,7 @@ def launch_framework_aws(task_name):
     :return:
     """
 
-    print "....... launching framework on AWS"
+    print "....... Launching framework on AWS"
     task_arn = aws.run_task(task_name)
     fwk.wait_up()
     return task_arn
@@ -51,7 +51,7 @@ def launch_framework_local(main_class=""):
     :return:
     """
 
-    print "....... launching framework locally"
+    print "....... Launching framework locally"
     cmd = "../node_coordinator/run.sh "
     if main_class is not "":
         cmd = "../node_coordinator/run-demo.sh node.properties " + main_class + " " + TEMPLATE_PREFIX
@@ -111,7 +111,7 @@ def run_exp(entity_file, data_file, param_description):
                           exp.outputfile(new_entity_file),
                           exp.outputfile(new_data_file))
 
-    print "....... Shutdown Framework"
+    print "....... Shutdown System"
     shutdown_framework(task_arn)
 
 
