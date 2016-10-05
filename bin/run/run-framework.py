@@ -91,8 +91,9 @@ def run_exp(entity_file, data_file, param_description):
               ", does not exist.\nCANNOT CONTINUE."
         exit()
 
-    print "....... Launch Framework"
-    task_arn = launch_framework()
+    if (launch_mode is LaunchMode.per_experiment) and args.launch_framework:
+        print "....... Launch Framework"
+        task_arn = launch_framework()
 
     print "....... Import Experiment"
     fwk.import_experiment(entity_file_path, data_file_path)
@@ -101,15 +102,18 @@ def run_exp(entity_file, data_file, param_description):
     set_dataset(exps_file)
 
     print "....... Run Experiment"
+    print "Prefix = " + exp.prefix
+    print "Parameters = " + param_description
     fwk.run_experiment(exp)
 
-    print "....... Export Experiment"
-    new_entity_file = utils.append_before_ext(entity_file, "___" + param_description)
-    new_data_file = utils.append_before_ext(data_file, "___" + param_description)
+    if is_export:
+        print "....... Export Experiment"
+        new_entity_file = utils.append_before_ext(entity_file, "___" + param_description)
+        new_data_file = utils.append_before_ext(data_file, "___" + param_description)
 
-    fwk.export_experiment(exp.entity_with_prefix("experiment"),
-                          exp.outputfile(new_entity_file),
-                          exp.outputfile(new_data_file))
+        fwk.export_experiment(exp.entity_with_prefix("experiment"),
+                              exp.outputfile(new_entity_file),
+                              exp.outputfile(new_data_file))
 
     print "....... Shutdown System"
     shutdown_framework(task_arn)
@@ -299,6 +303,8 @@ def setup_arg_parsing():
                         help='Launch the framework.')
     parser.add_argument('--step_shutdown', dest='shutdown', action='store_true',
                         help='Shutdown instances and framework after other stages.')
+    parser.add_argument('--step_export', dest='export', action='store_true',
+                        help='Export entity tree and data at the end of each experiment.')
 
     # how to reach the framework
     parser.add_argument('--host', dest='host', required=False,
@@ -342,11 +348,10 @@ def launch_framework():
 
     task_arn = None
 
-    if args.launch_framework:
-        if is_aws:
-            task_arn = launch_framework_aws(args.task_name)
-        else:
-            launch_framework_local()
+    if is_aws:
+        task_arn = launch_framework_aws(args.task_name)
+    else:
+        launch_framework_local()
 
     return task_arn
 
@@ -356,9 +361,8 @@ def shutdown_framework(task_arn):
 
     fwk.terminate()
 
-    if args.launch_framework:
-        if is_aws:
-            aws.stop_task(task_arn)
+    if is_aws:
+        aws.stop_task(task_arn)
 
 
 class LaunchMode(Enum):
@@ -374,6 +378,7 @@ if __name__ == '__main__':
         print "LOG: Arguments: ", args
 
     is_aws = args.aws
+    is_export = args.export
     TEMPLATE_PREFIX = "SPAGHETTI"
     PREFIX_DELIMITER = "--"
 
