@@ -18,7 +18,15 @@ class AGIEF:
     # Return when the the config parameter has achieved the value specified
     # entity = name of entity, param_path = path to parameter, delimited by '.'
     def wait_till_param(self, entity_name, param_path, value):
+        wait_period = 10
+        age = None
         while True:
+
+            print " ... Waiting for parameter to achieve value (try every " + str(wait_period) + "s):"
+            print "     " + entity_name + "." + param_path + " ---> " + str(value)
+            if age is not None:
+                print "     " + entity_name + ".age = " + str(age)
+
             try:
                 param_dic = {'entity': entity_name}
                 r = requests.get(self.base_url + '/config', params=param_dic)
@@ -28,22 +36,22 @@ class AGIEF:
                     print "  LOG: response text = ", r.text
                     print "  LOG: url: ", r.url
 
-                if r.json()["value"] is not None:
-                    parameter = dpath.util.get(r.json(), "value." + param_path, '.')
+                if r.json()['value'] is not None:
+                    age = dpath.util.get(r.json(), 'value.age', '.')
+                    parameter = dpath.util.get(r.json(), 'value.' + param_path, '.')
                     if parameter == value:
                         if self.log:
-                            print "LOG: ... parameter: " + entity_name + "." + param_path + ", has achieved value: " + str(
-                                value) + "."
+                            print "LOG: ... parameter: " + entity_name + "." + param_path + ", has achieved value: " + \
+                                  str(value) + "."
                         break
             except requests.exceptions.ConnectionError:
                 print "Oops, ConnectionError exception"
             except requests.exceptions.RequestException:
                 print "Oops, request exception"
 
-            if self.log:
-                print "  LOG: ... parameter: " + entity_name + "." + param_path + ", has not achieved value: " + \
-                      str(value) + ",   wait 2s and try again ........"
-            time.sleep(2)  # sleep for n seconds
+            time.sleep(wait_period)  # sleep for n seconds
+
+        print "   -> success, parameter reached value"
 
     # setup the running instance of AGIEF with the input files
     def import_experiment(self, entity_filepath=None, data_filepath=None):
@@ -110,8 +118,8 @@ class AGIEF:
             version = self.version()
 
             if version is None:
-                time.sleep(1)
-                print "  - no connection yet ......"
+                print "  - no connection yet, wait 2s ......"
+                time.sleep(2)
             else:
                 break
 

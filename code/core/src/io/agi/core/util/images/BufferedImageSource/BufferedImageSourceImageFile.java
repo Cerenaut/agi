@@ -20,6 +20,8 @@
 package io.agi.core.util.images.BufferedImageSource;
 
 import io.agi.core.orm.AbstractPair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -32,6 +34,8 @@ import java.util.Collections;
  * Created by gideon on 1/10/14.
  */
 public class BufferedImageSourceImageFile extends BufferedImageSource {
+
+    protected static final Logger logger = LogManager.getLogger();
 
     protected ArrayList< String > _fileNames = new ArrayList< String >();
     protected String _folderName = null;
@@ -102,6 +106,9 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
             return _fileNames.get( idx );
         }
         catch( Exception e ) {
+            logger.error( "Unable to get image file name.");
+            logger.error( e.toString(), e );
+
             return null;
         }
     }
@@ -119,7 +126,10 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
                 _image = ImageIO.read( new File( fullFileName ) );
             }
             catch( IOException e ) {
-                e.printStackTrace();
+                logger.error( "Unable to get image.");
+                logger.error( e.toString(), e );
+
+                _image = null;
             }
         }
 

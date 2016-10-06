@@ -126,7 +126,7 @@ public class ImageClassEntity extends Entity {
             }
             else if( config.phase.equals( ImageClassEntityConfig.PHASE_TEST_ANALYTICS ) ) {
                 config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
-                _logger.info( "=======> Terminating on end of test set. (1)" );
+                _logger.warn( "=======> Terminating on end of test set. (1)" );
             }
         }
 
@@ -134,7 +134,7 @@ public class ImageClassEntity extends Entity {
         // Also set learning status of entities
         // May have changed from training to testing.
         // This can happen because above we may roll over into a new batch
-        _logger.info( "=======> Training set: " + trainingImages + " testing set: " + testingImages + " index: " + config.imageIndex + " phase " + config.phase );
+        _logger.warn( "=======> Training set: " + trainingImages + " testing set: " + testingImages + " index: " + config.imageIndex + " phase " + config.phase );
 
         bis = bisTraining;
         boolean learnAlgorithm = false;
@@ -170,7 +170,7 @@ public class ImageClassEntity extends Entity {
         if( config.phase.equals( ImageClassEntityConfig.PHASE_TEST_ANALYTICS ) ) {
             if( config.trainingBatch > 0 ) {
                 config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
-                _logger.info( "=======> Terminating on end of test set. (2)" );
+                _logger.warn( "=======> Terminating on end of test set. (2)" );
             }
         }
 
@@ -178,7 +178,7 @@ public class ImageClassEntity extends Entity {
         if( !inRange ) { // occurs if no testing images
             config.imageIndex = 0; // reset the index to allow further updates:
             config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
-            _logger.info( "=======> Terminating on no more images to serve. (3)" );
+            _logger.warn( "=======> Terminating on no more images to serve. (3)" );
         }
 
         // Setup screen scraper
@@ -195,15 +195,27 @@ public class ImageClassEntity extends Entity {
         }
 
         // get all data
-        imageScreenScraper.scrape(); // get the current image
+        boolean scraped = imageScreenScraper.scrape(); // get the current image
+
+        if (!scraped) {
+            _logger.error("Could not scrape image, so unable to do anything useful this update");
+            return;
+        }
+
         String imageFileName = bis.getImageFileName();
-        Integer imageClass = getClassification( imageFileName );//, config.sourceFilesPrefix );
+        Integer imageClass = getClassification( imageFileName ); //, config.sourceFilesPrefix );
+
+        if (imageClass == null) {
+            _logger.error("Could not get image classification, so unable to do anything useful this update");
+            return;
+        }
+
         Data image = imageScreenScraper.getData();
 
         _logger.info( "Emitting image " + bis.getIdx() + " class.: " + imageClass );
 
         // Update the experiment:
-        config.imageIndex = config.imageIndex +1; // set to fetch next image
+        config.imageIndex = config.imageIndex + 1; // set to fetch next image
 
         // write outputs back to persistence
         setData( OUTPUT_IMAGE, image );
@@ -221,6 +233,8 @@ public class ImageClassEntity extends Entity {
             return c;
         }
         catch( Exception e ) {
+            _logger.error( "Unable to get image classification" );
+            _logger.error( e.toString(), e );
             return null;
         }
     }
