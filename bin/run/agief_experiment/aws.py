@@ -6,6 +6,7 @@ import utils
 log = False
 cluster = 'default'
 
+
 # assumes there exists a private key for the given ec2 instance, at ~/.ssh/ecs-key
 def sync_experiment(host, keypath):
     print "....... Syncing code to ec2 container instance"
@@ -58,6 +59,7 @@ def run_task(task_name):
     if length > 0:
         print "ERROR: could not initiate task on AWS."
         print "reason = " + response['failures'][0]['reason']
+        print "arn = " + response['failures'][0]['arn']
         print " ----- exiting -------"
         exit()
 

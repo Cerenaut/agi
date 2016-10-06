@@ -47,6 +47,7 @@ class AGIEF:
 
     # setup the running instance of AGIEF with the input files
     def import_experiment(self, entity_filepath=None, data_filepath=None):
+        print "....... Import Experiment"
         with open(entity_filepath, 'rb') as entity_data_file:
             with open(data_filepath, 'rb') as data_data_file:
                 files = {'entity-file': entity_data_file, 'data-file': data_data_file}
@@ -58,6 +59,9 @@ class AGIEF:
                     print "  LOG: post body = ", files
 
     def run_experiment(self, exp):
+
+        print "....... Run Experiment"
+
         payload = {'entity': exp.entity_with_prefix('experiment'), 'event': 'update'}
         response = requests.get(self.base_url + '/update', params=payload)
         if self.log:
@@ -84,6 +88,8 @@ class AGIEF:
     # that consists of entity graph and the data
     def export_experiment(self, root_entity, entity_filepath, data_filepath):
 
+        print "....... Export Experiment"
+
         if self.log:
             print "Exporting data for root entity: " + root_entity
 
@@ -93,20 +99,21 @@ class AGIEF:
     def wait_up(self):
         print "....... wait till framework has started at = " + self.base_url
 
-        version = "** could not parse version number **"
+        version = None
+        i = 0
         while True:
-            try:
-                response = requests.get(self.base_url + '/version')
-                if self.log:
-                    print "LOG: response = ", response
+            i += 1
+            if i > 120:
+                print "Error: could not start framework, cannot continue."
+                exit()
 
-                response_json = response.json()
-                if 'version' in response_json:
-                    version = response_json['version']
-                break
-            except requests.ConnectionError:
+            version = self.version()
+
+            if version is None:
                 time.sleep(1)
                 print "  - no connection yet ......"
+            else:
+                break
 
         print "  - framework is up, running version: " + version
 
@@ -142,8 +149,10 @@ class AGIEF:
 
         log_debug = False
 
-        print "Modify Parameters: ", entity_name + "." + param_path + " = " + str(value)
-        print "LOG: in file: " + entity_filepath
+        print "Set Parameter: ", entity_name + "." + param_path + " = " + str(value)
+
+        if log_debug:
+            print "LOG: in file: " + entity_filepath
 
         # open the entity input file
         with open(entity_filepath) as data_file:
@@ -194,3 +203,26 @@ class AGIEF:
         # write back to file
         with open(entity_filepath, 'w') as data_file:
             data_file.write(json.dumps(data, indent=4))
+
+    def version(self):
+        """
+        Find out the version from the running framework, through the RESTful API. Return the string,
+        or None if it could not retrieve the version.
+        """
+
+        version = None
+        try:
+            response = requests.get(self.base_url + '/version')
+            if self.log:
+                print "LOG: response = ", response
+
+            response_json = response.json()
+            if 'version' in response_json:
+                version = response_json['version']
+
+        except requests.ConnectionError:
+            print "Error connecting to agief to retrieve the version."
+
+        return version
+
+

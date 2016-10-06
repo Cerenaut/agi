@@ -33,7 +33,7 @@ def launch_framework_aws(task_name):
     :return:
     """
 
-    print "....... Launching framework on AWS"
+    print "launching framework on AWS"
     task_arn = aws.run_task(task_name)
     fwk.wait_up()
     return task_arn
@@ -51,7 +51,7 @@ def launch_framework_local(main_class=""):
     :return:
     """
 
-    print "....... Launching framework locally"
+    print "launching framework locally"
     cmd = "../node_coordinator/run.sh "
     if main_class is not "":
         cmd = "../node_coordinator/run-demo.sh node.properties " + main_class + " " + TEMPLATE_PREFIX
@@ -67,7 +67,7 @@ def launch_framework_local(main_class=""):
     fwk.wait_up()
 
 
-def run_exp(entity_file, data_file, param_description):
+def run_parameterset(entity_file, data_file, param_description):
     """
     Import input files
     Run Experiment and Export experiment
@@ -79,6 +79,10 @@ def run_exp(entity_file, data_file, param_description):
     :param param_description:
     :return:
     """
+
+    print "........ Run parameter set."
+    print "Prefix = " + exp.prefix
+    print "Parameters = " + param_description
 
     entity_file_path = exp.inputfile(entity_file)
     data_file_path = exp.inputfile(data_file)
@@ -92,22 +96,15 @@ def run_exp(entity_file, data_file, param_description):
         exit()
 
     if (launch_mode is LaunchMode.per_experiment) and args.launch_framework:
-        print "....... Launch Framework"
         task_arn = launch_framework()
 
-    print "....... Import Experiment"
     fwk.import_experiment(entity_file_path, data_file_path)
 
-    print "....... Set Dataset"
     set_dataset(exps_file)
 
-    print "....... Run Experiment"
-    print "Prefix = " + exp.prefix
-    print "Parameters = " + param_description
     fwk.run_experiment(exp)
 
     if is_export:
-        print "....... Export Experiment"
         new_entity_file = utils.append_before_ext(entity_file, "___" + param_description)
         new_data_file = utils.append_before_ext(data_file, "___" + param_description)
 
@@ -115,7 +112,6 @@ def run_exp(entity_file, data_file, param_description):
                               exp.outputfile(new_entity_file),
                               exp.outputfile(new_data_file))
 
-    print "....... Shutdown System"
     shutdown_framework(task_arn)
 
 
@@ -209,6 +205,8 @@ def run_sweeps(exps_file):
     :return:
     """
 
+    print "........ Run Sweeps"
+
     with open(exps_file) as data_exps_file:
         data = json.load(data_exps_file)
 
@@ -227,7 +225,7 @@ def run_sweeps(exps_file):
             print "No parameters to sweep, just run once."
 
             entity_filename, data_filename = exp.create_input_files(TEMPLATE_PREFIX, base_entity_filename, base_data_filename)
-            run_exp(entity_filename, data_filename, "")
+            run_parameterset(entity_filename, data_filename, "")
         else:
             for param_sweep in exp_i['parameter-sweeps']:  # array of sweep definitions
 
@@ -242,7 +240,7 @@ def run_sweeps(exps_file):
                     if reset:
                         is_sweeping = False
                     else:
-                        run_exp(entity_filename, data_filename, param_description)
+                        run_parameterset(entity_filename, data_filename, param_description)
 
 
 def set_dataset(exps_file):
@@ -253,6 +251,8 @@ def set_dataset(exps_file):
     :param exps_file:
     :return:
     """
+
+    print "....... Set Dataset"
 
     with open(exps_file) as data_exps_file:
         data = json.load(data_exps_file)
@@ -345,6 +345,8 @@ def setup_arg_parsing():
 def launch_framework():
     """ Launch framework locally or on AWS. Return task arn if on AWS """
 
+    print "....... Launch Framework"
+
     task_arn = None
 
     if is_aws:
@@ -352,11 +354,16 @@ def launch_framework():
     else:
         launch_framework_local()
 
+    version = fwk.version()
+    print "Running framework version: " + version
+
     return task_arn
 
 
 def shutdown_framework(task_arn):
     """ Close framework: terminate and then if running on AWS, stop the task. """
+
+    print "....... Shutdown System"
 
     fwk.terminate()
 
