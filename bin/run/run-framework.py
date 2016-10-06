@@ -224,8 +224,7 @@ def run_sweeps(exps_file):
         base_data_filename = import_files['file-data']
 
         if 'parameter-sweeps' not in exp_i or len(exp_i['parameter-sweeps']) == 0:
-            if log:
-                print "No parameters to sweep, just run once."
+            print "No parameters to sweep, just run once."
 
             entity_filename, data_filename = exp.create_input_files(TEMPLATE_PREFIX, base_entity_filename, base_data_filename)
             run_exp(entity_filename, data_filename, "")
@@ -247,13 +246,13 @@ def run_sweeps(exps_file):
 
 
 def set_dataset(exps_file):
-    '''
+    """
     The dataset can be located in different locations on different machines. The location can be set in the
     experiments definition file (experiments.json). This method parses that file, finds the parameters to set
     relative to the AGI_DATA_HOME env variable, and sets the specified parameters.
     :param exps_file:
     :return:
-    '''
+    """
 
     with open(exps_file) as data_exps_file:
         data = json.load(data_exps_file)
