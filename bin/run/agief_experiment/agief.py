@@ -20,12 +20,21 @@ class AGIEF:
     def wait_till_param(self, entity_name, param_path, value):
         wait_period = 10
         age = None
-        while True:
+        i = 0
 
-            print " ... Waiting for parameter to achieve value (try every " + str(wait_period) + "s):"
-            print "     " + entity_name + "." + param_path + " ---> " + str(value)
+        print "... Waiting for param to achieve value (try every " + str(wait_period) + "s): " + entity_name + \
+              "." + param_path + " = " + str(value)
+
+        while True:
+            i += 1
+
+            age_string = ""
             if age is not None:
-                print "     " + entity_name + ".age = " + str(age)
+                age_string = ", " + entity_name + ".age = " + str(age)
+
+            if not self.log:
+                utils.restart_line()
+            print "Iteration = [%d]%s" % (i, age_string),
 
             try:
                 param_dic = {'entity': entity_name}
@@ -95,9 +104,7 @@ class AGIEF:
     # Export the full experiment state from the running instance of AGIEF
     # that consists of entity graph and the data
     def export_experiment(self, root_entity, entity_filepath, data_filepath):
-
         print "....... Export Experiment"
-
         if self.log:
             print "Exporting data for root entity: " + root_entity
 
@@ -105,25 +112,29 @@ class AGIEF:
         self.export_root_entity(data_filepath, root_entity, 'data')
 
     def wait_up(self):
-        print "....... wait till framework has started at = " + self.base_url
+        wait_period = 3
+
+        print "....... Wait till framework has started (try every " + str(wait_period) + " seconds),   at = " \
+              + self.base_url
 
         version = None
         i = 0
         while True:
             i += 1
             if i > 120:
-                print "Error: could not start framework, cannot continue."
+                print "\nError: could not start framework, cannot continue."
                 exit()
 
-            version = self.version()
+            version = self.version(True)
 
             if version is None:
-                print "  - no connection yet, wait 2s ......"
-                time.sleep(2)
+                utils.restart_line()
+                print "Iteration = [%d / 120]" % i,
+                time.sleep(wait_period)
             else:
                 break
 
-        print "  - framework is up, running version: " + version
+        print "\n  - framework is up, running version: " + version
 
     def terminate(self):
         print "...... Terminate framework"
@@ -212,7 +223,7 @@ class AGIEF:
         with open(entity_filepath, 'w') as data_file:
             data_file.write(json.dumps(data, indent=4))
 
-    def version(self):
+    def version(self, is_suppress_console_output=False):
         """
         Find out the version from the running framework, through the RESTful API. Return the string,
         or None if it could not retrieve the version.
@@ -229,7 +240,10 @@ class AGIEF:
                 version = response_json['version']
 
         except requests.ConnectionError:
-            print "Error connecting to agief to retrieve the version."
+            version = None
+
+            if not is_suppress_console_output:
+                print "Error connecting to agief to retrieve the version."
 
         return version
 

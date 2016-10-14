@@ -82,7 +82,7 @@ def run_parameterset(entity_file, data_file, param_description):
 
     print "........ Run parameter set."
     print "Prefix = " + exp.prefix
-    print "Parameters = " + param_description
+    # print "Parameters = " + param_description             # already output to console when they were set
 
     entity_file_path = exp.inputfile(entity_file)
     data_file_path = exp.inputfile(data_file)
@@ -395,6 +395,8 @@ if __name__ == '__main__':
 
     exp = experiment.Experiment(TEMPLATE_PREFIX, PREFIX_DELIMITER)
     fwk = agief.AGIEF(log, None)
+
+    print "finished"
 
     # 1) Generate input files
     if args.main_class:

@@ -2,6 +2,12 @@ import subprocess
 import os
 import errno
 import fileinput
+import sys
+
+
+def restart_line():
+    sys.stdout.write('\r')
+    sys.stdout.flush()
 
 
 def replace_in_file(src_string, dest_string, file_path):
