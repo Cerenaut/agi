@@ -58,8 +58,8 @@ public class JdbcUtil {
             //_logger.info( "JDBC T: {} @3 ", System.currentTimeMillis() );
 
             //STEP 6: Clean-up environment
-            s.close();
-            c.close();
+//            s.close();
+//            c.close();
         }
         catch( SQLException se ) {
             logger.error( se.getStackTrace() );
@@ -74,14 +74,14 @@ public class JdbcUtil {
             catch( SQLException se2 ) {
                 logger.error( se2.getStackTrace() );
             }
-
-            try {
-                if( c != null ) c.close();
+            finally {
+                try {
+                    if( c != null ) c.close();
+                }
+                catch( SQLException se ) {
+                    logger.error( se.getStackTrace() );
+                }
             }
-            catch( SQLException se ) {
-                logger.error( se.getStackTrace() );
-            }
-
         }
     }
 
