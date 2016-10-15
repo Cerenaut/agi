@@ -30,11 +30,15 @@ import io.agi.core.data.ImageData;
 import io.agi.core.orm.AbstractPair;
 import io.agi.core.orm.Callback;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSource;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class ImageScreenScraper implements Callback {
+
+    protected static final Logger logger = LogManager.getLogger();
 
     protected Rectangle _receptiveField;
     protected BufferedImageSource _bis;
@@ -98,14 +102,15 @@ public class ImageScreenScraper implements Callback {
     /**
      * Read in sub image at the receptive field, scale it to sensor resolution
      * and convert to the appropriate format for the ImageData field
+     * Return True if successful, False if unsuccessful (i.e. could not locate image)
      */
-    public void scrape() {
+    public boolean scrape() {
         BufferedImage bi = _bis.getImage();
         BufferedImage biTgt = null;
 
         if( bi == null ) {
-            System.out.println( "ERROR: ImageScreenScraper.scrape() - could not scrape image with name: " + _bis.getImageName() );
-            return;
+            logger.error( "ERROR: ImageScreenScraper.scrape() - could not scrape image with name: " + _bis.getImageName() );
+            return false;
         }
 
         // 1) crop to receptor field
@@ -131,6 +136,8 @@ public class ImageScreenScraper implements Callback {
         if( _invert ) {
             _imageData.getData().argSub( 1.f );
         }
+
+        return true;
     }
 
     public BufferedImageSource getSource() {

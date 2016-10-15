@@ -10,12 +10,17 @@
 
 
 # ---------------------------------------
-# AGI Home 
+# AGI Home Folders
 # ---------------------------------------
+
+# Code Home
 export AGI_HOME=~/dev/agi
 
 # RUN Home
 export AGI_RUN_HOME=~/dev/run
+
+# DATA Home
+export AGI_DATA_HOME=~/dev/data
 
 # Database 
 export DB_PORT=5432

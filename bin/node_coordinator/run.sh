@@ -66,14 +66,19 @@ dburl_default="jdbc:postgresql://$DB_HOST:$DB_PORT/agidb"
 p_key=${opt_p_key:-database-url}          # if it was not defined, that is ok, it is passed as null and ignored
 p_val=${opt_p_val:-$dburl_default} 		    # if it was not defined, that is ok, it is passed as null and ignored
 
+echo "Create classpath file cp.txt"
+cd $AGI_HOME/code/core
+pwd
+cmd="mvn dependency:build-classpath -Dmdep.outputFile=$AGI_RUN_HOME/cp.txt"
+eval $cmd;
+
 echo "Run home = $AGI_RUN_HOME"
 cd $AGI_RUN_HOME
 pwd
 
 # run coordinator
 cmd="$JAVA_HOME/bin/java -Xmx6000m -Dfile.encoding=UTF-8 -Dlog4j.configurationFile=file:$log_config \
--cp \
-$AGI_HOME/code/core/target/agief-jar-with-dependencies.jar $main_class \
+-cp `cat cp.txt`:$AGI_HOME/code/core/target/agief.jar $main_class \
 $node_properties $entity_file $data_file $config_file $p_key $p_val"
 
 echo $cmd;

@@ -25,8 +25,6 @@ import org.apache.commons.fileupload.RequestContext;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
-import javax.servlet.*;
-
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.agi.framework.Framework;
@@ -35,9 +33,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.List;
-import java.util.Map;
+
 
 /**
  * Created by dave on 2/04/16.
@@ -122,7 +119,8 @@ public class HttpImportHandler implements HttpHandler {
 
         }
         catch( Exception e ) {
-            logger.error( "Unable to import entities/data. The stack trace is: \n" + e.getStackTrace() );
+            logger.error( "Unable to import entities/data.");
+            logger.error( e.toString(), e );
         }
 
         HttpUtil.SendResponse( t, status, response );

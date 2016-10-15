@@ -24,6 +24,8 @@ import com.sun.net.httpserver.HttpHandler;
 import io.agi.core.orm.AbstractPair;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.models.ModelData;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,6 +35,8 @@ import java.util.Collection;
  * Created by dave on 17/03/16.
  */
 public class HttpDataHandler implements HttpHandler {
+
+    protected static final Logger logger = LogManager.getLogger();
 
     public static final String CONTEXT = "/data";
 
@@ -112,7 +116,8 @@ public class HttpDataHandler implements HttpHandler {
             status = 200;
         }
         catch( Exception e ) {
-            e.printStackTrace();
+            logger.error( "Unable to handle data call.");
+            logger.error( e.toString(), e );
         }
 
         HttpUtil.SendResponse( t, status, response );
