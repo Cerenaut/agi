@@ -26,6 +26,7 @@ import io.agi.framework.persistence.models.ModelNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -239,6 +240,12 @@ public class HttpCoordination implements Coordination {
 
             public Response( InputStream body ) {
                 this.body = body;
+                try {
+                    body.close();
+                }
+                catch( IOException e ) {
+
+                }
             }
 
             public InputStream getBody() {
