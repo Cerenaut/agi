@@ -25,10 +25,40 @@
 
 package io.agi.core.math;
 
+import java.util.Random;
+
 /**
  * @author dave
  */
 public class Statistics {
+
+    // TODO: A nonhomogeneous poisson process
+    // http://www.math.uah.edu/stat/poisson/Nonhomogeneous.html
+    // http://web.ics.purdue.edu/~pasupath/PAPERS/2011pasB.pdf
+    // http://prac.im.pwr.edu.pl/~burnecki/Simulation_of_counting_processes.pdf
+
+    /**
+     * Simulates a Poisson process. Generates events at random intervals, with frequency controlled by 'rate'.
+     * When you call this function, it will return the interval until the next event such that the average rate is
+     * 'rate' per time-unit. Each time an event occurs, call the function again to find the time of the next event.
+     *
+     * See:
+     * http://preshing.com/20111007/how-to-generate-random-timings-for-a-poisson-process/
+     * http://stackoverflow.com/questions/1155539/how-do-i-generate-a-poisson-process
+     *
+     * @param r
+     * @param rate
+     * @return
+     */
+    public static float poissonInterval( Random r, float rate ) {
+        if( rate <= 0f ) {
+            return 0f;
+        }
+
+        float U = r.nextFloat();
+        float interval = (float)( - Math.log( 1.0 - U ) / rate );
+        return interval;
+    }
 
     /**
      * Shannon entropy with base 10.
