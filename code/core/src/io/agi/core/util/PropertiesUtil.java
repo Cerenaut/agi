@@ -20,6 +20,7 @@
 package io.agi.core.util;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Properties;
 
 /**
@@ -32,14 +33,26 @@ public class PropertiesUtil {
     public static Properties load( String file ) {
         Properties p = new Properties();
 
+        FileInputStream fis = null;
+
         try {
-            p.load( new FileInputStream( file ) );
+            fis = new FileInputStream( file );
+            p.load( fis );
         }
         catch( Exception e ) {
             System.err.println( "Error reading properties from file: " + file );
             e.printStackTrace();
         }
-
+        finally {
+            if( fis != null ) {
+                try {
+                    fis.close();
+                }
+                catch( IOException ioe ) {
+                    // ok
+                }
+            }
+        }
         return p;
     }
 
@@ -53,15 +66,29 @@ public class PropertiesUtil {
      * @return
      */
     public static String get( String file, String key, String defaultValue ) {
+        Properties p = new Properties();
+        FileInputStream fis = null;
+
         try {
-            Properties p = new Properties();
-            p.load( new FileInputStream( file ) );
+            fis = new FileInputStream( file );
+            p.load( fis );
+
             return PropertiesUtil.get( p, key, defaultValue );
         }
         catch( Exception e ) {
             System.err.println( "Error reading properties from file: " + file );
             e.printStackTrace();
             return defaultValue;
+        }
+        finally {
+            if( fis != null ) {
+                try {
+                    fis.close();
+                }
+                catch( IOException ioe ) {
+                    // ok
+                }
+            }
         }
     }
 
