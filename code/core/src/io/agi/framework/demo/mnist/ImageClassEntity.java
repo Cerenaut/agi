@@ -84,12 +84,15 @@ public class ImageClassEntity extends Entity {
 
         if( config.reset ) {
             config.imageIndex = 0;
+            config.imageRepeat = 0;
             config.terminate = false;
             config.trainingBatch = 0;
             config.phase = ImageClassEntityConfig.PHASE_TRAIN_ALGORITHM;
         }
 
         // Load all files in training and testing folders.
+        _logger.info( "Training files folder: " + config.sourceFilesPathTraining );
+        _logger.info( "Testing files folder: " + config.sourceFilesPathTesting );
         BufferedImageSourceImageFile bisTraining = new BufferedImageSourceImageFile( config.sourceFilesPathTraining );
         BufferedImageSourceImageFile bisTesting  = new BufferedImageSourceImageFile( config.sourceFilesPathTesting  );
         BufferedImageSourceImageFile bis = null;
@@ -112,6 +115,7 @@ public class ImageClassEntity extends Entity {
             _logger.info( "End of image dataset: Batch complete." );
             config.trainingBatch += 1;
             config.imageIndex = 0;
+            config.imageRepeat = 0;
 
             // check for phase change:
             if( config.phase.equals( ImageClassEntityConfig.PHASE_TRAIN_ALGORITHM ) ) {
@@ -134,7 +138,7 @@ public class ImageClassEntity extends Entity {
         // Also set learning status of entities
         // May have changed from training to testing.
         // This can happen because above we may roll over into a new batch
-        _logger.info( "=======> Training set: " + trainingImages + " testing set: " + testingImages + " index: " + config.imageIndex + " phase " + config.phase );
+        _logger.info( "=======> Training set: " + trainingImages + " testing set: " + testingImages + " index: " + config.imageIndex + " repeat: " + config.imageRepeat + " phase " + config.phase );
 
         bis = bisTraining;
         boolean learnAlgorithm = false;
@@ -177,8 +181,10 @@ public class ImageClassEntity extends Entity {
         boolean inRange = bis.seek( config.imageIndex ); // next image
         if( !inRange ) { // occurs if no testing images
             config.imageIndex = 0; // reset the index to allow further updates:
+            config.imageRepeat = 0;
             config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
             _logger.info( "=======> Terminating on no more images to serve. (3)" );
+            bis.seek( config.imageIndex ); // seek first image
         }
 
         // Setup screen scraper
@@ -203,7 +209,11 @@ public class ImageClassEntity extends Entity {
         _logger.info( "Emitting image " + bis.getIdx() + " class.: " + imageClass );
 
         // Update the experiment:
-        config.imageIndex = config.imageIndex +1; // set to fetch next image
+        config.imageRepeat += 1;
+        if( config.imageRepeat == config.imageRepeats ) {
+            config.imageRepeat = 0;
+            config.imageIndex = config.imageIndex +1; // set to fetch next image
+        }
 
         // write outputs back to persistence
         setData( OUTPUT_IMAGE, image );

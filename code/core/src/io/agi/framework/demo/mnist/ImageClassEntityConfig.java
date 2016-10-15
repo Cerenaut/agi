@@ -57,6 +57,8 @@ public class ImageClassEntityConfig extends EntityConfig {
 
     int imageClass = 0;
     int imageIndex = 0;
+    int imageRepeat = 0;
+    int imageRepeats = 1;
     int trainingBatch = 0;
     int trainingBatches = 1;
     boolean terminate = false;
