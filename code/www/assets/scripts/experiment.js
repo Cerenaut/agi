@@ -145,7 +145,7 @@ var Experiment = {
   },
 
   setup : function() {
-
+    Framework.setNodeHost(); // in case override by param
     Parameters.extract( Experiment.onParameter );
     Loop.setup( Experiment.onInterval );
   }

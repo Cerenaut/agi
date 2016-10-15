@@ -188,6 +188,7 @@ var Vector = {
   },
 
   setup : function() {
+    Framework.setNodeHost(); // in case override by param
     Parameters.extract( Vector.onParameter );
     Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
     Loop.setup( Vector.update );

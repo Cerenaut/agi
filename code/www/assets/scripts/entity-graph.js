@@ -66,6 +66,7 @@ var EntityGraph = {
   },
 
   setup : function() {
+    Framework.setNodeHost(); // in case override by param
     Parameters.extract( EntityGraph.onParameter );
     EntityGraph.show();
   }

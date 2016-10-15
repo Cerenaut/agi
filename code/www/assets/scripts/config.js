@@ -70,6 +70,7 @@ var Config = {
   },
 
   setup : function() {
+    Framework.setNodeHost(); // in case override by param
     Parameters.extract( Config.onParameter );
     Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
     Loop.setup( Config.refresh );

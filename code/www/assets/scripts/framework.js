@@ -28,6 +28,9 @@ var Framework = {
   exportTypeData : "data",  
   exportTypeDataRefs : "data-refs",
 
+  setNodeHost : function() {
+    $( "#host" ).val( window.location.hostname );
+  },
 
   update : function( entity, callback ) {
     var suffix = Framework.contextUpdate 

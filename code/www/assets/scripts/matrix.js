@@ -163,6 +163,7 @@ var Matrix = {
   },
 
   setup : function() {
+    Framework.setNodeHost(); // in case override by param
     Parameters.extract( Matrix.onParameter );
     Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
     Loop.setup( Matrix.update );

@@ -103,6 +103,7 @@ var Search = {
   },
 
   setup : function() {
+    Framework.setNodeHost(); // in case override by param
     Parameters.extract( Search.onParameter );
 
     if( Search.type != null ) {

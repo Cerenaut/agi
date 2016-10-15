@@ -70,6 +70,7 @@ var Data = {
 };
 
 $( document ).ready( function() {
+  Framework.setNodeHost(); // in case override by param
   Data.setup();
   Data.update(); // once
 } );
