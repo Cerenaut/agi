@@ -24,9 +24,16 @@ import io.agi.core.orm.AbstractPair;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by gideon on 1/10/14.
@@ -39,22 +46,37 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
     protected int _idx = 0;
 
     public BufferedImageSourceImageFile( String folderName ) {
-
         _folderName = folderName;
+        _fileNames = new ArrayList< String >();
 
-        addFileNames( folderName );
-    }
+        File folder = new File( _folderName );
+        boolean isFile = folder.isFile();
 
-    public void addFileNames( String folderName ) {
-        File folder = new File( folderName );
-        if( !folder.isFile() && folder.listFiles() != null ) {
-            for( File fileEntry : folder.listFiles() ) {
-                if( fileEntry.isFile() ) {
-                    _fileNames.add( fileEntry.getName() );
+        if( !isFile ) {
+            DirectoryStream< Path > directoryStream = null;
+            try {
+                directoryStream = Files.newDirectoryStream( Paths.get( _folderName ) );
+                for( Path path : directoryStream ) {
+                    _fileNames.add( path.getFileName().toString() );
+                }
+            } catch( IOException ex ) {
+                System.err.println( "IO Exception reading files in folder: " + _folderName );
+            }
+            finally {
+                if( directoryStream != null ) {
+                    try {
+                        directoryStream.close();
+                    }
+                    catch( Exception e ) {
+                        System.err.println( "Exception closing directory stream from folder: " + _folderName );
+                        e.printStackTrace();
+                    }
                 }
             }
         }
-
+        else {
+            System.err.println( "ERROR: " + _folderName + " is a file but should be a directory." );
+        }
         Collections.sort( _fileNames );
     }
 
@@ -83,8 +105,11 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
 
     public String getImageFilePath( int idx ) {
         String fullFileName = "undefined";
-        if( _idx >= 0 && _idx < _fileNames.size() ) {
+        if( idx >= 0 && idx < _fileNames.size() ) {
             fullFileName = _folderName + "/" + _fileNames.get( idx );
+        }
+        else {
+            System.err.println( "Invalid iDX:" + idx + " of " + _fileNames.size() );
         }
         return fullFileName;
     }
@@ -114,12 +139,27 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
 
         if( _image == null ) {
             String fullFileName = getImageFilePath();
+            InputStream stream = null;
 
             try {
-                _image = ImageIO.read( new File( fullFileName ) );
+                // Java bug:
+                // https://bugs.openjdk.java.net/browse/JDK-7166379
+                // http://stackoverflow.com/questions/10441276/jdk-1-7-too-many-open-files-due-to-posix-semaphores
+                stream = new FileInputStream( fullFileName );
+                _image = ImageIO.read( stream );
             }
             catch( IOException e ) {
                 e.printStackTrace();
+            }
+            finally {
+                if( stream != null ) {
+                    try {
+                        stream.close();
+                    }
+                    catch( IOException ex ) {
+                        System.err.println( "ERROR closing image input stream: " + fullFileName + ex.getMessage() );
+                    }
+                }
             }
         }
 
