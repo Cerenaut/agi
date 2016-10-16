@@ -25,7 +25,7 @@
 
     <groupId>io.agi.core</groupId>
     <artifactId>agief</artifactId>
-    <version>1.0.44(5be9695)</version>
+    <version>1.0.57(68ccff2)</version>
 
     <build>
         <sourceDirectory>src</sourceDirectory>
@@ -112,6 +112,11 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-iostreams</artifactId>
             <version>${log4j.version}</version>
         </dependency>
         <dependency>

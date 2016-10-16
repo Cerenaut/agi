@@ -28,10 +28,13 @@ import io.agi.framework.factories.CommonEntityFactory;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.PersistenceFactory;
 import io.agi.framework.persistence.models.ModelNode;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.io.IoBuilder;
 
 import java.io.FileInputStream;
+import java.io.PrintStream;
 import java.util.Properties;
 
 
@@ -147,6 +150,11 @@ public class Main {
      * @param args
      */
     public static void main( String[] args ) {
+
+        // Redirect stdout and stderr to log4j
+        // The log4j configuration determines where the log can be seen (e.g. console, file, or custom appender)
+        System.setErr( IoBuilder.forLogger( LogManager.getRootLogger() ).setLevel( Level.ERROR ).buildPrintStream() );
+        System.setOut( IoBuilder.forLogger( LogManager.getRootLogger() ).setLevel( Level.INFO ).buildPrintStream() );
 
         // Create a Node
         if( args.length == 0 ) {

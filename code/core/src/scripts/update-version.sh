@@ -36,5 +36,5 @@ version=`mvn -Dexec.executable='echo' -Dexec.args='${project.version}' --non-rec
 new_version=$(advance_version $version $commit)
 
 # run maven versions plugin to set new version
-mvn versions:set -DgenerateBackupPoms=false -DnewVersion=$new_version 2 > /dev/null
+mvn versions:set -DgenerateBackupPoms=false -DnewVersion=$new_version 2> stderr.log
 echo "Changed version in pom.xml files to $new_version"

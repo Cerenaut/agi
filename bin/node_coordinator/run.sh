@@ -14,9 +14,8 @@ variables_file=${VARIABLES_FILE:-"variables.sh"}
 echo "Using variables file = \"$variables_file\""
 source $(dirname $0)/../$variables_file
 
-usage="Usage: `basename $0` NODE_PROPERTIES ENTITIES_FILE(optional) DATA_FILE(optional)"
- 
-while getopts ":p:e:d:l:m:k:v:c:" opt; do
+
+while getopts ":p:e:d:l:m:k:v:c:f" opt; do
   case $opt in
     p)	# name of properties file (optional, there is a default)
       opt_p=$OPTARG
@@ -42,6 +41,9 @@ while getopts ":p:e:d:l:m:k:v:c:" opt; do
     v)	# property value (optional, there is default)
       opt_p_val=$OPTARG
       ;;
+    f)  # redirect stdout and stderr to log files
+      std_stream=" > stdout.log 2> stderr.log "
+      ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
       exit 1
@@ -60,6 +62,7 @@ config_file=${opt_c:-null}			# if it was not defined, that is ok, it is passed a
 log_config=${opt_l:-log4j2.xml}
 main_class=${opt_m:-io.agi.framework.Main}
 
+
 dburl_default="jdbc:postgresql://$DB_HOST:$DB_PORT/agidb"
 
 # e.g. key: database-url value: jdbc:postgresql://localhost:5432/agidb
@@ -77,9 +80,9 @@ cd $AGI_RUN_HOME
 pwd
 
 # run coordinator
-cmd="$JAVA_HOME/bin/java -Xmx6000m -Dfile.encoding=UTF-8 -Dlog4j.configurationFile=file:$log_config \
+cmd="$JAVA_HOME/bin/java -Dfile.encoding=UTF-8 -Dlog4j.configurationFile=file:$log_config \
 -cp `cat cp.txt`:$AGI_HOME/code/core/target/agief.jar $main_class \
-$node_properties $entity_file $data_file $config_file $p_key $p_val"
+$node_properties $entity_file $data_file $config_file $p_key $p_val $std_stream"
 
 echo $cmd;
 eval $cmd;
