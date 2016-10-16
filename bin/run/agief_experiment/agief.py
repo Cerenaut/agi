@@ -32,8 +32,8 @@ class AGIEF:
             if age is not None:
                 age_string = ", " + entity_name + ".age = " + str(age)
 
-            if not self.log:
-                utils.restart_line()
+            # if not self.log:
+            #     utils.restart_line()
             print "Iteration = [%d]%s" % (i, age_string),
 
             try:
@@ -128,7 +128,7 @@ class AGIEF:
             version = self.version(True)
 
             if version is None:
-                utils.restart_line()
+                # utils.restart_line()
                 print "Iteration = [%d / 120]" % i,
                 time.sleep(wait_period)
             else:
