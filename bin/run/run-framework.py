@@ -336,7 +336,7 @@ def setup_arg_parsing():
     parser.set_defaults(host="localhost")
     parser.set_defaults(port="8491")
     parser.set_defaults(pg_instance="localhost")
-    parser.set_defaults(task_name="mnist-spatial-task:8")
+    parser.set_defaults(task_name="mnist-spatial-task:10")
     parser.set_defaults(ec2_keypath=utils.filepath_from_env_variable(".ssh/ecs-key", "HOME"))
 
     return parser.parse_args()
