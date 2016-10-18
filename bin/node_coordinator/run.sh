@@ -80,7 +80,7 @@ cd $AGI_RUN_HOME
 pwd
 
 # run coordinator
-cmd="$JAVA_HOME/bin/java -Dfile.encoding=UTF-8 -Dlog4j.configurationFile=file:$log_config \
+cmd="$JAVA_HOME/bin/java -Xmx20000m -Dfile.encoding=UTF-8 -Dlog4j.configurationFile=file:$log_config \
 -cp `cat cp.txt`:$AGI_HOME/code/core/target/agief.jar $main_class \
 $node_properties $entity_file $data_file $config_file $p_key $p_val $std_stream"
 
