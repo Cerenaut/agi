@@ -9,6 +9,8 @@ Setup and installation are required:
 
 The components of the AGIEF system also have scripts where necessary, with their own READMEs. They can be found under ```/bin``` in the relevant subfolder, in the code repo.
 
+The system is shown graphically [here](https://docs.google.com/drawings/d/1zBIRn2o5c29C8w1IUUh38syWOqL4EiedtEpPHkgxDko/edit).
+
 
 ## Setup AGIEF
 - get the latest [code](https://github.com/ProjectAGI/agi) and [experiment definitions](https://github.com/ProjectAGI/experiment-definitions) from github
