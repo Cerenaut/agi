@@ -4,8 +4,8 @@ This README describes the use of  ```/bin/run/run-framework.py```.
 It is a python script that is used to run and interact with the framework covering aspects such as generating input files, launching infrastrcture on AWS, running those experiments (locally or on AWS) and exporting the output. 
 
 Setup and installation are required:
-[Setup](#markdown-header-setup)
-[Installation Instructions](#markdown-header-intallation-instructions)
+- [Setup](#markdown-header-setup)
+- [Installation Instructions](#markdown-header-intallation-instructions)
 
 The components of the AGIEF system also have scripts where necessary, with their own READMEs. They can be found under ```/bin``` in the relevant subfolder, in the code repo.
 
