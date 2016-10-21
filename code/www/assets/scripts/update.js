@@ -25,13 +25,22 @@ var Update = {
     Update.onGetEntityAge( json );
 
     console.log( "OLD age: " + Update.entityAgeOld + " NEW age: " + Update.entityAge );
+
+    var doUpdate = $( "#update-with-thread" ).is( ":checked" );
+
     if( Update.entityAgeOld == null ) {
       Update.entityAgeOld = Update.entityAge;
-      Update.update();
+
+      if( doUpdate ) {
+        Update.update();
+      }
     }
     else if( Update.entityAgeOld != Update.entityAge ) {
       Update.entityAgeOld = Update.entityAge;
-      Update.update();
+
+      if( doUpdate ) {
+        Update.update();
+      }
     }
     else {
       //console.log( "Not updating, same age as before." );
@@ -69,17 +78,12 @@ var Update = {
 
   update : function() {
 
-    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
+      Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
 
-    // localhost:8080/update?entity=mySwitch&event=update
-    var entity = $( "#entity" ).val();
-    console.log( "Updating " + entity );
-    Framework.update( entity, Update.updateCallback );
-/*    var suffix = "update" 
-               + "?entity=" + entity 
-               + "&event=" + "update";
-    var verb = "POST";
-    Update.doAjax( suffix, Update.updateCallback, verb, "result" );*/
+      // localhost:8080/update?entity=mySwitch&event=update
+      var entity = $( "#entity" ).val();
+      console.log( "Updating " + entity );
+      Framework.update( entity, Update.updateCallback );
   },
 
   onParameter : function( key, value ) {
@@ -89,6 +93,7 @@ var Update = {
   },
 
   setup : function() {
+    Framework.setNodeHost(); // in case override by param
     Parameters.extract( Update.onParameter );
     Loop.setup( Update.onInterval );
   }

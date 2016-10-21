@@ -216,6 +216,28 @@ public class JdbcPersistence implements Persistence {
         //_logger.info( "persistData T: {} @3 ", System.currentTimeMillis() );
     }
 
+    public Collection< ModelData > getDataMeta( String filter ) {
+        String sql = "SELECT name, ref_name, sizes FROM data where name like '%" + filter + "%'";
+
+        ResultSetMap rsm = new ResultSetMap();
+        rsm._fields.add( "name" );
+        rsm._fields.add( "ref_name" );
+        rsm._fields.add( "sizes" );
+        executeQuery( sql, rsm );
+
+        ArrayList< ModelData > al = new ArrayList< ModelData >();
+
+        for( int i = 0; i < rsm._rows.size(); ++i ) {
+            String name    = rsm.getRowValue( i, "name" );
+            String refKeys = rsm.getRowValue( i, "ref_name" );
+            String sizes   = rsm.getRowValue( i, "sizes" );
+            ModelData md2 = new ModelData( name, refKeys, sizes, null ); // sans actual data
+            al.add( md2 );
+        }
+
+        return al;
+    }
+
     public Collection< String > getData() {
         String sql = "SELECT name FROM data";
         ResultSetMap rsm = new ResultSetMap();

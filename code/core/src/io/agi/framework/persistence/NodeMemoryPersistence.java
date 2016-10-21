@@ -104,6 +104,20 @@ public class NodeMemoryPersistence implements Persistence {
         _dataMap.put( modelData.name, modelData );
     }
 
+    public Collection< ModelData > getDataMeta( String filter ) {
+        ArrayList< ModelData > al = new ArrayList< ModelData >();
+
+        for( String key : _dataMap.keySet() ) {
+            if( key.indexOf( filter ) >= 0 ) {
+                ModelData md = _dataMap.get( key );
+                ModelData md2 = new ModelData( md.name, md.refKeys, md.sizes, null ); // sans actual data
+                al.add( md2 );
+            }
+        }
+
+        return al;
+    }
+
     public Collection< String > getData() {
         ArrayList< String > names = new ArrayList< String >();
         names.addAll( _dataMap.keySet() );

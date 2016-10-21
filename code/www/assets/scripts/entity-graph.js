@@ -23,13 +23,32 @@ var EntityGraph = {
       return;
     }
 
+    EntityGraph.entities = JSON.parse( json.responseText );
+
+    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
+    filter = "";
+    Framework.getDataMeta( filter, EntityGraph.onGetData );
+  },
+
+  onGetData : function( json ) {
+    if( json.length == 0 ) {
+      return;
+    }
+
+    if( json.status != 200 ) {
+      return;
+    }
+
+    EntityGraph.datas = JSON.parse( json.responseText );
+
     var nodes = {};
     var links = [];
+
+    // parse through entities
     var classValue = "entity";
 
-    var entities = JSON.parse( json.responseText );
-    for( var i = 0; i < entities.length; ++i ) {
-      var entity = entities[ i ];
+    for( var i = 0; i < EntityGraph.entities.length; ++i ) {
+      var entity = EntityGraph.entities[ i ];
       var entityName = entity.name;
       var entityParent = entity.parent
 
@@ -37,10 +56,69 @@ var EntityGraph = {
         continue;
       }
   
+      var link = { source: entityName, target: entityParent, classValue: classValue, strokeWidth: 3 };
+      links.push( link );
+
+      console.log( link.source + " ====> " + link.target );  
+    }
+
+    // parse through data refs
+    var classValue = "data";
+
+    for( var i = 0; i < EntityGraph.datas.length; ++i ) {
+      var data = EntityGraph.datas[ i ];
+      var dataName = data.name;
+      var dataRefNames = data.refKeys;
+      if( dataRefNames == "null" ) {
+        continue;
+      }
+
+      var dataEntityName = "?";
+
+      for( var j = 0; j < EntityGraph.entities.length; ++j ) {
+          var entity = EntityGraph.entities[ j ];
+          var entityName = entity.name;
+  
+          // It's bad that we don't break down the data keys properly with some delimiter..
+          if( dataName.indexOf( entityName ) == 0 ) {
+            dataEntityName = entityName;
+            break;
+          }
+        }
+
+      var dataRefNameList = dataRefNames.split( "," );
+
+      for( var k = 0; k < dataRefNameList.length; ++k ) {
+        var dataRefName = dataRefNameList[ k ];
+        var dataRefEntityName = "?";
+ 
+        for( var j = 0; j < EntityGraph.entities.length; ++j ) {
+          var entity = EntityGraph.entities[ j ];
+          var entityName = entity.name;
+  
+          // It's bad that we don't break down the data keys properly with some delimiter..
+          if( dataRefName.indexOf( entityName ) == 0 ) {
+            dataRefEntityName = entityName;
+            break;
+          }
+        }
+
+        var link = { source: dataEntityName, target: dataRefEntityName, classValue: classValue, strokeWidth: 1 };
+        links.push( link );
+
+        console.log( link.source + " ----> " + link.target ); 
+      }
+
+      console.log( "data: " + dataName );
+
+/*      if ( entityParent == null || entityParent == "null" ) {
+        continue;
+      }
+  
       var link = { source: entityName, target: entityParent, classValue: classValue, strokeWidth: 2 };
       links.push( link );
 
-      console.log( link.source + " ----> " + link.target );  
+      console.log( link.source + " ----> " + link.target );  */
     }
     
     // Compute the distinct nodes from the links.

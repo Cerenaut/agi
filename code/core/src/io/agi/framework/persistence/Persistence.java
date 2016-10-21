@@ -57,6 +57,8 @@ public interface Persistence {
     // Data
     Collection< String > getData(); // list all, note, only obtains keys, as the volume of data would be too large to fetch all.
 
+    Collection< ModelData > getDataMeta( String filter ); // return matching data, but only the meta properties.
+
     void persistData( ModelData modelData );
 
     ModelData fetchData( String name );

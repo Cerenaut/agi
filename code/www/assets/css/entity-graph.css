@@ -9,8 +9,12 @@
   fill: green;
 }
 
-.link.type-entity {
-  stroke: green;
+.link.tree {
+  stroke: blue;
+}
+
+.link.data {
+  stroke: red;
 }
 
 .link.resolved {

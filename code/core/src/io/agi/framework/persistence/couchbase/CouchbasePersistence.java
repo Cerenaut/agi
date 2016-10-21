@@ -334,6 +334,13 @@ public class CouchbasePersistence implements Persistence { //PropertyStringAcces
         return names;
     }
 
+    public Collection< ModelData > getDataMeta( String filter ) {
+        ArrayList< ModelData > al = new ArrayList< ModelData >();
+
+        // NOT IMPLEMENTED
+
+        return al;
+    }
 
     public void persistData( ModelData modelData ) {
         String key = GetKey( KEY_PREFIX_DATA, modelData.name );
