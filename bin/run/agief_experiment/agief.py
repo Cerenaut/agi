@@ -34,7 +34,7 @@ class AGIEF:
 
             # if not self.log:
             #     utils.restart_line()
-            print "Iteration = [%d]%s" % (i, age_string),
+            print "Iteration = [%d]%s" % (i, age_string)    # add a comma at the end to remove newline
 
             try:
                 param_dic = {'entity': entity_name}
@@ -129,7 +129,7 @@ class AGIEF:
 
             if version is None:
                 # utils.restart_line()
-                print "Iteration = [%d / 120]" % i,
+                print "Iteration = [%d / 120]" % i      # add comma at the end to remove newline
                 time.sleep(wait_period)
             else:
                 break
