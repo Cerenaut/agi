@@ -122,22 +122,22 @@ def run_parameterset(entity_file, data_file, param_description):
 
         # upload exported output files (if they exist)
         aws.upload_experiment_file(exp.prefix,
-                                   new_entity_file,
-                                   out_entity_file_path)
-
-        aws.upload_experiment(exp.prefix,
-                              new_data_file,
-                              out_data_file_path)
+                                new_entity_file,
+                                out_entity_file_path)
 
         aws.upload_experiment_file(exp.prefix,
-                               exp.experiments_def_filename,
-                               exp.experiment_def_file())
+                                new_data_file,
+                                out_data_file_path)
+
+        aws.upload_experiment_file(exp.prefix,
+                                exp.experiments_def_filename,
+                                exp.experiment_def_file())
 
         log_filename = "log4j2.log"
         log_filepath = exp.experimentfile(log_filename)
         aws.upload_experiment_file(exp.prefix,
-                               log_filename,
-                               log_filepath)
+                                log_filename,
+                                log_filepath)
 
 
 def setup_parameter_sweep_counters(param_sweep, counters):
