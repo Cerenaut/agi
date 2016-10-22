@@ -66,7 +66,8 @@ var Search = {
       var linksValue = "";
 
       if( Search.type == "entities" ) {
-        linksValue = "<a href='config.html?entity="+ objectName + "' title='Open config' target='_blank'>Config</a>";
+        linksValue = "<a href='config.html?entity="+ objectName + "' title='Open config' target='_blank'>Config</a>"
+                   + " / <a href='update.html?entity="+ objectName + "' title='Open update UI' target='_blank'>Update</a>";
         if( root ) {
           linksValue = linksValue 
                      + " / <a href='graph.html?entity="+ objectName + "' title='Open as Graph' target='_blank'>Graph</a>"

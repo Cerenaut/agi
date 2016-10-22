@@ -46,8 +46,10 @@ var Vector = {
 
     var chartType = $( "#type" ).val();
     var window = $( "#window" ).val();
+    var userMinValue = $( "#min" ).val();
     var userMaxValue = $( "#max" ).val();
 
+    var minValue = 0.0;
     var maxValue = 0.0;
 
     for( var d = 0; d < datas.length; ++d ) {
@@ -86,9 +88,11 @@ var Vector = {
         for( var i = 0; i < elements; ++i ) {
           var value = dataElements.elements[ i ];
           maxValue = Math.max( value, maxValue );
+          minValue = Math.min( value, minValue );
         }
       }
       else {
+        minValue = parseFloat( userMinValue );
         maxValue = parseFloat( userMaxValue );
       }
 
@@ -127,7 +131,7 @@ var Vector = {
             }
         },
         yAxis: {
-            min: 0,
+            min: minValue,
             max: maxValue,
             title: {
                 text: 'Value',

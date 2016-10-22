@@ -41,6 +41,7 @@ public class HttpDataHandler implements HttpHandler {
     public static final String CONTEXT = "/data";
 
     public static final String PARAMETER_NAME = "name";
+    public static final String PARAMETER_FILTER = "filter";
 
     public Persistence _p;
 
@@ -70,8 +71,12 @@ public class HttpDataHandler implements HttpHandler {
                     ModelData m = _p.fetchData( value );
 
                     if( m != null ) {
-                        results.add( m );
+                        results.add( m ); // a complete data (specifically fetched)
                     }
+                }
+                else if( key.equalsIgnoreCase( PARAMETER_FILTER ) ) {
+                    Collection< ModelData > c = _p.getDataMeta( value );
+                    results.addAll( c );
                 }
             }
 
@@ -89,6 +94,7 @@ public class HttpDataHandler implements HttpHandler {
             boolean first = true;
             if( method.equalsIgnoreCase( "GET" ) ) {
 
+                // TODO change to the faster StringBuilder approach
                 response += "[ ";
 
                 for( ModelData m : results ) {

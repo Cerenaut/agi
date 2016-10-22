@@ -65,6 +65,11 @@ var Framework = {
     Framework.doAjaxJson( suffix, callback, "GET" );
   },
 
+  getDataMeta : function( dataFilter, callback ) {
+    var suffix = Framework.contextData + "?filter=" + dataFilter;
+    Framework.doAjaxJson( suffix, callback, "GET" );
+  },
+
   getDataList : function( dataNames, callback ) {
     var suffix = Framework.contextData + "?" + dataNames;
     Framework.doAjaxJson( suffix, callback, "GET" );
