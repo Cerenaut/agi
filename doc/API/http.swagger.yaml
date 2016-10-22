@@ -147,7 +147,7 @@ paths:
           type: string
         - name: type
           in: query
-          description: Either 'data' or 'entity'
+          description: Either 'data' or 'entity' or 'data-refs'
           required: true
           type: string
       responses:

@@ -20,8 +20,8 @@ export AGI_RUN_HOME=/Users/gideon/Development/ProjectAGI/AGIEF/experiment-defini
 #export AGI_RUN_HOME=/home/dave/workspace/agi.io/agi/resources/run-empty
 
 # DATA Home (set to the home of the data for the actual experiment - i.e. in the environment where they'll be running)
-# export AGI_DATA_HOME=~/Development/ProjectAGI/AGIEF/datasets/MNIST      # when running locally
-export AGI_DATA_HOME=/root/dev/data
+export AGI_DATA_HOME=/Users/gideon/Development/ProjectAGI/AGIEF/datasets/MNIST      # when running locally
+# export AGI_DATA_HOME=/root/dev/data
 
 
 # Database

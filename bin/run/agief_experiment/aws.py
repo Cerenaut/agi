@@ -1,5 +1,7 @@
 import boto3
 import subprocess
+import os
+import botocore
 
 import utils
 
@@ -124,3 +126,36 @@ def close(instance_id):
 
     if log:
         print "LOG: stop ec2: ", response
+
+
+def upload_experiment_file(prefix, filename, file_path):
+    print "...... Uploading experiment file to S3"
+
+    if not os.path.isfile(file_path):
+        print "ERROR: the file: " + file_path + ", DOES NOT EXIST!"
+        return
+
+    s3 = boto3.resource('s3')
+    bucket_name = "agief-project"
+
+    exists = True
+    try:
+        s3.meta.client.head_bucket(Bucket=bucket_name)
+    except botocore.exceptions.ClientError as e:
+        # If a client error is thrown, then check that it was a 404 error.
+        # If it was a 404 error, then the bucket does not exist.
+        error_code = int(e.response['Error']['Code'])
+        if error_code == 404:
+            exists = False
+
+    if not exists:
+        print "WARNING: s3 bucket " + bucket_name + " does not exist, creating it now."
+        s3.create_bucket(Bucket=bucket_name)
+
+    key = "experiment-output/" + prefix + "/" + filename
+
+    print " ... file = " + file_path + ", to bucket = " + bucket_name + ", key = " + key
+    response = s3.Object(bucket_name=bucket_name, key=key).put(Body=open(file_path, 'rb'))
+
+    if log:
+        print response

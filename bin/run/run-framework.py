@@ -100,19 +100,44 @@ def run_parameterset(entity_file, data_file, param_description):
 
     fwk.import_experiment(entity_file_path, data_file_path)
 
-    set_dataset(exps_file)
+    set_dataset(exp.experiment_def_file())
 
     fwk.run_experiment(exp)
 
     if is_export:
-        new_entity_file = utils.append_before_ext(entity_file, "___" + param_description)
-        new_data_file = utils.append_before_ext(data_file, "___" + param_description)
+        new_entity_file = "exported_" + entity_file      # utils.append_before_ext(entity_file, "___" + param_description)
+        new_data_file = "exported_" + data_file          # utils.append_before_ext(data_file, "___" + param_description)
+
+        out_entity_file_path = exp.outputfile(new_entity_file)
+        out_data_file_path = exp.outputfile(new_data_file)
 
         fwk.export_experiment(exp.entity_with_prefix("experiment"),
-                              exp.outputfile(new_entity_file),
-                              exp.outputfile(new_data_file))
+                            out_entity_file_path,
+                            out_data_file_path)
 
-    shutdown_framework(task_arn)
+    if (launch_mode is LaunchMode.per_experiment) and args.launch_framework:
+        shutdown_framework(task_arn)
+
+    if is_upload:
+
+        # upload exported output files (if they exist)
+        aws.upload_experiment_file(exp.prefix,
+                                   new_entity_file,
+                                   out_entity_file_path)
+
+        aws.upload_experiment(exp.prefix,
+                              new_data_file,
+                              out_data_file_path)
+
+        aws.upload_experiment_file(exp.prefix,
+                               exp.experiments_def_filename,
+                               exp.experiment_def_file())
+
+        log_filename = "log4j2.log"
+        log_filepath = exp.experimentfile(log_filename)
+        aws.upload_experiment_file(exp.prefix,
+                               log_filename,
+                               log_filepath)
 
 
 def setup_parameter_sweep_counters(param_sweep, counters):
@@ -198,14 +223,16 @@ def inc_parameter_set(entity_file, counters):
     return reset, param_description
 
 
-def run_sweeps(exps_file):
+def run_sweeps():
     """ Perform parameter sweep steps, and run experiment for each step.
 
-    :param exps_file:
+    :param exps_file: full path to experiments file
     :return:
     """
 
     print "........ Run Sweeps"
+
+    exps_file = exp.experiment_def_file()
 
     with open(exps_file) as data_exps_file:
         data = json.load(data_exps_file)
@@ -304,6 +331,8 @@ def setup_arg_parsing():
                         help='Shutdown instances and framework after other stages.')
     parser.add_argument('--step_export', dest='export', action='store_true',
                         help='Export entity tree and data at the end of each experiment.')
+    parser.add_argument('--step_upload', dest='upload', action='store_true',
+                        help='Upload exported entity tree and data at the end of each experiment.')
 
     # how to reach the framework
     parser.add_argument('--host', dest='host', required=False,
@@ -385,6 +414,15 @@ if __name__ == '__main__':
 
     is_aws = args.aws
     is_export = args.export
+
+    is_upload = False
+    if args.upload:
+        if is_export is False:
+            print "WARNING: You cannot set step_upload, without seting step_export. " \
+                  "i.e. the files must exist to upload them."
+        else:
+            is_upload = True
+
     TEMPLATE_PREFIX = "SPAGHETTI"
     PREFIX_DELIMITER = "--"
 
@@ -449,12 +487,12 @@ if __name__ == '__main__':
 
     # 5) Run experiments
     if args.exps_file:
+        exp.experiments_def_filename = args.exps_file
         if not args.launch_framework:
             print "WARNING: Running experiment is meaningless unless you're already running framework " \
                   "(use param --step_agief)"
 
-        exps_file = utils.filepath_from_env_variable(args.exps_file, "AGI_RUN_HOME")
-        run_sweeps(exps_file)
+        run_sweeps()
 
     # 6) Shutdown framework
     if args.shutdown:

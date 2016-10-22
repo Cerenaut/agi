@@ -7,6 +7,7 @@ import shutil
 class Experiment:
     prefix = None
     prefix_delimiter = None
+    experiments_def_filename = None     # the filename of the experiment definition (usually experiments.json)
 
     def __init__(self, prefix, prefix_delimiter):
         self.prefix = prefix
@@ -19,6 +20,14 @@ class Experiment:
     # return the full path to the output file specified by simple filename (AGI_RUN_HOME/output/filename)
     def outputfile(self, filename):
         return utils.filepath_from_env_variable("output/" + filename, "AGI_RUN_HOME")
+
+    # return the full path to the experiments definition file
+    def experiment_def_file(self):
+        return utils.filepath_from_env_variable(self.experiments_def_filename, "AGI_RUN_HOME")
+
+    # return the full path to a file in the folder AGI_RUN_HOME
+    def experimentfile(self, filename):
+        return utils.filepath_from_env_variable(filename, "AGI_RUN_HOME")
 
     def entity_with_prefix(self, entity_name):
         if self.prefix is None or self.prefix is "":

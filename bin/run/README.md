@@ -58,17 +58,21 @@ The steps are:
 
 
 ## Examples
-### aws esc and aws postgres 
-```sh
-python run-framework.py --logging --step_aws --step_exps experiments.json --step_sync --step_agief --step_shutdown --instanceid i-06d6a791 --port 8491 --pg_instance i-b1d1bd33 --task_name mnist-spatial-task:8 --ec2_keypath /$HOME/.ssh/ecs-key.pem
-```
-
-### local agief and local postgres
-```sh
-python run-framework.py --logging --step_exps experiments.json --step_agief --step_shutdown --host localhost --pg_instance localhost --port 8491
-```
 
 ### generate input files
 ```sh
 python run-framework.py --step_gen_input io.agi.framework.demo.mnist.DeepMNISTDemo
 ```
+
+### aws esc and aws postgres (don't export or upload results), shutdown instances afterwards
+```sh
+python run-framework.py --logging --step_aws --step_exps experiments.json --step_sync --step_agief --step_shutdown --instanceid i-06d6a791 --port 8491 --pg_instance i-b1d1bd33 --task_name mnist-spatial-task:8 --ec2_keypath /$HOME/.ssh/ecs-key.pem
+```
+
+### local agief and local postgres (don't export or upload results)
+```sh
+python run-framework.py --logging --step_exps experiments.json --step_agief --host localhost --pg_instance localhost --port 8491
+```
+
+### local agief (running in node mode i.e. no postgres required), export the output files, upload them to S3
+python run-framework.py --step_exps experiments.json --step_agief --step_export --step_upload --host localhost --port 8491
