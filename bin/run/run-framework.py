@@ -414,14 +414,11 @@ if __name__ == '__main__':
 
     is_aws = args.aws
     is_export = args.export
+    is_upload = args.upload
 
-    is_upload = False
-    if args.upload:
-        if is_export is False:
-            print "WARNING: You cannot set step_upload, without seting step_export. " \
-                  "i.e. the files must exist to upload them."
-        else:
-            is_upload = True
+    if is_upload and not is_export:
+        print "WARNING: Uploading experiment to S3 is enabled, but 'export experiment' is not, so the most " \
+              "important files (output entity.json and data.json) will be missing"
 
     TEMPLATE_PREFIX = "SPAGHETTI"
     PREFIX_DELIMITER = "--"
