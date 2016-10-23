@@ -21,3 +21,7 @@ ssh -i $keyfile ec2-user@${host} 'bash -s' <<'ENDSSH'
 	cd /home/ec2-user/agief-project/agi/bin/node_coordinator
 	./run-in-docker.sh
 ENDSSH
+
+
+exit
+ssh -i ~/.ssh/nextpair.pem ec2-user@52.63.242.158 "bash -c \"export VARIABLES_FILE=\"variables-ec2.sh\" && cd /home/ec2-user/agief-project/agi/bin/node_coordinator && ./run-in-docker.sh\""
