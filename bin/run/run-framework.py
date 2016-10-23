@@ -3,7 +3,7 @@ import os
 import subprocess
 from enum import Enum
 
-from agief_experiment import agief
+from agief_experiment import compute
 from agief_experiment import aws
 from agief_experiment import experiment
 from agief_experiment import utils
@@ -26,17 +26,31 @@ Assumptions:
 """
 
 
-def launch_framework_aws(task_name):
-    """ Launch AGIEF on AWS. Hang till framework is up and running. Return task arn.
+def launch_framework_aws_ecs(task_name):
+    """
+    Launch AGIEF on AWS ECS (elastic container service).
+    Assumes that ECS is setup to have the necessary task, and container instances running.
+    Hang till framework is up and running. Return task arn.
 
     :param task_name:
     :return:
     """
 
-    print "launching framework on AWS"
+    print "launching framework on AWS-ECS"
     task_arn = aws.run_task(task_name)
-    fwk.wait_up()
+    compute_node.wait_up()
     return task_arn
+
+
+def launch_framework_aws():
+    """
+    Launch Compute Node on AWS. Assumes there is a running ec2 instance running Docker
+    Hang till framework is up and running.
+    """
+
+    print "launching framework on AWS (on ec2 using run-in-docker.sh)"
+    # run shell script:       run-remote.sh key host
+    compute_node.wait_up()
 
 
 def launch_framework_local(main_class=""):
@@ -64,7 +78,7 @@ def launch_framework_local(main_class=""):
                      stdout=subprocess.PIPE,
                      stderr=subprocess.STDOUT,
                      executable="/bin/bash")
-    fwk.wait_up()
+    compute_node.wait_up()
 
 
 def run_parameterset(entity_file, data_file, param_description):
@@ -98,22 +112,22 @@ def run_parameterset(entity_file, data_file, param_description):
     if (launch_mode is LaunchMode.per_experiment) and args.launch_framework:
         task_arn = launch_framework()
 
-    fwk.import_experiment(entity_file_path, data_file_path)
+    compute_node.import_experiment(entity_file_path, data_file_path)
 
     set_dataset(exp.experiment_def_file())
 
-    fwk.run_experiment(exp)
+    compute_node.run_experiment(exp)
 
     if is_export:
-        new_entity_file = "exported_" + entity_file      # utils.append_before_ext(entity_file, "___" + param_description)
-        new_data_file = "exported_" + data_file          # utils.append_before_ext(data_file, "___" + param_description)
+        new_entity_file = "exported_" + entity_file   # utils.append_before_ext(entity_file, "___" + param_description)
+        new_data_file = "exported_" + data_file       # utils.append_before_ext(data_file, "___" + param_description)
 
         out_entity_file_path = exp.outputfile(new_entity_file)
         out_data_file_path = exp.outputfile(new_data_file)
 
-        fwk.export_experiment(exp.entity_with_prefix("experiment"),
-                            out_entity_file_path,
-                            out_data_file_path)
+        compute_node.export_experiment(exp.entity_with_prefix("experiment"),
+                                       out_entity_file_path,
+                                       out_data_file_path)
 
     if (launch_mode is LaunchMode.per_experiment) and args.launch_framework:
         shutdown_framework(task_arn)
@@ -201,7 +215,7 @@ def inc_parameter_set(entity_file, counters):
 
         val = incrementer.value()
         entity_file_path = exp.inputfile(entity_file)
-        fwk.set_parameter_inputfile(entity_file_path, counter['entity-name'], counter['param-path'], val)
+        compute_node.set_parameter_inputfile(entity_file_path, counter['entity-name'], counter['param-path'], val)
 
         delta = counter['entity-name'] + "." + counter['param-path'] + "=" + str(val)
         if param_description is None:
@@ -292,7 +306,7 @@ def set_dataset(exps_file):
 
             data_path = utils.filepath_from_env_variable(value, 'AGI_DATA_HOME')
 
-            fwk.set_parameter_db(exp.entity_with_prefix(entity_name), param_path, data_path)
+            compute_node.set_parameter_db(exp.entity_with_prefix(entity_name), param_path, data_path)
 
 
 def generate_input_files_locally():
@@ -300,7 +314,7 @@ def generate_input_files_locally():
     data_file_path = exp.inputfile("data.json")
 
     root = exp.entity_with_prefix("experiment")
-    fwk.export_experiment(root, entity_file_path, data_file_path)
+    compute_node.export_experiment(root, entity_file_path, data_file_path)
 
 
 def setup_arg_parsing():
@@ -379,11 +393,11 @@ def launch_framework():
     task_arn = None
 
     if is_aws:
-        task_arn = launch_framework_aws(args.task_name)
+        task_arn = launch_framework_aws_ecs(args.task_name)
     else:
         launch_framework_local()
 
-    version = fwk.version()
+    version = compute_node.version()
     print "Running framework version: " + version
 
     return task_arn
@@ -394,7 +408,7 @@ def shutdown_framework(task_arn):
 
     print "....... Shutdown System"
 
-    fwk.terminate()
+    compute_node.terminate()
 
     if is_aws:
         aws.stop_task(task_arn)
@@ -429,16 +443,16 @@ if __name__ == '__main__':
         launch_mode = LaunchMode.per_experiment
 
     exp = experiment.Experiment(TEMPLATE_PREFIX, PREFIX_DELIMITER)
-    fwk = agief.AGIEF(log, None)
+    compute_node = compute.Compute(log, None)
 
     print "finished"
 
     # 1) Generate input files
     if args.main_class:
-        fwk.base_url = utils.getbaseurl(args.host, args.port)
+        compute_node.base_url = utils.getbaseurl(args.host, args.port)
         launch_framework_local(args.main_class)
         generate_input_files_locally()
-        fwk.terminate()
+        compute_node.terminate()
         exit()
 
     # 2) Setup infrastructure (on AWS or nothing to do locally)
@@ -465,7 +479,7 @@ if __name__ == '__main__':
 
         ips_pg = {'ip_public': args.pg_instance, 'ip_private': args.pg_instance}
 
-    fwk.base_url = utils.getbaseurl(ips['ip_public'], args.port)  # define base_url, with aws host if relevant
+    compute_node.base_url = utils.getbaseurl(ips['ip_public'], args.port)  # define base_url, with aws host if relevant
 
     # TEMPORARY HACK
     # Set the DB_HOST environment variable
@@ -495,7 +509,7 @@ if __name__ == '__main__':
     if args.shutdown:
 
         if launch_mode is LaunchMode.per_session:
-            fwk.terminate()
+            compute_node.terminate()
 
         # Shutdown infrastructure
         if is_aws:

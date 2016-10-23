@@ -6,7 +6,7 @@ import dpath.util
 import utils
 
 
-class AGIEF:
+class Compute:
 
     log = False
     base_url = None
@@ -15,9 +15,11 @@ class AGIEF:
         self.log = log
         self.base_url = base_url
 
-    # Return when the the config parameter has achieved the value specified
-    # entity = name of entity, param_path = path to parameter, delimited by '.'
     def wait_till_param(self, entity_name, param_path, value):
+        """
+        Return when the the config parameter has achieved the value specified
+        entity = name of entity, param_path = path to parameter, delimited by '.'
+        """
         wait_period = 10
         age = None
         i = 0
@@ -62,8 +64,9 @@ class AGIEF:
 
         print "   -> success, parameter reached value"
 
-    # setup the running instance of AGIEF with the input files
     def import_experiment(self, entity_filepath=None, data_filepath=None):
+        """setup the running instance of AGIEF with the input files"""
+
         print "....... Import Experiment"
         with open(entity_filepath, 'rb') as entity_data_file:
             with open(data_filepath, 'rb') as data_data_file:
@@ -101,9 +104,11 @@ class AGIEF:
         with open(filepath, 'w') as data_file:
             data_file.write(json.dumps(output_json, indent=4))
 
-    # Export the full experiment state from the running instance of AGIEF
-    # that consists of entity graph and the data
     def export_experiment(self, root_entity, entity_filepath, data_filepath):
+        """
+        Export the full experiment state from the running instance of AGIEF
+        that consists of entity graph and the data
+        """
         print "....... Export Experiment"
         if self.log:
             print "Exporting data for root entity: " + root_entity

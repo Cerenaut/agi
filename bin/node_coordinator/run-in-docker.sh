@@ -56,11 +56,14 @@ set -x
 
 
 # should use the script /docker/run.sh,  but thinking of deprecating, not worth maintaining another script that isn't that useful
-docker run "$switch" \
-        -w /root/dev/agi/bin/node_coordinator \
-        -e VARIABLES_FILE="variables-docker.sh" \
-        -v $AGI_HOME:/root/dev/agi \
-        -v $AGI_RUN_HOME:/root/dev/run \
-        -v "${maven_cache_repo}:/root/.m2/repository" \
-        -p 8491:8491 -p 5432:5432 \
-        gkowadlo/agief:2.1 $cmd $args
+dcmd='docker run "$switch"
+        -w /root/dev/agi/bin/node_coordinator
+        -e VARIABLES_FILE="variables-docker.sh"
+        -v $AGI_HOME:/root/dev/agi
+        -v $AGI_RUN_HOME:/root/dev/run
+        -v "${maven_cache_repo}:/root/.m2/repository"
+        -p 8491:8491 -p 5432:5432
+        gkowadlo/agief:2.1 $cmd $args'
+
+echo $dcmd
+eval $dcmd

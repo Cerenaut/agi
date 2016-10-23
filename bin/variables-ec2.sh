@@ -12,7 +12,7 @@
 export AGI_HOME=/home/ec2-user/agief-project/agi
 
 # RUN Home
-export AGI_RUN_HOME=/home/ec2-user/agief-project/experiment-definitions/mnist-gng-v1
+export AGI_RUN_HOME=/home/ec2-user/agief-project/run
 
 # DATA Home (set to the home of the data for the actual experiment - i.e. in the environment where they'll be running)
 # export AGI_DATA_HOME=~/Development/ProjectAGI/AGIEF/datasets/MNIST      # when running locally

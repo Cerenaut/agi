@@ -13,3 +13,9 @@ Data
 Reference to data is not automated. You must manually set the relevant parameter in the appropriate entity, and make sure the data is at that location.
 The convention is to make a symbolic link to it in your experiment-definitions folder under /data, and hardcode to there in the Demo file.
 In future we can use $AGI_DATA_HOME and automate pulling down from S3, and setting the correct reference.
+
+
+
+General
+---------------------
+run-remote.sh hardcodes the location of the AGI_HOME folder on ec2

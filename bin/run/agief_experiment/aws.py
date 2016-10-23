@@ -9,13 +9,15 @@ log = False
 cluster = 'default'
 
 
-# assumes there exists a private key for the given ec2 instance, at ~/.ssh/ecs-key
 def sync_experiment(host, keypath):
+    """ Assumes there exists a private key for the given ec2 instance, at ~/.ssh/ecs-key """
+
     print "....... Syncing code to ec2 container instance"
 
     # code
     file_path = utils.filepath_from_env_variable("", "AGI_HOME")
-    cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + file_path + " ec2-user@" + host + ":~/agief-project/agi --exclude={\"*.git/*\",*/src/*}"
+    cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + file_path + " ec2-user@" + host +\
+          ":~/agief-project/agi --exclude={\"*.git/*\",*/src/*}"
     if log:
         print cmd
     output, error = subprocess.Popen(cmd,
@@ -29,7 +31,8 @@ def sync_experiment(host, keypath):
 
     # experiments
     file_path = utils.filepath_from_env_variable("", "AGI_RUN_HOME")
-    cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + file_path + " ec2-user@" + host + ":~/agief-project/run --exclude={\"*.git/*\"}"
+    cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + file_path + " ec2-user@" + host +\
+          ":~/agief-project/run --exclude={\"*.git/*\"}"
     if log:
         print cmd
     output, error = subprocess.Popen(cmd,
