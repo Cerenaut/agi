@@ -18,6 +18,27 @@ variables_file=${VARIABLES_FILE:-"variables.sh"}
 echo "Using variables file = \"$variables_file\""
 source $(dirname $0)/../$variables_file
 
+detached=0
+
+while getopts ":d" opt; do
+  case $opt in
+    d)  # run in detached mode (i.e. it will return, and the container will exit when the running command terminates)
+      detached=1
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+  esac
+done
+
+
+shift $(($OPTIND - 1))                  # so that we can deal with mass-arguments as per normal
+
 set -e                                  # stops the execution of a script if a command or pipeline has an error 
 cd "$(dirname $BASH_SOURCE)"            # change to directory of the script
 
@@ -46,24 +67,31 @@ set +e
 
 mkdir -p "$maven_cache_repo"
 
-if [ "`tty`" != "not a tty" ]; then
-        switch="-it"
-else
-        switch="-i"
-fi
 
-set -x
+if [ $detached -eq 1 ]; then
+        switch="-d"
+else
+        echo "NOT DETACHED"
+        if [ "`tty`" == "not a tty" ]; then
+                switch="-i"
+        else
+                switch="-it"
+        fi
+fi
 
 
 # should use the script /docker/run.sh,  but thinking of deprecating, not worth maintaining another script that isn't that useful
-dcmd='docker run "$switch"
+dcmd="docker run $switch
         -w /root/dev/agi/bin/node_coordinator
-        -e VARIABLES_FILE="variables-docker.sh"
+        -e VARIABLES_FILE='variables-docker.sh'
         -v $AGI_HOME:/root/dev/agi
         -v $AGI_RUN_HOME:/root/dev/run
-        -v "${maven_cache_repo}:/root/.m2/repository"
+        -v '${maven_cache_repo}:/root/.m2/repository'
         -p 8491:8491 -p 5432:5432
-        gkowadlo/agief:2.1 $cmd $args'
+        gkowadlo/agief:2.1 $cmd $args"
 
 echo $dcmd
-eval $dcmd
+
+set -x
+
+#       eval $dcmd
