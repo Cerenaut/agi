@@ -4,7 +4,7 @@ import subprocess
 from enum import Enum
 
 from agief_experiment import compute
-from agief_experiment import aws
+from agief_experiment import cloud
 from agief_experiment import experiment
 from agief_experiment import utils
 from agief_experiment import valincrementer
@@ -26,7 +26,7 @@ Assumptions:
 """
 
 
-def launch_framework_aws_ecs(task_name):
+def launch_compute_aws_ecs(task_name):
     """
     Launch AGIEF on AWS ECS (elastic container service).
     Assumes that ECS is setup to have the necessary task, and container instances running.
@@ -37,23 +37,23 @@ def launch_framework_aws_ecs(task_name):
     """
 
     print "launching framework on AWS-ECS"
-    task_arn = aws.run_task(task_name)
+    task_arn = cloud.run_task(task_name)
     compute_node.wait_up()
     return task_arn
 
 
-def launch_framework_aws():
+def launch_compute_remote_docker():
     """
     Launch Compute Node on AWS. Assumes there is a running ec2 instance running Docker
     Hang till framework is up and running.
     """
 
     print "launching framework on AWS (on ec2 using run-in-docker.sh)"
-    # run shell script:       run-remote.sh key host
+    cloud.launch_compute_docker(compute_node.host, remote_keypath)
     compute_node.wait_up()
 
 
-def launch_framework_local(main_class=""):
+def launch_compute_local(main_class=""):
     """ Launch AGIEF locally. Hang till framework is up and running.
 
     If main_class is specified, then use run-demo.sh,
@@ -110,7 +110,7 @@ def run_parameterset(entity_file, data_file, param_description):
         exit()
 
     if (launch_mode is LaunchMode.per_experiment) and args.launch_framework:
-        task_arn = launch_framework()
+        task_arn = launch_compute()
 
     compute_node.import_experiment(entity_file_path, data_file_path)
 
@@ -130,28 +130,28 @@ def run_parameterset(entity_file, data_file, param_description):
                                        out_data_file_path)
 
     if (launch_mode is LaunchMode.per_experiment) and args.launch_framework:
-        shutdown_framework(task_arn)
+        shutdown_compute(task_arn)
 
     if is_upload:
 
         # upload exported output files (if they exist)
-        aws.upload_experiment_file(exp.prefix,
-                                new_entity_file,
-                                out_entity_file_path)
+        cloud.upload_experiment_file(exp.prefix,
+                                     new_entity_file,
+                                     out_entity_file_path)
 
-        aws.upload_experiment_file(exp.prefix,
-                                new_data_file,
-                                out_data_file_path)
+        cloud.upload_experiment_file(exp.prefix,
+                                     new_data_file,
+                                     out_data_file_path)
 
-        aws.upload_experiment_file(exp.prefix,
-                                exp.experiments_def_filename,
-                                exp.experiment_def_file())
+        cloud.upload_experiment_file(exp.prefix,
+                                     exp.experiments_def_filename,
+                                     exp.experiment_def_file())
 
         log_filename = "log4j2.log"
         log_filepath = exp.experimentfile(log_filename)
-        aws.upload_experiment_file(exp.prefix,
-                                log_filename,
-                                log_filepath)
+        cloud.upload_experiment_file(exp.prefix,
+                                     log_filename,
+                                     log_filepath)
 
 
 def setup_parameter_sweep_counters(param_sweep, counters):
@@ -385,7 +385,7 @@ def setup_arg_parsing():
     return parser.parse_args()
 
 
-def launch_framework():
+def launch_compute(use_ecs=False):
     """ Launch framework locally or on AWS. Return task arn if on AWS """
 
     print "....... Launch Framework"
@@ -393,9 +393,12 @@ def launch_framework():
     task_arn = None
 
     if is_aws:
-        task_arn = launch_framework_aws_ecs(args.task_name)
+        if use_ecs:
+            task_arn = launch_compute_aws_ecs(args.task_name)
+        else:
+            launch_compute_remote_docker()
     else:
-        launch_framework_local()
+        launch_compute_local()
 
     version = compute_node.version()
     print "Running framework version: " + version
@@ -403,15 +406,15 @@ def launch_framework():
     return task_arn
 
 
-def shutdown_framework(task_arn):
+def shutdown_compute(task_arn):
     """ Close framework: terminate and then if running on AWS, stop the task. """
 
     print "....... Shutdown System"
 
     compute_node.terminate()
 
-    if is_aws:
-        aws.stop_task(task_arn)
+    if is_aws and (task_arn is not None):
+        cloud.stop_task(task_arn)
 
 
 class LaunchMode(Enum):
@@ -429,6 +432,7 @@ if __name__ == '__main__':
     is_aws = args.aws
     is_export = args.export
     is_upload = args.upload
+    remote_keypath = args.ec2_keypath
 
     if is_upload and not is_export:
         print "WARNING: Uploading experiment to S3 is enabled, but 'export experiment' is not, so the most " \
@@ -443,14 +447,12 @@ if __name__ == '__main__':
         launch_mode = LaunchMode.per_experiment
 
     exp = experiment.Experiment(TEMPLATE_PREFIX, PREFIX_DELIMITER)
-    compute_node = compute.Compute(log, None)
-
-    print "finished"
+    compute_node = compute.Compute(log)
 
     # 1) Generate input files
     if args.main_class:
         compute_node.base_url = utils.getbaseurl(args.host, args.port)
-        launch_framework_local(args.main_class)
+        launch_compute_local(args.main_class)
         generate_input_files_locally()
         compute_node.terminate()
         exit()
@@ -466,10 +468,10 @@ if __name__ == '__main__':
                   "and ECS Task Name (--task_name) to run on AWS."
             exit()
 
-        ips = aws.run_ec2(args.instanceid)
+        ips = cloud.run_ec2(args.instanceid)
 
         if is_pg_ec2:
-            ips_pg = aws.run_ec2(args.pg_instance)
+            ips_pg = cloud.run_ec2(args.pg_instance)
         else:
             ips_pg = {'ip_private': args.pg_instance}
     else:
@@ -479,7 +481,8 @@ if __name__ == '__main__':
 
         ips_pg = {'ip_public': args.pg_instance, 'ip_private': args.pg_instance}
 
-    compute_node.base_url = utils.getbaseurl(ips['ip_public'], args.port)  # define base_url, with aws host if relevant
+    compute_node.host = ips['ip_public']
+    compute_node.port = args.port
 
     # TEMPORARY HACK
     # Set the DB_HOST environment variable
@@ -490,11 +493,11 @@ if __name__ == '__main__':
         if not args.aws:
             print "ERROR: Syncing is meaningless unless you're running aws (use param --step_aws)"
             exit()
-        aws.sync_experiment(ips['ip_public'], args.ec2_keypath)
+        cloud.sync_experiment(compute_node.base_url(), remote_keypath)
 
     # 4) Launch framework (on AWS or locally) - *** IF Mode == 'Per Session' ***
     if (launch_mode is LaunchMode.per_session) and args.launch_framework:
-        launch_framework()
+        launch_compute()
 
     # 5) Run experiments
     if args.exps_file:
@@ -513,7 +516,7 @@ if __name__ == '__main__':
 
         # Shutdown infrastructure
         if is_aws:
-            aws.close(args.instanceid)
+            cloud.close(args.instanceid)
 
             if is_pg_ec2:
-                aws.close(args.pg_instance)
+                cloud.close(args.pg_instance)

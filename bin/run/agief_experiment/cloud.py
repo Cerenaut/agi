@@ -45,6 +45,30 @@ def sync_experiment(host, keypath):
         print error
 
 
+def launch_compute_docker(host, keypath):
+    """ Assumes there exists a private key for the given ec2 instance, at ~/.ssh/ecs-key """
+
+    print "....... Launch compute node in a docker container on a remote host"
+
+    # cmd = "ssh -i " + keypath + " ec2-user@" + host + " -o \"StrictHostKeyChecking no\" " \
+    #       "bash -c \"export VARIABLES_FILE=\"variables-ec2.sh\" " \
+    #       "&& cd /home/ec2-user/agief-project/agi/bin/node_coordinator " \
+    #       "&& ./run-in-docker.sh\""
+
+    cmd = "../aws/run-remote.sh " + host + " " + keypath
+
+    if log:
+        print cmd
+    output, error = subprocess.Popen(cmd,
+                                     shell=True,
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE,
+                                     executable="/bin/bash").communicate()
+    if log:
+        print output
+        print error
+
+
 def run_task(task_name):
     """ Run task 'task_name' and return the Task ARN """
 

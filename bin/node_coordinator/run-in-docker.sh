@@ -94,4 +94,4 @@ echo $dcmd
 
 set -x
 
-#       eval $dcmd
+eval $dcmd

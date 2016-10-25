@@ -9,11 +9,14 @@ import utils
 class Compute:
 
     log = False
-    base_url = None
+    host = "localhost"
+    port = 8491
 
-    def __init__(self, log, base_url):
+    def __init__(self, log):
         self.log = log
-        self.base_url = base_url
+
+    def base_url(self):
+        return utils.getbaseurl(self.host, self.port)
 
     def wait_till_param(self, entity_name, param_path, value):
         """
@@ -40,7 +43,7 @@ class Compute:
 
             try:
                 param_dic = {'entity': entity_name}
-                r = requests.get(self.base_url + '/config', params=param_dic)
+                r = requests.get(self.base_url() + '/config', params=param_dic)
 
                 if self.log:
                     print "LOG: Get config: /config with params " + json.dumps(param_dic) + ", response = ", r
@@ -71,7 +74,7 @@ class Compute:
         with open(entity_filepath, 'rb') as entity_data_file:
             with open(data_filepath, 'rb') as data_data_file:
                 files = {'entity-file': entity_data_file, 'data-file': data_data_file}
-                response = requests.post(self.base_url + '/import', files=files)
+                response = requests.post(self.base_url() + '/import', files=files)
                 if self.log:
                     print "LOG: Import entity file, response = ", response
                     print "  LOG: response text = ", response.text
@@ -83,7 +86,7 @@ class Compute:
         print "....... Run Experiment"
 
         payload = {'entity': exp.entity_with_prefix('experiment'), 'event': 'update'}
-        response = requests.get(self.base_url + '/update', params=payload)
+        response = requests.get(self.base_url() + '/update', params=payload)
         if self.log:
             print "LOG: Start experiment, response = ", response
 
@@ -92,7 +95,7 @@ class Compute:
 
     def export_root_entity(self, filepath, root_entity, export_type):
         payload = {'entity': root_entity, 'type': export_type}
-        response = requests.get(self.base_url + '/export', params=payload)
+        response = requests.get(self.base_url() + '/export', params=payload)
         if self.log:
             # print "LOG: Export entity file, response text = ", response.text
             print "  LOG: response = ", response
@@ -120,7 +123,7 @@ class Compute:
         wait_period = 3
 
         print "....... Wait till framework has started (try every " + str(wait_period) + " seconds),   at = " \
-              + self.base_url
+              + self.base_url()
 
         version = None
         i = 0
@@ -143,7 +146,7 @@ class Compute:
 
     def terminate(self):
         print "...... Terminate framework"
-        response = requests.get(self.base_url + '/stop')
+        response = requests.get(self.base_url() + '/stop')
 
         if self.log:
             print "LOG: response text = ", response.text
@@ -155,7 +158,7 @@ class Compute:
         """
 
         payload = {'entity': entity_name, 'path': param_path, 'value': value}
-        response = requests.post(self.base_url + '/config', params=payload)
+        response = requests.post(self.base_url() + '/config', params=payload)
         if self.log:
             print "LOG: set_parameter, response = ", response
 
@@ -236,7 +239,7 @@ class Compute:
 
         version = None
         try:
-            response = requests.get(self.base_url + '/version')
+            response = requests.get(self.base_url() + '/version')
             if self.log:
                 print "LOG: response = ", response
 
