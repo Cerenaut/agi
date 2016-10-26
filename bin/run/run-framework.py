@@ -26,6 +26,235 @@ Assumptions:
 """
 
 
+def run_parameterset(entity_file, data_file, param_description):
+    """
+    Import input files
+    Run Experiment and Export experiment
+    The input files specified by params ('entity_file' and 'data_file')
+    have parameters modified, which are described in parameters 'param_description'
+
+    :param entity_file:
+    :param data_file:
+    :param param_description:
+    :return:
+    """
+
+    print "........ Run parameter set."
+    print "Prefix = " + experiment.prefix
+    # print "Parameters = " + param_description             # already output to console when they were set
+
+    entity_file_path = experiment.inputfile(entity_file)
+    data_file_path = experiment.inputfile(data_file)
+
+    if log:
+        print "LOG: Entity file full path = " + entity_file_path
+
+    if not os.path.isfile(entity_file_path):
+        print "ERROR: The entity file " + entity_file + ", at path " + entity_file_path + \
+              ", does not exist.\nCANNOT CONTINUE."
+        exit()
+
+    if (launch_mode is LaunchMode.per_experiment) and args.launch_framework:
+        task_arn = launch_compute()
+
+    compute_node.import_experiment(entity_file_path, data_file_path)
+
+    set_dataset(experiment.experiment_def_file())
+
+    compute_node.run_experiment(experiment)
+
+    if is_export:
+        new_entity_file = "exported_" + entity_file   # utils.append_before_ext(entity_file, "___" + param_description)
+        new_data_file = "exported_" + data_file       # utils.append_before_ext(data_file, "___" + param_description)
+
+        out_entity_file_path = experiment.outputfile(new_entity_file)
+        out_data_file_path = experiment.outputfile(new_data_file)
+
+        compute_node.export_experiment(experiment.entity_with_prefix("experiment"),
+                                       out_entity_file_path,
+                                       out_data_file_path)
+
+    if (launch_mode is LaunchMode.per_experiment) and args.launch_framework:
+        shutdown_compute(task_arn)
+
+    if is_upload:
+
+        # upload exported output files (if they exist)
+        cloud.upload_experiment_output_s3(experiment.prefix,
+                                          new_entity_file,
+                                          out_entity_file_path)
+
+        cloud.upload_experiment_output_s3(experiment.prefix,
+                                          new_data_file,
+                                          out_data_file_path)
+
+        cloud.upload_experiment_output_s3(experiment.prefix,
+                                          experiment.experiments_def_filename,
+                                          experiment.experiment_def_file())
+
+        log_filename = "log4j2.log"
+        log_filepath = experiment.experimentfile(log_filename)
+        cloud.upload_experiment_output_s3(experiment.prefix,
+                                          log_filename,
+                                          log_filepath)
+
+
+def setup_parameter_sweep_counters(param_sweep, counters):
+    """
+    For each 'param' in a set, get details and setup counter
+    The result is an array of counters
+    Each counter represents one parameter
+
+    :param param_sweep:
+    :param counters:
+    :return:
+    """
+
+    param_i = 0
+    for param in param_sweep['parameter-set']:  # set of params for one 'sweep'
+
+        if False:
+            print "LOG: Parameter sweep set part: " + str(param_i)
+            print json.dumps(param, indent=4)
+        param_i += 1
+
+        entity_name = param['entity-name']
+        param_path = param['parameter-path']
+        # exp_type = param['val-type']
+        val_begin = param['val-begin']
+        val_end = param['val-end']
+        val_inc = param['val-inc']
+
+        entity_name = experiment.entity_with_prefix(entity_name)
+
+        incrementer = valincrementer.ValIncrementer(val_begin, val_end, val_inc)
+
+        counter = {'incrementer': incrementer, 'entity-name': entity_name, 'param-path': param_path}
+        counters.append(counter)
+
+
+def inc_parameter_set(entity_file, counters):
+    """
+    Iterate through counters, incrementing each parameter in the set
+    Set the new values in the input file, and then run the experiment
+    First counter to reset, return False
+
+    :param entity_file:
+    :param counters:
+    :return: reset (True if any counter has reached above max), description of parameters (string)
+                            If reset is False, there MUST be a description of the parameters that have been set
+    """
+
+    # inc all counters, and set parameter in entity file
+    param_description = None
+    reset = False
+    for counter in counters:
+        incrementer = counter['incrementer']
+        is_counting = incrementer.increment()
+        if is_counting is False:
+            if log:
+                print "LOG: Sweeping has concluded for this sweep-set, due to the parameter: " + \
+                      counter['entity-name'] + '.' + counter['param-path']
+            reset = True
+            break
+
+        val = incrementer.value()
+        entity_file_path = experiment.inputfile(entity_file)
+        compute_node.set_parameter_inputfile(entity_file_path, counter['entity-name'], counter['param-path'], val)
+
+        delta = counter['entity-name'] + "." + counter['param-path'] + "=" + str(val)
+        if param_description is None:
+            param_description = delta
+        else:
+            param_description += "_" + delta
+
+    if log:
+        if param_description is None:
+            print "LOG: inc_parameter_set(): no parameters were changed."
+        else:
+            print "LOG: Parameter sweep: " + param_description
+
+    if reset is False and param_description is None:
+        print "Error: inc_parameter_set() indeterminate state, reset is False, but parameter_description indicates no " \
+              "parameters have been modified. If there is no sweep to conduct, reset should be True."
+        exit()
+
+    return reset, param_description
+
+
+def run_sweeps():
+    """ Perform parameter sweep steps, and run experiment for each step.
+
+    :param exps_file: full path to experiments file
+    :return:
+    """
+
+    print "........ Run Sweeps"
+
+    exps_file = experiment.experiment_def_file()
+
+    with open(exps_file) as data_exps_file:
+        data = json.load(data_exps_file)
+
+    for exp_i in data['experiments']:
+        import_files = exp_i['import-files']  # import files dictionary
+
+        if log:
+            print "LOG: Import Files Dictionary = "
+            print "LOG: ", import_files
+
+        # get experiment file-names, and expand to full path
+        base_entity_filename = import_files['file-entities']
+        base_data_filename = import_files['file-data']
+
+        if 'parameter-sweeps' not in exp_i or len(exp_i['parameter-sweeps']) == 0:
+            print "No parameters to sweep, just run once."
+
+            entity_filename, data_filename = experiment.create_input_files(TEMPLATE_PREFIX, base_entity_filename,
+                                                                           base_data_filename)
+            run_parameterset(entity_filename, data_filename, "")
+        else:
+            for param_sweep in exp_i['parameter-sweeps']:  # array of sweep definitions
+
+                entity_filename, data_filename = experiment.create_input_files(TEMPLATE_PREFIX, base_entity_filename,
+                                                                               base_data_filename)
+
+                counters = []
+                setup_parameter_sweep_counters(param_sweep, counters)
+
+                is_sweeping = True
+                while is_sweeping:
+                    reset, param_description = inc_parameter_set(entity_filename, counters)
+                    if reset:
+                        is_sweeping = False
+                    else:
+                        run_parameterset(entity_filename, data_filename, param_description)
+
+
+def set_dataset(exps_file):
+    """
+    The dataset can be located in different locations on different machines. The location can be set in the
+    experiments definition file (experiments.json). This method parses that file, finds the parameters to set
+    relative to the AGI_DATA_HOME env variable, and sets the specified parameters.
+    :param exps_file:
+    :return:
+    """
+
+    print "....... Set Dataset"
+
+    with open(exps_file) as data_exps_file:
+        data = json.load(data_exps_file)
+
+    for exp_i in data['experiments']:
+        for param in exp_i['dataset-parameters']:  # array of sweep definitions
+            entity_name = param['entity-name']
+            param_path = param['parameter-path']
+            value = param['value']
+
+            data_path = utils.filepath_from_env_variable(value, 'AGI_DATA_HOME')
+
+            compute_node.set_parameter_db(experiment.entity_with_prefix(entity_name), param_path, data_path)
+
 def launch_compute_aws_ecs(task_name):
     """
     Launch AGIEF on AWS ECS (elastic container service).
@@ -37,7 +266,12 @@ def launch_compute_aws_ecs(task_name):
     """
 
     print "launching framework on AWS-ECS"
-    task_arn = cloud.run_task(task_name)
+
+    if task_name is None:
+        print "ERROR: you must specify a Task Name to run on aws-ecs"
+        exit()
+
+    task_arn = cloud.run_task_ecs(task_name)
     compute_node.wait_up()
     return task_arn
 
@@ -81,239 +315,44 @@ def launch_compute_local(main_class=""):
     compute_node.wait_up()
 
 
-def run_parameterset(entity_file, data_file, param_description):
-    """
-    Import input files
-    Run Experiment and Export experiment
-    The input files specified by params ('entity_file' and 'data_file')
-    have parameters modified, which are described in parameters 'param_description'
+def launch_compute(use_ecs=False):
+    """ Launch framework locally or on AWS. Return task arn if on AWS """
 
-    :param entity_file:
-    :param data_file:
-    :param param_description:
-    :return:
-    """
+    print "....... Launch Framework"
 
-    print "........ Run parameter set."
-    print "Prefix = " + exp.prefix
-    # print "Parameters = " + param_description             # already output to console when they were set
+    task_arn = None
 
-    entity_file_path = exp.inputfile(entity_file)
-    data_file_path = exp.inputfile(data_file)
-
-    if log:
-        print "LOG: Entity file full path = " + entity_file_path
-
-    if not os.path.isfile(entity_file_path):
-        print "ERROR: The entity file " + entity_file + ", at path " + entity_file_path + \
-              ", does not exist.\nCANNOT CONTINUE."
-        exit()
-
-    if (launch_mode is LaunchMode.per_experiment) and args.launch_framework:
-        task_arn = launch_compute()
-
-    compute_node.import_experiment(entity_file_path, data_file_path)
-
-    set_dataset(exp.experiment_def_file())
-
-    compute_node.run_experiment(exp)
-
-    if is_export:
-        new_entity_file = "exported_" + entity_file   # utils.append_before_ext(entity_file, "___" + param_description)
-        new_data_file = "exported_" + data_file       # utils.append_before_ext(data_file, "___" + param_description)
-
-        out_entity_file_path = exp.outputfile(new_entity_file)
-        out_data_file_path = exp.outputfile(new_data_file)
-
-        compute_node.export_experiment(exp.entity_with_prefix("experiment"),
-                                       out_entity_file_path,
-                                       out_data_file_path)
-
-    if (launch_mode is LaunchMode.per_experiment) and args.launch_framework:
-        shutdown_compute(task_arn)
-
-    if is_upload:
-
-        # upload exported output files (if they exist)
-        cloud.upload_experiment_file(exp.prefix,
-                                     new_entity_file,
-                                     out_entity_file_path)
-
-        cloud.upload_experiment_file(exp.prefix,
-                                     new_data_file,
-                                     out_data_file_path)
-
-        cloud.upload_experiment_file(exp.prefix,
-                                     exp.experiments_def_filename,
-                                     exp.experiment_def_file())
-
-        log_filename = "log4j2.log"
-        log_filepath = exp.experimentfile(log_filename)
-        cloud.upload_experiment_file(exp.prefix,
-                                     log_filename,
-                                     log_filepath)
-
-
-def setup_parameter_sweep_counters(param_sweep, counters):
-    """
-    For each 'param' in a set, get details and setup counter
-    The result is an array of counters
-    Each counter represents one parameter
-
-    :param param_sweep:
-    :param counters:
-    :return:
-    """
-
-    param_i = 0
-    for param in param_sweep['parameter-set']:  # set of params for one 'sweep'
-
-        if False:
-            print "LOG: Parameter sweep set part: " + str(param_i)
-            print json.dumps(param, indent=4)
-        param_i += 1
-
-        entity_name = param['entity-name']
-        param_path = param['parameter-path']
-        # exp_type = param['val-type']
-        val_begin = param['val-begin']
-        val_end = param['val-end']
-        val_inc = param['val-inc']
-
-        entity_name = exp.entity_with_prefix(entity_name)
-
-        incrementer = valincrementer.ValIncrementer(val_begin, val_end, val_inc)
-
-        counter = {'incrementer': incrementer, 'entity-name': entity_name, 'param-path': param_path}
-        counters.append(counter)
-
-
-def inc_parameter_set(entity_file, counters):
-    """
-    Iterate through counters, incrementing each parameter in the set
-    Set the new values in the input file, and then run the experiment
-    First counter to reset, return False
-
-    :param entity_file:
-    :param counters:
-    :return: reset (True if any counter has reached above max), description of parameters (string)
-                            If reset is False, there MUST be a description of the parameters that have been set
-    """
-
-    # inc all counters, and set parameter in entity file
-    param_description = None
-    reset = False
-    for counter in counters:
-        incrementer = counter['incrementer']
-        is_counting = incrementer.increment()
-        if is_counting is False:
-            if log:
-                print "LOG: Sweeping has concluded for this sweep-set, due to the parameter: " + \
-                      counter['entity-name'] + '.' + counter['param-path']
-            reset = True
-            break
-
-        val = incrementer.value()
-        entity_file_path = exp.inputfile(entity_file)
-        compute_node.set_parameter_inputfile(entity_file_path, counter['entity-name'], counter['param-path'], val)
-
-        delta = counter['entity-name'] + "." + counter['param-path'] + "=" + str(val)
-        if param_description is None:
-            param_description = delta
+    if is_aws:
+        if use_ecs:
+            task_arn = launch_compute_aws_ecs(args.task_name)
         else:
-            param_description += "_" + delta
+            launch_compute_remote_docker()
+    else:
+        launch_compute_local()
 
-    if log:
-        if param_description is None:
-            print "LOG: inc_parameter_set(): no parameters were changed."
-        else:
-            print "LOG: Parameter sweep: " + param_description
+    version = compute_node.version()
+    print "Running framework version: " + version
 
-    if reset is False and param_description is None:
-        print "Error: inc_parameter_set() indeterminate state, reset is False, but parameter_description indicates no " \
-              "parameters have been modified. If there is no sweep to conduct, reset should be True."
-        exit()
-
-    return reset, param_description
+    return task_arn
 
 
-def run_sweeps():
-    """ Perform parameter sweep steps, and run experiment for each step.
+def shutdown_compute(task_arn):
+    """ Close compute: terminate and then if running on AWS, stop the task. """
 
-    :param exps_file: full path to experiments file
-    :return:
-    """
+    print "....... Shutdown System"
 
-    print "........ Run Sweeps"
+    compute_node.terminate()
 
-    exps_file = exp.experiment_def_file()
-
-    with open(exps_file) as data_exps_file:
-        data = json.load(data_exps_file)
-
-    for exp_i in data['experiments']:
-        import_files = exp_i['import-files']  # import files dictionary
-
-        if log:
-            print "LOG: Import Files Dictionary = "
-            print "LOG: ", import_files
-
-        # get experiment file-names, and expand to full path
-        base_entity_filename = import_files['file-entities']
-        base_data_filename = import_files['file-data']
-
-        if 'parameter-sweeps' not in exp_i or len(exp_i['parameter-sweeps']) == 0:
-            print "No parameters to sweep, just run once."
-
-            entity_filename, data_filename = exp.create_input_files(TEMPLATE_PREFIX, base_entity_filename, base_data_filename)
-            run_parameterset(entity_filename, data_filename, "")
-        else:
-            for param_sweep in exp_i['parameter-sweeps']:  # array of sweep definitions
-
-                entity_filename, data_filename = exp.create_input_files(TEMPLATE_PREFIX, base_entity_filename, base_data_filename)
-
-                counters = []
-                setup_parameter_sweep_counters(param_sweep, counters)
-
-                is_sweeping = True
-                while is_sweeping:
-                    reset, param_description = inc_parameter_set(entity_filename, counters)
-                    if reset:
-                        is_sweeping = False
-                    else:
-                        run_parameterset(entity_filename, data_filename, param_description)
-
-
-def set_dataset(exps_file):
-    """
-    The dataset can be located in different locations on different machines. The location can be set in the
-    experiments definition file (experiments.json). This method parses that file, finds the parameters to set
-    relative to the AGI_DATA_HOME env variable, and sets the specified parameters.
-    :param exps_file:
-    :return:
-    """
-
-    print "....... Set Dataset"
-
-    with open(exps_file) as data_exps_file:
-        data = json.load(data_exps_file)
-
-    for exp_i in data['experiments']:
-        for param in exp_i['dataset-parameters']:  # array of sweep definitions
-            entity_name = param['entity-name']
-            param_path = param['parameter-path']
-            value = param['value']
-
-            data_path = utils.filepath_from_env_variable(value, 'AGI_DATA_HOME')
-
-            compute_node.set_parameter_db(exp.entity_with_prefix(entity_name), param_path, data_path)
+    # note that task may be set up to terminate once compute has been terminated
+    if is_aws and (task_arn is not None):
+        cloud.stop_task_ecs(task_arn)
 
 
 def generate_input_files_locally():
-    entity_file_path = exp.inputfile("entity.json")
-    data_file_path = exp.inputfile("data.json")
+    entity_file_path = experiment.inputfile("entity.json")
+    data_file_path = experiment.inputfile("data.json")
 
-    root = exp.entity_with_prefix("experiment")
+    root = experiment.entity_with_prefix("experiment")
     compute_node.export_experiment(root, entity_file_path, data_file_path)
 
 
@@ -363,7 +402,14 @@ def setup_arg_parsing():
 
     # aws details
     parser.add_argument('--instanceid', dest='instanceid', required=False,
-                        help='Instance ID of the ec2 container instance (default=%(default)s).')
+                        help='Instance ID of the ec2 container instance - to start an ec2 instance, use this OR ami id,'
+                             ' not both.')
+    parser.add_argument('--amiid', dest='amiid', required=False,
+                        help='AMI ID for new ec2 instances - to start an ec2 instance, use this OR instance id, not'
+                             ' both.')
+    parser.add_argument('--ami_ram', dest='ami_ram', required=False,
+                        help='If launching ec2 via AMI, use this to specify how much minimum RAM you want '
+                             '(default=%(default)s).')
     parser.add_argument('--task_name', dest='task_name', required=False,
                         help='The name of the ecs task (default=%(default)s).')
     parser.add_argument('--ec2_keypath', dest='ec2_keypath', required=False,
@@ -381,40 +427,9 @@ def setup_arg_parsing():
     parser.set_defaults(pg_instance="localhost")
     parser.set_defaults(task_name="mnist-spatial-task:10")
     parser.set_defaults(ec2_keypath=utils.filepath_from_env_variable(".ssh/ecs-key", "HOME"))
+    parser.set_defaults(ami_ram='6')
 
     return parser.parse_args()
-
-
-def launch_compute(use_ecs=False):
-    """ Launch framework locally or on AWS. Return task arn if on AWS """
-
-    print "....... Launch Framework"
-
-    task_arn = None
-
-    if is_aws:
-        if use_ecs:
-            task_arn = launch_compute_aws_ecs(args.task_name)
-        else:
-            launch_compute_remote_docker()
-    else:
-        launch_compute_local()
-
-    version = compute_node.version()
-    print "Running framework version: " + version
-
-    return task_arn
-
-
-def shutdown_compute(task_arn):
-    """ Close framework: terminate and then if running on AWS, stop the task. """
-
-    print "....... Shutdown System"
-
-    compute_node.terminate()
-
-    if is_aws and (task_arn is not None):
-        cloud.stop_task(task_arn)
 
 
 class LaunchMode(Enum):
@@ -423,6 +438,9 @@ class LaunchMode(Enum):
 
 
 if __name__ == '__main__':
+
+    TEMPLATE_PREFIX = "SPAGHETTI"
+    PREFIX_DELIMITER = "--"
 
     args = setup_arg_parsing()
     log = args.logging
@@ -438,16 +456,21 @@ if __name__ == '__main__':
         print "WARNING: Uploading experiment to S3 is enabled, but 'export experiment' is not, so the most " \
               "important files (output entity.json and data.json) will be missing"
 
-    TEMPLATE_PREFIX = "SPAGHETTI"
-    PREFIX_DELIMITER = "--"
-
     if args.launch_per_session:
         launch_mode = LaunchMode.per_session
     else:
         launch_mode = LaunchMode.per_experiment
 
-    exp = experiment.Experiment(TEMPLATE_PREFIX, PREFIX_DELIMITER)
+    if args.amiid and args.instanceid:
+        print "ERROR: Both the AMI ID and EC2 Instance ID have been specified. Use just one to specify how to get " \
+              "a running ec2 instance"
+        if args.aws:
+            print "--- in any case, aws has not been set, so they have no effect"
+        exit()
+
+    experiment = experiment.Experiment(TEMPLATE_PREFIX, PREFIX_DELIMITER)
     compute_node = compute.Compute(log)
+    cloud = cloud.Cloud()
 
     # 1) Generate input files
     if args.main_class:
@@ -461,20 +484,18 @@ if __name__ == '__main__':
     ips = {'ip_public': args.host, 'ip_private': None}
     ips_pg = {'ip_public': None, 'ip_private': None}
 
-    is_pg_ec2 = (args.pg_instance[:2] == 'i-')
+    if args.pg_instance:
+        is_pg_ec2 = (args.pg_instance[:2] == 'i-')
     if is_aws:
-        if not args.instanceid and not args.task_name:
-            print "ERROR: You must specify an EC2 Instance ID (--instanceid) " \
-                  "and ECS Task Name (--task_name) to run on AWS."
-            exit()
-
-        ips = cloud.run_ec2(args.instanceid)
-
-        if is_pg_ec2:
-            ips_pg = cloud.run_ec2(args.pg_instance)
+        if args.instanceid:
+            ips = cloud.run_ec2(args.instanceid)
         else:
-            ips_pg = {'ip_private': args.pg_instance}
-    else:
+            ips = cloud.launch_from_ami_ec2(args.amiid, args.ram)
+            if args.pg_instance and is_pg_ec2:
+                ips_pg = cloud.run_ec2(args.pg_instance)
+            else:
+                ips_pg = {'ip_private': args.pg_instance}
+    elif args.pg_instance:
         if is_pg_ec2:
             print "ERROR: the pg instance is set to an ec2 instance id, but you are not running AWS."
             exit()
@@ -486,7 +507,8 @@ if __name__ == '__main__':
 
     # TEMPORARY HACK
     # Set the DB_HOST environment variable
-    os.putenv("DB_HOST", ips_pg['ip_private'])
+    if args.pg_instance:
+        os.putenv("DB_HOST", ips_pg['ip_private'])
 
     # 3) Sync code and run-home
     if args.sync:
@@ -501,7 +523,7 @@ if __name__ == '__main__':
 
     # 5) Run experiments
     if args.exps_file:
-        exp.experiments_def_filename = args.exps_file
+        experiment.experiments_def_filename = args.exps_file
         if not args.launch_framework:
             print "WARNING: Running experiment is meaningless unless you're already running framework " \
                   "(use param --step_agief)"
@@ -516,7 +538,7 @@ if __name__ == '__main__':
 
         # Shutdown infrastructure
         if is_aws:
-            cloud.close(args.instanceid)
+            cloud.stop_ec2(args.instanceid)
 
             if is_pg_ec2:
-                cloud.close(args.pg_instance)
+                cloud.stop_ec2(args.pg_instance)
