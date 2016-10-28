@@ -6,8 +6,9 @@ class ValIncrementer:
     val = 0
     counting = False
 
-    # The class "constructor" - It's actually an initializer
     def __init__(self, minv, maxv, deltav):
+        """" The class "constructor" - It's actually an initializer """
+
         self.min = minv
         self.max = maxv
         self.delta = deltav
@@ -20,10 +21,12 @@ class ValIncrementer:
         self.val = self.min
         self.counting = False
 
-    # First call sets the counter value to the minimum
-    # Subsequent calls increment it
-    # If the value exceeds the maximum, then return false
     def increment(self):
+        """
+        First call sets the counter value to the minimum.
+        Subsequent calls increment it.
+        :return: If the value exceeds the maximum, then return false
+        """
         if not self.counting:
             self.val = self.min
             self.counting = True

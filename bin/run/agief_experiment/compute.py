@@ -6,18 +6,23 @@ import dpath.util
 import utils
 
 
-class AGIEF:
+class Compute:
 
     log = False
-    base_url = None
+    host = "localhost"
+    port = 8491
 
-    def __init__(self, log, base_url):
+    def __init__(self, log):
         self.log = log
-        self.base_url = base_url
 
-    # Return when the the config parameter has achieved the value specified
-    # entity = name of entity, param_path = path to parameter, delimited by '.'
+    def base_url(self):
+        return utils.getbaseurl(self.host, self.port)
+
     def wait_till_param(self, entity_name, param_path, value):
+        """
+        Return when the the config parameter has achieved the value specified
+        entity = name of entity, param_path = path to parameter, delimited by '.'
+        """
         wait_period = 10
         age = None
         i = 0
@@ -34,11 +39,11 @@ class AGIEF:
 
             # if not self.log:
             #     utils.restart_line()
-            print "Iteration = [%d]%s" % (i, age_string)    # add a comma at the end to remove newline
+            print "Try = [%d]%s" % (i, age_string)    # add a comma at the end to remove newline
 
             try:
                 param_dic = {'entity': entity_name}
-                r = requests.get(self.base_url + '/config', params=param_dic)
+                r = requests.get(self.base_url() + '/config', params=param_dic)
 
                 if self.log:
                     print "LOG: Get config: /config with params " + json.dumps(param_dic) + ", response = ", r
@@ -62,13 +67,14 @@ class AGIEF:
 
         print "   -> success, parameter reached value"
 
-    # setup the running instance of AGIEF with the input files
     def import_experiment(self, entity_filepath=None, data_filepath=None):
+        """setup the running instance of AGIEF with the input files"""
+
         print "....... Import Experiment"
         with open(entity_filepath, 'rb') as entity_data_file:
             with open(data_filepath, 'rb') as data_data_file:
                 files = {'entity-file': entity_data_file, 'data-file': data_data_file}
-                response = requests.post(self.base_url + '/import', files=files)
+                response = requests.post(self.base_url() + '/import', files=files)
                 if self.log:
                     print "LOG: Import entity file, response = ", response
                     print "  LOG: response text = ", response.text
@@ -80,7 +86,7 @@ class AGIEF:
         print "....... Run Experiment"
 
         payload = {'entity': exp.entity_with_prefix('experiment'), 'event': 'update'}
-        response = requests.get(self.base_url + '/update', params=payload)
+        response = requests.get(self.base_url() + '/update', params=payload)
         if self.log:
             print "LOG: Start experiment, response = ", response
 
@@ -89,7 +95,7 @@ class AGIEF:
 
     def export_root_entity(self, filepath, root_entity, export_type):
         payload = {'entity': root_entity, 'type': export_type}
-        response = requests.get(self.base_url + '/export', params=payload)
+        response = requests.get(self.base_url() + '/export', params=payload)
         if self.log:
             # print "LOG: Export entity file, response text = ", response.text
             print "  LOG: response = ", response
@@ -101,9 +107,11 @@ class AGIEF:
         with open(filepath, 'w') as data_file:
             data_file.write(json.dumps(output_json, indent=4))
 
-    # Export the full experiment state from the running instance of AGIEF
-    # that consists of entity graph and the data
     def export_experiment(self, root_entity, entity_filepath, data_filepath):
+        """
+        Export the full experiment state from the running instance of AGIEF
+        that consists of entity graph and the data
+        """
         print "....... Export Experiment"
         if self.log:
             print "Exporting data for root entity: " + root_entity
@@ -115,7 +123,7 @@ class AGIEF:
         wait_period = 3
 
         print "....... Wait till framework has started (try every " + str(wait_period) + " seconds),   at = " \
-              + self.base_url
+              + self.base_url()
 
         version = None
         i = 0
@@ -129,7 +137,7 @@ class AGIEF:
 
             if version is None:
                 # utils.restart_line()
-                print "Iteration = [%d / 120]" % i      # add comma at the end to remove newline
+                print "Try = [%d / 120]" % i      # add comma at the end to remove newline
                 time.sleep(wait_period)
             else:
                 break
@@ -138,7 +146,7 @@ class AGIEF:
 
     def terminate(self):
         print "...... Terminate framework"
-        response = requests.get(self.base_url + '/stop')
+        response = requests.get(self.base_url() + '/stop')
 
         if self.log:
             print "LOG: response text = ", response.text
@@ -150,7 +158,7 @@ class AGIEF:
         """
 
         payload = {'entity': entity_name, 'path': param_path, 'value': value}
-        response = requests.post(self.base_url + '/config', params=payload)
+        response = requests.post(self.base_url() + '/config', params=payload)
         if self.log:
             print "LOG: set_parameter, response = ", response
 
@@ -168,7 +176,7 @@ class AGIEF:
 
         log_debug = False
 
-        print "Set Parameter: ", entity_name + "." + param_path + " = " + str(value)
+        set_param = entity_name + "." + param_path + " = " + str(value)
 
         if log_debug:
             print "LOG: in file: " + entity_filepath
@@ -223,6 +231,8 @@ class AGIEF:
         with open(entity_filepath, 'w') as data_file:
             data_file.write(json.dumps(data, indent=4))
 
+        return set_param
+
     def version(self, is_suppress_console_output=False):
         """
         Find out the version from the running framework, through the RESTful API. Return the string,
@@ -231,7 +241,7 @@ class AGIEF:
 
         version = None
         try:
-            response = requests.get(self.base_url + '/version')
+            response = requests.get(self.base_url() + '/version')
             if self.log:
                 print "LOG: response = ", response
 

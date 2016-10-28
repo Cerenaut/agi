@@ -2,23 +2,96 @@ import utils
 import os
 import datetime
 import shutil
+import subprocess
 
 
 class Experiment:
+
+    log = False
+
     prefix = None
     prefix_delimiter = None
+    experiments_def_filename = None     # the filename of the experiment definition (usually experiments.json)
+
+    # environment variables
+    agi_run_home = "AGI_RUN_HOME"
+    agi_home = "AGI_HOME"
+    agi_data_home = "AGI_DATA_HOME"
+    variables_file = "VARIABLES_FILE"
 
     def __init__(self, prefix, prefix_delimiter):
         self.prefix = prefix
         self.prefix_delimiter = prefix_delimiter
 
-    # return the full path to the inputfile specified by simple filename (AGI_RUN_HOME/input/filename)
-    def inputfile(self, filename):
-        return utils.filepath_from_env_variable("input/" + filename, "AGI_RUN_HOME")
+    def info(self):
 
-    # return the full path to the output file specified by simple filename (AGI_RUN_HOME/output/filename)
+        print "=============================================="
+        print "Experiment Information"
+        print "=============================================="
+
+        print "Datetime: " + datetime.datetime.now().strftime("%y %m %d - %H %M")
+        print "Folder: " + self.experiment_folder()
+        print "Githash: " + self.githash()
+        print "Variables file: " + self.variables_filepath()
+        print "Prefix: " + self.prefix
+        print "=============================================="
+
+    def filepath_from_env_variable(self, filename, path_env):
+
+        variables_file = self.variables_filepath()
+
+        if variables_file is "" or variables_file is None:
+            print "WARNING: unable to locate variables file." \
+
+        if self.log:
+            print "variables file = " + variables_file
+
+        cmd = "source " + variables_file + " && echo $" + path_env
+        output, error = subprocess.Popen(cmd,
+                                         shell=True,
+                                         stdout=subprocess.PIPE,
+                                         stderr=subprocess.PIPE,
+                                         executable="/bin/bash").communicate()
+
+        file_path = utils.cleanpath(output, filename)
+        return file_path
+
+    def githash(self):
+        """ return githash of experiment-definitions """
+
+        folder = self.experiment_folder()
+        cmd = "cd " + folder + " && git rev-parse --short HEAD"
+
+        commit, error = subprocess.Popen(cmd,
+                                         shell=True,
+                                         stdout=subprocess.PIPE,
+                                         stderr=subprocess.PIPE,
+                                         executable="/bin/bash").communicate()
+
+        return commit
+
+    def inputfile(self, filename):
+        """ return the full path to the inputfile specified by simple filename (AGI_RUN_HOME/input/filename) """
+        return self.filepath_from_env_variable("input/" + filename, self.agi_run_home)
+
     def outputfile(self, filename):
-        return utils.filepath_from_env_variable("output/" + filename, "AGI_RUN_HOME")
+        """ return the full path to the output file specified by simple filename (AGI_RUN_HOME/output/filename) """
+        return self.filepath_from_env_variable("output/" + filename, self.agi_run_home)
+
+    def datafile(self, filename):
+        return self.filepath_from_env_variable(filename, self.agi_data_home)
+
+    def experiment_def_file(self):
+        """ return the full path to the experiments definition file """
+        return self.filepath_from_env_variable(self.experiments_def_filename, self.agi_run_home)
+
+    def experiment_folder(self):
+        """ return the full path to the experiments folder """
+        return self.filepath_from_env_variable("", self.agi_run_home)
+
+    def experimentfile(self, filename):
+        """ return the full path to a file in the folder AGI_RUN_HOME """
+        return self.filepath_from_env_variable(filename, self.agi_run_home)
 
     def entity_with_prefix(self, entity_name):
         if self.prefix is None or self.prefix is "":
@@ -29,7 +102,7 @@ class Experiment:
     def reset_prefix(self):
         use_prefix_file = False
         if use_prefix_file:
-            prefix_filepath = utils.filepath_from_env_variable('prefix.txt', 'AGI_RUN_HOME')
+            prefix_filepath = self.filepath_from_env_variable('prefix.txt', self.agi_run_home)
 
             if not os.path.isfile(prefix_filepath):
                 print """WARNING ****   no prefix.txt file could be found,
@@ -65,3 +138,10 @@ class Experiment:
         utils.replace_in_file(template_prefix, self.prefix, self.inputfile(data_filename))
 
         return entity_filename, data_filename
+
+    def variables_filepath(self):
+        """ return full filename with path, of the file being used for the variables file """
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        variables_file = os.getenv(self.variables_file, dir_path + '/../../variables.sh')
+        return variables_file
+
