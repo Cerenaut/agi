@@ -1,6 +1,11 @@
 #!/bin/bash
 
 
+default="$(dirname $0)/../variables.sh"
+variables_file=${VARIABLES_FILE:-$default}
+echo "Using variables file = $variables_file" 
+source $variables_file
+
 if [ "$1" == "-h" -o "$1" == "--help" -o "$1" == "" ]; then
   echo "Usage: `basename $0` HOST KEY_FILE (default = ~/.ssh/ecs-key.pem)"
   exit 0
@@ -17,8 +22,9 @@ echo "Using host = " $host
 # WARNING: hardcoded path on remote machine in shell commands below (to be run on remote host via ssh)
 
 ssh -i $keyfile ec2-user@${host} -o 'StrictHostKeyChecking no' 'bash -s' <<'ENDSSH' 
-	export VARIABLES_FILE="variables-ec2.sh"
-	cd /home/ec2-user/agief-project/agi/bin/node_coordinator
+	export VARIABLES_FILE="/home/ec2-user/agief-project/agi/bin/variables-ec2.sh"
+	source $VARIABLES_FILE
+	cd $AGI_HOME/bin/node_coordinator
 	./run-in-docker.sh -d
 ENDSSH
 

@@ -19,23 +19,6 @@ def replace_in_file(src_string, dest_string, file_path):
     f.close()
 
 
-def filepath_from_env_variable(filename, path_env):
-    variables_file = os.getenv('VARIABLES_FILE', 'variables.sh')
-
-    cmd = "source ../" + variables_file + " && echo $" + path_env
-    output, error = subprocess.Popen(cmd,
-                                     shell=True,
-                                     stdout=subprocess.PIPE,
-                                     stderr=subprocess.PIPE,
-                                     executable="/bin/bash").communicate()
-
-    path_from_env = output.strip()
-    filename = filename.strip()
-    filename = filename.lstrip('/')
-    file_path = os.path.join(path_from_env, filename)
-    return file_path
-
-
 def create_folder(filepath):
     if not os.path.exists(os.path.dirname(filepath)):
         try:
@@ -54,3 +37,25 @@ def append_before_ext(filename, text):
 def getbaseurl(host, port):
     return 'http://' + host + ':' + port
 
+
+def filepath_from_env_variable(filename, path_env):
+
+    cmd = "echo $" + path_env
+    output, error = subprocess.Popen(cmd,
+                                     shell=True,
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE,
+                                     executable="/bin/bash").communicate()
+
+    file_path = cleanpath(output, filename)
+    return file_path
+
+
+def cleanpath(path, filename):
+    """ given a path and a filename, return the fully qualified filename with path"""
+
+    path_from_env = path.strip()
+    filename = filename.strip()
+    filename = filename.lstrip('/')
+    file_path = os.path.join(path_from_env, filename)
+    return file_path

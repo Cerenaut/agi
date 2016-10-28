@@ -1,9 +1,9 @@
 #!/bin/bash
 
-variables_file=${VARIABLES_FILE:-"variables.sh"}
-echo "Using variables file = \"$variables_file\""
-source $(dirname $0)/../$variables_file
-
+default="$(dirname $0)/../variables.sh"
+variables_file=${VARIABLES_FILE:-$default}
+echo "Using variables file = $variables_file" 
+source $variables_file
 
 ### NOTE: temporarily deprecated until we split the project again
 # echo "------- Build and install libs -------"

@@ -13,10 +13,15 @@
         </LogglyAppender>
     </Appenders>
     <Loggers>
-        <Root level="info">
+        <!-- Show only error level as default -->
+        <Root level="error">
             <AppenderRef ref="LogglyAppender" />
-            <AppenderRef ref="Console" />
-            <AppenderRef ref="MyFile"/>
+            <AppenderRef ref="MyFile"/>            
         </Root>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
+        <!-- show the following at the desired level -->
+        <Logger name="io.agi.framework.persistence.jdbc.JdbcUtil" level="INFO"/>
     </Loggers>
 </Configuration>

@@ -26,7 +26,7 @@ Assumptions:
 """
 
 
-def run_parameterset(entity_file, data_file, param_description):
+def run_parameterset(entity_file, data_file, sweep_param_vals):
     """
     Import input files
     Run Experiment and Export experiment
@@ -40,8 +40,13 @@ def run_parameterset(entity_file, data_file, param_description):
     """
 
     print "........ Run parameter set."
-    print "Prefix = " + experiment.prefix
-    # print "Parameters = " + param_description             # already output to console when they were set
+
+    experiment.info()
+
+    print "\nSweep Parameters:"
+    for param_def in sweep_param_vals:
+        print param_def
+    print "\n"
 
     entity_file_path = experiment.inputfile(entity_file)
     data_file_path = experiment.inputfile(data_file)
@@ -79,19 +84,22 @@ def run_parameterset(entity_file, data_file, param_description):
 
     if is_upload:
 
-        # upload exported output files (if they exist)
+        # upload exported output Entity file (if it exists)
         cloud.upload_experiment_output_s3(experiment.prefix,
                                           new_entity_file,
                                           out_entity_file_path)
 
+        # upload exported output Data file (if it exists)
         cloud.upload_experiment_output_s3(experiment.prefix,
                                           new_data_file,
                                           out_data_file_path)
 
+        # upload experiments definition file (if it exists)
         cloud.upload_experiment_output_s3(experiment.prefix,
                                           experiment.experiments_def_filename,
                                           experiment.experiment_def_file())
 
+        # upload log4j configuration file that was used (if it exists)
         log_filename = "log4j2.log"
         log_filepath = experiment.experimentfile(log_filename)
         cloud.upload_experiment_output_s3(experiment.prefix,
@@ -146,7 +154,7 @@ def inc_parameter_set(entity_file, counters):
     """
 
     # inc all counters, and set parameter in entity file
-    param_description = None
+    sweep_param_vals = []
     reset = False
     for counter in counters:
         incrementer = counter['incrementer']
@@ -160,26 +168,24 @@ def inc_parameter_set(entity_file, counters):
 
         val = incrementer.value()
         entity_file_path = experiment.inputfile(entity_file)
-        compute_node.set_parameter_inputfile(entity_file_path, counter['entity-name'], counter['param-path'], val)
-
-        delta = counter['entity-name'] + "." + counter['param-path'] + "=" + str(val)
-        if param_description is None:
-            param_description = delta
-        else:
-            param_description += "_" + delta
+        set_param = compute_node.set_parameter_inputfile(entity_file_path,
+                                                         counter['entity-name'],
+                                                         counter['param-path'],
+                                                         val)
+        sweep_param_vals.append(set_param)
 
     if log:
-        if param_description is None:
-            print "LOG: inc_parameter_set(): no parameters were changed."
+        if len(sweep_param_vals):
+            print "LOG: no parameters were changed."
         else:
-            print "LOG: Parameter sweep: " + param_description
+            print "LOG: Parameter sweep: ", sweep_param_vals
 
-    if reset is False and param_description is None:
-        print "Error: inc_parameter_set() indeterminate state, reset is False, but parameter_description indicates no " \
-              "parameters have been modified. If there is no sweep to conduct, reset should be True."
+    if reset is False and len(sweep_param_vals) == 0:
+        print "Error: inc_parameter_set() indeterminate state, reset is False, but parameter_description indicates " \
+              "no parameters have been modified. If there is no sweep to conduct, reset should be True."
         exit()
 
-    return reset, param_description
+    return reset, sweep_param_vals
 
 
 def run_sweeps():
@@ -224,11 +230,11 @@ def run_sweeps():
 
                 is_sweeping = True
                 while is_sweeping:
-                    reset, param_description = inc_parameter_set(entity_filename, counters)
+                    reset, sweep_param_vals = inc_parameter_set(entity_filename, counters)
                     if reset:
                         is_sweeping = False
                     else:
-                        run_parameterset(entity_filename, data_filename, param_description)
+                        run_parameterset(entity_filename, data_filename, sweep_param_vals)
 
 
 def set_dataset(exps_file):
@@ -249,11 +255,11 @@ def set_dataset(exps_file):
         for param in exp_i['dataset-parameters']:  # array of sweep definitions
             entity_name = param['entity-name']
             param_path = param['parameter-path']
-            value = param['value']
+            data_filename = param['value']
 
-            data_path = utils.filepath_from_env_variable(value, 'AGI_DATA_HOME')
-
+            data_path = experiment.datafile(data_filename)
             compute_node.set_parameter_db(experiment.entity_with_prefix(entity_name), param_path, data_path)
+
 
 def launch_compute_aws_ecs(task_name):
     """

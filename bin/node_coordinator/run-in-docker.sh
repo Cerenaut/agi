@@ -14,9 +14,10 @@
 # 
 ########################################################################################################
 
-variables_file=${VARIABLES_FILE:-"variables.sh"}
-echo "Using variables file = \"$variables_file\""
-source $(dirname $0)/../$variables_file
+default="$(dirname $0)/../variables.sh"
+variables_file=${VARIABLES_FILE:-$default}
+echo "Using variables file = $variables_file" 
+source $variables_file
 
 detached=0
 

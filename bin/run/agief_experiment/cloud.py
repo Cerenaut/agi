@@ -248,7 +248,7 @@ class Cloud:
                 'Enabled': False
             },
             DisableApiTermination=False,
-            InstanceInitiatedShutdownBehavior='stop',       # | 'terminate'
+            InstanceInitiatedShutdownBehavior='terminate',      # | 'stop'
             # ClientToken=self.client_token,
             AdditionalInfo='started by run-framework.py',
             # IamInstanceProfile={

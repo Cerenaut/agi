@@ -176,7 +176,7 @@ class Compute:
 
         log_debug = False
 
-        print "Set Parameter: ", entity_name + "." + param_path + " = " + str(value)
+        set_param = entity_name + "." + param_path + " = " + str(value)
 
         if log_debug:
             print "LOG: in file: " + entity_filepath
@@ -230,6 +230,8 @@ class Compute:
         # write back to file
         with open(entity_filepath, 'w') as data_file:
             data_file.write(json.dumps(data, indent=4))
+
+        return set_param
 
     def version(self, is_suppress_console_output=False):
         """
