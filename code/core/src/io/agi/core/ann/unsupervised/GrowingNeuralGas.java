@@ -90,10 +90,6 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         _cellStress.set( 0.f ); // disable all cells
     }
 
-    public void call() {
-        update();
-    }
-
     public void update() {
 
         // given current cell mask local, ensure that there are at least 2 cells locally.

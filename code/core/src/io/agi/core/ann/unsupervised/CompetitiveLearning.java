@@ -38,6 +38,13 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
         super( name, om );
     }
 
+    public abstract void reset();
+    public abstract void update();
+
+    public void call() {
+        update();
+    }
+
     public ArrayList< Integer > createCellList(
             CompetitiveLearningConfig c,
             FloatArray cellMask ) {
