@@ -84,8 +84,9 @@ fi
 # should use the script /docker/run.sh,  but thinking of deprecating, not worth maintaining another script that isn't that useful
 dcmd="docker run $switch
         -w /root/dev/agi/bin/node_coordinator
-        -e VARIABLES_FILE='/root/dev/run/variables/variables-docker.sh'
+        -e VARIABLES_FILE='/root/dev/variables/variables-docker.sh'
         -v $AGI_HOME:/root/dev/agi
+        -v $AGI_RUN_HOME/variables:/root/dev/variables
         -v $AGI_RUN_HOME:/root/dev/run
         -v '${maven_cache_repo}:/root/.m2/repository'
         -p 8491:8491 -p 5432:5432
