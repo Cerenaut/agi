@@ -16,7 +16,7 @@ class Experiment:
     # environment variables
     agi_run_home = "AGI_RUN_HOME"
     agi_home = "AGI_HOME"
-    agi_data_home = "AGI_DATA_HOME"
+    agi_data_run_home = "AGI_DATA_RUN_HOME"
     variables_file = "VARIABLES_FILE"
 
     def __init__(self, log, prefix, prefix_delimiter):
@@ -80,7 +80,8 @@ class Experiment:
         return self.filepath_from_exp_variable("output/" + filename, self.agi_run_home)
 
     def datafile(self, filename):
-        return self.filepath_from_exp_variable(filename, self.agi_data_home)
+        """ return the file in the data folder, on the system where compute is running """
+        return self.filepath_from_exp_variable(filename, self.agi_data_run_home)
 
     def experiment_def_file(self):
         """ return the full path to the experiments definition file """

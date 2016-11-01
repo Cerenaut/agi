@@ -444,6 +444,10 @@ class LaunchMode(Enum):
 
 if __name__ == '__main__':
 
+    print "------------------------------------------"
+    print "----          run-framework           ----"
+    print "------------------------------------------"
+
     TEMPLATE_PREFIX = "SPAGHETTI"
     PREFIX_DELIMITER = "--"
 

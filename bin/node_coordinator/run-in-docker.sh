@@ -86,6 +86,7 @@ dcmd="docker run $switch
         -w /root/dev/agi/bin/node_coordinator
         -e VARIABLES_FILE='/root/dev/variables/variables-docker.sh'
         -v $AGI_HOME:/root/dev/agi
+        -v $AGI_DATA_HOME:/root/dev/data
         -v $AGI_RUN_HOME/../variables:/root/dev/variables
         -v $AGI_RUN_HOME:/root/dev/run
         -v '${maven_cache_repo}:/root/.m2/repository'
