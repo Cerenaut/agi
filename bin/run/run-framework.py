@@ -493,14 +493,19 @@ if __name__ == '__main__':
     if args.pg_instance:
         is_pg_ec2 = (args.pg_instance[:2] == 'i-')
     if is_aws:
+
+        # start Compute ec2 either from instanceid or amiid
         if args.instanceid:
             ips = cloud.run_ec2(args.instanceid)
         else:
-            ips = cloud.launch_from_ami_ec2(args.amiid, args.ram)
-            if args.pg_instance and is_pg_ec2:
-                ips_pg = cloud.run_ec2(args.pg_instance)
-            else:
-                ips_pg = {'ip_private': args.pg_instance}
+            ips = cloud.launch_from_ami_ec2(args.amiid, int(args.ami_ram))
+
+        # start DB ec2, from instanceid
+        if args.pg_instance and is_pg_ec2:
+            ips_pg = cloud.run_ec2(args.pg_instance)
+        else:
+            ips_pg = {'ip_private': args.pg_instance}
+
     elif args.pg_instance:
         if is_pg_ec2:
             print "ERROR: the pg instance is set to an ec2 instance id, but you are not running AWS."
