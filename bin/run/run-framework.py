@@ -59,7 +59,7 @@ def run_parameterset(entity_file, data_file, sweep_param_vals):
               ", does not exist.\nCANNOT CONTINUE."
         exit()
 
-    if (launch_mode is LaunchMode.per_experiment) and args.launch_framework:
+    if (launch_mode is LaunchMode.per_experiment) and args.launch_compute:
         task_arn = launch_compute()
 
     compute_node.import_experiment(entity_file_path, data_file_path)
@@ -79,7 +79,7 @@ def run_parameterset(entity_file, data_file, sweep_param_vals):
                                        out_entity_file_path,
                                        out_data_file_path)
 
-    if (launch_mode is LaunchMode.per_experiment) and args.launch_framework:
+    if (launch_mode is LaunchMode.per_experiment) and args.launch_compute:
         shutdown_compute(task_arn)
 
     if is_upload:
@@ -263,15 +263,15 @@ def set_dataset(exps_file):
 
 def launch_compute_aws_ecs(task_name):
     """
-    Launch AGIEF on AWS ECS (elastic container service).
+    Launch Compute on AWS ECS (elastic container service).
     Assumes that ECS is setup to have the necessary task, and container instances running.
-    Hang till framework is up and running. Return task arn.
+    Hang till Compute is up and running. Return task arn.
 
     :param task_name:
     :return:
     """
 
-    print "launching framework on AWS-ECS"
+    print "launching Compute on AWS-ECS"
 
     if task_name is None:
         print "ERROR: you must specify a Task Name to run on aws-ecs"
@@ -285,16 +285,16 @@ def launch_compute_aws_ecs(task_name):
 def launch_compute_remote_docker():
     """
     Launch Compute Node on AWS. Assumes there is a running ec2 instance running Docker
-    Hang till framework is up and running.
+    Hang till Compute is up and running.
     """
 
-    print "launching framework on AWS (on ec2 using run-in-docker.sh)"
+    print "launching Compute on AWS (on ec2 using run-in-docker.sh)"
     cloud.launch_compute_docker(compute_node.host, remote_keypath)
     compute_node.wait_up()
 
 
 def launch_compute_local(main_class=""):
-    """ Launch AGIEF locally. Hang till framework is up and running.
+    """ Launch Compute locally. Hang till Compute is up and running.
 
     If main_class is specified, then use run-demo.sh,
     which builds entity graph and data from the relevant Demo project defined by the Main Class.
@@ -305,7 +305,7 @@ def launch_compute_local(main_class=""):
     :return:
     """
 
-    print "launching framework locally"
+    print "launching Compute locally"
     cmd = "../node_coordinator/run.sh "
     if main_class is not "":
         cmd = "../node_coordinator/run-demo.sh node.properties " + main_class + " " + TEMPLATE_PREFIX
@@ -322,9 +322,9 @@ def launch_compute_local(main_class=""):
 
 
 def launch_compute(use_ecs=False):
-    """ Launch framework locally or on AWS. Return task arn if on AWS """
+    """ Launch Compute locally or on AWS. Return task arn if on AWS """
 
-    print "....... Launch Framework"
+    print "....... Launch Compute"
 
     task_arn = None
 
@@ -337,7 +337,7 @@ def launch_compute(use_ecs=False):
         launch_compute_local()
 
     version = compute_node.version()
-    print "Running framework version: " + version
+    print "Running Compute version: " + version
 
     return task_arn
 
@@ -376,7 +376,7 @@ def setup_arg_parsing():
 
     # main program flow
     parser.add_argument('--step_aws', dest='aws', action='store_true',
-                        help='Run AWS instances to run framework. Then InstanceId and Task need to be specified.')
+                        help='Run AWS instances to run Compute. Then InstanceId and Task need to be specified.')
     parser.add_argument('--step_exps', dest='exps_file', required=False,
                         help='Run experiments, defined in the file that is set with this parameter.'
                              'Filename is within AGI_RUN_HOME that defines the '
@@ -384,26 +384,26 @@ def setup_arg_parsing():
     parser.add_argument('--step_sync', dest='sync', action='store_true',
                         help='Sync the code and run folder (relevant for --step_aws).'
                              'Requires setting key path with --ec2_keypath')
-    parser.add_argument('--step_agief', dest='launch_framework', action='store_true',
-                        help='Launch the framework.')
+    parser.add_argument('--step_compute', dest='launch_compute', action='store_true',
+                        help='Launch the Compute node.')
     parser.add_argument('--step_shutdown', dest='shutdown', action='store_true',
-                        help='Shutdown instances and framework after other stages.')
+                        help='Shutdown instances and Compute after other stages.')
     parser.add_argument('--step_export', dest='export', action='store_true',
                         help='Export entity tree and data at the end of each experiment.')
     parser.add_argument('--step_upload', dest='upload', action='store_true',
                         help='Upload exported entity tree and data at the end of each experiment.')
 
-    # how to reach the framework
+    # how to reach the Compute
     parser.add_argument('--host', dest='host', required=False,
-                        help='Host where the framework will be running (default=%(default)s). '
+                        help='Host where the Compute node will be running (default=%(default)s). '
                              'THIS IS IGNORED IF RUNNING ON AWS (in which case the IP of the instance '
                              'specified by the Instance ID is used)')
     parser.add_argument('--port', dest='port', required=False,
-                        help='Port where the framework will be running (default=%(default)s).')
+                        help='Port where the Compute node will be running (default=%(default)s).')
 
     # launch mode
     parser.add_argument('--launch_per_session', dest='launch_per_session', action='store_true',
-                        help='Framework is launched once at the start (and shutdown at the end if you use '
+                        help='Compute node is launched once at the start (and shutdown at the end if you use '
                              '--step_shutdown. Otherwise, it is launched and shut per experiment.')
 
     # aws details
@@ -523,16 +523,16 @@ if __name__ == '__main__':
             exit()
         cloud.sync_experiment(compute_node.base_url(), remote_keypath)
 
-    # 4) Launch framework (on AWS or locally) - *** IF Mode == 'Per Session' ***
-    if (launch_mode is LaunchMode.per_session) and args.launch_framework:
+    # 4) Launch Compute (on AWS or locally) - *** IF Mode == 'Per Session' ***
+    if (launch_mode is LaunchMode.per_session) and args.launch_compute:
         launch_compute()
 
     # 5) Run experiments
     if args.exps_file:
         experiment.experiments_def_filename = args.exps_file
-        if not args.launch_framework:
-            print "WARNING: Running experiment is meaningless unless you're already running framework " \
-                  "(use param --step_agief)"
+        if not args.launch_compute:
+            print "WARNING: Running experiment is meaningless unless you're already running the Compute node" \
+                  "(use param --step_compute)"
 
         run_sweeps()
 
