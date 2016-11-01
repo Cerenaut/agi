@@ -23,6 +23,7 @@ import io.agi.core.ann.NetworkConfig;
 import io.agi.core.data.Data2d;
 import io.agi.core.orm.ObjectMap;
 
+import java.awt.*;
 import java.util.Random;
 
 /**
@@ -84,6 +85,10 @@ public class CompetitiveLearningConfig extends NetworkConfig {
     public int getHeightCells() {
         Integer h = _om.getInteger( getKey( _keyHeightCells ) );
         return h.intValue();
+    }
+
+    public Point getSizeCells() {
+        return new Point( getWidthCells(), getHeightCells() );
     }
 
     public int getNbrCells() {

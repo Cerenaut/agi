@@ -160,10 +160,6 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         _c.setAge( 0 );
     }
 
-    public void call() {
-        update();
-    }
-
     public void updatePromotion() {
 
         // as cells age, their weight is promoted

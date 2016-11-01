@@ -20,10 +20,9 @@
 package io.agi.core.alg;
 
 import io.agi.core.ann.NetworkConfig;
-import io.agi.core.ann.unsupervised.DynamicSelfOrganizingMapConfig;
 import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
+import io.agi.core.ann.unsupervised.HierarchicalQuiltConfig;
 import io.agi.core.ann.unsupervised.ParameterLessSelfOrganizingMapConfig;
-import io.agi.core.ann.unsupervised.PlasticNeuralGasConfig;
 import io.agi.core.data.Data2d;
 import io.agi.core.orm.ObjectMap;
 
@@ -31,11 +30,9 @@ import java.awt.*;
 import java.util.Random;
 
 /**
- * Created by dave on 14/05/16.
+ * Created by dave on 22/10/16.
  */
-public class RegionLayerConfig extends NetworkConfig {
-
-//    public static final int RECEPTIVE_FIELD_DIMENSIONS = 2;
+public class HierarchicalQuiltedCompetitiveLearningConfig extends NetworkConfig {
 
     public static final String FF_INPUT_1_WIDTH = "ff-input-1-width";
     public static final String FF_INPUT_1_HEIGHT = "ff-input-1-height";
@@ -43,70 +40,108 @@ public class RegionLayerConfig extends NetworkConfig {
     public static final String FF_INPUT_2_HEIGHT = "ff-input-2-height";
     public static final String FB_INPUTS = "fb-inputs";
 
-    public static final String RECEPTIVE_FIELDS_TRAINING_SAMPLES = "receptive-fields-training-samples";
-//    public static final String RECEPTIVE_FIELD_SIZE = "receptive-field-size";
+    public static final String ORGANIZER = "organizer";
+    public static final String CLASSIFIER = "classifier";
+    public static final String PREDICTOR = "predictor";
+
+    public static final String PREDICTION_LEARNING_RATE = "prediction-learning-rate";
+    public static final String PREDICTION_DECAY_RATE = "prediction-decay-rate";
+
+    public static final String ERROR_HISTORY_LENGTH = "error-history-length";
+
     public static final String CLASSIFIERS_PER_BIT_1 = "classifiers-per-bit-1";
     public static final String CLASSIFIERS_PER_BIT_2 = "classifiers-per-bit-2";
-    public static final String ORGANIZER_TRAIN_ON_CHANGE = "organizer-train-on-change";
-    public static final String PREDICTOR_LEARNING_RATE = "predictor-learning-rate";
-    public static final String DEPTH_CELLS = "depth-cells";
-    public static final String DEFAULT_PREDICTION_INHIBITION = "default-prediction-inhibition";
-    public static final String EMIT_UNCHANGED_CELLS = "emit-unchanged-cells";
 
-    public static final String SUFFIX_ORGANIZER = "organizer";
-    public static final String SUFFIX_CLASSIFIER = "classifier";
-    public static final String SUFFIX_PREDICTOR = "predictor";
-
-//    public PlasticNeuralGasConfig _classifierConfig;
+    public HierarchicalQuiltConfig _organizerConfig;
     public GrowingNeuralGasConfig _classifierConfig;
-//    public GrowingNeuralGasConfig _organizerConfig;
-    public ParameterLessSelfOrganizingMapConfig _organizerConfig;
 
-    public RegionLayerConfig() {
+    public HierarchicalQuiltedCompetitiveLearningConfig() {
     }
 
     public void setup(
             ObjectMap om,
             String name,
             Random r,
-//            DynamicSelfOrganizingMapConfig organizerConfig,
-            ParameterLessSelfOrganizingMapConfig organizerConfig,
+            HierarchicalQuiltConfig organizerConfig,
             GrowingNeuralGasConfig classifierConfig,
-//            PlasticNeuralGasConfig classifierConfig,
             int ffInput1Width,
             int ffInput1Height,
             int ffInput2Width,
             int ffInput2Height,
             int fbInputArea,
-            float predictorLearningRate,
-            float receptiveFieldsTrainingSamples,
-            float defaultPredictionInhibition,
-            boolean organizerTrainOnChange,
-            boolean emitUnchangedCells,
+            float predictionLearningRate,
+            float predictionDecayRate,
+            int errorHistoryLength,
             int classifiersPerBit1,
-            int classifiersPerBit2,
-            int depthCells ) {
+            int classifiersPerBit2 ) {
         super.setup( om, name, r );
 
         _organizerConfig = organizerConfig;
         _classifierConfig = classifierConfig;
 
-        setOrganizerTrainOnChange( organizerTrainOnChange );
-        setEmitUnchangedCells( emitUnchangedCells );
-        setPredictorLearningRate( predictorLearningRate );
-        setReceptiveFieldsTrainingSamples( receptiveFieldsTrainingSamples );
-//        setReceptiveFieldSize( receptiveFieldSize );
+        setPredictionLearningRate( predictionLearningRate );
+        setPredictionDecayRate( predictionDecayRate );
+
+        setErrorHistoryLength( errorHistoryLength );
+
         setClassifiersPerBit1( classifiersPerBit1 );
         setClassifiersPerBit2( classifiersPerBit2 );
+
         setFfInput1Size( ffInput1Width, ffInput1Height );
         setFfInput2Size( ffInput2Width, ffInput2Height );
         setFbInputArea( fbInputArea );
-        setDepthCells( depthCells );
-        setDefaultPredictionInhibition( defaultPredictionInhibition );
+    }
+
+    public void copyFrom( NetworkConfig nc, String name ) {
+        super.copyFrom( nc, name );
+
+        HierarchicalQuiltedCompetitiveLearningConfig c = ( HierarchicalQuiltedCompetitiveLearningConfig ) nc;
+
+        _organizerConfig.copyFrom( c._organizerConfig, c._name );
+        _classifierConfig.copyFrom( c._classifierConfig, c._name );
+
+        setPredictionLearningRate( c.getPredictionLearningRate() );
+        setPredictionDecayRate( c.getPredictionDecayRate() );
+
+        setErrorHistoryLength( c.getErrorHistoryLength() );
+
+        setClassifiersPerBit1( c.getClassifiersPerBit1() );
+        setClassifiersPerBit2( c.getClassifiersPerBit2() );
+
+        setFfInput1Size( c.getFfInput1Size().x, c.getFfInput1Size().y );
+        setFfInput2Size( c.getFfInput2Size().x, c.getFfInput2Size().y );
+        setFbInputArea( c.getFbInputArea() );
     }
 
     public Random getRandom() {
         return _r;
+    }
+
+    public float getPredictionLearningRate() {
+        float r = _om.getFloat( getKey( PREDICTION_LEARNING_RATE ) );
+        return r;
+    }
+
+    public void setPredictionLearningRate( float r ) {
+        _om.put( getKey( PREDICTION_LEARNING_RATE ), r );
+    }
+
+    public float getPredictionDecayRate() {
+        float r = _om.getFloat( getKey( PREDICTION_DECAY_RATE ) );
+        return r;
+    }
+
+    public void setPredictionDecayRate( float r ) {
+        _om.put( getKey( PREDICTION_DECAY_RATE ), r );
+    }
+
+    public int getErrorHistoryLength() {
+        int n = _om.getInteger( getKey( ERROR_HISTORY_LENGTH ) );
+        return n;
+    }
+
+    public void setErrorHistoryLength( int n ) {
+        _om.put( getKey( ERROR_HISTORY_LENGTH ), n );
     }
 
     public Point getFfInput1Size() {
@@ -161,40 +196,6 @@ public class RegionLayerConfig extends NetworkConfig {
         _om.put( getKey( FB_INPUTS ), fbInputArea );
     }
 
-    public boolean getOrganizerTrainOnChange() {
-        boolean b = _om.getBoolean( getKey( ORGANIZER_TRAIN_ON_CHANGE ) );
-        return b;
-    }
-
-    public void setOrganizerTrainOnChange( boolean b ) {
-        _om.put( getKey( ORGANIZER_TRAIN_ON_CHANGE ), b );
-    }
-
-    public boolean getEmitUnchangedCells() {
-        boolean b = _om.getBoolean( getKey( EMIT_UNCHANGED_CELLS ) );
-        return b;
-    }
-
-    public void setEmitUnchangedCells( boolean b ) {
-        _om.put( getKey( EMIT_UNCHANGED_CELLS ), b );
-    }
-
-    public float getPredictorLearningRate() {
-        float r = _om.getFloat( getKey( PREDICTOR_LEARNING_RATE ) );
-        return r;
-    }
-
-    public void setPredictorLearningRate( float learningRate ) {
-        _om.put( getKey( PREDICTOR_LEARNING_RATE ), learningRate );
-    }
-
-    public int getPredictorInputs() {
-        int inputArea = getFbInputArea();
-        int regionArea = getRegionAreaCells();
-        int predictorInputs = inputArea + regionArea;
-        return predictorInputs;
-    }
-
     public Point getClassifierSizeCells() {
         int width = _classifierConfig.getWidthCells();
         int height = _classifierConfig.getHeightCells();
@@ -205,6 +206,12 @@ public class RegionLayerConfig extends NetworkConfig {
         int width = _organizerConfig.getWidthCells();
         int height = _organizerConfig.getHeightCells();
         return new Point( width, height );
+    }
+
+    public int getOrganizerAreaCells() {
+        int width = _organizerConfig.getWidthCells();
+        int height = _organizerConfig.getHeightCells();
+        return ( width * height );
     }
 
 //    public int getReceptiveFieldSize() {
@@ -229,35 +236,9 @@ public class RegionLayerConfig extends NetworkConfig {
     public void setClassifiersPerBit1( int n ) {
         _om.put( getKey( CLASSIFIERS_PER_BIT_1 ), n );
     }
+
     public void setClassifiersPerBit2( int n ) {
         _om.put( getKey( CLASSIFIERS_PER_BIT_2 ), n );
-    }
-
-    public int getDepthCells() {
-        int n = _om.getInteger( getKey( DEPTH_CELLS ) );
-        return n;
-    }
-
-    public void setDepthCells( int depthCells ) {
-        _om.put( getKey( DEPTH_CELLS ), depthCells );
-    }
-
-    public float getReceptiveFieldsTrainingSamples() {
-        float r = _om.getFloat( getKey( RECEPTIVE_FIELDS_TRAINING_SAMPLES ) );
-        return r;
-    }
-
-    public void setReceptiveFieldsTrainingSamples( float receptiveFieldsTrainingSamples ) {
-        _om.put( getKey( RECEPTIVE_FIELDS_TRAINING_SAMPLES ), receptiveFieldsTrainingSamples );
-    }
-
-    public float getDefaultPredictionInhibition() {
-        float r = _om.getFloat( getKey( DEFAULT_PREDICTION_INHIBITION ) );
-        return r;
-    }
-
-    public void setDefaultPredictionInhibition( float r ) {
-        _om.put( getKey( DEFAULT_PREDICTION_INHIBITION ), r );
     }
 
     public int getOrganizerOffset( int xClassifier, int yClassifier ) {
@@ -281,33 +262,27 @@ public class RegionLayerConfig extends NetworkConfig {
 
     /**
      * Calculates the coordinates of the classifier that owns the given region cell.
+     *
      * @param xRegion
      * @param yRegion
      * @return
      */
     public Point getOrganizerCoordinateGivenRegionCoordinate( int xRegion, int yRegion ) {
-        Point columnSize = getColumnSizeCells();
+        Point columnSize = getClassifierSizeCells();
         int xClassifier = xRegion / columnSize.x;
         int yClassifier = yRegion / columnSize.y;
         return new Point( xClassifier, yClassifier ); // the
     }
 
-    public Point getColumnSizeCells() {
-        Point classifierSize = getClassifierSizeCells();
-        int depthCells = getDepthCells();
-        int wColumn = classifierSize.x;
-        int hColumn = classifierSize.y * depthCells;
-        return new Point( wColumn, hColumn );
-    }
     /**
      * Calculates the coordinates of the cell within a classifier that represents the given region cell.
+     *
      * @param xRegion
      * @param yRegion
      * @return
      */
     public Point getColumnCoordinateGivenRegionCoordinate( int xRegion, int yRegion ) {
-//        Point classifierSize = getClassifierSizeCells();
-        Point columnSize = getColumnSizeCells();
+        Point columnSize = getClassifierSizeCells();
 
         int xClassifier = ( xRegion / columnSize.x ) * columnSize.x;
         int yClassifier = ( yRegion / columnSize.y ) * columnSize.y;
@@ -339,8 +314,7 @@ public class RegionLayerConfig extends NetworkConfig {
     }
 
     public Point getRegionClassifierOrigin( int xClassifier, int yClassifier ) {
-//        Point classifierSize = getClassifierSizeCells();
-        Point columnSize = getColumnSizeCells();
+        Point columnSize = getClassifierSizeCells();
         int xRegion = xClassifier * columnSize.x;
         int yRegion = yClassifier * columnSize.y;
 
@@ -355,39 +329,14 @@ public class RegionLayerConfig extends NetworkConfig {
     }
 
     public Point getRegionSizeCells() {
-//        Point classifierSize = getClassifierSizeCells();
-        Point columnSize = getColumnSizeCells();
+        Point columnSize = getClassifierSizeCells();
         Point organizerSize = getOrganizerSizeCells();
 
-        int width  = columnSize.x * organizerSize.x;
+        int width = columnSize.x * organizerSize.x;
         int height = columnSize.y * organizerSize.y;
 
         Point regionSize = new Point( width, height );
         return regionSize;
     }
 
-    public int getHebbianPredictorStates() {
-//        int hebbianStates = getClassifierSizeCells().x * getClassifierSizeCells().y;
-        Point columnSize = getColumnSizeCells();
-        int hebbianStates = columnSize.x * columnSize.y;
-        return hebbianStates;
-    }
-    public int getHebbianPredictorContext( int fbInputArea ) {
-        int regionArea = getRegionAreaCells();
-        int feedbackVolume = fbInputArea;//_fbInput1.getSize();
-        int hebbianContext = regionArea + feedbackVolume; // this is the contextual info it uses to work out the next state
-        return hebbianContext;
-    }
-    public int getHebbianPredictorContextSizeRegion( int predictorContextSize ) {
-        Point organizerSizeCells = getOrganizerSizeCells();
-        int nbrClassifiers = organizerSizeCells.x * organizerSizeCells.y;
-        int hebbianPredictorInputs  = nbrClassifiers * predictorContextSize;//_predictor._context.getSize();
-        return hebbianPredictorInputs;
-    }
-    public int getHebbianPredictorWeightsSizeRegion( int predictorWeightsSize ) {
-        Point organizerSizeCells = getOrganizerSizeCells();
-        int nbrClassifiers = organizerSizeCells.x * organizerSizeCells.y;
-        int hebbianPredictorWeights = nbrClassifiers * predictorWeightsSize;//_predictor._weights.getSize();
-        return hebbianPredictorWeights;
-    }
 }

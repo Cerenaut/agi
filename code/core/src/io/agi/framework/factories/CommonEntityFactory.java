@@ -106,8 +106,24 @@ public class CommonEntityFactory implements EntityFactory {
             return new AutoRegionLayerEntity( objectMap, _n, modelEntity );
         }
 
+//        if( entityType.equals( ConsensusRegionLayerEntity.ENTITY_TYPE ) ) {
+//            return new ConsensusRegionLayerEntity( objectMap, _n, modelEntity );
+//        }
+//
+//        if( entityType.equals( SpikingRegionLayerEntity.ENTITY_TYPE ) ) {
+//            return new SpikingRegionLayerEntity( objectMap, _n, modelEntity );
+//        }
+
+        if( entityType.equals( HqClRegionLayerEntity.ENTITY_TYPE ) ) {
+            return new HqClRegionLayerEntity( objectMap, _n, modelEntity );
+        }
+
         if( entityType.equals( ConstantMatrixEntity.ENTITY_TYPE ) ) {
             return new ConstantMatrixEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( SpikeEncoderEntity.ENTITY_TYPE ) ) {
+            return new SpikeEncoderEntity( objectMap, _n, modelEntity );
         }
 
         if( entityType.equals( EncoderEntity.ENTITY_TYPE ) ) {

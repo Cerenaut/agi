@@ -50,11 +50,15 @@ var Search = {
       var objectName = object.name;
       var objectValue = objectName;
       var root = false;
+      var type = null;
       if( "parent" in object ) {
         if( object.parent == "null" ) {
           objectValue = objectValue + " <b style='color:#ff0000'>(Root)</b>";
           root = true;
         }
+      }
+      if( "type" in object ) {
+        type = object.type;
       }
 
       if( filter.length > 0 ) {
@@ -72,6 +76,14 @@ var Search = {
           linksValue = linksValue 
                      + " / <a href='graph.html?entity="+ objectName + "' title='Open as Graph' target='_blank'>Graph</a>"
                      + " / <a href='experiment.html?entity="+ objectName + "' title='Open as Experiment' target='_blank'>Experiment</a>";
+        }
+        if( type ) {
+          if( type == "hq-cl-region-layer" ) {
+            linksValue = linksValue + " / <a href='hqcl-region.html?entity="+ objectName + "' title='Open Region-Layer UI' target='_blank'><b>Region</b></a>"
+          }
+          if( type == "auto-region-layer" ) {
+            linksValue = linksValue + " / <a href='auto-region.html?entity="+ objectName + "' title='Open Region-Layer UI' target='_blank'>Region</a>"
+          }
         }
       }
       else if( Search.type == "data" ) {

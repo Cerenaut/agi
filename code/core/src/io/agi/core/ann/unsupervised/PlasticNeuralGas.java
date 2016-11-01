@@ -76,10 +76,6 @@ public class PlasticNeuralGas extends CompetitiveLearning {
         _cellStress.set( 0.f ); // enable all cells
     }
 
-    public void call() {
-        update();
-    }
-
     public void update() {
 
         boolean learn = _c.getLearn();
