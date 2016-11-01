@@ -521,10 +521,11 @@ if __name__ == '__main__':
         os.putenv("DB_HOST", ips_pg['ip_private'])
 
     # if we just started an ec2 instance, and there are any further steps, wait 30 seconds
-    if (args.instanceid or is_pg_ec2 or args.amiid) and (args.sync or args.exp_file or args.launch_compute):
+    if args.aws and (args.instanceid or is_pg_ec2 or args.amiid) and (args.sync or args.exp_file or args.launch_compute):
+        wait_for_ec2_delay = 60         # seconds
         # TODO: better solution would be to try to connect for a number of times and catch the exceptions
-        print "WAIT 30 seconds to ensure enough time for services such as SSH to start."
-        time.sleep(30)
+        print "WAIT " + str(wait_for_ec2_delay) + " seconds to ensure enough time for services such as SSH to start."
+        time.sleep(wait_for_ec2_delay)
 
     # 3) Sync code and run-home
     if args.sync:
