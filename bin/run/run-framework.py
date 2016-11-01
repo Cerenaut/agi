@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 from enum import Enum
+import time
 
 from agief_experiment import compute
 from agief_experiment import cloud
@@ -66,7 +67,7 @@ def run_parameterset(entity_file, data_file, sweep_param_vals):
 
     set_dataset(_experiment.experiment_def_file())
 
-    _compute_node.run_experiment(experiment)
+    _compute_node.run_experiment(_experiment)
 
     if is_export:
         new_entity_file = "exported_" + entity_file  # utils.append_before_ext(entity_file, "___" + param_description)
@@ -518,6 +519,12 @@ if __name__ == '__main__':
     # Set the DB_HOST environment variable
     if args.pg_instance:
         os.putenv("DB_HOST", ips_pg['ip_private'])
+
+    # if we just started an ec2 instance, and there are any further steps, wait 30 seconds
+    if (args.instanceid or is_pg_ec2 or args.amiid) and (args.sync or args.exp_file or args.launch_compute):
+        # TODO: better solution would be to try to connect for a number of times and catch the exceptions
+        print "WAIT 30 seconds to ensure enough time for services such as SSH to start."
+        time.sleep(30)
 
     # 3) Sync code and run-home
     if args.sync:

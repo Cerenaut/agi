@@ -37,7 +37,7 @@ class Experiment:
         print "Prefix: " + self.prefix
         print "=============================================="
 
-    def filepath_from_env_variable(self, filename, path_env):
+    def filepath_from_exp_variable(self, filename, path_env):
 
         variables_file = self.variables_filepath()
 
@@ -73,26 +73,26 @@ class Experiment:
 
     def inputfile(self, filename):
         """ return the full path to the inputfile specified by simple filename (AGI_RUN_HOME/input/filename) """
-        return self.filepath_from_env_variable("input/" + filename, self.agi_run_home)
+        return self.filepath_from_exp_variable("input/" + filename, self.agi_run_home)
 
     def outputfile(self, filename):
         """ return the full path to the output file specified by simple filename (AGI_RUN_HOME/output/filename) """
-        return self.filepath_from_env_variable("output/" + filename, self.agi_run_home)
+        return self.filepath_from_exp_variable("output/" + filename, self.agi_run_home)
 
     def datafile(self, filename):
-        return self.filepath_from_env_variable(filename, self.agi_data_home)
+        return self.filepath_from_exp_variable(filename, self.agi_data_home)
 
     def experiment_def_file(self):
         """ return the full path to the experiments definition file """
-        return self.filepath_from_env_variable(self.experiments_def_filename, self.agi_run_home)
+        return self.filepath_from_exp_variable(self.experiments_def_filename, self.agi_run_home)
 
     def experiment_folder(self):
         """ return the full path to the experiments folder """
-        return self.filepath_from_env_variable("", self.agi_run_home)
+        return self.filepath_from_exp_variable("", self.agi_run_home)
 
     def experimentfile(self, filename):
         """ return the full path to a file in the folder AGI_RUN_HOME """
-        return self.filepath_from_env_variable(filename, self.agi_run_home)
+        return self.filepath_from_exp_variable(filename, self.agi_run_home)
 
     def entity_with_prefix(self, entity_name):
         if self.prefix is None or self.prefix is "":
@@ -103,7 +103,7 @@ class Experiment:
     def reset_prefix(self):
         use_prefix_file = False
         if use_prefix_file:
-            prefix_filepath = self.filepath_from_env_variable('prefix.txt', self.agi_run_home)
+            prefix_filepath = self.filepath_from_exp_variable('prefix.txt', self.agi_run_home)
 
             if not os.path.isfile(prefix_filepath):
                 print """WARNING ****   no prefix.txt file could be found,

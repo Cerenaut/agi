@@ -45,7 +45,7 @@ class Cloud:
     #     print "....... Syncing code to ec2 container instance"
     #
     #     # code
-    #     file_path = utils.filepath_from_env_variable("", "AGI_HOME")
+    #     file_path = experiment.filepath_from_exp_variable("", "AGI_HOME")
     #     cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + file_path + " ec2-user@" + \
     #           host + ":~/agief-project/agi --exclude={\"*.git/*\",*/src/*}"
     #     if self.log:
@@ -61,7 +61,7 @@ class Cloud:
     #         print error
     #
     #     # experiments
-    #     file_path = utils.filepath_from_env_variable("", "AGI_RUN_HOME")
+    #     file_path = experiment.filepath_from_exp_variable("", "AGI_RUN_HOME")
     #     cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + file_path + " ec2-user@" + \
     #           host + ":~/agief-project/run --exclude={\"*.git/*\"}"
     #     if self.log:
@@ -76,7 +76,7 @@ class Cloud:
     #         print error
     #
     #     # variables
-    #     file_path = utils.filepath_from_env_variable("", "AGI_RUN_HOME")
+    #     file_path = experiment.filepath_from_exp_variable("", "AGI_RUN_HOME")
     #     file_path += "/../variables"
     #     cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + file_path + " ec2-user@" + \
     #           host + ":~/agief-project/variables --exclude={\"*.git/*\"}"
@@ -168,7 +168,9 @@ class Cloud:
         if self.log:
             print "self.log: Start response: ", response
 
-        ips = self.wait_till_running_ec2(instance)
+        instance_id = instance.instance_id
+
+        ips = self.wait_till_running_ec2(instance_id)
         return ips
 
     def wait_till_running_ec2(self, instance_id):
@@ -181,7 +183,6 @@ class Cloud:
 
         if self.log:
             print "wait_till_running for instance: ", instance
-
 
         instance.wait_until_running()
 
