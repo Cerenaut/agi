@@ -496,7 +496,7 @@ if __name__ == '__main__':
         if args.instanceid:
             ips = cloud.run_ec2(args.instanceid)
         else:
-            ips = cloud.launch_from_ami_ec2(args.amiid, args.ram)
+            ips = cloud.launch_from_ami_ec2(args.amiid, args.ami_ram)
             if args.pg_instance and is_pg_ec2:
                 ips_pg = cloud.run_ec2(args.pg_instance)
             else:
