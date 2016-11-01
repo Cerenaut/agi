@@ -31,10 +31,18 @@ echo "Using host = " $host
 # synch code and run folder with ecs instance
 ########################################################
 
+# code
 cmd="rsync -ave 'ssh -i $keyfile -o \"StrictHostKeyChecking no\"' $AGI_HOME/ ec2-user@${host}:~/agief-project/agi --exclude={\"*.git/*\",*/src/*}"
 echo $cmd
 eval $cmd
 
+# the specific experiment folder
 cmd="rsync -ave 'ssh -i $keyfile -o \"StrictHostKeyChecking no\"' $AGI_RUN_HOME/ ec2-user@${host}:~/agief-project/run --exclude={\"*.git/*\"}"
 echo $cmd
 eval $cmd
+
+# the variables folder (with variables.sh files)
+cmd="rsync -ave 'ssh -i $keyfile -o \"StrictHostKeyChecking no\"' $AGI_RUN_HOME/../variables ec2-user@${host}:~/agief-project/variables --exclude={\"*.git/*\"}"
+echo $cmd
+eval $cmd
+

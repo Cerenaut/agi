@@ -18,34 +18,16 @@ class Cloud:
     # client_token = 'this_is_the_client_token_la_la_34'  # Unique, case-sensitive identifier you provide to ensure the idempotency of the request.
     network_interface_id = 'eni - b2acd4d4'
 
-    def __init__(self):
-        pass
+    def __init__(self, log):
+        self.log = log
 
     def sync_experiment(self, host, keypath):
-        """ Assumes there exists a private key for the given ec2 instance, at ~/.ssh/ecs-key """
+        """ Assumes there exists a private key for the given ec2 instance, at keypath """
 
-        print "....... Syncing code to ec2 container instance"
+        print "....... Use ecs-sync-experiment.sh to rsync relevant folders."
 
-        # code
-        file_path = utils.filepath_from_env_variable("", "AGI_HOME")
-        cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + file_path + " ec2-user@" + host +\
-              ":~/agief-project/agi --exclude={\"*.git/*\",*/src/*}"
-        if self.log:
-            print cmd
+        cmd = "../aws/ecs-sync-experiment.sh " + host + " " + keypath
 
-        output, error = subprocess.Popen(cmd,
-                                         shell=True,
-                                         stdout=subprocess.PIPE,
-                                         stderr=subprocess.PIPE,
-                                         executable="/bin/bash").communicate()
-        if self.log:
-            print output
-            print error
-
-        # experiments
-        file_path = utils.filepath_from_env_variable("", "AGI_RUN_HOME")
-        cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + file_path + " ec2-user@" + host +\
-              ":~/agief-project/run --exclude={\"*.git/*\"}"
         if self.log:
             print cmd
         output, error = subprocess.Popen(cmd,
@@ -56,16 +38,64 @@ class Cloud:
         if self.log:
             print output
             print error
+
+    # def sync_experiment(self, host, keypath):
+    #     """ Assumes there exists a private key for the given ec2 instance, at ~/.ssh/ecs-key """
+    #
+    #     print "....... Syncing code to ec2 container instance"
+    #
+    #     # code
+    #     file_path = utils.filepath_from_env_variable("", "AGI_HOME")
+    #     cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + file_path + " ec2-user@" + \
+    #           host + ":~/agief-project/agi --exclude={\"*.git/*\",*/src/*}"
+    #     if self.log:
+    #         print cmd
+    #
+    #     output, error = subprocess.Popen(cmd,
+    #                                      shell=True,
+    #                                      stdout=subprocess.PIPE,
+    #                                      stderr=subprocess.PIPE,
+    #                                      executable="/bin/bash").communicate()
+    #     if self.log:
+    #         print output
+    #         print error
+    #
+    #     # experiments
+    #     file_path = utils.filepath_from_env_variable("", "AGI_RUN_HOME")
+    #     cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + file_path + " ec2-user@" + \
+    #           host + ":~/agief-project/run --exclude={\"*.git/*\"}"
+    #     if self.log:
+    #         print cmd
+    #     output, error = subprocess.Popen(cmd,
+    #                                      shell=True,
+    #                                      stdout=subprocess.PIPE,
+    #                                      stderr=subprocess.PIPE,
+    #                                      executable="/bin/bash").communicate()
+    #     if self.log:
+    #         print output
+    #         print error
+    #
+    #     # variables
+    #     file_path = utils.filepath_from_env_variable("", "AGI_RUN_HOME")
+    #     file_path += "/../variables"
+    #     cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + file_path + " ec2-user@" + \
+    #           host + ":~/agief-project/variables --exclude={\"*.git/*\"}"
+    #     if self.log:
+    #         print cmd
+    #
+    #     output, error = subprocess.Popen(cmd,
+    #                                      shell=True,
+    #                                      stdout=subprocess.PIPE,
+    #                                      stderr=subprocess.PIPE,
+    #                                      executable="/bin/bash").communicate()
+    #     if self.log:
+    #         print output
+    #         print error
 
     def launch_compute_docker(self, host, keypath):
-        """ Assumes there exists a private key for the given ec2 instance, at ~/.ssh/ecs-key """
+        """ Assumes there exists a private key for the given ec2 instance, at keypath """
 
-        print "....... Launch compute node in a docker container on a remote host"
-
-        # cmd = "ssh -i " + keypath + " ec2-user@" + host + " -o \"StrictHostKeyChecking no\" " \
-        #       "bash -c \"export VARIABLES_FILE=\"variables-ec2.sh\" " \
-        #       "&& cd /home/ec2-user/agief-project/agi/bin/node_coordinator " \
-        #       "&& ./run-in-docker.sh\""
+        print "....... Use run-remote.sh to launch compute node in a docker container on a remote host."
 
         cmd = "../aws/run-remote.sh " + host + " " + keypath
 
@@ -212,13 +242,15 @@ class Cloud:
         if self.log:
             print response
 
-    def launch_from_ami_ec2(self, ami_id, min_ram):
+    def launch_from_ami_ec2(self, name, ami_id, min_ram):
         """
         :param ami_id: ami id
         :param min_ram: (integer), minimum ram to allocate to ec2 instance
         :return: ip addresses, public and private
         """
-        
+
+        print "....... Launching ec2 from AMI (AMI id " + ami_id + ", with minimum " + str(min_ram) + "GB RAM)"
+
         instance_type = None      # minimum size, 15GB on machine, leaves 13GB for compute
         if min_ram < 6:
             instance_type = 'm4.large'      # 8
@@ -246,7 +278,7 @@ class Cloud:
             InstanceType=instance_type,
             Placement={
                 'AvailabilityZone': self.availability_zone,
-                'GroupName': self.placement_group,
+                # 'GroupName': self.placement_group,
                 'Tenancy': 'default'                # | 'dedicated' | 'host',
             },
             Monitoring={
@@ -263,8 +295,28 @@ class Cloud:
             EbsOptimized=False
         )
 
-        if self.log:
-            print "Instance launched ", instance[0]
+        instance_id = instance[0].instance_id
 
-        ips = self.wait_till_running_ec2(instance[0].instance_id)
+        if self.log:
+            print "Instance launched ", instance_id
+
+        # set name
+        response = ec2.create_tags(
+            DryRun=False,
+            Resources=[
+                instance_id,
+            ],
+            Tags=[
+                {
+                    'Key': 'Name',
+                    'Value': name
+                },
+            ]
+        )
+
+        if self.log:
+            print "Set Name tag on instanceid: ", instance_id
+            print "Response is: ", response
+
+        ips = self.wait_till_running_ec2(instance_id)
         return ips

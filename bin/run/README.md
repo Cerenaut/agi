@@ -69,6 +69,11 @@ python run-framework.py --step_gen_input io.agi.framework.demo.mnist.DeepMNISTDe
 python run-framework.py --logging --step_aws --step_exps experiments.json --step_sync --step_agief --step_shutdown --instanceid i-06d6a791 --port 8491 --pg_instance i-b1d1bd33 --task_name mnist-spatial-task:8 --ec2_keypath /$HOME/.ssh/ecs-key.pem
 ```
 
+### aws run in a docker container on a new ec2 instance specified by AMI ID, node mode, export and upload results, shutdown instances afterwards
+```sh
+python run-framework.py --logging --step_aws --step_exps experiments.json --step_sync --step_compute --step_shutdown --step_export --step_upload --amiid ami-17211d74 --ami_ram 12 --port 8491 --ec2_keypath ~/.ssh/nextpair.pem
+```
+
 ### local agief and local postgres (don't export or upload results)
 ```sh
 python run-framework.py --logging --step_exps experiments.json --step_agief --host localhost --pg_instance localhost --port 8491

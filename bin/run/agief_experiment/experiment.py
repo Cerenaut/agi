@@ -19,7 +19,8 @@ class Experiment:
     agi_data_home = "AGI_DATA_HOME"
     variables_file = "VARIABLES_FILE"
 
-    def __init__(self, prefix, prefix_delimiter):
+    def __init__(self, log, prefix, prefix_delimiter):
+        self.log = log
         self.prefix = prefix
         self.prefix_delimiter = prefix_delimiter
 
@@ -44,7 +45,7 @@ class Experiment:
             print "WARNING: unable to locate variables file." \
 
         if self.log:
-            print "variables file = " + variables_file
+            print "experiment:filepath_from_env_variable: variables file = " + variables_file
 
         cmd = "source " + variables_file + " && echo $" + path_env
         output, error = subprocess.Popen(cmd,
