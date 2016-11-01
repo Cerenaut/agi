@@ -213,7 +213,12 @@ class Cloud:
             print response
 
     def launch_from_ami_ec2(self, ami_id, min_ram):
-
+        """
+        :param ami_id: ami id
+        :param min_ram: (integer), minimum ram to allocate to ec2 instance
+        :return: ip addresses, public and private
+        """
+        
         instance_type = None      # minimum size, 15GB on machine, leaves 13GB for compute
         if min_ram < 6:
             instance_type = 'm4.large'      # 8
