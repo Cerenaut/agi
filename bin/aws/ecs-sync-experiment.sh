@@ -42,7 +42,7 @@ echo $cmd
 eval $cmd
 
 # the variables folder (with variables.sh files)
-cmd="rsync -ave 'ssh -i $keyfile -o \"StrictHostKeyChecking no\"' $AGI_RUN_HOME/../variables ec2-user@${host}:~/agief-project/variables --exclude={\"*.git/*\"}"
+cmd="rsync -ave 'ssh -i $keyfile -o \"StrictHostKeyChecking no\"' $AGI_RUN_HOME/../variables/ ec2-user@${host}:~/agief-project/variables --exclude={\"*.git/*\"}"
 echo $cmd
 eval $cmd
 
