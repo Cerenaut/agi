@@ -91,7 +91,7 @@ dcmd="docker run $switch
         -p 8491:8491 -p 5432:5432
         gkowadlo/agief:2.1 $cmd $args"
 
-echo $dcmd
+# echo $dcmd
 
 set -x
 
