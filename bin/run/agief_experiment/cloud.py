@@ -196,7 +196,7 @@ class Cloud:
         return {'ip_public': ip_public, 'ip_private': ip_private}
 
     def stop_ec2(self, instance_id):
-        print "...... Closing ec2 instance (instance id " + instance_id + ")"
+        print "...... Closing ec2 instance (instance id " + str(instance_id) + ")"
         ec2 = boto3.resource('ec2')
         instance = ec2.Instance(instance_id)
 
