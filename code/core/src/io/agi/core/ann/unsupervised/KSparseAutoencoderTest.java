@@ -61,6 +61,10 @@ public class KSparseAutoencoderTest implements UnitTest {
         int age = 0;
         float ageScale = 15f;
 
+        float rateScale = 5f;
+        float rateMax = 0.25f;
+        float rateLearningRate = 0.01f;
+
         RandomInstance.setSeed( randomSeed ); // make the tests repeatable
         Random random = RandomInstance.getInstance();
         ObjectMap om = ObjectMap.GetInstance();
@@ -68,7 +72,7 @@ public class KSparseAutoencoderTest implements UnitTest {
         c.setup(
             om, NAME, random,
             inputs, widthCells, heightCells,
-            learningRate, binaryOutput, sparsityOutput, sparsity, sparsityMin, sparsityMax, ageMin, ageMax, age, ageScale );
+            learningRate, binaryOutput, sparsityOutput, sparsity, sparsityMin, sparsityMax, ageMin, ageMax, age, ageScale, rateScale, rateMax, rateLearningRate );
 
         KSparseAutoencoder ae = new KSparseAutoencoder( NAME, om );
         ae.setup( c );

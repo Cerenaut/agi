@@ -67,7 +67,9 @@ public class KSparseAutoencoder extends CompetitiveLearning {
     public Data _cellTransferTopK;
     public Data _cellActivity;
     public Data _cellAges; // age is zero when active, otherwise incremented
+    public Data _cellRates; // rate at which cell fires
     public Data _cellPromotion; // idle cells are promoted until they are used
+    public Data _cellInhibition; // idle cells are promoted until they are used
 
     protected boolean _ageLearn = true;
 
@@ -99,10 +101,15 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         _cellTransferTopK = new Data( w, h );
         _cellActivity = new Data( w, h );
         _cellAges = new Data( w, h );
+        _cellRates = new Data( w, h );
         _cellPromotion = new Data( w, h );
+        _cellInhibition = new Data( w, h );
     }
 
     public void reset() {
+
+        _cellAges.set( 0f );
+        _cellRates.set( 0f );
 
         // Better initialization of the weights:
         // http://neuralnetworksanddeeplearning.com/chap3.html
@@ -160,6 +167,34 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         _c.setAge( 0 );
     }
 
+    public void updateInhibition() {
+        // inihibition of cells that are used too often. (lifetime sparsity)
+        // need to measure the rate of use - a slow moving average.
+        float rateScale = _c.getRateScale(); // about 5
+        float rateMax = _c.getRateMax(); // e.g. 0.1
+        int cells = _c.getNbrCells();
+
+        for( int c = 0; c < cells; ++c ) {
+            float rate = _cellRates._values[ c ];
+
+            if( rate > rateMax ) {
+                rate = rateMax;
+            }
+
+            rate = rate / rateMax; // so becomes 1 @ max value
+            // 0 = never used
+            // 1 = always used
+            // bring in the penalty for lifetime sparsity early, at around 20% (0.2)
+            // penalty becomes excessive at
+            // http://www.wolframalpha.com/input/?i=plot+1-(+e%5E(-5(1-x))+)+for+x+%3D+0+to+1.05
+            float factor = 1f - (float)( Math.exp( -rateScale * ( 1.0f - rate ) ) ); // 1 if old, zero if young
+            float inhibition = factor; // reduces the value
+
+            _cellInhibition._values[ c ] = inhibition;
+        }
+
+    }
+
     public void updatePromotion() {
 
         // as cells age, their weight is promoted
@@ -177,10 +212,6 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             float unitAge = age / (float)maxAge; // 1 iff max age
 //            unitAge = Math.min( 1f, unitAge ); // clip at 1  (not doing this because why not increase promotion beyond 2x?
 
-            if( unitAge > 0.5 ) {
-                int g = 0;
-                g++;
-            }
             // 0 = in regular use
             // 1 = never used
             // > 1 = ever increasing promotion
@@ -207,6 +238,24 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             float age = _cellAges._values[ c ];
             age *= ageFactor;
             _cellAges._values[ c ] = age;
+        }
+    }
+
+    public void updateRates( Collection< Integer > activeCells ) {
+        float learningRate = _c.getRateLearningRate();
+        float memoryRate = 1f - learningRate;
+        int cells = _c.getNbrCells();
+
+        // increment all ages
+        for( int c = 0; c < cells; ++c ) {
+            float rate = 0f;
+            if( activeCells.contains( c ) ) {
+                rate = 1f;
+            }
+
+            float oldRate = _cellRates._values[ c ];
+            float newRate = oldRate * memoryRate + rate * learningRate;
+            _cellRates._values[ c ] = newRate;
         }
     }
 
@@ -272,7 +321,6 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         float ageFactor = 0.5f; // halve the age each time it fires
         float noiseMagnitude = 0.001f; // small magnitude
         float learningRate = _c.getLearningRate();
-        updatePromotion();
         int k = updateSparsity();
         float sparsityOutput = _c.getSparsityOutput(); // alpha
         boolean binaryOutput = false;//_c.getBinaryOutput();
@@ -287,6 +335,9 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         int rowsT = inputs; // major
         int colsT = cells; // minor
 //        FloatArray weightsT = FloatMatrix.transpose( _cellWeights, rows, cols );
+
+        updateInhibition();
+        updatePromotion();
 
         // add a small amount of noise to the inputs
         for( int i = 0; i < inputs; ++i ) {
@@ -326,8 +377,9 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 //            Ranking.add( ranking, sum, c );
             Ranking.add( ranking, transfer, c ); // this is the new output
 
-            float promotion = _cellPromotion._values[ c ];
-            float transferPromoted = transfer * promotion;
+            float promotion  = _cellPromotion._values[ c ];
+            float inhibition = _cellInhibition._values[ c ];
+            float transferPromoted = transfer * promotion * inhibition;
             Ranking.add( rankingWithPromotion, transferPromoted, c ); // this is the new output
         }
 
@@ -344,20 +396,22 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         maxRank = k;
 
 //        ArrayList< Integer > activeCells = Ranking.getBestValues( ranking, findMaxima, maxRank );
-        ArrayList< Integer > activeCells = Ranking.getBestValues( rankingWithPromotion, findMaxima, maxRank );
+        ArrayList< Integer > activeCellsWithPromotion = Ranking.getBestValues( rankingWithPromotion, findMaxima, maxRank );
 
         _cellTransferTopK.set( 0f );
 
-        // NOTE: Use the *non* promoted transfer value for forward and backward passes
-        for( Integer c : activeCells ) {
+        // NOTE: Use the promoted transfer value for training
+        for( Integer c : activeCellsWithPromotion ) {
             float transfer = _cellTransfer._values[ c ]; // otherwise zero
             _cellTransferTopK._values[ c ] = transfer;
         }
 
         // NOTE: Update ages with the *non* promoted ranking, to require a "natural" win indicating the weights have learned to be useful to zero the age
         // NOTE: I tried the above, but it just got fixated. Seems like you have to learn it once, then remove the promotion.
-        updateAges( activeCells, ageFactor );
+        updateAges( activeCellsWithPromotion, ageFactor );
         //updateAges( _activeCells );
+        updateRates( activeCellsWithPromotion );
+
 
         // Output layer (forward pass)
         // dont really need to do this if not learning.
