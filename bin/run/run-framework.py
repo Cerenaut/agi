@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 from enum import Enum
+import time
 
 from agief_experiment import compute
 from agief_experiment import cloud
@@ -41,15 +42,15 @@ def run_parameterset(entity_file, data_file, sweep_param_vals):
 
     print "........ Run parameter set."
 
-    experiment.info()
+    _experiment.info()
 
     print "\nSweep Parameters:"
     for param_def in sweep_param_vals:
         print param_def
     print "\n"
 
-    entity_file_path = experiment.inputfile(entity_file)
-    data_file_path = experiment.inputfile(data_file)
+    entity_file_path = _experiment.inputfile(entity_file)
+    data_file_path = _experiment.inputfile(data_file)
 
     if log:
         print "LOG: Entity file full path = " + entity_file_path
@@ -62,49 +63,48 @@ def run_parameterset(entity_file, data_file, sweep_param_vals):
     if (launch_mode is LaunchMode.per_experiment) and args.launch_compute:
         task_arn = launch_compute()
 
-    compute_node.import_experiment(entity_file_path, data_file_path)
+    _compute_node.import_experiment(entity_file_path, data_file_path)
 
-    set_dataset(experiment.experiment_def_file())
+    set_dataset(_experiment.experiment_def_file())
 
-    compute_node.run_experiment(experiment)
+    _compute_node.run_experiment(_experiment)
 
     if is_export:
-        new_entity_file = "exported_" + entity_file   # utils.append_before_ext(entity_file, "___" + param_description)
-        new_data_file = "exported_" + data_file       # utils.append_before_ext(data_file, "___" + param_description)
+        new_entity_file = "exported_" + entity_file  # utils.append_before_ext(entity_file, "___" + param_description)
+        new_data_file = "exported_" + data_file  # utils.append_before_ext(data_file, "___" + param_description)
 
-        out_entity_file_path = experiment.outputfile(new_entity_file)
-        out_data_file_path = experiment.outputfile(new_data_file)
+        out_entity_file_path = _experiment.outputfile(new_entity_file)
+        out_data_file_path = _experiment.outputfile(new_data_file)
 
-        compute_node.export_experiment(experiment.entity_with_prefix("experiment"),
-                                       out_entity_file_path,
-                                       out_data_file_path)
+        _compute_node.export_experiment(_experiment.entity_with_prefix("experiment"),
+                                        out_entity_file_path,
+                                        out_data_file_path)
 
     if (launch_mode is LaunchMode.per_experiment) and args.launch_compute:
         shutdown_compute(task_arn)
 
     if is_upload:
-
         # upload exported output Entity file (if it exists)
-        cloud.upload_experiment_output_s3(experiment.prefix,
-                                          new_entity_file,
-                                          out_entity_file_path)
+        _cloud.upload_experiment_output_s3(_experiment.prefix,
+                                           new_entity_file,
+                                           out_entity_file_path)
 
         # upload exported output Data file (if it exists)
-        cloud.upload_experiment_output_s3(experiment.prefix,
-                                          new_data_file,
-                                          out_data_file_path)
+        _cloud.upload_experiment_output_s3(_experiment.prefix,
+                                           new_data_file,
+                                           out_data_file_path)
 
         # upload experiments definition file (if it exists)
-        cloud.upload_experiment_output_s3(experiment.prefix,
-                                          experiment.experiments_def_filename,
-                                          experiment.experiment_def_file())
+        _cloud.upload_experiment_output_s3(_experiment.prefix,
+                                           _experiment.experiments_def_filename,
+                                           _experiment.experiment_def_file())
 
         # upload log4j configuration file that was used (if it exists)
         log_filename = "log4j2.log"
-        log_filepath = experiment.experimentfile(log_filename)
-        cloud.upload_experiment_output_s3(experiment.prefix,
-                                          log_filename,
-                                          log_filepath)
+        log_filepath = _experiment.experimentfile(log_filename)
+        _cloud.upload_experiment_output_s3(_experiment.prefix,
+                                           log_filename,
+                                           log_filepath)
 
 
 def setup_parameter_sweep_counters(param_sweep, counters):
@@ -133,7 +133,7 @@ def setup_parameter_sweep_counters(param_sweep, counters):
         val_end = param['val-end']
         val_inc = param['val-inc']
 
-        entity_name = experiment.entity_with_prefix(entity_name)
+        entity_name = _experiment.entity_with_prefix(entity_name)
 
         incrementer = valincrementer.ValIncrementer(val_begin, val_end, val_inc)
 
@@ -167,11 +167,11 @@ def inc_parameter_set(entity_file, counters):
             break
 
         val = incrementer.value()
-        entity_file_path = experiment.inputfile(entity_file)
-        set_param = compute_node.set_parameter_inputfile(entity_file_path,
-                                                         counter['entity-name'],
-                                                         counter['param-path'],
-                                                         val)
+        entity_file_path = _experiment.inputfile(entity_file)
+        set_param = _compute_node.set_parameter_inputfile(entity_file_path,
+                                                          counter['entity-name'],
+                                                          counter['param-path'],
+                                                          val)
         sweep_param_vals.append(set_param)
 
     if log:
@@ -197,7 +197,7 @@ def run_sweeps():
 
     print "........ Run Sweeps"
 
-    exps_file = experiment.experiment_def_file()
+    exps_file = _experiment.experiment_def_file()
 
     with open(exps_file) as data_exps_file:
         data = json.load(data_exps_file)
@@ -207,7 +207,7 @@ def run_sweeps():
 
         if log:
             print "LOG: Import Files Dictionary = "
-            print "LOG: ", import_files
+            print "LOG: ", json.dumps(import_files, indent=4)
 
         # get experiment file-names, and expand to full path
         base_entity_filename = import_files['file-entities']
@@ -216,15 +216,14 @@ def run_sweeps():
         if 'parameter-sweeps' not in exp_i or len(exp_i['parameter-sweeps']) == 0:
             print "No parameters to sweep, just run once."
 
-            entity_filename, data_filename = experiment.create_input_files(TEMPLATE_PREFIX, base_entity_filename,
-                                                                           base_data_filename)
+            entity_filename, data_filename = _experiment.create_input_files(TEMPLATE_PREFIX, base_entity_filename,
+                                                                            base_data_filename)
             run_parameterset(entity_filename, data_filename, "")
         else:
             for param_sweep in exp_i['parameter-sweeps']:  # array of sweep definitions
 
-                entity_filename, data_filename = experiment.create_input_files(TEMPLATE_PREFIX, base_entity_filename,
-                                                                               base_data_filename)
-
+                entity_filename, data_filename = _experiment.create_input_files(TEMPLATE_PREFIX, base_entity_filename,
+                                                                                base_data_filename)
                 counters = []
                 setup_parameter_sweep_counters(param_sweep, counters)
 
@@ -257,8 +256,8 @@ def set_dataset(exps_file):
             param_path = param['parameter-path']
             data_filename = param['value']
 
-            data_path = experiment.datafile(data_filename)
-            compute_node.set_parameter_db(experiment.entity_with_prefix(entity_name), param_path, data_path)
+            data_path = _experiment.datafile(data_filename)
+            _compute_node.set_parameter_db(_experiment.entity_with_prefix(entity_name), param_path, data_path)
 
 
 def launch_compute_aws_ecs(task_name):
@@ -277,8 +276,8 @@ def launch_compute_aws_ecs(task_name):
         print "ERROR: you must specify a Task Name to run on aws-ecs"
         exit()
 
-    task_arn = cloud.run_task_ecs(task_name)
-    compute_node.wait_up()
+    task_arn = _cloud.run_task_ecs(task_name)
+    _compute_node.wait_up()
     return task_arn
 
 
@@ -289,8 +288,8 @@ def launch_compute_remote_docker():
     """
 
     print "launching Compute on AWS (on ec2 using run-in-docker.sh)"
-    cloud.launch_compute_docker(compute_node.host, remote_keypath)
-    compute_node.wait_up()
+    _cloud.launch_compute_docker(_compute_node.host, remote_keypath)
+    _compute_node.wait_up()
 
 
 def launch_compute_local(main_class=""):
@@ -318,7 +317,7 @@ def launch_compute_local(main_class=""):
                      stdout=subprocess.PIPE,
                      stderr=subprocess.STDOUT,
                      executable="/bin/bash")
-    compute_node.wait_up()
+    _compute_node.wait_up()
 
 
 def launch_compute(use_ecs=False):
@@ -336,7 +335,7 @@ def launch_compute(use_ecs=False):
     else:
         launch_compute_local()
 
-    version = compute_node.version()
+    version = _compute_node.version()
     print "Running Compute version: " + version
 
     return task_arn
@@ -347,19 +346,19 @@ def shutdown_compute(task_arn):
 
     print "....... Shutdown System"
 
-    compute_node.terminate()
+    _compute_node.terminate()
 
     # note that task may be set up to terminate once compute has been terminated
     if is_aws and (task_arn is not None):
-        cloud.stop_task_ecs(task_arn)
+        _cloud.stop_task_ecs(task_arn)
 
 
 def generate_input_files_locally():
-    entity_file_path = experiment.inputfile("entity.json")
-    data_file_path = experiment.inputfile("data.json")
+    entity_file_path = _experiment.inputfile("entity.json")
+    data_file_path = _experiment.inputfile("data.json")
 
-    root = experiment.entity_with_prefix("experiment")
-    compute_node.export_experiment(root, entity_file_path, data_file_path)
+    root = _experiment.entity_with_prefix("experiment")
+    _compute_node.export_experiment(root, entity_file_path, data_file_path)
 
 
 def setup_arg_parsing():
@@ -432,7 +431,7 @@ def setup_arg_parsing():
     parser.set_defaults(port="8491")
     parser.set_defaults(pg_instance="localhost")
     parser.set_defaults(task_name="mnist-spatial-task:10")
-    parser.set_defaults(ec2_keypath=utils.filepath_from_env_variable(".ssh/ecs-key", "HOME"))
+    parser.set_defaults(ec2_keypath=utils.filepath_from_env_variable(".ssh/ecs-key.pem", "HOME"))
     parser.set_defaults(ami_ram='6')
 
     return parser.parse_args()
@@ -444,6 +443,10 @@ class LaunchMode(Enum):
 
 
 if __name__ == '__main__':
+
+    print "------------------------------------------"
+    print "----          run-framework           ----"
+    print "------------------------------------------"
 
     TEMPLATE_PREFIX = "SPAGHETTI"
     PREFIX_DELIMITER = "--"
@@ -474,16 +477,16 @@ if __name__ == '__main__':
             print "--- in any case, aws has not been set, so they have no effect"
         exit()
 
-    experiment = experiment.Experiment(TEMPLATE_PREFIX, PREFIX_DELIMITER)
-    compute_node = compute.Compute(log)
-    cloud = cloud.Cloud()
+    _experiment = experiment.Experiment(log, TEMPLATE_PREFIX, PREFIX_DELIMITER)
+    _compute_node = compute.Compute(log)
+    _cloud = cloud.Cloud(log)
 
     # 1) Generate input files
     if args.main_class:
-        compute_node.base_url = utils.getbaseurl(args.host, args.port)
+        _compute_node.base_url = utils.getbaseurl(args.host, args.port)
         launch_compute_local(args.main_class)
         generate_input_files_locally()
-        compute_node.terminate()
+        _compute_node.terminate()
         exit()
 
     # 2) Setup infrastructure (on AWS or nothing to do locally)
@@ -496,13 +499,13 @@ if __name__ == '__main__':
 
         # start Compute ec2 either from instanceid or amiid
         if args.instanceid:
-            ips = cloud.run_ec2(args.instanceid)
+            ips = _cloud.run_ec2(args.instanceid)
         else:
-            ips = cloud.launch_from_ami_ec2(args.amiid, int(args.ami_ram))
+            ips = _cloud.launch_from_ami_ec2('run-fwk auto', args.amiid, int(args.ami_ram))
 
         # start DB ec2, from instanceid
         if args.pg_instance and is_pg_ec2:
-            ips_pg = cloud.run_ec2(args.pg_instance)
+            ips_pg = _cloud.run_ec2(args.pg_instance)
         else:
             ips_pg = {'ip_private': args.pg_instance}
 
@@ -513,20 +516,27 @@ if __name__ == '__main__':
 
         ips_pg = {'ip_public': args.pg_instance, 'ip_private': args.pg_instance}
 
-    compute_node.host = ips['ip_public']
-    compute_node.port = args.port
+    _compute_node.host = ips['ip_public']
+    _compute_node.port = args.port
 
     # TEMPORARY HACK
     # Set the DB_HOST environment variable
     if args.pg_instance:
         os.putenv("DB_HOST", ips_pg['ip_private'])
 
+    # if we just started an ec2 instance, and there are any further steps, wait 30 seconds
+    if args.aws and (args.instanceid or is_pg_ec2 or args.amiid) and (args.sync or args.exp_file or args.launch_compute):
+        wait_for_ec2_delay = 60         # seconds
+        # TODO: better solution would be to try to connect for a number of times and catch the exceptions
+        print "WAIT " + str(wait_for_ec2_delay) + " seconds to ensure enough time for services such as SSH to start."
+        time.sleep(wait_for_ec2_delay)
+
     # 3) Sync code and run-home
     if args.sync:
         if not args.aws:
             print "ERROR: Syncing is meaningless unless you're running aws (use param --step_aws)"
             exit()
-        cloud.sync_experiment(compute_node.base_url(), remote_keypath)
+        _cloud.sync_experiment(_compute_node.host, remote_keypath)
 
     # 4) Launch Compute (on AWS or locally) - *** IF Mode == 'Per Session' ***
     if (launch_mode is LaunchMode.per_session) and args.launch_compute:
@@ -534,7 +544,7 @@ if __name__ == '__main__':
 
     # 5) Run experiments
     if args.exps_file:
-        experiment.experiments_def_filename = args.exps_file
+        _experiment.experiments_def_filename = args.exps_file
         if not args.launch_compute:
             print "WARNING: Running experiment is meaningless unless you're already running the Compute node" \
                   "(use param --step_compute)"
@@ -545,11 +555,11 @@ if __name__ == '__main__':
     if args.shutdown:
 
         if launch_mode is LaunchMode.per_session:
-            compute_node.terminate()
+            _compute_node.terminate()
 
         # Shutdown infrastructure
         if is_aws:
-            cloud.stop_ec2(args.instanceid)
+            _cloud.stop_ec2(args.instanceid)
 
             if is_pg_ec2:
-                cloud.stop_ec2(args.pg_instance)
+                _cloud.stop_ec2(args.pg_instance)
