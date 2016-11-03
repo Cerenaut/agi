@@ -19,7 +19,6 @@
 
 package io.agi.framework.demo.mnist;
 
-import io.agi.core.ann.unsupervised.KSparseAutoencoder;
 import io.agi.core.orm.AbstractPair;
 import io.agi.core.util.PropertiesUtil;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
