@@ -40,6 +40,10 @@ public class AutoRegionLayerEntityConfig extends EntityConfig {
     int contextFreeAge = 0; // current value, computed
     float contextFreeAgeScale = 17f; // current value, computed
 
+    float rateScale = 5f;
+    float rateMax = 0.25f;
+    float rateLearningRate = 0.001f;
+
 //    float contextualLearningRate = 0.1f;
 //    int contextualWidthCells = 20;
 //    int contextualHeightCells = 20;

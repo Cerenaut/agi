@@ -124,10 +124,10 @@ var Region = {
   },
 
   selectThreshold : function() {
-/*    Region.selectedInput1 = [];
+    Region.selectedInput1 = [];
     Region.selectedInput2 = [];
 
-    var data1 = Region.findData( "-ff-input-1" );
+    var data1 = Region.findData( "-input-1" );
     if( !data1 ) {
       return; // can't paint
     }
@@ -140,7 +140,7 @@ var Region = {
       return;
     }
 
-    var data2 = Region.findData( "-ff-input-2" );
+    var data2 = Region.findData( "-input-2" );
     if( !data2 ) {
       return; // can't paint
     }
@@ -153,90 +153,34 @@ var Region = {
       return;
     }
 
-    var dataActivityNew = Region.findData( "-activity-new" );
-    if( !dataActivityNew ) {
+    var dataWeights = Region.findData( "-context-free-weights" );
+    if( !dataWeights ) {
       return; // can't paint
     }
 
-    var dataOrganizerOutputMask = Region.findData( "-organizer-output-mask" );
-    if( !dataOrganizerOutputMask ) {
+    var dataBiases = Region.findData( "-context-free-biases-2" );
+    if( !dataBiases ) {
       return; // can't paint
     }
 
-    var organizerDataSize = Framework.getDataSize( dataOrganizerOutputMask );
-    var ow = organizerDataSize.w;
-    var oh = organizerDataSize.h;
+    var gain = $( "#gain" ).val();
+    var threshold = $( "#threshold" ).val();
 
-    if( ( ow == 0 ) || ( oh == 0 ) ) {
-      return;
-    }
+    var dataSizeW = Framework.getDataSize( dataWeights );
+    var weightsSize = dataSizeW.w * dataSizeW.h;
+    var weightsStride = w1 * h1 + w2 * h2;
 
-    var regionDataSize = Framework.getDataSize( dataActivityNew );
-    var rw = regionDataSize.w;
-    var rh = regionDataSize.h;
-    var cw = rw / ow;
-    var ch = rh / oh;
-    var cd = Region.config.classifierDepthCells;
+    var inputOffset = 0;
 
-    var classifierInputStride = w1 * h1 + w2 * h2;
-    var classifierInputOffset = 0;
+    Region.thresholdCellsInputWeights( w1, h1, inputOffset, weightsStride, dataWeights, dataBiases, Region.selectedCells, Region.selectedInput1, gain, threshold );
 
-    Region.selectThresholdForInput( 0, Region.selectedInput1, w1, h1, rw, rh, cw, ch, cd, ow, oh, classifierInputStride, classifierInputOffset );
+    inputOffset = w1 * h1;
 
-    classifierInputOffset = w1 * h1;
-
-    Region.selectThresholdForInput( 1, Region.selectedInput2, w2, h2, rw, rh, cw, ch, cd, ow, oh, classifierInputStride, classifierInputOffset );
+    Region.thresholdCellsInputWeights( w2, h2, inputOffset, weightsStride, dataWeights, dataBiases, Region.selectedCells, Region.selectedInput2, gain, threshold );
 
     Region.updateSelection( "sel-input-1", Region.selectedInput1 );
-    Region.updateSelection( "sel-input-2", Region.selectedInput2 );*/
+    Region.updateSelection( "sel-input-2", Region.selectedInput2 );
     Region.repaint();
-  },
-
-  selectThresholdForInput : function( inputIndex, selectedInput, w, h, rw, rh, cw, ch, cd, ow, oh, classifierInputStride, classifierInputOffset ) {
-/*    var threshold = $( "#threshold" ).val();
-
-    var dataClassifierOutputWeights = Region.findData( "-classifier-output-weights" );
-
-    for( var c = 0; c < Region.selectedCells.length; ++c ) {
-      var regionOffset = Region.selectedCells[ c ];
-
-      if( !dataClassifierOutputWeights ) {
-        continue; // can't paint
-      }
-
-      var rx = Math.floor( regionOffset % rw );
-      var ry = Math.floor( regionOffset / rw );
-
-      var ox = Math.floor( rx / cw ); // coordinates of column in grid (region).
-      var oy = Math.floor( ry / ch );    
-
-      var cx = rx - ( ox * cw ); // coordinates in column.
-      var cy = ry - ( oy * ch );    
-
-      var classifierHeight = ( ch / cd );
-      var classifierY = cy - ( classifierHeight * Math.floor( cy / classifierHeight ) );
-      var classifierOffset = ( ( classifierY * cw ) + cx ) * classifierInputStride;
-
-      var classifierSize = cw * classifierHeight * classifierInputStride; // Each classifier has this number of cells. 
-      var classifierIndex = oy * ow + ox;
-      var packedOffset = classifierIndex * classifierSize;
-
-      // examine each input:
-      for( var y = 0; y < h; ++y ) {
-        for( var x = 0; x < w; ++x ) {
-          var inputOffset = y * w + x;
-          var weightsOffset = packedOffset + classifierOffset + classifierInputOffset + inputOffset;
-
-          var value = dataClassifierOutputWeights.elements.elements[ weightsOffset ];
-          if( value < threshold ) { // if less than this frac of max weight, don't bother drawing
-            continue;
-          }
-
-          selectedInput.push( inputOffset );
-        }
-      }
-
-    }    */
   },
 
   updateSelection : function( id, list ) {
@@ -717,20 +661,21 @@ var Region = {
 
     var inputOffset = 0;
 
-    Region.paintInputData( ctx, x0, y0, w1, h1, data1, Region.selectedInput1 );
+    Region.paintInputData( ctx, x0, y0, w1, h1, data1 );
     Region.paintInputWeights( ctx, x0, y0, w1, h1, inputOffset, data1, weightsSize, weightsStride, dataWeights, dataBiases, dataResponse, Region.selectedCells, gain );
+    Region.paintInputDataSelected( ctx, x0, y0, w1, h1, Region.selectedInput1 );
 
     y0 = y0 + h1 * Region.pixelsPerBit + Region.pixelsMargin;
     inputOffset = w1 * h1;
 
-    Region.paintInputData( ctx, x0, y0, w2, h2, data2, Region.selectedInput2 );
+    Region.paintInputData( ctx, x0, y0, w2, h2, data2 );
     Region.paintInputWeights( ctx, x0, y0, w2, h2, inputOffset, data2, weightsSize, weightsStride, dataWeights, dataBiases, dataResponse, Region.selectedCells, gain );
-
+    Region.paintInputDataSelected( ctx, x0, y0, w2, h2, Region.selectedInput2 );
   },
 
-  paintInputWeights : function( ctx, x0, y0, w, h, inputOffset, dataInput, weightsSize, weightsStride, dataWeights, dataBiases, dataResponse, selectedElements, gain ) {
+  thresholdCellsInputWeights : function( w, h, inputOffset, weightsStride, dataWeights, dataBiases, selectedCells, selectedInputs, gain, threshold ) {
 
-    if( selectedElements.length < 1 ) {
+    if( selectedCells.length < 1 ) {
       return;
     }
 
@@ -740,8 +685,44 @@ var Region = {
 
         var sumWeight = 0.0;
 
-        for( var i = 0; i < selectedElements.length; ++i ) {
-          var e = selectedElements[ i ];
+        for( var i = 0; i < selectedCells.length; ++i ) {
+          var e = selectedCells[ i ];
+
+	  var r = gain;
+
+          var weightsOffset = weightsStride * e 
+                            + inputOffset 
+                            + inputBit;
+
+          var weight = dataWeights.elements.elements[ weightsOffset ];
+          sumWeight += ( weight * r ); // * 1, which doesn't matter
+        }
+ 
+        var biasesOffset = inputOffset + inputBit;
+        var bias = dataBiases.elements.elements[ biasesOffset ];
+        sumWeight += bias;      
+
+        if( sumWeight > threshold ) {
+          selectedInputs.push( inputBit );
+        }
+      }
+    }
+  },
+
+  paintInputWeights : function( ctx, x0, y0, w, h, inputOffset, dataInput, weightsSize, weightsStride, dataWeights, dataBiases, dataResponse, selectedCells, gain ) {
+
+    if( selectedCells.length < 1 ) {
+      return;
+    }
+
+    for( var y = 0; y < h; ++y ) {
+      for( var x = 0; x < w; ++x ) {
+        var inputBit = y * w + x;
+
+        var sumWeight = 0.0;
+
+        for( var i = 0; i < selectedCells.length; ++i ) {
+          var e = selectedCells[ i ];
 
           //var r = dataResponse.elements.elements[ e ];
 	  var r = gain;
@@ -880,7 +861,7 @@ var Region = {
     }*/
   },
 
-  paintInputData : function( ctx, x0, y0, w, h, dataInput, selectedElements ) {
+  paintInputData : function( ctx, x0, y0, w, h, dataInput ) {
 
     for( var y = 0; y < h; ++y ) {
       for( var x = 0; x < w; ++x ) {
@@ -898,13 +879,33 @@ var Region = {
 
         ctx.strokeStyle = "#808080";
 
-        for( var i = 0; i < selectedElements.length; ++i ) {
+/*        for( var i = 0; i < selectedElements.length; ++i ) {
           if( selectedElements[ i ] == offset ) { // select one at a time
             ctx.strokeStyle = "#FFFFFF";
           }
+        }*/
+
+        ctx.strokeRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );       
+      }
+    }
+  },
+
+  paintInputDataSelected : function( ctx, x0, y0, w, h, selectedElements ) {
+
+    ctx.strokeStyle = "#00FF00";
+
+    for( var y = 0; y < h; ++y ) {
+      for( var x = 0; x < w; ++x ) {
+        var cx = x * Region.pixelsPerBit;
+        var cy = y * Region.pixelsPerBit;
+        var offset = y * w + x;
+         
+        for( var i = 0; i < selectedElements.length; ++i ) {
+          if( selectedElements[ i ] == offset ) { // select one at a time
+            ctx.strokeRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
+          }
         }
 
-        ctx.strokeRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
       }
     }
   },

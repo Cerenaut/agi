@@ -74,8 +74,8 @@ public class AutoRegionLayerDemo {
 
     public static void createEntities( Node n ) {
 
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
@@ -86,13 +86,13 @@ public class AutoRegionLayerDemo {
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle_deep";
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/all_train";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/all_t10k";
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
-//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/5k_test";
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
+        String testingPath = "/home/dave/workspace/agi.io/data/mnist/5k_test";
 //        String trainingPath = "./training";
 //        String testingPath = "./testing";
 //        int terminationAge = 10;//9000;
         int terminationAge = 50000;//25000;
-        int trainingBatches = 2;//80; // good for up to 80k
+        int trainingBatches = 1;//80; // good for up to 80k
         boolean terminateByAge = false;
         float defaultPredictionInhibition = 1.f; // random image classification only experiments
 //        float defaultPredictionInhibition = 0.f; // where you use prediction
@@ -155,9 +155,9 @@ public class AutoRegionLayerDemo {
         }
 
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList< AbstractPair< String, String > >();
-//        if( layers > 0 ) featureDatas.add( new AbstractPair< String, String >( region1FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
-        if( layers > 1 ) featureDatas.add( new AbstractPair< String, String >( region2FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
-        if( layers > 2 ) featureDatas.add( new AbstractPair< String, String >( region3FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
+        if( layers == 1 ) featureDatas.add( new AbstractPair< String, String >( region1FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
+        if( layers == 2 ) featureDatas.add( new AbstractPair< String, String >( region2FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
+        if( layers == 3 ) featureDatas.add( new AbstractPair< String, String >( region3FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
         Framework.SetDataReferences( classFeaturesName, ClassFeaturesEntity.FEATURES, featureDatas ); // get current state from the region to be used to predict
 
         // Experiment config
@@ -204,33 +204,33 @@ public class AutoRegionLayerDemo {
         }
 
         // image region config
-        int widthCells = 32; // from the paper, this was optimal on MNIST
-        int heightCells = 32;
+        // effective constants:
+        float predictorLearningRate = 0.01f;
         int ageMin = 0;
-        int ageMax = 1400;//700;//1000;
+        int ageMax = 750;//700;//1000;
         float ageScale = 12f;//17f;//15f; // maybe try 12 or 17
+        float rateScale = 5f;
+        float rateLearningRate = 0.01f;
+        float sparsityMax = 0;// no longer used - adaptive cell promotion/inh (int)( (widthCells * heightCells) * 0.9f );
 
+        // variables
 //        float sparseLearningRate = 0.000001f;
 //        float sparseLearningRate = 0.00001f;
 //        float sparseLearningRate = 0.0001f;
-        float sparseLearningRate = 0.001f; // * best
+//        float sparseLearningRate = 0.001f; // * best
 //        float sparseLearningRate = 0.01f;
 //        float sparseLearningRate = 0.1f;
-
 //        sparseLearningRate = 0.01f;//0.001f; // test
 //        sparseLearningRate = 0.05f; // test saturated at 0.6, but now with improved output
 //        sparseLearningRate = 0.1f; //
-        sparseLearningRate = 0.01f;
+        float sparseLearningRate = 0.01f;
+//        sparseLearningRate = 0.05f;
 
-        //float cells = (float)( widthCells * heightCells );
-        float sparsityMin = 25;//30;//25;//cells * 0.02f;
-        float sparsityMax = (int)( (widthCells * heightCells) * 0.9f );
-        float sparsityOutput = 2.5f;//2.f; // temporal pooling, off if 1f
-
-//        float sparsityCells = 0.f; // determined by age
+        int widthCells = 32; // from the paper, 32x32=1024 was optimal on MNIST (but with a supervised output layer)
+        int heightCells = 32;
+        float sparsityMin = 25f;//25;//30;//25;//cells * 0.02f;
+        float sparsityOutput = 2.f;//2.f; // temporal pooling, off if 1f
         float sparsityFactor = sparsityOutput;//1.f; // the "alpha" term in the paper
-//        float predictorLearningRate = 0.001f;
-        float predictorLearningRate = 0.01f;
 
 //        KSparseAutoencoder.REGULARIZATION = 0.001f;
 
@@ -239,16 +239,14 @@ public class AutoRegionLayerDemo {
                 widthCells, heightCells,
                 ageMin, ageMax, ageScale,
                 sparseLearningRate, sparsityMin, sparsityMax, sparsityFactor, sparsityOutput,
-                defaultPredictionInhibition, predictorLearningRate );
+                defaultPredictionInhibition, predictorLearningRate,
+                rateScale, rateLearningRate );
 
         // smaller region
-        widthCells = 20;
-        heightCells = 20;
-        //ageMin = ageMax;
-        //ageMax = ageMax * 3;
-        sparsityMin = 12;//12;//10;//25;//cells * 0.02f;
-        sparsityMax = ( (widthCells * heightCells) * 0.9f );
-        sparsityOutput = 2.25f;//2.f; // temporal pooling, off if 1f
+        widthCells = 32;
+        heightCells = 32;
+        sparsityMin = 8;//12;//10;//25;//cells * 0.02f;
+        sparsityOutput = 2.f;//2.f; // temporal pooling, off if 1f
         sparsityFactor = sparsityOutput; // added was missing
 
         // look at weight decay, l2 norm, momentum, batches
@@ -280,7 +278,8 @@ public class AutoRegionLayerDemo {
                 widthCells, heightCells,
                 ageMin, ageMax, ageScale,
                 sparseLearningRate, sparsityMin, sparsityMax, sparsityFactor, sparsityOutput,
-                defaultPredictionInhibition, predictorLearningRate );
+                defaultPredictionInhibition, predictorLearningRate,
+                rateScale, rateLearningRate );
 
         // feature-class config
         Framework.SetConfig( classFeaturesName, "classEntityName", imageClassName );
@@ -318,7 +317,9 @@ public class AutoRegionLayerDemo {
             float sparsityFactor,
             float sparsityOutput,
             float defaultPredictionInhibition,
-            float predictorLearningRate ) {
+            float predictorLearningRate,
+            float rateScale,
+            float rateLearningRate ) {
 
         Framework.SetConfig( regionLayerName, "contextFreeLearningRate", String.valueOf( sparseLearningRate ) );
         Framework.SetConfig( regionLayerName, "contextFreeWidthCells", String.valueOf( widthCells ) );
@@ -332,6 +333,9 @@ public class AutoRegionLayerDemo {
         Framework.SetConfig( regionLayerName, "contextFreeAgeMax", String.valueOf( ageMax ) );
         Framework.SetConfig( regionLayerName, "contextFreeAge", String.valueOf( 0 ) );
         Framework.SetConfig( regionLayerName, "contextFreeAgeScale", String.valueOf( ageScale ) );
+
+        Framework.SetConfig( regionLayerName, "rateScale", String.valueOf( rateScale ) );
+        Framework.SetConfig( regionLayerName, "rateLearningRate", String.valueOf( rateLearningRate ) );
 //        Framework.SetConfig( regionLayerName, "contextualLearningRate", String.valueOf( sparseLearningRate ) );
 //        Framework.SetConfig( regionLayerName, "contextualWidthCells", String.valueOf( widthCells ) );
 //        Framework.SetConfig( regionLayerName, "contextualHeightCells", String.valueOf( heightCells ) );

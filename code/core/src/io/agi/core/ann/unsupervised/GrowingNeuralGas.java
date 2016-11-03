@@ -133,6 +133,8 @@ public class GrowingNeuralGas extends CompetitiveLearning {
             return;
         }
 
+        // don't age or do learning/maintenance when input isn't changing. This is achieved by setting learning to false when this occurs
+
         _cellAges._values[ bestCellA ] += 1.f;
         _cellAges._values[ bestCellB ] += 1.f;
 

@@ -124,13 +124,79 @@ var Region = {
   },
 
   selectThreshold : function() {
+    Region.selectedInput1 = [];
+    Region.selectedInput2 = [];
+
+    var data1 = Region.findData( "-input-ff-1" );
+    if( !data1 ) {
+      return; // can't paint
+    }
+
+    var dataSize1 = Framework.getDataSize( data1 );
+    var w1 = dataSize1.w;
+    var h1 = dataSize1.h;
+
+    if( ( w1 == 0 ) || ( h1 == 0 ) ) {
+      return;
+    }
+
+    var data2 = Region.findData( "-input-ff-2" );
+    if( !data2 ) {
+      return; // can't paint
+    }
+
+    var dataSize2 = Framework.getDataSize( data2 );
+    var w2 = dataSize2.w;
+    var h2 = dataSize2.h;
+
+    if( ( w2 == 0 ) || ( h2 == 0 ) ) {
+      return;
+    }
+
+    var dataActivityNew = Region.findData( "-region-activity" );
+    if( !dataActivityNew ) {
+      return; // can't paint
+    }
+
+    var dataOrganizerOutputMask = Region.findData( "-organizer-cell-mask" );
+    if( !dataOrganizerOutputMask ) {
+      return; // can't paint
+    }
+
+    var organizerDataSize = Framework.getDataSize( dataOrganizerOutputMask );
+    var ow = organizerDataSize.w;
+    var oh = organizerDataSize.h;
+
+    if( ( ow == 0 ) || ( oh == 0 ) ) {
+      return;
+    }
+
+    var regionDataSize = Framework.getDataSize( dataActivityNew );
+    var rw = regionDataSize.w;
+    var rh = regionDataSize.h;
+    var cw = rw / ow;
+    var ch = rh / oh;
+//    var cd = Region.config.classifierDepthCells;
+
+    var classifierInputStride = w1 * h1 + w2 * h2;
+    var classifierInputOffset = 0;
+
+    Region.selectThresholdForInput( 0, Region.selectedInput1, w1, h1, rw, rh, cw, ch, ow, oh, classifierInputStride, classifierInputOffset );
+
+    classifierInputOffset = w1 * h1;
+
+    Region.selectThresholdForInput( 1, Region.selectedInput2, w2, h2, rw, rh, cw, ch, ow, oh, classifierInputStride, classifierInputOffset );
+
+    Region.updateSelection( "sel-input-1", Region.selectedInput1 );
+    Region.updateSelection( "sel-input-2", Region.selectedInput2 );
+
     Region.repaint();
   },
 
-  selectThresholdForInput : function( inputIndex, selectedInput, w, h, rw, rh, cw, ch, cd, ow, oh, classifierInputStride, classifierInputOffset ) {
-/*    var threshold = $( "#threshold" ).val();
+  selectThresholdForInput : function( inputIndex, selectedInput, w, h, rw, rh, cw, ch, ow, oh, classifierInputStride, classifierInputOffset ) {
+    var threshold = $( "#threshold" ).val();
 
-    var dataClassifierOutputWeights = Region.findData( "-classifier-output-weights" );
+    var dataClassifierOutputWeights = Region.findData( "-classifier-cell-weights" );
 
     for( var c = 0; c < Region.selectedCells.length; ++c ) {
       var regionOffset = Region.selectedCells[ c ];
@@ -148,7 +214,7 @@ var Region = {
       var cx = rx - ( ox * cw ); // coordinates in column.
       var cy = ry - ( oy * ch );    
 
-      var classifierHeight = ( ch / cd );
+      var classifierHeight = ( ch );/// cd );
       var classifierY = cy - ( classifierHeight * Math.floor( cy / classifierHeight ) );
       var classifierOffset = ( ( classifierY * cw ) + cx ) * classifierInputStride;
 
@@ -171,7 +237,7 @@ var Region = {
         }
       }
 
-    }    */
+    }   
   },
 
   updateSelection : function( id, list ) {
@@ -976,6 +1042,12 @@ var Region = {
     }
 
     var datas = JSON.parse( json.responseText );
+
+    if( datas.length > 1 ) {
+      Region.getData(); // get next data.
+      return;
+    }
+
     var data = datas[ 0 ];
 
     Framework.decode( data );

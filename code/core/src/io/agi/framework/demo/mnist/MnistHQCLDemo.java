@@ -74,7 +74,7 @@ public class MnistHQCLDemo {
 //        String trainingPath = "./data/training";
 //        String testingPath = "./data/testing";
         int terminationAge = 25;//000;
-        int trainingBatches = 2;
+        int trainingBatches = 3;
         boolean terminateByAge = false;
         boolean encodeZero = false;
         boolean classFeaturesOnline = false;
@@ -130,18 +130,19 @@ public class MnistHQCLDemo {
         Framework.SetDataReference( region1FfName, HqClRegionLayerEntity.INPUT_FB_1, constantName, ConstantMatrixEntity.OUTPUT ); // feedback to this region is just a constant
 
         String learningEntitiesAlgorithm = region1FfName;
-        String regionLayerOutputSuffix = HqClRegionLayerEntity.REGION_ACTIVITY;
-//        String regionLayerOutputSuffix = HqClRegionLayerEntity.REGION_ACTIVITY_INFERRED;
+        String regionLayerFfOutputSuffix = HqClRegionLayerEntity.REGION_ACTIVITY;
+//        String regionLayerFfOutputSuffix = HqClRegionLayerEntity.REGION_ACTIVITY_INFERRED;
+        String regionLayerFbOutputSuffix = HqClRegionLayerEntity.REGION_ACTIVITY_INFERRED;
 
         if( layers > 1 ) {
-            Framework.SetDataReference( region2FfName, HqClRegionLayerEntity.INPUT_FF_1, region1FfName, regionLayerOutputSuffix );
+            Framework.SetDataReference( region2FfName, HqClRegionLayerEntity.INPUT_FF_1, region1FfName, regionLayerFfOutputSuffix );
             Framework.SetDataReference( region2FfName, HqClRegionLayerEntity.INPUT_FF_2, constantName, ConstantMatrixEntity.OUTPUT );
             Framework.SetDataReference( region2FfName, HqClRegionLayerEntity.INPUT_FB_1, constantName, ConstantMatrixEntity.OUTPUT ); // feedback to this region is just a constant
             learningEntitiesAlgorithm = learningEntitiesAlgorithm + "," + region2FfName;
         }
 
         if( layers > 2 ) {
-            Framework.SetDataReference( region3FfName, HqClRegionLayerEntity.INPUT_FF_1, region2FfName, regionLayerOutputSuffix );
+            Framework.SetDataReference( region3FfName, HqClRegionLayerEntity.INPUT_FF_1, region2FfName, regionLayerFfOutputSuffix );
             Framework.SetDataReference( region3FfName, HqClRegionLayerEntity.INPUT_FF_2, constantName, ConstantMatrixEntity.OUTPUT );
 // Option to provide class-label directly to layer 3 for inclusion in classification
 //            Framework.SetDataReference( region3FfName, HqClRegionLayerEntity.FF_INPUT_2, labelEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
@@ -156,9 +157,9 @@ public class MnistHQCLDemo {
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList< AbstractPair< String, String > >();
         //featureDatas.add( new AbstractPair< String, String >( region1FfName, regionLayerOutputSuffix ) );
 //        featureDatas.add( new AbstractPair< String, String >( region2FfName, regionLayerOutputSuffix ) );
-        if( layers == 1 ) featureDatas.add( new AbstractPair< String, String >( region1FfName, regionLayerOutputSuffix ) );
-        if( layers == 2 ) featureDatas.add( new AbstractPair< String, String >( region2FfName, regionLayerOutputSuffix ) );
-        if( layers == 3 ) featureDatas.add( new AbstractPair< String, String >( region3FfName, regionLayerOutputSuffix ) );
+        if( layers == 1 ) featureDatas.add( new AbstractPair< String, String >( region1FfName, regionLayerFbOutputSuffix ) );
+        if( layers == 2 ) featureDatas.add( new AbstractPair< String, String >( region2FfName, regionLayerFbOutputSuffix ) );
+        if( layers == 3 ) featureDatas.add( new AbstractPair< String, String >( region3FfName, regionLayerFbOutputSuffix ) );
         Framework.SetDataReferences( classFeaturesName, ClassFeaturesEntity.FEATURES, featureDatas ); // get current state from the region to be used to predict
 
         // Experiment config
@@ -189,37 +190,15 @@ public class MnistHQCLDemo {
         Framework.SetConfig( imageClassName, "learningEntitiesAlgorithm", String.valueOf( learningEntitiesAlgorithm ) );
         Framework.SetConfig( imageClassName, "learningEntitiesAnalytics", String.valueOf( learningEntitiesAnalytics ) );
 
-        // constant config
+        // image encoder config
         if( encodeZero ) {
-
-            // image encoder config
             Framework.SetConfig( imageEncoderName, "density", "1" );
             Framework.SetConfig( imageEncoderName, "bits", "2" );
             Framework.SetConfig( imageEncoderName, "encodeZero", "true" );
-
-            // image decoder config x2
-//            Framework.SetConfig( activityImageDecoderName, "density", "1" );
-//            Framework.SetConfig( activityImageDecoderName, "bits", "2" );
-//            Framework.SetConfig( activityImageDecoderName, "encodeZero", "true" );
-//
-//            Framework.SetConfig( predictedImageDecoderName, "density", "1" );
-//            Framework.SetConfig( predictedImageDecoderName, "bits", "2" );
-//            Framework.SetConfig( predictedImageDecoderName, "encodeZero", "true" );
         } else {
-
-            // image encoder config
             Framework.SetConfig( imageEncoderName, "density", "1" );
             Framework.SetConfig( imageEncoderName, "bits", "1" );
             Framework.SetConfig( imageEncoderName, "encodeZero", "false" );
-
-            // image decoder config x2
-//            Framework.SetConfig( activityImageDecoderName, "density", "1" );
-//            Framework.SetConfig( activityImageDecoderName, "bits", "1" );
-//            Framework.SetConfig( activityImageDecoderName, "encodeZero", "false" );
-//
-//            Framework.SetConfig( predictedImageDecoderName, "density", "1" );
-//            Framework.SetConfig( predictedImageDecoderName, "bits", "1" );
-//            Framework.SetConfig( predictedImageDecoderName, "encodeZero", "false" );
         }
 
         // feature-class config
@@ -243,79 +222,54 @@ public class MnistHQCLDemo {
         Framework.SetConfig( valueSeriesTruthName, "configPath", "classTruth" );
 
         // image region config
-        float predictionLearningRate = 0.01f;
-        float predictionDecayRate = 0.999f; // 1x slower
-        int errorHistoryLength = 30; // compute stats over last N times cell was active
-
-        int organizerWidth = 8;
-        int organizerHeight = 8;
-        int classifierWidth = 5;//5
-        int classifierHeight = 5;
-        int classifierDepth = 1;
-        int classifiersPerBit1 = 4;//5;
+        // 5*5 * 8*8 = 1600 cells
+        int errorHistoryLength = 30; // not used
+        int organizerWidth = 0;
+        int organizerHeight = 0;
+        int classifierWidth = 0;
+        int classifierHeight = 0;
+        int classifiersPerBit1 = 0;
         int classifiersPerBit2 = 1;
-
-        float predictorLearningRate = 0.005f;
-        int edgeMaxAge = 400;
+        float predictionLearningRate = 0.05f;
+        float predictionDecayRate = 0.98f; // slower
+        int edgeMaxAge = 500;
         int classifierGrowthInterval = 120;
 
         // GNG region layer:
         organizerWidth = 8;
-        organizerHeight = 8;
+        organizerHeight = 8; // 8x8 = 64 bits
         classifiersPerBit1 = 3; // relatively local
-        classifierWidth = 5;
-        classifierHeight = 4;
+        classifierWidth = 6;
+        classifierHeight = 6; // 8x8x6x6 = 2304 cells
 
         if( layers > 0 ) {
-            setRegionLayerConfig(
-                    region1FfName,
-                    classifiersPerBit1, classifiersPerBit2,
-                    classifierWidth, classifierHeight,
-                    organizerWidth, organizerHeight,
-                    edgeMaxAge,
-                    predictionLearningRate,
-                    predictionDecayRate,
-                    errorHistoryLength,
-                    classifierGrowthInterval );
+            setRegionLayerConfig( region1FfName,
+                    classifiersPerBit1, classifiersPerBit2, classifierWidth, classifierHeight, organizerWidth, organizerHeight, edgeMaxAge, predictionLearningRate, predictionDecayRate, errorHistoryLength, classifierGrowthInterval );
         }
 
-        organizerWidth = 7;
-        organizerHeight = 7;
-        classifiersPerBit1 = 4;
-        classifierWidth = 6;
-        classifierHeight = 6;
+        organizerWidth = 8;
+        organizerHeight = 8;
+        classifiersPerBit1 = 9;
+        classifierWidth = 8;
+        classifierHeight = 8;
 
         if( layers > 1 ) {
             setRegionLayerConfig(
                     region2FfName,
-                    classifiersPerBit1, classifiersPerBit2,
-                    classifierWidth, classifierHeight,
-                    organizerWidth, organizerHeight,
-                    edgeMaxAge,
-                    predictionLearningRate,
-                    predictionDecayRate,
-                    errorHistoryLength,
-                    classifierGrowthInterval );
+                    classifiersPerBit1, classifiersPerBit2, classifierWidth, classifierHeight, organizerWidth, organizerHeight, edgeMaxAge, predictionLearningRate, predictionDecayRate, errorHistoryLength, classifierGrowthInterval );
         }
 
         // apex
-        organizerWidth = 1;
-        organizerHeight = 1;
-        classifiersPerBit1 = 1;
-        classifierWidth = 10;
-        classifierHeight = 10; // 100 cells each
+        organizerWidth = 8; // maybe too ambitious?  8 -> 6 -> 3
+        organizerHeight = 8;
+        classifiersPerBit1 = 9;
+        classifierWidth = 8;
+        classifierHeight = 8; // 100 cells each
 
         if( layers > 2 ) {
             setRegionLayerConfig(
                     region3FfName,
-                    classifiersPerBit1, classifiersPerBit2,
-                    classifierWidth, classifierHeight,
-                    organizerWidth, organizerHeight,
-                    edgeMaxAge,
-                    predictionLearningRate,
-                    predictionDecayRate,
-                    errorHistoryLength,
-                    classifierGrowthInterval );
+                    classifiersPerBit1, classifiersPerBit2, classifierWidth, classifierHeight, organizerWidth, organizerHeight, edgeMaxAge, predictionLearningRate, predictionDecayRate, errorHistoryLength, classifierGrowthInterval );
         }
 
     }

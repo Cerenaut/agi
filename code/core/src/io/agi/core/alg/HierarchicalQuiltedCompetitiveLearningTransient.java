@@ -19,6 +19,7 @@
 
 package io.agi.core.alg;
 
+import io.agi.core.data.Data;
 import io.agi.core.data.Ranking;
 
 import java.util.ArrayList;
@@ -35,22 +36,26 @@ public class HierarchicalQuiltedCompetitiveLearningTransient {
     public HashSet< Integer > _ffInput2Active;
     public HashSet< Integer > _fbInputActive;
 
+    public HashSet< Integer > _ffInput1ActiveOld;
+    public HashSet< Integer > _ffInput2ActiveOld;
+    public HashSet< Integer > _fbInputActiveOld;
+
     public ArrayList< Integer > _regionActiveCells = new ArrayList< Integer >();
 
-//    public ArrayList< Integer > _unchangedClassifiers = new ArrayList< Integer >(); // not updated because their cols had no input.
-//    public ArrayList< Integer > _unchangedCells = new ArrayList< Integer >(); // not updated because their cols had no input.
+    public HashMap< Integer, HashSet< Integer > > _classifierRegionCells = new HashMap< Integer, HashSet< Integer > >();
 
-//    public HashMap< Integer, Integer > _columnActiveCells = new HashMap< Integer, Integer >();
     public HashMap< Integer, ArrayList< Integer > > _classifierActiveInput = new HashMap< Integer, ArrayList< Integer > >();
+    public HashMap< Integer, ArrayList< Integer > > _classifierActiveInputOld = new HashMap< Integer, ArrayList< Integer > >();
 
     public HashMap< Integer, TreeMap< Float, ArrayList< Integer > > > _activeInputClassifierRanking = new HashMap< Integer, TreeMap< Float, ArrayList< Integer > > >();
+    public HashMap< Integer, TreeMap< Float, ArrayList< Integer > > > _activeInputClassifierRankingOld = new HashMap< Integer, TreeMap< Float, ArrayList< Integer > > >();
 //    public HashMap< Integer, TreeMap< Float, ArrayList< Integer > > > _classifierActiveInputRanking = new HashMap< Integer, TreeMap< Float, ArrayList< Integer > > >();
 
     public HierarchicalQuiltedCompetitiveLearningTransient() {
 
     }
 
-    public TreeMap< Float, ArrayList< Integer > > getRankingLazy( HashMap< Integer, TreeMap< Float, ArrayList< Integer > > > rankingMap, int i ) {
+    public static TreeMap< Float, ArrayList< Integer > > getRankingLazy( HashMap< Integer, TreeMap< Float, ArrayList< Integer > > > rankingMap, int i ) {
         TreeMap< Float, ArrayList< Integer > > ranking = rankingMap.get( i );
         if( ranking == null ) {
             ranking = Ranking.CreateRanking();
@@ -67,11 +72,19 @@ public class HierarchicalQuiltedCompetitiveLearningTransient {
         return activeInput;
     }
 
-    public void addClassifierActiveInput( int classifier, int activeInput ) {
-        ArrayList< Integer > al = _classifierActiveInput.get( classifier );
+    public ArrayList< Integer > getClassifierActiveInputOld( int classifier ) {
+        ArrayList< Integer > activeInput = _classifierActiveInputOld.get( classifier );
+        if( activeInput == null ) {
+            return new ArrayList< Integer >();
+        }
+        return activeInput;
+    }
+
+    public static void addClassifierActiveInput( int classifier, int activeInput, HashMap< Integer, ArrayList< Integer > > classifierActiveInput ) {
+        ArrayList< Integer > al = classifierActiveInput.get( classifier );
         if( al == null ) {
             al = new ArrayList< Integer >();
-            _classifierActiveInput.put( classifier, al );
+            classifierActiveInput.put( classifier, al );
         }
 
         al.add( activeInput );

@@ -68,13 +68,14 @@ public class HttpExportHandler implements HttpHandler {
 
                 status = 200;
             }
+
+            HttpUtil.SendResponse( t, status, response );
         }
         catch( Exception e ) {
             logger.error( "Unable to export entities or data.");
             logger.error( e.toString(), e );
         }
 
-        HttpUtil.SendResponse( t, status, response );
     }
 }
 

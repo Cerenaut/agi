@@ -24,9 +24,7 @@ import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
 import io.agi.core.data.DataSize;
 import io.agi.core.data.Ranking;
-import io.agi.core.math.Gaussian;
 import io.agi.core.math.Geometry;
-import io.agi.core.math.RollingWindowVariance;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 
@@ -160,6 +158,8 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
         _transient = new HierarchicalQuiltedCompetitiveLearningTransient(); // this replaces all the transient data structures, ensuring they are truly transient
         _transient._ffInput1Active = _ffInput1.indicesMoreThan( 0.f ); // find all the active bits.
         _transient._ffInput2Active = _ffInput2.indicesMoreThan( 0.f ); // find all the active bits.
+        _transient._ffInput1ActiveOld = _ffInput1Old.indicesMoreThan( 0.f ); // find all the active bits.
+        _transient._ffInput2ActiveOld = _ffInput2Old.indicesMoreThan( 0.f ); // find all the active bits.
         _transient._fbInputActive = _fbInput1.indicesMoreThan( 0.f ); // find all the active bits.
 
         boolean inputChanged = hasFfInputChanged();
@@ -172,7 +172,7 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
         likelihoodUpdate(); // convert to likelihood fn
 //        predictionUpdate( _transient._regionActiveCells ); // moved to inside inference
         predictionLearn();
-//        inferenceUpdate();
+        inferenceSearch();
 
         _ffInput1Old.copy( _ffInput1 );
         _ffInput2Old.copy( _ffInput2 );
@@ -207,16 +207,15 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
 // P( E ) = irrelevant.
 // For different values of H, only the factors P(H) and P(E|H), both in the numerator, affect the value of P(H|E)
 
-    protected void inferenceUpdate() {
+    protected void inferenceSearch() {
+
+        updateClassifierRegionCells();
 
 //        int history = _config.getErrorHistoryLength();
 //        int regionAreaCells = _config.getRegionAreaCells();
-        int nbrSelections = 100;
-        float fracExclusions = 0.25f;
+        int nbrSelections = 50;
+        float fracExclusions = 0.15f;
         int nbrExclusions = (int)( (float)_transient._regionActiveCells.size() * fracExclusions );
-
-        Point organizerSizeCells = _config.getOrganizerSizeCells();
-        Point classifierSizeCells = _config.getClassifierSizeCells();
 
         ArrayList< Integer > allActiveCells = new ArrayList< Integer >();
         allActiveCells.addAll( _transient._regionActiveCells );
@@ -227,7 +226,6 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
         for( int s = 0; s < nbrSelections; ++s ) {
 
             // TODO maximize likelihood or posterior?
-
             HashSet< Integer > exclusions = new HashSet< Integer >();
 
             // build the exclusion set
@@ -245,7 +243,7 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
 
             predictionUpdate( activeCells );
 
-            float sum = inferenceWithExclusions( organizerSizeCells, classifierSizeCells );
+            float sum = inferenceUpdate();
 
             if( ( bestExclusions == null ) || ( sum >= maxSum ) ) {
                 bestExclusions = exclusions;
@@ -260,14 +258,16 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
         // Now apply the best exclusion set.
         HashSet< Integer > activeCells = new HashSet<>();
         activeCells.addAll( _transient._regionActiveCells );
-        for( Integer c : bestExclusions ) {
-            activeCells.remove( c );
+        if( bestExclusions != null ) {
+            for( Integer c : bestExclusions ) {
+                activeCells.remove( c );
+            }
         }
 
         predictionUpdate( activeCells );
         //predictionUpdate( _transient._regionActiveCells );
 
-        inferenceWithExclusions( organizerSizeCells, classifierSizeCells );
+        inferenceUpdate();
     }
 
     protected void likelihoodUpdate() {
@@ -281,7 +281,7 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
                 int classifierOffset = _config.getOrganizerOffset( xClassifier, yClassifier );
                 GrowingNeuralGas classifier = _classifiers.get( classifierOffset );
 
-                float sumRootError = 0f;
+                float sumCellError = 0f;
 
                 for( int yCell = 0; yCell < classifierSizeCells.y; ++yCell ) {
                     for( int xCell = 0; xCell < classifierSizeCells.x; ++xCell ) {
@@ -290,10 +290,11 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
 
                         float mask = classifier._cellMask._values[ cell ];
                         float sumSqError = classifier._cellErrors._values[ cell ];
-                        float error = ( float ) Math.sqrt( sumSqError );
+//                        float error = ( float ) Math.sqrt( sumSqError );
+                        float error = sumSqError;
 
                         if( mask > 0f ) {
-                            sumRootError += error;
+                            sumCellError += error;
                         }
                     }
                 }
@@ -309,13 +310,20 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
 
                         float mask = classifier._cellMask._values[ cell ];
                         float sumSqError = classifier._cellErrors._values[ cell ];
-                        float error = ( float ) Math.sqrt( sumSqError );
+//                        float error = ( float ) Math.sqrt( sumSqError );
+                        float error = sumSqError;
 
                         // now compute statistics from the history window
                         float likelihood = 0;
                         if( mask > 0f ) {
-                            error = error / sumRootError; // so now it is some fraction of all error ie unit. 0 is better.
-                            likelihood = 1f - error;
+                            if( sumCellError <= 0f ) {
+                                error = 0f;
+                                likelihood = 1f;
+                            }
+                            else {
+                                error = error / sumCellError; // so now it is some fraction of all error ie unit. 0 is better.
+                                likelihood = 1f - error;
+                            }
                         }
 
                         // e.g. error = 0.01,   0.05,  0.25, 0.8
@@ -333,7 +341,10 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
         }
     }
 
-    protected float inferenceWithExclusions( Point organizerSizeCells, Point classifierSizeCells ) {
+    protected float inferenceUpdate() {
+        Point organizerSizeCells = _config.getOrganizerSizeCells();
+        Point classifierSizeCells = _config.getClassifierSizeCells();
+
         _regionActivityInferred.set( 0f );
 
         float sum = 0f;
@@ -343,7 +354,7 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
 
                 Point classifierOrigin = _config.getRegionClassifierOrigin( xClassifier, yClassifier );
 
-                float maxPosterior = 0f;
+                float bestPosterior = 0f;
                 int xBestCell = 0;
                 int yBestCell = 0;
 
@@ -363,10 +374,11 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
                         // prior = probability that this cell is the best cell, given all the other active cells
                         // posterior = combination of the prior evidence from all cells and the likelihood based on error.
                         float likelihood = _regionLikelihood._values[ regionOffset ];
-                        float prior = _regionPrediction._values[ regionOffset ];
+                        float prior      = _regionPrediction._values[ regionOffset ];
                         float posterior = likelihood * prior;
-                        if( posterior >= maxPosterior ) {
-                            maxPosterior = posterior;
+
+                        if( posterior >= bestPosterior ) {
+                            bestPosterior = posterior;
                             xBestCell = xCell;
                             yBestCell = yCell;
                         }
@@ -374,7 +386,7 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
                     }
                 }
 
-                sum += maxPosterior;
+                sum += bestPosterior;
 
                 int regionX = classifierOrigin.x + xBestCell;
                 int regionY = classifierOrigin.y + yBestCell;
@@ -429,7 +441,98 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
         }
     }
 
+    protected void updateClassifierRegionCells() {
+        _transient._classifierRegionCells.clear();
+
+        Point organizerSizeCells = _config.getOrganizerSizeCells();
+        Point classifierSizeCells = _config.getClassifierSizeCells();
+
+        for( int yClassifier = 0; yClassifier < organizerSizeCells.y; ++yClassifier ) {
+            for( int xClassifier = 0; xClassifier < organizerSizeCells.x; ++xClassifier ) {
+
+                Point classifierOrigin = _config.getRegionClassifierOrigin( xClassifier, yClassifier );
+                int classifierOffset = _config.getOrganizerOffset( xClassifier, yClassifier );
+                GrowingNeuralGas classifier = _classifiers.get( classifierOffset );
+
+                HashSet< Integer > classifierRegionCells = new HashSet< Integer >();
+
+                for( int yCell = 0; yCell < classifierSizeCells.y; ++yCell ) {
+                    for( int xCell = 0; xCell < classifierSizeCells.x; ++xCell ) {
+
+                        int cell = classifier._c.getCell( xCell, yCell );
+
+                        int regionX = classifierOrigin.x + xCell;
+                        int regionY = classifierOrigin.y + yCell;
+                        int j = _config.getRegionOffset( regionX, regionY );
+
+                        float mask = classifier._cellMask._values[ cell ];
+                        if( mask == 0f ) {
+                            continue;
+                        }
+
+                        classifierRegionCells.add( j );
+                    }
+                }
+
+                _transient._classifierRegionCells.put( classifierOffset, classifierRegionCells );
+            }
+        }
+    }
+
     protected void predictionUpdate( Collection< Integer > activeCells ) {
+
+        _regionPrediction.set( 0f );
+
+        int cells = _config.getRegionAreaCells();
+
+        Point organizerSizeCells = _config.getOrganizerSizeCells();
+        Point classifierSizeCells = _config.getClassifierSizeCells();
+
+        for( int yClassifier = 0; yClassifier < organizerSizeCells.y; ++yClassifier ) {
+            for( int xClassifier = 0; xClassifier < organizerSizeCells.x; ++xClassifier ) {
+
+//                Point classifierOrigin = _config.getRegionClassifierOrigin( xClassifier, yClassifier );
+                int classifierOffset = _config.getOrganizerOffset( xClassifier, yClassifier );
+
+                HashSet< Integer > classifierRegionCells = _transient._classifierRegionCells.get( classifierOffset );
+
+                float sumColWeight = 0f;
+
+                for( Integer j : classifierRegionCells ) {
+
+                    float sumWeight = 0f;
+
+                    for( Integer i : activeCells ) {//_transient._regionActiveCells ) {
+                        if( classifierRegionCells.contains( i ) ) {
+                            continue; // no support from within the column
+                        }
+
+                        // how much does c1 support c2?
+                        int weightsOffset = j * cells + i;
+                        float w_ji = _regionPredictionWeights._values[ weightsOffset ];
+                        sumWeight += w_ji;
+                    }
+
+                    sumColWeight += sumWeight;
+
+                    _regionPrediction._values[ j ] = sumWeight;
+                }
+
+                for( Integer j : classifierRegionCells ) {
+
+                    float weight = _regionPrediction._values[ j ];
+                    float unitWeight = 1f;
+                    if( sumColWeight > 0f ) {
+                        unitWeight = weight / sumColWeight; // so if I am the most predicted cell, I get a high score.
+                    }
+
+                    _regionPrediction._values[ j ] = unitWeight;
+                }
+            }
+        }
+    }
+
+    protected void predictionUpdateOld2( Collection< Integer > activeCells ) {
 
         int cells = _config.getRegionAreaCells();
 
@@ -666,11 +769,22 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
         int inputOffset1 = 0;
         int inputOffset2 = _ffInput1.getSize();
 
-        rankClassifierReceptiveField( xClassifier, yClassifier, _ffInput1, _transient._ffInput1Active, xField1, yField1, inputOffset1 );
-        rankClassifierReceptiveField( xClassifier, yClassifier, _ffInput2, _transient._ffInput2Active, xField2, yField2, inputOffset2 );
+        rankClassifierReceptiveField( xClassifier, yClassifier, _ffInput1, _transient._ffInput1Active, _transient._activeInputClassifierRanking, xField1, yField1, inputOffset1 );
+        rankClassifierReceptiveField( xClassifier, yClassifier, _ffInput2, _transient._ffInput2Active, _transient._activeInputClassifierRanking, xField2, yField2, inputOffset2 );
+
+        rankClassifierReceptiveField( xClassifier, yClassifier, _ffInput1Old, _transient._ffInput1ActiveOld, _transient._activeInputClassifierRankingOld, xField1, yField1, inputOffset1 );
+        rankClassifierReceptiveField( xClassifier, yClassifier, _ffInput2Old, _transient._ffInput2ActiveOld, _transient._activeInputClassifierRankingOld, xField2, yField2, inputOffset2 );
     }
 
-    protected void rankClassifierReceptiveField( int xClassifier, int yClassifier, Data ffInput, HashSet< Integer > ffInputActive, float xField, float yField, int inputOffset ) {
+    protected void rankClassifierReceptiveField(
+            int xClassifier,
+            int yClassifier,
+            Data ffInput,
+            HashSet< Integer > ffInputActive,
+            HashMap< Integer, TreeMap< Float, ArrayList< Integer > > > ranking,
+            float xField,
+            float yField,
+            int inputOffset ) {
         int classifierOffset = _config.getOrganizerOffset( xClassifier, yClassifier );
 
         for( Integer i : ffInputActive ) {
@@ -679,7 +793,7 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
             float d = Geometry.distanceEuclidean2d( ( float ) p.getX(), ( float ) p.getY(), xField, yField );
             int inputBit = i + inputOffset;
 
-            TreeMap< Float, ArrayList< Integer > > activeInputRanking = _transient.getRankingLazy( _transient._activeInputClassifierRanking, inputBit );
+            TreeMap< Float, ArrayList< Integer > > activeInputRanking = _transient.getRankingLazy( ranking, inputBit );
 
             // Rank by classifier:
             Ranking.add( activeInputRanking, d, classifierOffset ); // add classifier with quality d (distance) to i.
@@ -688,6 +802,13 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
     }
 
     protected void updateClassifierInput() {
+        updateClassifierInput( _transient._activeInputClassifierRanking, _transient._classifierActiveInput );
+        updateClassifierInput( _transient._activeInputClassifierRankingOld, _transient._classifierActiveInputOld );
+    }
+
+    protected void updateClassifierInput(
+            HashMap< Integer, TreeMap< Float, ArrayList< Integer > > > activeInputClassifierRanking,
+            HashMap< Integer, ArrayList< Integer > > classifierActiveInput ) {
 
         int classifiersPerBit1 = _config.getClassifiersPerBit1();
         int classifiersPerBit2 = _config.getClassifiersPerBit2();
@@ -696,7 +817,7 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
         //int inputOffset1 = 0; conceptually
         int inputOffset2 = _ffInput1.getSize();
 
-        Set< Integer > activeInputBits = _transient._activeInputClassifierRanking.keySet();
+        Set< Integer > activeInputBits = activeInputClassifierRanking.keySet();
         for( Integer inputBit : activeInputBits ) {
 
             // pick the right spread of input through the region depending on which input it is from
@@ -705,12 +826,12 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
                 maxRank = classifiersPerBit2;
             }
 
-            TreeMap< Float, ArrayList< Integer > > activeInputRanking = _transient.getRankingLazy( _transient._activeInputClassifierRanking, inputBit );
+            TreeMap< Float, ArrayList< Integer > > activeInputRanking = _transient.getRankingLazy( activeInputClassifierRanking, inputBit );
 
             ArrayList< Integer > activeInputClassifiers = Ranking.getBestValues( activeInputRanking, max, maxRank ); // ok now we got the current set of inputs for the column
 
             for( Integer classifierOffset : activeInputClassifiers ) {
-                _transient.addClassifierActiveInput( classifierOffset, inputBit );
+                _transient.addClassifierActiveInput( classifierOffset, inputBit, classifierActiveInput );
             }
         }
     }
@@ -721,9 +842,26 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
         int classifierOffset = _config.getOrganizerOffset( xClassifier, yClassifier );
 
         ArrayList< Integer > activeInput = _transient.getClassifierActiveInput( classifierOffset );//_classifierActiveInput.get( classifierOffset );
+        ArrayList< Integer > activeInputOld = _transient.getClassifierActiveInputOld( classifierOffset );//_classifierActiveInput.get( classifierOffset );
+
+        Collections.sort( activeInput );
+        Collections.sort( activeInputOld );
+
+        boolean activeInputChanged = !activeInput.equals( activeInputOld ); // not sure of correctness without sorting
+
         GrowingNeuralGas classifier = _classifiers.get( classifierOffset );
 
         boolean learn = _config.getLearn();
+
+        // disable learning and aging when input hasnt changed
+        if( activeInputChanged == false ) {
+            learn = false;
+        }
+//        else {
+//            int g= 0;
+//            g++;
+//        }
+
         classifier._c.setLearn( learn );
         classifier.setSparseUnitInput( activeInput );
         classifier.update(); // trains with this sparse input.
