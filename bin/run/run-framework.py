@@ -133,8 +133,6 @@ def setup_parameter_sweep_counters(param_sweep, counters):
         val_end = param['val-end']
         val_inc = param['val-inc']
 
-        entity_name = _experiment.entity_with_prefix(entity_name)
-
         incrementer = valincrementer.ValIncrementer(val_begin, val_end, val_inc)
 
         counter = {'incrementer': incrementer, 'entity-name': entity_name, 'param-path': param_path}
@@ -169,15 +167,16 @@ def inc_parameter_set(entity_file, counters):
         val = incrementer.value()
         entity_file_path = _experiment.inputfile(entity_file)
         set_param = _compute_node.set_parameter_inputfile(entity_file_path,
-                                                          counter['entity-name'],
+                                                          _experiment.entity_with_prefix(counter['entity-name']),
                                                           counter['param-path'],
                                                           val)
         sweep_param_vals.append(set_param)
 
+    if len(sweep_param_vals) == 0:
+        print "WARNING: no parameters were changed."
+
     if log:
         if len(sweep_param_vals):
-            print "LOG: no parameters were changed."
-        else:
             print "LOG: Parameter sweep: ", sweep_param_vals
 
     if reset is False and len(sweep_param_vals) == 0:
@@ -216,19 +215,23 @@ def run_sweeps():
         if 'parameter-sweeps' not in exp_i or len(exp_i['parameter-sweeps']) == 0:
             print "No parameters to sweep, just run once."
 
-            entity_filename, data_filename = _experiment.create_input_files(TEMPLATE_PREFIX, base_entity_filename,
+            entity_filename, data_filename = _experiment.create_input_files(TEMPLATE_PREFIX,
+                                                                            base_entity_filename,
                                                                             base_data_filename)
             run_parameterset(entity_filename, data_filename, "")
         else:
             for param_sweep in exp_i['parameter-sweeps']:  # array of sweep definitions
 
-                entity_filename, data_filename = _experiment.create_input_files(TEMPLATE_PREFIX, base_entity_filename,
-                                                                                base_data_filename)
                 counters = []
                 setup_parameter_sweep_counters(param_sweep, counters)
 
                 is_sweeping = True
                 while is_sweeping:
+
+                    entity_filename, data_filename = _experiment.create_input_files(TEMPLATE_PREFIX,
+                                                                                    base_entity_filename,
+                                                                                    base_data_filename)
+
                     reset, sweep_param_vals = inc_parameter_set(entity_filename, counters)
                     if reset:
                         is_sweeping = False
@@ -312,11 +315,14 @@ def launch_compute_local(main_class=""):
     if log:
         print "Running: " + cmd
 
+    cmd += " > run_stdout.log 2> run_stderr.log "
+
+    # we can't hold on to the stdout and stderr streams for logging, because it will hang on this line
+    # instead, log to a file
     subprocess.Popen(cmd,
                      shell=True,
-                     stdout=subprocess.PIPE,
-                     stderr=subprocess.STDOUT,
                      executable="/bin/bash")
+
     _compute_node.wait_up()
 
 
@@ -525,8 +531,9 @@ if __name__ == '__main__':
         os.putenv("DB_HOST", ips_pg['ip_private'])
 
     # if we just started an ec2 instance, and there are any further steps, wait 30 seconds
-    if args.aws and (args.instanceid or is_pg_ec2 or args.amiid) and (args.sync or args.exp_file or args.launch_compute):
-        wait_for_ec2_delay = 60         # seconds
+    if args.aws and (args.instanceid or is_pg_ec2 or args.amiid) and (
+            args.sync or args.exp_file or args.launch_compute):
+        wait_for_ec2_delay = 60  # seconds
         # TODO: better solution would be to try to connect for a number of times and catch the exceptions
         print "WAIT " + str(wait_for_ec2_delay) + " seconds to ensure enough time for services such as SSH to start."
         time.sleep(wait_for_ec2_delay)

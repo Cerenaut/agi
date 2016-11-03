@@ -165,11 +165,10 @@ class Compute:
     def set_parameter_inputfile(self, entity_filepath, entity_name, param_path, value):
         """
         Set parameter at 'param_path' for entity 'entity_name', in the input file specified by 'entity_filepath'
-        'entity_name' is the fully qualified name WITH the prefix
 
-        :param entity_filepath:
-        :param entity_name:
-        :param param_path:
+        :param entity_filepath: modify values in this file (full path)
+        :param entity_name: the fully qualified entity name, WITH Prefix
+        :param param_path: set parameter at this path
         :param value:
         :return:
         """
