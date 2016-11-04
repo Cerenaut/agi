@@ -3,6 +3,7 @@ import os
 import errno
 import fileinput
 import sys
+import time
 
 
 def restart_line():
@@ -39,7 +40,6 @@ def getbaseurl(host, port):
 
 
 def filepath_from_env_variable(filename, path_env):
-
     cmd = "echo $" + path_env
     output, error = subprocess.Popen(cmd,
                                      shell=True,
@@ -59,3 +59,43 @@ def cleanpath(path, filename):
     filename = filename.lstrip('/')
     file_path = os.path.join(path_from_env, filename)
     return file_path
+
+
+def run_bashscript_repeat(cmd, max_repeats, wait_period, verbose=False):
+    """ Run a shell command repeatedly until exit status shows success.
+    Run command 'cmd' a maximum of 'max_repeats' times and wait 'wait_period' between attempts. """
+
+    if verbose:
+        print "run_bashscript_repeat, running cmd = " + cmd
+
+    success = False
+    for i in range(1, max_repeats+1):
+        child = subprocess.Popen(cmd,
+                                 shell=True,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
+                                 executable="/bin/bash")
+
+        output, error = child.communicate()     # get the outputs. NOTE: This will block until shell command returns.
+
+        exit_status = child.returncode
+
+        if verbose:
+            print "Stdout: " + output
+            print "Exit status: " + str(exit_status)
+
+        print "utils.run_bashscript_repeat - stderr: " + error
+
+        if exit_status == 0:
+            success = True
+            break
+
+        print "Run bash script was unsuccessful on attempt " + str(i)
+        print "Wait " + str(wait_period) + ", and try again."
+
+        time.sleep(wait_period)
+
+    if not success:
+        print "ERROR: was not able run shell command: " + cmd
+        print " Exit status = " + str(exit_status)
+        exit()

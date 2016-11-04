@@ -1,8 +1,6 @@
 import boto3
-import subprocess
 import os
 import botocore
-
 import utils
 
 
@@ -27,70 +25,7 @@ class Cloud:
         print "....... Use ecs-sync-experiment.sh to rsync relevant folders."
 
         cmd = "../aws/ecs-sync-experiment.sh " + host + " " + keypath
-
-        if self.log:
-            print cmd
-        output, error = subprocess.Popen(cmd,
-                                         shell=True,
-                                         stdout=subprocess.PIPE,
-                                         stderr=subprocess.PIPE,
-                                         executable="/bin/bash").communicate()
-        if self.log:
-            print output
-            print error
-
-    # def sync_experiment(self, host, keypath):
-    #     """ Assumes there exists a private key for the given ec2 instance, at ~/.ssh/ecs-key """
-    #
-    #     print "....... Syncing code to ec2 container instance"
-    #
-    #     # code
-    #     file_path = experiment.filepath_from_exp_variable("", "AGI_HOME")
-    #     cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + file_path + " ec2-user@" + \
-    #           host + ":~/agief-project/agi --exclude={\"*.git/*\",*/src/*}"
-    #     if self.log:
-    #         print cmd
-    #
-    #     output, error = subprocess.Popen(cmd,
-    #                                      shell=True,
-    #                                      stdout=subprocess.PIPE,
-    #                                      stderr=subprocess.PIPE,
-    #                                      executable="/bin/bash").communicate()
-    #     if self.log:
-    #         print output
-    #         print error
-    #
-    #     # experiments
-    #     file_path = experiment.filepath_from_exp_variable("", "AGI_RUN_HOME")
-    #     cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + file_path + " ec2-user@" + \
-    #           host + ":~/agief-project/run --exclude={\"*.git/*\"}"
-    #     if self.log:
-    #         print cmd
-    #     output, error = subprocess.Popen(cmd,
-    #                                      shell=True,
-    #                                      stdout=subprocess.PIPE,
-    #                                      stderr=subprocess.PIPE,
-    #                                      executable="/bin/bash").communicate()
-    #     if self.log:
-    #         print output
-    #         print error
-    #
-    #     # variables
-    #     file_path = experiment.filepath_from_exp_variable("", "AGI_RUN_HOME")
-    #     file_path += "/../variables"
-    #     cmd = "rsync -ave 'ssh -i " + keypath + "  -o \"StrictHostKeyChecking no\" ' " + file_path + " ec2-user@" + \
-    #           host + ":~/agief-project/variables --exclude={\"*.git/*\"}"
-    #     if self.log:
-    #         print cmd
-    #
-    #     output, error = subprocess.Popen(cmd,
-    #                                      shell=True,
-    #                                      stdout=subprocess.PIPE,
-    #                                      stderr=subprocess.PIPE,
-    #                                      executable="/bin/bash").communicate()
-    #     if self.log:
-    #         print output
-    #         print error
+        utils.run_bashscript_repeat(cmd, 15, 6, verbose=self.log)
 
     def launch_compute_docker(self, host, keypath):
         """ Assumes there exists a private key for the given ec2 instance, at keypath """
@@ -98,17 +33,7 @@ class Cloud:
         print "....... Use run-remote.sh to launch compute node in a docker container on a remote host."
 
         cmd = "../aws/run-remote.sh " + host + " " + keypath
-
-        if self.log:
-            print cmd
-        output, error = subprocess.Popen(cmd,
-                                         shell=True,
-                                         stdout=subprocess.PIPE,
-                                         stderr=subprocess.PIPE,
-                                         executable="/bin/bash").communicate()
-        if self.log:
-            print output
-            print error
+        utils.run_bashscript_repeat(cmd, 15, 6, verbose=self.log)
 
     def run_task_ecs(self, task_name):
         """ Run task 'task_name' and return the Task ARN """
@@ -247,7 +172,7 @@ class Cloud:
         """
         :param ami_id: ami id
         :param min_ram: (integer), minimum ram to allocate to ec2 instance
-        :return: ip addresses, public and private
+        :return: ip addresses: public and private, and instance id
         """
 
         print "....... Launching ec2 from AMI (AMI id " + ami_id + ", with minimum " + str(min_ram) + "GB RAM)"
@@ -320,4 +245,4 @@ class Cloud:
             print "Response is: ", response
 
         ips = self.wait_till_running_ec2(instance_id)
-        return ips
+        return ips, instance_id

@@ -308,6 +308,8 @@ def launch_compute_local(main_class=""):
     """
 
     print "launching Compute locally"
+    print "NOTE: generating run_stdout.log and run_stderr.log"
+
     cmd = "../node_coordinator/run.sh "
     if main_class is not "":
         cmd = "../node_coordinator/run-demo.sh node.properties " + main_class + " " + TEMPLATE_PREFIX
@@ -318,7 +320,7 @@ def launch_compute_local(main_class=""):
     cmd += " > run_stdout.log 2> run_stderr.log "
 
     # we can't hold on to the stdout and stderr streams for logging, because it will hang on this line
-    # instead, log to a file
+    # instead, logging to a file
     subprocess.Popen(cmd,
                      shell=True,
                      executable="/bin/bash")
@@ -498,6 +500,7 @@ if __name__ == '__main__':
     # 2) Setup infrastructure (on AWS or nothing to do locally)
     ips = {'ip_public': args.host, 'ip_private': None}
     ips_pg = {'ip_public': None, 'ip_private': None}
+    instance_id = None
 
     if args.pg_instance:
         is_pg_ec2 = (args.pg_instance[:2] == 'i-')
@@ -506,8 +509,9 @@ if __name__ == '__main__':
         # start Compute ec2 either from instanceid or amiid
         if args.instanceid:
             ips = _cloud.run_ec2(args.instanceid)
+            instance_id = args.instanceid
         else:
-            ips = _cloud.launch_from_ami_ec2('run-fwk auto', args.amiid, int(args.ami_ram))
+            ips, instance_id = _cloud.launch_from_ami_ec2('run-fwk auto', args.amiid, int(args.ami_ram))
 
         # start DB ec2, from instanceid
         if args.pg_instance and is_pg_ec2:
@@ -529,14 +533,6 @@ if __name__ == '__main__':
     # Set the DB_HOST environment variable
     if args.pg_instance:
         os.putenv("DB_HOST", ips_pg['ip_private'])
-
-    # if we just started an ec2 instance, and there are any further steps, wait 30 seconds
-    if args.aws and (args.instanceid or is_pg_ec2 or args.amiid) and (
-            args.sync or args.exp_file or args.launch_compute):
-        wait_for_ec2_delay = 90  # seconds
-        # TODO: better solution would be to try to connect for a number of times and catch the exceptions
-        print "WAIT " + str(wait_for_ec2_delay) + " seconds to ensure enough time for services such as SSH to start."
-        time.sleep(wait_for_ec2_delay)
 
     # 3) Sync code and run-home
     if args.sync:
@@ -566,7 +562,7 @@ if __name__ == '__main__':
 
         # Shutdown infrastructure
         if is_aws:
-            _cloud.stop_ec2(args.instanceid)
+            _cloud.stop_ec2(instance_id)
 
             if is_pg_ec2:
                 _cloud.stop_ec2(args.pg_instance)

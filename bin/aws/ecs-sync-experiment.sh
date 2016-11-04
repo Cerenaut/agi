@@ -13,7 +13,6 @@ fi
 host=$1
 keyfile=${2:-$HOME/.ssh/ecs-key.pem}
 
-
 echo "Using keyfile = " $keyfile
 echo "Using host = " $host
 
@@ -35,14 +34,40 @@ echo "Using host = " $host
 cmd="rsync -ave 'ssh -i $keyfile -o \"StrictHostKeyChecking no\"' $AGI_HOME/ ec2-user@${host}:~/agief-project/agi --exclude={\"*.git/*\",*/src/*}"
 echo $cmd
 eval $cmd
+status=$?
+
+if [ $status -ne 0 ]
+then
+	echo "ERROR:  Could not complete rsync operation - failed at 'Code' stage." >&2
+	echo "	Error status = $status" >&2
+	echo "	Exiting now." >&2
+	exit $status
+fi
 
 # the specific experiment folder
 cmd="rsync -ave 'ssh -i $keyfile -o \"StrictHostKeyChecking no\"' $AGI_RUN_HOME/ ec2-user@${host}:~/agief-project/run --exclude={\"*.git/*\"}"
 echo $cmd
 eval $cmd
+status=$?
+
+if [ $status -ne 0 ]
+then
+	echo "ERROR:  Could not complete rsync operation - failed at 'Experiment-Definitions' stage. Exiting now." >&2
+	echo "	Error status = $status" >&2
+	echo "	Exiting now." >&2
+	exit $status
+fi
 
 # the variables folder (with variables.sh files)
 cmd="rsync -ave 'ssh -i $keyfile -o \"StrictHostKeyChecking no\"' $AGI_RUN_HOME/../variables/ ec2-user@${host}:~/agief-project/variables --exclude={\"*.git/*\"}"
 echo $cmd
 eval $cmd
+status=$?
 
+if [ $status -ne 0 ]
+then
+	echo "ERROR: Could not complete rsync operation - failed at 'Variables' stage. Exiting now." >&2
+	echo "	Error status = $status" >&2
+	echo "	Exiting now." >&2
+	exit $status
+fi
