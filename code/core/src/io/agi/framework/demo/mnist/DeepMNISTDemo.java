@@ -133,7 +133,7 @@ public class DeepMNISTDemo {
             topLayerName = region3FfName;
         }
 
-        Framework.CreateEntity( classFeaturesName, ClassFeaturesEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
+        Framework.CreateEntity( classFeaturesName, FeatureLabelsEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
 //        Framework.CreateEntity( classRegionName, RegionLayerEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
 //        Framework.CreateEntity( classDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), classRegionName ); // produce the predicted classification for inspection by mnist next time
         Framework.CreateEntity( activityImageDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), classFeaturesName );
@@ -187,7 +187,7 @@ public class DeepMNISTDemo {
         if( layers > 0 ) featureDatas.add( new AbstractPair< String, String >( region1FfName, RegionLayerEntity.PREDICTION_FN ) );
         if( layers > 1 ) featureDatas.add( new AbstractPair< String, String >( region2FfName, RegionLayerEntity.PREDICTION_FN ) );
         if( layers > 2 ) featureDatas.add( new AbstractPair< String, String >( region3FfName, RegionLayerEntity.PREDICTION_FN ) );
-        Framework.SetDataReferences( classFeaturesName, ClassFeaturesEntity.FEATURES, featureDatas ); // get current state from the region to be used to predict
+        Framework.SetDataReferences( classFeaturesName, FeatureLabelsEntity.FEATURES, featureDatas ); // get current state from the region to be used to predict
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //        // Special test of accuracy in static classification:

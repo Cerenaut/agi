@@ -62,6 +62,7 @@ public class ImageClassEntityConfig extends EntityConfig {
     int trainingBatch = 0;
     int trainingBatches = 1;
     boolean terminate = false;
+    boolean trainAnalytics = false;
     String phase = PHASE_TRAIN_ALGORITHM;
 
     public Rectangle getReceptiveField() {

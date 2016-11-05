@@ -97,7 +97,7 @@ public class ScalarEncoder implements SparseDistributedEncoder {
     }
 
     @Override
-    public Data createDecodingOutput( Data decodingInput ) {
+    public Data createDecodingOutput( Data encodingInput, Data decodingInput ) {
         int inputs = decodingInput.getSize();
 
         // Assuming the same type of encoder did the encoding, we can reverse the geometric changes.

@@ -50,6 +50,7 @@ public class ImageClassEntity extends Entity {
     public static final String ENTITY_TYPE = "image-class";
 
     public static final String OUTPUT_IMAGE = "output-image";
+    public static final String OUTPUT_LABEL = "output-label";
 
     public ImageClassEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
@@ -62,6 +63,7 @@ public class ImageClassEntity extends Entity {
     @Override
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
         attributes.add( OUTPUT_IMAGE );
+        attributes.add( OUTPUT_LABEL );
     }
 
     @Override
@@ -120,8 +122,14 @@ public class ImageClassEntity extends Entity {
             // check for phase change:
             if( config.phase.equals( ImageClassEntityConfig.PHASE_TRAIN_ALGORITHM ) ) {
                 if( config.trainingBatch >= config.trainingBatches ) { // say batches = 3, then 0 1 2 for training, then 3 for testing
-                    config.phase = ImageClassEntityConfig.PHASE_TRAIN_ANALYTICS;
-                    config.trainingBatch = 0;
+                    if( config.trainAnalytics ) {
+                        config.phase = ImageClassEntityConfig.PHASE_TRAIN_ANALYTICS;
+                        config.trainingBatch = 0;
+                    }
+                    else { // move straight onto testing
+                        config.phase = ImageClassEntityConfig.PHASE_TEST_ANALYTICS;
+                        config.trainingBatch = 0;
+                    }
                 }
             }
             else if( config.phase.equals( ImageClassEntityConfig.PHASE_TRAIN_ANALYTICS ) ) {
@@ -146,6 +154,7 @@ public class ImageClassEntity extends Entity {
 
         if( config.phase.equals( ImageClassEntityConfig.PHASE_TRAIN_ALGORITHM ) ) {
             learnAlgorithm = true;
+            learnAnalytics = true;
         }
         else if( config.phase.equals( ImageClassEntityConfig.PHASE_TRAIN_ANALYTICS ) ) {
             learnAnalytics = true;
@@ -228,6 +237,10 @@ public class ImageClassEntity extends Entity {
         }
 
         // write outputs back to persistence
+        Data label = new Data( 1 );
+        label.set( imageClass );
+
+        setData( OUTPUT_LABEL, label );
         setData( OUTPUT_IMAGE, image );
 
         // write classification

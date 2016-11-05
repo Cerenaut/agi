@@ -19,28 +19,15 @@
 
 package io.agi.framework.entities;
 
-import io.agi.core.sdr.ScalarEncoder;
 import io.agi.framework.EntityConfig;
 
 /**
- * Created by dave on 2/04/16.
+ * Created by dave on 3/11/16.
  */
-public class EncoderEntityConfig extends EntityConfig {
+public class ClassificationResultEntityConfig extends EntityConfig {
 
-        String encoderType = ScalarEncoder.class.getSimpleName();
-
-        // Scalar encoder
-        int bits = 8;
-        int density = 1;
-        boolean encodeZero = true;
-
-        // Number encoder
-        public int digits = 1;
-        public int numbers = 1;
-
-        // Integer encoder
-        public int minValue = 0;
-        public int maxValue = 1;
-        public int rows = 1;
+    public int classPredicted = 0; // the predicted class given the input features
+    public int classError = 0; // 1 if the prediction didn't match the input class
+    public int classTruth = 0; // the value that was taken as input
 
 }

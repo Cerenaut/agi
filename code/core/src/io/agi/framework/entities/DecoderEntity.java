@@ -37,6 +37,7 @@ public class DecoderEntity extends Entity {
     public static final String ENTITY_TYPE = "decoder";
 
     // data
+    public static final String DATA_INPUT_DECODED = "input-decoded"; // tells us about the unencoded dimensions
     public static final String DATA_INPUT_ENCODED = "input-encoded";
     public static final String DATA_OUTPUT_DECODED = "output-decoded";
 
@@ -46,6 +47,7 @@ public class DecoderEntity extends Entity {
 
     @Override
     public void getInputAttributes( Collection< String > attributes ) {
+        attributes.add( DATA_INPUT_DECODED );
         attributes.add( DATA_INPUT_ENCODED );
     }
 
@@ -70,18 +72,19 @@ public class DecoderEntity extends Entity {
             return;
         }
 
-        Data input = getData( DATA_INPUT_ENCODED );
+        Data inputDecoded = getData( DATA_INPUT_DECODED );
+        Data inputEncoded = getData( DATA_INPUT_ENCODED );
 
-        if( input == null ) {
+        if( inputEncoded == null ) {
             getData( DATA_INPUT_ENCODED );
             _logger.info( getName() + ": Could not update because input missing." );
             return;
         }
 
-        Data output = encoder.createDecodingOutput( input );
-        encoder.decode( input, output );
+        Data outputDecoded = encoder.createDecodingOutput( inputDecoded, inputEncoded );
+        encoder.decode( inputEncoded, outputDecoded );
 
-        setData( DATA_OUTPUT_DECODED, output );
+        setData( DATA_OUTPUT_DECODED, outputDecoded );
     }
 
 }

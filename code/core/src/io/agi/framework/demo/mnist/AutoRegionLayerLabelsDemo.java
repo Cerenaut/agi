@@ -19,7 +19,7 @@
 
 package io.agi.framework.demo.mnist;
 
-import io.agi.core.orm.AbstractPair;
+import io.agi.core.sdr.IntegerEncoder;
 import io.agi.core.util.PropertiesUtil;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.framework.Framework;
@@ -28,13 +28,12 @@ import io.agi.framework.Node;
 import io.agi.framework.entities.*;
 import io.agi.framework.factories.CommonEntityFactory;
 
-import java.util.ArrayList;
 import java.util.Properties;
 
 /**
  * Created by dave on 8/07/16.
  */
-public class AutoRegionLayerDemo {
+public class AutoRegionLayerLabelsDemo {
 
     /**
      * Usage: Expects some arguments. These are:
@@ -73,20 +72,10 @@ public class AutoRegionLayerDemo {
 
     public static void createEntities( Node n ) {
 
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
-//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle_twin";
-//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle_twin";
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle_deep";
-//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle_deep";
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/all_train";
-//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/all_t10k";
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
-        String testingPath = "/home/dave/workspace/agi.io/data/mnist/5k_test";
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/5k_test";
 //        String trainingPath = "./training";
 //        String testingPath = "./testing";
 //        int terminationAge = 10;//9000;
@@ -94,10 +83,9 @@ public class AutoRegionLayerDemo {
         int trainingBatches = 1;//80; // good for up to 80k
         boolean terminateByAge = false;
         float defaultPredictionInhibition = 1.f; // random image classification only experiments
-//        float defaultPredictionInhibition = 0.f; // where you use prediction
         boolean encodeZero = false;
-        boolean classFeaturesOnline = false;
-        int layers = 2;
+        int layers = 3;
+        int labelBits = 8;
 
         // Define some entities
         String experimentName           = Framework.GetEntityName( "experiment" );
@@ -107,17 +95,23 @@ public class AutoRegionLayerDemo {
         String region2FfName            = Framework.GetEntityName( "image-region-2-ff" );
         String region3FfName            = Framework.GetEntityName( "image-region-3-ff" );
         String imageEncoderName         = Framework.GetEntityName( "image-encoder" );
-        String classFeaturesName        = Framework.GetEntityName( "class-features" );
+        String labelEncoderName         = Framework.GetEntityName( "label-encoder" );
+        String labelDecoderName         = Framework.GetEntityName( "label-decoder" );
+        String classResultName          = Framework.GetEntityName( "class-result" );
         String valueSeriesPredictedName = Framework.GetEntityName( "value-series-predicted" );
         String valueSeriesErrorName     = Framework.GetEntityName( "value-series-error" );
         String valueSeriesTruthName     = Framework.GetEntityName( "value-series-truth" );
+        String configProductName        = Framework.GetEntityName( "config-product" );
+
 
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         Framework.CreateEntity( imageClassName, ImageClassEntity.ENTITY_TYPE, n.getName(), experimentName );
         Framework.CreateEntity( imageEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), imageClassName );
         Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), imageEncoderName ); // ok all input to the regions is ready
+        Framework.CreateEntity( labelEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), constantName );
+        Framework.CreateEntity( configProductName, ConfigProductEntity.ENTITY_TYPE, n.getName(), labelEncoderName ); // ok all input to the regions is ready
 
-        Framework.CreateEntity( region1FfName, AutoRegionLayerEntity.ENTITY_TYPE, n.getName(), constantName );
+        Framework.CreateEntity( region1FfName, AutoRegionLayerEntity.ENTITY_TYPE, n.getName(), configProductName );
         String learningEntitiesAlgorithm = region1FfName;
         String topLayerName = region1FfName;
         if( layers > 1 ) {
@@ -131,33 +125,56 @@ public class AutoRegionLayerDemo {
             learningEntitiesAlgorithm = learningEntitiesAlgorithm + "," + region3FfName;
         }
 
-        Framework.CreateEntity( classFeaturesName, FeatureLabelsEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
-        Framework.CreateEntity( valueSeriesPredictedName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), classFeaturesName ); // 2nd, class region updates after first to get its feedback
-        Framework.CreateEntity( valueSeriesErrorName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), classFeaturesName ); // 2nd, class region updates after first to get its feedback
-        Framework.CreateEntity( valueSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), classFeaturesName ); // 2nd, class region updates after first to get its feedback
+        Framework.CreateEntity( labelDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), topLayerName ); // produce the predicted classification for inspection by mnist next time
+        Framework.CreateEntity( classResultName, ClassificationResultEntity.ENTITY_TYPE, n.getName(), labelDecoderName ); // produce the predicted classification for inspection by mnist next time
+
+        Framework.CreateEntity( valueSeriesPredictedName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), classResultName ); // 2nd, class region updates after first to get its feedback
+        Framework.CreateEntity( valueSeriesErrorName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), classResultName ); // 2nd, class region updates after first to get its feedback
+        Framework.CreateEntity( valueSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), classResultName ); // 2nd, class region updates after first to get its feedback
 
         // Connect the entities' data
         // a) Image to image region, and decode
         Framework.SetDataReference( imageEncoderName, EncoderEntity.DATA_INPUT, imageClassName, ImageClassEntity.OUTPUT_IMAGE );
+        Framework.SetDataReference( labelEncoderName, EncoderEntity.DATA_INPUT, imageClassName, ImageClassEntity.OUTPUT_LABEL );
+        Framework.SetDataReference( labelDecoderName, DecoderEntity.DATA_INPUT_DECODED, imageClassName, ImageClassEntity.OUTPUT_LABEL );
+
+//                Framework.SetDataReference( region2FfName, AutoRegionLayerEntity.INPUT_2, labelEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
+        Framework.SetDataReference( configProductName, ConfigProductEntity.INPUT, labelEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
 
         Framework.SetDataReference( region1FfName, AutoRegionLayerEntity.INPUT_1, imageEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
         Framework.SetDataReference( region1FfName, AutoRegionLayerEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
 
         if( layers > 1 ) {
             Framework.SetDataReference( region2FfName, AutoRegionLayerEntity.INPUT_1, region1FfName, AutoRegionLayerEntity.OUTPUT );
-            Framework.SetDataReference( region2FfName, AutoRegionLayerEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
+            if( layers == 2 ) {
+//                Framework.SetDataReference( region2FfName, AutoRegionLayerEntity.INPUT_2, labelEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
+                Framework.SetDataReference( region2FfName, AutoRegionLayerEntity.INPUT_2, configProductName, ConfigProductEntity.OUTPUT );
+            }
+            else {
+                Framework.SetDataReference( region2FfName, AutoRegionLayerEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
+            }
         }
 
         if( layers > 2 ) {
             Framework.SetDataReference( region3FfName, AutoRegionLayerEntity.INPUT_1, region2FfName, AutoRegionLayerEntity.OUTPUT );
-            Framework.SetDataReference( region3FfName, AutoRegionLayerEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
+            if( layers == 3 ) {
+//                Framework.SetDataReference( region3FfName, AutoRegionLayerEntity.INPUT_2, labelEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
+                Framework.SetDataReference( region3FfName, AutoRegionLayerEntity.INPUT_2, configProductName, ConfigProductEntity.OUTPUT );
+            }
+            else {
+                Framework.SetDataReference( region3FfName, AutoRegionLayerEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
+            }
         }
 
-        ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList< AbstractPair< String, String > >();
-        if( layers == 1 ) featureDatas.add( new AbstractPair< String, String >( region1FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
-        if( layers == 2 ) featureDatas.add( new AbstractPair< String, String >( region2FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
-        if( layers == 3 ) featureDatas.add( new AbstractPair< String, String >( region3FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
-        Framework.SetDataReferences( classFeaturesName, FeatureLabelsEntity.FEATURES, featureDatas ); // get current state from the region to be used to predict
+        // invert the hidden layer state to produce the predicted label
+        Framework.SetDataReference( labelDecoderName, DecoderEntity.DATA_INPUT_ENCODED, topLayerName, AutoRegionLayerEntity.OUTPUT_INPUT_2 ); // the prediction of the next state
+
+        Framework.SetDataReference( classResultName, ClassificationResultEntity.INPUT_LABEL, imageClassName, ImageClassEntity.OUTPUT_LABEL ); // get current state from the region to be used to predict
+        Framework.SetDataReference( classResultName, ClassificationResultEntity.INPUT_CLASS, labelDecoderName, DecoderEntity.DATA_OUTPUT_DECODED ); // get current state from the region to be used to predict
+
+        // Label filter
+        Framework.SetConfig( configProductName, "entityName", region1FfName );
+        Framework.SetConfig( configProductName, "configPath", "learn" ); // so the value is '1' when the region is learning, and 0 otherwise.
 
         // Experiment config
         if( !terminateByAge ) {
@@ -184,7 +201,7 @@ public class AutoRegionLayerDemo {
         Framework.SetConfig( imageClassName, "sourceFilesPathTesting", testingPath );
         Framework.SetConfig( imageClassName, "trainingBatches", String.valueOf( trainingBatches ) );
 
-        String learningEntitiesAnalytics = classFeaturesName;
+        String learningEntitiesAnalytics = "";//classFeaturesName;
         Framework.SetConfig( imageClassName, "learningEntitiesAlgorithm", String.valueOf( learningEntitiesAlgorithm ) );
         Framework.SetConfig( imageClassName, "learningEntitiesAnalytics", String.valueOf( learningEntitiesAnalytics ) );
 
@@ -201,6 +218,18 @@ public class AutoRegionLayerDemo {
             Framework.SetConfig( imageEncoderName, "bits", "1" );
             Framework.SetConfig( imageEncoderName, "encodeZero", "false" );
         }
+// TODO juyst need to add the switch to disable the labels.
+        // Label encoder
+        Framework.SetConfig( labelEncoderName, "encoderType", IntegerEncoder.class.getSimpleName() );
+        Framework.SetConfig( labelEncoderName, "minValue", "0" );
+        Framework.SetConfig( labelEncoderName, "maxValue", "9" );
+        Framework.SetConfig( labelEncoderName, "rows", String.valueOf( labelBits ) );
+
+        // Label DEcoder
+        Framework.SetConfig( labelDecoderName, "encoderType", IntegerEncoder.class.getSimpleName() );
+        Framework.SetConfig( labelDecoderName, "minValue", "0" );
+        Framework.SetConfig( labelDecoderName, "maxValue", "9" );
+        Framework.SetConfig( labelDecoderName, "rows", String.valueOf( labelBits ) );
 
         // image region config
         // effective constants:
@@ -248,6 +277,22 @@ public class AutoRegionLayerDemo {
         sparsityOutput = 2.f;//2.f; // temporal pooling, off if 1f
         sparsityFactor = sparsityOutput; // added was missing
 
+        setRegionLayerConfig(
+                region2FfName,
+                widthCells, heightCells,
+                ageMin, ageMax, ageScale,
+                sparseLearningRate, sparsityMin, sparsityMax, sparsityFactor, sparsityOutput,
+                defaultPredictionInhibition, predictorLearningRate,
+                rateScale, rateLearningRate );
+
+        setRegionLayerConfig(
+                region3FfName,
+                widthCells, heightCells,
+                ageMin, ageMax, ageScale,
+                sparseLearningRate, sparsityMin, sparsityMax, sparsityFactor, sparsityOutput,
+                defaultPredictionInhibition, predictorLearningRate,
+                rateScale, rateLearningRate );
+
         // look at weight decay, l2 norm, momentum, batches
         // TODO LIST:
         //   try changing the time constant of the classifier (it measures better with 0.01 than 0.001): Better with shorter, i.e. otherwise affected by learning.
@@ -272,30 +317,22 @@ public class AutoRegionLayerDemo {
         // NB the UI active includes the extra x active cells, not the set used for training
         // NB log-sigmoid saturates at 5.
 
-        setRegionLayerConfig(
-                region2FfName,
-                widthCells, heightCells,
-                ageMin, ageMax, ageScale,
-                sparseLearningRate, sparsityMin, sparsityMax, sparsityFactor, sparsityOutput,
-                defaultPredictionInhibition, predictorLearningRate,
-                rateScale, rateLearningRate );
-
         // feature-class config
-        Framework.SetConfig( classFeaturesName, "classEntityName", imageClassName );
-        Framework.SetConfig( classFeaturesName, "classConfigPath", "imageClass" );
-        Framework.SetConfig( classFeaturesName, "classes", "10" );
-        Framework.SetConfig( classFeaturesName, "onlineLearning", String.valueOf( classFeaturesOnline ) );
-//        Framework.SetConfig( classFeaturesName, "onlineLearningRate", "0.001" );
-        Framework.SetConfig( classFeaturesName, "onlineLearningRate", "0.01" );
+//        Framework.SetConfig( classFeaturesName, "classEntityName", imageClassName );
+//        Framework.SetConfig( classFeaturesName, "classConfigPath", "imageClass" );
+//        Framework.SetConfig( classFeaturesName, "classes", "10" );
+//        Framework.SetConfig( classFeaturesName, "onlineLearning", String.valueOf( classFeaturesOnline ) );
+////        Framework.SetConfig( classFeaturesName, "onlineLearningRate", "0.001" );
+//        Framework.SetConfig( classFeaturesName, "onlineLearningRate", "0.01" );
 
         // data series logging
         Framework.SetConfig( valueSeriesPredictedName, "period", "-1" ); // log forever
         Framework.SetConfig( valueSeriesErrorName, "period", "-1" );
         Framework.SetConfig( valueSeriesTruthName, "period", "-1" );
 
-        Framework.SetConfig( valueSeriesPredictedName, "entityName", classFeaturesName ); // log forever
-        Framework.SetConfig( valueSeriesErrorName, "entityName", classFeaturesName );
-        Framework.SetConfig( valueSeriesTruthName, "entityName", classFeaturesName );
+        Framework.SetConfig( valueSeriesPredictedName, "entityName", classResultName ); // log forever
+        Framework.SetConfig( valueSeriesErrorName, "entityName", classResultName );
+        Framework.SetConfig( valueSeriesTruthName, "entityName", classResultName );
 
         Framework.SetConfig( valueSeriesPredictedName, "configPath", "classPredicted" ); // log forever
         Framework.SetConfig( valueSeriesErrorName, "configPath", "classError" );

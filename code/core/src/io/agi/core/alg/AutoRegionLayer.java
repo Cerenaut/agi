@@ -87,6 +87,9 @@ public class AutoRegionLayer extends NamedObject {
     public Data _input1;
     public Data _input2;
 
+    public Data _outputInput1;
+    public Data _outputInput2;
+
     public Data _contextFreeActivity;
     public Data _contextFreeActivityOld;
     public Data _contextFreeActivityNew;
@@ -149,6 +152,9 @@ public class AutoRegionLayer extends NamedObject {
 
         _input1 = new Data( dataSizeInput1 );
         _input2 = new Data( dataSizeInput2 );
+
+        _outputInput1 = new Data( dataSizeInput1 );
+        _outputInput2 = new Data( dataSizeInput2 );
 
         _contextFreeActivity    = new Data( dataSizeContextFree );
         _contextFreeActivityOld = new Data( dataSizeContextFree );
@@ -213,6 +219,8 @@ public class AutoRegionLayer extends NamedObject {
 
         onClassificationChanged();
 
+        updateInputOutput();
+
         // 3. Form the input to the contextual classifier from the new and previous context-free classification
 //        updateContextualClassification();
 //
@@ -267,6 +275,24 @@ public class AutoRegionLayer extends NamedObject {
         _transient._contextFreeActive    = _contextFreeActivity   .indicesMoreThan( 0.5f );
         _transient._contextFreeActiveNew = _contextFreeActivityNew.indicesMoreThan( 0.5f );
         _transient._contextFreeActiveOld = _contextFreeActivityOld.indicesMoreThan( 0.5f );
+    }
+
+    protected void updateInputOutput() {
+        // use the active cells in _cellActivity
+        // reproject back into the input space.
+        int offset = 0;
+        int inputs1 = _input1.getSize();
+        int inputs2 = _input2.getSize();
+
+        for( int i = 0; i < inputs1; ++i ) {
+            _outputInput1._values[ i ] = _contextFreeClassifier._inputReconstructionK2._values[ offset +i ];
+        }
+
+        offset = inputs1;
+
+        for( int i = 0; i < inputs2; ++i ) {
+            _outputInput2._values[ i ] = _contextFreeClassifier._inputReconstructionK2._values[ offset +i ];
+        }
     }
 
     protected boolean contextFreeClassificationChanged() {

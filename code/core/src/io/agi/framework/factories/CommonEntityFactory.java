@@ -74,8 +74,12 @@ public class CommonEntityFactory implements EntityFactory {
             return new DiscreteRandomEntity( objectMap, _n, modelEntity );
         }
 
-        if( entityType.equals( ClassFeaturesEntity.ENTITY_TYPE ) ) {
-            return new ClassFeaturesEntity( objectMap, _n, modelEntity );
+        if( entityType.equals( ClassificationResultEntity.ENTITY_TYPE ) ) {
+            return new ClassificationResultEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( FeatureLabelsEntity.ENTITY_TYPE ) ) {
+            return new FeatureLabelsEntity( objectMap, _n, modelEntity );
         }
 
         if( entityType.equals( ParameterLessSelfOrganizingMapEntity.ENTITY_TYPE ) ) {
@@ -120,6 +124,10 @@ public class CommonEntityFactory implements EntityFactory {
 
         if( entityType.equals( ConstantMatrixEntity.ENTITY_TYPE ) ) {
             return new ConstantMatrixEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( ConfigProductEntity.ENTITY_TYPE ) ) {
+            return new ConfigProductEntity( objectMap, _n, modelEntity );
         }
 
         if( entityType.equals( SpikeEncoderEntity.ENTITY_TYPE ) ) {
