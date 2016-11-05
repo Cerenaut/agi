@@ -154,7 +154,7 @@ public class ImageClassEntity extends Entity {
 
         if( config.phase.equals( ImageClassEntityConfig.PHASE_TRAIN_ALGORITHM ) ) {
             learnAlgorithm = true;
-            learnAnalytics = true;
+//            learnAnalytics = true; 
         }
         else if( config.phase.equals( ImageClassEntityConfig.PHASE_TRAIN_ANALYTICS ) ) {
             learnAnalytics = true;
