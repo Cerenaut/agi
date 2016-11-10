@@ -68,7 +68,7 @@ var Vector = {
         for( var i = 0; i < elements; ++i ) {
           var count = 0;
           var sum = 0;
-          var j0 = Math.max( 0, i-j-1 );
+          var j0 = Math.max( 0, i-window-1 );
           for( var j = i; j >= j0; --j ) {
             var value = dataElements.elements[ j ];
             sum += value;
