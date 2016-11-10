@@ -102,6 +102,10 @@ class Experiment:
             return self.prefix + self.prefix_delimiter + entity_name
 
     def reset_prefix(self):
+
+        if self.log:
+            print "-------------- RESET_PREFIX -------------"
+
         use_prefix_file = False
         if use_prefix_file:
             prefix_filepath = self.filepath_from_exp_variable('prefix.txt', self.agi_run_home)
@@ -114,7 +118,11 @@ class Experiment:
             with open(prefix_filepath, 'r') as myfile:
                 self.prefix = myfile.read()
         else:
-            self.prefix = datetime.datetime.now().strftime("%y%m%d-%H%M")
+            new_prefix = datetime.datetime.now().strftime("%y%m%d-%H%M")
+            if new_prefix != self.prefix:
+                self.prefix = new_prefix
+            else:
+                self.prefix += self.prefix + "i"
 
     def create_input_files(self, template_prefix, baseentity_filename, basedata_filename):
         """

@@ -19,11 +19,12 @@
 
 package io.agi.core.ann.unsupervised;
 
-import io.agi.core.ann.supervised.BackPropagation;
 import io.agi.core.ann.supervised.TransferFunction;
 import io.agi.core.data.*;
 import io.agi.core.math.Useful;
 import io.agi.core.orm.ObjectMap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,6 +48,8 @@ import java.util.TreeMap;
  * Created by dave on 1/07/16.
  */
 public class KSparseAutoencoder extends CompetitiveLearning {
+
+    protected static final Logger logger = LogManager.getLogger();
 
 //    public static float REGULARIZATION = 0.001f;
 
@@ -505,8 +508,6 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
             totalError += ( error * error ); // fyi only
         }
-
-        System.err.println( "Total error: " + totalError );
 
         // compute gradient in hidden units. Derivative is either 1 or 0 depending whether the cell was filtered.
         for( int c = 0; c < cells; ++c ) { // computing error for each "input"

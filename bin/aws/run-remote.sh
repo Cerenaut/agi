@@ -21,12 +21,22 @@ echo "Using host = " $host
 
 # WARNING: hardcoded path on remote machine in shell commands below (to be run on remote host via ssh)
 
-ssh -i $keyfile ec2-user@${host} -o 'StrictHostKeyChecking no' 'bash -s' <<'ENDSSH' 
+ssh -v -i $keyfile ec2-user@${host} -o 'StrictHostKeyChecking no' 'bash -s' <<'ENDSSH' 
 	export VARIABLES_FILE="/home/ec2-user/agief-project/variables/variables-ec2.sh"
 	source $VARIABLES_FILE
 	cd $AGI_HOME/bin/node_coordinator
 	./run-in-docker.sh -d
 ENDSSH
+
+status=$?
+
+if [ $status -ne 0 ]
+then
+	echo "ERROR: Could not complete execute run-in-docker.sh on remote machine through ssh." >&2
+	echo "	Error status = $status" >&2
+	echo "	Exiting now." >&2
+	exit $status
+fi
 
 
 exit
