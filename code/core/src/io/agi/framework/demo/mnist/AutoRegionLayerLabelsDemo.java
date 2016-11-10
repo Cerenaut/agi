@@ -72,10 +72,19 @@ public class AutoRegionLayerLabelsDemo {
 
     public static void createEntities( Node n ) {
 
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
-//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/5k_test";
+// so I'm getting around 0.7 with layer 2 and 0.6 with layer 3
+
+//Ideas:
+//- Present all possible inputs and see which one responds most strongly, rather than an absence of input
+//                Do this by hacking the class when learn is off.(make assumptions about input)
+//- move onto sequence data to boost recognition
+//          FF with PC
+//                FB with both FF and FB inference.
+
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
+        String testingPath = "/home/dave/workspace/agi.io/data/mnist/5k_test";
 //        String trainingPath = "./training";
 //        String testingPath = "./testing";
 //        int terminationAge = 10;//9000;
@@ -84,7 +93,7 @@ public class AutoRegionLayerLabelsDemo {
         boolean terminateByAge = false;
         float defaultPredictionInhibition = 1.f; // random image classification only experiments
         boolean encodeZero = false;
-        int layers = 3;
+        int layers = 2;//3;
         int labelBits = 8;
 
         // Define some entities
@@ -285,13 +294,13 @@ public class AutoRegionLayerLabelsDemo {
                 defaultPredictionInhibition, predictorLearningRate,
                 rateScale, rateLearningRate );
 
-        setRegionLayerConfig(
-                region3FfName,
-                widthCells, heightCells,
-                ageMin, ageMax, ageScale,
-                sparseLearningRate, sparsityMin, sparsityMax, sparsityFactor, sparsityOutput,
-                defaultPredictionInhibition, predictorLearningRate,
-                rateScale, rateLearningRate );
+//        setRegionLayerConfig(
+//                region3FfName,
+//                widthCells, heightCells,
+//                ageMin, ageMax, ageScale,
+//                sparseLearningRate, sparsityMin, sparsityMax, sparsityFactor, sparsityOutput,
+//                defaultPredictionInhibition, predictorLearningRate,
+//                rateScale, rateLearningRate );
 
         // look at weight decay, l2 norm, momentum, batches
         // TODO LIST:

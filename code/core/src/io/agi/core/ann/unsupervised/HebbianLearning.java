@@ -30,6 +30,8 @@ import java.util.TreeMap;
 /**
  * Converges on the relative frequency of transitions between sets of states.
  *
+ * Can use this to predict future states.
+ *
  * Created by dave on 6/07/16.
  */
 public class HebbianLearning {
@@ -139,7 +141,7 @@ public class HebbianLearning {
     /**
      * Call this when there is a state change.
      */
-    public void train( Data stateOld, Data stateNew ) {
+    public void trainExponential( Data stateOld, Data stateNew ) {
         HashSet< Integer > bitsOld = stateOld.indicesMoreThan( 0.5f );
         HashSet< Integer > bitsNew = stateNew.indicesMoreThan( 0.5f );
 
@@ -176,4 +178,57 @@ public class HebbianLearning {
             }
         }
     }
+
+    /**
+     * Call this when there is a state change.
+     */
+    public void trainLinear( Data stateOld, Data stateNew ) {
+        HashSet< Integer > bitsOld = stateOld.indicesMoreThan( 0.5f );
+        HashSet< Integer > bitsNew = stateNew.indicesMoreThan( 0.5f );
+
+        if( bitsOld.equals( bitsNew ) ) {
+            return;
+        }
+
+        int states = stateOld.getSize();
+
+        for( int s1 = 0; s1 < states; ++s1 ) {
+
+            // old state - train only from old active states to all new states
+            float active1 = stateOld._values[ s1 ];
+
+            if( active1 < 1.f ) {
+                continue; // says nothing about any cell s2
+            }
+
+            for( int s2 = 0; s2 < states; ++s2 ) {
+
+                float delta = - _learningRate;
+
+                float active2 = stateNew._values[ s2 ];
+                if( active2 != 0f ) {
+                    delta = _learningRate;
+                }
+
+                int offset = s1 * states + s2; // the weight from state s1, to state s2.
+
+                float oldWeight = _weights._values[ offset ];
+                float newWeight = oldWeight + delta;
+
+                newWeight = Math.max( 0, Math.min( 1f, newWeight ) );
+
+                _weights._values[ offset ] = newWeight;
+            }
+        }
+    }
+
+    // * https://en.wikipedia.org/wiki/Oja%27s_rule
+    // * http://www.scholarpedia.org/article/Oja_learning_rule
+
+    // I could implement STDP rule
+    // where "early" bits predict and "late" bits inhibit
+    // here we would have traces before and after. Or just prior/next states
+    // So if bit A was active and now bit B is active, then we reduce the weight between bit B -> A
+    // http://www.scholarpedia.org/article/Spike-timing_dependent_plasticity
+
 }

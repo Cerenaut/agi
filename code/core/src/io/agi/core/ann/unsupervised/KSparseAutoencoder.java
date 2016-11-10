@@ -77,6 +77,10 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
     protected ArrayList< Integer > _activeCells = new ArrayList< Integer >();
 
+    // HACK
+    public float _sumResponse = 0f;
+    // HACK
+
     public KSparseAutoencoder( String name, ObjectMap om ) {
         super( name, om );
     }
@@ -227,7 +231,11 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         }
     }
 
-    public void updateAges( Collection< Integer > activeCells, float ageFactor ) {
+    public void updateAges( Collection< Integer > activeCells, float ageFactor, boolean learn ) {
+        if( !learn ) {
+            return;
+        }
+
         int cells = _c.getNbrCells();
 
         // increment all ages
@@ -245,7 +253,11 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         }
     }
 
-    public void updateRates( Collection< Integer > activeCells ) {
+    public void updateRates( Collection< Integer > activeCells, boolean learn ) {
+        if( !learn ) {
+            return;
+        }
+
         float learningRate = _c.getRateLearningRate();
         float memoryRate = 1f - learningRate;
         int cells = _c.getNbrCells();
@@ -395,6 +407,14 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 //        findActiveHiddenCellsOtsu();
         findActiveHiddenCellsRank( ranking, findMaxima, maxRank );
 
+        // HACK
+        _sumResponse = 0f;
+        for( Integer c : _activeCells ) {
+            float transfer = _cellTransfer._values[ c ]; // otherwise zero
+            _sumResponse += transfer;
+        }
+        // HACK
+
         // now restrict to just k. This set is used for learning.
         // Hence, we now swap to the "promoted" scores
         maxRank = k;
@@ -412,9 +432,9 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
         // NOTE: Update ages with the *non* promoted ranking, to require a "natural" win indicating the weights have learned to be useful to zero the age
         // NOTE: I tried the above, but it just got fixated. Seems like you have to learn it once, then remove the promotion.
-        updateAges( activeCellsWithPromotion, ageFactor );
+        updateAges( activeCellsWithPromotion, ageFactor, learn );
         //updateAges( _activeCells );
-        updateRates( activeCellsWithPromotion );
+        updateRates( activeCellsWithPromotion, learn );
 
 
         // Output layer (forward pass)
