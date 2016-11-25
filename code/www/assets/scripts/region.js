@@ -747,7 +747,7 @@ var Region = {
       var ox = Math.floor( rx / cw ); // coordinates of column in grid (region).
       var oy = Math.floor( ry / ch );    
 
-      var dataClassifierOutputWeights = Region.findData( "-classifier-output-weights" );
+      var dataClassifierOutputWeights = Region.findData( "-classifier-cell-weights" );
       if( !dataClassifierOutputWeights ) {
         continue; // can't paint
       }
@@ -778,7 +778,7 @@ var Region = {
         }
       }
 
-      var minWeight = 0.01;
+      var minWeight = 0.0001;
       if( maxWeight < minWeight ) maxWeight = minWeight;
       // examine each input:
       for( var y = 0; y < h; ++y ) {
@@ -833,7 +833,7 @@ var Region = {
           var oySelected = Math.floor( ry / ch );    
 
           if( ( oxSelected == ox ) && ( oySelected == oy ) ) {
-            ctx.strokeStyle = "rgb(255,255,0)";
+            ctx.strokeStyle = "rgb(0,255,255)";
             //console.log( "selected col is : " + ox + ", " + oy );
 
             break;

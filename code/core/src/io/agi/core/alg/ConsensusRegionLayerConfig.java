@@ -20,65 +20,56 @@
 package io.agi.core.alg;
 
 import io.agi.core.ann.NetworkConfig;
+import io.agi.core.ann.unsupervised.ConsensusAutoencoderConfig;
 import io.agi.core.ann.unsupervised.KSparseAutoencoderConfig;
-import io.agi.core.ann.unsupervised.ParameterLessSelfOrganizingMapConfig;
-import io.agi.core.ann.unsupervised.PlasticNeuralGasConfig;
 import io.agi.core.orm.ObjectMap;
 
 import java.awt.*;
 import java.util.Random;
 
 /**
- * Created by dave on 4/07/16.
+ * Created by dave on 18/10/16.
  */
-public class AutoRegionLayerConfig extends NetworkConfig {
+public class ConsensusRegionLayerConfig extends NetworkConfig {
 
     public static final String INPUT_1_WIDTH = "input-1-width";
     public static final String INPUT_1_HEIGHT = "input-1-height";
     public static final String INPUT_2_WIDTH = "input-2-width";
     public static final String INPUT_2_HEIGHT = "input-2-height";
-    public static final String INPUT_3_WIDTH = "input-2-width";
-    public static final String INPUT_3_HEIGHT = "input-2-height";
 
     public static final String PREDICTOR_LEARNING_RATE = "predictor-learning-rate";
     public static final String DEFAULT_PREDICTION_INHIBITION = "default-prediction-inhibition";
-    public static final String SLOW_SPARSITY = "slow-sparsity";
+    public static final String OUTPUT_SPARSITY = "output-sparsity";
 
     public static final String SUFFIX_CONTEXT_FREE = "context-free";
     public static final String SUFFIX_CONTEXTUAL = "contextual";
     public static final String SUFFIX_PREDICTOR = "predictor";
 
-    public KSparseAutoencoderConfig _contextFreeConfig;
-    public KSparseAutoencoderConfig _contextualConfig;
+    public ConsensusAutoencoderConfig _contextFreeConfig;
 
-    public AutoRegionLayerConfig() {
+    public ConsensusRegionLayerConfig() {
     }
 
     public void setup(
             ObjectMap om,
             String name,
             Random r,
-            KSparseAutoencoderConfig contextFreeConfig,
-            KSparseAutoencoderConfig contextualConfig,
+            ConsensusAutoencoderConfig contextFreeConfig,
             int input1Width,
             int input1Height,
             int input2Width,
             int input2Height,
-            int input3Width,
-            int input3Height,
-            float slowSparsity,
+            float outputSparsity,
             float predictorLearningRate,
             float defaultPredictionInhibition ) {
         super.setup( om, name, r );
 
         _contextFreeConfig = contextFreeConfig;
-        _contextualConfig = contextualConfig;
 
-        setSlowSparsity( slowSparsity );
+        setOutputSparsity( outputSparsity );
         setPredictorLearningRate( predictorLearningRate );
         setInput1Size( input1Width, input1Height );
         setInput2Size( input2Width, input2Height );
-        setInput3Size( input3Width, input3Height );
         setDefaultPredictionInhibition( defaultPredictionInhibition );
     }
 
@@ -104,20 +95,20 @@ public class AutoRegionLayerConfig extends NetworkConfig {
         _om.put( getKey( DEFAULT_PREDICTION_INHIBITION ), r );
     }
 
-    public float getSlowSparsity() {
-        float r = _om.getFloat( getKey( SLOW_SPARSITY ) );
+    public float getOutputSparsity() {
+        float r = _om.getFloat( getKey( OUTPUT_SPARSITY ) );
         return r;
     }
 
-    public void setSlowSparsity( float r ) {
-        _om.put( getKey( SLOW_SPARSITY ), r );
+    public void setOutputSparsity( float r ) {
+        _om.put( getKey( OUTPUT_SPARSITY ), r );
     }
 
     public int getInputArea() {
         Point input1Size = getInput1Size();
         Point input2Size = getInput2Size();
         int inputArea = input1Size.x * input1Size.y
-                      + input2Size.x * input2Size.y;
+                + input2Size.x * input2Size.y;
         return inputArea;
     }
 
@@ -133,12 +124,6 @@ public class AutoRegionLayerConfig extends NetworkConfig {
         return new Point( inputWidth, inputHeight );
     }
 
-    public Point getInput3Size() {
-        int inputWidth = _om.getInteger( getKey( INPUT_3_WIDTH ) );
-        int inputHeight = _om.getInteger( getKey( INPUT_3_HEIGHT ) );
-        return new Point( inputWidth, inputHeight );
-    }
-
     public void setInput1Size( int ffInputWidth, int ffInputHeight ) {
         _om.put( getKey( INPUT_1_WIDTH ), ffInputWidth );
         _om.put( getKey( INPUT_1_HEIGHT ), ffInputHeight );
@@ -149,8 +134,5 @@ public class AutoRegionLayerConfig extends NetworkConfig {
         _om.put( getKey( INPUT_2_HEIGHT ), ffInputHeight );
     }
 
-    public void setInput3Size( int ffInputWidth, int ffInputHeight ) {
-        _om.put( getKey( INPUT_3_WIDTH ), ffInputWidth );
-        _om.put( getKey( INPUT_3_HEIGHT ), ffInputHeight );
-    }
+
 }

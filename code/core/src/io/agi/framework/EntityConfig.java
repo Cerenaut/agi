@@ -19,6 +19,9 @@
 
 package io.agi.framework;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 /**
  * These 'Property' models are bags of primitives, and can be nested objects.
  * THIS IS STANDARD practice for models.
@@ -34,4 +37,13 @@ public class EntityConfig {
     public boolean learn = true;  // default
 
     // TODO add last update date/time?
+    public static Collection< String > GetEntityNames( String configValue ) {
+        String[] names = configValue.split( "," );
+        Collection< String > c = new ArrayList< String >();
+        for( String s : names ) {
+            c.add( s );
+        }
+        return c;
+    }
+
 }

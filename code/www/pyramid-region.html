@@ -59,9 +59,8 @@ show flush, show age. -->
          <label for="gain">Hidden Gain</label> <input type="number" id="gain" name="gain" min="0.1" max="12.0" step="0.1" value="1.0" style="width:3em;" />
          <label for="threshold">Input Threshold</label> <input type="number" id="threshold" name="threshold" min="-1.0" max="1.0" step="0.01" value="0.5" style="width:3em;" />
          <input type="button" id="select-threshold" class="btn btn-sm btn-primary" style="" onclick="Region.selectThreshold()" value="Invert"/>
-         <b>Selected input:</b> <input type="text" id="sel-input-1" style="width:6em;" class="" placeholder="#1" />
-         <input type="text" id="sel-input-2" style="width:6em;" class="" placeholder="#2" />
-         <input type="text" id="sel-input-3" style="width:6em;" class="" placeholder="#3" />
+         <b>Selected input:</b> <input type="text" id="sel-input-c1" style="width:6em;" class="" placeholder="#1" />
+         <input type="text" id="sel-input-c2" style="width:6em;" class="" placeholder="#2" />
          <br>
          <small><span id="mouse-left"></span> &#9668;&#9644;&#9658; <span id="mouse-right"></span></small>
         </div>
@@ -96,7 +95,7 @@ show flush, show age. -->
     <!-- Our stuff -->
     <script src="assets/scripts/framework.js"></script>
     <script src="assets/scripts/parameters.js"></script>
-    <script src="assets/scripts/auto-region.js"></script>
+    <script src="assets/scripts/pyramid-region.js"></script>
 
   </body>
 </html>

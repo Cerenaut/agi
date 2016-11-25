@@ -19,7 +19,7 @@
 
 package io.agi.framework.demo.mnist;
 
-import io.agi.core.sdr.IntegerEncoder;
+import io.agi.core.orm.AbstractPair;
 import io.agi.core.util.PropertiesUtil;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.framework.Framework;
@@ -28,12 +28,13 @@ import io.agi.framework.Node;
 import io.agi.framework.entities.*;
 import io.agi.framework.factories.CommonEntityFactory;
 
+import java.util.ArrayList;
 import java.util.Properties;
 
 /**
  * Created by dave on 8/07/16.
  */
-public class AutoRegionLayerLabelsDemo {
+public class ConsensusRegionLayerDemo {
 
     /**
      * Usage: Expects some arguments. These are:
@@ -72,29 +73,31 @@ public class AutoRegionLayerLabelsDemo {
 
     public static void createEntities( Node n ) {
 
-// so I'm getting around 0.7 with layer 2 and 0.6 with layer 3
-
-//Ideas:
-//- Present all possible inputs and see which one responds most strongly, rather than an absence of input
-//                Do this by hacking the class when learn is off.(make assumptions about input)
-//- move onto sequence data to boost recognition
-//          FF with PC
-//                FB with both FF and FB inference.
-
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle_twin";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle_twin";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle_deep";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle_deep";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/all_train";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/all_t10k";
         String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
         String testingPath = "/home/dave/workspace/agi.io/data/mnist/5k_test";
 //        String trainingPath = "./training";
 //        String testingPath = "./testing";
 //        int terminationAge = 10;//9000;
         int terminationAge = 50000;//25000;
-        int trainingBatches = 1;//80; // good for up to 80k
-        boolean terminateByAge = false;
+        int trainingBatches = 2;//80; // good for up to 80k
+        boolean terminateByAge = true;
         float defaultPredictionInhibition = 1.f; // random image classification only experiments
+//        float defaultPredictionInhibition = 0.f; // where you use prediction
         boolean encodeZero = false;
-        int layers = 2;//3;
-        int labelBits = 8;
+        boolean classFeaturesOnline = false;
+        int layers = 2;
 
         // Define some entities
         String experimentName           = Framework.GetEntityName( "experiment" );
@@ -104,86 +107,57 @@ public class AutoRegionLayerLabelsDemo {
         String region2FfName            = Framework.GetEntityName( "image-region-2-ff" );
         String region3FfName            = Framework.GetEntityName( "image-region-3-ff" );
         String imageEncoderName         = Framework.GetEntityName( "image-encoder" );
-        String labelEncoderName         = Framework.GetEntityName( "label-encoder" );
-        String labelDecoderName         = Framework.GetEntityName( "label-decoder" );
-        String classResultName          = Framework.GetEntityName( "class-result" );
+        String classFeaturesName        = Framework.GetEntityName( "class-features" );
         String valueSeriesPredictedName = Framework.GetEntityName( "value-series-predicted" );
         String valueSeriesErrorName     = Framework.GetEntityName( "value-series-error" );
         String valueSeriesTruthName     = Framework.GetEntityName( "value-series-truth" );
-        String configProductName        = Framework.GetEntityName( "config-product" );
-
 
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         Framework.CreateEntity( imageClassName, ImageClassEntity.ENTITY_TYPE, n.getName(), experimentName );
         Framework.CreateEntity( imageEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), imageClassName );
         Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), imageEncoderName ); // ok all input to the regions is ready
-        Framework.CreateEntity( labelEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), constantName );
-        Framework.CreateEntity( configProductName, ConfigProductEntity.ENTITY_TYPE, n.getName(), labelEncoderName ); // ok all input to the regions is ready
 
-        Framework.CreateEntity( region1FfName, AutoRegionLayerEntity.ENTITY_TYPE, n.getName(), configProductName );
+        Framework.CreateEntity( region1FfName, ConsensusRegionLayerEntity.ENTITY_TYPE, n.getName(), constantName );
         String learningEntitiesAlgorithm = region1FfName;
         String topLayerName = region1FfName;
         if( layers > 1 ) {
-            Framework.CreateEntity( region2FfName, AutoRegionLayerEntity.ENTITY_TYPE, n.getName(), region1FfName );
+            Framework.CreateEntity( region2FfName, ConsensusRegionLayerEntity.ENTITY_TYPE, n.getName(), region1FfName );
             topLayerName = region2FfName;
             learningEntitiesAlgorithm = learningEntitiesAlgorithm + "," + region2FfName;
         }
         if( layers > 2 ) {
-            Framework.CreateEntity( region3FfName, AutoRegionLayerEntity.ENTITY_TYPE, n.getName(), region2FfName );
+            Framework.CreateEntity( region3FfName, ConsensusRegionLayerEntity.ENTITY_TYPE, n.getName(), region2FfName );
             topLayerName = region3FfName;
             learningEntitiesAlgorithm = learningEntitiesAlgorithm + "," + region3FfName;
         }
 
-        Framework.CreateEntity( labelDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), topLayerName ); // produce the predicted classification for inspection by mnist next time
-        Framework.CreateEntity( classResultName, ClassificationResultEntity.ENTITY_TYPE, n.getName(), labelDecoderName ); // produce the predicted classification for inspection by mnist next time
-
-        Framework.CreateEntity( valueSeriesPredictedName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), classResultName ); // 2nd, class region updates after first to get its feedback
-        Framework.CreateEntity( valueSeriesErrorName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), classResultName ); // 2nd, class region updates after first to get its feedback
-        Framework.CreateEntity( valueSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), classResultName ); // 2nd, class region updates after first to get its feedback
+        Framework.CreateEntity( classFeaturesName, FeatureLabelsEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
+        Framework.CreateEntity( valueSeriesPredictedName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), classFeaturesName ); // 2nd, class region updates after first to get its feedback
+        Framework.CreateEntity( valueSeriesErrorName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), classFeaturesName ); // 2nd, class region updates after first to get its feedback
+        Framework.CreateEntity( valueSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), classFeaturesName ); // 2nd, class region updates after first to get its feedback
 
         // Connect the entities' data
         // a) Image to image region, and decode
         Framework.SetDataReference( imageEncoderName, EncoderEntity.DATA_INPUT, imageClassName, ImageClassEntity.OUTPUT_IMAGE );
-        Framework.SetDataReference( labelEncoderName, EncoderEntity.DATA_INPUT, imageClassName, ImageClassEntity.OUTPUT_LABEL );
-        Framework.SetDataReference( labelDecoderName, DecoderEntity.DATA_INPUT_DECODED, imageClassName, ImageClassEntity.OUTPUT_LABEL );
-
-//                Framework.SetDataReference( region2FfName, AutoRegionLayerEntity.INPUT_2, labelEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
-        Framework.SetDataReference( configProductName, ConfigProductEntity.INPUT, labelEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
 
         Framework.SetDataReference( region1FfName, AutoRegionLayerEntity.INPUT_1, imageEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
         Framework.SetDataReference( region1FfName, AutoRegionLayerEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
 
         if( layers > 1 ) {
             Framework.SetDataReference( region2FfName, AutoRegionLayerEntity.INPUT_1, region1FfName, AutoRegionLayerEntity.OUTPUT );
-            if( layers == 2 ) {
-//                Framework.SetDataReference( region2FfName, AutoRegionLayerEntity.INPUT_2, labelEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
-                Framework.SetDataReference( region2FfName, AutoRegionLayerEntity.INPUT_2, configProductName, ConfigProductEntity.OUTPUT );
-            }
-            else {
-                Framework.SetDataReference( region2FfName, AutoRegionLayerEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
-            }
+            Framework.SetDataReference( region2FfName, AutoRegionLayerEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
         }
 
         if( layers > 2 ) {
             Framework.SetDataReference( region3FfName, AutoRegionLayerEntity.INPUT_1, region2FfName, AutoRegionLayerEntity.OUTPUT );
-            if( layers == 3 ) {
-//                Framework.SetDataReference( region3FfName, AutoRegionLayerEntity.INPUT_2, labelEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
-                Framework.SetDataReference( region3FfName, AutoRegionLayerEntity.INPUT_2, configProductName, ConfigProductEntity.OUTPUT );
-            }
-            else {
-                Framework.SetDataReference( region3FfName, AutoRegionLayerEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
-            }
+            Framework.SetDataReference( region3FfName, AutoRegionLayerEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
         }
 
-        // invert the hidden layer state to produce the predicted label
-//        Framework.SetDataReference( labelDecoderName, DecoderEntity.DATA_INPUT_ENCODED, topLayerName, AutoRegionLayerEntity.OUTPUT_INPUT_2 ); // the prediction of the next state
-
-        Framework.SetDataReference( classResultName, ClassificationResultEntity.INPUT_LABEL, imageClassName, ImageClassEntity.OUTPUT_LABEL ); // get current state from the region to be used to predict
-        Framework.SetDataReference( classResultName, ClassificationResultEntity.INPUT_CLASS, labelDecoderName, DecoderEntity.DATA_OUTPUT_DECODED ); // get current state from the region to be used to predict
-
-        // Label filter
-        Framework.SetConfig( configProductName, "entityName", region1FfName );
-        Framework.SetConfig( configProductName, "configPath", "learn" ); // so the value is '1' when the region is learning, and 0 otherwise.
+        ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList< AbstractPair< String, String > >();
+//        if( layers > 0 ) featureDatas.add( new AbstractPair< String, String >( region1FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
+        if( layers > 1 ) featureDatas.add( new AbstractPair< String, String >( region2FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
+//        if( layers > 2 ) featureDatas.add( new AbstractPair< String, String >( region3FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
+        Framework.SetDataReferences( classFeaturesName, FeatureLabelsEntity.FEATURES, featureDatas ); // get current state from the region to be used to predict
 
         // Experiment config
         if( !terminateByAge ) {
@@ -210,7 +184,7 @@ public class AutoRegionLayerLabelsDemo {
         Framework.SetConfig( imageClassName, "sourceFilesPathTesting", testingPath );
         Framework.SetConfig( imageClassName, "trainingBatches", String.valueOf( trainingBatches ) );
 
-        String learningEntitiesAnalytics = "";//classFeaturesName;
+        String learningEntitiesAnalytics = classFeaturesName;
         Framework.SetConfig( imageClassName, "learningEntitiesAlgorithm", String.valueOf( learningEntitiesAlgorithm ) );
         Framework.SetConfig( imageClassName, "learningEntitiesAnalytics", String.valueOf( learningEntitiesAnalytics ) );
 
@@ -227,49 +201,40 @@ public class AutoRegionLayerLabelsDemo {
             Framework.SetConfig( imageEncoderName, "bits", "1" );
             Framework.SetConfig( imageEncoderName, "encodeZero", "false" );
         }
-// TODO juyst need to add the switch to disable the labels.
-        // Label encoder
-        Framework.SetConfig( labelEncoderName, "encoderType", IntegerEncoder.class.getSimpleName() );
-        Framework.SetConfig( labelEncoderName, "minValue", "0" );
-        Framework.SetConfig( labelEncoderName, "maxValue", "9" );
-        Framework.SetConfig( labelEncoderName, "rows", String.valueOf( labelBits ) );
-
-        // Label DEcoder
-        Framework.SetConfig( labelDecoderName, "encoderType", IntegerEncoder.class.getSimpleName() );
-        Framework.SetConfig( labelDecoderName, "minValue", "0" );
-        Framework.SetConfig( labelDecoderName, "maxValue", "9" );
-        Framework.SetConfig( labelDecoderName, "rows", String.valueOf( labelBits ) );
 
         // image region config
-        // effective constants:
-        float predictorLearningRate = 0.01f;
+        int widthCells = 32; // from the paper, this was optimal on MNIST
+        int heightCells = 32;
         int ageMin = 0;
-        int ageMax = 750;//700;//1000;
+        int ageMax = 1400;//700;//1000;
         float ageScale = 12f;//17f;//15f; // maybe try 12 or 17
-        float rateScale = 5f;
-        float rateLearningRate = 0.01f;
-        float sparsityMax = 0;// no longer used - adaptive cell promotion/inh (int)( (widthCells * heightCells) * 0.9f );
 
-        // variables
 //        float sparseLearningRate = 0.000001f;
 //        float sparseLearningRate = 0.00001f;
 //        float sparseLearningRate = 0.0001f;
-//        float sparseLearningRate = 0.001f; // * best
+        float sparseLearningRate = 0.001f; // * best
 //        float sparseLearningRate = 0.01f;
 //        float sparseLearningRate = 0.1f;
+
 //        sparseLearningRate = 0.01f;//0.001f; // test
 //        sparseLearningRate = 0.05f; // test saturated at 0.6, but now with improved output
 //        sparseLearningRate = 0.1f; //
-        float sparseLearningRate = 0.01f;
-//        sparseLearningRate = 0.05f;
+        sparseLearningRate = 0.01f;
 
-        int widthCells = 32; // from the paper, 32x32=1024 was optimal on MNIST (but with a supervised output layer)
-        int heightCells = 32;
-        float sparsityMin = 25f;//25;//30;//25;//cells * 0.02f;
-        float sparsityOutput = 2.f;//2.f; // temporal pooling, off if 1f
+        //float cells = (float)( widthCells * heightCells );
+        float sparsityMin = 25;//30;//25;//cells * 0.02f;
+        float sparsityMax = (int)( (widthCells * heightCells) * 0.9f );
+        float sparsityOutput = 2.5f;//2.f; // temporal pooling, off if 1f
+
+//        float sparsityCells = 0.f; // determined by age
         float sparsityFactor = sparsityOutput;//1.f; // the "alpha" term in the paper
+//        float predictorLearningRate = 0.001f;
+        float predictorLearningRate = 0.01f;
 
-//        KSparseAutoencoder.REGULARIZATION = 0.001f;
+        float consensusLearningRate = 0.02f;
+        float consensusDecayRate = 0.99999f;
+        float consensusStrength = 1.0f; //0.5f;///0.1f; // 10% influence
+        int consensusSteps = 20;
 
         setRegionLayerConfig(
                 region1FfName,
@@ -277,30 +242,17 @@ public class AutoRegionLayerLabelsDemo {
                 ageMin, ageMax, ageScale,
                 sparseLearningRate, sparsityMin, sparsityMax, sparsityFactor, sparsityOutput,
                 defaultPredictionInhibition, predictorLearningRate,
-                rateScale, rateLearningRate );
+                consensusLearningRate, consensusDecayRate,consensusStrength, consensusSteps );
 
         // smaller region
-        widthCells = 32;
-        heightCells = 32;
-        sparsityMin = 8;//12;//10;//25;//cells * 0.02f;
-        sparsityOutput = 2.f;//2.f; // temporal pooling, off if 1f
+        widthCells = 20;
+        heightCells = 20;
+        //ageMin = ageMax;
+        //ageMax = ageMax * 3;
+        sparsityMin = 12;//12;//10;//25;//cells * 0.02f;
+        sparsityMax = ( (widthCells * heightCells) * 0.9f );
+        sparsityOutput = 2.25f;//2.f; // temporal pooling, off if 1f
         sparsityFactor = sparsityOutput; // added was missing
-
-        setRegionLayerConfig(
-                region2FfName,
-                widthCells, heightCells,
-                ageMin, ageMax, ageScale,
-                sparseLearningRate, sparsityMin, sparsityMax, sparsityFactor, sparsityOutput,
-                defaultPredictionInhibition, predictorLearningRate,
-                rateScale, rateLearningRate );
-
-//        setRegionLayerConfig(
-//                region3FfName,
-//                widthCells, heightCells,
-//                ageMin, ageMax, ageScale,
-//                sparseLearningRate, sparsityMin, sparsityMax, sparsityFactor, sparsityOutput,
-//                defaultPredictionInhibition, predictorLearningRate,
-//                rateScale, rateLearningRate );
 
         // look at weight decay, l2 norm, momentum, batches
         // TODO LIST:
@@ -326,22 +278,30 @@ public class AutoRegionLayerLabelsDemo {
         // NB the UI active includes the extra x active cells, not the set used for training
         // NB log-sigmoid saturates at 5.
 
+        setRegionLayerConfig(
+                region2FfName,
+                widthCells, heightCells,
+                ageMin, ageMax, ageScale,
+                sparseLearningRate, sparsityMin, sparsityMax, sparsityFactor, sparsityOutput,
+                defaultPredictionInhibition, predictorLearningRate,
+                consensusLearningRate, consensusDecayRate,consensusStrength, consensusSteps );
+
         // feature-class config
-//        Framework.SetConfig( classFeaturesName, "classEntityName", imageClassName );
-//        Framework.SetConfig( classFeaturesName, "classConfigPath", "imageClass" );
-//        Framework.SetConfig( classFeaturesName, "classes", "10" );
-//        Framework.SetConfig( classFeaturesName, "onlineLearning", String.valueOf( classFeaturesOnline ) );
-////        Framework.SetConfig( classFeaturesName, "onlineLearningRate", "0.001" );
-//        Framework.SetConfig( classFeaturesName, "onlineLearningRate", "0.01" );
+        Framework.SetConfig( classFeaturesName, "classEntityName", imageClassName );
+        Framework.SetConfig( classFeaturesName, "classConfigPath", "imageClass" );
+        Framework.SetConfig( classFeaturesName, "classes", "10" );
+        Framework.SetConfig( classFeaturesName, "onlineLearning", String.valueOf( classFeaturesOnline ) );
+//        Framework.SetConfig( classFeaturesName, "onlineLearningRate", "0.001" );
+        Framework.SetConfig( classFeaturesName, "onlineLearningRate", "0.01" );
 
         // data series logging
         Framework.SetConfig( valueSeriesPredictedName, "period", "-1" ); // log forever
         Framework.SetConfig( valueSeriesErrorName, "period", "-1" );
         Framework.SetConfig( valueSeriesTruthName, "period", "-1" );
 
-        Framework.SetConfig( valueSeriesPredictedName, "entityName", classResultName ); // log forever
-        Framework.SetConfig( valueSeriesErrorName, "entityName", classResultName );
-        Framework.SetConfig( valueSeriesTruthName, "entityName", classResultName );
+        Framework.SetConfig( valueSeriesPredictedName, "entityName", classFeaturesName ); // log forever
+        Framework.SetConfig( valueSeriesErrorName, "entityName", classFeaturesName );
+        Framework.SetConfig( valueSeriesTruthName, "entityName", classFeaturesName );
 
         Framework.SetConfig( valueSeriesPredictedName, "configPath", "classPredicted" ); // log forever
         Framework.SetConfig( valueSeriesErrorName, "configPath", "classError" );
@@ -363,8 +323,10 @@ public class AutoRegionLayerLabelsDemo {
             float sparsityOutput,
             float defaultPredictionInhibition,
             float predictorLearningRate,
-            float rateScale,
-            float rateLearningRate ) {
+            float consensusLearningRate,
+            float consensusDecayRate,
+            float consensusStrength,
+            int consensusSteps ) {
 
         Framework.SetConfig( regionLayerName, "contextFreeLearningRate", String.valueOf( sparseLearningRate ) );
         Framework.SetConfig( regionLayerName, "contextFreeWidthCells", String.valueOf( widthCells ) );
@@ -379,22 +341,14 @@ public class AutoRegionLayerLabelsDemo {
         Framework.SetConfig( regionLayerName, "contextFreeAge", String.valueOf( 0 ) );
         Framework.SetConfig( regionLayerName, "contextFreeAgeScale", String.valueOf( ageScale ) );
 
-        Framework.SetConfig( regionLayerName, "rateScale", String.valueOf( rateScale ) );
-        Framework.SetConfig( regionLayerName, "rateLearningRate", String.valueOf( rateLearningRate ) );
-//        Framework.SetConfig( regionLayerName, "contextualLearningRate", String.valueOf( sparseLearningRate ) );
-//        Framework.SetConfig( regionLayerName, "contextualWidthCells", String.valueOf( widthCells ) );
-//        Framework.SetConfig( regionLayerName, "contextualHeightCells", String.valueOf( heightCells ) );
-//        Framework.SetConfig( regionLayerName, "contextualSparsity", String.valueOf( 0 ) );
-//        Framework.SetConfig( regionLayerName, "contextualSparsityOutput", String.valueOf( sparsityFactor ) );
-//        Framework.SetConfig( regionLayerName, "contextualSparsityMin", String.valueOf( sparsityMin ) );
-//        Framework.SetConfig( regionLayerName, "contextualSparsityMax", String.valueOf( sparsityMax ) );
-//        Framework.SetConfig( regionLayerName, "contextualAgeMin", String.valueOf( ageMin ) );
-//        Framework.SetConfig( regionLayerName, "contextualAgeMax", String.valueOf( ageMax ) );
-//        Framework.SetConfig( regionLayerName, "contextualAge", String.valueOf( 0 ) );
-
         Framework.SetConfig( regionLayerName, "outputSparsity", String.valueOf( sparsityOutput ) );
         Framework.SetConfig( regionLayerName, "defaultPredictionInhibition", String.valueOf( defaultPredictionInhibition ) );
         Framework.SetConfig( regionLayerName, "predictorLearningRate", String.valueOf( predictorLearningRate ) );
+
+        Framework.SetConfig( regionLayerName, "consensusLearningRate", String.valueOf( consensusLearningRate ) );
+        Framework.SetConfig( regionLayerName, "consensusDecayRate", String.valueOf( consensusDecayRate ) );
+        Framework.SetConfig( regionLayerName, "consensusStrength", String.valueOf( consensusStrength ) );
+        Framework.SetConfig( regionLayerName, "consensusSteps", String.valueOf( consensusSteps ) );
 
     }
 

@@ -41,9 +41,8 @@ var Region = {
   selectedCells : [  ],
   selectedInput1 : [  ],
   selectedInput2 : [  ],
-  selectedInput3 : [  ],
 
-  regionSuffixes : [ "-input-1", "-input-2", "-input-3", "-spike-age", "-context-free-mask", "-context-free-response", "-context-free-weights", "-context-free-biases-2", "-context-free-activity-new", "-context-free-activity-old", "-prediction-fp", "-prediction-fn", "-prediction-old", "-prediction-new-real", "-prediction-new", "-output", "-output-age" ],
+  regionSuffixes : [ "-input-c1", "-input-c2", "-input-p1", "-input-p2", "-spike-age", "-classifier-mask", "-classifier-response", "-classifier-weights", "-classifier-biases-2", "-classifier-spikes-integrated", "-classifier-spikes-new", "-classifier-spikes-old", "-prediction-error-fp", "-prediction-error-fn", "-prediction-old", "-prediction-new-real", "-prediction-new", "-output-spikes-new", "-output-spikes-old" ],
   regionSuffixIdx : 0,
   dataMap : {
   },
@@ -98,11 +97,11 @@ var Region = {
   },
 
   selectPrevious : function() {
-    Region.selectCells( "-context-free-activity-old" );
+    Region.selectCells( "-classifier-spikes-old" );
   },
 
   selectActive : function() {
-    Region.selectCells( "-context-free-activity-new" );
+    Region.selectCells( "-classifier-spikes-new" );
   },
   selectPredictionOld : function() {
     Region.selectCells( "-prediction-old" );
@@ -118,12 +117,12 @@ var Region = {
   },
   toggleSelectInput1 : function( offset ) {
     Region.toggleSelection( Region.selectedInput1, offset );
-    Region.updateSelection( "sel-input-1", Region.selectedInput1 );
+    Region.updateSelection( "sel-input-c1", Region.selectedInput1 );
     Region.repaint();
   },
   toggleSelectInput2 : function( offset ) {
     Region.toggleSelection( Region.selectedInput2, offset );
-    Region.updateSelection( "sel-input-2", Region.selectedInput2 );
+    Region.updateSelection( "sel-input-c2", Region.selectedInput2 );
     Region.repaint();
   },
   toggleSelectInput3 : function( offset ) {
@@ -137,18 +136,13 @@ var Region = {
     Region.selectedInput2 = [];
     Region.selectedInput3 = [];
 
-    var data1 = Region.findData( "-input-1" );
+    var data1 = Region.findData( "-input-c1" );
     if( !data1 ) {
       return; // can't paint
     }
 
-    var data2 = Region.findData( "-input-2" );
+    var data2 = Region.findData( "-input-c2" );
     if( !data2 ) {
-      return; // can't paint
-    }
-
-    var data3 = Region.findData( "-input-3" );
-    if( !data3 ) {
       return; // can't paint
     }
 
@@ -168,20 +162,12 @@ var Region = {
       return;
     }
 
-    var dataSize3 = Framework.getDataSize( data3 );
-    var w3 = dataSize3.w;
-    var h3 = dataSize3.h;
-
-    if( ( w3 == 0 ) || ( h3 == 0 ) ) {
-      return;
-    }
-
-    var dataWeights = Region.findData( "-context-free-weights" );
+    var dataWeights = Region.findData( "-classifier-weights" );
     if( !dataWeights ) {
       return; // can't paint
     }
 
-    var dataBiases = Region.findData( "-context-free-biases-2" );
+    var dataBiases = Region.findData( "-classifier-biases-2" );
     if( !dataBiases ) {
       return; // can't paint
     }
@@ -201,13 +187,8 @@ var Region = {
 
     Region.thresholdCellsInputWeights( w2, h2, inputOffset, weightsStride, dataWeights, dataBiases, Region.selectedCells, Region.selectedInput2, gain, threshold );
 
-    inputOffset += w2 * h2;
-
-    Region.thresholdCellsInputWeights( w3, h3, inputOffset, weightsStride, dataWeights, dataBiases, Region.selectedCells, Region.selectedInput3, gain, threshold );
-
-    Region.updateSelection( "sel-input-1", Region.selectedInput1 );
-    Region.updateSelection( "sel-input-2", Region.selectedInput2 );
-    Region.updateSelection( "sel-input-3", Region.selectedInput3 );
+    Region.updateSelection( "sel-input-c1", Region.selectedInput1 );
+    Region.updateSelection( "sel-input-c2", Region.selectedInput2 );
     Region.repaint();
   },
 
@@ -261,7 +242,7 @@ var Region = {
 
   onMouseClickCentre : function( e, mx, my ) {
 
-    var dataNew = Region.findData( "-context-free-activity-new" );
+    var dataNew = Region.findData( "-classifier-spikes-new" );
     if( !dataNew ) {
       return; // can't paint
     }
@@ -288,18 +269,13 @@ var Region = {
   },
 
   onMouseClickRight : function( e, mx, my ) {
-    var data1 = Region.findData( "-input-1" );
+    var data1 = Region.findData( "-input-c1" );
     if( !data1 ) {
       return; // can't paint
     }
 
-    var data2 = Region.findData( "-input-2" );
+    var data2 = Region.findData( "-input-c2" );
     if( !data2 ) {
-      return; // can't paint
-    }
-
-    var data3 = Region.findData( "-input-3" );
-    if( !data3 ) {
       return; // can't paint
     }
 
@@ -311,19 +287,11 @@ var Region = {
     var iw2 = dataSize2.w;
     var ih2 = dataSize2.h;
 
-    var dataSize3 = Framework.getDataSize( data3 );
-    var iw3 = dataSize3.w;
-    var ih3 = dataSize3.h;
-
     if( ( iw1 == 0 ) || ( ih1 == 0 ) ) {
       return;
     }
 
     if( ( iw2 == 0 ) || ( ih2 == 0 ) ) {
-      return;
-    }
-
-    if( ( iw3 == 0 ) || ( ih3 == 0 ) ) {
       return;
     }
 
@@ -369,23 +337,18 @@ var Region = {
   },
 
   repaintMiddle : function() {
-    var dataNew = Region.findData( "-context-free-activity-new" );
+    var dataNew = Region.findData( "-classifier-spikes-new" );
     if( !dataNew ) {
       return; // can't paint
     }
 
-    var dataOld = Region.findData( "-context-free-activity-old" );
+    var dataOld = Region.findData( "-classifier-spikes-old" );
     if( !dataOld ) {
       return; // can't paint
     }
 
-    var dataMask = Region.findData( "-context-free-mask" );
+    var dataMask = Region.findData( "-classifier-mask" );
     if( !dataMask ) {
-      return; // can't paint
-    }
-
-    var dataSpikeAge = Region.findData( "-spike-age" );
-    if( !dataSpikeAge ) {
       return; // can't paint
     }
 
@@ -404,7 +367,7 @@ var Region = {
     y0 += ( Region.pixelsPerGap );
 
 //    Region.fillDataRgbBinary( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataSpikeAge, null, null );//, null );
-    Region.fillDataRgba( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataSpikeAge, 255,0,0, true );
+//    Region.fillDataRgba( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataSpikeAge, 255,0,0, true );
     Region.strokeDataBinary( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataMask, "#ffff00", true );
 
   },
@@ -412,22 +375,22 @@ var Region = {
   repaintLeft : function() {
     var c = $( "#left-canvas" )[ 0 ];
 
-    var dataNew = Region.findData( "-context-free-activity-new" );
+    var dataNew = Region.findData( "-classifier-spikes-new" );
     if( !dataNew ) {
       return; // can't paint
     }
 
-    var dataOld = Region.findData( "-context-free-activity-old" );
+    var dataOld = Region.findData( "-classifier-spikes-old" );
     if( !dataOld ) {
       return; // can't paint
     }
 
-    var dataFp = Region.findData( "-prediction-fp" );
+    var dataFp = Region.findData( "-prediction-error-fp" );
     if( !dataFp ) {
       return; // can't paint
     }
 
-    var dataFn = Region.findData( "-prediction-fn" );
+    var dataFn = Region.findData( "-prediction-error-fn" );
     if( !dataFn ) {
       return; // can't paint
     }
@@ -444,16 +407,6 @@ var Region = {
 
     var dataPredictionNewReal = Region.findData( "-prediction-new-real" );
     if( !dataPredictionNewReal ) {
-      return; // can't paint
-    }
-
-    var dataOutput = Region.findData( "-output" );
-    if( !dataOutput ) {
-      return; // can't paint
-    }
-
-    var dataOutputAge = Region.findData( "-output-age" );
-    if( !dataOutputAge ) {
       return; // can't paint
     }
 
@@ -482,7 +435,7 @@ var Region = {
     y0 += ( Region.pixelsPerBit * canvasDataSize.h ); 
     y0 += ( Region.pixelsPerGap );
 
-    Region.fillDataRgbBinary( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataOutput, dataFn, null ); // 
+//    Region.fillDataRgbBinary( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataOutput, dataFn, null ); // 
 //    Region.fillDataRgba( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataOutput, 255,255,255, false );
 //    Region.strokeDataBinary( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataPredictionNew, "#0000ff", true );
 
@@ -668,12 +621,12 @@ var Region = {
   repaintInput : function() {
     var c = $( "#right-canvas" )[ 0 ];
 
-    var data1 = Region.findData( "-input-1" );
+    var data1 = Region.findData( "-input-c1" );
     if( !data1 ) {
       return; // can't paint
     }
 
-    var data2 = Region.findData( "-input-2" );
+    var data2 = Region.findData( "-input-c2" );
     if( !data2 ) {
       return; // can't paint
     }
@@ -716,17 +669,17 @@ var Region = {
     ctx.fillStyle = "#505050";
     ctx.fillRect( 0, 0, c.width, c.height );
 
-    var dataWeights = Region.findData( "-context-free-weights" );
+    var dataWeights = Region.findData( "-classifier-weights" );
     if( !dataWeights ) {
       return; // can't paint
     }
 
-    var dataBiases = Region.findData( "-context-free-biases-2" );
+    var dataBiases = Region.findData( "-classifier-biases-2" );
     if( !dataBiases ) {
       return; // can't paint
     }
 
-    var dataResponse = Region.findData( "-context-free-response" );
+    var dataResponse = Region.findData( "-classifier-response" );
     if( !dataResponse ) {
       return; // can't paint
     }

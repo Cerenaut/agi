@@ -84,6 +84,9 @@ var Search = {
           if( type == "auto-region-layer" ) {
             linksValue = linksValue + " / <a href='auto-region.html?entity="+ objectName + "' title='Open Region-Layer UI' target='_blank'><b>Region</b></a>"
           }
+          if( type == "pyramid-region-layer" ) {
+            linksValue = linksValue + " / <a href='pyramid-region.html?entity="+ objectName + "' title='Open Region-Layer UI' target='_blank'><b>Region</b></a>"
+          }
         }
       }
       else if( Search.type == "data" ) {

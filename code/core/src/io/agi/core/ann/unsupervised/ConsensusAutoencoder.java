@@ -20,82 +20,55 @@
 package io.agi.core.ann.unsupervised;
 
 import io.agi.core.ann.supervised.TransferFunction;
-import io.agi.core.data.*;
-import io.agi.core.math.Geometry;
+import io.agi.core.data.Data;
+import io.agi.core.data.FloatArray;
+import io.agi.core.data.Otsu;
+import io.agi.core.data.Ranking;
 import io.agi.core.math.Useful;
 import io.agi.core.orm.ObjectMap;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.TreeMap;
 
 /**
- * An implementation of K-Sparse Autoencoders by Alireza Makhzani and Brendan Frey
+ * A derivation of of K-Sparse Autoencoders by Alireza Makhzani and Brendan Frey
  *
  * Full paper at: http://arxiv.org/abs/1312.5663
  *
- * One small difference: I saw in a later paper the authors set the gradients to zero to implement the sparsening. But,
- * in this paper I wasn't sure. Emailed them, and Ali says:
- *
- * "The implementation is only one line of code, just like dropout. In dropout, you randomly set hidden units to zero,
- * in k-sparse autoencoder you set the k largest units to zero in the forward pass. If you set the activation to zero,
- * then the gradient doesn't go back through that hidden unit. So you only need to modify the forward pass.
- *
- * Also, I bumped into Eric Laukien on the internet and he said he had better results setting the hidden activation of
- * the k hidden cells to a unit value, so I've added that as an option but it isn't tested yet.
- *
  * Created by dave on 1/07/16.
  */
-public class KSparseAutoencoder extends CompetitiveLearning {
+public class ConsensusAutoencoder extends CompetitiveLearning {
 
-    protected static final Logger logger = LogManager.getLogger();
-
-//    public static float REGULARIZATION = 0.001f;
-
-    public KSparseAutoencoderConfig _c;
+    public ConsensusAutoencoderConfig _c;
     public ArrayList< Integer > _sparseUnitInput;
     public Data _inputValues;
     public Data _inputReconstructionWeightedSum;
     public Data _inputReconstruction;
-    public Data _inputReconstructionWeightedSumK2;
-    public Data _inputReconstructionK2;
     public Data _cellWeights;
     public Data _cellBiases1;
     public Data _cellBiases2;
-//    public Data _cellWeightsVelocity;
-//    public Data _cellBiases1Velocity;
-//    public Data _cellBiases2Velocity;
-    public Data _cellMask;
     public Data _cellErrors;
     public Data _cellWeightedSum;
     public Data _cellTransfer;
     public Data _cellTransferTopK;
     public Data _cellActivity;
     public Data _cellAges; // age is zero when active, otherwise incremented
-    public Data _cellRates; // rate at which cell fires
     public Data _cellPromotion; // idle cells are promoted until they are used
-    public Data _cellInhibition; // idle cells are promoted until they are used
-//    public Data _cellPositionInhibition;
-//    public Data _cellSequenceInhibitionWeights;
+    public Data _cellInhibitionWeights;
+    public Data _inhibitionHistory;
+    public Data _concensusHistory;
 
-//    protected boolean _ageLearn = true;
+    protected boolean _ageLearn = true;
 
     protected ArrayList< Integer > _activeCells = new ArrayList< Integer >();
 
-    // Instrumentation
-    public float _sumResponse = 0f;
-    public float _sumTopKError = 0f;
-    // Instrumentation
-
-    public KSparseAutoencoder( String name, ObjectMap om ) {
+    public ConsensusAutoencoder( String name, ObjectMap om ) {
         super( name, om );
     }
 
-    public void setup( KSparseAutoencoderConfig c ) {
+    public void setup( ConsensusAutoencoderConfig c ) {
         _c = c;
 
         int inputs = c.getNbrInputs();
@@ -105,41 +78,31 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         _inputValues = new Data( inputs );
         _inputReconstructionWeightedSum = new Data( inputs );
         _inputReconstruction = new Data( inputs );
-        _inputReconstructionWeightedSumK2 = new Data( inputs );
-        _inputReconstructionK2 = new Data( inputs );
         _cellWeights = new Data( w, h, inputs );
         _cellBiases1 = new Data( w, h );
         _cellBiases2 = new Data( inputs );
-//        _cellWeightsVelocity = new Data( w, h, inputs );
-//        _cellBiases1Velocity = new Data( w, h );
-//        _cellBiases2Velocity = new Data( inputs );
         _cellErrors = new Data( w, h );
-        _cellMask = new Data( w, h );
         _cellWeightedSum = new Data( w, h );
         _cellTransfer = new Data( w, h );
         _cellTransferTopK = new Data( w, h );
         _cellActivity = new Data( w, h );
         _cellAges = new Data( w, h );
-        _cellRates = new Data( w, h );
         _cellPromotion = new Data( w, h );
-        _cellInhibition = new Data( w, h );
 
-        //int cells = c.getNbrCells();
-        //_cellSequenceInhibitionWeights = new Data( cells, cells );
-        //_cellPositionInhibition = new Data( w, h );
+        int concensusSteps = c.getConsensusSteps(); // TODO from config
+        int cells = w * h;
+        _cellInhibitionWeights = new Data( cells, cells );
+        _inhibitionHistory = new Data( cells, concensusSteps );
+         _concensusHistory = new Data( cells, concensusSteps );
     }
 
     public void reset() {
-
-        _cellAges.set( 0f );
-        _cellRates.set( 0f );
-        _cellMask.set( 1f ); // all cells available
 
         // Better initialization of the weights:
         // http://neuralnetworksanddeeplearning.com/chap3.html
         // init weights to SD = 1/ sqrt( n ) where n is number of inputs.
         int inputs = _inputValues.getSize(); //875.f;
-        float sqRtInputs = (float)Math.sqrt( (float)inputs );
+//        float sqRtInputs = (float)Math.sqrt( (float)inputs );
 /*        for( int i = 0; i < _cellWeights.getSize(); ++i ) {
             double r = _c._r.nextGaussian(); // mean: 0, SD: 1
             _cellWeights._values[ i ] = (float)r / sqRtInputs;
@@ -155,9 +118,7 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             _cellBiases2._values[ i ] = (float)r;
         }
 
-//        _cellWeightsVelocity.set( 0f );
-//        _cellBiases1Velocity.set( 0f );
-//        _cellBiases2Velocity.set( 0f );
+        _cellInhibitionWeights.set( 0.01f ); // no association
 
         // From the textbook:
         //        Then we shall initialize those weights as Gaussian random variables with mean 00 and standard deviation 1/nin−−−√1/nin.
@@ -189,99 +150,10 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         }
 
         _c.setAge( 0 );
-
-        //_cellSequenceInhibitionWeights.random( _c._r );
     }
 
-/*    public void updatePositionInhibition( Data cellActivityOld ) {
-        int cells = _c.getNbrCells();
-
-        TreeMap< Float, ArrayList< Integer > > ranking = new TreeMap< Float, ArrayList< Integer > >();
-
-        float dMax = cells * cells;
-
-        for( int c2 = 0; c2 < cells; ++c2 ) {
-
-            float sum = 0f;
-
-            Point xy2 = Data2d.getXY( _cellPositionInhibition._dataSize, c2 );
-
-            for( int c1 = 0; c1 < cells; ++c1 ) {
-                float oldActivity = cellActivityOld._values[ c1 ];
-
-                if( oldActivity < 1f ) {
-                    continue;
-                }
-
-                //int offset = c1 * cells + c2;
-
-                // this could be distance based actually.
-                //float weight = _cellSequenceInhibitionWeights._values[ offset ];
-                Point xy1 = Data2d.getXY( _cellPositionInhibition._dataSize, c1 );
-
-                float distance = Geometry.distanceEuclidean2d( xy1.x, xy1.y, xy2.x, xy2.y );
-                sum += distance;
-            }
-
-            _cellPositionInhibition._values[ c2 ] = sum;
-
-            Ranking.add( ranking, sum, c2 ); // this is the new output
-        }
-
-        // convert rank into a promotion value
-        float magnitude = 0.05f;
-        float perRank = magnitude / (float)cells;
-
-        Iterator i = ranking.keySet().iterator();
-
-        int rank = 0;
-
-        while( i.hasNext() ) {
-            Float key = ( Float ) i.next(); // the sum
-            ArrayList< Integer > al = ranking.get( key );
-
-            float inverseRank = cells - rank;
-            float promotion = 1f + perRank * inverseRank;
-
-            if( inverseRank < 0f ) {
-                int g = 0;
-                g++;
-            }
-            for( Integer c : al ) {
-                _cellPositionInhibition._values[ c ] = promotion;
-            }
-
-            ++rank;
-        }
-
-    }*/
-
-    public void updateInhibition() {
-        // inihibition of cells that are used too often. (lifetime sparsity)
-        // need to measure the rate of use - a slow moving average.
-        float rateScale = _c.getRateScale(); // about 5
-        float rateMax = _c.getRateMax(); // e.g. 0.1
-        int cells = _c.getNbrCells();
-
-        for( int c = 0; c < cells; ++c ) {
-            float rate = _cellRates._values[ c ];
-
-            if( rate > rateMax ) {
-                rate = rateMax;
-            }
-
-            rate = rate / rateMax; // so becomes 1 @ max value
-            // 0 = never used
-            // 1 = always used
-            // bring in the penalty for lifetime sparsity early, at around 20% (0.2)
-            // penalty becomes excessive at
-            // http://www.wolframalpha.com/input/?i=plot+1-(+e%5E(-5(1-x))+)+for+x+%3D+0+to+1.05
-            float factor = 1f - (float)( Math.exp( -rateScale * ( 1.0f - rate ) ) ); // 1 if old, zero if young
-            float inhibition = factor; // reduces the value
-
-            _cellInhibition._values[ c ] = inhibition;
-        }
-
+    public void call() {
+        update();
     }
 
     public void updatePromotion() {
@@ -312,11 +184,7 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         }
     }
 
-    public void updateAges( Collection< Integer > activeCells, float ageFactor, boolean learn ) {
-        if( !learn ) {
-            return;
-        }
-
+    public void updateAges( Collection< Integer > activeCells, float ageFactor ) {
         int cells = _c.getNbrCells();
 
         // increment all ages
@@ -334,61 +202,15 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         }
     }
 
-    public void updateRates( Collection< Integer > activeCells, boolean learn ) {
-        if( !learn ) {
-            return;
-        }
-
-        float learningRate = _c.getRateLearningRate();
-        float memoryRate = 1f - learningRate;
-        int cells = _c.getNbrCells();
-
-        // increment all ages
-        for( int c = 0; c < cells; ++c ) {
-            float rate = 0f;
-            if( activeCells.contains( c ) ) {
-                rate = 1f;
-            }
-
-            float oldRate = _cellRates._values[ c ];
-            float newRate = oldRate * memoryRate + rate * learningRate;
-            _cellRates._values[ c ] = newRate;
-        }
-    }
-
     public int updateSparsity() {
         int kMin = _c.getSparsityMin();
 //        int kMax = _c.getSparsityMax();
 //        int ageMin = _c.getAgeMin();
 //        int ageMax = _c.getAgeMax();
         int age = _c.getAge();
-
-//        _ageLearn = true;
-//
-//        int k = 0;
-//        if( age < ageMin ) {
-//            k = kMax;
-//            _ageLearn = false;
-//        }
-//        else if( k > ageMax ){
-//            k = kMin;
-//        }
-//        else {
-//            int age2 = age - ageMin;
-//            int ageRange = ageMax - ageMin;
-//            float relativeAge = (float)age2 / (float)ageRange;
-//            relativeAge = Math.min( 1.f, relativeAge );
-//            relativeAge = 1.f - relativeAge;
-//            int kRange = kMax - kMin;
-//            int kRel = (int)( (float)kRange * relativeAge );
-//            k = kMin + kRel;
-//        }
-//
-//        //System.err.println( "Age: " + age + " Sparsity: " + k );
-//        _c.setAge( age +1 );
         int k = kMin;
         _c.setSparsity( k );
-        _c.setAge( age +1 );
+        _c.setAge( age + 1 );
 
         return k;
     }
@@ -396,8 +218,228 @@ public class KSparseAutoencoder extends CompetitiveLearning {
     public void update() {
         // don't go any further unless learning is enabled
         boolean learn = _c.getLearn();
-//        learn = learn & _ageLearn;
+        learn = learn & _ageLearn;
         update( learn );
+    }
+
+    protected static void trainInhibition(
+            ConsensusAutoencoderConfig config,
+//            Data cellActivation,
+            ArrayList< Integer > activeCells,
+            Data inhibitionWeights ) {
+
+        int cells = config.getNbrCells();
+
+        // new parameters:
+        float concensusLearningRate = config.getConsensusLearningRate();// 0.01f;
+        float concensusDecayRate = config.getConsensusDecayRate();// 0.99f; // the system is nonstationary so we want it to be able to reduce weights not just grow more slowly
+
+//        HashSet< Integer > activeCells = initialActiveCells.indicesMoreThan( 0f );
+        HashSet< Integer > activeCellSet = new HashSet< Integer >();
+        activeCellSet.addAll( activeCells );
+
+        for( int j = 0; j < cells; ++j ) { // all cells (probably doesnt matter as y will be small when cell is not active
+//        for( Integer j : activeCells ) { // only active cells
+
+            float y = 0;
+
+            for( int i = 0; i < cells; ++i ) {
+                int inhibitionOffset = getInhibitionOffset( j, i, cells );
+                float w_ji = inhibitionWeights._values[ inhibitionOffset ];
+                float x_i = 0f;
+                if( activeCellSet.contains( i ) ) {
+                    x_i = 1f;
+                }
+                float y_i = x_i * w_ji;
+                y += y_i;
+            }
+
+            float ySq = y * y;
+
+            for( int i = 0; i < cells; ++i ) {
+
+// Not sure about this
+//                if( c1 > c2 ) {
+//                    continue;
+//                }
+
+
+                // how much does c1 inhibit c2?
+                // the inverse of the association between them
+                // use ojas rule to train inhibition?
+                // https://en.wikipedia.org/wiki/Oja%27s_rule
+                // http://www.scholarpedia.org/article/Oja_learning_rule
+                int inhibitionOffset = getInhibitionOffset( j, i, cells );
+                float w1 = inhibitionWeights._values[ inhibitionOffset ];
+                float w_ji = w1;
+                float x_i = 0f;
+                if( activeCellSet.contains( i ) ) {
+                    x_i = 1f;
+                }
+                // e.g. x = 1, y = 0.01 (wrong input)
+                // 0.01 * 0.01 = 0.001
+                //
+                float delta = concensusLearningRate * ( x_i * y - ySq * w_ji );
+                float w2 = w1 * concensusDecayRate + delta;
+                inhibitionWeights._values[ inhibitionOffset ] = w2;
+            }
+        }
+    }
+
+    protected static int getInhibitionOffset( int c1, int c2, int cells ) {
+//        int ca = c1;
+//        int cb = c2;
+//        if( c2 < c1 ) {
+//            ca = c2;
+//            cb = c1;
+//        }
+//        int inhibitionOffset = ca * cells + cb;
+        int inhibitionOffset = c1 * cells + c2;
+        return inhibitionOffset;
+    }
+
+    protected static HashSet< Integer > findConsensus(
+            ConsensusAutoencoderConfig config,
+//            Data initialActiveCells,
+            ArrayList< Integer > initialActiveCells,
+            Data cellWeightedSums,
+            Data cellActivation,
+            Data concensusHistory,
+            Data inhibitionHistory,
+            Data inhibitionWeights ) {
+        // find the concensus without promotion. That's only for learning.
+        // given a set of k active cells
+        // use these to inhibit other cells
+//        int inputs = _c.getNbrInputs();
+        int cells = config.getNbrCells();
+        int k = config.getSparsity();
+        float sparsityOutput = config.getSparsityOutput(); // alpha
+
+        // new parameters:
+        int maxConcensusSteps = config.getConsensusSteps();
+        float consensusStrength = config.getConsensusStrength();// 0.1f;
+
+        // preparation:
+        int k2 = (int)( (float)k * sparsityOutput );
+        int maxRank = k2;
+        boolean findMaxima = true;
+        concensusHistory.set( 0f );
+
+//        HashSet< Integer > activeCells = initialActiveCells.indicesMoreThan( 0f );
+        HashSet< Integer > activeCells = new HashSet< Integer >();
+        activeCells.addAll( initialActiveCells );
+
+        // since we are using Oja's rule the association metric is unbounded.
+        float maxSupport = inhibitionWeights.max();
+
+        // can either inhibit missing associations, or promote extra evidence.
+        for( int step = 0; step < maxConcensusSteps; ++step ) {
+
+            // calculate max support at this time:
+            for( int c2 = 0; c2 < cells; ++c2 ) {
+                float sumSupport = 0;
+
+                for( Integer c1 : activeCells ) {
+
+                    if( c1.equals( c2 ) ) {
+                        continue; // no self support
+                    }
+                    // how much does c1 inhibit c2?
+                    // the inverse of the association between them
+                    // use ojas rule to train inhibition?
+                    int inhibitionOffset = getInhibitionOffset( c1, c2, cells );
+                    float association = inhibitionWeights._values[ inhibitionOffset ];
+//                    association *= reciprocalMax; // now 1 if maximally associated globally
+//                    float inhibition = 1f - association; // ie if assoc = 1, ie always together, then inh = 0
+                    // if always orthogonal, then assoc = 0. inh = 1;
+                    sumSupport += association;
+                }
+
+                maxSupport = Math.max( sumSupport, maxSupport );
+            }
+
+            float reciprocalMax = 0f;
+            if( maxSupport > 0f ) {
+                reciprocalMax = 1f / maxSupport; // max = 3, 1/3 = 0.3     val * 0.3 = val /3
+            }
+
+            // calculate inhibition for each cell
+            for( int c2 = 0; c2 < cells; ++c2 ) {
+
+// inactive cells don't inhibit
+//                for( int c1 = 0; c1 < cells; ++c1 ) {
+//                }
+                float sumSupport = 0;
+
+                for( Integer c1 : activeCells ) {
+
+                    if( c1.equals( c2 ) ) {
+                        continue; // no self support
+                    }
+
+                    // how much does c1 support c2?
+                    int inhibitionOffset = getInhibitionOffset( c1, c2, cells );
+                    float association = inhibitionWeights._values[ inhibitionOffset ];
+                    association *= reciprocalMax; // now 1 if maximally associated globally
+//                    float inhibition = 1f - association; // ie if assoc = 1, ie always together, then inh = 0
+                    // if always orthogonal, then assoc = 0. inh = 1;
+                    sumSupport += association;
+                }
+
+                int nbrActiveCells = activeCells.size();
+                if( nbrActiveCells > 0 ) {
+                    sumSupport /= ( float ) nbrActiveCells;
+                }
+                int inhibitionOffset = step * cells + c2;
+                inhibitionHistory._values[ inhibitionOffset ] = sumSupport; // a unit value
+            }
+
+            TreeMap< Float, ArrayList< Integer > > rankingWithInhibition = new TreeMap< Float, ArrayList< Integer > >(); // for output
+
+            for( int c = 0; c < cells; ++c ) {
+        /*            float sum = 0.f;
+                for( int i = 0; i < inputs; ++i ) {
+                    int offset = c * inputs +i;
+                    float input = _inputValues._values[ i ];
+                    float weight = _cellWeights._values[ offset ];
+                    float product = input * weight;
+                    sum += product;
+                }
+                float bias = _cellBiases1._values[ c ];
+                sum += bias;*/
+
+                int inhibitionOffset = step * cells + c;
+                float support = inhibitionHistory._values[ inhibitionOffset ]; // a unit value
+
+                // now inhibit the weighted sums? or the nonlinearity?
+//                float sum = cellWeightedSums._values[ c ]; // a unit value, at most
+//
+//                float promotion = 1f + (support * consensusStrength ); // so basically a unit value * some strength factor e.g. 1.1
+//                float promoted = sum * promotion;
+//                float transfer = (float) TransferFunction.logisticSigmoid( promoted );
+                float transfer = cellActivation._values[ c ]; // a unit value
+                float promotion = 1f + (support * consensusStrength ); // so basically a unit value * some strength factor e.g. 1.1
+                float promoted = transfer * promotion;
+                Ranking.add( rankingWithInhibition, promoted, c ); // this is the new output
+            }
+
+            ArrayList< Integer > nextActiveCells = Ranking.getBestValues( rankingWithInhibition, findMaxima, maxRank );
+
+            // record which cells were active at each step of the search
+            for( Integer c : nextActiveCells ) {
+                int offset = step * cells + c;
+                concensusHistory._values[ offset ] = 1;
+            }
+
+            // if concensus reached, stop.
+            // but, since it won't change anymore, we dont need to implement this
+            // it will cost a lot of unnecessary work tho
+
+            activeCells.clear();
+            activeCells.addAll( nextActiveCells );
+        } // steps
+
+        return activeCells;
     }
 
     public void update( boolean learn ) {
@@ -418,9 +460,10 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         float ageFactor = 0.5f; // halve the age each time it fires
         float noiseMagnitude = 0.001f; // small magnitude
         float learningRate = _c.getLearningRate();
+        updatePromotion();
         int k = updateSparsity();
         float sparsityOutput = _c.getSparsityOutput(); // alpha
-        boolean binaryOutput = false;//_c.getBinaryOutput();
+//        boolean binaryOutput = false;//_c.getBinaryOutput();
         int k2 = (int)( (float)k * sparsityOutput );
 
         int inputs = _c.getNbrInputs();
@@ -433,9 +476,6 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         int colsT = cells; // minor
 //        FloatArray weightsT = FloatMatrix.transpose( _cellWeights, rows, cols );
 
-        updateInhibition();
-        updatePromotion();
-
         // add a small amount of noise to the inputs
         for( int i = 0; i < inputs; ++i ) {
             float noise = _c._r.nextFloat() * noiseMagnitude;
@@ -445,20 +485,10 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         // Hidden layer (forward pass)
         _cellActivity.set( 0.f );
 
-        TreeMap< Float, ArrayList< Integer > > ranking = new TreeMap< Float, ArrayList< Integer > >();
-        TreeMap< Float, ArrayList< Integer > > rankingWithPromotion = new TreeMap< Float, ArrayList< Integer > >();
+        TreeMap< Float, ArrayList< Integer > > rankingSansPromotionForOutput = new TreeMap< Float, ArrayList< Integer > >(); // for output
+        TreeMap< Float, ArrayList< Integer > > rankingWithPromotionForTraining = new TreeMap< Float, ArrayList< Integer > >(); // for learning
 
         for( int c = 0; c < cells; ++c ) {
-
-            float mask = _cellMask._values[ c ];
-
-            if( mask < 1f ) {
-                _cellWeightedSum._values[ c ] = 0f;
-                _cellTransfer._values[ c ] = 0f;
-
-                continue;
-            }
-
             float sum = 0.f;
 
             for( int i = 0; i < inputs; ++i ) {
@@ -477,91 +507,90 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
             _cellWeightedSum._values[ c ] = sum;
 
-            float transfer = (float)TransferFunction.logisticSigmoid( sum );
+            float transfer = (float) TransferFunction.logisticSigmoid( sum );
 
             _cellTransfer._values[ c ] = transfer;
 
+            // without promotion
 //            Ranking.add( ranking, sum, c );
-            Ranking.add( ranking, transfer, c ); // this is the new output
+            Ranking.add( rankingSansPromotionForOutput, transfer, c ); // this is the new output
 
-            float promotion  = _cellPromotion._values[ c ];
-            float inhibition = _cellInhibition._values[ c ];
-            float transferPromoted = transfer * promotion * inhibition;
+            // add promotion
+            float promotion = _cellPromotion._values[ c ];
+            float transferPromoted = transfer * promotion;
 
-            //float sequenceInhibition = _cellPositionInhibition._values[ c ];
-            //float transferPromoted = transfer * promotion * inhibition * sequenceInhibition;
-
-            Ranking.add( rankingWithPromotion, transferPromoted, c ); // this is the new output
+            Ranking.add( rankingWithPromotionForTraining, transferPromoted, c ); // this is the new output
         }
 
         // Hidden Layer Nonlinearity: Make all except top k cells zero.
         int maxRank = k2;
         boolean findMaxima = true;
-        //Ranking.truncate( ranking, maxRank, findMaxima );
+        //Ranking.truncate( ranking, maxRank, findMaxima ); whats the point
 
-//        findActiveHiddenCellsOtsu();
-        findActiveHiddenCellsRank( ranking, findMaxima, maxRank );
-
-        // HACK
-        _sumResponse = 0f;
-        _sumTopKError = 0f;
-        for( Integer c : _activeCells ) {
-            float transfer = _cellTransfer._values[ c ]; // otherwise zero
-            float error = _cellErrors._values[ c ]; // otherwise zero
-            _sumResponse += transfer;
-            _sumTopKError += error;
-        }
-        // HACK
+//        findActiveHiddenCellsRank( rankingSansPromotionForOutput, findMaxima, maxRank );
+        maxRank = k; // just to see if this shakes things up a bit
+        ArrayList< Integer > activeCellsSansPromotion = Ranking.getBestValues( rankingSansPromotionForOutput, findMaxima, maxRank );
 
         // now restrict to just k. This set is used for learning.
         // Hence, we now swap to the "promoted" scores
         maxRank = k;
 
-//        ArrayList< Integer > activeCells = Ranking.getBestValues( ranking, findMaxima, maxRank );
-        ArrayList< Integer > activeCellsWithPromotion = Ranking.getBestValues( rankingWithPromotion, findMaxima, maxRank );
+        ArrayList< Integer > activeCells = Ranking.getBestValues( rankingWithPromotionForTraining, findMaxima, maxRank );
+
+        // Produce the concensus output:
+        HashSet< Integer > consensusCells = findConsensus( _c, activeCellsSansPromotion, _cellWeightedSum, _cellTransfer, _concensusHistory, _inhibitionHistory, _cellInhibitionWeights );
+
+        _activeCells.clear();
+        _activeCells.addAll( consensusCells );
+
+        for( Integer c : _activeCells ) {
+            _cellActivity._values[ c ] = 1.f;
+        }
+
+        // Train the concensus system:
+        // Don't use consensus cells, so there's no runaway feedback effect
+        // We use promoted values for this to pre-train them
+        trainInhibition( _c, activeCells, _cellInhibitionWeights );
+
 
         _cellTransferTopK.set( 0f );
 
-        // NOTE: Use the promoted transfer value for training
-        for( Integer c : activeCellsWithPromotion ) {
+        // NOTE: Use the *non* promoted transfer value for forward and backward passes
+        for( Integer c : activeCells ) {
             float transfer = _cellTransfer._values[ c ]; // otherwise zero
             _cellTransferTopK._values[ c ] = transfer;
         }
 
         // NOTE: Update ages with the *non* promoted ranking, to require a "natural" win indicating the weights have learned to be useful to zero the age
         // NOTE: I tried the above, but it just got fixated. Seems like you have to learn it once, then remove the promotion.
-        updateAges( activeCellsWithPromotion, ageFactor, learn );
+        updateAges( activeCells, ageFactor );
         //updateAges( _activeCells );
-        updateRates( activeCellsWithPromotion, learn );
-
 
         // Output layer (forward pass)
         // dont really need to do this if not learning.
-        reconstruct( _cellTransferTopK, _inputReconstructionWeightedSum, _inputReconstruction ); // for learning
-        reconstruct( _cellActivity, _inputReconstructionWeightedSumK2, _inputReconstructionK2 ); // for output
-//        for( int i = 0; i < inputs; ++i ) {
-//            float sum = 0.f;
-//
-//            for( int c = 0; c < cells; ++c ) {
-//
-//                float response = _cellTransferTopK._values[ c ];
-//
-//                int offset = c * inputs +i;
-//                float weight = _cellWeights._values[ offset ];
-//                float product = response * weight;
-//                sum += product;
-//            }
-//
-//            float bias = _cellBiases2._values[ i ];
-//
-//            sum += bias;
-//
-//            _inputReconstructionWeightedSum._values[ i ] = sum;
-//
-//            float transfer = (float)TransferFunction.logisticSigmoid( sum );
-//
-//            _inputReconstruction._values[ i ] = transfer;
-//        }
+        for( int i = 0; i < inputs; ++i ) {
+            float sum = 0.f;
+
+            for( int c = 0; c < cells; ++c ) {
+
+                float response = _cellTransferTopK._values[ c ];
+
+                int offset = c * inputs +i;
+                float weight = _cellWeights._values[ offset ];
+                float product = response * weight;
+                sum += product;
+            }
+
+            float bias = _cellBiases2._values[ i ];
+
+            sum += bias;
+
+            _inputReconstructionWeightedSum._values[ i ] = sum;
+
+            float transfer = (float)TransferFunction.logisticSigmoid( sum );
+
+            _inputReconstruction._values[ i ] = transfer;
+        }
 
         // don't go any further unless learning is enabled
         if( !learn ) {
@@ -604,6 +633,8 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             totalError += ( error * error ); // fyi only
         }
 
+        System.err.println( "Total error: " + totalError );
+
         // compute gradient in hidden units. Derivative is either 1 or 0 depending whether the cell was filtered.
         for( int c = 0; c < cells; ++c ) { // computing error for each "input"
             float sum = 0.f;
@@ -639,10 +670,6 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
             float errorGradient = dOutput._values[ i ];
 
-//            if( errorGradient == 0f ) {
-//                continue;
-//            }
-
             for( int c = 0; c < cells; ++c ) { // computing error for each "input"
 
                 int offset = c * inputs + i;
@@ -654,44 +681,22 @@ public class KSparseAutoencoder extends CompetitiveLearning {
                 // Normal
                 float wNew = wOld - wDelta;
 
-                // Momentum
-//                float vOld = _cellWeightsVelocity._values[ offset ];
-//                float vNew = ( vOld * friction ) - wDelta;
-//                float wNew = wOld + vNew;
-                // Weight decay / L2 regularization
-//                float regularization = learningRate * REGULARIZATION * wOld;
-//                float wNew = wOld - wDelta - regularization;
-
-                // Weight clipping
-//                float wMax = 1.f;
-//                if( wNew > wMax ) wNew = wMax;
-//                if( wNew < -wMax ) wNew = -wMax;
-
                 Useful.IsBad( wNew );
 
                 _cellWeights._values[ offset ] = wNew;
-//                _cellWeightsVelocity._values[ offset ] = vNew;
             }
 
             float bOld = _cellBiases2._values[ i ];
             float bDelta = learningRate * errorGradient;
             float bNew = bOld - bDelta;
-//            float vOld = _cellBiases2Velocity._values[ i ];
-//            float vNew = ( vOld * friction ) - bDelta;
-//            float bNew = bOld + vNew;
 
             _cellBiases2._values[ i ] = bNew;
-//            _cellBiases2Velocity._values[ i ] = vNew;
         }
 
         // now gradient descent in the input->hidden layer
         for( int c = 0; c < cells; ++c ) { // computing error for each "input"
 
             float errorGradient = dHidden._values[ c ];
-
-//            if( errorGradient == 0f ) {
-//                continue;
-//            }
 
             for( int i = 0; i < inputs; ++i ) {
 
@@ -704,96 +709,18 @@ public class KSparseAutoencoder extends CompetitiveLearning {
                 // Normal
                 float wNew = wOld - wDelta;
 
-                // Momentum
-//                float vOld = _cellWeightsVelocity._values[ offset ];
-//                float vNew = ( vOld * friction ) - wDelta;
-//                float wNew = wOld + vNew;
-
-                // Weight decay / L2 regularization
-//                float regularization = learningRate * REGULARIZATION * wOld;
-//                float wNew = wOld - wDelta - regularization;
-
-                // Weight clipping
-//                float wMax = 1.f;
-//                if( wNew > wMax ) wNew = wMax;
-//                if( wNew < -wMax ) wNew = -wMax;
-
                 Useful.IsBad( wNew );
 
                 _cellWeights._values[ offset ] = wNew;
-//                _cellWeightsVelocity._values[ offset ] = vNew;
             }
 
             float bOld = _cellBiases1._values[ c ];
             float bDelta = learningRate * errorGradient;
             float bNew = bOld - bDelta;
-//            float vOld = _cellBiases1Velocity._values[ c ];
-//            float vNew = ( vOld * friction ) - bDelta;
-//            float bNew = bOld + vNew;
 
             _cellBiases1._values[ c ] = bNew;
-//            _cellBiases1Velocity._values[ c ] = vNew;
         }
 
-//        - investigate k sparse weights view : they look good in reconstruction - due to vaRYING MAGS
-//        - add data stats view
-//            - read paper re why so many idle (epochs)
-//        - why dont they get closer eg learning of static active cells
-//
-//competitive - when promoted, promote until naturally wins, then zero the promotion.
-//nonlinear - saturates at 1. so the nodes are flat.
-//looks like need sigmoid
-
-//        FloatArray iHidden = _inputValues;
-////        FloatArray iOutput = _cellResponse;//cellResponseTruncated; // input reconstructed as output
-//        FloatArray iOutput = cellResponseTruncated; // input reconstructed as output
-//
-//        FloatArray bHidden = _cellBiases1;
-//        FloatArray bOutput = _cellBiases2;
-//
-//        FloatArray wHidden = _cellWeights;
-////        FloatArray wOutput = weightsT;
-//
-//        // normally z is the weighted sum + bias, but in this case the transfer function is linear so it is the same as the post-transfer (output) value
-////        FloatArray zHidden = _cellResponse;//cellResponseTruncated; // i.e. these are mostly zeros
-//        FloatArray zHidden = cellResponseTruncated; // i.e. these are mostly zeros
-//        FloatArray zOutput = _inputReconstruction;
-//
-//        FloatArray mOutput = new FloatArray( inputs );
-//        mOutput.set( 1.f );
-//
-//        FloatArray mHidden = new FloatArray( cells );
-//        mHidden.set( 0.f );
-//        for( Integer c : _activeCells ) {
-//            mHidden._values[ c ] = 1.f;
-//        }
-//
-//        TransferFunction f = TransferFunction.createLinear();
-
-        // Compute the delta terms for the hidden layer
-//        float l2R = 0.f;
-//        BackPropagation.ErrorGradient( zHidden, dHidden, wOutput, dOutput, f, l2R );
-
-        // Mask out the gradients for the inactive cells.
-//        for( int c = 0; c < cells; ++c ) {
-//            if( activeCells.contains( c ) ) {
-//                continue;
-//            }
-//
-//            dHidden._values[ c ] = 0.f;
-//        }
-
-        // This will back propagate to any inputs that were nonzero, because inputs to the cell layer that are zero won't be adjusted
-//        BackPropagation.StochasticGradientDescent( mOutput, dOutput, wOutput, bOutput, iOutput, learningRate );
-
-        // Since we've modified the weights, we need to transpose them and copy before we can modify them again
-//        FloatArray weightsUnT = FloatMatrix.transpose( wOutput, rowsT, colsT );
-//        wHidden.copy( weightsUnT );
-
-        // Don't need to calculate the error gradient for the input layer, as it has no weights
-        //BackPropagation.ErrorGradient( zInput, dInput, wHidden, dHidden, f, l2R ); // not required
-
-//        BackPropagation.StochasticGradientDescent( mHidden, dHidden, wHidden, bHidden, iHidden, learningRate );
     }
 
     protected void findActiveHiddenCellsOtsu() {
@@ -814,37 +741,5 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         for( Integer c : _activeCells ) {
             _cellActivity._values[ c ] = 1.f;
         }
-    }
-
-    public void reconstruct( Data hiddenActivity, Data reconstructionWeightedSum, Data reconstructionTransfer ) {
-        int inputs = _c.getNbrInputs();
-        int cells = _c.getNbrCells();
-
-        for( int i = 0; i < inputs; ++i ) {
-            float sum = 0.f;
-
-            for( int c = 0; c < cells; ++c ) {
-
-                float response = hiddenActivity._values[ c ];// _cellTransferTopK._values[ c ];
-
-                int offset = c * inputs +i;
-                float weight = _cellWeights._values[ offset ];
-                float product = response * weight;
-                sum += product;
-            }
-
-            float bias = _cellBiases2._values[ i ];
-
-            sum += bias;
-
-            if( reconstructionWeightedSum != null ) {
-                reconstructionWeightedSum._values[ i ] = sum;
-            }
-
-            float transfer = (float)TransferFunction.logisticSigmoid( sum );
-
-            reconstructionTransfer._values[ i ] = transfer;
-        }
-
     }
 }

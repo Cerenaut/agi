@@ -25,6 +25,7 @@ import io.agi.framework.EntityFactory;
 import io.agi.framework.Node;
 import io.agi.framework.demo.mnist.ImageClassEntity;
 import io.agi.framework.demo.mnist.MnistEntity;
+import io.agi.framework.demo.mnist.Text2ImageLabelEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.persistence.models.ModelEntity;
 import org.apache.logging.log4j.LogManager;
@@ -110,6 +111,10 @@ public class CommonEntityFactory implements EntityFactory {
             return new AutoRegionLayerEntity( objectMap, _n, modelEntity );
         }
 
+        if( entityType.equals( PyramidRegionLayerEntity.ENTITY_TYPE ) ) {
+            return new PyramidRegionLayerEntity( objectMap, _n, modelEntity );
+        }
+
 //        if( entityType.equals( ConsensusRegionLayerEntity.ENTITY_TYPE ) ) {
 //            return new ConsensusRegionLayerEntity( objectMap, _n, modelEntity );
 //        }
@@ -130,6 +135,10 @@ public class CommonEntityFactory implements EntityFactory {
             return new ConfigProductEntity( objectMap, _n, modelEntity );
         }
 
+        if( entityType.equals( BinaryErrorEntity.ENTITY_TYPE ) ) {
+            return new BinaryErrorEntity( objectMap, _n, modelEntity );
+        }
+
         if( entityType.equals( SpikeEncoderEntity.ENTITY_TYPE ) ) {
             return new SpikeEncoderEntity( objectMap, _n, modelEntity );
         }
@@ -148,6 +157,10 @@ public class CommonEntityFactory implements EntityFactory {
 
         if( entityType.equals( ImageClassEntity.ENTITY_TYPE ) ) {
             return new ImageClassEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( Text2ImageLabelEntity.ENTITY_TYPE ) ) {
+            return new Text2ImageLabelEntity( objectMap, _n, modelEntity );
         }
 
         return null;

@@ -25,7 +25,7 @@ import io.agi.framework.EntityConfig;
  *
  * Created by dave on 7/07/16.
  */
-public class AutoRegionLayerEntityConfig extends EntityConfig {
+public class ConsensusRegionLayerEntityConfig extends EntityConfig {
 
     float contextFreeLearningRate = 0.1f;
     int contextFreeWidthCells = 15;
@@ -40,33 +40,15 @@ public class AutoRegionLayerEntityConfig extends EntityConfig {
     int contextFreeAge = 0; // current value, computed
     float contextFreeAgeScale = 17f; // current value, computed
 
-    float rateScale = 5f;
-    float rateMax = 0.25f;
-    float rateLearningRate = 0.001f;
-
-//    float contextualLearningRate = 0.1f;
-//    int contextualWidthCells = 20;
-//    int contextualHeightCells = 20;
-//    int contextualSparsity = 0; // current value, computed
-//    int contextualSparsityOutput = 0;
-//    int contextualSparsityMin = 0;
-//    int contextualSparsityMax = 0;
-//    int contextualAgeMin = 0;
-//    int contextualAgeMax = 0;
-//    int contextualAge = 0; // current value, computed
-
-    float slowSparsity = 0;
+    float outputSparsity = 0;
 
     float defaultPredictionInhibition = 0.f; // don't inhibit
 
     float predictorLearningRate = 100.0f;
 
-    // outputs calculated during operation
-    int sumFalsePositiveErrors = 0;
-    int sumFalseNegativeErrors = 0;
-
-    float sumAbsPredictionErrorInput1 = 0f;
-    float sumAbsPredictionErrorInput2 = 0f;
-    float sumAbsPredictionErrorInput3 = 0f;
+    float consensusLearningRate = 0.01f;
+    float consensusDecayRate = 0.99f;
+    float consensusStrength = 0.1f; // 10% influence
+    int consensusSteps = 20;
 
 }

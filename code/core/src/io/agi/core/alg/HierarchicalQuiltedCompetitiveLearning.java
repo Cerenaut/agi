@@ -213,8 +213,8 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
 
 //        int history = _config.getErrorHistoryLength();
 //        int regionAreaCells = _config.getRegionAreaCells();
-        int nbrSelections = 50;
-        float fracExclusions = 0.15f;
+        int nbrSelections = 1;
+        float fracExclusions = 0;//.15f;
         int nbrExclusions = (int)( (float)_transient._regionActiveCells.size() * fracExclusions );
 
         ArrayList< Integer > allActiveCells = new ArrayList< Integer >();
