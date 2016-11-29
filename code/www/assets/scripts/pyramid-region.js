@@ -336,6 +336,25 @@ var Region = {
     Region.repaintInput();
   },
 
+  // general GUI design:
+  // interesting data:
+  // ----------------------------------------
+  // Cprediction-new /old           --- (binary) what it expects/ed to fire next 
+  // Cprediction-error-fp / fn      --- (binary) attempts to predict the current input
+  // C classifier-spikes-new         --- (binary) the bottom-up classification of current input NOW
+  // C classifier-spikes-integrated  --- (real)   how it's managing per cell with the combination of input and output
+  // L output-spikes-new             --- (binary) the output spikes this iter
+  // L predictor-output-traces       --- (real)   history of recent output spikes
+  // R input-c1 / c2                 --- the P1/2 inputs are not so interesting.
+
+  // LEFT: R: output-spikes-new, G-fill: predictor-output-traces (ie the output of the RL)
+  //       R-outline: classifier-spikes-new, G: integrated (latter is fill, spikes are outline)
+  // 
+  // MIDDLE: R: classifier-spikes-new, G: pred-old (so R = FN error, G = FP error, Y = good.
+  //                                2nd outline (small) is pred-old (generates errors) with colouring by error type (FP/FN)? 
+  //         2nd row: prediction-old + 
+  // RIGHT: input c1, c2 of selected cells. + current inputs
+
   repaintMiddle : function() {
     var dataNew = Region.findData( "-classifier-spikes-new" );
     if( !dataNew ) {

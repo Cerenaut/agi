@@ -67,6 +67,10 @@ public class CommonEntityFactory implements EntityFactory {
             return new ValueSeriesEntity( objectMap, _n, modelEntity );
         }
 
+        if( entityType.equals( VectorSeriesEntity.ENTITY_TYPE ) ) {
+            return new VectorSeriesEntity( objectMap, _n, modelEntity );
+        }
+
         if( entityType.equals( RandomVectorEntity.ENTITY_TYPE ) ) {
             return new RandomVectorEntity( objectMap, _n, modelEntity );
         }

@@ -504,12 +504,10 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
         // HACK
         _sumResponse = 0f;
-        _sumTopKError = 0f;
         for( Integer c : _activeCells ) {
             float transfer = _cellTransfer._values[ c ]; // otherwise zero
             float error = _cellErrors._values[ c ]; // otherwise zero
             _sumResponse += transfer;
-            _sumTopKError += error;
         }
         // HACK
 
@@ -536,32 +534,24 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
 
         // Output layer (forward pass)
+        // diagnostics
         // dont really need to do this if not learning.
         reconstruct( _cellTransferTopK, _inputReconstructionWeightedSum, _inputReconstruction ); // for learning
         reconstruct( _cellActivity, _inputReconstructionWeightedSumK2, _inputReconstructionK2 ); // for output
-//        for( int i = 0; i < inputs; ++i ) {
-//            float sum = 0.f;
-//
-//            for( int c = 0; c < cells; ++c ) {
-//
-//                float response = _cellTransferTopK._values[ c ];
-//
-//                int offset = c * inputs +i;
-//                float weight = _cellWeights._values[ offset ];
-//                float product = response * weight;
-//                sum += product;
-//            }
-//
-//            float bias = _cellBiases2._values[ i ];
-//
-//            sum += bias;
-//
-//            _inputReconstructionWeightedSum._values[ i ] = sum;
-//
-//            float transfer = (float)TransferFunction.logisticSigmoid( sum );
-//
-//            _inputReconstruction._values[ i ] = transfer;
-//        }
+
+        // diagnostics
+        // calculate error of top-k (only)
+        _sumTopKError = 0f;
+        for( int i = 0; i < inputs; ++i ) {
+            float target = _inputValues._values[ i ]; // y
+            float output = _inputReconstruction._values[ i ]; // a
+            float error = output - target; // == d^L
+            error *= error;
+            error = (float)Math.sqrt( error );
+
+            _sumTopKError += error;
+//            _cellErrors._values[ i ] = error; uh ... its not per cell
+        }
 
         // don't go any further unless learning is enabled
         if( !learn ) {

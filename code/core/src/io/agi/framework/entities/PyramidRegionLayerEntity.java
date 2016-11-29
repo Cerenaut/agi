@@ -102,7 +102,6 @@ public class PyramidRegionLayerEntity extends Entity {
 
         flags.putFlag( CLASSIFIER_SPIKES_OLD, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( CLASSIFIER_SPIKES_NEW, DataFlags.FLAG_SPARSE_BINARY );
-        flags.putFlag( CLASSIFIER_SPIKES_INTEGRATED, DataFlags.FLAG_SPARSE_BINARY );
 
         attributes.add( OUTPUT_SPIKES_OLD );
         attributes.add( OUTPUT_SPIKES_NEW );
@@ -177,6 +176,8 @@ public class PyramidRegionLayerEntity extends Entity {
 
     protected void doUpdateSelf() {
 
+        PyramidRegionLayerEntityConfig config = ( PyramidRegionLayerEntityConfig ) _config;
+
         // Do nothing unless the input is defined
         Data inputC1 = getData( INPUT_C1 );
         Data inputC2 = getData( INPUT_C2 );
@@ -184,6 +185,14 @@ public class PyramidRegionLayerEntity extends Entity {
         Data inputP2 = getData( INPUT_P2 );
 
         if( ( inputC1 == null ) || ( inputC2 == null ) || ( inputP1 == null ) || ( inputP2 == null ) ) {
+            // we need to produce our output even if we can't write to it yet, to allow circular dependencies to be formed.
+            Data outputSpikes = new Data( config.widthCells, config.heightCells );
+            setData( OUTPUT_SPIKES_OLD, outputSpikes );
+            setData( OUTPUT_SPIKES_NEW, outputSpikes );
+
+            if( config.reset ) {
+                config.resetDelayed = true;
+            }
             return; // can't update yet.
         }
 
@@ -212,8 +221,6 @@ public class PyramidRegionLayerEntity extends Entity {
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Algorithm specific parameters
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        PyramidRegionLayerEntityConfig config = ( PyramidRegionLayerEntityConfig ) _config;
-
         // Build the algorithm
         ObjectMap om = ObjectMap.GetInstance();
 
@@ -244,8 +251,9 @@ public class PyramidRegionLayerEntity extends Entity {
 
         copyDataFromPersistence( rl );
 
-        if( config.reset ) {
+        if( config.reset || config.resetDelayed ) {
             rl.reset();
+            config.resetDelayed = false;
         }
 
         rl._rc.setLearn( config.learn );

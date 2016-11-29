@@ -45,6 +45,8 @@ public class PyramidRegionLayerEntityConfig extends EntityConfig {
     float predictorTraceDecayRate = 0.5f; // fast decay ie exact timing important
 
     // stats calculated during operation
+    boolean resetDelayed = false;
+
     float sumClassifierError = 0;
     float sumClassifierResponse = 0;
     float sumOutputSpikes = 0;
