@@ -76,7 +76,7 @@ public class NumberEncoder implements SparseDistributedEncoder {
      * @param decodingInput
      * @return
      */
-    public Data createDecodingOutput( Data decodingInput ) {
+    public Data createDecodingOutput( Data encodingInput, Data decodingInput ) {
         return new Data( DataSize.create( _numbers ) );
     }
 

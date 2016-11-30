@@ -19,28 +19,14 @@
 
 package io.agi.framework.entities;
 
-import io.agi.core.sdr.ScalarEncoder;
 import io.agi.framework.EntityConfig;
 
 /**
- * Created by dave on 2/04/16.
+ * Created by dave on 5/11/16.
  */
-public class EncoderEntityConfig extends EntityConfig {
+public class ConfigProductEntityConfig extends EntityConfig {
 
-        String encoderType = ScalarEncoder.class.getSimpleName();
-
-        // Scalar encoder
-        int bits = 8;
-        int density = 1;
-        boolean encodeZero = true;
-
-        // Number encoder
-        public int digits = 1;
-        public int numbers = 1;
-
-        // Integer encoder
-        public int minValue = 0;
-        public int maxValue = 1;
-        public int rows = 1;
+    public String entityName;
+    public String configPath;
 
 }

@@ -62,7 +62,7 @@ import java.util.Collection;
  *
  * Created by dave on 8/07/16.
  */
-public class ClassFeaturesEntity extends Entity {
+public class FeatureLabelsEntity extends Entity {
 
     public static final String ENTITY_TYPE = "class-features";
 
@@ -70,7 +70,7 @@ public class ClassFeaturesEntity extends Entity {
     public static final String FEATURE_CLASS_COUNT = "feature-class-count";     // count of each of the features for a class
     public static final String CLASS_PREDICTION = "class-prediction";           // z
 
-    public ClassFeaturesEntity( ObjectMap om, Node n, ModelEntity model ) {
+    public FeatureLabelsEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
     }
 
@@ -84,13 +84,13 @@ public class ClassFeaturesEntity extends Entity {
     }
 
     public Class getConfigClass() {
-        return ClassFeaturesEntityConfig.class;
+        return FeatureLabelsEntityConfig.class;
     }
 
     @Override
     protected void doUpdateSelf() {
 
-        ClassFeaturesEntityConfig config = ( ClassFeaturesEntityConfig ) _config;
+        FeatureLabelsEntityConfig config = ( FeatureLabelsEntityConfig ) _config;
 
         Data featureData = getData( FEATURES );
         if( featureData == null ) {

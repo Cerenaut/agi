@@ -112,7 +112,7 @@ public class MnistHQCLDemo {
             topLayerName = region3FfName;
         }
 
-        Framework.CreateEntity( classFeaturesName, ClassFeaturesEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
+        Framework.CreateEntity( classFeaturesName, FeatureLabelsEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
 //        Framework.CreateEntity( activityImageDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), classFeaturesName );
 //        Framework.CreateEntity( predictedImageDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), classFeaturesName );
 
@@ -160,7 +160,7 @@ public class MnistHQCLDemo {
         if( layers == 1 ) featureDatas.add( new AbstractPair< String, String >( region1FfName, regionLayerFbOutputSuffix ) );
         if( layers == 2 ) featureDatas.add( new AbstractPair< String, String >( region2FfName, regionLayerFbOutputSuffix ) );
         if( layers == 3 ) featureDatas.add( new AbstractPair< String, String >( region3FfName, regionLayerFbOutputSuffix ) );
-        Framework.SetDataReferences( classFeaturesName, ClassFeaturesEntity.FEATURES, featureDatas ); // get current state from the region to be used to predict
+        Framework.SetDataReferences( classFeaturesName, FeatureLabelsEntity.FEATURES, featureDatas ); // get current state from the region to be used to predict
 
         // Experiment config
         if( !terminateByAge ) {
@@ -249,7 +249,7 @@ public class MnistHQCLDemo {
 
         organizerWidth = 8;
         organizerHeight = 8;
-        classifiersPerBit1 = 9;
+        classifiersPerBit1 = 5;
         classifierWidth = 8;
         classifierHeight = 8;
 
@@ -260,11 +260,11 @@ public class MnistHQCLDemo {
         }
 
         // apex
-        organizerWidth = 8; // maybe too ambitious?  8 -> 6 -> 3
-        organizerHeight = 8;
+        organizerWidth = 6; // maybe too ambitious?  8 -> 6 -> 3
+        organizerHeight = 6;
         classifiersPerBit1 = 9;
-        classifierWidth = 8;
-        classifierHeight = 8; // 100 cells each
+        classifierWidth = 12;
+        classifierHeight = 12; // 144 cells each
 
         if( layers > 2 ) {
             setRegionLayerConfig(

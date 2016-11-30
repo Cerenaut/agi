@@ -58,6 +58,8 @@ public class KSparseAutoencoder extends CompetitiveLearning {
     public Data _inputValues;
     public Data _inputReconstructionWeightedSum;
     public Data _inputReconstruction;
+    public Data _inputReconstructionWeightedSumK2;
+    public Data _inputReconstructionK2;
     public Data _cellWeights;
     public Data _cellBiases1;
     public Data _cellBiases2;
@@ -78,6 +80,10 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
     protected ArrayList< Integer > _activeCells = new ArrayList< Integer >();
 
+    // HACK
+    public float _sumResponse = 0f;
+    // HACK
+
     public KSparseAutoencoder( String name, ObjectMap om ) {
         super( name, om );
     }
@@ -92,6 +98,8 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         _inputValues = new Data( inputs );
         _inputReconstructionWeightedSum = new Data( inputs );
         _inputReconstruction = new Data( inputs );
+        _inputReconstructionWeightedSumK2 = new Data( inputs );
+        _inputReconstructionK2 = new Data( inputs );
         _cellWeights = new Data( w, h, inputs );
         _cellBiases1 = new Data( w, h );
         _cellBiases2 = new Data( inputs );
@@ -226,7 +234,11 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         }
     }
 
-    public void updateAges( Collection< Integer > activeCells, float ageFactor ) {
+    public void updateAges( Collection< Integer > activeCells, float ageFactor, boolean learn ) {
+        if( !learn ) {
+            return;
+        }
+
         int cells = _c.getNbrCells();
 
         // increment all ages
@@ -244,7 +256,11 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         }
     }
 
-    public void updateRates( Collection< Integer > activeCells ) {
+    public void updateRates( Collection< Integer > activeCells, boolean learn ) {
+        if( !learn ) {
+            return;
+        }
+
         float learningRate = _c.getRateLearningRate();
         float memoryRate = 1f - learningRate;
         int cells = _c.getNbrCells();
@@ -394,6 +410,14 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 //        findActiveHiddenCellsOtsu();
         findActiveHiddenCellsRank( ranking, findMaxima, maxRank );
 
+        // HACK
+        _sumResponse = 0f;
+        for( Integer c : _activeCells ) {
+            float transfer = _cellTransfer._values[ c ]; // otherwise zero
+            _sumResponse += transfer;
+        }
+        // HACK
+
         // now restrict to just k. This set is used for learning.
         // Hence, we now swap to the "promoted" scores
         maxRank = k;
@@ -411,36 +435,38 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
         // NOTE: Update ages with the *non* promoted ranking, to require a "natural" win indicating the weights have learned to be useful to zero the age
         // NOTE: I tried the above, but it just got fixated. Seems like you have to learn it once, then remove the promotion.
-        updateAges( activeCellsWithPromotion, ageFactor );
+        updateAges( activeCellsWithPromotion, ageFactor, learn );
         //updateAges( _activeCells );
-        updateRates( activeCellsWithPromotion );
+        updateRates( activeCellsWithPromotion, learn );
 
 
         // Output layer (forward pass)
         // dont really need to do this if not learning.
-        for( int i = 0; i < inputs; ++i ) {
-            float sum = 0.f;
-
-            for( int c = 0; c < cells; ++c ) {
-
-                float response = _cellTransferTopK._values[ c ];
-
-                int offset = c * inputs +i;
-                float weight = _cellWeights._values[ offset ];
-                float product = response * weight;
-                sum += product;
-            }
-
-            float bias = _cellBiases2._values[ i ];
-
-            sum += bias;
-
-            _inputReconstructionWeightedSum._values[ i ] = sum;
-
-            float transfer = (float)TransferFunction.logisticSigmoid( sum );
-
-            _inputReconstruction._values[ i ] = transfer;
-        }
+        reconstruct( _cellTransferTopK, _inputReconstructionWeightedSum, _inputReconstruction ); // for learning
+        reconstruct( _cellActivity, _inputReconstructionWeightedSumK2, _inputReconstructionK2 ); // for output
+//        for( int i = 0; i < inputs; ++i ) {
+//            float sum = 0.f;
+//
+//            for( int c = 0; c < cells; ++c ) {
+//
+//                float response = _cellTransferTopK._values[ c ];
+//
+//                int offset = c * inputs +i;
+//                float weight = _cellWeights._values[ offset ];
+//                float product = response * weight;
+//                sum += product;
+//            }
+//
+//            float bias = _cellBiases2._values[ i ];
+//
+//            sum += bias;
+//
+//            _inputReconstructionWeightedSum._values[ i ] = sum;
+//
+//            float transfer = (float)TransferFunction.logisticSigmoid( sum );
+//
+//            _inputReconstruction._values[ i ] = transfer;
+//        }
 
         // don't go any further unless learning is enabled
         if( !learn ) {
@@ -693,5 +719,35 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         for( Integer c : _activeCells ) {
             _cellActivity._values[ c ] = 1.f;
         }
+    }
+
+    protected void reconstruct( Data hiddenActivity, Data reconstructionWeightedSum, Data reconstructionTransfer ) {
+        int inputs = _c.getNbrInputs();
+        int cells = _c.getNbrCells();
+
+        for( int i = 0; i < inputs; ++i ) {
+            float sum = 0.f;
+
+            for( int c = 0; c < cells; ++c ) {
+
+                float response = hiddenActivity._values[ c ];// _cellTransferTopK._values[ c ];
+
+                int offset = c * inputs +i;
+                float weight = _cellWeights._values[ offset ];
+                float product = response * weight;
+                sum += product;
+            }
+
+            float bias = _cellBiases2._values[ i ];
+
+            sum += bias;
+
+            reconstructionWeightedSum._values[ i ] = sum;
+
+            float transfer = (float)TransferFunction.logisticSigmoid( sum );
+
+            reconstructionTransfer._values[ i ] = transfer;
+        }
+
     }
 }

@@ -20,10 +20,7 @@
 package io.agi.core.alg;
 
 import io.agi.core.ann.unsupervised.*;
-import io.agi.core.data.Data;
-import io.agi.core.data.DataSize;
-import io.agi.core.data.FloatArray;
-import io.agi.core.data.Ranking;
+import io.agi.core.data.*;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 
@@ -86,6 +83,9 @@ public class AutoRegionLayer extends NamedObject {
     // Data structures
     public Data _input1;
     public Data _input2;
+
+    public Data _outputInput1;
+    public Data _outputInput2;
 
     public Data _contextFreeActivity;
     public Data _contextFreeActivityOld;
@@ -150,6 +150,9 @@ public class AutoRegionLayer extends NamedObject {
         _input1 = new Data( dataSizeInput1 );
         _input2 = new Data( dataSizeInput2 );
 
+        _outputInput1 = new Data( dataSizeInput1 );
+        _outputInput2 = new Data( dataSizeInput2 );
+
         _contextFreeActivity    = new Data( dataSizeContextFree );
         _contextFreeActivityOld = new Data( dataSizeContextFree );
         _contextFreeActivityNew = new Data( dataSizeContextFree );
@@ -213,6 +216,8 @@ public class AutoRegionLayer extends NamedObject {
 
         onClassificationChanged();
 
+        updateInputOutput();
+
         // 3. Form the input to the contextual classifier from the new and previous context-free classification
 //        updateContextualClassification();
 //
@@ -257,6 +262,90 @@ public class AutoRegionLayer extends NamedObject {
 
         int offset = _input1.getSize();
 
+        // Hack - present all labels as inputs, pick the highest response. This being kept only to show it was tried.
+        /*
+        boolean doHack = false;
+        int input2Size = _input2.getSize();
+        if( _rc.getLearn() == false ) {
+            if( input2Size > 1 ) {
+                doHack = true;
+            }
+        }
+
+        if( doHack ) {
+            // test each label
+            float maxSum = 0f;
+            int bestLabel = 0;
+
+            // reset the input2
+
+            // set one col to represent a label
+            int labels = 10;
+            int w = labels;
+            int h = 8;
+            for( int label = 0; label < labels; ++label ) {
+
+                for( int i = 0; i < input2Size; ++i ) {
+                    int inputOffset = offset + i;
+                    _contextFreeClassifier._inputValues._values[ inputOffset ] = 0.f;
+                }
+
+                // set all input bits - one col
+                for( int y = 0; y < h; ++y ) {
+                    int input2Offset = y * labels + label;
+                    int inputOffset = offset + input2Offset;
+
+                    _contextFreeClassifier._inputValues._values[ inputOffset ] = 1.f;
+                }
+
+                _contextFreeClassifier.update(); // produces a new classification
+
+                float sum = _contextFreeClassifier._sumResponse;
+                if( sum >= maxSum ) {
+                    maxSum = sum;
+                    bestLabel = label;
+                }
+            }
+
+            // now repeat the best label:
+            for( int i = 0; i < input2Size; ++i ) {
+                int inputOffset = offset + i;
+                _contextFreeClassifier._inputValues._values[ inputOffset ] = 0.f;
+            }
+
+            // set all input bits - one col
+            for( int y = 0; y < h; ++y ) {
+                int input2Offset = y * labels + bestLabel;
+                int inputOffset = offset + input2Offset;
+
+                _contextFreeClassifier._inputValues._values[ inputOffset ] = 1.f;
+            }
+
+            _contextFreeClassifier.update(); // produces a new classification
+            _contextFreeActivity.copy( _contextFreeClassifier._cellActivity );
+
+            _transient._contextFreeActive    = _contextFreeActivity   .indicesMoreThan( 0.5f );
+            _transient._contextFreeActiveNew = _contextFreeActivityNew.indicesMoreThan( 0.5f );
+            _transient._contextFreeActiveOld = _contextFreeActivityOld.indicesMoreThan( 0.5f );
+        }
+        else {
+            // Original
+            for( Integer i : _transient._input2Active ) {
+                _contextFreeClassifier._inputValues._values[ offset + i ] = 1.f;
+            }
+
+            _contextFreeClassifier.update(); // produces a new classification
+            _contextFreeActivity.copy( _contextFreeClassifier._cellActivity );
+
+            _transient._contextFreeActive    = _contextFreeActivity   .indicesMoreThan( 0.5f );
+            _transient._contextFreeActiveNew = _contextFreeActivityNew.indicesMoreThan( 0.5f );
+            _transient._contextFreeActiveOld = _contextFreeActivityOld.indicesMoreThan( 0.5f );
+            // Original
+        }
+
+        // Hack */
+
+        // Original
         for( Integer i : _transient._input2Active ) {
             _contextFreeClassifier._inputValues._values[ offset + i ] = 1.f;
         }
@@ -267,6 +356,24 @@ public class AutoRegionLayer extends NamedObject {
         _transient._contextFreeActive    = _contextFreeActivity   .indicesMoreThan( 0.5f );
         _transient._contextFreeActiveNew = _contextFreeActivityNew.indicesMoreThan( 0.5f );
         _transient._contextFreeActiveOld = _contextFreeActivityOld.indicesMoreThan( 0.5f );
+    }
+
+    protected void updateInputOutput() {
+        // use the active cells in _cellActivity
+        // reproject back into the input space.
+        int offset = 0;
+        int inputs1 = _input1.getSize();
+        int inputs2 = _input2.getSize();
+
+        for( int i = 0; i < inputs1; ++i ) {
+            _outputInput1._values[ i ] = _contextFreeClassifier._inputReconstructionK2._values[ offset +i ];
+        }
+
+        offset = inputs1;
+
+        for( int i = 0; i < inputs2; ++i ) {
+            _outputInput2._values[ i ] = _contextFreeClassifier._inputReconstructionK2._values[ offset +i ];
+        }
     }
 
     protected boolean contextFreeClassificationChanged() {
@@ -403,7 +510,7 @@ public class AutoRegionLayer extends NamedObject {
         boolean findMaxima = false; // keep the youngest
 
         HashSet< Integer > youngOutput = new HashSet< Integer >();
-        Ranking.getBestValues( ranking, findMaxima, maxRank, youngOutput );
+        Ranking.getBestValuesRandomTieBreak( ranking, findMaxima, maxRank, youngOutput, _rc.getRandom() );
 
         for( Integer i : _transient._output ) {
 
@@ -424,7 +531,7 @@ public class AutoRegionLayer extends NamedObject {
         updatePrediction( _contextFreeActivityOld, _contextFreeActivityNew, density );
     }
     protected void updatePrediction( Data activityOld, Data activityNew, int density ) {
-        _predictor.train( activityOld, activityNew );
+        _predictor.trainLinear( activityOld, activityNew );
         _predictor.predict( activityNew, density );
         _predictionOld .copy( _predictionNew ); // the old prediction
         _predictionNew .copy( _predictor._statePredicted ); // copy the new prediction

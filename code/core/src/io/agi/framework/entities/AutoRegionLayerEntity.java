@@ -44,6 +44,9 @@ public class AutoRegionLayerEntity extends Entity {
     public static final String INPUT_1 = "input-1";
     public static final String INPUT_2 = "input-2";
 
+    public static final String OUTPUT_INPUT_1 = "output-input-1";
+    public static final String OUTPUT_INPUT_2 = "output-input-2";
+
     public static final String CONTEXT_FREE_ACTIVITY     = "context-free-activity";
     public static final String CONTEXT_FREE_ACTIVITY_OLD = "context-free-activity-old";
     public static final String CONTEXT_FREE_ACTIVITY_NEW = "context-free-activity-new";
@@ -98,6 +101,14 @@ public class AutoRegionLayerEntity extends Entity {
     }
 
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
+
+        attributes.add( OUTPUT_INPUT_1 );
+        attributes.add( OUTPUT_INPUT_2 );
+
+        flags.putFlag( OUTPUT_INPUT_1, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( OUTPUT_INPUT_2, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( OUTPUT_INPUT_1, DataFlags.FLAG_PERSIST_ONLY );
+        flags.putFlag( OUTPUT_INPUT_2, DataFlags.FLAG_PERSIST_ONLY );
 
         attributes.add( CONTEXT_FREE_ACTIVITY );
         attributes.add( CONTEXT_FREE_ACTIVITY_OLD );
@@ -332,6 +343,9 @@ public class AutoRegionLayerEntity extends Entity {
     }
 
     protected void copyDataToPersistence( AutoRegionLayer rl ) {
+
+        setData( OUTPUT_INPUT_1, rl._outputInput1 );
+        setData( OUTPUT_INPUT_2, rl._outputInput2 );
 
         setData( CONTEXT_FREE_ACTIVITY, rl._contextFreeActivity );
         setData( CONTEXT_FREE_ACTIVITY_OLD, rl._contextFreeActivityOld );

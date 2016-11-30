@@ -19,6 +19,7 @@
 
 package io.agi.framework.entities;
 
+import io.agi.core.sdr.IntegerEncoder;
 import io.agi.core.sdr.NumberEncoder;
 import io.agi.core.sdr.ScalarEncoder;
 import io.agi.core.sdr.SparseDistributedEncoder;
@@ -40,6 +41,13 @@ public class EncoderFactory {
         if( config.encoderType.equals( NumberEncoder.class.getSimpleName() ) ) {
             NumberEncoder encoder = new NumberEncoder();
             encoder.setup( config.digits, config.numbers );
+            return encoder;
+        }
+
+        if( config.encoderType.equals( IntegerEncoder.class.getSimpleName() ) ) {
+            IntegerEncoder encoder = new IntegerEncoder();
+            encoder.setup( config.minValue, config.maxValue, config.rows );
+
             return encoder;
         }
 

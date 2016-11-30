@@ -59,7 +59,7 @@ public interface SparseDistributedEncoder {
      * @param decodingInput
      * @return
      */
-    Data createDecodingOutput( Data decodingInput );
+    Data createDecodingOutput( Data encodingInput, Data decodingInput );
 
     /**
      * Encode the input. Note both args are expected to be non null and nonzero

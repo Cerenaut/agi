@@ -271,6 +271,44 @@ public class Ranking {
         }
     }
 
+    public static void getBestValuesRandomTieBreak( TreeMap< Float, ArrayList< Integer > > ranking, boolean max, int maxRank, Collection< Integer > bestValues, Random random ) {
+        Iterator i = null;
+        if( max ) { // rank max first
+            i = ranking.descendingKeySet().iterator(); // maxima first
+        } else { // rank min first
+            i = ranking.keySet().iterator(); // ascending values
+        }
+
+        HashMap< Float, ArrayList< Integer > > mutableRankedValues = new HashMap< Float, ArrayList< Integer >();
+
+        for( Float key : ranking.keySet() ) {
+            ArrayList< Integer > al = ranking.get( key );
+            ArrayList< Integer > copy = new ArrayList< Integer >( al );
+            mutableRankedValues.put( key, copy );
+        }
+
+        while( i.hasNext() ) {
+
+            Float key = ( Float ) i.next();
+            ArrayList< Integer > al = ranking.get( key );
+
+            // randomly add elements from the list.
+            ArrayList< Integer > copy = new ArrayList< Integer >( al ); // leave ranking unchanged
+
+            while( !copy.isEmpty() ) {
+                int ties = copy.size();
+                int r = random.nextInt( ties );
+                Integer n = copy.remove( r );
+
+                bestValues.add( n );
+
+                if( bestValues.size() >= maxRank ) {
+                    return;
+                }
+            }
+        }
+    }
+
     public static Integer getRank( TreeMap< Float, ArrayList< Integer > > ranking, boolean max, int value ) {
 
         Iterator i = null;
