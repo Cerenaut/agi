@@ -22,7 +22,20 @@ package io.agi.framework.entities;
 import io.agi.framework.EntityConfig;
 
 /**
- * Created by gideon on 17/07/2016.
+ * Created by gideon on 11/07/2016.
  */
-public class LogfileEntityConfig extends EntityConfig {
+public class LearningEntitiesAnalyticsEntityConfig extends EntityConfig {
+
+    public String classEntityName;
+    public String classConfigPath;
+    public int classes = 0;
+
+    public boolean onlineLearning = false;
+    public float onlineLearningRate = 0.001f;
+
+    // output:
+    public int classPredicted = 0; // the predicted class given the input features
+    public int classError = 0; // 1 if the prediction didn't match the input class
+    public int classTruth = 0; // the value that was taken as input
+
 }

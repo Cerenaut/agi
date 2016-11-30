@@ -19,10 +19,10 @@
 
 package io.agi.framework.entities;
 
-import io.agi.framework.EntityConfig;
-
 /**
- * Created by gideon on 11/07/2016.
+ * Created by dave on 9/07/16.
  */
-public class SVMEntityConfig extends EntityConfig {
+public class SVMEntityConfig extends LearningEntitiesAnalyticsEntityConfig {
+
+    public boolean trained = false;
 }
