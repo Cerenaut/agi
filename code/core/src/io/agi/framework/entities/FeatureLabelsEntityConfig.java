@@ -24,6 +24,6 @@ import io.agi.framework.EntityConfig;
 /**
  * Created by dave on 9/07/16.
  */
-public class ClassFeaturesEntityConfig extends LearningEntitiesAnalyticsEntityConfig {
+public class FeatureLabelsEntityConfig extends LearningEntitiesAnalyticsEntityConfig {
 
 }

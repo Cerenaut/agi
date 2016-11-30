@@ -42,7 +42,7 @@ import java.util.Collection;
  * Outputs:
  *
  *  2 Data:
- *  - ClassFeatures (A Data containing the frequencies of all features x all classes.)
+ *  - LabelFeatures (A Data containing the frequencies of all features x all classes.)
  *  - ClassPrediction (A Data containing a score for each class, where higher values = more likely.)
  *
  *  3 Config properties:
@@ -64,7 +64,7 @@ import java.util.Collection;
  */
 public class FeatureLabelsEntity extends Entity {
 
-    public static final String ENTITY_TYPE = "class-features";
+    public static final String ENTITY_TYPE = "feature-labels";
 
     public static final String FEATURES = "features";
     public static final String FEATURE_CLASS_COUNT = "feature-class-count";     // count of each of the features for a class

@@ -36,7 +36,7 @@ import java.util.Properties;
 public class DeepMNISTDemo {
 
     enum LearningEntitiesAnalyticsType {
-        ClassFeatures,
+        LabelFeatures,
         SvmEntity
     }
 
@@ -106,7 +106,9 @@ public class DeepMNISTDemo {
         boolean classFeaturesOnline = false;
         int layers = 3;
 
-        LearningEntitiesAnalyticsType learningEntitiesAnalyticsType = LearningEntitiesAnalyticsType.SvmEntity;
+        ArrayList<LearningEntitiesAnalyticsType> learningEntitiesAnalyticsTypes = new ArrayList<>();
+        learningEntitiesAnalyticsTypes.add( LearningEntitiesAnalyticsType.SvmEntity );
+        learningEntitiesAnalyticsTypes.add( LearningEntitiesAnalyticsType.LabelFeatures );
 
         // Define some entities' names
         String experimentName            = Framework.GetEntityName( "experiment" );
@@ -118,18 +120,17 @@ public class DeepMNISTDemo {
         String region3FfName             = Framework.GetEntityName( "image-region-3-ff" );
         String activityImageDecoderName  = Framework.GetEntityName( "activity-image-decoder" );
         String predictedImageDecoderName = Framework.GetEntityName( "predicted-image-decoder" );
-        String valueSeriesPredictedName  = Framework.GetEntityName( "value-series-predicted" );
-        String valueSeriesErrorName      = Framework.GetEntityName( "value-series-error" );
-        String valueSeriesTruthName      = Framework.GetEntityName( "value-series-truth" );
 
-        String learningEntitiesAlgorithm = region1FfName;
-        String learningEntitiesAnalytics = null;
-        if ( learningEntitiesAnalyticsType == LearningEntitiesAnalyticsType.ClassFeatures ) {
-            learningEntitiesAnalytics  = Framework.GetEntityName( "class-features" );
-        }
-        else {
-            learningEntitiesAnalytics  = Framework.GetEntityName( "svm-eval" );
-        }
+        String svmEntitySeriesPredictedName  = Framework.GetEntityName( "svm-value-series-predicted" );
+        String svmEntitySeriesErrorName      = Framework.GetEntityName( "svm-value-series-error" );
+        String svmEntitySeriesTruthName      = Framework.GetEntityName( "svm-value-series-truth" );
+
+        String svmEntitySeriesFeatures   = Framework.GetEntityName( "svm-vector-series-features" );
+
+        String featureLabelsSeriesPredictedName  = Framework.GetEntityName( "feature-labels-value-series-predicted" );
+        String featureLabelsSeriesErrorName      = Framework.GetEntityName( "feature-labels-value-series-error" );
+        String featureLabelsSeriesTruthName      = Framework.GetEntityName( "feature-labels-value-series-truth" );
+
 
         // Create Entities
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
@@ -148,16 +149,38 @@ public class DeepMNISTDemo {
             topLayerName = region3FfName;
         }
 
+        String learningEntitiesAlgorithm = region1FfName;
+        String featureLabelsName = null;
+        if ( learningEntitiesAnalyticsTypes.contains( LearningEntitiesAnalyticsType.LabelFeatures ) ) {
+            featureLabelsName = Framework.GetEntityName( "feature-labels" );
+            Framework.CreateEntity( featureLabelsName, FeatureLabelsEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
 
-        Framework.CreateEntity( learningEntitiesAnalytics, ClassFeaturesEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
+
+            Framework.CreateEntity( activityImageDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), featureLabelsName );
+            Framework.CreateEntity( predictedImageDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), featureLabelsName );
+
+            Framework.CreateEntity( featureLabelsSeriesPredictedName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), featureLabelsName ); // 2nd, class region updates after first to get its feedback
+            Framework.CreateEntity( featureLabelsSeriesErrorName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), featureLabelsName ); // 2nd, class region updates after first to get its feedback
+            Framework.CreateEntity( featureLabelsSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), featureLabelsName ); // 2nd, class region updates after first to get its feedback
+        }
+
+        String svmEntityName = null;
+        if (learningEntitiesAnalyticsTypes.contains( LearningEntitiesAnalyticsType.SvmEntity ) ) {
+            svmEntityName = Framework.GetEntityName( "svm-eval" );
+            Framework.CreateEntity( svmEntityName, SVMEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
+
+            Framework.CreateEntity( svmEntitySeriesPredictedName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), svmEntityName ); // 2nd, class region updates after first to get its feedback
+            Framework.CreateEntity( svmEntitySeriesErrorName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), svmEntityName ); // 2nd, class region updates after first to get its feedback
+            Framework.CreateEntity( svmEntitySeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), svmEntityName ); // 2nd, class region updates after first to get its feedback
+
+            // vector series to accumulate features over time (the training data set) :  input = features, output = svmEntity
+            Framework.CreateEntity( svmEntitySeriesFeatures, VectorSeriesEntity.ENTITY_TYPE, n.getName(), topLayerName );
+        }
+
+
+
 //        Framework.CreateEntity( classRegionName, RegionLayerEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
 //        Framework.CreateEntity( classDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), classRegionName ); // produce the predicted classification for inspection by mnist next time
-        Framework.CreateEntity( activityImageDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), learningEntitiesAnalytics );
-        Framework.CreateEntity( predictedImageDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), learningEntitiesAnalytics );
-
-        Framework.CreateEntity( valueSeriesPredictedName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), learningEntitiesAnalytics ); // 2nd, class region updates after first to get its feedback
-        Framework.CreateEntity( valueSeriesErrorName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), learningEntitiesAnalytics ); // 2nd, class region updates after first to get its feedback
-        Framework.CreateEntity( valueSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), learningEntitiesAnalytics ); // 2nd, class region updates after first to get its feedback
 
 
         // Connect the entities' data
@@ -197,11 +220,23 @@ public class DeepMNISTDemo {
 ////        referenceEntitySuffixes.add( new AbstractPair< String, String >( region1FfName, RegionLayerEntity.PREDICTION_FN ) );
 //        if( layers > 1 ) referenceEntitySuffixes.add( new AbstractPair< String, String >( region2FfName, RegionLayerEntity.PREDICTION_FN ) );
 //        if( layers > 2 ) referenceEntitySuffixes.add( new AbstractPair< String, String >( region3FfName, RegionLayerEntity.PREDICTION_FN ) );
+
+
+
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList< AbstractPair< String, String > >();
         if( layers > 0 ) featureDatas.add( new AbstractPair< String, String >( region1FfName, RegionLayerEntity.PREDICTION_FN ) );
         if( layers > 1 ) featureDatas.add( new AbstractPair< String, String >( region2FfName, RegionLayerEntity.PREDICTION_FN ) );
         if( layers > 2 ) featureDatas.add( new AbstractPair< String, String >( region3FfName, RegionLayerEntity.PREDICTION_FN ) );
-        Framework.SetDataReferences( learningEntitiesAnalytics, ClassFeaturesEntity.FEATURES, featureDatas ); // get current state from the region to be used to predict
+
+        if ( learningEntitiesAnalyticsTypes.contains( LearningEntitiesAnalyticsType.LabelFeatures ) ) {
+            Framework.SetDataReferences( featureLabelsName, FeatureLabelsEntity.FEATURES, featureDatas ); // get current state from the region to be used to predict
+        }
+
+        if ( learningEntitiesAnalyticsTypes.contains( LearningEntitiesAnalyticsType.SvmEntity ) ) {
+            Framework.SetDataReferences( svmEntityName, FeatureLabelsEntity.FEATURES, featureDatas );           // get current state from the region to be used to predict
+            Framework.SetDataReferences( svmEntitySeriesFeatures, VectorSeriesEntity.INPUT, featureDatas );     // accumulate data set for input to SVM for training
+            Framework.SetDataReference( svmEntityName, SVMEntity.ACCUMULATED_FEATURES, svmEntitySeriesFeatures, VectorSeriesEntity.OUTPUT );  // connect it to the SVM
+        }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //        // Special test of accuracy in static classification:
@@ -237,7 +272,24 @@ public class DeepMNISTDemo {
         Framework.SetConfig( imageClassName, "trainingBatches", String.valueOf( trainingBatches ) );
 
         Framework.SetConfig( imageClassName, "learningEntitiesAlgorithm", String.valueOf( learningEntitiesAlgorithm ) );
-        Framework.SetConfig( imageClassName, "learningEntitiesAnalytics", String.valueOf( learningEntitiesAnalytics ) );
+
+        if ( learningEntitiesAnalyticsTypes.contains( LearningEntitiesAnalyticsType.LabelFeatures ) ) {
+            Framework.SetConfig( imageClassName, "learningEntitiesAnalytics", String.valueOf( featureLabelsName ) );
+        }
+
+        if ( learningEntitiesAnalyticsTypes.contains( LearningEntitiesAnalyticsType.SvmEntity ) ) {
+            String configVal = Framework.GetConfig( imageClassName, "learningEntitiesAnalytics" );
+
+            String newConfig = null;
+            if ( configVal != null ) {
+                newConfig = configVal + "," + svmEntityName;
+            }
+            else {
+                newConfig = svmEntityName;
+            }
+
+            Framework.SetConfig( imageClassName, "learningEntitiesAnalytics", String.valueOf( newConfig ) );
+        }
 
         // constant config
         if( encodeZero ) {
@@ -287,25 +339,51 @@ public class DeepMNISTDemo {
 //        Framework.SetConfig( classDecoderName, "digits", "2" );
 //        Framework.SetConfig( classDecoderName, "numbers", "1" );
 
-        // feature-class config
-        Framework.SetConfig( learningEntitiesAnalytics, "classEntityName", imageClassName );
-        Framework.SetConfig( learningEntitiesAnalytics, "classConfigPath", "imageClass" );
-        Framework.SetConfig( learningEntitiesAnalytics, "classes", "10" );
-        Framework.SetConfig( learningEntitiesAnalytics, "onlineLearning", String.valueOf( classFeaturesOnline ) );
-        Framework.SetConfig( learningEntitiesAnalytics, "onlineLearningRate", "0.001" );
+        if ( learningEntitiesAnalyticsTypes.contains( LearningEntitiesAnalyticsType.LabelFeatures ) ) {
+            // feature-class config
+            Framework.SetConfig( featureLabelsName, "classEntityName", imageClassName );
+            Framework.SetConfig( featureLabelsName, "classConfigPath", "imageClass" );
+            Framework.SetConfig( featureLabelsName, "classes", "10" );
+            Framework.SetConfig( featureLabelsName, "onlineLearning", String.valueOf( classFeaturesOnline ) );
+            Framework.SetConfig( featureLabelsName, "onlineLearningRate", "0.001" );
+        }
+
+        if ( learningEntitiesAnalyticsTypes.contains( LearningEntitiesAnalyticsType.SvmEntity ) ) {
+            // svm config
+            Framework.SetConfig( svmEntityName, "classEntityName", imageClassName );
+            Framework.SetConfig( svmEntityName, "classConfigPath", "imageClass" );
+            Framework.SetConfig( svmEntityName, "classes", "10" );
+            Framework.SetConfig( svmEntityName, "onlineLearning", String.valueOf( false ) );
+            Framework.SetConfig( svmEntityName, "onlineLearningRate", "0.0" );
+        }
 
         // data series logging
-        Framework.SetConfig( valueSeriesPredictedName, "period", "-1" ); // log forever
-        Framework.SetConfig( valueSeriesErrorName, "period", "-1" );
-        Framework.SetConfig( valueSeriesTruthName, "period", "-1" );
+        Framework.SetConfig( featureLabelsSeriesPredictedName, "period", "-1" ); // log forever
+        Framework.SetConfig( featureLabelsSeriesErrorName, "period", "-1" );
+        Framework.SetConfig( featureLabelsSeriesTruthName, "period", "-1" );
 
-        Framework.SetConfig( valueSeriesPredictedName, "entityName", learningEntitiesAnalytics );
-        Framework.SetConfig( valueSeriesErrorName, "entityName", learningEntitiesAnalytics );
-        Framework.SetConfig( valueSeriesTruthName, "entityName", learningEntitiesAnalytics );
+        if ( learningEntitiesAnalyticsTypes.contains( LearningEntitiesAnalyticsType.LabelFeatures ) ) {
+            Framework.SetConfig( featureLabelsSeriesPredictedName, "entityName", featureLabelsName );
+            Framework.SetConfig( featureLabelsSeriesErrorName, "entityName", featureLabelsName );
+            Framework.SetConfig( featureLabelsSeriesTruthName, "entityName", featureLabelsName );
 
-        Framework.SetConfig( valueSeriesPredictedName, "configPath", "classPredicted" );
-        Framework.SetConfig( valueSeriesErrorName, "configPath", "classError" );
-        Framework.SetConfig( valueSeriesTruthName, "configPath", "classTruth" );
+            Framework.SetConfig( featureLabelsSeriesPredictedName, "configPath", "classPredicted" );
+            Framework.SetConfig( featureLabelsSeriesErrorName, "configPath", "classError" );
+            Framework.SetConfig( featureLabelsSeriesTruthName, "configPath", "classTruth" );
+        }
+
+        if ( learningEntitiesAnalyticsTypes.contains( LearningEntitiesAnalyticsType.SvmEntity ) ) {
+            Framework.SetConfig( svmEntitySeriesPredictedName, "entityName", svmEntityName );
+            Framework.SetConfig( svmEntitySeriesErrorName, "entityName", svmEntityName );
+            Framework.SetConfig( svmEntitySeriesTruthName, "entityName", svmEntityName );
+
+            Framework.SetConfig( svmEntitySeriesPredictedName, "configPath", "classPredicted" );
+            Framework.SetConfig( svmEntitySeriesErrorName, "configPath", "classError" );
+            Framework.SetConfig( svmEntitySeriesTruthName, "configPath", "classTruth" );
+
+        }
+
+
 
         // image region config
         boolean emitUnchangedCells = false; // if there are no input bits, the classifier isn't updated.

@@ -79,6 +79,7 @@ public class ImageClassEntity extends Entity {
         }
         return c;
     }
+
     public void doUpdateSelf() {
 
         // Check for a reset (to start of sequence and re-train)
