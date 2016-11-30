@@ -155,7 +155,6 @@ public class DeepMNISTDemo {
             featureLabelsName = Framework.GetEntityName( "feature-labels" );
             Framework.CreateEntity( featureLabelsName, FeatureLabelsEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
 
-
             Framework.CreateEntity( activityImageDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), featureLabelsName );
             Framework.CreateEntity( predictedImageDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), featureLabelsName );
 

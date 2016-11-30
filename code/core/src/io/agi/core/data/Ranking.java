@@ -279,7 +279,7 @@ public class Ranking {
             i = ranking.keySet().iterator(); // ascending values
         }
 
-        HashMap< Float, ArrayList< Integer > > mutableRankedValues = new HashMap< Float, ArrayList< Integer >();
+        HashMap< Float, ArrayList< Integer > > mutableRankedValues = new HashMap< Float, ArrayList< Integer > >();
 
         for( Float key : ranking.keySet() ) {
             ArrayList< Integer > al = ranking.get( key );

@@ -34,9 +34,9 @@ import java.util.Vector;
 
 /**
  * This is a 'learning analytics' Entity
- * These Entities have two phases, 'learn' on and off
+ * These Entities have two main phases, 'learn' on and off
  * <p>
- * In Learn=on (Training) phase - it simply collects the data that it needs
+ * In Learn=on (Training) phase - it simply collects the data that it needs (via a VectorSeriesEntity that is an Input)
  * In Learn=off (Testing) phase - train SVM and give predictions
  * <p>
  * <p>
@@ -49,7 +49,7 @@ public class SVMEntity extends Entity {
 
     public static final String ACCUMULATED_FEATURES = "accum-features";
     public static final String FEATURES = "features";
-    public static final String CLASS_PREDICTION = "class-prediction";           // z
+    public static final String CLASS_PREDICTION = "class-prediction";
 
     public SVMEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
@@ -58,6 +58,7 @@ public class SVMEntity extends Entity {
     @Override
     public void getInputAttributes( Collection< String > attributes ) {
         attributes.add( FEATURES );
+        attributes.add( ACCUMULATED_FEATURES );
     }
 
     @Override
@@ -116,10 +117,6 @@ public class SVMEntity extends Entity {
         // ----------------------------------------------------------------------
         if ( config.learn ) {
             for ( int i = 0; i < features; ++i ) {
-                float r = featureData._values[ i ];
-                if ( r == 0.f ) {
-                    continue;
-                }
 
                 if ( config.onlineLearning ) {
 
@@ -131,7 +128,7 @@ public class SVMEntity extends Entity {
                 else {
 
                     // add a data point
-
+                    // taken care of by the VectorSeries that inputs to ACCUMULATED_FEATURES
 
                 }
             }
@@ -152,7 +149,6 @@ public class SVMEntity extends Entity {
             else {
                 svmloadSavedModel();
             }
-
 
             prediction = svmPredict();
         }
@@ -179,6 +175,10 @@ public class SVMEntity extends Entity {
     }
 
     public void svmTrain() {
+
+
+        // CONVERT THE CODE BELOW TO CREATE points FROM ACCUMULATED_FEATURES
+
 
         Vector< point > point_list = new Vector< point >();
 
