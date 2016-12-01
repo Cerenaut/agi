@@ -25,4 +25,5 @@ package io.agi.framework.entities;
 public class SVMEntityConfig extends LearningEntitiesAnalyticsEntityConfig {
 
     public boolean trained = false;
+    public float C = 1.f;                   // regularization parameter
 }

@@ -48,7 +48,6 @@ public class SVMEntity extends Entity {
     public static final String ENTITY_TYPE = "svm-entity";
 
     public static final String ACCUMULATED_FEATURES = "accum-features";
-    public static final String FEATURES = "features";
     public static final String CLASS_PREDICTION = "class-prediction";
 
     public SVMEntity( ObjectMap om, Node n, ModelEntity model ) {
@@ -57,7 +56,6 @@ public class SVMEntity extends Entity {
 
     @Override
     public void getInputAttributes( Collection< String > attributes ) {
-        attributes.add( FEATURES );
         attributes.add( ACCUMULATED_FEATURES );
     }
 
@@ -88,12 +86,10 @@ public class SVMEntity extends Entity {
 
         SVMEntityConfig config = ( SVMEntityConfig ) _config;
 
-        Data featureData = getData( FEATURES );
-        if ( featureData == null ) {
+        Data accumulatedFeatureData = getData( ACCUMULATED_FEATURES );
+        if ( accumulatedFeatureData == null ) {
             return;
         }
-
-        Data accumulatedFeatureData = getData( ACCUMULATED_FEATURES );
 
         // Get the input classification
         String stringClassValue = Framework.GetConfig( config.classEntityName, config.classConfigPath );
@@ -103,34 +99,23 @@ public class SVMEntity extends Entity {
         }
 
         // Get all the parameters:
-        int features = featureData.getSize();
         Data classPrediction = getDataLazyResize( CLASS_PREDICTION, DataSize.create( config.classes ) );
 
         if ( config.reset ) {
-
-            // reset SVM
-
+            svmReset();
         }
 
 
         // 1) collect data (training set)
         // ----------------------------------------------------------------------
         if ( config.learn ) {
-            for ( int i = 0; i < features; ++i ) {
-
-                if ( config.onlineLearning ) {
-
-                    // could be: add a data point to window, that will be used as training data for SVM
-
-                    // NOT IMPLEMENTED
-
-                }
-                else {
-
-                    // add a data point
-                    // taken care of by the VectorSeries that inputs to ACCUMULATED_FEATURES
-
-                }
+            if ( config.onlineLearning ) {
+                // could be: add a data point to window, that will be used as training data for SVM
+                // NOT IMPLEMENTED
+            }
+            else {
+                // add a data point
+                // taken care of by the VectorSeries that inputs to ACCUMULATED_FEATURES
             }
         }
 
@@ -143,7 +128,7 @@ public class SVMEntity extends Entity {
         if ( !config.learn ) {
 
             if ( config.trained == false ) {
-                svmTrain();
+                svmTrain( accumulatedFeatureData, classValue );
                 config.trained = true;
             }
             else {
@@ -159,9 +144,13 @@ public class SVMEntity extends Entity {
         }
 
         // update the config based on the result:
-        config.classPredicted = prediction;      // the predicted class given the input features
-        config.classError = error;          // 1 if the prediction didn't match the input class
-        config.classTruth = classValue;     // the value that was taken as input
+        config.classPredicted = prediction;     // the predicted class given the input features
+        config.classError = error;              // 1 if the prediction didn't match the input class
+        config.classTruth = classValue;         // the value that was taken as input
+
+    }
+
+    private void svmReset() {
 
     }
 
@@ -174,13 +163,9 @@ public class SVMEntity extends Entity {
         return 0;
     }
 
-    public void svmTrain() {
+    public void svmTrain( Data accumulatedFeatureData, int classValue ) {
 
-
-        // CONVERT THE CODE BELOW TO CREATE points FROM ACCUMULATED_FEATURES
-
-
-        Vector< point > point_list = new Vector< point >();
+        SVMEntityConfig config = ( SVMEntityConfig ) _config;
 
         svm_parameter param = new svm_parameter();
 
@@ -192,7 +177,6 @@ public class SVMEntity extends Entity {
         param.coef0 = 0;
         param.nu = 0.5;
         param.cache_size = 40;
-        param.C = 1;
         param.eps = 1e-3;
         param.p = 0.1;
         param.shrinking = 1;
@@ -201,65 +185,89 @@ public class SVMEntity extends Entity {
         param.weight_label = new int[ 0 ];
         param.weight = new double[ 0 ];
 
+        // values from config
+        param.C = config.C;
+
+        DataSize datasetSize = accumulatedFeatureData._dataSize;
+
+        int n = datasetSize.getSize( DataSize.DIMENSION_Y );        // n = number of data points
+        int m = datasetSize.getSize( DataSize.DIMENSION_X );        // m = feature vector size
+
         // build problem
         svm_problem prob = new svm_problem();
-        prob.l = point_list.size();
+        prob.l = n;
         prob.y = new double[ prob.l ];
+        prob.x = new svm_node[ prob.l ][ m ];
 
-        if ( param.kernel_type == svm_parameter.PRECOMPUTED ) {
-        }
-        else if ( param.svm_type == svm_parameter.EPSILON_SVR ||
-                param.svm_type == svm_parameter.NU_SVR ) {
-            if ( param.gamma == 0 )
-                param.gamma = 1;
-            prob.x = new svm_node[ prob.l ][ 1 ];
-            for ( int i = 0; i < prob.l; i++ ) {
-                point p = point_list.elementAt( i );
-                prob.x[ i ][ 0 ] = new svm_node();
-                prob.x[ i ][ 0 ].index = 1;
-                prob.x[ i ][ 0 ].value = p.x;
-                prob.y[ i ] = p.y;
+        // iterate data points (vectors in the VectorSeries - each vector is a data point)
+        for ( int i = 0; i < n ; ++i ) {
+
+            // iterate dimensions of x (elements of the vector)
+            for ( int j = 0 ; j < m ; j++) {
+
+                float xij = accumulatedFeatureData._values[ i * n + j];
+
+                if ( xij == 0.f ) {
+                    continue;
+                }
+
+                prob.x[ i ][ j ] = new svm_node();
+                prob.x[ i ][ j ].index = j+1;
+                prob.x[ i ][ j ].value = xij;
+                prob.y[ i ] = classValue;
             }
-
-            // build model & classify
-            svm_model model = svm.svm_train( prob, param );
-            svm_node[] x = new svm_node[ 1 ];
-            x[ 0 ] = new svm_node();
-            x[ 0 ].index = 1;
-
-
-        }
-        else {
-
-            if ( param.gamma == 0 ) {
-                param.gamma = 0.5;
-            }
-
-            prob.x = new svm_node[ prob.l ][ 2 ];
-
-            for ( int i = 0; i < prob.l; i++ ) {
-                point p = point_list.elementAt( i );
-                prob.x[ i ][ 0 ] = new svm_node();
-                prob.x[ i ][ 0 ].index = 1;
-                prob.x[ i ][ 0 ].value = p.x;
-                prob.x[ i ][ 1 ] = new svm_node();
-                prob.x[ i ][ 1 ].index = 2;
-                prob.x[ i ][ 1 ].value = p.y;
-                prob.y[ i ] = p.value;
-            }
-
-            // build model & classify
-            svm_model model = svm.svm_train( prob, param );
-            svm_node[] x = new svm_node[ 2 ];
-
-
-            x[ 0 ] = new svm_node();
-            x[ 1 ] = new svm_node();
-            x[ 0 ].index = 1;
-            x[ 1 ].index = 2;
-
         }
 
+        // build model & classify
+        svm_model model = svm.svm_train( prob, param );
+
+
+//        if ( param.kernel_type == svm_parameter.PRECOMPUTED ) {
+//        }
+//        else if ( param.svm_type == svm_parameter.EPSILON_SVR ||
+//                param.svm_type == svm_parameter.NU_SVR ) {
+//            if ( param.gamma == 0 )
+//                param.gamma = 1;
+//            prob.x = new svm_node[ prob.l ][ 1 ];
+//            for ( int i = 0; i < prob.l; i++ ) {
+//                point p = point_list.elementAt( i );
+//                prob.x[ i ][ 0 ] = new svm_node();
+//                prob.x[ i ][ 0 ].index = 1;
+//                prob.x[ i ][ 0 ].value = p.x;
+//                prob.y[ i ] = p.y;
+//            }
+//
+//            // build model & classify
+//            svm_model model = svm.svm_train( prob, param );
+//            svm_node[] x = new svm_node[ 1 ];
+//            x[ 0 ] = new svm_node();
+//            x[ 0 ].index = 1;
+//        }
+//        else {
+//            if ( param.gamma == 0 ) {
+//                param.gamma = 0.5;
+//            }
+//
+//            prob.x = new svm_node[ prob.l ][ 2 ];
+//            for ( int i = 0; i < prob.l; i++ ) {
+//                point p = point_list.elementAt( i );
+//                prob.x[ i ][ 0 ] = new svm_node();
+//                prob.x[ i ][ 0 ].index = 1;
+//                prob.x[ i ][ 0 ].value = p.x;
+//                prob.x[ i ][ 1 ] = new svm_node();
+//                prob.x[ i ][ 1 ].index = 2;
+//                prob.x[ i ][ 1 ].value = p.y;
+//                prob.y[ i ] = p.value;
+//            }
+//
+//            // build model & classify
+//            svm_model model = svm.svm_train( prob, param );
+//            svm_node[] x = new svm_node[ 2 ];
+//            x[ 0 ] = new svm_node();
+//            x[ 1 ] = new svm_node();
+//            x[ 0 ].index = 1;
+//            x[ 1 ].index = 2;
+//        }
 
     }
 }
