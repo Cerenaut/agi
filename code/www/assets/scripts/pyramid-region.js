@@ -42,7 +42,8 @@ var Region = {
   selectedInput1 : [  ],
   selectedInput2 : [  ],
 
-  regionSuffixes : [ "-input-c1", "-input-c2", "-input-p1", "-input-p2", "-spike-age", "-classifier-mask", "-classifier-response", "-classifier-weights", "-classifier-biases-2", "-classifier-spikes-integrated", "-classifier-spikes-new", "-classifier-spikes-old", "-prediction-error-fp", "-prediction-error-fn", "-prediction-old", "-prediction-new-real", "-prediction-new", "-output-spikes-new", "-output-spikes-old" ],
+  regionSuffixes : [ "-input-c1", "-input-c2", "-input-p1", "-input-p2", "-spike-age", "-classifier-mask", "-classifier-response", "-classifier-weights", "-classifier-biases-2", "-classifier-spikes-integrated", "-classifier-spikes-new", "-classifier-spikes-old", "-prediction-error-fp", "-prediction-error-fn", "-prediction-old", "-prediction-new-real", "-prediction-new", "-predictor-output-traces", "-output-spikes-new", "-output-spikes-old" ],
+
   regionSuffixIdx : 0,
   dataMap : {
   },
@@ -331,9 +332,50 @@ var Region = {
   },
 
   repaint : function() {
+    DataCanvas.pxPerElement = Region.pixelsPerBit;
     Region.repaintLeft();
     Region.repaintMiddle();
     Region.repaintInput();
+  },
+
+  repaintLeft : function() {
+    var outputSpikesNew = Region.findData( "-output-spikes-new" );
+    if( !outputSpikesNew ) {
+      return; // can't paint
+    }
+
+    var predictorOutputTraces = Region.findData( "-predictor-output-traces" );
+    if( !predictorOutputTraces ) {
+      return; // can't paint
+    }
+
+    var dataFp = Region.findData( "-prediction-error-fp" );
+    if( !dataFp ) {
+      return; // can't paint
+    }
+
+    var dataFn = Region.findData( "-prediction-error-fn" );
+    if( !dataFn ) {
+      return; // can't paint
+    }
+
+    var panels = 2;
+    var canvasDataSize = Region.resizeCanvas( "#left-canvas", outputSpikesNew, 1, panels );
+    if( !canvasDataSize ) {
+      return; // can't paint
+    }
+
+    var x0 = 0;
+    var y0 = 0;
+
+    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, predictorOutputTraces, outputSpikesNew, null );//, null );
+    DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#ffff00" );
+
+    y0 += ( Region.pixelsPerBit * canvasDataSize.h ); 
+    y0 += ( Region.pixelsPerGap );
+
+    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataFp, dataFn, null );//, null );
+    DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#ffff00" );
   },
 
   // general GUI design:
@@ -355,62 +397,21 @@ var Region = {
   //         2nd row: prediction-old + 
   // RIGHT: input c1, c2 of selected cells. + current inputs
 
+
   repaintMiddle : function() {
-    var dataNew = Region.findData( "-classifier-spikes-new" );
-    if( !dataNew ) {
+
+    var dataSpikesNew = Region.findData( "-classifier-spikes-new" );
+    if( !dataSpikesNew ) {
       return; // can't paint
     }
 
-    var dataOld = Region.findData( "-classifier-spikes-old" );
-    if( !dataOld ) {
+    var dataSpikesOld = Region.findData( "-classifier-spikes-old" );
+    if( !dataSpikesOld ) {
       return; // can't paint
     }
 
-    var dataMask = Region.findData( "-classifier-mask" );
-    if( !dataMask ) {
-      return; // can't paint
-    }
-
-    var canvasDataSize = Region.resizeCanvas( "#centre-canvas", dataNew, 1, 2 );
-    if( !canvasDataSize ) {
-      return; // can't paint
-    }
-
-    var x0 = 0;
-    var y0 = 0;
-
-    Region.fillDataRgbBinary( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataNew, null, dataOld );//, null );
-    Region.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#00ffff" );
-
-    y0 += ( Region.pixelsPerBit * canvasDataSize.h ); 
-    y0 += ( Region.pixelsPerGap );
-
-//    Region.fillDataRgbBinary( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataSpikeAge, null, null );//, null );
-//    Region.fillDataRgba( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataSpikeAge, 255,0,0, true );
-    Region.strokeDataBinary( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataMask, "#ffff00", true );
-
-  },
-
-  repaintLeft : function() {
-    var c = $( "#left-canvas" )[ 0 ];
-
-    var dataNew = Region.findData( "-classifier-spikes-new" );
-    if( !dataNew ) {
-      return; // can't paint
-    }
-
-    var dataOld = Region.findData( "-classifier-spikes-old" );
-    if( !dataOld ) {
-      return; // can't paint
-    }
-
-    var dataFp = Region.findData( "-prediction-error-fp" );
-    if( !dataFp ) {
-      return; // can't paint
-    }
-
-    var dataFn = Region.findData( "-prediction-error-fn" );
-    if( !dataFn ) {
+    var dataSpikesInt = Region.findData( "-classifier-spikes-integrated" );
+    if( !dataSpikesInt ) {
       return; // can't paint
     }
 
@@ -424,12 +425,8 @@ var Region = {
       return; // can't paint
     }
 
-    var dataPredictionNewReal = Region.findData( "-prediction-new-real" );
-    if( !dataPredictionNewReal ) {
-      return; // can't paint
-    }
-
-    var canvasDataSize = Region.resizeCanvas( "#left-canvas", dataNew, 1, 3 );
+    var panels = 2;
+    var canvasDataSize = Region.resizeCanvas( "#centre-canvas", dataSpikesNew, 1, panels );
     if( !canvasDataSize ) {
       return; // can't paint
     }
@@ -437,175 +434,16 @@ var Region = {
     var x0 = 0;
     var y0 = 0;
 
-    //       Fill         Hilight    Select
-    // top:  TP/TN/FP/FN  Pred-new     Outline yellow
-    // mid:  Pred-raw     Pred-new     Outline yellow
-    // bot:  Output-Age   Output       Outline yellow
-
-    // Red: Active-new Green: Active-new Blue: Pred-old
-    // TP: white
-    // TN: black
-    // FP: Yellow
-    // FN: Blue
-    Region.fillDataRgbBinary( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataPredictionOld, dataNew, dataOld ); // 
-    Region.strokeDataBinary( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataPredictionNew, "#ffff00", true );
-    Region.strokeDataBinary( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataPredictionOld, "#0000ff", true );
+    // top panel: spikes-new + pred-old
+    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataSpikesNew, dataPredictionOld, dataPredictionNew );//, null );
+    DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#ffff00" );
 
     y0 += ( Region.pixelsPerBit * canvasDataSize.h ); 
     y0 += ( Region.pixelsPerGap );
 
-//    Region.fillDataRgbBinary( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataOutput, dataFn, null ); // 
-//    Region.fillDataRgba( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataOutput, 255,255,255, false );
-//    Region.strokeDataBinary( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataPredictionNew, "#0000ff", true );
-
-    y0 += ( Region.pixelsPerBit * canvasDataSize.h ); 
-    y0 += ( Region.pixelsPerGap );
-
-//    Region.fillDataRgba( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataOutputAge, 255,0,0, true );
-//    Region.strokeDataBinary( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataOutput, "#00ffff", true );
-  },
-
-  strokeElements : function( ctx, x0, y0, w, h, elements, strokeStyle ) {
-
-    ctx.strokeStyle = strokeStyle;
-
-    for( var i = 0; i < elements.length; ++i ) {
-      var offset = elements[ i ];
-      var xs = Math.floor( offset % w );
-      var ys = Math.floor( offset / w );
-
-      var x = x0 + xs * Region.pixelsPerBit;
-      var y = y0 + ys * Region.pixelsPerBit;
-      
-      ctx.strokeRect( x, y, Region.pixelsPerBit, Region.pixelsPerBit );        
-    }
-  },
-
-  strokeDataBinary : function( ctx, x0, y0, w, h, data, strokeStyle, small ) {
-
-    var dx = 0;
-    var size = Region.pixelsPerBit;
-
-    if( small ) {
-      size = Region.pixelsPerBit * 0.5;
-      dx = size;
-    }
-
-    ctx.strokeStyle = strokeStyle;
-
-    for( var y = 0; y < h; ++y ) {
-      for( var x = 0; x < w; ++x ) {
-        var cx = x0 + x * Region.pixelsPerBit;
-        var cy = y0 + y * Region.pixelsPerBit;
-        var offset = y * w + x;
-//        var valueR = 0.0;
-//        var valueG = 0.0;
-//        var valueB = 0.0;
-
-//        if( dataR ) valueR = dataR.elements.elements[ offset ];
-//        if( dataG ) valueG = dataG.elements.elements[ offset ];
-//        if( dataB ) valueB = dataB.elements.elements[ offset ];
-  
-        var value = data.elements.elements[ offset ];
-        if( value > 0.5 ) {
-          ctx.strokeRect( cx+dx, cy, size, size );        
-        }
-       
-//        ctx.strokeStyle = Region.getStyleRgb( valueR, valueG, valueB );
-      }
-    }
-  },
-
-  getStyleRgb : function( r, g, b ) {
-    var style = "#";
-    if( r > 0.5 ) {
-      style += "FF";
-    }
-    else {
-      style += "00";
-    }
-    if( g > 0.5 ) {
-      style += "FF";
-    }
-    else {
-      style += "00";
-    }
-    if( b > 0.5 ) {
-      style += "FF";
-    }
-    else {
-      style += "00";
-    }
-    return style;
-  },
-
-  fillDataRgbBinary : function( ctx, x0, y0, w, h, dataR, dataG, dataB ) {
-
-    for( var y = 0; y < h; ++y ) {
-      for( var x = 0; x < w; ++x ) {
-        var cx = x * Region.pixelsPerBit;
-        var cy = y * Region.pixelsPerBit;
-        var offset = y * w + x;
-        var valueR = 0.0;
-        var valueG = 0.0;
-        var valueB = 0.0;
-
-        if( dataR ) valueR = dataR.elements.elements[ offset ];
-        if( dataG ) valueG = dataG.elements.elements[ offset ];
-        if( dataB ) valueB = dataB.elements.elements[ offset ];
-         
-        ctx.fillStyle = Region.getStyleRgb( valueR, valueG, valueB );
-        ctx.fillRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
-        ctx.fill();
-
-        ctx.strokeStyle = "#808080";
-
-/*        if( selectedElements ) {
-          for( var i = 0; i < selectedElements.length; ++i ) {
-            if( selectedElements[ i ] == offset ) { // select one at a time
-              ctx.strokeStyle = "#FFFFFF";
-            }
-          }
-        }*/
-
-        ctx.strokeRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
-      }
-    }
-  },
-
-  fillDataRgba : function( ctx, x0, y0, w, h, data, r,g,b, scale ) {
-
-    var maxValue = 0.01;
-
-    for( var y = 0; y < h; ++y ) {
-      for( var x = 0; x < w; ++x ) {
-        var offset = y * w + x;
-        maxValue = Math.max( maxValue, data.elements.elements[ offset ] );
-      }
-    }
-
-    ctx.fillStyle = "#000000";
-    ctx.fillRect( x0, y0, Region.pixelsPerBit * w, Region.pixelsPerBit * h );        
-
-    var fillStyle1 = "rgba("+r+","+g+","+b+",";
-
-    for( var y = 0; y < h; ++y ) {
-      for( var x = 0; x < w; ++x ) {
-        var cx = x * Region.pixelsPerBit;
-        var cy = y * Region.pixelsPerBit;
-        var offset = y * w + x;
-        var value = data.elements.elements[ offset ];
-        if( scale ) {
-          value = value / maxValue; 
-        }
-        ctx.fillStyle = fillStyle1 + value.toFixed( 3 ) + ")";
-        ctx.fillRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
-        ctx.fill();
-
-        ctx.strokeStyle = "#808080";
-        ctx.strokeRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
-      }
-    }
+    // low panel: spikes-new and spikes-int
+    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataSpikesNew, dataSpikesInt, dataPredictionNew );//, null );
+    DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#ffff00" );
   },
 
   resizeCanvas : function( canvasSelector, data, repeatX, repeatY ) {
@@ -650,11 +488,6 @@ var Region = {
       return; // can't paint
     }
 
-    var data3 = Region.findData( "-input-3" );
-    if( !data3 ) {
-      return; // can't paint
-    }
-
     var dataSize1 = Framework.getDataSize( data1 );
     var w1 = dataSize1.w;
     var h1 = dataSize1.h;
@@ -671,18 +504,9 @@ var Region = {
       return;
     }
 
-    var dataSize3 = Framework.getDataSize( data3 );
-    var w3 = dataSize3.w;
-    var h3 = dataSize3.h;
-
-    if( ( w3 == 0 ) || ( h3 == 0 ) ) {
-      return;
-    }
-
     c.width  = w1 * Region.pixelsPerBit;
     c.height = h1 * Region.pixelsPerBit + Region.pixelsMargin 
-             + h2 * Region.pixelsPerBit + Region.pixelsMargin
-             + h3 * Region.pixelsPerBit;
+             + h2 * Region.pixelsPerBit;
 
     var ctx = c.getContext( "2d" );
     ctx.fillStyle = "#505050";
@@ -707,7 +531,7 @@ var Region = {
 
     var dataSizeW = Framework.getDataSize( dataWeights );
     var weightsSize = dataSizeW.w * dataSizeW.h;
-    var weightsStride = w1 * h1 + w2 * h2 + w3 * h3;
+    var weightsStride = w1 * h1 + w2 * h2;
 
     var x0 = 0;
     var y0 = 0;
@@ -724,13 +548,6 @@ var Region = {
     Region.paintInputData( ctx, x0, y0, w2, h2, data2 );
     Region.paintInputWeights( ctx, x0, y0, w2, h2, inputOffset, data2, weightsSize, weightsStride, dataWeights, dataBiases, dataResponse, Region.selectedCells, gain );
     Region.paintInputDataSelected( ctx, x0, y0, w2, h2, Region.selectedInput2 );
-
-    y0 = y0 + h2 * Region.pixelsPerBit + Region.pixelsMargin;
-    inputOffset += w2 * h2;
-
-    Region.paintInputData( ctx, x0, y0, w3, h3, data3 );
-    Region.paintInputWeights( ctx, x0, y0, w3, h3, inputOffset, data3, weightsSize, weightsStride, dataWeights, dataBiases, dataResponse, Region.selectedCells, gain );
-    Region.paintInputDataSelected( ctx, x0, y0, w3, h3, Region.selectedInput3 );
   },
 
   thresholdCellsInputWeights : function( w, h, inputOffset, weightsStride, dataWeights, dataBiases, selectedCells, selectedInputs, gain, threshold ) {
