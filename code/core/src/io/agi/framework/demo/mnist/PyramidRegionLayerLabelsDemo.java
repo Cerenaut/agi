@@ -78,13 +78,13 @@ public class PyramidRegionLayerLabelsDemo {
         String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
         String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 
-        int terminationAge = 10;//000;//25000;
-        int trainingBatches = 1;//80; // good for up to 80k
+        int terminationAge = 5000;//000;//25000;
+        int trainingBatches = 10000;//80; // good for up to 80k
         boolean terminateByAge = true;//false;
         boolean encodeZero = false;
         boolean featureLabelsOnline = true;
         int labelBits = 8;
-        int imageRepeats = 50;
+        int imageRepeats = 1;//50;
 
         // Define some entities
         String experimentName           = Framework.GetEntityName( "experiment" );
@@ -183,14 +183,16 @@ public class PyramidRegionLayerLabelsDemo {
         Framework.SetDataReference( regionLayer1Name, PyramidRegionLayerEntity.INPUT_C1, imageEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
         Framework.SetDataReference( regionLayer1Name, PyramidRegionLayerEntity.INPUT_C2, constantName, ConstantMatrixEntity.OUTPUT );
 
-        Framework.SetDataReference( regionLayer1Name, PyramidRegionLayerEntity.INPUT_P1, regionLayer3Name, PyramidRegionLayerEntity.OUTPUT_SPIKES_NEW );
+//        Framework.SetDataReference( regionLayer1Name, PyramidRegionLayerEntity.INPUT_P1, regionLayer3Name, PyramidRegionLayerEntity.OUTPUT_SPIKES_NEW );
+        Framework.SetDataReference( regionLayer1Name, PyramidRegionLayerEntity.INPUT_P1, constantName, ConstantMatrixEntity.OUTPUT );
         Framework.SetDataReference( regionLayer1Name, PyramidRegionLayerEntity.INPUT_P2, constantName, ConstantMatrixEntity.OUTPUT );
 
         // RL2
         Framework.SetDataReference( regionLayer2Name, PyramidRegionLayerEntity.INPUT_C1, configProductName, ConfigProductEntity.OUTPUT );
         Framework.SetDataReference( regionLayer2Name, PyramidRegionLayerEntity.INPUT_C2, constantName, ConstantMatrixEntity.OUTPUT );
 
-        Framework.SetDataReference( regionLayer2Name, PyramidRegionLayerEntity.INPUT_P1, regionLayer3Name, PyramidRegionLayerEntity.OUTPUT_SPIKES_NEW );
+//        Framework.SetDataReference( regionLayer2Name, PyramidRegionLayerEntity.INPUT_P1, regionLayer3Name, PyramidRegionLayerEntity.OUTPUT_SPIKES_NEW );
+        Framework.SetDataReference( regionLayer2Name, PyramidRegionLayerEntity.INPUT_P1, constantName, ConstantMatrixEntity.OUTPUT );
         Framework.SetDataReference( regionLayer2Name, PyramidRegionLayerEntity.INPUT_P2, constantName, ConstantMatrixEntity.OUTPUT );
 
         // RL3
@@ -337,6 +339,7 @@ public class PyramidRegionLayerLabelsDemo {
         float integrationSpikeWeight = 0.1f; // how much each dendrite spike contributes to the integrated value
         float predictorLearningRate = 0.01f; // how fast the prediction weights learn
         float predictorTraceDecayRate = 0.5f; // fast decay ie exact timing important
+        int spikeOutputAgeMax = 4;
 
         // variables
         int widthCells = 20;
@@ -349,24 +352,27 @@ public class PyramidRegionLayerLabelsDemo {
                 widthCells, heightCells,
                 classifierLearningRate, classifierSparsity, classifierSparsityOutput,
                 classifierAgeMin, classifierAgeMax, classifierAgeScale, classifierRateScale, classifierRateMax, classifierRateLearningRate,
-                integrationDecayRate, integrationSpikeWeight,
-                predictorTraceDecayRate, predictorLearningRate );
+                spikeOutputAgeMax, predictorLearningRate );
+//                integrationDecayRate, integrationSpikeWeight,
+//                predictorTraceDecayRate, predictorLearningRate );
 
         setRegionLayerConfig(
                 regionLayer2Name,
                 widthCells, heightCells,
                 classifierLearningRate, classifierSparsity, classifierSparsityOutput,
                 classifierAgeMin, classifierAgeMax, classifierAgeScale, classifierRateScale, classifierRateMax, classifierRateLearningRate,
-                integrationDecayRate, integrationSpikeWeight,
-                predictorTraceDecayRate, predictorLearningRate );
+                spikeOutputAgeMax, predictorLearningRate );
+//                integrationDecayRate, integrationSpikeWeight,
+//                predictorTraceDecayRate, predictorLearningRate );
 
         setRegionLayerConfig(
                 regionLayer3Name,
                 widthCells, heightCells,
                 classifierLearningRate, classifierSparsity, classifierSparsityOutput,
                 classifierAgeMin, classifierAgeMax, classifierAgeScale, classifierRateScale, classifierRateMax, classifierRateLearningRate,
-                integrationDecayRate, integrationSpikeWeight,
-                predictorTraceDecayRate, predictorLearningRate );
+                spikeOutputAgeMax, predictorLearningRate );
+//                integrationDecayRate, integrationSpikeWeight,
+//                predictorTraceDecayRate, predictorLearningRate );
     }
 
     public static void setRegionLayerConfig(
@@ -382,9 +388,10 @@ public class PyramidRegionLayerLabelsDemo {
             float classifierRateScale,
             float classifierRateMax,
             float classifierRateLearningRate,
-            float integrationDecayRate,
-            float integrationSpikeWeight,
-            float predictorTraceDecayRate,
+            int spikeOutputAgeMax,
+//            float integrationDecayRate,
+//            float integrationSpikeWeight,
+//            float predictorTraceDecayRate,
             float predictorLearningRate ) {
 
         Framework.SetConfig( regionLayerName, "widthCells", String.valueOf( widthCells ) );
@@ -400,10 +407,12 @@ public class PyramidRegionLayerLabelsDemo {
         Framework.SetConfig( regionLayerName, "classifierRateMax", String.valueOf( classifierRateMax ) );
         Framework.SetConfig( regionLayerName, "classifierRateLearningRate", String.valueOf( classifierRateLearningRate ) );
 
-        Framework.SetConfig( regionLayerName, "integrationDecayRate", String.valueOf( integrationDecayRate ) );
-        Framework.SetConfig( regionLayerName, "integrationSpikeWeight", String.valueOf( integrationSpikeWeight ) );
+        Framework.SetConfig( regionLayerName, "spikeOutputAgeMax", String.valueOf( spikeOutputAgeMax ) );
 
-        Framework.SetConfig( regionLayerName, "predictorTraceDecayRate", String.valueOf( predictorTraceDecayRate ) );
+//        Framework.SetConfig( regionLayerName, "integrationDecayRate", String.valueOf( integrationDecayRate ) );
+//        Framework.SetConfig( regionLayerName, "integrationSpikeWeight", String.valueOf( integrationSpikeWeight ) );
+
+//        Framework.SetConfig( regionLayerName, "predictorTraceDecayRate", String.valueOf( predictorTraceDecayRate ) );
         Framework.SetConfig( regionLayerName, "predictorLearningRate", String.valueOf( predictorLearningRate ) );
     }
 

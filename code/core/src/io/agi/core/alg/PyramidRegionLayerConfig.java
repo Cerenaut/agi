@@ -41,10 +41,11 @@ public class PyramidRegionLayerConfig extends NetworkConfig {
     public static final String INPUT_P2_HEIGHT = "input-p2-height";
 
     public static final String PREDICTOR_LEARNING_RATE = "predictor-learning-rate";
-    public static final String PREDICTOR_TRACE_DECAY_RATE = "predictor-trace-decay-rate";
+//    public static final String PREDICTOR_TRACE_DECAY_RATE = "predictor-trace-decay-rate";
 
-    public static final String INTEGRATION_DECAY_RATE = "integration-decay-rate";
-    public static final String INTEGRATION_SPIKE_WEIGHT = "integration-spike-weight";
+    public static final String OUTPUT_SPIKE_AGE_MAX = "output-spike-age-max";
+//    public static final String INTEGRATION_DECAY_RATE = "integration-decay-rate";
+//    public static final String INTEGRATION_SPIKE_WEIGHT = "integration-spike-weight";
 
     public static final String SUFFIX_CLASSIFIER = "classifier";
     public static final String SUFFIX_PREDICTOR = "predictor";
@@ -77,10 +78,11 @@ public class PyramidRegionLayerConfig extends NetworkConfig {
             float classifierRateScale, // age of disuse where we start to promote cells
             float classifierRateMax, // age of disuse where we start to promote cells
             float classifierRateLearningRate, // age of disuse where we start to promote cells
-            float integrationDecayRate, // how fast the accumulated
-            float integrationSpikeWeight,
-            float predictorLearningRate,
-            float predictorTraceDecayRate ) {
+            int outputSpikeAgeMax,
+//            float integrationDecayRate, // how fast the accumulated
+//            float integrationSpikeWeight,
+            float predictorLearningRate ) {
+//            float predictorTraceDecayRate ) {
 
         super.setup( om, name, r );
 
@@ -105,35 +107,45 @@ public class PyramidRegionLayerConfig extends NetworkConfig {
 
         _classifierConfig = classifierConfig;
 
-        setIntegrationDecayRate( integrationDecayRate );
-        setIntegrationSpikeWeight( integrationSpikeWeight );
+        setOutputSpikeAgeMax( outputSpikeAgeMax );
+
+//        setIntegrationDecayRate( integrationDecayRate );
+//        setIntegrationSpikeWeight( integrationSpikeWeight );
 
         setPredictorLearningRate( predictorLearningRate );
-        setPredictorTraceDecayRate( predictorTraceDecayRate );
+//        setPredictorTraceDecayRate( predictorTraceDecayRate );
     }
 
     public Random getRandom() {
         return _r;
     }
 
-    public float getIntegrationDecayRate() {
-        float r = _om.getFloat( getKey( INTEGRATION_DECAY_RATE ) );
-        return r;
+//    public float getIntegrationDecayRate() {
+//        float r = _om.getFloat( getKey( INTEGRATION_DECAY_RATE ) );
+//        return r;
+//    }
+//
+//    public void setIntegrationDecayRate( float r ) {
+//        _om.put( getKey( INTEGRATION_DECAY_RATE ), r );
+//    }
+
+    public int getOutputSpikeAgeMax() {
+        int n = _om.getInteger( getKey( OUTPUT_SPIKE_AGE_MAX ) );
+        return n;
     }
 
-    public void setIntegrationDecayRate( float r ) {
-        _om.put( getKey( INTEGRATION_DECAY_RATE ), r );
+    public void setOutputSpikeAgeMax( int n ) {
+        _om.put( getKey( OUTPUT_SPIKE_AGE_MAX ), n );
     }
 
-    public float getIntegrationSpikeWeight() {
-        float r = _om.getFloat( getKey( INTEGRATION_SPIKE_WEIGHT ) );
-        return r;
-    }
-
-    public void setIntegrationSpikeWeight( float r ) {
-        _om.put( getKey( INTEGRATION_SPIKE_WEIGHT ), r );
-    }
-
+//    public float getIntegrationSpikeWeight() {
+//        float r = _om.getFloat( getKey( INTEGRATION_SPIKE_WEIGHT ) );
+//        return r;
+//    }
+//
+//    public void setIntegrationSpikeWeight( float r ) {
+//        _om.put( getKey( INTEGRATION_SPIKE_WEIGHT ), r );
+//    }
 
     public float getPredictorLearningRate() {
         float r = _om.getFloat( getKey( PREDICTOR_LEARNING_RATE ) );
@@ -144,14 +156,14 @@ public class PyramidRegionLayerConfig extends NetworkConfig {
         _om.put( getKey( PREDICTOR_LEARNING_RATE ), r );
     }
 
-    public float getPredictorTraceDecayRate() {
-        float r = _om.getFloat( getKey( PREDICTOR_TRACE_DECAY_RATE ) );
-        return r;
-    }
-
-    public void setPredictorTraceDecayRate( float r ) {
-        _om.put( getKey( PREDICTOR_TRACE_DECAY_RATE ), r );
-    }
+//    public float getPredictorTraceDecayRate() {
+//        float r = _om.getFloat( getKey( PREDICTOR_TRACE_DECAY_RATE ) );
+//        return r;
+//    }
+//
+//    public void setPredictorTraceDecayRate( float r ) {
+//        _om.put( getKey( PREDICTOR_TRACE_DECAY_RATE ), r );
+//    }
 
     public int getInputCArea() {
         Point p1 = getInputC1Size();

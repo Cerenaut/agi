@@ -42,7 +42,7 @@ var Region = {
   selectedInput1 : [  ],
   selectedInput2 : [  ],
 
-  regionSuffixes : [ "-input-c1", "-input-c2", "-input-p1", "-input-p2", "-spike-age", "-classifier-mask", "-classifier-response", "-classifier-weights", "-classifier-biases-2", "-classifier-spikes-integrated", "-classifier-spikes-new", "-classifier-spikes-old", "-prediction-error-fp", "-prediction-error-fn", "-prediction-old", "-prediction-new-real", "-prediction-new", "-predictor-output-traces", "-output-spikes-new", "-output-spikes-old" ],
+  regionSuffixes : [ "-input-c1", "-input-c2", "-input-p1", "-input-p2", "-spike-age", "-classifier-mask", "-classifier-response", "-classifier-weights", "-classifier-biases-2", "-classifier-spikes-new", "-classifier-spikes-old", "-prediction-error-fp", "-prediction-error-fn", "-prediction-old", "-prediction-new-real", "-prediction-new", "-output-spikes-new", "-output-spikes-old", "-output-spikes-age" ],
 
   regionSuffixIdx : 0,
   dataMap : {
@@ -344,22 +344,22 @@ var Region = {
       return; // can't paint
     }
 
-    var predictorOutputTraces = Region.findData( "-predictor-output-traces" );
-    if( !predictorOutputTraces ) {
+    var outputSpikesAge = Region.findData( "-output-spikes-age" );
+    if( !outputSpikesAge ) {
       return; // can't paint
     }
 
-    var dataFp = Region.findData( "-prediction-error-fp" );
-    if( !dataFp ) {
-      return; // can't paint
-    }
+//    var dataFp = Region.findData( "-prediction-error-fp" );
+//    if( !dataFp ) {
+//      return; // can't paint
+//    }
+//
+//    var dataFn = Region.findData( "-prediction-error-fn" );
+//    if( !dataFn ) {
+//      return; // can't paint
+//    }
 
-    var dataFn = Region.findData( "-prediction-error-fn" );
-    if( !dataFn ) {
-      return; // can't paint
-    }
-
-    var panels = 2;
+    var panels = 1;
     var canvasDataSize = Region.resizeCanvas( "#left-canvas", outputSpikesNew, 1, panels );
     if( !canvasDataSize ) {
       return; // can't paint
@@ -368,14 +368,14 @@ var Region = {
     var x0 = 0;
     var y0 = 0;
 
-    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, predictorOutputTraces, outputSpikesNew, null );//, null );
+    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, outputSpikesNew, outputSpikesAge, null );//, null );
     DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#ffff00" );
 
-    y0 += ( Region.pixelsPerBit * canvasDataSize.h ); 
+/*    y0 += ( Region.pixelsPerBit * canvasDataSize.h ); 
     y0 += ( Region.pixelsPerGap );
 
     DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataFp, dataFn, null );//, null );
-    DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#ffff00" );
+    DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#ffff00" );*/
   },
 
   // general GUI design:
@@ -410,11 +410,6 @@ var Region = {
       return; // can't paint
     }
 
-    var dataSpikesInt = Region.findData( "-classifier-spikes-integrated" );
-    if( !dataSpikesInt ) {
-      return; // can't paint
-    }
-
     var dataPredictionOld = Region.findData( "-prediction-old" );
     if( !dataPredictionOld ) {
       return; // can't paint
@@ -435,14 +430,14 @@ var Region = {
     var y0 = 0;
 
     // top panel: spikes-new + pred-old
-    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataSpikesNew, dataPredictionOld, dataPredictionNew );//, null );
+    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataSpikesNew, dataPredictionOld, null );//, null );
     DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#ffff00" );
 
     y0 += ( Region.pixelsPerBit * canvasDataSize.h ); 
     y0 += ( Region.pixelsPerGap );
 
     // low panel: spikes-new and spikes-int
-    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataSpikesNew, dataSpikesInt, dataPredictionNew );//, null );
+    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataSpikesNew, dataPredictionNew, null );//, null );
     DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#ffff00" );
   },
 

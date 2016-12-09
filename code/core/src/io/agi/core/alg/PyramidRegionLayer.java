@@ -21,6 +21,7 @@ package io.agi.core.alg;
 
 import io.agi.core.ann.unsupervised.HebbianLearning;
 import io.agi.core.ann.unsupervised.KSparseAutoencoder;
+import io.agi.core.ann.unsupervised.SpikeOrderLearning;
 import io.agi.core.ann.unsupervised.SpikeTimingLearning;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
@@ -46,11 +47,15 @@ public class PyramidRegionLayer extends NamedObject {
     public Data _inputP1;
     public Data _inputP2;
 
+    public Data _inputOld; // all input
+    public Data _inputNew;
+
     public Data _spikesOld; // apical dendrite spikes
     public Data _spikesNew;
-    public Data _spikesIntegrated; // apical dendrite spikes
+//    public Data _spikesIntegrated; // apical dendrite spikes
     public Data _outputSpikesOld; // axon spikes
     public Data _outputSpikesNew; // axon spikes
+    public Data _outputSpikesAge; // axon spikes
 
     public Data _predictionErrorFP;
     public Data _predictionErrorFN;
@@ -71,7 +76,7 @@ public class PyramidRegionLayer extends NamedObject {
     public PyramidRegionLayerConfig _rc;
     public PyramidRegionLayerTransient _transient = null;
     public KSparseAutoencoder _classifier;
-    public SpikeTimingLearning _predictor;
+    public SpikeOrderLearning _predictor;
 
     public PyramidRegionLayer( String name, ObjectMap om ) {
         super( name, om );
@@ -101,10 +106,10 @@ public class PyramidRegionLayer extends NamedObject {
         int predictorInputs = dataSizeInputP1.getVolume() + dataSizeInputP2.getVolume() + cells;
         int predictorOutputs = cells;
         float predictorLearningRate = rc.getPredictorLearningRate();
-        float predictorDecayRate = rc.getPredictorTraceDecayRate();
+//        float predictorDecayRate = rc.getPredictorTraceDecayRate();
 
-        _predictor = new SpikeTimingLearning();
-        _predictor.setup( predictorInputs, predictorOutputs, predictorLearningRate, predictorDecayRate );
+        _predictor = new SpikeOrderLearning();
+        _predictor.setup( predictorInputs, predictorOutputs, predictorLearningRate );//, predictorDecayRate );
 
         DataSize dataSizeCells = DataSize.create( _rc._classifierConfig.getWidthCells(), _rc._classifierConfig.getHeightCells() );
 
@@ -114,12 +119,18 @@ public class PyramidRegionLayer extends NamedObject {
         _inputP1 = new Data( dataSizeInputP1 );
         _inputP2 = new Data( dataSizeInputP2 );
 
+        DataSize dataSizeInputC = DataSize.create( predictorInputs );
+
+        _inputOld = new Data( dataSizeInputC );
+        _inputNew = new Data( dataSizeInputC );
+
         _spikesOld = new Data( dataSizeCells );
         _spikesNew = new Data( dataSizeCells );
-        _spikesIntegrated = new Data( dataSizeCells );
+//        _spikesIntegrated = new Data( dataSizeCells );
 
         _outputSpikesOld = new Data( dataSizeCells );
         _outputSpikesNew = new Data( dataSizeCells );
+        _outputSpikesAge = new Data( dataSizeCells );
 
         _predictionErrorFP = new Data( dataSizeCells );
         _predictionErrorFN = new Data( dataSizeCells );
@@ -138,6 +149,10 @@ public class PyramidRegionLayer extends NamedObject {
         _predictionOld.set( 0.f );
         _predictionNew.set( 0.f );
         _predictionNewReal.set( 0.f );
+
+        _outputSpikesOld.set( 0f );
+        _outputSpikesNew.set( 0f );
+        _outputSpikesAge.set( 0f );
 
         // classifier cell mask will be reset to all 1 also.
     }
@@ -179,8 +194,8 @@ public class PyramidRegionLayer extends NamedObject {
         // 1. leak the state of each cell
         // 2. add errors to integrated state of each cell
         // 3. Compute spikes and reset spiking states.
-        float cellDecay = _rc.getIntegrationDecayRate();
-        float spikeWeight = _rc.getIntegrationSpikeWeight();
+//        float cellDecay = _rc.getIntegrationDecayRate();
+//        float spikeWeight = _rc.getIntegrationSpikeWeight();
         int cells = _classifier._c.getNbrCells();
 
         _outputSpikesOld.copy( _outputSpikesNew );
@@ -189,7 +204,9 @@ public class PyramidRegionLayer extends NamedObject {
         _sumOutputSpikes = 0;
         _sumPredictionErrorFP = 0;
         _sumPredictionErrorFN = 0;
-        _sumIntegration = 0;
+//        _sumIntegration = 0;
+
+        float outputSpikeAgeMax = _rc.getOutputSpikeAgeMax();
 
         for( int c = 0; c < cells; ++c ) {
             float classifierSpike = 0f;
@@ -211,30 +228,37 @@ public class PyramidRegionLayer extends NamedObject {
             _predictionErrorFP._values[ c ] = predictionErrorFP;
             _predictionErrorFN._values[ c ] = predictionErrorFN;
 
-            float deltaWeight = predictionErrorFN * spikeWeight; // essentially this is the prediction error
+            // add new FN spikes (long term) and age any existing ones
+            float outputSpikeAge = _outputSpikesAge._values[ c ];
+            if( predictionErrorFN > 0f ) {
+                outputSpikeAge = outputSpikeAgeMax;
+            }
+            else {
+                outputSpikeAge -= 1f;
+                outputSpikeAge = Math.max( 0, outputSpikeAge );
+            }
 
-            float oldIntegration = _spikesIntegrated._values[ c ];
-            float newIntegration = oldIntegration * cellDecay
-                                 + deltaWeight;
-
-            // TODO could have a nonlinear stochastic threshold e.g. if log-sigmoid( integrated ) > t then spike
             float outputSpike = 0f;
 
-            if( newIntegration > 1f ) { // these can be fixed, we adjust the weights.
+            if(    ( outputSpikeAge > 0f )
+                || ( classifierSpike > 0f ) ) {
                 outputSpike = 1f;
-                newIntegration = 0f;
                 _transient._spikesOut.add( c );
             }
 
+            //FN = was not active, now IS active, was not predicted. All other cases normal
+            //spike active cells once, spike fns for N steps (countdown)
+
             // store result
             _outputSpikesNew._values[ c ] = outputSpike;
-            _spikesIntegrated._values[ c ] = newIntegration;
+            _outputSpikesAge._values[ c ] = outputSpikeAge;
+//            _spikesIntegrated._values[ c ] = newIntegration;
 
             // instrumentation
             _sumOutputSpikes += outputSpike;
             _sumPredictionErrorFP += predictionErrorFP;
             _sumPredictionErrorFN += predictionErrorFN;
-            _sumIntegration += newIntegration;
+//            _sumIntegration += newIntegration;
         }
     }
 
@@ -291,21 +315,24 @@ public class PyramidRegionLayer extends NamedObject {
 
         int cells = _rc._classifierConfig.getNbrCells();
         int inputs = inputP1Volume + inputP2Volume + cells;
-        Data inputSpikes = new Data( inputs );
+//        Data inputSpikes = new Data( inputs );
 
         // copy the input spike data.
+        _inputOld.copy( _inputNew ); // a complete copy
+
         int offset = 0;
-        inputSpikes.copyRange( _inputP1, offset, 0, inputP1Volume );
+        _inputNew.copyRange( _spikesNew, offset, 0, cells );
+        offset += cells;
+        _inputNew.copyRange( _inputP1, offset, 0, inputP1Volume );
         offset += inputP1Volume;
-        inputSpikes.copyRange( _inputP2, offset, 0, inputP2Volume );
-        offset += inputP2Volume;
-        inputSpikes.copyRange( _outputSpikesOld, offset, 0, cells );
+        _inputNew.copyRange( _inputP2, offset, 0, inputP2Volume );
+        //offset += inputP2Volume;
 
         // train the predictor
-        _predictor.train( inputSpikes, _outputSpikesNew );
+        _predictor.train( _inputOld, _inputNew, _spikesOld, _spikesNew );
 
         // generate a new prediction
-        _predictor.predict( inputSpikes, density );
+        _predictor.predict( _inputNew, density );
         _predictionOld .copy( _predictionNew ); // the old prediction
         _predictionNew .copy( _predictor._outputPredicted ); // copy the new prediction
         _predictionNewReal.copy( _predictor._outputPredictedReal ); // copy the new prediction

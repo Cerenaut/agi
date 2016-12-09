@@ -39,10 +39,11 @@ public class PyramidRegionLayerEntityConfig extends EntityConfig {
     float classifierRateScale = 5f; // inhibition nonlinearity
     float classifierRateMax = 0.25f; // i.e. never more than 1 in 4.
     float classifierRateLearningRate = 0.001f; // how fast the measurement of rate of cell use changes.
-    float integrationDecayRate = 0.9f; // how fast the accumulated spikes decay
-    float integrationSpikeWeight = 0.1f; // how much each dendrite spike contributes to the integrated value
+//    float integrationDecayRate = 0.9f; // how fast the accumulated spikes decay
+//    float integrationSpikeWeight = 0.1f; // how much each dendrite spike contributes to the integrated value
     float predictorLearningRate = 0.01f; // how fast the prediction weights learn
-    float predictorTraceDecayRate = 0.5f; // fast decay ie exact timing important
+//    float predictorTraceDecayRate = 0.5f; // fast decay ie exact timing important
+    int spikeOutputAgeMax = 4;
 
     // stats calculated during operation
     boolean resetDelayed = false;

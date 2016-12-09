@@ -47,6 +47,9 @@ public class PyramidRegionLayerEntity extends Entity {
     public static final String INPUT_P1 = "input-p1";
     public static final String INPUT_P2 = "input-p2";
 
+    public static final String INPUT_OLD = "input-old";
+    public static final String INPUT_NEW = "input-new";
+
     public static final String PREDICTION_ERROR_FP  = "prediction-error-fp";
     public static final String PREDICTION_ERROR_FN  = "prediction-error-fn";
     public static final String PREDICTION_OLD = "prediction-old";
@@ -54,15 +57,16 @@ public class PyramidRegionLayerEntity extends Entity {
     public static final String PREDICTION_NEW_REAL = "prediction-new-real";
 
     public static final String PREDICTOR_WEIGHTS = "predictor-weights";
-    public static final String PREDICTOR_OUTPUT_TRACES = "predictor-output-traces";
-    public static final String PREDICTOR_INPUT_OUTPUT_TRACES = "predictor-input-output-traces";
+//    public static final String PREDICTOR_OUTPUT_TRACES = "predictor-output-traces";
+//    public static final String PREDICTOR_INPUT_OUTPUT_TRACES = "predictor-input-output-traces";
 
     public static final String CLASSIFIER_SPIKES_OLD = "classifier-spikes-old";
     public static final String CLASSIFIER_SPIKES_NEW = "classifier-spikes-new";
-    public static final String CLASSIFIER_SPIKES_INTEGRATED = "classifier-spikes-integrated";
+//    public static final String CLASSIFIER_SPIKES_INTEGRATED = "classifier-spikes-integrated";
 
     public static final String OUTPUT_SPIKES_OLD = "output-spikes-old";
     public static final String OUTPUT_SPIKES_NEW = "output-spikes-new";
+    public static final String OUTPUT_SPIKES_AGE = "output-spikes-age";
 
     public static final String CLASSIFIER_WEIGHTS = "classifier-weights";
     public static final String CLASSIFIER_BIASES_1 = "classifier-biases-1";
@@ -91,14 +95,25 @@ public class PyramidRegionLayerEntity extends Entity {
 
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
 
+        attributes.add( INPUT_OLD );
+        attributes.add( INPUT_NEW );
+
+        flags.putFlag( INPUT_OLD, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( INPUT_NEW, DataFlags.FLAG_NODE_CACHE );
+
+        flags.putFlag( INPUT_OLD, DataFlags.FLAG_SPARSE_BINARY );
+        flags.putFlag( INPUT_NEW, DataFlags.FLAG_SPARSE_BINARY );
+
         // cell state
         attributes.add( CLASSIFIER_SPIKES_OLD );
         attributes.add( CLASSIFIER_SPIKES_NEW );
-        attributes.add( CLASSIFIER_SPIKES_INTEGRATED );
+//        attributes.add( CLASSIFIER_SPIKES_INTEGRATED );
+        attributes.add( OUTPUT_SPIKES_AGE );
 
         flags.putFlag( CLASSIFIER_SPIKES_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( CLASSIFIER_SPIKES_NEW, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( CLASSIFIER_SPIKES_INTEGRATED, DataFlags.FLAG_NODE_CACHE );
+//        flags.putFlag( CLASSIFIER_SPIKES_INTEGRATED, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( OUTPUT_SPIKES_AGE, DataFlags.FLAG_NODE_CACHE );
 
         flags.putFlag( CLASSIFIER_SPIKES_OLD, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( CLASSIFIER_SPIKES_NEW, DataFlags.FLAG_SPARSE_BINARY );
@@ -129,16 +144,16 @@ public class PyramidRegionLayerEntity extends Entity {
         flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_SPARSE_BINARY );
 
         attributes.add( PREDICTOR_WEIGHTS );
-        attributes.add( PREDICTOR_OUTPUT_TRACES );
-        attributes.add( PREDICTOR_INPUT_OUTPUT_TRACES );
+//        attributes.add( PREDICTOR_OUTPUT_TRACES );
+//        attributes.add( PREDICTOR_INPUT_OUTPUT_TRACES );
 
         flags.putFlag( PREDICTOR_WEIGHTS, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTOR_OUTPUT_TRACES, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTOR_INPUT_OUTPUT_TRACES, DataFlags.FLAG_NODE_CACHE );
+//        flags.putFlag( PREDICTOR_OUTPUT_TRACES, DataFlags.FLAG_NODE_CACHE );
+//        flags.putFlag( PREDICTOR_INPUT_OUTPUT_TRACES, DataFlags.FLAG_NODE_CACHE );
 
         flags.putFlag( PREDICTOR_WEIGHTS, DataFlags.FLAG_PERSIST_ON_FLUSH );
-        flags.putFlag( PREDICTOR_OUTPUT_TRACES, DataFlags.FLAG_PERSIST_ON_FLUSH );
-        flags.putFlag( PREDICTOR_INPUT_OUTPUT_TRACES, DataFlags.FLAG_PERSIST_ON_FLUSH );
+////        flags.putFlag( PREDICTOR_OUTPUT_TRACES, DataFlags.FLAG_PERSIST_ON_FLUSH );
+//        flags.putFlag( PREDICTOR_INPUT_OUTPUT_TRACES, DataFlags.FLAG_PERSIST_ON_FLUSH );
 
         // K sparse autoencoder data
         attributes.add( CLASSIFIER_WEIGHTS );
@@ -241,10 +256,11 @@ public class PyramidRegionLayerEntity extends Entity {
             config.classifierRateScale,
             config.classifierRateMax,
             config.classifierRateLearningRate,
-            config.integrationDecayRate,
-            config.integrationSpikeWeight,
-            config.predictorLearningRate,
-            config.predictorTraceDecayRate ) ;
+            config.spikeOutputAgeMax,
+//            config.integrationDecayRate,
+//            config.integrationSpikeWeight,
+            config.predictorLearningRate );//,
+//            config.predictorTraceDecayRate ) ;
 
         PyramidRegionLayer rl = new PyramidRegionLayer( regionLayerName, om );
         rl.setup( rlc );
@@ -283,12 +299,16 @@ public class PyramidRegionLayerEntity extends Entity {
         rl._inputP1 = getData( INPUT_P1 );
         rl._inputP2 = getData( INPUT_P2 );
 
+        rl._inputOld = getDataLazyResize( INPUT_OLD, rl._inputOld._dataSize );
+        rl._inputNew = getDataLazyResize( INPUT_NEW, rl._inputNew._dataSize );
+
         rl._spikesOld = getDataLazyResize( CLASSIFIER_SPIKES_OLD, rl._spikesOld._dataSize );
         rl._spikesNew = getDataLazyResize( CLASSIFIER_SPIKES_NEW, rl._spikesNew._dataSize );
-        rl._spikesIntegrated = getDataLazyResize( CLASSIFIER_SPIKES_INTEGRATED, rl._spikesIntegrated._dataSize );
+//        rl._spikesIntegrated = getDataLazyResize( CLASSIFIER_SPIKES_INTEGRATED, rl._spikesIntegrated._dataSize );
 
         rl._outputSpikesOld = getDataLazyResize( OUTPUT_SPIKES_OLD, rl._outputSpikesOld._dataSize );
         rl._outputSpikesNew = getDataLazyResize( OUTPUT_SPIKES_NEW, rl._outputSpikesNew._dataSize );
+        rl._outputSpikesAge = getDataLazyResize( OUTPUT_SPIKES_AGE, rl._outputSpikesAge._dataSize );
 
         rl._predictionErrorFP = getDataLazyResize( PREDICTION_ERROR_FP, rl._predictionErrorFP._dataSize );
         rl._predictionErrorFN = getDataLazyResize( PREDICTION_ERROR_FN, rl._predictionErrorFN._dataSize );
@@ -297,8 +317,8 @@ public class PyramidRegionLayerEntity extends Entity {
         rl._predictionNewReal = getDataLazyResize( PREDICTION_NEW_REAL, rl._predictionNewReal._dataSize );
 
         rl._predictor._weights = getDataLazyResize( PREDICTOR_WEIGHTS, rl._predictor._weights._dataSize );
-        rl._predictor._outputTraces = getDataLazyResize( PREDICTOR_OUTPUT_TRACES, rl._predictor._outputTraces._dataSize );
-        rl._predictor._inputOutputTraces = getDataLazyResize( PREDICTOR_INPUT_OUTPUT_TRACES, rl._predictor._inputOutputTraces._dataSize );
+//        rl._predictor._outputTraces = getDataLazyResize( PREDICTOR_OUTPUT_TRACES, rl._predictor._outputTraces._dataSize );
+//        rl._predictor._inputOutputTraces = getDataLazyResize( PREDICTOR_INPUT_OUTPUT_TRACES, rl._predictor._inputOutputTraces._dataSize );
 
         rl._classifier._cellWeights = getDataLazyResize( CLASSIFIER_WEIGHTS, rl._classifier._cellWeights._dataSize );
         rl._classifier._cellBiases1 = getDataLazyResize( CLASSIFIER_BIASES_1, rl._classifier._cellBiases1._dataSize );
@@ -315,12 +335,16 @@ public class PyramidRegionLayerEntity extends Entity {
 
     protected void copyDataToPersistence( PyramidRegionLayer rl ) {
 
+        setData( INPUT_OLD, rl._inputOld );
+        setData( INPUT_NEW, rl._inputNew );
+
         setData( CLASSIFIER_SPIKES_OLD, rl._spikesOld );
         setData( CLASSIFIER_SPIKES_NEW, rl._spikesNew );
-        setData( CLASSIFIER_SPIKES_INTEGRATED, rl._spikesIntegrated );
+//        setData( CLASSIFIER_SPIKES_INTEGRATED, rl._spikesIntegrated );
 
         setData( OUTPUT_SPIKES_OLD, rl._outputSpikesOld );
         setData( OUTPUT_SPIKES_NEW, rl._outputSpikesNew );
+        setData( OUTPUT_SPIKES_AGE, rl._outputSpikesAge );
 
         setData( PREDICTION_ERROR_FP, rl._predictionErrorFP );
         setData( PREDICTION_ERROR_FN, rl._predictionErrorFN );
@@ -329,8 +353,8 @@ public class PyramidRegionLayerEntity extends Entity {
         setData( PREDICTION_NEW_REAL, rl._predictionNewReal );
 
         setData( PREDICTOR_WEIGHTS, rl._predictor._weights );
-        setData( PREDICTOR_OUTPUT_TRACES, rl._predictor._outputTraces );
-        setData( PREDICTOR_INPUT_OUTPUT_TRACES, rl._predictor._inputOutputTraces );
+//        setData( PREDICTOR_OUTPUT_TRACES, rl._predictor._outputTraces );
+//        setData( PREDICTOR_INPUT_OUTPUT_TRACES, rl._predictor._inputOutputTraces );
 
         setData( CLASSIFIER_WEIGHTS, rl._classifier._cellWeights );
         setData( CLASSIFIER_BIASES_1, rl._classifier._cellBiases1 );
