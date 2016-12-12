@@ -35,11 +35,6 @@ import java.util.Properties;
  */
 public class DeepMNISTDemo {
 
-    enum LearningEntitiesAnalyticsType {
-        LabelFeatures,
-        SvmEntity
-    }
-
     public static void main( String[] args ) {
 
         // Create a Node

@@ -37,7 +37,7 @@ import java.util.Vector;
  * These Entities have two main phases, 'learn' on and off
  * <p>
  * In Learn=on (Training) phase - it simply collects the data that it needs (via a VectorSeriesEntity that is an Input)
- * In Learn=off (Testing) phase - train SVM and give predictions
+ * In Learn=off (Testing) phase - train SVM if not already trained, and give predictions (i.e. only train once then predict)
  * <p>
  * <p>
  * <p>
@@ -47,7 +47,11 @@ public class SVMEntity extends Entity {
 
     public static final String ENTITY_TYPE = "svm-entity";
 
-    public static final String ACCUMULATED_FEATURES = "accum-features";
+    // This is a VectorSeries. It comprises the input data set.
+    // It is effectively a vector of data points (each one a feature vector)
+    // It can also be viewed as a matrix, of size: features x number of data points, or m x n in standard ML terminology
+    public static final String ACCUMULATED_FEATURES = "accumulated-features";
+
     public static final String CLASS_PREDICTION = "class-prediction";
 
     public SVMEntity( ObjectMap om, Node n, ModelEntity model ) {

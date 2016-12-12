@@ -17,13 +17,13 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.entities;
+package io.agi.framework.demo.mnist;
 
 /**
- * Created by dave on 9/07/16.
+ * Created by gideon on 12/12/16.
  */
-public class SVMEntityConfig extends LearningEntitiesAnalyticsEntityConfig {
-
-    public boolean trained = false;         // once the model has been trained on a dataset, this flag is set to true
-    public float C = 1.f;                   // regularization parameter
+enum LearningEntitiesAnalyticsType {
+    SoftMax,
+    LabelFeatures,
+    SvmEntity
 }
