@@ -117,10 +117,10 @@ public class DeepMNISTDemo {
         String predictedImageDecoderName = Framework.GetEntityName( "predicted-image-decoder" );
 
         String svmEntitySeriesPredictedName  = Framework.GetEntityName( "svm-value-series-predicted" );
-        String svmEntitySeriesErrorName      = Framework.GetEntityName( "svm-value-series-error" );
-        String svmEntitySeriesTruthName      = Framework.GetEntityName( "svm-value-series-truth" );
+        String svmEntitySeriesErrorName  = Framework.GetEntityName( "svm-value-series-error" );
+        String svmEntitySeriesTruthName  = Framework.GetEntityName( "svm-value-series-truth" );
+        String svmEntitySeriesFeatures   = Framework.GetEntityName( "svm-series-features" );
 
-        String svmEntitySeriesFeatures   = Framework.GetEntityName( "svm-vector-series-features" );
 
         String featureLabelsSeriesPredictedName  = Framework.GetEntityName( "feature-labels-value-series-predicted" );
         String featureLabelsSeriesErrorName      = Framework.GetEntityName( "feature-labels-value-series-error" );
@@ -167,8 +167,9 @@ public class DeepMNISTDemo {
             Framework.CreateEntity( svmEntitySeriesErrorName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), svmEntityName ); // 2nd, class region updates after first to get its feedback
             Framework.CreateEntity( svmEntitySeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), svmEntityName ); // 2nd, class region updates after first to get its feedback
 
-            // vector series to accumulate features over time (the training data set) :  input = features, output = svmEntity
+            // vector series to accumulate features over time :  input = features, output = svmEntity
             Framework.CreateEntity( svmEntitySeriesFeatures, VectorSeriesEntity.ENTITY_TYPE, n.getName(), topLayerName );
+
         }
 
 
@@ -227,9 +228,17 @@ public class DeepMNISTDemo {
         }
 
         if ( learningEntitiesAnalyticsTypes.contains( LearningEntitiesAnalyticsType.SvmEntity ) ) {
-            Framework.SetDataReferences( svmEntityName, FeatureLabelsEntity.FEATURES, featureDatas );           // get current state from the region to be used to predict
-            Framework.SetDataReferences( svmEntitySeriesFeatures, VectorSeriesEntity.INPUT, featureDatas );     // accumulate data set for input to SVM for training
-            Framework.SetDataReference( svmEntityName, SVMEntity.ACCUMULATED_FEATURES, svmEntitySeriesFeatures, VectorSeriesEntity.OUTPUT );  // connect it to the SVM
+            // get current state from the region to be used to predict
+            Framework.SetDataReferences( svmEntityName, FeatureLabelsEntity.FEATURES, featureDatas );
+
+            // accumulate data set (X) for input to SVM for training
+            Framework.SetDataReferences( svmEntitySeriesFeatures, VectorSeriesEntity.INPUT, featureDatas );
+            Framework.SetDataReference( svmEntityName, SVMEntity.FEATURES_MATRIX, svmEntitySeriesFeatures, VectorSeriesEntity.OUTPUT );  // connect it to the SVM
+
+            // TO COMMENT DAVE: This value series is an input and an output .... possible?
+
+            // have access to the labels (class truth) vector (y)
+            Framework.SetDataReference( svmEntityName, SVMEntity.CLASS_TRUTH_VECTOR, svmEntitySeriesTruthName, ValueSeriesEntity.OUTPUT );
         }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -340,6 +349,10 @@ public class DeepMNISTDemo {
             Framework.SetConfig( featureLabelsName, "classes", "10" );
             Framework.SetConfig( featureLabelsName, "onlineLearning", String.valueOf( classFeaturesOnline ) );
             Framework.SetConfig( featureLabelsName, "onlineLearningRate", "0.001" );
+
+            Framework.SetConfig( featureLabelsSeriesPredictedName, "period", "-1" ); // log forever
+            Framework.SetConfig( featureLabelsSeriesErrorName, "period", "-1" );
+            Framework.SetConfig( featureLabelsSeriesTruthName, "period", "-1" );
         }
 
         if ( learningEntitiesAnalyticsTypes.contains( LearningEntitiesAnalyticsType.SvmEntity ) ) {
@@ -351,10 +364,6 @@ public class DeepMNISTDemo {
             Framework.SetConfig( svmEntityName, "onlineLearningRate", "0.0" );
         }
 
-        // data series logging
-        Framework.SetConfig( featureLabelsSeriesPredictedName, "period", "-1" ); // log forever
-        Framework.SetConfig( featureLabelsSeriesErrorName, "period", "-1" );
-        Framework.SetConfig( featureLabelsSeriesTruthName, "period", "-1" );
 
         if ( learningEntitiesAnalyticsTypes.contains( LearningEntitiesAnalyticsType.LabelFeatures ) ) {
             Framework.SetConfig( featureLabelsSeriesPredictedName, "entityName", featureLabelsName );
@@ -374,7 +383,6 @@ public class DeepMNISTDemo {
             Framework.SetConfig( svmEntitySeriesPredictedName, "configPath", "classPredicted" );
             Framework.SetConfig( svmEntitySeriesErrorName, "configPath", "classError" );
             Framework.SetConfig( svmEntitySeriesTruthName, "configPath", "classTruth" );
-
         }
 
 
