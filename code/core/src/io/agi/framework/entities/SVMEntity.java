@@ -21,6 +21,9 @@ package io.agi.framework.entities;
 
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
+import io.agi.core.ml.supervised.Svm;
+import io.agi.core.ml.supervised.SvmConfig;
+import io.agi.core.orm.Keys;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
@@ -91,7 +94,16 @@ public class SVMEntity extends Entity {
     @Override
     protected void doUpdateSelf() {
 
+        // Get all the parameters:
         SVMEntityConfig config = ( SVMEntityConfig ) _config;
+
+        // Create the config object:
+        SvmConfig svmConfig = new SvmConfig();
+        svmConfig.setup( config.C );
+
+        // Create the implementing object itself, and copy data from persistence into it:
+        Svm svm = new Svm( getName(), _om );
+        svm.setup( svmConfig );
 
         Data featuresMatrix = getData( FEATURES_MATRIX );
         if ( featuresMatrix == null ) {
@@ -114,7 +126,7 @@ public class SVMEntity extends Entity {
         Data classPrediction = getDataLazyResize( CLASS_PREDICTION, DataSize.create( config.classes ) );
 
         if ( config.reset ) {
-            svmReset();
+            svm.reset();
         }
 
 
@@ -141,16 +153,16 @@ public class SVMEntity extends Entity {
 
             // not in training mode, so if not already trained, build a model
             if ( !config.trained ) {
-                svmTrain( featuresMatrix, classTruthVector );
+                svm.train( featuresMatrix, classTruthVector );
                 config.trained = true;
             }
             // or else load the saved model
             else {
-                svmloadSavedModel();
+                svm.loadSavedModel();
             }
 
             // and make the prediction
-            prediction = svmPredict();
+            prediction = svm.predict();
         }
 
         int error = 1;
@@ -164,89 +176,5 @@ public class SVMEntity extends Entity {
         config.classTruth = classValue;         // the value that was taken as input
     }
 
-    private void svmReset() {
 
-        // to implement
-
-    }
-
-    private void svmloadSavedModel() {
-
-        // to implement
-
-    }
-
-
-    public int svmPredict() {
-
-        // to implement
-
-        return 0;
-    }
-
-    public void svmTrain( Data featuresMatrix, Data classTruthVector ) {
-
-        SVMEntityConfig config = ( SVMEntityConfig ) _config;
-
-        svm_parameter param = new svm_parameter();
-
-        // default values
-        param.svm_type = svm_parameter.C_SVC;
-        param.kernel_type = svm_parameter.RBF;
-        param.degree = 3;
-        param.gamma = 0;
-        param.coef0 = 0;
-        param.nu = 0.5;
-        param.cache_size = 40;
-        param.eps = 1e-3;
-        param.p = 0.1;
-        param.shrinking = 1;
-        param.probability = 0;
-        param.nr_weight = 0;
-        param.weight_label = new int[ 0 ];
-        param.weight = new double[ 0 ];
-
-        // values from config
-        param.C = config.C;
-
-        DataSize datasetSize = featuresMatrix._dataSize;
-
-        int n = datasetSize.getSize( DataSize.DIMENSION_Y );        // n = number of data points
-        int m = datasetSize.getSize( DataSize.DIMENSION_X );        // m = feature vector size
-
-        // build problem
-        svm_problem prob = new svm_problem();
-        prob.l = n;
-        prob.y = new double[ prob.l ];
-        prob.x = new svm_node[ prob.l ][ m ];
-
-        // iterate data points (vectors in the VectorSeries - each vector is a data point)
-        for ( int i = 0; i < n ; ++i ) {
-
-            // iterate dimensions of x (elements of the vector)
-            for ( int j = 0 ; j < m ; j++) {
-
-                int classTruth = 0;
-                // ****** GET IT FROM ClassTruthVector ********
-                // To Implement
-
-                float xij = featuresMatrix._values[ i * n + j];
-
-                if ( xij == 0.f ) {
-                    continue;
-                }
-
-                prob.x[ i ][ j ] = new svm_node();
-                prob.x[ i ][ j ].index = j+1;
-                prob.x[ i ][ j ].value = xij;
-                prob.y[ i ] = classTruth;
-            }
-        }
-
-        // build model
-        svm_model model = svm.svm_train( prob, param );
-
-        // save model
-            // to implement
-    }
 }
