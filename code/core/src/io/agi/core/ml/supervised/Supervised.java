@@ -17,12 +17,17 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.entities;
+package io.agi.core.ml.supervised;
 
-import io.agi.framework.EntityConfig;
+import io.agi.core.data.Data;
 
 /**
- * Created by gideon on 17/07/2016.
+ * Created by gideon on 14/12/16.
  */
-public class LogfileEntityConfig extends EntityConfig {
+public interface Supervised {
+
+    void reset();
+    int predict();
+    void loadSavedModel();
+    void train( Data featuresMatrix, Data classTruthVector );
 }

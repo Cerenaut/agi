@@ -96,7 +96,7 @@ public class AutoRegionLayerDemo {
         float defaultPredictionInhibition = 1.f; // random image classification only experiments
 //        float defaultPredictionInhibition = 0.f; // where you use prediction
         boolean encodeZero = false;
-        boolean classFeaturesOnline = false;
+        boolean featureLabelsOnline = false;
         int layers = 2;
 
         // Define some entities
@@ -107,7 +107,7 @@ public class AutoRegionLayerDemo {
         String region2FfName            = Framework.GetEntityName( "image-region-2-ff" );
         String region3FfName            = Framework.GetEntityName( "image-region-3-ff" );
         String imageEncoderName         = Framework.GetEntityName( "image-encoder" );
-        String classFeaturesName        = Framework.GetEntityName( "class-features" );
+        String featureLabelsName        = Framework.GetEntityName( "feature-labels" );
         String valueSeriesPredictedName = Framework.GetEntityName( "value-series-predicted" );
         String valueSeriesErrorName     = Framework.GetEntityName( "value-series-error" );
         String valueSeriesTruthName     = Framework.GetEntityName( "value-series-truth" );
@@ -131,10 +131,10 @@ public class AutoRegionLayerDemo {
             learningEntitiesAlgorithm = learningEntitiesAlgorithm + "," + region3FfName;
         }
 
-        Framework.CreateEntity( classFeaturesName, FeatureLabelsEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
-        Framework.CreateEntity( valueSeriesPredictedName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), classFeaturesName ); // 2nd, class region updates after first to get its feedback
-        Framework.CreateEntity( valueSeriesErrorName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), classFeaturesName ); // 2nd, class region updates after first to get its feedback
-        Framework.CreateEntity( valueSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), classFeaturesName ); // 2nd, class region updates after first to get its feedback
+        Framework.CreateEntity( featureLabelsName, FeatureLabelsEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
+        Framework.CreateEntity( valueSeriesPredictedName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), featureLabelsName ); // 2nd, class region updates after first to get its feedback
+        Framework.CreateEntity( valueSeriesErrorName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), featureLabelsName ); // 2nd, class region updates after first to get its feedback
+        Framework.CreateEntity( valueSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), featureLabelsName ); // 2nd, class region updates after first to get its feedback
 
         // Connect the entities' data
         // a) Image to image region, and decode
@@ -157,7 +157,7 @@ public class AutoRegionLayerDemo {
         if( layers == 1 ) featureDatas.add( new AbstractPair< String, String >( region1FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
         if( layers == 2 ) featureDatas.add( new AbstractPair< String, String >( region2FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
         if( layers == 3 ) featureDatas.add( new AbstractPair< String, String >( region3FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
-        Framework.SetDataReferences( classFeaturesName, FeatureLabelsEntity.FEATURES, featureDatas ); // get current state from the region to be used to predict
+        Framework.SetDataReferences( featureLabelsName, FeatureLabelsEntity.FEATURES, featureDatas ); // get current state from the region to be used to predict
 
         // Experiment config
         if( !terminateByAge ) {
@@ -184,7 +184,7 @@ public class AutoRegionLayerDemo {
         Framework.SetConfig( imageClassName, "sourceFilesPathTesting", testingPath );
         Framework.SetConfig( imageClassName, "trainingBatches", String.valueOf( trainingBatches ) );
 
-        String learningEntitiesAnalytics = classFeaturesName;
+        String learningEntitiesAnalytics = featureLabelsName;
         Framework.SetConfig( imageClassName, "learningEntitiesAlgorithm", String.valueOf( learningEntitiesAlgorithm ) );
         Framework.SetConfig( imageClassName, "learningEntitiesAnalytics", String.valueOf( learningEntitiesAnalytics ) );
 
@@ -281,21 +281,21 @@ public class AutoRegionLayerDemo {
                 rateScale, rateLearningRate );
 
         // feature-class config
-        Framework.SetConfig( classFeaturesName, "classEntityName", imageClassName );
-        Framework.SetConfig( classFeaturesName, "classConfigPath", "imageClass" );
-        Framework.SetConfig( classFeaturesName, "classes", "10" );
-        Framework.SetConfig( classFeaturesName, "onlineLearning", String.valueOf( classFeaturesOnline ) );
+        Framework.SetConfig( featureLabelsName, "classEntityName", imageClassName );
+        Framework.SetConfig( featureLabelsName, "classConfigPath", "imageClass" );
+        Framework.SetConfig( featureLabelsName, "classes", "10" );
+        Framework.SetConfig( featureLabelsName, "onlineLearning", String.valueOf( featureLabelsOnline ) );
 //        Framework.SetConfig( classFeaturesName, "onlineLearningRate", "0.001" );
-        Framework.SetConfig( classFeaturesName, "onlineLearningRate", "0.01" );
+        Framework.SetConfig( featureLabelsName, "onlineLearningRate", "0.01" );
 
         // data series logging
         Framework.SetConfig( valueSeriesPredictedName, "period", "-1" ); // log forever
         Framework.SetConfig( valueSeriesErrorName, "period", "-1" );
         Framework.SetConfig( valueSeriesTruthName, "period", "-1" );
 
-        Framework.SetConfig( valueSeriesPredictedName, "entityName", classFeaturesName ); // log forever
-        Framework.SetConfig( valueSeriesErrorName, "entityName", classFeaturesName );
-        Framework.SetConfig( valueSeriesTruthName, "entityName", classFeaturesName );
+        Framework.SetConfig( valueSeriesPredictedName, "entityName", featureLabelsName ); // log forever
+        Framework.SetConfig( valueSeriesErrorName, "entityName", featureLabelsName );
+        Framework.SetConfig( valueSeriesTruthName, "entityName", featureLabelsName );
 
         Framework.SetConfig( valueSeriesPredictedName, "configPath", "classPredicted" ); // log forever
         Framework.SetConfig( valueSeriesErrorName, "configPath", "classError" );

@@ -19,22 +19,46 @@
 
 package io.agi.framework.entities;
 
+import io.agi.core.data.Data;
+import io.agi.core.data.DataSize;
+import io.agi.core.ml.supervised.Svm;
+import io.agi.core.ml.supervised.SvmConfig;
+import io.agi.core.orm.Keys;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
+import io.agi.framework.Framework;
 import io.agi.framework.Node;
 import io.agi.framework.persistence.models.ModelEntity;
 import libsvm.*;
 
 import java.util.Collection;
-import java.util.Vector;
 
 /**
+ * This is a 'learning analytics' Entity
+ * These Entities have two main phases, 'learn' on and off
+ * <p>
+ * In Learn=on (Training) phase - it simply collects the data that it needs (via a VectorSeriesEntity that is an Input)
+ * In Learn=off (Testing) phase - train SVM if not already trained, and give predictions (i.e. only train once then predict)
+ * <p>
+ * <p>
+ * <p>
  * Created by gideon on 11/07/2016.
  */
 public class SVMEntity extends Entity {
 
     public static final String ENTITY_TYPE = "svm-entity";
+
+    // This is the input data set implemented with a VectorSeries.
+    // It is a series of data points (each one a feature vector).
+    // It can be viewed as a matrix of size: 'number of features' x 'number of data points', or n x m in standard ML terminology
+    public static final String FEATURES_MATRIX = "features-matrix";
+
+    // The labels in the input data set (y)
+    public static final String CLASS_TRUTH_VECTOR = "class-truth-vector";
+
+    public static final String CLASS_PREDICTION = "class-prediction";
+
 
     public SVMEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
@@ -42,12 +66,12 @@ public class SVMEntity extends Entity {
 
     @Override
     public void getInputAttributes( Collection< String > attributes ) {
-
+        attributes.add( FEATURES_MATRIX );
     }
 
     @Override
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
-
+        attributes.add( CLASS_PREDICTION );
     }
 
     @Override
@@ -56,12 +80,12 @@ public class SVMEntity extends Entity {
     }
 
     class point {
-        point(double x, double y, byte value)
-        {
+        point( double x, double y, byte value ) {
             this.x = x;
             this.y = y;
             this.value = value;
         }
+
         double x, y;
         byte value;
     }
@@ -70,86 +94,87 @@ public class SVMEntity extends Entity {
     @Override
     protected void doUpdateSelf() {
 
-        Vector<point> point_list = new Vector<point>();
+        // Get all the parameters:
+        SVMEntityConfig config = ( SVMEntityConfig ) _config;
 
-        svm_parameter param = new svm_parameter();
+        // Create the config object:
+        SvmConfig svmConfig = new SvmConfig();
+        svmConfig.setup( config.C );
 
-        // default values
-        param.svm_type = svm_parameter.C_SVC;
-        param.kernel_type = svm_parameter.RBF;
-        param.degree = 3;
-        param.gamma = 0;
-        param.coef0 = 0;
-        param.nu = 0.5;
-        param.cache_size = 40;
-        param.C = 1;
-        param.eps = 1e-3;
-        param.p = 0.1;
-        param.shrinking = 1;
-        param.probability = 0;
-        param.nr_weight = 0;
-        param.weight_label = new int[0];
-        param.weight = new double[0];
+        // Create the implementing object itself, and copy data from persistence into it:
+        Svm svm = new Svm( getName(), _om );
+        svm.setup( svmConfig );
 
-        // build problem
-        svm_problem prob = new svm_problem();
-        prob.l = point_list.size();
-        prob.y = new double[prob.l];
-
-        if(param.kernel_type == svm_parameter.PRECOMPUTED)
-        {
+        Data featuresMatrix = getData( FEATURES_MATRIX );
+        if ( featuresMatrix == null ) {
+            return;
         }
-        else if(param.svm_type == svm_parameter.EPSILON_SVR ||
-                param.svm_type == svm_parameter.NU_SVR)
-        {
-            if(param.gamma == 0)
-                param.gamma = 1;
-            prob.x = new svm_node[prob.l][1];
-            for(int i=0;i<prob.l;i++)
-            {
-                point p = point_list.elementAt(i);
-                prob.x[i][0] = new svm_node();
-                prob.x[i][0].index = 1;
-                prob.x[i][0].value = p.x;
-                prob.y[i] = p.y;
+
+        Data classTruthVector = getData( CLASS_TRUTH_VECTOR );
+        if ( classTruthVector == null ) {
+            return;
+        }
+
+        // Get the input classification (for this time step)
+        String stringClassValue = Framework.GetConfig( config.classEntityName, config.classConfigPath );
+        Integer classValue = Integer.valueOf( stringClassValue );
+        if ( classValue == null ) {
+            classValue = 0;
+        }
+
+        // Get all the parameters:
+        Data classPrediction = getDataLazyResize( CLASS_PREDICTION, DataSize.create( config.classes ) );
+
+        if ( config.reset ) {
+            svm.reset();
+        }
+
+
+        // 1) collect data (training set)
+        // ----------------------------------------------------------------------
+        if ( config.learn ) {
+            if ( config.onlineLearning ) {
+                // could be: add a data point to window, that will be used as training data for SVM
+                // NOT IMPLEMENTED
+            }
+            else {
+                // this could be 'add a data point',
+                // but taken care of by the VectorSeries that inputs to FEATURES_MATRIX
+            }
+        }
+
+        classPrediction.set( 0.f );
+
+
+        // 2) predict (testing set)
+        // ----------------------------------------------------------------------
+        int prediction = 0;
+        if ( !config.learn ) {
+
+            // not in training mode, so if not already trained, build a model
+            if ( !config.trained ) {
+                svm.train( featuresMatrix, classTruthVector );
+                config.trained = true;
+            }
+            // or else load the saved model
+            else {
+                svm.loadSavedModel();
             }
 
-            // build model & classify
-            svm_model model = svm.svm_train(prob, param);
-            svm_node[] x = new svm_node[1];
-            x[0] = new svm_node();
-            x[0].index = 1;
-
-
-        }
-        else
-        {
-            if(param.gamma == 0) param.gamma = 0.5;
-            prob.x = new svm_node [prob.l][2];
-            for(int i=0;i<prob.l;i++)
-            {
-                point p = point_list.elementAt(i);
-                prob.x[i][0] = new svm_node();
-                prob.x[i][0].index = 1;
-                prob.x[i][0].value = p.x;
-                prob.x[i][1] = new svm_node();
-                prob.x[i][1].index = 2;
-                prob.x[i][1].value = p.y;
-                prob.y[i] = p.value;
-            }
-
-            // build model & classify
-            svm_model model = svm.svm_train(prob, param);
-            svm_node[] x = new svm_node[2];
-            x[0] = new svm_node();
-            x[1] = new svm_node();
-            x[0].index = 1;
-            x[1].index = 2;
-
+            // and make the prediction
+            prediction = svm.predict();
         }
 
+        int error = 1;
+        if ( classValue == prediction ) {
+            error = 0;
+        }
 
-
-
+        // update the config based on the result:
+        config.classPredicted = prediction;     // the predicted class given the input features
+        config.classError = error;              // 1 if the prediction didn't match the input class
+        config.classTruth = classValue;         // the value that was taken as input
     }
+
+
 }

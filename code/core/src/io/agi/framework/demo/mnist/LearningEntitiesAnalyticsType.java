@@ -17,13 +17,13 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.entities;
-
-import io.agi.framework.EntityConfig;
+package io.agi.framework.demo.mnist;
 
 /**
- * Created by dave on 9/07/16.
+ * Created by gideon on 12/12/16.
  */
-public class FeatureLabelsEntityConfig extends LearningEntitiesAnalyticsEntityConfig {
-
+enum LearningEntitiesAnalyticsType {
+    SoftMax,
+    LabelFeatures,
+    SvmEntity
 }

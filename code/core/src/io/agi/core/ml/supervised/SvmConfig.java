@@ -17,13 +17,27 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.entities;
+package io.agi.core.ml.supervised;
 
-import io.agi.framework.EntityConfig;
+import io.agi.core.ann.NetworkConfig;
 
 /**
- * Created by dave on 9/07/16.
+ * Created by gideon on 14/12/16.
  */
-public class FeatureLabelsEntityConfig extends LearningEntitiesAnalyticsEntityConfig {
+public class SvmConfig extends NetworkConfig {
 
+    public String _keyRegularisation = "regularisation";
+    private double regularisation;
+
+    public void setup( float C ) {
+        setRegularisation( C );
+    }
+
+    public void setRegularisation( float C ) {
+        _om.put( getKey( _keyRegularisation ), C );
+    }
+
+    public float getRegularisation() {
+        return _om.getFloat( _keyRegularisation );
+    }
 }
