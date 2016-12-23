@@ -94,6 +94,9 @@ public class Svm extends NamedObject implements Callback, Supervised {
         int m = datasetSize.getSize( DataSize.DIMENSION_Y );        // m = number of data points
         int n = datasetSize.getSize( DataSize.DIMENSION_X );        // n = feature vector size
 
+        // **** NORMALISE *****    to implement on Data
+        //featuresMatrix.normalize(  )
+
         svm_problem prob = new svm_problem();
         prob.l = m;
         prob.y = new double[ prob.l ];
