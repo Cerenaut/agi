@@ -27,9 +27,6 @@ import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 
 import de.bwaldvogel.liblinear.*;
-import libsvm.svm_node;
-import libsvm.svm_parameter;
-import libsvm.svm_problem;
 
 /**
  * Created by gideon on 23/12/16.
@@ -65,7 +62,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
     public int predict() {
 
         // sample below
-        Feature[] instance = { new FeatureNode(1, 4), new FeatureNode(2, 2) };
+        Feature[] instance = { new FeatureNode( 1, 4 ), new FeatureNode( 2, 2 ) };
         double prediction = Linear.predict( _model, instance );
 
         // convert input to Feature instance, then predict
@@ -82,11 +79,10 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
     @Override
     public void saveModel() {
 
-        if ( _model != null ) {
+        if( _model != null ) {
 //        File modelFile = new File("model");
 //        _model.save(modelFile);
-        }
-        else {
+        } else {
             // throw exception
         }
     }
@@ -114,20 +110,20 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
         problem.n = n; // number of features
 
         // iterate data points (vectors in the VectorSeries - each vector is a data point)
-        for ( int i = 0; i < n ; ++i ) {
+        for( int i = 0; i < n; ++i ) {
 
             // iterate dimensions of x (elements of the vector)
-            for ( int j = 0 ; j < m ; j++ ) {
+            for( int j = 0; j < m; j++ ) {
 
                 int classTruth = getClassTruth( classTruthVector, i, j );
 
-                double xij = featuresMatrix._values[ i * n + j];
+                double xij = featuresMatrix._values[ i * n + j ];
 
-                if ( xij == 0.f ) {
+                if( xij == 0.f ) {
                     continue;
                 }
 
-                problem.x[ i ][ j ] = new FeatureNode( j+1, xij );
+                problem.x[ i ][ j ] = new FeatureNode( j + 1, xij );
                 problem.y[ i ] = classTruth;
             }
         }
@@ -140,7 +136,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
         double C = 1.0;    // cost of constraints violation
         double eps = 0.01; // stopping criteria
 
-        Parameter parameter = new Parameter(solver, C, eps);
+        Parameter parameter = new Parameter( solver, C, eps );
         return parameter;
     }
 
