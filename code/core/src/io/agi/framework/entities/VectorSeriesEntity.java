@@ -20,6 +20,7 @@
 package io.agi.framework.entities;
 
 import io.agi.core.data.Data;
+import io.agi.core.data.Data2d;
 import io.agi.core.data.DataSize;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
@@ -72,9 +73,15 @@ public class VectorSeriesEntity extends Entity {
             return; // nothing to log yet
         }
 
-        int elements = input.getSize();
+        if( !_config.learn ) {
+             return; // don't append or update the output data except when "learning" ie accumulating
+        }
 
-        Data newOutput;
+        Data oldOutput = getData( OUTPUT );
+        Data newOutput = Data2d.accumulateVectors( input, config.period, oldOutput );
+        setData( OUTPUT, newOutput );
+
+/*        int elements = input.getSize();
 
         if( config.period < 0 ) {
             // keep appending
@@ -135,7 +142,7 @@ public class VectorSeriesEntity extends Entity {
             }
         }
 
-        setData( OUTPUT, newOutput );
+        setData( OUTPUT, newOutput );*/
     }
 
 }

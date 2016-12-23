@@ -178,8 +178,8 @@ public class AutoRegionLayerLabelsDemo {
         // invert the hidden layer state to produce the predicted label
         Framework.SetDataReference( labelDecoderName, DecoderEntity.DATA_INPUT_ENCODED, topLayerName, AutoRegionLayerEntity.OUTPUT_INPUT_2 ); // the prediction of the next state
 
-        Framework.SetDataReference( classResultName, ClassificationResultEntity.INPUT_LABEL, imageClassName, ImageClassEntity.OUTPUT_LABEL ); // get current state from the region to be used to predict
-        Framework.SetDataReference( classResultName, ClassificationResultEntity.INPUT_CLASS, labelDecoderName, DecoderEntity.DATA_OUTPUT_DECODED ); // get current state from the region to be used to predict
+        Framework.SetDataReference( classResultName, ClassificationResultEntity.INPUT_LABELS, imageClassName, ImageClassEntity.OUTPUT_LABEL ); // get current state from the region to be used to predict
+        Framework.SetDataReference( classResultName, ClassificationResultEntity.INPUT_CLASSIFICATIONS, labelDecoderName, DecoderEntity.DATA_OUTPUT_DECODED ); // get current state from the region to be used to predict
 
         // Label filter
         Framework.SetConfig( configProductName, "entityName", region1FfName );

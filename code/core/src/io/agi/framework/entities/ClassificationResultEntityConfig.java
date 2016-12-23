@@ -26,8 +26,9 @@ import io.agi.framework.EntityConfig;
  */
 public class ClassificationResultEntityConfig extends EntityConfig {
 
-    public int classPredicted = 0; // the predicted class given the input features
-    public int classError = 0; // 1 if the prediction didn't match the input class
-    public int classTruth = 0; // the value that was taken as input
+    public float labelPredicted = 0; // the predicted class given the input features
+    public float labelTruth = 0; // the value that was taken as input
+    public int labelError = 0; // 1 if the prediction didn't match the input class
+    public int labelErrorSum = 0; // sum of errors (if vector input)
 
 }

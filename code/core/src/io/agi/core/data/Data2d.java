@@ -38,6 +38,89 @@ import java.util.ArrayList;
 public class Data2d {
 
     /**
+     * Incrementally builds a matrix of vectors x time by appending new vectors as they become available.
+     *
+     * @param vector
+     * @param period
+     * @param existingVectors
+     * @return
+     */
+    public static Data accumulateVectors( Data vector, int period, Data existingVectors ) {
+        int elements = vector.getSize();
+
+        Data newOutput;
+
+        if( period < 0 ) {
+            // keep appending
+            int oldHistoryLength = 0;
+            int newHistoryLength = 0;
+
+            if( existingVectors == null ) {
+                newHistoryLength = 1;
+            }
+            else {
+                // infinite length
+                oldHistoryLength = existingVectors._dataSize.getSize( DataSize.DIMENSION_Y );
+                newHistoryLength = oldHistoryLength + 1;
+            }
+
+            newOutput = new Data( DataSize.create( DataSize.DIMENSION_X, elements, DataSize.DIMENSION_Y, newHistoryLength ) );
+
+            // copy old vectors
+            int offsetThis = 0;
+            int offsetThat = 0;
+
+            if( existingVectors != null ) {
+                offsetThis = oldHistoryLength * elements;
+                newOutput.copyRange( existingVectors, 0, 0, oldHistoryLength * elements );
+            }
+
+            // append new vector
+            newOutput.copyRange( vector, offsetThis, offsetThat, elements );
+        }
+        else {
+            // rolling window
+            DataSize ds = DataSize.create( DataSize.DIMENSION_X, elements, DataSize.DIMENSION_Y, period );
+
+            if( existingVectors == null ) {
+                newOutput = new Data( ds );
+            }
+            else if( !existingVectors._dataSize.isSameAs( ds ) ) {
+                newOutput = new Data( ds );
+                newOutput.setSize( ds );
+            }
+            else {
+                newOutput = existingVectors; // don't resize, keep old data
+            }
+
+            // it's slow, but ideally the picture makes sense when viewed. So to make this happen we need to shift all the data.
+            // shift all the old values 1 place
+            for( int i1 = period -2; i1 >= 0; --i1 ) {
+
+                int i2 = i1 + 1;
+                if( i2 >= period ) {
+                    continue;
+                }
+
+                for( int j = 0; j < elements; ++j ) {
+                    int offset1 = i1 * elements +j;
+                    int offset2 = i2 * elements +j;
+                    float x1 = newOutput._values[ offset1 ];
+                    newOutput._values[ offset2 ] = x1;
+                }
+            }
+
+            for( int j = 0; j < elements; ++j ) {
+                int offset2 = 0 * elements +j;
+                float x1 = vector._values[ j ];
+                newOutput._values[ offset2 ] = x1;
+            }
+        }
+
+        return newOutput;
+    }
+
+    /**
      * @param xRect
      * @param yRect
      * @param wRect

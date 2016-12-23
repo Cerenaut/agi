@@ -78,8 +78,8 @@ public class CommonEntityFactory implements EntityFactory {
             return new ClassificationResultEntity( objectMap, _n, modelEntity );
         }
 
-        if( entityType.equals( FeatureLabelsEntity.ENTITY_TYPE ) ) {
-            return new FeatureLabelsEntity( objectMap, _n, modelEntity );
+        if( entityType.equals( FeatureLabelsCorrelationEntity.ENTITY_TYPE ) ) {
+            return new FeatureLabelsCorrelationEntity( objectMap, _n, modelEntity );
         }
 
         if( entityType.equals( ParameterLessSelfOrganizingMapEntity.ENTITY_TYPE ) ) {

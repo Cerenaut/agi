@@ -19,11 +19,11 @@
 
 package io.agi.framework.entities;
 
-import io.agi.framework.EntityConfig;
-
 /**
  * Created by dave on 9/07/16.
  */
-public class FeatureLabelsEntityConfig extends LearningEntitiesAnalyticsEntityConfig {
+public class FeatureLabelsCorrelationEntityConfig extends SupervisedLearningEntityConfig {
+
+    public float onlineLearningRate = 0.01f; // if online learning, this is the learning rate.
 
 }

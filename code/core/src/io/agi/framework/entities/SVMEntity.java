@@ -23,14 +23,12 @@ import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.ml.supervised.Svm;
 import io.agi.core.ml.supervised.SvmConfig;
-import io.agi.core.orm.Keys;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
 import io.agi.framework.persistence.models.ModelEntity;
-import libsvm.*;
 
 import java.util.Collection;
 
@@ -45,55 +43,39 @@ import java.util.Collection;
  * <p>
  * Created by gideon on 11/07/2016.
  */
-public class SVMEntity extends Entity {
+public class SVMEntity extends SupervisedLearningEntity {
 
     public static final String ENTITY_TYPE = "svm-entity";
 
-    // This is the input data set implemented with a VectorSeries.
-    // It is a series of data points (each one a feature vector).
-    // It can be viewed as a matrix of size: 'number of features' x 'number of data points', or n x m in standard ML terminology
-    public static final String FEATURES_MATRIX = "features-matrix";
-
-    // The labels in the input data set (y)
-    public static final String CLASS_TRUTH_VECTOR = "class-truth-vector";
-
-    public static final String CLASS_PREDICTION = "class-prediction";
-
+//    public static final String FEATURE_LABEL_COUNT = "feature-label-count";     // count of each of the features for a class
+//    protected Data _featureLabelCount;
+    Svm _svm;
 
     public SVMEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
     }
 
-    @Override
     public void getInputAttributes( Collection< String > attributes ) {
-        attributes.add( FEATURES_MATRIX );
+        super.getInputAttributes( attributes );
     }
 
-    @Override
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
-        attributes.add( CLASS_PREDICTION );
+        super.getOutputAttributes( attributes, flags );
+
+        // TODO add any Data you need to persist your SVM model
+        // attributes.add( FEATURE_LABEL_COUNT );
     }
 
-    @Override
     public Class getConfigClass() {
         return SVMEntityConfig.class;
     }
 
-    class point {
-        point( double x, double y, byte value ) {
-            this.x = x;
-            this.y = y;
-            this.value = value;
-        }
-
-        double x, y;
-        byte value;
+    protected void resetModel() {
+        super.resetModel();
+        _svm.reset();
     }
 
-
-    @Override
-    protected void doUpdateSelf() {
-
+    protected void loadModel( int features, int labels, int labelClasses ) {
         // Get all the parameters:
         SVMEntityConfig config = ( SVMEntityConfig ) _config;
 
@@ -102,79 +84,57 @@ public class SVMEntity extends Entity {
         svmConfig.setup( config.C );
 
         // Create the implementing object itself, and copy data from persistence into it:
-        Svm svm = new Svm( getName(), _om );
-        svm.setup( svmConfig );
-
-        Data featuresMatrix = getData( FEATURES_MATRIX );
-        if ( featuresMatrix == null ) {
-            return;
-        }
-
-        Data classTruthVector = getData( CLASS_TRUTH_VECTOR );
-        if ( classTruthVector == null ) {
-            return;
-        }
-
-        // Get the input classification (for this time step)
-        String stringClassValue = Framework.GetConfig( config.classEntityName, config.classConfigPath );
-        Integer classValue = Integer.valueOf( stringClassValue );
-        if ( classValue == null ) {
-            classValue = 0;
-        }
-
-        // Get all the parameters:
-        Data classPrediction = getDataLazyResize( CLASS_PREDICTION, DataSize.create( config.classes ) );
-
-        if ( config.reset ) {
-            svm.reset();
-        }
-
-
-        // 1) collect data (training set)
-        // ----------------------------------------------------------------------
-        if ( config.learn ) {
-            if ( config.onlineLearning ) {
-                // could be: add a data point to window, that will be used as training data for SVM
-                // NOT IMPLEMENTED
-            }
-            else {
-                // this could be 'add a data point',
-                // but taken care of by the VectorSeries that inputs to FEATURES_MATRIX
-            }
-        }
-
-        classPrediction.set( 0.f );
-
-
-        // 2) predict (testing set)
-        // ----------------------------------------------------------------------
-        int prediction = 0;
-        if ( !config.learn ) {
-
-            // not in training mode, so if not already trained, build a model
-            if ( !config.trained ) {
-                svm.train( featuresMatrix, classTruthVector );
-                config.trained = true;
-            }
-            // or else load the saved model
-            else {
-                svm.loadSavedModel();
-            }
-
-            // and make the prediction
-            prediction = svm.predict();
-        }
-
-        int error = 1;
-        if ( classValue == prediction ) {
-            error = 0;
-        }
-
-        // update the config based on the result:
-        config.classPredicted = prediction;     // the predicted class given the input features
-        config.classError = error;              // 1 if the prediction didn't match the input class
-        config.classTruth = classValue;         // the value that was taken as input
+        _svm = new Svm( getName(), _om );
+        _svm.setup( svmConfig );
+        _svm.loadSavedModel(); // TODO load any state representing this model
     }
 
+    protected void saveModel() {
+        // TODO save any model state to persistence
+        //setData( FEATURE_LABEL_COUNT, _featureLabelCount );
+    }
+
+    /**
+     * Train the algorithm given the entire history of training samples provided.
+     *
+     * @param featuresTimeMatrix History of features
+     * @param labelsTimeMatrix History of labels
+     * @param features Nbr of features in each sample
+     */
+    protected void trainBatch( Data featuresTimeMatrix, Data labelsTimeMatrix, int features ) {
+        _svm.train( featuresTimeMatrix, labelsTimeMatrix );
+    }
+
+    /**
+     * Incrementally train the model with one additional sample.
+     *
+     * @param features Latest sample
+     * @param labels Latest sample
+     */
+    protected void trainSample( Data features, Data labels ) {
+        throw new java.lang.UnsupportedOperationException();
+    }
+
+    /**
+     * Train the algorithm using an online update, which implies forgetting older updates.
+     *
+     * @param features
+     * @param labels
+     */
+    protected void trainOnline( Data features, Data labels ) {
+        throw new java.lang.UnsupportedOperationException();
+    }
+
+    /**
+     * Generate a prediction from the model and copy it into predictedLabels.
+     *
+     * @param features
+     * @param predictedLabels
+     */
+    protected void predict( Data features, Data predictedLabels ) {
+        predictedLabels.set( 0f );
+        int prediction = _svm.predict();
+        predictedLabels._values[ prediction ] = 1f;
+    }
 
 }

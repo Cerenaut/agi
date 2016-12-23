@@ -148,7 +148,7 @@ public class DeepMNISTDemo {
         String featureLabelsName = null;
         if ( learningEntitiesAnalyticsTypes.contains( LearningEntitiesAnalyticsType.LabelFeatures ) ) {
             featureLabelsName = Framework.GetEntityName( "feature-labels" );
-            Framework.CreateEntity( featureLabelsName, FeatureLabelsEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
+            Framework.CreateEntity( featureLabelsName, FeatureLabelsCorrelationEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
 
             Framework.CreateEntity( activityImageDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), featureLabelsName );
             Framework.CreateEntity( predictedImageDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), featureLabelsName );
@@ -224,21 +224,21 @@ public class DeepMNISTDemo {
         if( layers > 2 ) featureDatas.add( new AbstractPair< String, String >( region3FfName, RegionLayerEntity.PREDICTION_FN ) );
 
         if ( learningEntitiesAnalyticsTypes.contains( LearningEntitiesAnalyticsType.LabelFeatures ) ) {
-            Framework.SetDataReferences( featureLabelsName, FeatureLabelsEntity.FEATURES, featureDatas ); // get current state from the region to be used to predict
+            Framework.SetDataReferences( featureLabelsName, SupervisedLearningEntity.INPUT_FEATURES, featureDatas ); // get current state from the region to be used to predict
         }
 
         if ( learningEntitiesAnalyticsTypes.contains( LearningEntitiesAnalyticsType.SvmEntity ) ) {
             // get current state from the region to be used to predict
-            Framework.SetDataReferences( svmEntityName, FeatureLabelsEntity.FEATURES, featureDatas );
+            Framework.SetDataReferences( svmEntityName, SupervisedLearningEntity.INPUT_FEATURES, featureDatas );
 
             // accumulate data set (X) for input to SVM for training
             Framework.SetDataReferences( svmEntitySeriesFeatures, VectorSeriesEntity.INPUT, featureDatas );
-            Framework.SetDataReference( svmEntityName, SVMEntity.FEATURES_MATRIX, svmEntitySeriesFeatures, VectorSeriesEntity.OUTPUT );  // connect it to the SVM
+            Framework.SetDataReference( svmEntityName, SupervisedLearningEntity.INPUT_FEATURES, svmEntitySeriesFeatures, VectorSeriesEntity.OUTPUT );  // connect it to the SVM
 
             // TO COMMENT DAVE: This value series is an input and an output .... possible?
 
             // have access to the labels (class truth) vector (y)
-            Framework.SetDataReference( svmEntityName, SVMEntity.CLASS_TRUTH_VECTOR, svmEntitySeriesTruthName, ValueSeriesEntity.OUTPUT );
+            Framework.SetDataReference( svmEntityName, SupervisedLearningEntity.OUTPUT_LABELS_TRUTH, svmEntitySeriesTruthName, ValueSeriesEntity.OUTPUT );
         }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

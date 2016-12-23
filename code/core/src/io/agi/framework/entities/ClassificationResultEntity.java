@@ -37,19 +37,21 @@ public class ClassificationResultEntity extends Entity {
 
     public static final String ENTITY_TYPE = "classification-result";
 
-    public static final String INPUT_LABEL = "input-label";
-    public static final String INPUT_CLASS = "input-class";
+    public static final String INPUT_LABELS = "input-labels";
+    public static final String INPUT_CLASSIFICATIONS = "input-classifications";
+    public static final String OUTPUT_ERRORS = "output-errors";
 
     public ClassificationResultEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
     }
 
     public void getInputAttributes( Collection< String > attributes ) {
-        attributes.add( INPUT_LABEL );
-        attributes.add( INPUT_CLASS );
+        attributes.add( INPUT_LABELS );
+        attributes.add( INPUT_CLASSIFICATIONS );
     }
 
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
+        attributes.add( OUTPUT_ERRORS );
     }
 
     public Class getConfigClass() {
@@ -61,28 +63,41 @@ public class ClassificationResultEntity extends Entity {
 
         ClassificationResultEntityConfig config = ( ClassificationResultEntityConfig ) _config;
 
-        Data labelData = getData( INPUT_LABEL );
+        Data labelData = getData( INPUT_LABELS );
         if( labelData == null ) {
             return;
         }
 
-        Data classData = getData( INPUT_CLASS );
+        Data classData = getData( INPUT_CLASSIFICATIONS );
         if( classData == null ) {
             return;
         }
 
         // calculate the result
-        int labelValue = (int)labelData._values[ 0 ];
-        int classValue = (int)classData._values[ 0 ];
-        int errorValue = 0;
-        if( labelValue != classValue ) {
-            errorValue = 1;
+        int elements = labelData.getSize();
+        if( classData.getSize() != elements ) {
+            return;
         }
 
-        // update the config based on the result:
-        config.classPredicted = classValue; // the predicted class given the input features
-        config.classError = errorValue; // 1 if the prediction didn't match the input class
-        config.classTruth = labelValue; // the value that was taken as input
+        config.labelErrorSum = 0;
+
+        for( int i = 0; i < elements; ++i ) {
+            float labelValue = labelData._values[ i ];
+            float classValue = classData._values[ i ];
+            int errorValue = 0;
+            if( labelValue != classValue ) {
+                errorValue = 1;
+            }
+
+            config.labelErrorSum += errorValue;
+
+            if( i == 0 ) {
+                // update the config based on the result:
+                config.labelPredicted = classValue; // the predicted class given the input features
+                config.labelError = errorValue; // 1 if the prediction didn't match the input class
+                config.labelTruth = labelValue; // the value that was taken as input
+            }
+        }
     }
 
 }

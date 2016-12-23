@@ -24,7 +24,6 @@ import io.agi.core.data.DataSize;
 import io.agi.core.orm.Callback;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
-import io.agi.framework.entities.SVMEntityConfig;
 import libsvm.*;
 
 /**
