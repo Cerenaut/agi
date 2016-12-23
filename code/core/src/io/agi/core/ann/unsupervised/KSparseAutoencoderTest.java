@@ -51,7 +51,7 @@ public class KSparseAutoencoderTest implements UnitTest {
 
         // Algorithm specific parameters
         float learningRate = 0.001f;
-        boolean binaryOutput = false;
+        float momentum = 0.01f;
         float sparsityOutput = 1.5f;
         int sparsity = 0; // 3 x 3 = 9 possible inputs, * 2 (sparsity) = 18, 25 cells available
         int sparsityMin = 2;
@@ -59,11 +59,7 @@ public class KSparseAutoencoderTest implements UnitTest {
         int ageMin = 100;
         int ageMax = 1000;
         int age = 0;
-        float ageScale = 15f;
-
-        float rateScale = 5f;
-        float rateMax = 0.25f;
-        float rateLearningRate = 0.01f;
+        float weightsStdDev = 0.01f;
 
         RandomInstance.setSeed( randomSeed ); // make the tests repeatable
         Random random = RandomInstance.getInstance();
@@ -72,7 +68,7 @@ public class KSparseAutoencoderTest implements UnitTest {
         c.setup(
             om, NAME, random,
             inputs, widthCells, heightCells,
-            learningRate, binaryOutput, sparsityOutput, sparsity, sparsityMin, sparsityMax, ageMin, ageMax, age, ageScale, rateScale, rateMax, rateLearningRate );
+            learningRate, momentum, sparsityOutput, sparsity, sparsityMin, sparsityMax, ageMin, ageMax, age, weightsStdDev );
 
         KSparseAutoencoder ae = new KSparseAutoencoder( NAME, om );
         ae.setup( c );
@@ -158,7 +154,7 @@ public class KSparseAutoencoderTest implements UnitTest {
         for( int i = 0; i < inputs; ++i ) {
 
             float x1 = ae._inputValues._values[ i ];
-            float x2 = ae._inputReconstruction._values[ i ];
+            float x2 = ae._inputReconstructionK._values[ i ];
             float d = Math.abs( x1 - x2 );
             sumError += d;
         }

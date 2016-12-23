@@ -351,7 +351,7 @@ public class AutoRegionLayer extends NamedObject {
         }
 
         _contextFreeClassifier.update(); // produces a new classification
-        _contextFreeActivity.copy( _contextFreeClassifier._cellActivity );
+//HACK        _contextFreeActivity.copy( _contextFreeClassifier._cellActivity );
 
         _transient._contextFreeActive    = _contextFreeActivity   .indicesMoreThan( 0.5f );
         _transient._contextFreeActiveNew = _contextFreeActivityNew.indicesMoreThan( 0.5f );
@@ -366,13 +366,13 @@ public class AutoRegionLayer extends NamedObject {
         int inputs2 = _input2.getSize();
 
         for( int i = 0; i < inputs1; ++i ) {
-            _outputInput1._values[ i ] = _contextFreeClassifier._inputReconstructionK2._values[ offset +i ];
+//HACK            _outputInput1._values[ i ] = _contextFreeClassifier._inputReconstructionK2._values[ offset +i ];
         }
 
         offset = inputs1;
 
         for( int i = 0; i < inputs2; ++i ) {
-            _outputInput2._values[ i ] = _contextFreeClassifier._inputReconstructionK2._values[ offset +i ];
+//HACK            _outputInput2._values[ i ] = _contextFreeClassifier._inputReconstructionK2._values[ offset +i ];
         }
     }
 

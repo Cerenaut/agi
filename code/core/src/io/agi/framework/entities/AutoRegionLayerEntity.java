@@ -243,13 +243,13 @@ public class AutoRegionLayerEntity extends Entity {
         String contextFreeName = getKey( AutoRegionLayerConfig.SUFFIX_CONTEXT_FREE );
   //      String contextualName  = getKey( AutoRegionLayerConfig.SUFFIX_CONTEXTUAL );
 
-        contextFreeConfig.setup(
-                om, contextFreeName, _r,
-                inputArea, config.contextFreeWidthCells, config.contextFreeHeightCells, config.contextFreeLearningRate,
-                config.contextFreeBinaryOutput,
-                config.contextFreeSparsityOutput, config.contextFreeSparsity, config.contextFreeSparsityMin, config.contextFreeSparsityMax,
-                config.contextFreeAgeMin, config.contextFreeAgeMax, config.contextFreeAge, config.contextFreeAgeScale,
-                config.rateScale, config.rateMax, config.rateLearningRate );
+//HACK        contextFreeConfig.setup(
+//HACK                om, contextFreeName, _r,
+//HACK                inputArea, config.contextFreeWidthCells, config.contextFreeHeightCells, config.contextFreeLearningRate,
+//HACK                config.contextFreeBinaryOutput,
+//HACK                config.contextFreeSparsityOutput, config.contextFreeSparsity, config.contextFreeSparsityMin, config.contextFreeSparsityMax,
+//HACK                config.contextFreeAgeMin, config.contextFreeAgeMax, config.contextFreeAge, config.contextFreeAgeScale,
+//HACK                config.rateScale, config.rateMax, config.rateLearningRate );
 
 //        int contextFreeCellArea = config.contextFreeWidthCells * config.contextFreeHeightCells;
 //        int contextualInputArea = contextFreeCellArea * 2;
@@ -327,11 +327,11 @@ public class AutoRegionLayerEntity extends Entity {
 
         rl._contextFreeClassifier._cellErrors = getDataLazyResize( CONTEXT_FREE_ERRORS, rl._contextFreeClassifier._cellErrors._dataSize );
         rl._contextFreeClassifier._cellWeightedSum = getDataLazyResize( CONTEXT_FREE_WEIGHTED_SUM, rl._contextFreeClassifier._cellWeightedSum._dataSize );
-        rl._contextFreeClassifier._cellTransfer = getDataLazyResize( CONTEXT_FREE_TRANSFER, rl._contextFreeClassifier._cellTransfer._dataSize );
-        rl._contextFreeClassifier._cellTransferTopK = getDataLazyResize( CONTEXT_FREE_RESPONSE, rl._contextFreeClassifier._cellTransferTopK._dataSize );
-        rl._contextFreeClassifier._inputReconstruction = getDataLazyResize( CONTEXT_FREE_RECONSTRUCTION, rl._contextFreeClassifier._inputReconstruction._dataSize );
+//HACK        rl._contextFreeClassifier._cellTransfer = getDataLazyResize( CONTEXT_FREE_TRANSFER, rl._contextFreeClassifier._cellTransfer._dataSize );
+//HACK        rl._contextFreeClassifier._cellTransferTopK = getDataLazyResize( CONTEXT_FREE_RESPONSE, rl._contextFreeClassifier._cellTransferTopK._dataSize );
+//HACK        rl._contextFreeClassifier._inputReconstruction = getDataLazyResize( CONTEXT_FREE_RECONSTRUCTION, rl._contextFreeClassifier._inputReconstruction._dataSize );
         rl._contextFreeClassifier._cellAges = getDataLazyResize( CONTEXT_FREE_AGES, rl._contextFreeClassifier._cellAges._dataSize );
-        rl._contextFreeClassifier._cellRates = getDataLazyResize( CONTEXT_FREE_RATES, rl._contextFreeClassifier._cellRates._dataSize );
+//HACK        rl._contextFreeClassifier._cellRates = getDataLazyResize( CONTEXT_FREE_RATES, rl._contextFreeClassifier._cellRates._dataSize );
 //        rl._contextFreeClassifier._cellPromotion = getDataLazyResize( CONTEXT_FREE_PROMOTION, rl._contextFreeClassifier._cellPromotion._dataSize );
 
 //        rl._contextualClassifier._cellWeights = getDataLazyResize( CONTEXTUAL_WEIGHTS, rl._contextualClassifier._cellWeights._dataSize );
@@ -376,13 +376,13 @@ public class AutoRegionLayerEntity extends Entity {
 
         setData( CONTEXT_FREE_ERRORS, rl._contextFreeClassifier._cellErrors );
         setData( CONTEXT_FREE_WEIGHTED_SUM, rl._contextFreeClassifier._cellWeightedSum );
-        setData( CONTEXT_FREE_TRANSFER, rl._contextFreeClassifier._cellTransfer );
-        setData( CONTEXT_FREE_RESPONSE, rl._contextFreeClassifier._cellTransferTopK );
-        setData( CONTEXT_FREE_RECONSTRUCTION, rl._contextFreeClassifier._inputReconstruction );
+//HACK        setData( CONTEXT_FREE_TRANSFER, rl._contextFreeClassifier._cellTransfer );
+//HACK        setData( CONTEXT_FREE_RESPONSE, rl._contextFreeClassifier._cellTransferTopK );
+//HACK        setData( CONTEXT_FREE_RECONSTRUCTION, rl._contextFreeClassifier._inputReconstruction );
         setData( CONTEXT_FREE_AGES, rl._contextFreeClassifier._cellAges );
-        setData( CONTEXT_FREE_RATES, rl._contextFreeClassifier._cellRates );
-        setData( CONTEXT_FREE_PROMOTION, rl._contextFreeClassifier._cellPromotion );
-        setData( CONTEXT_FREE_INHIBITION, rl._contextFreeClassifier._cellInhibition );
+//HACK        setData( CONTEXT_FREE_RATES, rl._contextFreeClassifier._cellRates );
+//HACK        setData( CONTEXT_FREE_PROMOTION, rl._contextFreeClassifier._cellPromotion );
+//HACK        setData( CONTEXT_FREE_INHIBITION, rl._contextFreeClassifier._cellInhibition );
 
 //        setData( CONTEXTUAL_WEIGHTS, rl._contextualClassifier._cellWeights );
 //        setData( CONTEXTUAL_BIASES_1, rl._contextualClassifier._cellBiases1 );

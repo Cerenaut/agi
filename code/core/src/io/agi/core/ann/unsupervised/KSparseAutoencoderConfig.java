@@ -30,19 +30,15 @@ import java.util.Random;
 public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
 
     public static final String LEARNING_RATE = "learning-rate";
+    public static final String MOMENTUM = "momentum";
+    public static final String WEIGHTS_STD_DEV = "weights-std-dev";
     public static final String SPARSITY = "sparsity";
     public static final String SPARSITY_MAX = "sparsity-max";
     public static final String SPARSITY_MIN = "sparsity-min";
     public static final String SPARSITY_OUTPUT = "sparsity-output";
-    public static final String BINARY_OUTPUT = "binary-output";
     public static final String AGE_MIN = "age-min";
     public static final String AGE_MAX = "age-max";
     public static final String AGE = "age";
-    public static final String AGE_SCALE = "age-scale";
-
-    public static final String RATE_SCALE = "rate-scale";
-    public static final String RATE_MAX = "rate-max";
-    public static final String RATE_LEARNING_RATE = "rate-learning-rate";
 
     public KSparseAutoencoderConfig() {
     }
@@ -72,7 +68,7 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
             int w,
             int h,
             float learningRate,
-            boolean binaryOutput,
+            float momentum,
             float sparsityOutput,
             int sparsity,
             int sparsityMin,
@@ -80,15 +76,11 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
             int ageMin,
             int ageMax,
             int age,
-            float ageScale,
-            float rateScale,
-            float rateMax,
-            float rateLearningRate ){
+            float weightsStdDev ){
 
         super.setup( om, name, r, inputs, w, h );
 
         setLearningRate( learningRate );
-        setBinaryOutput( binaryOutput );
         setSparsityOutput( sparsityOutput );
         setSparsity( sparsity );
         setSparsityMin( sparsityMin );
@@ -96,10 +88,8 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
         setAgeMin( ageMin );
         setAgeMax( ageMax );
         setAge( age );
-        setAgeScale( ageScale );
-        setRateScale( rateScale );
-        setRateMax( rateMax );
-        setRateLearningRate( rateLearningRate );
+        setMomentum( momentum );
+        setWeightsStdDev( weightsStdDev );
     }
 
     public void copyFrom( NetworkConfig nc, String name ) {
@@ -108,7 +98,6 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
         KSparseAutoencoderConfig c = ( KSparseAutoencoderConfig ) nc;
 
         setLearningRate( c.getLearningRate() );
-        setBinaryOutput( c.getBinaryOutput() );
         setSparsityOutput( c.getSparsityOutput() );
         setSparsity( c.getSparsity() );
         setSparsityMin( c.getSparsityMin() );
@@ -116,18 +105,12 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
         setAgeMin( c.getAgeMin() );
         setAgeMax( c.getAgeMax() );
         setAge( c.getAge() );
-        setAgeScale( c.getAgeScale() );
-        setRateScale( c.getRateScale() );
-        setRateMax( c.getRateMax() );
-        setRateLearningRate( c.getRateLearningRate() );
+        setMomentum( c.getMomentum() );
+        setWeightsStdDev( c.getWeightsStdDev() );
     }
 
     public void setLearningRate( float r ) {
         _om.put( getKey( LEARNING_RATE ), r );
-    }
-
-    public void setBinaryOutput( boolean b ) {
-        _om.put( getKey( BINARY_OUTPUT ), b );
     }
 
     public void setSparsityOutput( float r ) {
@@ -158,30 +141,27 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
         _om.put( getKey( AGE ), n );
     }
 
-    public void setAgeScale( float r ) {
-        _om.put( getKey( AGE_SCALE ), r );
+    public void setMomentum( float r ) {
+        _om.put( getKey( MOMENTUM ), r );
     }
 
-    public void setRateScale( float r ) {
-        _om.put( getKey( RATE_SCALE ), r );
+    public void setWeightsStdDev( float r ) {
+        _om.put( getKey( WEIGHTS_STD_DEV ), r );
     }
 
-    public void setRateMax( float r ) {
-        _om.put( getKey( RATE_MAX ), r );
+    public float getWeightsStdDev() {
+        Float r = _om.getFloat( getKey( WEIGHTS_STD_DEV ) );
+        return r.floatValue();
     }
 
-    public void setRateLearningRate( float r ) {
-        _om.put( getKey( RATE_LEARNING_RATE ), r );
+    public float getMomentum() {
+        Float r = _om.getFloat( getKey( MOMENTUM ) );
+        return r.floatValue();
     }
 
     public float getLearningRate() {
         Float r = _om.getFloat( getKey( LEARNING_RATE ) );
         return r.floatValue();
-    }
-
-    public boolean getBinaryOutput() {
-        Boolean b = _om.getBoolean( getKey( BINARY_OUTPUT ) );
-        return b.booleanValue();
     }
 
     public float getSparsityOutput() {
@@ -217,26 +197,6 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
     public int getAge() {
         Integer n = _om.getInteger( getKey( AGE ) );
         return n.intValue();
-    }
-
-    public float getAgeScale() {
-        Float r = _om.getFloat( getKey( AGE_SCALE ) );
-        return r.floatValue();
-    }
-
-    public float getRateScale() {
-        Float r = _om.getFloat( getKey( RATE_SCALE ) );
-        return r.floatValue();
-    }
-
-    public float getRateMax() {
-        Float r = _om.getFloat( getKey( RATE_MAX ) );
-        return r.floatValue();
-    }
-
-    public float getRateLearningRate() {
-        Float r = _om.getFloat( getKey( RATE_LEARNING_RATE ) );
-        return r.floatValue();
     }
 
 }
