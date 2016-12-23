@@ -26,5 +26,6 @@
     <orderEntry type="library" name="Maven: commons-io:commons-io:2.2" level="project" />
     <orderEntry type="library" name="Maven: javax.servlet:servlet-api:2.5" level="project" />
     <orderEntry type="library" name="Maven: tw.edu.ntu.csie:libsvm:3.17" level="project" />
+    <orderEntry type="library" name="Maven: de.bwaldvogel:liblinear:1.95" level="project" />
   </component>
 </module>

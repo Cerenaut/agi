@@ -32,6 +32,7 @@ import libsvm.*;
 public class Svm extends NamedObject implements Callback, Supervised {
 
     private SvmConfig _config;
+    svm_model _model = null;
 
     public Svm( String name, ObjectMap om ) {
         super( name, om );
@@ -53,13 +54,20 @@ public class Svm extends NamedObject implements Callback, Supervised {
     public void reset() {
 
         // to implement
+        // svm.svm_save_model(  );
 
     }
 
     public void loadSavedModel() {
 
         // to implement
+        // _model = svm.svm_load_model();
 
+    }
+
+    @Override
+    public void saveModel() {
+        // to implement
     }
 
     public int predict() {
@@ -71,6 +79,51 @@ public class Svm extends NamedObject implements Callback, Supervised {
 
     public void train( Data featuresMatrix, Data classTruthVector ) {
 
+        svm_parameter paramaters = setupParamaters();
+
+        svm_problem problem = setupProblem( featuresMatrix, classTruthVector );
+
+        _model = svm.svm_train( problem, paramaters );
+
+        saveModel();
+    }
+
+    private svm_problem setupProblem( Data featuresMatrix, Data classTruthVector ) {
+
+        DataSize datasetSize = featuresMatrix._dataSize;
+        int m = datasetSize.getSize( DataSize.DIMENSION_Y );        // m = number of data points
+        int n = datasetSize.getSize( DataSize.DIMENSION_X );        // n = feature vector size
+
+        svm_problem prob = new svm_problem();
+        prob.l = m;
+        prob.y = new double[ prob.l ];
+        prob.x = new svm_node[ prob.l ][ n ];
+
+        // iterate data points (vectors in the VectorSeries - each vector is a data point)
+        for ( int i = 0; i < m ; ++i ) {
+
+            // iterate dimensions of x (elements of the vector)
+            for ( int j = 0 ; j < n ; j++ ) {
+
+                int classTruth = getClassTruth( classTruthVector, i, j );
+
+                float xij = featuresMatrix._values[ i * m + j];
+
+                if ( xij == 0.f ) {
+                    continue;
+                }
+
+                prob.x[ i ][ j ] = new svm_node();
+                prob.x[ i ][ j ].index = j+1;
+                prob.x[ i ][ j ].value = xij;
+                prob.y[ i ] = classTruth;
+            }
+        }
+
+        return prob;
+    }
+
+    private svm_parameter setupParamaters() {
         svm_parameter param = new svm_parameter();
 
         // default values
@@ -92,45 +145,11 @@ public class Svm extends NamedObject implements Callback, Supervised {
         // values from config
         param.C = _config.getRegularisation();
 
-        DataSize datasetSize = featuresMatrix._dataSize;
+        return param;
+    }
 
-        int n = datasetSize.getSize( DataSize.DIMENSION_Y );        // n = number of data points
-        int m = datasetSize.getSize( DataSize.DIMENSION_X );        // m = feature vector size
-
-        // build problem
-        svm_problem prob = new svm_problem();
-        prob.l = n;
-        prob.y = new double[ prob.l ];
-        prob.x = new svm_node[ prob.l ][ m ];
-
-        // iterate data points (vectors in the VectorSeries - each vector is a data point)
-        for ( int i = 0; i < n ; ++i ) {
-
-            // iterate dimensions of x (elements of the vector)
-            for ( int j = 0 ; j < m ; j++) {
-
-                int classTruth = 0;
-                // ****** GET IT FROM ClassTruthVector ********
-                // To Implement
-
-                float xij = featuresMatrix._values[ i * n + j];
-
-                if ( xij == 0.f ) {
-                    continue;
-                }
-
-                prob.x[ i ][ j ] = new svm_node();
-                prob.x[ i ][ j ].index = j+1;
-                prob.x[ i ][ j ].value = xij;
-                prob.y[ i ] = classTruth;
-            }
-        }
-
-        // build model
-        svm_model model = svm.svm_train( prob, param );
-
-        // save model
-        // to implement
+    private int getClassTruth( Data classTruthVector, int i, int j ) {
+        return 0;
     }
 
 }

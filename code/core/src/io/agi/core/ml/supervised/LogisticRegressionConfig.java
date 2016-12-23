@@ -19,16 +19,11 @@
 
 package io.agi.core.ml.supervised;
 
-import io.agi.core.data.Data;
+import io.agi.core.ann.NetworkConfig;
 
 /**
- * Created by gideon on 14/12/16.
+ * Created by gideon on 23/12/16.
  */
-public interface Supervised {
+public class LogisticRegressionConfig extends NetworkConfig {
 
-    void reset();
-    int predict();
-    void loadSavedModel();
-    void saveModel();
-    void train( Data featuresMatrix, Data classTruthVector );
 }
