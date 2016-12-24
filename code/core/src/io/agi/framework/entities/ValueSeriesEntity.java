@@ -63,6 +63,10 @@ public class ValueSeriesEntity extends Entity {
         // Get all the parameters:
         ValueSeriesEntityConfig config = ( ValueSeriesEntityConfig ) _config;
 
+        if( !_config.learn ) {
+            return; // don't append or update the output data except when "learning" ie accumulating
+        }
+
         String stringValue = Framework.GetConfig( config.entityName, config.configPath );
         Float newValue = Float.valueOf( stringValue );
 
@@ -75,16 +79,19 @@ public class ValueSeriesEntity extends Entity {
 
         if( config.period < 0 ) {
             Data input = getData( OUTPUT ); // error in classification (0,1)
+            int oldLength = 0;
             if( input == null ) {
-                input = new Data( DataSize.create( 1 ) );
+                output = new Data( DataSize.create( 1 ) );
+            }
+            else {
+                // infinite length
+                oldLength = input.getSize();
+                output = new Data( DataSize.create( oldLength + 1 ) );
+                for( int i = 0; i < oldLength; ++i ) {
+                    output._values[ i ] = input._values[ i ];
+                }
             }
 
-            // infinite length
-            int oldLength = input.getSize();
-            output = new Data( DataSize.create( oldLength +1 ) );
-            for( int i = 0; i < oldLength; ++i ) {
-                output._values[ i ] = input._values[ i ];
-            }
             output._values[ oldLength ] = newValue;
         }
         else {

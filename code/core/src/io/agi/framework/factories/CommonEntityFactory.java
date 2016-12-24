@@ -23,7 +23,7 @@ import io.agi.core.orm.ObjectMap;
 import io.agi.framework.Entity;
 import io.agi.framework.EntityFactory;
 import io.agi.framework.Node;
-import io.agi.framework.demo.mnist.ImageClassEntity;
+import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.demo.mnist.MnistEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.persistence.models.ModelEntity;
@@ -64,6 +64,10 @@ public class CommonEntityFactory implements EntityFactory {
 
         if( entityType.equals( ValueSeriesEntity.ENTITY_TYPE ) ) {
             return new ValueSeriesEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( VectorSeriesEntity.ENTITY_TYPE ) ) {
+            return new VectorSeriesEntity( objectMap, _n, modelEntity );
         }
 
         if( entityType.equals( RandomVectorEntity.ENTITY_TYPE ) ) {
@@ -146,8 +150,12 @@ public class CommonEntityFactory implements EntityFactory {
             return new MnistEntity( objectMap, _n, modelEntity );
         }
 
-        if( entityType.equals( ImageClassEntity.ENTITY_TYPE ) ) {
-            return new ImageClassEntity( objectMap, _n, modelEntity );
+        if( entityType.equals( ImageLabelEntity.ENTITY_TYPE ) ) {
+            return new ImageLabelEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( KSparseAutoencoderEntity.ENTITY_TYPE ) ) {
+            return new KSparseAutoencoderEntity( objectMap, _n, modelEntity );
         }
 
         return null;

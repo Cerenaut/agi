@@ -26,11 +26,10 @@ import java.awt.*;
 /**
  * Created by dave on 10/07/16.
  */
-public class ImageClassEntityConfig extends EntityConfig {
+public class ImageLabelEntityConfig extends EntityConfig {
 
-    public static final String PHASE_TRAIN_ALGORITHM = "train-algorithm";
-    public static final String PHASE_TRAIN_ANALYTICS = "train-analytics";
-    public static final String PHASE_TEST_ANALYTICS = "test-analytics";
+    public static final String PHASE_TRAINING = "training";
+    public static final String PHASE_TESTING = "testing";
 
     public class ReceptiveField {
         int receptiveFieldX;
@@ -49,21 +48,23 @@ public class ImageClassEntityConfig extends EntityConfig {
     boolean greyscale;
     boolean invert;
 
-    String learningEntitiesAlgorithm = "";
-    String learningEntitiesAnalytics = "";
-
     String sourceFilesPathTraining;
     String sourceFilesPathTesting;
 
-    int imageClass = 0;
+    String trainingEntities = "";
+    String testingEntities = "";
+
+    int epoch = 0;
+    int trainingEpochs = 1;
+    int testingEpochs = 1;
+
+    int imageLabel = 0;
     int imageIndex = 0;
-    int imageRepeat = 0;
-    int imageRepeats = 1;
-    int trainingBatch = 0;
-    int trainingBatches = 1;
-    boolean terminate = false;
-    boolean trainAnalytics = false;
-    String phase = PHASE_TRAIN_ALGORITHM;
+    int imageRepeat = 0; // index of image repeat
+    int imageRepeats = 1; // 1 repeat = show once only
+
+    boolean terminate = false; // trigger to stop generating images
+    String phase = PHASE_TRAINING;
 
     public Rectangle getReceptiveField() {
         Rectangle rectangle = new Rectangle( receptiveField.receptiveFieldX, receptiveField.receptiveFieldY, receptiveField.receptiveFieldW, receptiveField.receptiveFieldH );

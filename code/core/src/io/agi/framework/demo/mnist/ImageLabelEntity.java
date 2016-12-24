@@ -45,14 +45,14 @@ import java.util.Collection;
  *
  * Created by dave on 8/07/16.
  */
-public class ImageClassEntity extends Entity {
+public class ImageLabelEntity extends Entity {
 
-    public static final String ENTITY_TYPE = "image-class";
+    public static final String ENTITY_TYPE = "image-label";
 
     public static final String OUTPUT_IMAGE = "output-image";
     public static final String OUTPUT_LABEL = "output-label";
 
-    public ImageClassEntity( ObjectMap om, Node n, ModelEntity model ) {
+    public ImageLabelEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
     }
 
@@ -68,7 +68,7 @@ public class ImageClassEntity extends Entity {
 
     @Override
     public Class getConfigClass() {
-       return ImageClassEntityConfig.class;
+       return ImageLabelEntityConfig.class;
     }
 
     public Collection< String > getEntityNames( String configValue ) {
@@ -83,14 +83,14 @@ public class ImageClassEntity extends Entity {
     public void doUpdateSelf() {
 
         // Check for a reset (to start of sequence and re-train)
-        ImageClassEntityConfig config = (ImageClassEntityConfig ) _config;
+        ImageLabelEntityConfig config = (ImageLabelEntityConfig ) _config;
 
         if( config.reset ) {
             config.imageIndex = 0;
             config.imageRepeat = 0;
             config.terminate = false;
-            config.trainingBatch = 0;
-            config.phase = ImageClassEntityConfig.PHASE_TRAIN_ALGORITHM;
+            config.epoch = 0;
+            config.phase = ImageLabelEntityConfig.PHASE_TRAINING;
         }
 
         // Load all files in training and testing folders.
@@ -104,40 +104,27 @@ public class ImageClassEntity extends Entity {
         int  testingImages = bisTesting .getNbrImages();
 
         bis = bisTraining;
-        if( config.phase.equals( ImageClassEntityConfig.PHASE_TRAIN_ALGORITHM ) ) {
+        if( config.phase.equals( ImageLabelEntityConfig.PHASE_TRAINING ) ) {
         }
-        else if( config.phase.equals( ImageClassEntityConfig.PHASE_TRAIN_ANALYTICS ) ) {
-        }
-        else if( config.phase.equals( ImageClassEntityConfig.PHASE_TEST_ANALYTICS ) ) {
+        else if( config.phase.equals( ImageLabelEntityConfig.PHASE_TESTING ) ) {
             bis = bisTesting;
         }
 
         // catch end of images before it happens:
         int images = bis.getNbrImages();
         if( config.imageIndex >= images ) {
-            _logger.info( "End of image dataset: Batch complete." );
-            config.trainingBatch += 1;
+            _logger.info( "End of image dataset: Epoch complete." );
+            config.epoch += 1;
             config.imageIndex = 0;
             config.imageRepeat = 0;
 
             // check for phase change:
-            if( config.phase.equals( ImageClassEntityConfig.PHASE_TRAIN_ALGORITHM ) ) {
-                if( config.trainingBatch >= config.trainingBatches ) { // say batches = 3, then 0 1 2 for training, then 3 for testing
-                    if( config.trainAnalytics ) {
-                        config.phase = ImageClassEntityConfig.PHASE_TRAIN_ANALYTICS;
-                        config.trainingBatch = 0;
-                    }
-                    else { // move straight onto testing
-                        config.phase = ImageClassEntityConfig.PHASE_TEST_ANALYTICS;
-                        config.trainingBatch = 0;
-                    }
+            if( config.phase.equals( ImageLabelEntityConfig.PHASE_TRAINING ) ) {
+                if( config.epoch >= config.trainingEpochs ) { // say batches = 3, then 0 1 2 for training, then 3 for testing
+                    config.phase = ImageLabelEntityConfig.PHASE_TESTING;
                 }
             }
-            else if( config.phase.equals( ImageClassEntityConfig.PHASE_TRAIN_ANALYTICS ) ) {
-                config.phase = ImageClassEntityConfig.PHASE_TEST_ANALYTICS;
-                config.trainingBatch = 0;
-            }
-            else if( config.phase.equals( ImageClassEntityConfig.PHASE_TEST_ANALYTICS ) ) {
+            else if( config.phase.equals( ImageLabelEntityConfig.PHASE_TESTING ) ) {
                 config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
                 _logger.warn( "=======> Terminating on end of test set. (1)" );
             }
@@ -147,42 +134,40 @@ public class ImageClassEntity extends Entity {
         // Also set learning status of entities
         // May have changed from training to testing.
         // This can happen because above we may roll over into a new batch
-        _logger.warn( "=======> Training set: " + trainingImages + " testing set: " + testingImages + " index: " + config.imageIndex + " repeat: " + config.imageRepeat + " phase " + config.phase );
+        _logger.warn( "=======> Training set: " + trainingImages + " testing set: " + testingImages + " epoch: " + config.epoch + " index: " + config.imageIndex + " repeat: " + config.imageRepeat + " phase " + config.phase );
 
-        bis = bisTraining;
-        boolean learnAlgorithm = false;
-        boolean learnAnalytics = false;
+        boolean learnTraining = false;
+        boolean learnTesting = false;
 
-        if( config.phase.equals( ImageClassEntityConfig.PHASE_TRAIN_ALGORITHM ) ) {
-            learnAlgorithm = true;
-//            learnAnalytics = true; 
+        if( config.phase.equals( ImageLabelEntityConfig.PHASE_TRAINING ) ) {
+            bis = bisTraining;
+            learnTraining = true;
         }
-        else if( config.phase.equals( ImageClassEntityConfig.PHASE_TRAIN_ANALYTICS ) ) {
-            learnAnalytics = true;
-        }
-        else if( config.phase.equals( ImageClassEntityConfig.PHASE_TEST_ANALYTICS ) ) {
+        else if( config.phase.equals( ImageLabelEntityConfig.PHASE_TESTING ) ) {
+            learnTesting = true;
             bis = bisTesting;
         }
 
         try {
-            Collection< String > entityNames = getEntityNames( config.learningEntitiesAlgorithm );
+            Collection< String > entityNames = getEntityNames( config.trainingEntities );
             for( String entityName : entityNames ) {
-                Framework.SetConfig( entityName, "learn", String.valueOf( learnAlgorithm ) );
+                Framework.SetConfig( entityName, "learn", String.valueOf( learnTraining ) );
             }
         }
         catch( Exception e ) {} // this is ok, the experiment is just not configured to have a learning flag
 
         try {
-            Collection< String > entityNames = getEntityNames( config.learningEntitiesAnalytics );
+            Collection< String > entityNames = getEntityNames( config.testingEntities );
             for( String entityName : entityNames ) {
-                Framework.SetConfig( entityName, "learn", String.valueOf( learnAnalytics ) );
+                Framework.SetConfig( entityName, "learn", String.valueOf( learnTesting ) );
             }
         }
         catch( Exception e ) {} // this is ok, the experiment is just not configured to have a learning flag
 
         // detect finished one pass of test set:
-        if( config.phase.equals( ImageClassEntityConfig.PHASE_TEST_ANALYTICS ) ) {
-            if( config.trainingBatch > 0 ) {
+        int maxEpochs = config.trainingEpochs + config.testingEpochs;
+        if( config.phase.equals( ImageLabelEntityConfig.PHASE_TESTING ) ) {
+            if( config.epoch >= maxEpochs ) {
                 config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
                 _logger.warn( "=======> Terminating on end of test set. (2)" );
             }
@@ -214,23 +199,22 @@ public class ImageClassEntity extends Entity {
         boolean scraped = imageScreenScraper.scrape(); // get the current image
 
         if (!scraped) {
-            _logger.error("Could not scrape image, so unable to do anything useful this update");
+            _logger.error("=======> !! Could not scrape image, so unable to do anything useful this update");
             return;
         }
 
         String imageFileName = bis.getImageFileName();
-        Integer imageClass = getClassification( imageFileName ); //, config.sourceFilesPrefix );
+        Integer imageLabel = getClassification( imageFileName ); //, config.sourceFilesPrefix );
 
-        if (imageClass == null) {
-            _logger.error("Could not get image classification, so unable to do anything useful this update");
+        if( imageLabel == null ) {
+            _logger.error("=======> !! Could not get image classification, so unable to do anything useful this update");
             return;
         }
 
         Data image = imageScreenScraper.getData();
 
-        _logger.info( "Emitting image " + bis.getIdx() + " class.: " + imageClass );
+        _logger.info( "Emitting image " + bis.getIdx() + " label: " + imageLabel );
 
-        // Update the experiment:
         config.imageRepeat += 1;
         if( config.imageRepeat == config.imageRepeats ) {
             config.imageRepeat = 0;
@@ -239,13 +223,13 @@ public class ImageClassEntity extends Entity {
 
         // write outputs back to persistence
         Data label = new Data( 1 );
-        label.set( imageClass );
+        label.set( imageLabel );
 
         setData( OUTPUT_LABEL, label );
         setData( OUTPUT_IMAGE, image );
 
         // write classification
-        config.imageClass = imageClass;
+        config.imageLabel = imageLabel;
     }
 
     public static Integer getClassification( String filename ) {//}, String prefix ) {

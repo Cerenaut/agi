@@ -37,7 +37,6 @@ public class KSparseAutoencoderEntityConfig extends EntityConfig {
     int sparsityMax = 0;
     int ageMin = 0;
     int ageMax = 0;
-    int age = 0; // current value, computed
     float weightsStdDev = 0f; // used at reset
 
 }

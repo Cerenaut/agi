@@ -150,6 +150,8 @@ public class KSparseAutoencoderEntity extends Entity {
 
         KSparseAutoencoder ksa = new KSparseAutoencoder( name, om );
 
+        ksa.setup( autoencoderConfig );
+
         // Load data, overwriting the default setup.
         copyDataFromPersistence( ksa );
 
@@ -163,7 +165,7 @@ public class KSparseAutoencoderEntity extends Entity {
 
         // Save computed properties
         config.sparsity = autoencoderConfig.getSparsity();
-        config.age = autoencoderConfig.getAge();
+//        config.age = autoencoderConfig.getAge(); no, let this be advanced by the entity
 
         // Save data
         copyDataToPersistence( ksa );
