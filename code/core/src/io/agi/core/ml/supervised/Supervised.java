@@ -28,7 +28,13 @@ public interface Supervised {
 
     void reset();
     int predict();
-    void loadSavedModel();
-    void saveModel();
+
+    // train the model (subclasses should ensure that the model is saved to config)
     void train( Data featuresMatrix, Data classTruthVector );
+
+    // load from config
+    void loadModel( );
+
+    // load model from a string (and set config to be consistent)
+    void loadModel( String modelString );
 }

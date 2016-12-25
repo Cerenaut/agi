@@ -86,12 +86,7 @@ public class SVMEntity extends SupervisedLearningEntity {
         // Create the implementing object itself, and copy data from persistence into it:
         _svm = new Svm( getName(), _om );
         _svm.setup( svmConfig );
-        _svm.loadSavedModel(); // TODO load any state representing this model
-    }
-
-    protected void saveModel() {
-        // TODO save any model state to persistence
-        //setData( FEATURE_LABEL_COUNT, _featureLabelCount );
+        _svm.loadModel( );
     }
 
     /**

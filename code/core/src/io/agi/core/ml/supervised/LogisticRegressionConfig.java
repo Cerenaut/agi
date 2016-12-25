@@ -26,4 +26,27 @@ import io.agi.core.ann.NetworkConfig;
  */
 public class LogisticRegressionConfig extends NetworkConfig {
 
+    public String _keyRegularisation = "regularisation";
+    public String _keyModelString = "modelString";
+
+    public void setup( float C ) {
+        setRegularisation( C );
+    }
+
+    public void setRegularisation( float C ) {
+        _om.put( getKey( _keyRegularisation ), C );
+    }
+
+    public float getRegularisation() {
+        return _om.getFloat( _keyRegularisation );
+    }
+
+    public void setModelString( String modelString ) {
+        _om.put( getKey( _keyModelString ), modelString );
+    }
+
+    public String getModelString() {
+        return _om.getString( _keyModelString );
+    }
+
 }

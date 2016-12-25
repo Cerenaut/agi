@@ -27,7 +27,7 @@ import io.agi.core.ann.NetworkConfig;
 public class SvmConfig extends NetworkConfig {
 
     public String _keyRegularisation = "regularisation";
-    private double regularisation;
+    public String _keyModelString = "modelString";
 
     public void setup( float C ) {
         setRegularisation( C );
@@ -40,4 +40,13 @@ public class SvmConfig extends NetworkConfig {
     public float getRegularisation() {
         return _om.getFloat( _keyRegularisation );
     }
+
+    public void setModelString( String modelString ) {
+        _om.put( getKey( _keyModelString ), modelString );
+    }
+
+    public String getModelString() {
+        return _om.getString( _keyModelString );
+    }
+
 }

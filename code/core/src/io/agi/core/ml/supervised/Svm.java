@@ -25,11 +25,19 @@ import io.agi.core.orm.Callback;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 import libsvm.*;
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Created by gideon on 14/12/16.
  */
 public class Svm extends NamedObject implements Callback, Supervised {
+
+    protected static final Logger _logger = LogManager.getLogger();
 
     private SvmConfig _config;
     svm_model _model = null;
@@ -51,23 +59,64 @@ public class Svm extends NamedObject implements Callback, Supervised {
         this._config = config;
     }
 
+    @Override
     public void reset() {
-
-        // to implement
-        // svm.svm_save_model(  );
-
-    }
-
-    public void loadSavedModel() {
-
-        // to implement
-        // _model = svm.svm_load_model();
-
+        _model = null;
     }
 
     @Override
-    public void saveModel() {
-        // to implement
+    public void loadModel( ) {
+        String modelString = _config.getModelString();
+        loadModel( modelString );
+    }
+
+    @Override
+    public void loadModel( String modelString ) {
+        try {
+            _model = svm.svm_load_model( modelString );
+        }
+        catch( IOException e ) {
+            _logger.error( "Unable to load svm model." );
+            _logger.error( e.toString(), e );
+        }
+    }
+
+    private void saveModel() {
+        String modelString = null;
+        try {
+            modelString = modelString();
+        }
+        catch( Exception e ) {
+            _logger.error( "Could not save model to config." );
+            _logger.error( e.toString(), e );
+        }
+
+        _config.setModelString( modelString );
+
+    }
+
+    public String modelString() throws Exception {
+
+        String modelString = null;
+
+        if ( _model != null ) {
+            try {
+                String filename = "temp_svmmodel";
+                File modelFile = new File( filename );
+                svm.svm_save_model( filename, _model );
+                modelString = FileUtils.readFileToString( modelFile );
+            }
+            catch( IOException e ) {
+                _logger.error( "Unable to save svm model." );
+                _logger.error( e.toString(), e );
+            }
+        } else {
+            String errorMessage = "Cannot to save LibLinear model before it is defined";
+            _logger.error( errorMessage );
+            throw new Exception( errorMessage );
+        }
+
+        return modelString;
     }
 
     public int predict() {

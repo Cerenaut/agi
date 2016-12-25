@@ -19,7 +19,6 @@
 
 package io.agi.core.ml.supervised;
 
-import com.sun.org.apache.bcel.internal.generic.RET;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.orm.Callback;
@@ -27,11 +26,20 @@ import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 
 import de.bwaldvogel.liblinear.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 
 /**
  * Created by gideon on 23/12/16.
  */
 public class LogisticRegression extends NamedObject implements Callback, Supervised {
+
+    protected static final Logger _logger = LogManager.getLogger();
 
     private LogisticRegressionConfig _config;
     private Model _model = null;
@@ -71,20 +79,58 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
     }
 
     @Override
-    public void loadSavedModel() {
-        // load model or use it directly
-        // _model = Model.load( _model );
+    public void loadModel() {
+        String modelString = _config.getModelString();
+        loadModel( modelString );
     }
 
     @Override
-    public void saveModel() {
+    public void loadModel( String modelString ) {
 
-        if( _model != null ) {
-//        File modelFile = new File("model");
-//        _model.save(modelFile);
-        } else {
-            // throw exception
+        Reader stringReader = new StringReader( modelString );
+        try {
+            _model = Model.load( stringReader );
         }
+        catch( IOException e ) {
+            _logger.error( "Unable to load LibLinear model." );
+            _logger.error( e.toString(), e );
+        }
+    }
+
+    private void saveModel() {
+        String modelString = null;
+        try {
+            modelString = modelString();
+        }
+        catch( Exception e ) {
+            _logger.error( "Could not save model to config." );
+            _logger.error( e.toString(), e );
+        }
+
+        _config.setModelString( modelString );
+
+    }
+
+    public String modelString() throws Exception {
+
+        String modelString = null;
+        if( _model != null ) {
+            StringWriter writer = new StringWriter(  );
+            try {
+                _model.save( writer );
+                modelString = writer.toString();
+            }
+            catch( IOException e ) {
+                _logger.error( "Unable to save LibLinear model." );
+                _logger.error( e.toString(), e );
+            }
+        } else {
+            String errorMessage = "Cannot to save LibLinear model before it is defined";
+            _logger.error( errorMessage );
+            throw new Exception( errorMessage );
+        }
+
+        return modelString;
     }
 
     @Override
@@ -95,8 +141,6 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
         Problem problem = setupProblem( featuresMatrix, classTruthVector );
 
         _model = Linear.train( problem, paramaters );
-
-        saveModel();
     }
 
     private Problem setupProblem( Data featuresMatrix, Data classTruthVector ) {
