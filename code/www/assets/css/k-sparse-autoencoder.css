@@ -1,0 +1,31 @@
+body {
+
+}
+
+@linkColor: #ff0000;
+
+.agi-div-background {
+
+  width:100vw;
+  height:100vh;
+  background:white;
+
+}
+
+.column {
+    width:50vw;
+    height:100vh;
+    overflow:auto;
+    float:left;
+    border:1px #eee solid;
+}
+
+.column-canvas {
+    background:#000;
+}
+
+.viewport {
+    background:#ccc;
+    width:100%;
+    border:1px #eee solid;
+}

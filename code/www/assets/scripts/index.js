@@ -84,6 +84,12 @@ var Search = {
           if( type == "auto-region-layer" ) {
             linksValue = linksValue + " / <a href='auto-region.html?entity="+ objectName + "' title='Open Region-Layer UI' target='_blank'><b>Region</b></a>"
           }
+          if( type == "pyramid-region-layer" ) {
+            linksValue = linksValue + " / <a href='pyramid-region.html?entity="+ objectName + "' title='Open Region-Layer UI' target='_blank'><b>Region</b></a>"
+          }
+          if( type == "k-sparse-autoencoder" ) {
+            linksValue = linksValue + " / <a href='k-sparse-autoencoder.html?entity="+ objectName + "' title='Open Autoencoder UI' target='_blank'><b>K-Sparse UI</b></a>"
+          }
         }
       }
       else if( Search.type == "data" ) {
@@ -92,7 +98,7 @@ var Search = {
                    + "<a href='data.html?data="+ objectName + "' title='Open as Json' target='_blank'>Json</a>";
       }
 
-      html = html + "<tr><td style='text-align:left;'>" + objectValue + "</td><td>" + linksValue + "</td></tr>";
+      html = html + "<tr><td style='text-align:left;'>" + objectValue + " <small>["+type+"]</small></td><td>" + linksValue + "</td></tr>";
     }
 
     $( "#table-body" ).html( html );
