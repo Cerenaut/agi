@@ -74,21 +74,21 @@ public class KSparseDemo {
 
     public static void createEntities( Node n ) {
 
-//        String trainingPath = "./training";
-//        String testingPath = "./testing";
+        String trainingPath = "./training";
+        String testingPath = "./testing";
 
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
 //        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
 
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 
         boolean terminateByAge = false;
 //        int terminationAge = 10;//9000;
         int terminationAge = 50000;//25000;
         int trainingEpochs = 2;//80; // good for up to 80k
         int testingEpochs = 1;//80; // good for up to 80k
-        int imagesPerEpoch = 10;//00;
+        int imagesPerEpoch = 1000;
 
         // Define some entities
         String experimentName           = Framework.GetEntityName( "experiment" );
@@ -160,7 +160,7 @@ public class KSparseDemo {
 
         // variables
         float learningRate = 0.01f;
-        float momentum = 0.9f;
+        float momentum = 0.5f;//0.9f;
         float weightsStdDev = 0.01f; // From paper. used at reset
 
         Framework.SetConfig( autoencoderName, "learningRate", String.valueOf( learningRate ) );
@@ -176,11 +176,11 @@ public class KSparseDemo {
 
         // Log features of the algorithm during all phases
         Framework.SetConfig( vectorSeriesName, "period", String.valueOf( "-1" ) ); // infinite
-        Framework.SetConfig( vectorSeriesName, "learn", String.valueOf( "false" ) ); // infinite
+        Framework.SetConfig( vectorSeriesName, "learn", String.valueOf( "true" ) ); // infinite
 
         // Log labels of each image produced during all phases
         Framework.SetConfig( valueSeriesName, "period", "-1" );
-        Framework.SetConfig( valueSeriesName, "learn", String.valueOf( "false" ) ); // infinite
+        Framework.SetConfig( valueSeriesName, "learn", String.valueOf( "true" ) ); // infinite
         Framework.SetConfig( valueSeriesName, "entityName", imageLabelName ); // log forever
         Framework.SetConfig( valueSeriesName, "configPath", "imageLabel" ); // log forever
 

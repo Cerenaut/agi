@@ -109,8 +109,6 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
         // "We also use a Gaussian distribution with a standard deviation of sigma for initialization of the weights."
         // Better initialization of the weights:
-        // http://neuralnetworksanddeeplearning.com/chap3.html
-        // init weights to SD = 1/ sqrt( n ) where n is number of inputs.
         float weightsStdDev = _c.getWeightsStdDev();
 
         for( int i = 0; i < _cellWeights.getSize(); ++i ) {
@@ -180,7 +178,7 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             k = kMin + kRel;
         }
 
-        System.err.println( "Age: " + age + " Sparsity: " + k );
+        //System.err.println( "Age: " + age + " Sparsity: " + k );
 
         _c.setAge( age + 1 );
         _c.setSparsity( k );
@@ -327,7 +325,7 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             float sum = 0.f;
 
             float transferTopK = _cellSpikesTopK._values[ c ];
-            float weightedSum = _cellWeightedSum._values[ c ];
+//            float weightedSum = _cellWeightedSum._values[ c ];
             float derivative = 1f;//(float)TransferFunction.logisticSigmoidDerivative( weightedSum );
 
             if( transferTopK > 0f ) { // if was cell active
@@ -378,6 +376,7 @@ public class KSparseAutoencoder extends CompetitiveLearning {
                 float vOld = _cellWeightsVelocity._values[ offset ];
                 float vNew = ( vOld * momentum ) - wDelta;
                 float wNew = wOld + vNew;
+//                float vNew = 0f;
 
                 // Weight decay / L2 regularization
 //                float regularization = learningRate * REGULARIZATION * wOld;
@@ -406,6 +405,9 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         }
 
         // now gradient descent in the input->hidden layer
+//        float vMin = Float.MAX_VALUE;
+//        float vMax = Float.MIN_VALUE;
+
         for( int c = 0; c < cells; ++c ) { // computing error for each "input"
 
             float errorGradient = dHidden._values[ c ];
@@ -429,7 +431,10 @@ public class KSparseAutoencoder extends CompetitiveLearning {
                 float vOld = _cellWeightsVelocity._values[ offset ];
                 float vNew = ( vOld * momentum ) - wDelta;
                 float wNew = wOld + vNew;
+//                float vNew = 0f;
 
+//                 vMax = Math.max( vMax, vNew );
+//                vMin = Math.min( vMin, vNew );
                 // Weight decay / L2 regularization
 //                float regularization = learningRate * REGULARIZATION * wOld;
 //                float wNew = wOld - wDelta - regularization;
@@ -455,6 +460,9 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             _cellBiases1._values[ c ] = bNew;
             _cellBiases1Velocity._values[ c ] = vNew;
         }
+
+//        System.err.println( "Age: " + this._c.getAge() + " Sparsity: " + k  + " vMax = " + vMax );
+
     }
 
     protected void reconstruct( Data hiddenActivity, Data inputReconstruction ) {
