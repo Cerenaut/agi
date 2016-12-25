@@ -41,7 +41,7 @@ import java.util.List;
  */
 public class HttpImportHandler implements HttpHandler {
 
-    protected static final Logger logger = LogManager.getLogger();
+    protected static final Logger _logger = LogManager.getLogger();
 
     public static final String CONTEXT = "/import";
 
@@ -106,21 +106,21 @@ public class HttpImportHandler implements HttpHandler {
                     status = 200;
                     response = response + "Imported Entities from: " + fi.getName() + "\n";
 
-                    logger.info( "Import: entities file: " + fi.getName() );
+                    _logger.info( "Import: entities file: " + fi.getName() );
                 }
                 else if( fieldName.equalsIgnoreCase( "data-file" ) ) {
                     Framework.ImportData( value );
                     status = 200;
                     response = response + "Imported Data from: " + fi.getName() + "\n";
 
-                    logger.info( "Import: data file: " + fi.getName() );
+                    _logger.info( "Import: data file: " + fi.getName() );
                 }
             }
 
         }
         catch( Exception e ) {
-            logger.error( "Unable to import entities/data.");
-            logger.error( e.toString(), e );
+            _logger.error( "Unable to import entities/data.");
+            _logger.error( e.toString(), e );
         }
 
         HttpUtil.SendResponse( t, status, response );

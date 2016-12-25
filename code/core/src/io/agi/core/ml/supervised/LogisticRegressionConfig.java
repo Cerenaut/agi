@@ -22,9 +22,9 @@ package io.agi.core.ml.supervised;
 import io.agi.core.ann.NetworkConfig;
 
 /**
- * Created by gideon on 14/12/16.
+ * Created by gideon on 23/12/16.
  */
-public class SvmConfig extends NetworkConfig {
+public class LogisticRegressionConfig extends NetworkConfig {
 
     public String _keyRegularisation = "regularisation";
     public String _keyModelString = "modelString";
