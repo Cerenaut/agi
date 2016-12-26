@@ -294,16 +294,17 @@ public abstract class Entity extends NamedObject implements EntityListener {
             ModelData modelData = null;
 
             // check for cache policy
-            if( _dataFlags.hasFlag( attribute, DataFlags.FLAG_NODE_CACHE ) ) {
-                Data d = _n.getCachedData( inputKey );
+            // Change: just try to read anything available from the data cache.
+//            if( _dataFlags.hasFlag( attribute, DataFlags.FLAG_NODE_CACHE ) ) {
+                Data cached = _n.getCachedData( inputKey );
 
-                if( d != null ) {
+                if( cached != null ) {
                     //_logger.info( "Skipping fetch of Data: " + inputKey );
-                    _data.put( inputKey, d );
+                    _data.put( inputKey, cached );
                     continue;
                 }
                 // else: allow read
-            }
+//            }
 
             // check for no - read
             if( _dataFlags.hasFlag( attribute, DataFlags.FLAG_PERSIST_ONLY ) ) {
@@ -327,7 +328,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
                 HashMap< String, Data > allRefs = new HashMap< String, Data >();
 
                 for( String refKey : refKeys ) {
-                    ModelData refJson = p.fetchData( refKey );
+                    ModelData refJson = _n.fetchData( refKey );
                     if( refJson == null ) {
                         continue; // don't put in data store
                     }
@@ -339,7 +340,13 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
                 modelData.setData( combinedData, ModelData.ENCODING_DENSE ); // data added to ref keys.
 
-                p.persistData( modelData ); // DAVE: BUG? It writes it back out.. I guess we wanna see this, but seems excessive.
+// If i put this in the cache, it loses the refkeys and becomes constant.
+//                if( _config.cache ) {
+//                    _n.setCachedData( inputKey, combinedData ); // DAVE: BUG? It writes it back out.. I guess we wanna see this, but seems excessive.
+//                }
+//                else {
+                    p.persistData( modelData );
+//                }
 
                 _data.put( inputKey, combinedData );
             }
@@ -364,6 +371,11 @@ public abstract class Entity extends NamedObject implements EntityListener {
         for( String keySuffix : attributes ) {
             String inputKey = getKey( keySuffix );
             Data d = _data.get( inputKey );
+
+            if( _config.cache ) {
+                _n.setCachedData( inputKey, d ); // cache this one, so we don't need to read it next time.
+                continue;
+            }
 
             // check for cache policy
             if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_NODE_CACHE ) ) {

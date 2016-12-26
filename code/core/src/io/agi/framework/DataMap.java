@@ -36,6 +36,12 @@ public class DataMap {
 
     }
 
+    public boolean hasData( String name ) {
+        synchronized( _cache ) {
+            return _cache.keySet().contains( name );
+        }
+    }
+
     public Data getData( String name ) {
         synchronized( _cache ) {
             Data d = _cache.get( name );

@@ -98,7 +98,13 @@ var Search = {
                    + "<a href='data.html?data="+ objectName + "' title='Open as Json' target='_blank'>Json</a>";
       }
 
-      html = html + "<tr><td style='text-align:left;'>" + objectValue + " <small>["+type+"]</small></td><td>" + linksValue + "</td></tr>";
+      html = html + "<tr><td style='text-align:left;'>" + objectValue;
+
+      if( type ) { 
+        html = html + " <small>["+type+"]</small>";
+      }
+
+      html = html + "</td><td>" + linksValue + "</td></tr>";
     }
 
     $( "#table-body" ).html( html );

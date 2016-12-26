@@ -78,7 +78,7 @@ public class HttpCoordination implements Coordination {
 
     public void addHandlers() {
         HttpConfigHandler ph = new HttpConfigHandler( _n.getPersistence() );
-        HttpDataHandler dh = new HttpDataHandler( _n.getPersistence() );
+        HttpDataHandler dh = new HttpDataHandler();
         HttpNodesHandler nh = new HttpNodesHandler( _n.getPersistence() );
         HttpEntitiesHandler eh = new HttpEntitiesHandler( _n.getPersistence() );
         HttpImportHandler imh = new HttpImportHandler();

@@ -22,6 +22,7 @@ package io.agi.framework.coordination.http;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.agi.core.orm.AbstractPair;
+import io.agi.framework.Node;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.models.ModelData;
 import org.apache.logging.log4j.LogManager;
@@ -43,10 +44,10 @@ public class HttpDataHandler implements HttpHandler {
     public static final String PARAMETER_NAME = "name";
     public static final String PARAMETER_FILTER = "filter";
 
-    public Persistence _p;
+//    public Persistence _p;
 
-    public HttpDataHandler( Persistence p ) {
-        _p = p;
+    public HttpDataHandler() {//} Persistence p ) {
+//        _p = p;
     }
 
     @Override
@@ -55,6 +56,8 @@ public class HttpDataHandler implements HttpHandler {
         String response = "";
 
         try {
+            Node n = Node.NodeInstance();
+
             String query = t.getRequestURI().getQuery();
             //System.err.println("Request: " + HttpCoordinationHandler.CONTEXT + " " + query);
 
@@ -68,21 +71,24 @@ public class HttpDataHandler implements HttpHandler {
                 String key = ap._first;
                 String value = ap._second;
                 if( key.equalsIgnoreCase( PARAMETER_NAME ) ) {
-                    ModelData m = _p.fetchData( value );
+//                    ModelData m = _p.fetchData( value );
+                    ModelData m = n.fetchData( value );
 
                     if( m != null ) {
                         results.add( m ); // a complete data (specifically fetched)
                     }
                 }
                 else if( key.equalsIgnoreCase( PARAMETER_FILTER ) ) {
-                    Collection< ModelData > c = _p.getDataMeta( value );
+//                    Collection< ModelData > c = _p.getDataMeta( value );
+                    Collection< ModelData > c = n.getDataMeta( value );
                     results.addAll( c );
                 }
             }
 
             // if no data specified, get all data names.
             if( results.isEmpty() ) {
-                Collection< String > names = _p.getData();
+//                Collection< String > names = _p.getData();
+                Collection< String > names = n.getData();
 
                 for( String name : names ) {
                     ModelData m = new ModelData();

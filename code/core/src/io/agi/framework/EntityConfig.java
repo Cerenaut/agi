@@ -32,6 +32,7 @@ public class EntityConfig {
     public boolean reset = false;  // default                  optional
     public boolean flush = false;  // default
     public boolean learn = true;   // default
+    public boolean cache = false;  // default false. If true, will cache all data in the Node avoiding serialization.
 
     // TODO add last update date/time?
 }

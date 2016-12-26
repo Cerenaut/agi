@@ -23,13 +23,13 @@ import io.agi.core.data.Data;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.coordination.Coordination;
 import io.agi.framework.persistence.Persistence;
+import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
 import io.agi.framework.persistence.models.ModelNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -149,7 +149,8 @@ public class Node {
      * @return
      */
     public Data getCachedData( String name ) {
-        return _dataCache.getData( name );
+        Data d = _dataCache.getData( name );
+        return d;
     }
 
     /**
@@ -160,6 +161,82 @@ public class Node {
      */
     public void setCachedData( String name, Data d ) {
         _dataCache.putData( name, d );
+    }
+
+    public ModelData fetchData( String key ) {
+        if( key.equals( "autoencoder-input" ) ) {
+            int g = 0;
+            g++;
+        }
+        synchronized ( _dataCache._cache ) {
+            Data d = _dataCache._cache.get( key );
+            if( d == null ) {//!_dataCache._cache.keySet().contains( key ) ) {
+                return _p.fetchData( key );
+            }
+
+            // ok it's in the cache. Persist it and return it from persistence
+            String encoding = ModelData.ENCODING_DENSE;
+            ModelData modelData = new ModelData( key, d, encoding ); // converts to json
+            return modelData;
+        }
+    }
+
+    public Collection< ModelData > getDataMeta( String filter ) {
+        HashMap< String, ModelData > keyModelData = new HashMap< String, ModelData >();
+
+        // lock the cache
+        synchronized ( _dataCache._cache ) {
+
+            // get everything from persistence
+            Collection< ModelData > c = _p.getDataMeta( filter );
+            for( ModelData md : c ) {
+                keyModelData.put( md.name, md );
+            }
+
+            // replace anything stale in persistence
+            Set< String > keySet = _dataCache._cache.keySet();
+            for( String key : keySet ) {
+                if( key.indexOf( filter ) >= 0 ) {
+                    Data d = _dataCache._cache.get( key );
+
+                    String encoding = ModelData.ENCODING_DENSE;
+                    ModelData md = new ModelData( key, d, encoding ); // converts to json
+                    ModelData md2 = new ModelData( md.name, md.refKeys, md.sizes, null ); // sans actual data
+                    keyModelData.put( md2.name, md2 );
+                }
+            }
+
+        }
+
+        ArrayList< ModelData > al = new ArrayList< ModelData >();
+        al.addAll( keyModelData.values() );
+        return al;
+    }
+
+    public Collection< String > getData() {
+        HashSet< String > keys = new HashSet< String >();
+
+        // lock the cache
+        synchronized ( _dataCache._cache ) {
+
+            // get everything from persistence
+            Collection< String > c = _p.getData();
+            for( String key : c ) {
+                keys.add( key );
+            }
+
+            // replace anything stale in persistence
+            Set< String > keySet = _dataCache._cache.keySet();
+            for( String key : keySet ) {
+                if( !keys.contains( key ) ) {
+                    keys.add( key );
+                }
+            }
+        }
+
+        ArrayList< String > al = new ArrayList< String >();
+        al.addAll( keys );
+        return al;
     }
 
     /**

@@ -13,7 +13,7 @@ body {
 }
 
 .column {
-    width:50vw;
+    width:49vw;
     height:100vh;
     overflow:auto;
     float:left;

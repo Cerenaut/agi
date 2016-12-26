@@ -83,6 +83,7 @@ public class KSparseDemo {
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 
+        boolean cacheAllData = true;
         boolean terminateByAge = false;
 //        int terminationAge = 10;//9000;
         int terminationAge = 50000;//25000;
@@ -120,6 +121,13 @@ public class KSparseDemo {
         else {
             Framework.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
         }
+
+        // cache all data for speed, when enabled
+        Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
+        Framework.SetConfig( imageLabelName, "cache", String.valueOf( cacheAllData ) );
+        Framework.SetConfig( autoencoderName, "cache", String.valueOf( cacheAllData ) );
+        Framework.SetConfig( vectorSeriesName, "cache", String.valueOf( cacheAllData ) );
+        Framework.SetConfig( valueSeriesName, "cache", String.valueOf( cacheAllData ) );
 
         // Mnist config
         Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldX", "0" );

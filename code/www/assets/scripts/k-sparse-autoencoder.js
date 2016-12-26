@@ -321,6 +321,8 @@ var Region = {
     var x0 = 0;
     var y0 = 0;
 
+console.log( "Painting left w/h=" + canvasDataSize.w + "," + canvasDataSize.h );
+
     DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, spikesTopKA, spikesTopK, null );
     DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#00ffff" );
 
@@ -379,8 +381,8 @@ var Region = {
       return; // can't paint
     }
 
-    var c = $( "#right-canvas" )[ 0 ];
-    var ctx = c.getContext( "2d" );
+//    var c = $( "#right-canvas" )[ 0 ];
+//    var ctx = c.getContext( "2d" );
 
     var gain = $( "#gain" ).val();
     var inputDisplay = $('select[name=invert-display]').val();
@@ -393,6 +395,7 @@ var Region = {
       return;
     }
 
+console.log( "Painting right w/h=" + w1 + "," + h1 );
     var dataSizeW = Framework.getDataSize( dataWeights );
     var weightsSize = dataSizeW.w * dataSizeW.h;
     var weightsStride = w1 * h1;
@@ -402,15 +405,15 @@ var Region = {
 
     var inputOffset = 0;
 
-    Region.paintInputData( ctx, x0, y0, w1, h1, data1 );
+    Region.paintInputData( canvasDataSize.ctx, x0, y0, w1, h1, data1 );
 
     if( inputDisplay == "weights" ) {
-      Region.paintInputWeights( ctx, x0, y0, w1, h1, inputOffset, data1, weightsSize, weightsStride, dataWeights, dataBiases, Region.selectedCells, gain );
+      Region.paintInputWeights( canvasDataSize.ctx, x0, y0, w1, h1, inputOffset, data1, weightsSize, weightsStride, dataWeights, dataBiases, Region.selectedCells, gain );
     }
     else {
-      Region.paintInputErrors( ctx, x0, y0, w1, h1, inputOffset, data1, weightsSize, weightsStride, dataWeights, dataBiases, Region.selectedCells, gain );
+      Region.paintInputErrors( canvasDataSize.ctx, x0, y0, w1, h1, inputOffset, data1, weightsSize, weightsStride, dataWeights, dataBiases, Region.selectedCells, gain );
     }
-    Region.paintInputDataSelected( ctx, x0, y0, w1, h1, Region.selectedInput1 );
+    Region.paintInputDataSelected( canvasDataSize.ctx, x0, y0, w1, h1, Region.selectedInput1 );
 
   },
 

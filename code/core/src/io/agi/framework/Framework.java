@@ -147,14 +147,15 @@ public class Framework {
     public static void SetDataReference(
             String dataKey,
             String refKeys ) {
-        Persistence persistence = Node.NodeInstance().getPersistence();
-        ModelData modelData = persistence.fetchData( dataKey );
+        Node n = Node.NodeInstance();
+        ModelData modelData = n.fetchData( dataKey );
 
         if( modelData == null ) {
             modelData = new ModelData( dataKey, refKeys );
         }
 
         modelData.refKeys = refKeys;
+        Persistence persistence = n.getPersistence();
         persistence.persistData( modelData );
     }
 
@@ -490,7 +491,7 @@ public class Framework {
         attributes.addAll( attributesOut );
         for( String attribute : attributes ) {
             String outputKey = entity.getKey( attribute );
-            ModelData modelData = node.getPersistence().fetchData( outputKey );
+            ModelData modelData = node.fetchData( outputKey );
 
             if( modelData != null ) {
                 modelDatas.add( modelData );
