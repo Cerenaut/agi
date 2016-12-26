@@ -139,7 +139,11 @@
             <artifactId>libsvm</artifactId>
             <version>3.17</version>
         </dependency>
-
+        <dependency>
+            <groupId>de.bwaldvogel</groupId>
+            <artifactId>liblinear</artifactId>
+            <version>1.95</version>
+        </dependency>
     </dependencies>
 
     <repositories>

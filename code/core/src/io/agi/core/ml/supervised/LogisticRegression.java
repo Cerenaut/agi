@@ -24,25 +24,27 @@ import io.agi.core.data.DataSize;
 import io.agi.core.orm.Callback;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
-import libsvm.*;
-import org.apache.commons.io.FileUtils;
+
+import de.bwaldvogel.liblinear.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 
 /**
- * Created by gideon on 14/12/16.
+ * Created by gideon on 23/12/16.
  */
-public class Svm extends NamedObject implements Callback, Supervised {
+public class LogisticRegression extends NamedObject implements Callback, Supervised {
 
     protected static final Logger _logger = LogManager.getLogger();
 
-    private SvmConfig _config;
-    svm_model _model = null;
+    private LogisticRegressionConfig _config;
+    private Model _model = null;
 
-    public Svm( String name, ObjectMap om ) {
+    public LogisticRegression( String name, ObjectMap om ) {
         super( name, om );
     }
 
@@ -55,7 +57,7 @@ public class Svm extends NamedObject implements Callback, Supervised {
 
     }
 
-    public void setup( SvmConfig config ) {
+    public void setup( LogisticRegressionConfig config ) {
         this._config = config;
     }
 
@@ -65,18 +67,32 @@ public class Svm extends NamedObject implements Callback, Supervised {
     }
 
     @Override
-    public void loadModel( ) {
+    public int predict() {
+
+        // sample below
+        Feature[] instance = { new FeatureNode( 1, 4 ), new FeatureNode( 2, 2 ) };
+        double prediction = Linear.predict( _model, instance );
+
+        // convert input to Feature instance, then predict
+
+        return 0;
+    }
+
+    @Override
+    public void loadModel() {
         String modelString = _config.getModelString();
         loadModel( modelString );
     }
 
     @Override
     public void loadModel( String modelString ) {
+
+        Reader stringReader = new StringReader( modelString );
         try {
-            _model = svm.svm_load_model( modelString );
+            _model = Model.load( stringReader );
         }
         catch( IOException e ) {
-            _logger.error( "Unable to load svm model." );
+            _logger.error( "Unable to load LibLinear model." );
             _logger.error( e.toString(), e );
         }
     }
@@ -98,16 +114,14 @@ public class Svm extends NamedObject implements Callback, Supervised {
     public String modelString() throws Exception {
 
         String modelString = null;
-
-        if ( _model != null ) {
+        if( _model != null ) {
+            StringWriter writer = new StringWriter(  );
             try {
-                String filename = "temp_svmmodel";
-                File modelFile = new File( filename );
-                svm.svm_save_model( filename, _model );
-                modelString = FileUtils.readFileToString( modelFile );
+                _model.save( writer );
+                modelString = writer.toString();
             }
             catch( IOException e ) {
-                _logger.error( "Unable to save svm model." );
+                _logger.error( "Unable to save LibLinear model." );
                 _logger.error( e.toString(), e );
             }
         } else {
@@ -119,25 +133,17 @@ public class Svm extends NamedObject implements Callback, Supervised {
         return modelString;
     }
 
-    public int predict() {
-
-        // to implement
-
-        return 0;
-    }
-
+    @Override
     public void train( Data featuresMatrix, Data classTruthVector ) {
 
-        svm_parameter paramaters = setupParamaters();
+        Parameter paramaters = setupParamaters();
 
-        svm_problem problem = setupProblem( featuresMatrix, classTruthVector );
+        Problem problem = setupProblem( featuresMatrix, classTruthVector );
 
-        _model = svm.svm_train( problem, paramaters );
-
-        saveModel();
+        _model = Linear.train( problem, paramaters );
     }
 
-    private svm_problem setupProblem( Data featuresMatrix, Data classTruthVector ) {
+    private Problem setupProblem( Data featuresMatrix, Data classTruthVector ) {
 
         DataSize datasetSize = featuresMatrix._dataSize;
         int m = datasetSize.getSize( DataSize.DIMENSION_Y );        // m = number of data points
@@ -146,58 +152,39 @@ public class Svm extends NamedObject implements Callback, Supervised {
         // **** NORMALISE *****    to implement on Data
         //featuresMatrix.normalize(  )
 
-        svm_problem prob = new svm_problem();
-        prob.l = m;
-        prob.y = new double[ prob.l ];
-        prob.x = new svm_node[ prob.l ][ n ];
+        Problem problem = new Problem();
+        problem.l = m; // number of training examples
+        problem.n = n; // number of features
 
         // iterate data points (vectors in the VectorSeries - each vector is a data point)
-        for ( int i = 0; i < m ; ++i ) {
+        for( int i = 0; i < n; ++i ) {
 
             // iterate dimensions of x (elements of the vector)
-            for ( int j = 0 ; j < n ; j++ ) {
+            for( int j = 0; j < m; j++ ) {
 
                 int classTruth = getClassTruth( classTruthVector, i, j );
 
-                float xij = featuresMatrix._values[ i * m + j];
+                double xij = featuresMatrix._values[ i * n + j ];
 
-                if ( xij == 0.f ) {
+                if( xij == 0.f ) {
                     continue;
                 }
 
-                prob.x[ i ][ j ] = new svm_node();
-                prob.x[ i ][ j ].index = j+1;
-                prob.x[ i ][ j ].value = xij;
-                prob.y[ i ] = classTruth;
+                problem.x[ i ][ j ] = new FeatureNode( j + 1, xij );
+                problem.y[ i ] = classTruth;
             }
         }
 
-        return prob;
+        return problem;
     }
 
-    private svm_parameter setupParamaters() {
-        svm_parameter param = new svm_parameter();
+    private Parameter setupParamaters() {
+        SolverType solver = SolverType.L2R_LR; // -s 0
+        double C = 1.0;    // cost of constraints violation
+        double eps = 0.01; // stopping criteria
 
-        // default values
-        param.svm_type = svm_parameter.C_SVC;
-        param.kernel_type = svm_parameter.RBF;
-        param.degree = 3;
-        param.gamma = 0;
-        param.coef0 = 0;
-        param.nu = 0.5;
-        param.cache_size = 40;
-        param.eps = 1e-3;
-        param.p = 0.1;
-        param.shrinking = 1;
-        param.probability = 0;
-        param.nr_weight = 0;
-        param.weight_label = new int[ 0 ];
-        param.weight = new double[ 0 ];
-
-        // values from config
-        param.C = _config.getRegularisation();
-
-        return param;
+        Parameter parameter = new Parameter( solver, C, eps );
+        return parameter;
     }
 
     private int getClassTruth( Data classTruthVector, int i, int j ) {

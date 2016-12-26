@@ -128,10 +128,6 @@ public class SupervisedLearningEntity extends Entity {
         // Implement as needed in subclasses
     }
 
-    protected void saveModel() {
-        // Implement as needed in subclasses
-    }
-
     /**
      * Train the algorithm given the entire history of training samples provided.
      *
@@ -356,9 +352,6 @@ public class SupervisedLearningEntity extends Entity {
 
         evaluate( features, labels, predictedLabels );
 
-        if( config.learn || config.reset ) {
-            saveModel(); // save updated model to persistence
-        }
     }
 
 
