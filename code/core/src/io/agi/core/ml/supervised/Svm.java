@@ -39,7 +39,7 @@ public class Svm extends NamedObject implements Callback, Supervised {
 
     protected static final Logger _logger = LogManager.getLogger();
 
-    private SvmConfig _config;
+    private SupervisedLearningConfig _config;
     svm_model _model = null;
 
     public Svm( String name, ObjectMap om ) {
@@ -55,8 +55,10 @@ public class Svm extends NamedObject implements Callback, Supervised {
 
     }
 
-    public void setup( SvmConfig config ) {
+    @Override
+    public void setup( SupervisedLearningConfig config ) {
         this._config = config;
+        loadModel();
     }
 
     @Override
@@ -83,7 +85,10 @@ public class Svm extends NamedObject implements Callback, Supervised {
         }
     }
 
-    // save the model to config object
+    /**
+     * Save the model to config object.
+     * @return
+     */
     private String saveModel() {
         String modelString = null;
         try {
@@ -98,7 +103,11 @@ public class Svm extends NamedObject implements Callback, Supervised {
         return modelString;
     }
 
-    // serialise model to a string and return
+    /**
+     * Serialise model to a string and return.
+     * @return
+     * @throws Exception
+     */
     public String modelString() throws Exception {
 
         String modelString = null;
@@ -123,6 +132,17 @@ public class Svm extends NamedObject implements Callback, Supervised {
         return modelString;
     }
 
+    public void train( Data featuresMatrix, Data classTruthVector ) {
+
+        svm_parameter parameters = setupParameters();
+
+        svm_problem problem = setupProblem( featuresMatrix, classTruthVector );
+
+        _model = svm.svm_train( problem, parameters );
+
+        saveModel();
+    }
+
     public void predict( Data featuresMatrix, Data predictionsVector ) {
 
         DataSize datasetSize = featuresMatrix._dataSize;
@@ -137,7 +157,7 @@ public class Svm extends NamedObject implements Callback, Supervised {
             // iterate dimensions of x (elements of the vector)
             for( int j = 0; j < n; j++ ) {
 
-                float xij = featuresMatrix._values[ i * m + j];
+                float xij = featuresMatrix._values[ i * m + j ];
 
                 x[ i ][ j ] = new svm_node();
                 x[ i ][ j ].index = j+1;
@@ -146,18 +166,6 @@ public class Svm extends NamedObject implements Callback, Supervised {
 
             predictionsVector._values[ i ] = ( float ) svm.svm_predict( _model, x[i] );
         }
-
-    }
-
-    public void train( Data featuresMatrix, Data classTruthVector ) {
-
-        svm_parameter paramaters = setupParamaters();
-
-        svm_problem problem = setupProblem( featuresMatrix, classTruthVector );
-
-        _model = svm.svm_train( problem, paramaters );
-
-        saveModel();
     }
 
     private svm_problem setupProblem( Data featuresMatrix, Data classTruthVector ) {
@@ -166,8 +174,7 @@ public class Svm extends NamedObject implements Callback, Supervised {
         int m = datasetSize.getSize( DataSize.DIMENSION_Y );        // m = number of data points
         int n = datasetSize.getSize( DataSize.DIMENSION_X );        // n = feature vector size
 
-        // **** NORMALISE *****    to implement on Data
-        //featuresMatrix.normalize(  )
+        featuresMatrix.normalizeFeatures( );
 
         svm_problem prob = new svm_problem();
         prob.l = m;
@@ -180,9 +187,8 @@ public class Svm extends NamedObject implements Callback, Supervised {
             // iterate dimensions of x (elements of the vector)
             for ( int j = 0 ; j < n ; j++ ) {
 
-                int classTruth = getClassTruth( classTruthVector, i, j );
-
-                float xij = featuresMatrix._values[ i * m + j];
+                float classTruth = getClassTruth( classTruthVector, i );
+                double xij = getFeatureValue( featuresMatrix, m, i, j );
 
                 if ( xij == 0.f ) {
                     continue;
@@ -198,7 +204,7 @@ public class Svm extends NamedObject implements Callback, Supervised {
         return prob;
     }
 
-    private svm_parameter setupParamaters() {
+    private svm_parameter setupParameters() {
         svm_parameter param = new svm_parameter();
 
         // default values
@@ -218,13 +224,20 @@ public class Svm extends NamedObject implements Callback, Supervised {
         param.weight = new double[ 0 ];
 
         // values from config
-        param.C = _config.getRegularisation();
+        param.C = _config.getConstraintsViolation();
 
         return param;
     }
 
-    private int getClassTruth( Data classTruthVector, int i, int j ) {
-        return 0;
+    // convenience method to get the specific value from featuresMatrix
+    private double getFeatureValue( Data featuresMatrix, int datasetSize, int datapointIndex, int featureIndex ) {
+        float value = featuresMatrix._values[ datapointIndex * datasetSize + featureIndex ];
+        return value;
     }
 
+    // convenience method to get the truth label from classTruthVector
+    private float getClassTruth( Data classTruthVector, int datapointIndex ) {
+        float value = classTruthVector._values[ datapointIndex ];
+        return value;
+    }
 }

@@ -1722,4 +1722,6 @@ public class FloatArray {
         }
     }
 
+    public void normalizeFeatures() {
+    }
 }

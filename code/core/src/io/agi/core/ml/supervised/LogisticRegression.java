@@ -26,8 +26,6 @@ import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 
 import de.bwaldvogel.liblinear.*;
-import libsvm.svm;
-import libsvm.svm_node;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -43,7 +41,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
 
     protected static final Logger _logger = LogManager.getLogger();
 
-    private LogisticRegressionConfig _config;
+    private SupervisedLearningConfig _config;
     private Model _model = null;
 
     public LogisticRegression( String name, ObjectMap om ) {
@@ -59,37 +57,16 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
 
     }
 
-    public void setup( LogisticRegressionConfig config ) {
+    @Override
+    public void setup( SupervisedLearningConfig config ) {
         this._config = config;
+        loadModel();
     }
 
     @Override
     public void reset() {
         _model = null;
         saveModel();
-    }
-
-    @Override
-    public void predict( Data featuresMatrix, Data predictionsVector ) {
-
-        DataSize datasetSize = featuresMatrix._dataSize;
-        int m = datasetSize.getSize( DataSize.DIMENSION_Y );        // m = number of data points ---> should be 1
-        int n = datasetSize.getSize( DataSize.DIMENSION_X );        // n = feature vector size
-
-        Feature[][] x = new Feature[ n ][ m ];
-
-        // convert input to Feature instance, then predict
-        // iterate data points (vectors in the VectorSeries - each vector is a data point)
-        for( int i = 0; i < m; ++i ) {
-
-            // iterate dimensions of x (elements of the vector)
-            for( int j = 0; j < n; j++ ) {
-                float xij = featuresMatrix._values[ i * m + j ];
-                x[ i ][ j ] = new FeatureNode( j+1, xij );
-            }
-
-            predictionsVector._values[ i ] = ( float ) Linear.predict( _model, x[ i ] );
-        }
     }
 
     @Override
@@ -150,11 +127,41 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
     @Override
     public void train( Data featuresMatrix, Data classTruthVector ) {
 
-        Parameter paramaters = setupParamaters();
+        Parameter parameters = setupParameters();
 
         Problem problem = setupProblem( featuresMatrix, classTruthVector );
 
-        _model = Linear.train( problem, paramaters );
+        _model = Linear.train( problem, parameters );
+    }
+
+
+//    // Placeholder for a convenience method to wrap the predict() method for the case of a single prediction
+//    // This would require creating a temp Data (1d for predictionsVector) and pull out the prediction to return
+//    public float predict( Data features ) {
+//
+//    }
+
+    @Override
+    public void predict( Data featuresMatrix, Data predictionsVector ) {
+
+        DataSize datasetSize = featuresMatrix._dataSize;
+        int m = datasetSize.getSize( DataSize.DIMENSION_Y );        // m = number of data points
+        int n = datasetSize.getSize( DataSize.DIMENSION_X );        // n = feature vector size
+
+        Feature[][] x = new Feature[ n ][ m ];
+
+        // convert input to Feature instance, then predict
+        // iterate data points (vectors in the VectorSeries - each vector is a data point)
+        for( int i = 0; i < m; ++i ) {
+
+            // iterate dimensions of x (elements of the vector)
+            for( int j = 0; j < n; j++ ) {
+                double xij = getFeatureValue( featuresMatrix, m, i, j );
+                x[ i ][ j ] = new FeatureNode( j+1, xij );
+            }
+
+            predictionsVector._values[ i ] = ( float ) Linear.predict( _model, x[ i ] );
+        }
     }
 
     private Problem setupProblem( Data featuresMatrix, Data classTruthVector ) {
@@ -163,8 +170,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
         int m = datasetSize.getSize( DataSize.DIMENSION_Y );        // m = number of data points
         int n = datasetSize.getSize( DataSize.DIMENSION_X );        // n = feature vector size
 
-        // **** NORMALISE *****    to implement on Data
-        //featuresMatrix.normalize(  )
+        featuresMatrix.normalizeFeatures();
 
         Problem problem = new Problem();
         problem.l = m; // number of training examples
@@ -176,9 +182,8 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
             // iterate dimensions of x (elements of the vector)
             for( int j = 0; j < m; j++ ) {
 
-                int classTruth = getClassTruth( classTruthVector, i, j );
-
-                double xij = featuresMatrix._values[ i * n + j ];
+                float classTruth = getClassTruth( classTruthVector, i );
+                double xij = getFeatureValue( featuresMatrix, m, i, j );
 
                 if( xij == 0.f ) {
                     continue;
@@ -192,17 +197,28 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
         return problem;
     }
 
-    private Parameter setupParamaters() {
+    private Parameter setupParameters() {
+
         SolverType solver = SolverType.L2R_LR; // -s 0
-        double C = 1.0;    // cost of constraints violation
         double eps = 0.01; // stopping criteria
+
+        // values from config
+        float C = _config.getConstraintsViolation();        // cost of constraints violation
 
         Parameter parameter = new Parameter( solver, C, eps );
         return parameter;
     }
 
-    private int getClassTruth( Data classTruthVector, int i, int j ) {
-        return 0;
+    // convenience method to get the specific value from featuresMatrix
+    private double getFeatureValue( Data featuresMatrix, int datasetSize, int datapointIndex, int featureIndex ) {
+        float value = featuresMatrix._values[ datapointIndex * datasetSize + featureIndex ];
+        return value;
+    }
+
+    // convenience method to get the truth label from classTruthVector
+    private float getClassTruth( Data classTruthVector, int datapointIndex ) {
+        float value = classTruthVector._values[ datapointIndex ];
+        return value;
     }
 
 }
