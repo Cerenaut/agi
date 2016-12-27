@@ -90,6 +90,9 @@ var Search = {
           if( type == "k-sparse-autoencoder" ) {
             linksValue = linksValue + " / <a href='k-sparse-autoencoder.html?entity="+ objectName + "' title='Open Autoencoder UI' target='_blank'><b>K-Sparse UI</b></a>"
           }
+          if( type == "online-k-sparse-autoencoder" ) {
+            linksValue = linksValue + " / <a href='online-k-sparse-autoencoder.html?entity="+ objectName + "' title='Open Autoencoder UI' target='_blank'><b>Online K-Sparse UI</b></a>"
+          }
         }
       }
       else if( Search.type == "data" ) {
