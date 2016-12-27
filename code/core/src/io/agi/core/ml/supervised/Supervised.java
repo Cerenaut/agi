@@ -26,16 +26,36 @@ import io.agi.core.data.Data;
  */
 public interface Supervised {
 
+    void setup( SupervisedLearningConfig config );
+
     void reset();
 
+    /**
+     * Make predictions using the trained model. If there is no valid model, there will be no predictions.
+     * @param featuresMatrix the input data points used to make predictions.
+     *                       This is an n x m matrix [n][m], where n = feature vector size and m = number of data points.
+     * @param predictionsVector For each data point (m) there is a corresponding prediction.
+     *                          m x 1 vector
+     */
     void predict( Data featuresMatrix, Data predictionsVector );
 
-    // train the model (subclasses should ensure that the model is saved to config)
+    /**
+     * Train the model (subclasses should ensure that the model is saved to config).
+     * @param featuresMatrix the input data points used for training the model.
+     *                       This is an n x m matrix [n][m], where n = feature vector size and m = number of data points.
+     * @param classTruthVector For each data point (m), this is the true label used for supervised learning training.
+     *                         m x 1 vector
+     */
     void train( Data featuresMatrix, Data classTruthVector );
 
-    // load from config
+    /**
+     * Load model from config object.
+     */
     void loadModel( );
 
-    // load model from a string (and set config to be consistent)
+    /**
+     * Load model from a string (and set config to be consistent).
+     * @param modelString
+     */
     void loadModel( String modelString );
 }

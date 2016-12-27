@@ -22,23 +22,23 @@ package io.agi.core.ml.supervised;
 import io.agi.core.ann.NetworkConfig;
 
 /**
- * Created by gideon on 14/12/16.
+ * Created by gideon on 23/12/16.
  */
-public class SvmConfig extends NetworkConfig {
+public class SupervisedLearningConfig extends NetworkConfig {
 
-    public String _keyRegularisation = "regularisation";
+    public String _keyConstraintsViolation = "constraints-violation";      // used for regularisation. C is the terminology used commonly for SVM.
     public String _keyModelString = "modelString";
 
     public void setup( float C ) {
-        setRegularisation( C );
+        setConstraintsViolation( C );
     }
 
-    public void setRegularisation( float C ) {
-        _om.put( getKey( _keyRegularisation ), C );
+    public void setConstraintsViolation( float C ) {
+        _om.put( getKey( _keyConstraintsViolation ), C );
     }
 
-    public float getRegularisation() {
-        return _om.getFloat( _keyRegularisation );
+    public float getConstraintsViolation() {
+        return _om.getFloat( _keyConstraintsViolation );
     }
 
     public void setModelString( String modelString ) {

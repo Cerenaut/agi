@@ -20,13 +20,10 @@
 package io.agi.framework.entities;
 
 import io.agi.core.data.Data;
-import io.agi.core.data.DataSize;
+import io.agi.core.ml.supervised.SupervisedLearningConfig;
 import io.agi.core.ml.supervised.Svm;
-import io.agi.core.ml.supervised.SvmConfig;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
-import io.agi.framework.Entity;
-import io.agi.framework.Framework;
 import io.agi.framework.Node;
 import io.agi.framework.persistence.models.ModelEntity;
 
@@ -80,7 +77,7 @@ public class SVMEntity extends SupervisedLearningEntity {
         SVMEntityConfig config = ( SVMEntityConfig ) _config;
 
         // Create the config object:
-        SvmConfig svmConfig = new SvmConfig();
+        SupervisedLearningConfig svmConfig = new SupervisedLearningConfig();
         svmConfig.setup( config.C );
 
         // Create the implementing object itself, and copy data from persistence into it:
@@ -127,11 +124,8 @@ public class SVMEntity extends SupervisedLearningEntity {
      * @param predictedLabels
      */
     protected void predict( Data features, Data predictedLabels ) {
+        predictedLabels.set( 0f );
         _svm.predict( features, predictedLabels );
-// TODO Gids pls review.
-//        predictedLabels.set( 0f );
-//        int prediction = _svm.predict( features, predictedLabels );
-//        predictedLabels._values[ prediction ] = 1f;
     }
 
 }

@@ -19,14 +19,8 @@
 
 package io.agi.framework.entities;
 
-import io.agi.core.data.Data;
-import io.agi.core.data.DataSize;
-import io.agi.core.ml.supervised.Svm;
-import io.agi.core.ml.supervised.SvmConfig;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
-import io.agi.framework.Entity;
-import io.agi.framework.Framework;
 import io.agi.framework.Node;
 import io.agi.framework.persistence.models.ModelEntity;
 
