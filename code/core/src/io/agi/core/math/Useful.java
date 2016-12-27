@@ -40,7 +40,7 @@ public class Useful {
         return sets;
     }
 
-    public static void IsBad( float r ) {
+    public static boolean IsBad( float r ) {
         boolean breakpoint = false;
         if( Float.isInfinite( r ) ) {
             breakpoint = true;
@@ -53,6 +53,8 @@ public class Useful {
             int g = 0;
             g++;
         }
+
+        return breakpoint;
     }
 
     public static void IsBad( double r ) {
