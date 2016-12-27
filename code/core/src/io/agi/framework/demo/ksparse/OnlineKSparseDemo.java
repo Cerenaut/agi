@@ -109,7 +109,13 @@ public class OnlineKSparseDemo {
         Framework.SetDataReference( autoencoderName, OnlineKSparseAutoencoderEntity.INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
 
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList< AbstractPair< String, String > >();
-        featureDatas.add( new AbstractPair< String, String >( autoencoderName, OnlineKSparseAutoencoderEntity.SPIKES_TOP_KA ) );
+        if( unitOutput ) {
+            featureDatas.add( new AbstractPair< String, String >( autoencoderName, OnlineKSparseAutoencoderEntity.SPIKES_TOP_KA ) );
+        }
+        else {
+            featureDatas.add( new AbstractPair< String, String >( autoencoderName, OnlineKSparseAutoencoderEntity.TRANSFER_TOP_KA ) );
+        }
+
         Framework.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
 
         // Experiment config

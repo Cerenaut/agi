@@ -58,6 +58,7 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
 
     public static final String TRANSFER = "transfer";
     public static final String TRANSFER_TOP_K = "transfer-top-k";
+    public static final String TRANSFER_TOP_KA = "transfer-top-k";
     public static final String TRANSFER_PROMOTED = "transfer-promoted";
 
     //    public static final String RECONSTRUCTION_KA = "reconstruction-ka";
@@ -93,6 +94,7 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
         attributes.add( WEIGHTED_SUM );
         attributes.add( TRANSFER );
         attributes.add( TRANSFER_TOP_K ); // the set ranking with promotion, but unpromoted values
+        attributes.add( TRANSFER_TOP_KA ); // the set ranking with promotion, but unpromoted values
         attributes.add( TRANSFER_PROMOTED );
 
 //        attributes.add( RECONSTRUCTION_KA );
@@ -104,7 +106,7 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
         attributes.add( PROMOTION );
         attributes.add( INHIBITION );
 
-        flags.putFlag( WEIGHTS, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag(WEIGHTS, DataFlags.FLAG_NODE_CACHE);
         flags.putFlag( BIASES_1, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( BIASES_2, DataFlags.FLAG_NODE_CACHE );
 
@@ -118,6 +120,7 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
 
         flags.putFlag( TRANSFER, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( TRANSFER_TOP_K, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( TRANSFER_TOP_KA, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( TRANSFER_PROMOTED, DataFlags.FLAG_NODE_CACHE );
 
         flags.putFlag( RECONSTRUCTION_WEIGHTED_SUM, DataFlags.FLAG_NODE_CACHE );
@@ -203,7 +206,7 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
 
         ksa._inputValues = getData( INPUT );
 
-        ksa._cellWeights = getDataLazyResize( WEIGHTS, ksa._cellWeights._dataSize );
+        ksa._cellWeights = getDataLazyResize(WEIGHTS, ksa._cellWeights._dataSize);
         ksa._cellBiases1 = getDataLazyResize( BIASES_1, ksa._cellBiases1._dataSize );
         ksa._cellBiases2 = getDataLazyResize( BIASES_2, ksa._cellBiases2._dataSize );
 
@@ -219,6 +222,7 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
         ksa._cellTransfer = getDataLazyResize( TRANSFER, ksa._cellTransfer._dataSize );
         ksa._cellTransferPromoted = getDataLazyResize( TRANSFER_PROMOTED, ksa._cellTransferPromoted._dataSize );
         ksa._cellTransferTopK = getDataLazyResize( TRANSFER_TOP_K, ksa._cellTransferTopK._dataSize );
+        ksa._cellTransferTopKA = getDataLazyResize( TRANSFER_TOP_K, ksa._cellTransferTopKA._dataSize );
 
         ksa._inputReconstructionWeightedSum = getDataLazyResize( RECONSTRUCTION_WEIGHTED_SUM, ksa._inputReconstructionWeightedSum._dataSize );
         ksa._inputReconstructionTransfer = getDataLazyResize( RECONSTRUCTION_TRANSFER, ksa._inputReconstructionTransfer._dataSize );
@@ -246,6 +250,7 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
         setData( TRANSFER, ksa._cellTransfer );
         setData( TRANSFER_PROMOTED, ksa._cellTransferPromoted );
         setData( TRANSFER_TOP_K, ksa._cellTransferTopK );
+        setData( TRANSFER_TOP_KA, ksa._cellTransferTopKA );
 
         setData( RECONSTRUCTION_WEIGHTED_SUM, ksa._inputReconstructionWeightedSum );
         setData( RECONSTRUCTION_TRANSFER, ksa._inputReconstructionTransfer );

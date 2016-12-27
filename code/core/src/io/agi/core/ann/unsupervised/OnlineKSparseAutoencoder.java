@@ -60,6 +60,7 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
     public Data _cellWeightedSumTopK;
     public Data _cellTransfer;
     public Data _cellTransferTopK;
+    public Data _cellTransferTopKA;
     public Data _cellTransferPromoted;
     public Data _cellSpikesTopKA;
     public Data _cellSpikesTopK;
@@ -95,6 +96,7 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
         _cellWeightedSumTopK = new Data( w, h );
         _cellTransfer = new Data( w, h );
         _cellTransferTopK = new Data( w, h );
+        _cellTransferTopKA = new Data( w, h );
         _cellTransferPromoted = new Data( w, h );
         _cellSpikesTopKA = new Data( w, h );
         _cellSpikesTopK = new Data( w, h );
@@ -334,8 +336,10 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
         int maxRank = ka;
         ArrayList< Integer > activeCellsKA = Ranking.getBestValues( ranking, findMaxima, maxRank );
         _cellSpikesTopKA.set( 0.f );
+        _cellTransferTopKA.set( 0f );
         for( Integer c : activeCellsKA ) {
             _cellSpikesTopKA._values[ c ] = 1f;
+            _cellTransferTopKA._values[ c ] = _cellTransfer._values[ c ];
         }
 
         // now restrict to just k. This set is used for learning.
