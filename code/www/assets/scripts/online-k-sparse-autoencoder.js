@@ -385,6 +385,7 @@ console.log( "Painting left w/h=" + canvasDataSize.w + "," + canvasDataSize.h );
 //    var ctx = c.getContext( "2d" );
 
     var gain = $( "#gain" ).val();
+    var nonlinear = $( "#nonlinear" ).is( ":checked" );
     var inputDisplay = $('select[name=invert-display]').val();
 
     var dataSize1 = Framework.getDataSize( data1 );
@@ -408,10 +409,10 @@ console.log( "Painting right w/h=" + w1 + "," + h1 );
     Region.paintInputData( canvasDataSize.ctx, x0, y0, w1, h1, data1 );
 
     if( inputDisplay == "weights" ) {
-      Region.paintInputWeights( canvasDataSize.ctx, x0, y0, w1, h1, inputOffset, data1, weightsSize, weightsStride, dataWeights, dataBiases, Region.selectedCells, gain );
+      Region.paintInputWeights( canvasDataSize.ctx, x0, y0, w1, h1, inputOffset, data1, weightsSize, weightsStride, dataWeights, dataBiases, Region.selectedCells, gain, nonlinear );
     }
     else {
-      Region.paintInputErrors( canvasDataSize.ctx, x0, y0, w1, h1, inputOffset, data1, weightsSize, weightsStride, dataWeights, dataBiases, Region.selectedCells, gain );
+      Region.paintInputErrors( canvasDataSize.ctx, x0, y0, w1, h1, inputOffset, data1, weightsSize, weightsStride, dataWeights, dataBiases, Region.selectedCells, gain, nonlinear );
     }
     Region.paintInputDataSelected( canvasDataSize.ctx, x0, y0, w1, h1, Region.selectedInput1 );
 
@@ -454,12 +455,13 @@ console.log( "Painting right w/h=" + w1 + "," + h1 );
   },
 
   logisticSigmoid : function( x ) {
+    // http://www.wolframalpha.com/input/?i=1%2F(+1%2Be%5E(-x)+)+for+x+%3D+-5+to+5
         var denominator = 1.0 + Math.pow( Math.E, -x );
         var y = 1.0 / denominator; // equation 3.4
         return y;
   },
 
-  paintInputWeights : function( ctx, x0, y0, w, h, inputOffset, dataInput, weightsSize, weightsStride, dataWeights, dataBiases, selectedCells, gain ) {
+  paintInputWeights : function( ctx, x0, y0, w, h, inputOffset, dataInput, weightsSize, weightsStride, dataWeights, dataBiases, selectedCells, gain, nonlinear ) {
 
     if( selectedCells.length < 1 ) {
       return;
@@ -514,9 +516,11 @@ console.log( "Painting right w/h=" + w1 + "," + h1 );
 //sumWeight = sumWeight * 0.5;
 
         var tf = sumWeight; //Region.logisticSigmoid( sumWeight );
-
-//        tf = Math.min(  1.0, tf );
-//        tf = Math.max( -1.0, tf );
+        if( nonlinear ) {
+          tf = Region.logisticSigmoid( sumWeight );
+        }
+        tf = Math.min(  1.0, tf );
+        tf = Math.max( -1.0, tf );
 
         var cx = x * Region.pixelsPerBit;
         var cy = y * Region.pixelsPerBit;
@@ -612,7 +616,7 @@ console.log( "Painting right w/h=" + w1 + "," + h1 );
     }*/
   },
 
-  paintInputErrors : function( ctx, x0, y0, w, h, inputOffset, dataInput, weightsSize, weightsStride, dataWeights, dataBiases, selectedCells, gain ) {
+  paintInputErrors : function( ctx, x0, y0, w, h, inputOffset, dataInput, weightsSize, weightsStride, dataWeights, dataBiases, selectedCells, gain, nonlinear ) {
 
     if( selectedCells.length < 1 ) {
       return;
@@ -642,8 +646,13 @@ console.log( "Painting right w/h=" + w1 + "," + h1 );
         var bias = dataBiases.elements.elements[ biasesOffset ];
         sumWeight += bias;      
 
-        sumWeight = Math.min(  1.0, sumWeight );
-        sumWeight = Math.max( -1.0, sumWeight );
+        var tf = sumWeight; //Region.logisticSigmoid( sumWeight );
+        if( nonlinear ) {
+          tf = Region.logisticSigmoid( sumWeight );
+        }
+
+        tf = Math.min(  1.0, tf );
+        tf = Math.max( -1.0, tf );
 
         var cx = x * Region.pixelsPerBit;
         var cy = y * Region.pixelsPerBit;

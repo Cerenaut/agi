@@ -47,9 +47,9 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
     public static final String BIASES_1 = "biases-1";
     public static final String BIASES_2 = "biases-2";
 
-//    public static final String WEIGHTS_VELOCITY = "weights-velocity";
-//    public static final String BIASES_1_VELOCITY = "biases-1-velocity";
-//    public static final String BIASES_2_VELOCITY = "biases-2-velocity";
+    public static final String WEIGHTS_VELOCITY = "weights-velocity";
+    public static final String BIASES_1_VELOCITY = "biases-1-velocity";
+    public static final String BIASES_2_VELOCITY = "biases-2-velocity";
 
     public static final String ERRORS = "errors";
     public static final String WEIGHTED_SUM = "weighted-sum";
@@ -83,9 +83,9 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
         attributes.add( BIASES_1 );
         attributes.add( BIASES_2 );
 
-//        attributes.add( WEIGHTS_VELOCITY );
-//        attributes.add( BIASES_1_VELOCITY );
-//        attributes.add( BIASES_2_VELOCITY );
+        attributes.add( WEIGHTS_VELOCITY );
+        attributes.add( BIASES_1_VELOCITY );
+        attributes.add( BIASES_2_VELOCITY );
 
         attributes.add( ERRORS );
         attributes.add( SPIKES_TOP_KA );
@@ -108,9 +108,9 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
         flags.putFlag( BIASES_1, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( BIASES_2, DataFlags.FLAG_NODE_CACHE );
 
-//        flags.putFlag( WEIGHTS_VELOCITY, DataFlags.FLAG_NODE_CACHE );
-//        flags.putFlag( BIASES_1_VELOCITY, DataFlags.FLAG_NODE_CACHE );
-//        flags.putFlag( BIASES_2_VELOCITY, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( WEIGHTS_VELOCITY, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( BIASES_1_VELOCITY, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( BIASES_2_VELOCITY, DataFlags.FLAG_NODE_CACHE );
 
         flags.putFlag( ERRORS, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( SPIKES_TOP_KA, DataFlags.FLAG_NODE_CACHE );
@@ -169,12 +169,12 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
         autoencoderConfig.setup(
                 om, name, _r,
                 inputArea, config.widthCells, config.heightCells,
-                config.learningRate, //config.momentum,
+                config.learningRate, config.momentum,
                 config.sparsityOutput, config.sparsity,
                 config.ageMin, config.ageMax, config.age,
                 config.ageTruncationFactor, config.ageScale,
                 config.rateScale, config.rateMax, config.rateLearningRate,
-                config.weightsStdDev );
+                config.weightsStdDev, config.unitOutput );
 
         OnlineKSparseAutoencoder ksa = new OnlineKSparseAutoencoder( name, om );
 
@@ -207,9 +207,9 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
         ksa._cellBiases1 = getDataLazyResize( BIASES_1, ksa._cellBiases1._dataSize );
         ksa._cellBiases2 = getDataLazyResize( BIASES_2, ksa._cellBiases2._dataSize );
 
-//        ksa._cellWeightsVelocity = getDataLazyResize( WEIGHTS_VELOCITY, ksa._cellWeightsVelocity._dataSize );
-//        ksa._cellBiases1Velocity = getDataLazyResize( BIASES_1_VELOCITY, ksa._cellBiases1Velocity._dataSize );
-//        ksa._cellBiases2Velocity = getDataLazyResize( BIASES_2_VELOCITY, ksa._cellBiases2Velocity._dataSize );
+        ksa._cellWeightsVelocity = getDataLazyResize( WEIGHTS_VELOCITY, ksa._cellWeightsVelocity._dataSize );
+        ksa._cellBiases1Velocity = getDataLazyResize( BIASES_1_VELOCITY, ksa._cellBiases1Velocity._dataSize );
+        ksa._cellBiases2Velocity = getDataLazyResize( BIASES_2_VELOCITY, ksa._cellBiases2Velocity._dataSize );
 
         ksa._cellErrors = getDataLazyResize( ERRORS, ksa._cellErrors._dataSize );
         ksa._cellWeightedSum = getDataLazyResize( WEIGHTED_SUM, ksa._cellWeightedSum._dataSize );
@@ -234,9 +234,9 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
         setData( BIASES_1, ksa._cellBiases1 );
         setData( BIASES_2, ksa._cellBiases2 );
 
-//        setData( WEIGHTS_VELOCITY, ksa._cellWeightsVelocity );
-//        setData( BIASES_1_VELOCITY, ksa._cellBiases1Velocity );
-//        setData( BIASES_2_VELOCITY, ksa._cellBiases2Velocity );
+        setData( WEIGHTS_VELOCITY, ksa._cellWeightsVelocity );
+        setData( BIASES_1_VELOCITY, ksa._cellBiases1Velocity );
+        setData( BIASES_2_VELOCITY, ksa._cellBiases2Velocity );
 
         setData( ERRORS, ksa._cellErrors );
         setData( WEIGHTED_SUM, ksa._cellWeightedSum );

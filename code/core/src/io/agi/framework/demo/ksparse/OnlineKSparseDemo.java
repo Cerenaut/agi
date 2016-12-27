@@ -89,6 +89,7 @@ public class OnlineKSparseDemo {
         int terminationAge = 50000;//25000;
         int trainingEpochs = 10;//80; // good for up to 80k
         int testingEpochs = 1;//80; // good for up to 80k
+        boolean unitOutput = true;
 
         // Define some entities
         String experimentName           = Framework.GetEntityName( "experiment" );
@@ -166,7 +167,10 @@ public class OnlineKSparseDemo {
 
         // variables
         float learningRate = 0.01f;
-//        float momentum = 0.5f;//0.9f;
+        if( unitOutput ) {
+//            learningRate = learningRate * 0.1f;
+        }
+        float momentum = 0f;//0.9f;
         float weightsStdDev = 0.01f; // From paper. used at reset (only for biases in online case
 
         // TODO set params
@@ -176,8 +180,9 @@ public class OnlineKSparseDemo {
         float rateMax = 0.05f; // i.e. 1/20th
         float rateLearningRate = learningRate * 0.1f; // slower than the learning rate
 
+        Framework.SetConfig( autoencoderName, "unitOutput", String.valueOf( unitOutput ) );
         Framework.SetConfig( autoencoderName, "learningRate", String.valueOf( learningRate ) );
-//        Framework.SetConfig( autoencoderName, "momentum", String.valueOf( momentum ) );
+        Framework.SetConfig( autoencoderName, "momentum", String.valueOf( momentum ) );
         Framework.SetConfig( autoencoderName, "widthCells", String.valueOf( widthCells ) );
         Framework.SetConfig( autoencoderName, "heightCells", String.valueOf( heightCells ) );
         Framework.SetConfig( autoencoderName, "weightsStdDev", String.valueOf( weightsStdDev ) );

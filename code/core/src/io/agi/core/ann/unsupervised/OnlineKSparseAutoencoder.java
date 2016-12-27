@@ -124,16 +124,25 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
         // ..."where fan_{in} is the number of units in the (i-1)-th layer, and fan_{out} is the number of units in the i-th layer"
         // For sigmoid: [-4\sqrt{\frac{6}{fan_{in}+fan_{out}}},4\sqrt{\frac{6}{fan_{in}+fan_{out}}}].
         // -x : +x
+
         // where x = 4 * sqrt( 6 / ( fan_in + fan_out ) )
         int cells = _c.getNbrCells();
         int inputs = _inputValues.getSize(); //875.f;
-        float randomScale = 4.f * (float)Math.sqrt( 6.f / ( inputs + cells ) );
+        float randomScale = 4.f * (float)Math.sqrt( 6.f / ( inputs + cells ) ); // approx 0.25
 
         for( int i = 0; i < _cellWeights.getSize(); ++i ) {
-//            float r = ( _c._r.nextFloat() * randomScale * 2.f ) -randomScale; // for sigmoid activation fn
-            double r = _c._r.nextGaussian(); // mean: 0, SD: 1
-            r *= weightsStdDev;
-            _cellWeights._values[ i ] = (float)r;
+            float r = 0f;
+            // the initialization seems ot make a big difference
+//            if( _unit ) {
+//                double rw = ( _c._r.nextFloat() * randomScale * 2.f ) -randomScale; // for sigmoid activation fn
+//                r = (float)( rw );
+//            }
+//            else {
+                r = (float)_c._r.nextGaussian(); // mean: 0, SD: 1
+                r *= weightsStdDev;
+//            }
+
+            _cellWeights._values[ i ] = r;
         }
 
         for( int i = 0; i < _cellBiases1.getSize(); ++i ) {
@@ -258,10 +267,10 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
     public void update( boolean learn ) {
 
         float learningRate = _c.getLearningRate();
-//        float momentum = _c.getMomentum();
+        float momentum = _c.getMomentum();
         float sparsityOutput = _c.getSparsityOutput(); // alpha
         float ageTruncation = _c.getAgeTruncationFactor(); //0.5f; // halve the age each time it fires
-
+        boolean unit = _c.getUnitOutput();
         int k = _c.getSparsity();
         int ka = (int)( (float)k * sparsityOutput );
 
@@ -356,15 +365,22 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
         // dont really need to do this if not learning.
 //        reconstruct( _cellTransferTopK, _inputReconstructionWeightedSum, _inputReconstructionTransfer ); // for output
 //        reconstruct( _cellSpikesTopK, _inputReconstructionWeightedSum, _inputReconstructionTransfer ); // for output
-        reconstruct( _cellWeightedSumTopK, _inputReconstructionWeightedSum, _inputReconstructionTransfer ); // for output
+        if( unit ) {
+            reconstruct(_cellWeightedSumTopK, _inputReconstructionWeightedSum, _inputReconstructionTransfer); // for output
+        }
+        else {
+            reconstruct( _cellTransferTopK, _inputReconstructionWeightedSum, _inputReconstructionTransfer ); // for output
+        }
 
         // don't go any further unless learning is enabled
         if( !learn ) {
             return;
         }
 
-        float momentum = 0f;
         boolean useMomentum = false;
+        if( momentum != 0f ) {
+            useMomentum = true;
+        }
 
         // http://neuralnetworksanddeeplearning.com/chap2.html
         // Compute the error
@@ -390,9 +406,19 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
         for( int i = 0; i < inputs; ++i ) {
             float weightedSum = _inputReconstructionWeightedSum._values[ i ]; //output; // z
             float target = _inputValues._values[ i ]; // y
-            float output = weightedSum;//_inputReconstructionTransfer._values[ i ]; // a
+            float output = 0f;
+            float derivative = 1f;
+
+            if( unit ) {
+                float transfer = _inputReconstructionTransfer._values[ i ]; //output; // z
+                output = transfer;
+                derivative = (float)TransferFunction.logisticSigmoidDerivative( weightedSum );
+            }
+            else {
+                output = weightedSum;
+            }
+
             float error = output - target; // == d^L
-            float derivative = 1f;//(float)TransferFunction.logisticSigmoidDerivative( weightedSum );
 
             dOutput._values[ i ] = error * derivative; // eqn 30
         }
@@ -401,12 +427,24 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
         for( int c = 0; c < cells; ++c ) { // computing error for each "input"
             float sum = 0.f;
 
-//            float spikesTopK = _cellSpikesTopK._values[ c ];
+////            float spikesTopK = _cellSpikesTopK._values[ c ];
             float weightedSumTopK = _cellWeightedSumTopK._values[ c ];
-            float derivative = 1f;//(float)TransferFunction.logisticSigmoidDerivative( weightedSum );
+//            float derivative = 1f;//(float)TransferFunction.logisticSigmoidDerivative( weightedSum );
+
+            boolean active = false;
+            if( weightedSumTopK != 0f ) {
+                active = true;
+            }
 
  //           if( spikesTopK > 0f ) { // if was cell active
-           if( weightedSumTopK != 0f ) { // if was cell active
+//           if( weightedSumTopK != 0f ) { // if was cell active
+            if( active ) {
+
+                float derivative = 1f;
+                if( unit ) {
+                    derivative = (float)TransferFunction.logisticSigmoidDerivative( weightedSumTopK );
+                }
+
                 for( int i = 0; i < inputs; ++i ) {
                     //int offset = j * K + k; // K = inputs, storage is all inputs adjacent
                     int offset = c * inputs + i;
@@ -440,9 +478,15 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
 
                 int offset = c * inputs + i;
 
-//                float spike = _cellSpikesTopK._values[ c ]; // causes a 0 or 1 * the weighted sum
+                // a is the input to the current layer's cells
+                float a = 0f;
+                if( unit ) {
+                    a = _cellTransferTopK._values[ c ];
+                }
+                else {
+                    a = _cellWeightedSumTopK._values[ c ];
+                }
 
-                float a = _cellWeightedSumTopK._values[ c ];//spike; //_cellTransferTopK._values[ c ];
                 float wOld = _cellWeights._values[ offset ];
                 float wDelta = learningRate * errorGradient * a;
 

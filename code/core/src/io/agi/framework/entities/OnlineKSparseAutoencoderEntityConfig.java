@@ -28,6 +28,7 @@ import io.agi.framework.EntityConfig;
 public class OnlineKSparseAutoencoderEntityConfig extends EntityConfig {
 
     float learningRate = 0f;
+    float momentum = 0f;
     int widthCells = 0;
     int heightCells = 0;
     int sparsity = 0; // current value, computed
@@ -42,5 +43,6 @@ public class OnlineKSparseAutoencoderEntityConfig extends EntityConfig {
     float rateLearningRate = 0f;
 
     float weightsStdDev = 0f; // used at reset
+    boolean unitOutput = false;
 
 }

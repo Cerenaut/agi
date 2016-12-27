@@ -30,7 +30,7 @@ import java.util.Random;
 public class OnlineKSparseAutoencoderConfig extends CompetitiveLearningConfig {
 
     public static final String LEARNING_RATE = "learning-rate";
-//    public static final String MOMENTUM = "momentum";
+    public static final String MOMENTUM = "momentum";
     public static final String WEIGHTS_STD_DEV = "weights-std-dev";
     public static final String SPARSITY = "sparsity";
     public static final String SPARSITY_OUTPUT = "sparsity-output";
@@ -42,6 +42,7 @@ public class OnlineKSparseAutoencoderConfig extends CompetitiveLearningConfig {
     public static final String RATE_MAX = "rate-max";
     public static final String RATE_LEARNING_RATE = "rate-learning-rate";
     public static final String AGE = "age";
+    public static final String UNIT_OUTPUT = "unit-output";
 
     public OnlineKSparseAutoencoderConfig() {
     }
@@ -75,7 +76,7 @@ public class OnlineKSparseAutoencoderConfig extends CompetitiveLearningConfig {
             int w,
             int h,
             float learningRate,
-//            float momentum,
+            float momentum,
             float sparsityOutput,
             int sparsity,
             int ageMin,
@@ -86,7 +87,8 @@ public class OnlineKSparseAutoencoderConfig extends CompetitiveLearningConfig {
             float rateScale,
             float rateMax,
             float rateLearningRate,
-            float weightsStdDev ){
+            float weightsStdDev,
+            boolean unitOutput ){
 
         super.setup(om, name, r, inputs, w, h);
 
@@ -96,15 +98,16 @@ public class OnlineKSparseAutoencoderConfig extends CompetitiveLearningConfig {
         setAgeMin(ageMin);
         setAgeMax(ageMax);
         setAge(age);
-//        setMomentum( momentum );
+        setMomentum( momentum );
         setWeightsStdDev(weightsStdDev);
 
         // new properties
         setAgeTruncationFactor( ageTruncationFactor );
-        setAgeScale( ageScale );
-        setRateScale( rateScale );
-        setRateMax( rateMax );
-        setRateLearningRate( rateLearningRate );
+        setAgeScale(ageScale);
+        setRateScale(rateScale);
+        setRateMax(rateMax);
+        setRateLearningRate(rateLearningRate);
+        setUnitOutput( unitOutput );
     }
 
     public void copyFrom( NetworkConfig nc, String name ) {
@@ -118,7 +121,7 @@ public class OnlineKSparseAutoencoderConfig extends CompetitiveLearningConfig {
         setAgeMin(c.getAgeMin());
         setAgeMax(c.getAgeMax());
         setAge(c.getAge());
-//        setMomentum( c.getMomentum() );
+        setMomentum(c.getMomentum());
         setWeightsStdDev(c.getWeightsStdDev());
 
         // new properties
@@ -127,6 +130,7 @@ public class OnlineKSparseAutoencoderConfig extends CompetitiveLearningConfig {
         setRateScale( c.getRateScale() );
         setRateMax( c.getRateMax() );
         setRateLearningRate( c.getRateLearningRate() );
+        setUnitOutput( c.getUnitOutput() );
     }
 
     public void setLearningRate( float r ) {
@@ -153,9 +157,9 @@ public class OnlineKSparseAutoencoderConfig extends CompetitiveLearningConfig {
         _om.put( getKey( AGE ), n );
     }
 
-//    public void setMomentum( float r ) {
-//        _om.put( getKey( MOMENTUM ), r );
-//    }
+    public void setMomentum( float r ) {
+        _om.put( getKey( MOMENTUM ), r );
+    }
 
     public void setWeightsStdDev( float r ) {
         _om.put( getKey( WEIGHTS_STD_DEV ), r );
@@ -166,10 +170,10 @@ public class OnlineKSparseAutoencoderConfig extends CompetitiveLearningConfig {
         return r.floatValue();
     }
 
-//    public float getMomentum() {
-//        Float r = _om.getFloat( getKey( MOMENTUM ) );
-//        return r.floatValue();
-//    }
+    public float getMomentum() {
+        Float r = _om.getFloat( getKey( MOMENTUM ) );
+        return r.floatValue();
+    }
 
     public float getLearningRate() {
         Float r = _om.getFloat( getKey( LEARNING_RATE ) );
@@ -221,6 +225,10 @@ public class OnlineKSparseAutoencoderConfig extends CompetitiveLearningConfig {
         _om.put( getKey( RATE_LEARNING_RATE ), r );
     }
 
+    public void setUnitOutput( boolean b ) {
+        _om.put( getKey( UNIT_OUTPUT ), b );
+    }
+
     public float getAgeTruncationFactor() {
         Float r = _om.getFloat( getKey( AGE_TRUNCATION_FACTOR ) );
         return r.floatValue();
@@ -244,6 +252,11 @@ public class OnlineKSparseAutoencoderConfig extends CompetitiveLearningConfig {
     public float getRateLearningRate() {
         Float r = _om.getFloat( getKey( RATE_LEARNING_RATE ) );
         return r.floatValue();
+    }
+
+    public boolean getUnitOutput() {
+        Boolean r = _om.getBoolean(getKey(UNIT_OUTPUT));
+        return r.booleanValue();
     }
 
 }

@@ -290,6 +290,9 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         }
 
         boolean useMomentum = false;
+        if( momentum != 0f ) {
+            useMomentum = true;
+        }
 
         // http://neuralnetworksanddeeplearning.com/chap2.html
         // Compute the error
