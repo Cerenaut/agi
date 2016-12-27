@@ -63,10 +63,10 @@ public class SupervisedLearningEntity extends Entity {
     public static final String OUTPUT_LABELS_PREDICTED = "output-labels-predicted";
     public static final String OUTPUT_LABELS_ERROR = "output-labels-error";
 
-
     public SupervisedLearningEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
     }
+
 
     @Override
     public void getInputAttributes( Collection< String > attributes ) {

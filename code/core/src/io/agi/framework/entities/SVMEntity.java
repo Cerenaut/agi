@@ -44,8 +44,6 @@ public class SVMEntity extends SupervisedLearningEntity {
 
     public static final String ENTITY_TYPE = "svm-entity";
 
-//    public static final String FEATURE_LABEL_COUNT = "feature-label-count";     // count of each of the features for a class
-//    protected Data _featureLabelCount;
     Svm _svm;
 
     public SVMEntity( ObjectMap om, Node n, ModelEntity model ) {
@@ -58,9 +56,6 @@ public class SVMEntity extends SupervisedLearningEntity {
 
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
         super.getOutputAttributes( attributes, flags );
-
-        // TODO add any Data you need to persist your SVM model
-        // attributes.add( FEATURE_LABEL_COUNT );
     }
 
     public Class getConfigClass() {
