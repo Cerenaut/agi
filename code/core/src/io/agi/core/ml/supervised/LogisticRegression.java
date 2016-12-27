@@ -26,6 +26,8 @@ import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 
 import de.bwaldvogel.liblinear.*;
+import libsvm.svm;
+import libsvm.svm_node;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -64,18 +66,30 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
     @Override
     public void reset() {
         _model = null;
+        saveModel();
     }
 
     @Override
-    public int predict() {
+    public void predict( Data featuresMatrix, Data predictionsVector ) {
 
-        // sample below
-        Feature[] instance = { new FeatureNode( 1, 4 ), new FeatureNode( 2, 2 ) };
-        double prediction = Linear.predict( _model, instance );
+        DataSize datasetSize = featuresMatrix._dataSize;
+        int m = datasetSize.getSize( DataSize.DIMENSION_Y );        // m = number of data points ---> should be 1
+        int n = datasetSize.getSize( DataSize.DIMENSION_X );        // n = feature vector size
+
+        Feature[][] x = new Feature[ n ][ m ];
 
         // convert input to Feature instance, then predict
+        // iterate data points (vectors in the VectorSeries - each vector is a data point)
+        for( int i = 0; i < m; ++i ) {
 
-        return 0;
+            // iterate dimensions of x (elements of the vector)
+            for( int j = 0; j < n; j++ ) {
+                float xij = featuresMatrix._values[ i * m + j ];
+                x[ i ][ j ] = new FeatureNode( j+1, xij );
+            }
+
+            predictionsVector._values[ i ] = ( float ) Linear.predict( _model, x[ i ] );
+        }
     }
 
     @Override
@@ -90,6 +104,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
         Reader stringReader = new StringReader( modelString );
         try {
             _model = Model.load( stringReader );
+            saveModel();
         }
         catch( IOException e ) {
             _logger.error( "Unable to load LibLinear model." );
@@ -108,7 +123,6 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
         }
 
         _config.setModelString( modelString );
-
     }
 
     public String modelString() throws Exception {

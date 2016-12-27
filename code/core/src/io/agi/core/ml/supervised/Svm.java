@@ -62,6 +62,7 @@ public class Svm extends NamedObject implements Callback, Supervised {
     @Override
     public void reset() {
         _model = null;
+        saveModel();
     }
 
     @Override
@@ -74,6 +75,7 @@ public class Svm extends NamedObject implements Callback, Supervised {
     public void loadModel( String modelString ) {
         try {
             _model = svm.svm_load_model( modelString );
+            saveModel();
         }
         catch( IOException e ) {
             _logger.error( "Unable to load svm model." );
@@ -81,7 +83,8 @@ public class Svm extends NamedObject implements Callback, Supervised {
         }
     }
 
-    private void saveModel() {
+    // save the model to config object
+    private String saveModel() {
         String modelString = null;
         try {
             modelString = modelString();
@@ -92,9 +95,10 @@ public class Svm extends NamedObject implements Callback, Supervised {
         }
 
         _config.setModelString( modelString );
-
+        return modelString;
     }
 
+    // serialise model to a string and return
     public String modelString() throws Exception {
 
         String modelString = null;
@@ -119,11 +123,30 @@ public class Svm extends NamedObject implements Callback, Supervised {
         return modelString;
     }
 
-    public int predict() {
+    public void predict( Data featuresMatrix, Data predictionsVector ) {
 
-        // to implement
+        DataSize datasetSize = featuresMatrix._dataSize;
+        int m = datasetSize.getSize( DataSize.DIMENSION_Y );        // m = number of data points ---> should be 1
+        int n = datasetSize.getSize( DataSize.DIMENSION_X );        // n = feature vector size
 
-        return 0;
+        svm_node[][] x = new svm_node[ n ][ m ];
+
+        // iterate data points (vectors in the VectorSeries - each vector is a data point)
+        for ( int i = 0; i < m ; ++i ) {
+
+            // iterate dimensions of x (elements of the vector)
+            for( int j = 0; j < n; j++ ) {
+
+                float xij = featuresMatrix._values[ i * m + j];
+
+                x[ i ][ j ] = new svm_node();
+                x[ i ][ j ].index = j+1;
+                x[ i ][ j ].value = xij;
+            }
+
+            predictionsVector._values[ i ] = ( float ) svm.svm_predict( _model, x[i] );
+        }
+
     }
 
     public void train( Data featuresMatrix, Data classTruthVector ) {

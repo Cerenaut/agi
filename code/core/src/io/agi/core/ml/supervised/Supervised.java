@@ -27,7 +27,8 @@ import io.agi.core.data.Data;
 public interface Supervised {
 
     void reset();
-    int predict();
+
+    void predict( Data featuresMatrix, Data predictionsVector );
 
     // train the model (subclasses should ensure that the model is saved to config)
     void train( Data featuresMatrix, Data classTruthVector );
