@@ -127,9 +127,11 @@ public class SVMEntity extends SupervisedLearningEntity {
      * @param predictedLabels
      */
     protected void predict( Data features, Data predictedLabels ) {
-        predictedLabels.set( 0f );
-        int prediction = _svm.predict();
-        predictedLabels._values[ prediction ] = 1f;
+        _svm.predict( features, predictedLabels );
+// TODO Gids pls review.
+//        predictedLabels.set( 0f );
+//        int prediction = _svm.predict( features, predictedLabels );
+//        predictedLabels._values[ prediction ] = 1f;
     }
 
 }
