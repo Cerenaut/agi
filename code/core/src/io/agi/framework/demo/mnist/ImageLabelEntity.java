@@ -20,7 +20,9 @@
 package io.agi.framework.demo.mnist;
 
 import io.agi.core.data.Data;
+import io.agi.core.math.ShuffledIndex;
 import io.agi.core.orm.ObjectMap;
+import io.agi.core.util.images.BufferedImageSource.BufferedImageSource;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceImageFile;
 import io.agi.core.util.images.ImageScreenScraper;
 import io.agi.framework.DataFlags;
@@ -32,6 +34,8 @@ import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Random;
 
 /**
  * A generic setup for a source of images that can be classified.
@@ -52,8 +56,10 @@ public class ImageLabelEntity extends Entity {
     public static final String OUTPUT_IMAGE = "output-image";
     public static final String OUTPUT_LABEL = "output-label";
 
+    protected static ShuffledIndex _shuffledIndex = new ShuffledIndex();
+
     public ImageLabelEntity( ObjectMap om, Node n, ModelEntity model ) {
-        super( om, n, model );
+        super(om, n, model);
     }
 
     @Override
@@ -72,12 +78,19 @@ public class ImageLabelEntity extends Entity {
     }
 
     public Collection< String > getEntityNames( String configValue ) {
-        String[] names = configValue.split( "," );
+        String[] names = configValue.split(",");
         Collection< String > c = new ArrayList< String >();
         for( String s : names ) {
             c.add( s );
         }
         return c;
+    }
+
+    public int getShuffledIndex( BufferedImageSourceImageFile bis, long shuffleSeed, int imageIndex ) {
+        int nbrImages = bis.getNbrImages();
+        int shuffled = _shuffledIndex.getShuffledIndexLazy( nbrImages, shuffleSeed, imageIndex );
+        _logger.warn( "Shuffle: Mapping index: " + imageIndex + " to index: " + shuffled + "." );
+        return shuffled;
     }
 
     public void doUpdateSelf() {
@@ -86,6 +99,7 @@ public class ImageLabelEntity extends Entity {
         ImageLabelEntityConfig config = (ImageLabelEntityConfig ) _config;
 
         if( config.reset ) {
+            config.shuffleSeed = _r.nextLong();
             config.imageIndex = 0;
             config.imageRepeat = 0;
             config.terminate = false;
@@ -115,6 +129,7 @@ public class ImageLabelEntity extends Entity {
         if( config.imageIndex >= images ) {
             _logger.info( "End of image dataset: Epoch complete." );
             config.epoch += 1;
+            config.shuffleSeed = _r.nextLong();
             config.imageIndex = 0;
             config.imageRepeat = 0;
 
@@ -173,13 +188,16 @@ public class ImageLabelEntity extends Entity {
             }
         }
 
-        boolean inRange = bis.seek( config.imageIndex ); // next image
+        int shuffledIndex = getShuffledIndex( bis, config.shuffleSeed, config.imageIndex );
+        boolean inRange = bis.seek( shuffledIndex ); // next image
         if( !inRange ) { // occurs if no testing images
+            config.shuffleSeed = _r.nextLong();
             config.imageIndex = 0; // reset the index to allow further updates:
             config.imageRepeat = 0;
             config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
             _logger.warn( "=======> Terminating on no more images to serve. (3)" );
-            bis.seek( config.imageIndex ); // seek first image
+            shuffledIndex = getShuffledIndex( bis, config.shuffleSeed, config.imageIndex );
+            bis.seek( shuffledIndex ); // seek first image
         }
 
         // Setup screen scraper
