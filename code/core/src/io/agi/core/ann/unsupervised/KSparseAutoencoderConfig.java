@@ -39,6 +39,9 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
     public static final String AGE_MIN = "age-min";
     public static final String AGE_MAX = "age-max";
     public static final String AGE = "age";
+    public static final String BATCH_COUNT = "batch-age";
+    public static final String BATCH_SIZE = "batch-size";
+
 
     public KSparseAutoencoderConfig() {
     }
@@ -59,6 +62,9 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
      * @param ageMin
      * @param ageMax
      * @param age
+     * @param weightsStdDev
+     * @param batchCount
+     * @param batchSize
      */
     public void setup(
             ObjectMap om,
@@ -76,37 +82,43 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
             int ageMin,
             int ageMax,
             int age,
-            float weightsStdDev ){
+            float weightsStdDev,
+            int batchCount,
+            int batchSize ){
 
         super.setup( om, name, r, inputs, w, h );
 
-        setLearningRate( learningRate );
-        setSparsityOutput( sparsityOutput );
-        setSparsity( sparsity );
-        setSparsityMin( sparsityMin );
-        setSparsityMax( sparsityMax );
-        setAgeMin( ageMin );
-        setAgeMax( ageMax );
-        setAge( age );
-        setMomentum( momentum );
-        setWeightsStdDev( weightsStdDev );
+        setLearningRate(learningRate);
+        setSparsityOutput(sparsityOutput);
+        setSparsity(sparsity);
+        setSparsityMin(sparsityMin);
+        setSparsityMax(sparsityMax);
+        setAgeMin(ageMin);
+        setAgeMax(ageMax);
+        setAge(age);
+        setMomentum(momentum);
+        setWeightsStdDev(weightsStdDev);
+        setBatchCount(batchCount);
+        setBatchSize(batchSize);
     }
 
     public void copyFrom( NetworkConfig nc, String name ) {
-        super.copyFrom( nc, name );
+        super.copyFrom(nc, name);
 
         KSparseAutoencoderConfig c = ( KSparseAutoencoderConfig ) nc;
 
         setLearningRate( c.getLearningRate() );
-        setSparsityOutput( c.getSparsityOutput() );
-        setSparsity( c.getSparsity() );
-        setSparsityMin( c.getSparsityMin() );
-        setSparsityMax( c.getSparsityMax() );
-        setAgeMin( c.getAgeMin() );
-        setAgeMax( c.getAgeMax() );
-        setAge( c.getAge() );
-        setMomentum( c.getMomentum() );
-        setWeightsStdDev( c.getWeightsStdDev() );
+        setSparsityOutput(c.getSparsityOutput());
+        setSparsity(c.getSparsity());
+        setSparsityMin(c.getSparsityMin());
+        setSparsityMax(c.getSparsityMax());
+        setAgeMin(c.getAgeMin());
+        setAgeMax(c.getAgeMax());
+        setAge(c.getAge());
+        setMomentum(c.getMomentum());
+        setWeightsStdDev(c.getWeightsStdDev());
+        setBatchCount( c.getBatchCount() );
+        setBatchSize( c.getBatchSize() );
     }
 
     public void setLearningRate( float r ) {
@@ -149,6 +161,14 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
         _om.put( getKey( WEIGHTS_STD_DEV ), r );
     }
 
+    public void setBatchCount( int n ) {
+        _om.put( getKey( BATCH_COUNT ), n );
+    }
+
+    public void setBatchSize( int n ) {
+        _om.put( getKey( BATCH_SIZE ), n );
+    }
+
     public float getWeightsStdDev() {
         Float r = _om.getFloat( getKey( WEIGHTS_STD_DEV ) );
         return r.floatValue();
@@ -170,7 +190,7 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
     }
 
     public int getSparsity() {
-        Integer n = _om.getInteger( getKey( SPARSITY ) );
+        Integer n = _om.getInteger(getKey(SPARSITY));
         return n.intValue();
     }
 
@@ -196,6 +216,16 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
 
     public int getAge() {
         Integer n = _om.getInteger( getKey( AGE ) );
+        return n.intValue();
+    }
+
+    public int getBatchCount() {
+        Integer n = _om.getInteger( getKey( BATCH_COUNT ) );
+        return n.intValue();
+    }
+
+    public int getBatchSize() {
+        Integer n = _om.getInteger( getKey( BATCH_SIZE ) );
         return n.intValue();
     }
 

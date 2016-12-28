@@ -69,6 +69,9 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
     public Data _cellPromotion; // idle cells are promoted until they are used
     public Data _cellInhibition; // idle cells are promoted until they are used
 
+    public Data _cellGradients; // hidden layer
+    public Data _inputGradients; // output layer, of dimension = inputs
+
     public OnlineKSparseAutoencoder(String name, ObjectMap om) {
         super( name, om );
     }
@@ -104,6 +107,9 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
         _cellRates = new Data( w, h );
         _cellPromotion = new Data( w, h );
         _cellInhibition = new Data( w, h );
+
+        _inputGradients = new Data( inputs );
+        _cellGradients = new Data( w, h );
     }
 
     public void reset() {
@@ -112,6 +118,10 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
 
         _cellAges.set(0f);
         _cellRates.set( 0f );
+
+        _c.setBatchCount(0);
+        _inputGradients.set( 0f );
+        _cellGradients.set( 0f );
 
         _cellWeightsVelocity.set( 0f );
         _cellBiases1Velocity.set( 0f );
@@ -276,14 +286,17 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
         int k = _c.getSparsity();
         int ka = (int)( (float)k * sparsityOutput );
 
+        int batchSize = _c.getBatchSize();
+        int batchCount = _c.getBatchCount();
+
         int inputs = _c.getNbrInputs();
         int cells = _c.getNbrCells();
 
-        // Transpose the weights
-        int rows = cells; // major
-        int cols = inputs; // minor
-        int rowsT = inputs; // major
-        int colsT = cells; // minor
+//        // Transpose the weights
+//        int rows = cells; // major
+//        int cols = inputs; // minor
+//        int rowsT = inputs; // major
+//        int colsT = cells; // minor
 
         // Update stats
         updateInhibition();
@@ -469,10 +482,32 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
             dHidden._values[ c ] = sum;
         }
 
+        // accumulate the error gradients
+        for( int i = 0; i < inputs; ++i ) {
+            float dNew = dOutput._values[ i ];
+            float dOld = _inputGradients._values[ i ];
+            _inputGradients._values[ i ] = dOld + dNew;
+        }
+
+        for( int i = 0; i < cells; ++i ) {
+            float dNew = dHidden._values[ i ];
+            float dOld = _cellGradients._values[ i ];
+            _cellGradients._values[ i ] = dOld + dNew;
+        }
+
+        // decide whether to learn or accumulate more gradients first (mini batch)
+        batchCount += 1;
+
+        if( batchCount < batchSize ) { // e.g. if was zero, then becomes 1, then we clear it and apply the gradients
+            _c.setBatchCount( batchCount );
+            return; // end update
+        }
+
         // now gradient descent in the hidden->output layer
         for( int i = 0; i < inputs; ++i ) {
 
-            float errorGradient = dOutput._values[ i ];
+//            float errorGradient = dOutput._values[ i ];
+            float errorGradient = _inputGradients._values[ i ];
 
 //            if( errorGradient == 0f ) {
 //                continue;
@@ -554,7 +589,8 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
 
         for( int c = 0; c < cells; ++c ) { // computing error for each "input"
 
-            float errorGradient = dHidden._values[ c ];
+//            float errorGradient = dHidden._values[ c ];
+            float errorGradient = _cellGradients._values[ c ];
 
 //            if( errorGradient == 0f ) {
 //                continue;
@@ -621,6 +657,10 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
 
 //        System.err.println( "Age: " + this._c.getAge() + " Sparsity: " + k  + " vMax = " + vMax );
 
+        // Clear the accumulated gradients
+        _c.setBatchCount( 0 );
+        _inputGradients.set( 0f );
+        _cellGradients.set( 0f );
     }
 
     protected void reconstruct( Data hiddenActivity, Data inputReconstructionWeightedSum, Data inputReconstructionTransfer ) {

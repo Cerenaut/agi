@@ -45,4 +45,7 @@ public class OnlineKSparseAutoencoderEntityConfig extends EntityConfig {
     float weightsStdDev = 0f; // used at reset
     boolean unitOutput = false;
 
+    int batchCount = 0;
+    int batchSize = 0;
+
 }

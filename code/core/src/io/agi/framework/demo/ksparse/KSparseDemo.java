@@ -166,8 +166,8 @@ public class KSparseDemo {
         float sparsityMin = 25f;
         float sparsityOutput = 3.f;
 
-        // variables
-        float learningRate = 0.01f;
+        int batchSize = 1;
+        float learningRate = 0.01f / (float)batchSize; // Note must reduce learning rate to prevent overshoot and numerical instability
         float momentum = 0.1f;//0.5f;//0.9f;
         float weightsStdDev = 0.01f; // From paper. used at reset
 
@@ -181,6 +181,7 @@ public class KSparseDemo {
         Framework.SetConfig( autoencoderName, "sparsityMax", String.valueOf( sparsityMax ) );
         Framework.SetConfig( autoencoderName, "ageMin", String.valueOf( ageMin ) );
         Framework.SetConfig( autoencoderName, "ageMax", String.valueOf( ageMax ) );
+        Framework.SetConfig( autoencoderName, "batchSize", String.valueOf( batchSize ) );
 
         // Log features of the algorithm during all phases
         Framework.SetConfig( vectorSeriesName, "period", String.valueOf( "-1" ) ); // infinite
