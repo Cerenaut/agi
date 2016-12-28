@@ -116,7 +116,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
                 _logger.error( e.toString(), e );
             }
         } else {
-            String errorMessage = "Cannot to save LibLinear model before it is defined";
+            String errorMessage = "Cannot save LibLinear model as it is undefined";
             _logger.error( errorMessage );
             throw new Exception( errorMessage );
         }
