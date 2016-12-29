@@ -99,6 +99,7 @@ public class LogisticRegressionTest {
         // count how many errors - an error is where the diff between prediction and label is greater than eps
         double meanError = _predictionsVectorTest.mean();
 
+        System.out.println( "Model = " + _learner.modelString() );
         System.out.println( "Accuracy = " + meanError * 100 + "%" );
 
         assertTrue( meanError > 0.89 );
