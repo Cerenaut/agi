@@ -814,7 +814,7 @@ public class FloatArray {
     /**
      * Makes elements in this equal to abs diff between this and arg fa.
      *
-     * @param v
+     * @param fa
      */
     public void absDiff( FloatArray fa ) {
 

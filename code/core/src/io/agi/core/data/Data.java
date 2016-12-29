@@ -27,10 +27,18 @@ package io.agi.core.data;
 
 import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.AbstractPair;
+import io.agi.core.util.FileUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 /**
  * A FloatArray with an associated DataSize object that describes the array as
@@ -41,6 +49,7 @@ import java.util.Random;
 public class Data extends FloatArray {
 
     public DataSize _dataSize = null;
+    protected static final Logger _logger = LogManager.getLogger();
 
     /**
      * Creates a 1-dimensional vector.
@@ -104,6 +113,86 @@ public class Data extends FloatArray {
     public Data( Data d ) {
         _dataSize = new DataSize( d._dataSize );
         copy( d );
+    }
+
+    /**
+     * Construct and return a 2D Data object by reading in all columns of a csv file/
+     * @param filepath the full name of the file including path.
+     * @return the 2D Data object
+     */
+    public static Data createFromCSV( String filepath ) {
+        Data data = createFromCSV( filepath, -1, -1 );
+        return data;
+    }
+
+    /**
+     * Construct a 2D Data object by reading from a csv within column range specified by colStart and colEnd.
+     * Rows are the first dimension (Y, height) and columns are the second dimension (X, width).
+     *
+     * @param filepath  the full name of the file including path.
+     * @param colIdxMin start of range of columns to read in (inclusive, and uses index style i.e. first column is
+     *                  specified by 0).
+     *                  If less than 0, 0 will be used.
+     *                  If greater than number of columns, limited to max column.
+     * @param colIdxMax end of range of columns to read in (inclusive, and uses index style i.e. first column is
+     *                  specified by 0).
+     *                  If less than 0, less than colStart or greater than idx of last column, read in all columns.
+     * @return the 2D Data object
+     *
+     */
+    public static Data createFromCSV( String filepath, int colIdxMin, int colIdxMax ) {
+
+        Data data = null;
+
+        // read in lines
+        List< String > lines;
+        try {
+            lines = Files.lines( Paths.get( filepath ) ).collect( Collectors.toList() );
+
+            // calculate size of Data object
+            int numRows = lines.size();
+            int numCols = 0;
+            if( numRows > 0 ) {
+                String line = lines.get( 0 );
+                String[] columns = line.split( "," );
+                numCols = columns.length;
+            }
+
+            int iMin;
+            int iMax;
+
+            iMin = Integer.max( colIdxMin, 0 );       // make sure not less than 0 (min possible)
+            iMax = Integer.min( colIdxMax, numCols );    // make sure not more than max possible
+
+            if( ( colIdxMax < 0 )
+                    || ( colIdxMax < iMin )
+                    || ( colIdxMax >= numCols )
+                    ) {
+                iMax = numCols - 1;
+            }
+
+            // re-calculate numCols
+            numCols = iMax - iMin + 1;
+
+            // create new appropriately sized Data object
+            data = new Data( numCols, numRows );    // Data.(X/width/column) == features of X in ML algorithms (m)
+
+            // copy data from file into Data
+            for( int j = 0; j < lines.size(); ++j ) {
+                String[] columns = lines.get( j ).split( "," );
+                for( int i = iMin; i <= iMax; ++i ) {
+                    float value = Float.valueOf( columns[ i ] );
+                    int iOffset = i - iMin;
+                    data._values[ j * numCols + iOffset ] = value;
+                }
+            }
+        }
+        catch( IOException e ) {
+            _logger.error( "Unable to open and read the CSV file." );
+            _logger.error( e.toString(), e );
+        }
+
+        return data;
     }
 
     /**
