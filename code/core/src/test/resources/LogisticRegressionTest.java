@@ -69,7 +69,7 @@ public class LogisticRegressionTest {
         // setup learner
         _r = new FastRandom(  );
         SupervisedLearningConfig config = new SupervisedLearningConfig( );
-        config.setup( _om, "test-logistic-config", _r, 0.3f);
+        config.setup( _om, "test-logistic-config", _r, 0.01f);
         _learner.setup( config );
 
         // train model
@@ -90,11 +90,18 @@ public class LogisticRegressionTest {
     @Test
     public void predict() throws Exception {
 
-        _learner.predict( _featuresMatrixTest, _predictionsVectorTest );
+        // test on the training data (for unit test this is good, but not the way to test the effectiveness of ml algorithm)
+        _learner.predict( _featuresMatrixTrain, _predictionsVectorTest );
 
-        // this is temporary 0 i'm sure that predictions are classes, not probabilities
-        float prob = 0.776f;
-        assertTrue( _predictionsVectorTest._values[ 0 ] - prob  < _eps );
+        // set values to 1 if error, 0 if not
+        _predictionsVectorTest.approxEquals( _classTruthVector, _eps );
+
+        // count how many errors - an error is where the diff between prediction and label is greater than eps
+        double meanError = _predictionsVectorTest.mean();
+
+        System.out.println( "Accuracy = " + meanError * 100 + "%" );
+
+        assertTrue( meanError > 0.89 );
     }
 
 }

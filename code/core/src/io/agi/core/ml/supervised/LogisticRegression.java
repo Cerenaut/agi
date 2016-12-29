@@ -196,6 +196,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
                 float classTruth = getClassTruth( classTruthVector, j );
                 double xi = getFeatureValue( featuresMatrix, n, j, i );
 
+                // sparse representation
                 if( xi == 0.f ) {
                     continue;
                 }

@@ -173,8 +173,6 @@ public class Svm extends NamedObject implements Callback, Supervised {
         int m = datasetSize.getSize( DataSize.DIMENSION_Y );        // m = number of data points
         int n = datasetSize.getSize( DataSize.DIMENSION_X );        // n = feature vector size
 
-        featuresMatrix.normalizeFeatures( );
-
         svm_problem prob = new svm_problem();
         prob.l = m;
         prob.y = new double[ prob.l ];
@@ -189,6 +187,7 @@ public class Svm extends NamedObject implements Callback, Supervised {
                 float classTruth = getClassTruth( classTruthVector, j );
                 double xi = getFeatureValue( featuresMatrix, n, j, i );
 
+                // sparse representation
                 if ( xi == 0.f ) {
                     continue;
                 }
