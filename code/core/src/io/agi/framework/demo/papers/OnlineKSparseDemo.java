@@ -17,7 +17,7 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.demo.ksparse;
+package io.agi.framework.demo.papers;
 
 import io.agi.core.orm.AbstractPair;
 import io.agi.core.util.PropertiesUtil;
@@ -77,17 +77,17 @@ public class OnlineKSparseDemo {
 //        String trainingPath = "./training";
 //        String testingPath = "./testing";
 
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
-        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+//        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
 
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 
         boolean cacheAllData = true;
         boolean terminateByAge = false;
 //        int terminationAge = 10;//9000;
         int terminationAge = 50000;//25000;
-        int trainingEpochs = 10;//80; // good for up to 80k
+        int trainingEpochs = 2;//10;//80; // good for up to 80k
         int testingEpochs = 1;//80; // good for up to 80k
         boolean unitOutput = true;
 

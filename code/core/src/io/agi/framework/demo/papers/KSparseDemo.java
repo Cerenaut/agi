@@ -17,7 +17,7 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.demo.ksparse;
+package io.agi.framework.demo.papers;
 
 import io.agi.core.orm.AbstractPair;
 import io.agi.core.util.PropertiesUtil;
