@@ -81,6 +81,9 @@ var Search = {
           if( type == "hq-cl-region-layer" ) {
             linksValue = linksValue + " / <a href='hqcl-region.html?entity="+ objectName + "' title='Open Region-Layer UI' target='_blank'><b>Region</b></a>"
           }
+          if( type == "gng" ) {
+            linksValue = linksValue + " / <a href='gng.html?entity="+ objectName + "' title='Open GNG UI' target='_blank'><b>GNG UI</b></a>"
+          }
           if( type == "auto-region-layer" ) {
             linksValue = linksValue + " / <a href='auto-region.html?entity="+ objectName + "' title='Open Region-Layer UI' target='_blank'><b>Region</b></a>"
           }
@@ -92,6 +95,9 @@ var Search = {
           }
           if( type == "online-k-sparse-autoencoder" ) {
             linksValue = linksValue + " / <a href='online-k-sparse-autoencoder.html?entity="+ objectName + "' title='Open Autoencoder UI' target='_blank'><b>Online K-Sparse UI</b></a>"
+          }
+          if( type == "quilted-competitive-learning" ) {
+            linksValue = linksValue + " / <a href='quilt.html?entity="+ objectName + "' title='Open Quilted Competitive Learning UI' target='_blank'><b>Quilt UI</b></a>"
           }
         }
       }
