@@ -70,6 +70,9 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
     public static final String PROMOTION = "promotion";
     public static final String INHIBITION = "inhibition";
 
+    public static final String OUTPUT_GRADIENTS = "output-gradients";
+    public static final String HIDDEN_GRADIENTS = "hidden-gradients";
+
     public OnlineKSparseAutoencoderEntity(ObjectMap om, Node n, ModelEntity model) {
         super( om, n, model );
     }
@@ -106,8 +109,11 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
         attributes.add( PROMOTION );
         attributes.add( INHIBITION );
 
+        attributes.add( OUTPUT_GRADIENTS );
+        attributes.add( HIDDEN_GRADIENTS );
+
         flags.putFlag(WEIGHTS, DataFlags.FLAG_NODE_CACHE);
-        flags.putFlag( BIASES_1, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag(BIASES_1, DataFlags.FLAG_NODE_CACHE);
         flags.putFlag( BIASES_2, DataFlags.FLAG_NODE_CACHE );
 
         flags.putFlag( WEIGHTS_VELOCITY, DataFlags.FLAG_NODE_CACHE );
@@ -129,6 +135,9 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
         flags.putFlag( RATES, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( PROMOTION, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( INHIBITION, DataFlags.FLAG_NODE_CACHE );
+
+        flags.putFlag( OUTPUT_GRADIENTS, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( HIDDEN_GRADIENTS, DataFlags.FLAG_NODE_CACHE );
     }
 
     @Override
@@ -177,7 +186,8 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
                 config.ageMin, config.ageMax, config.age,
                 config.ageTruncationFactor, config.ageScale,
                 config.rateScale, config.rateMax, config.rateLearningRate,
-                config.weightsStdDev, config.unitOutput );
+                config.weightsStdDev, config.unitOutput,
+                config.batchCount, config.batchSize );
 
         OnlineKSparseAutoencoder ksa = new OnlineKSparseAutoencoder( name, om );
 
@@ -196,6 +206,7 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
 
         // Save computed properties
         config.sparsity = autoencoderConfig.getSparsity();
+        config.batchCount = autoencoderConfig.getBatchCount();
 //        config.age = autoencoderConfig.getAge(); no, let this be advanced by the entity
 
         // Save data
@@ -207,7 +218,7 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
         ksa._inputValues = getData( INPUT );
 
         ksa._cellWeights = getDataLazyResize(WEIGHTS, ksa._cellWeights._dataSize);
-        ksa._cellBiases1 = getDataLazyResize( BIASES_1, ksa._cellBiases1._dataSize );
+        ksa._cellBiases1 = getDataLazyResize(BIASES_1, ksa._cellBiases1._dataSize);
         ksa._cellBiases2 = getDataLazyResize( BIASES_2, ksa._cellBiases2._dataSize );
 
         ksa._cellWeightsVelocity = getDataLazyResize( WEIGHTS_VELOCITY, ksa._cellWeightsVelocity._dataSize );
@@ -230,6 +241,9 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
         ksa._cellRates = getDataLazyResize( RATES, ksa._cellRates._dataSize );
         ksa._cellPromotion = getDataLazyResize( PROMOTION, ksa._cellPromotion._dataSize );
         ksa._cellInhibition = getDataLazyResize( INHIBITION, ksa._cellInhibition._dataSize );
+
+        ksa._inputGradients = getDataLazyResize( OUTPUT_GRADIENTS, ksa._inputGradients._dataSize );
+        ksa._cellGradients = getDataLazyResize( HIDDEN_GRADIENTS, ksa._cellGradients._dataSize );
     }
 
     protected void copyDataToPersistence( OnlineKSparseAutoencoder ksa ) {
@@ -258,6 +272,9 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
         setData( RATES, ksa._cellRates );
         setData( PROMOTION, ksa._cellPromotion );
         setData( INHIBITION, ksa._cellInhibition );
+
+        setData( OUTPUT_GRADIENTS, ksa._inputGradients );
+        setData( HIDDEN_GRADIENTS, ksa._cellGradients );
     }
 
 }

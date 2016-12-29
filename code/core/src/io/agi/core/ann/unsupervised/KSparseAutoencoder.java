@@ -70,6 +70,9 @@ public class KSparseAutoencoder extends CompetitiveLearning {
     public Data _cellSpikesTopK;
     public Data _cellAges; // age is zero when active, otherwise incremented
 
+    public Data _cellGradients; // hidden layer
+    public Data _inputGradients; // output layer, of dimension = inputs
+
     public KSparseAutoencoder( String name, ObjectMap om ) {
         super( name, om );
     }
@@ -95,13 +98,20 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         _cellSpikesTopKA = new Data( w, h );
         _cellSpikesTopK = new Data( w, h );
         _cellAges = new Data( w, h );
+
+        _inputGradients = new Data( inputs );
+        _cellGradients = new Data( w, h );
     }
 
     public void reset() {
 
-        _c.setAge( 0 );
+        _c.setAge(0);
 
-        _cellAges.set( 0f );
+        _cellAges.set(0f);
+
+        _c.setBatchCount(0);
+        _inputGradients.set( 0f );
+        _cellGradients.set( 0f );
 
         _cellWeightsVelocity.set( 0f );
         _cellBiases1Velocity.set( 0f );
@@ -214,6 +224,9 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         int k = updateSparsity();
         int ka = (int)( (float)k * sparsityOutput );
 
+        int batchSize = _c.getBatchSize();
+        int batchCount = _c.getBatchCount();
+
         int inputs = _c.getNbrInputs();
         int cells = _c.getNbrCells();
 
@@ -311,6 +324,7 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         // w' = w + learningRate * d * a^l-1
 //        FloatArray weightsNew = null;
 
+        // Compute gradients for this current input only
         FloatArray dOutput = new FloatArray( inputs );
         FloatArray dHidden = new FloatArray( cells ); // zeroes
 
@@ -354,10 +368,32 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             dHidden._values[ c ] = sum;
         }
 
+        // accumulate the error gradients
+        for( int i = 0; i < inputs; ++i ) {
+            float dNew = dOutput._values[ i ];
+            float dOld = _inputGradients._values[ i ];
+            _inputGradients._values[ i ] = dOld + dNew;
+        }
+
+        for( int i = 0; i < cells; ++i ) {
+            float dNew = dHidden._values[ i ];
+            float dOld = _cellGradients._values[ i ];
+            _cellGradients._values[ i ] = dOld + dNew;
+        }
+
+        // decide whether to learn or accumulate more gradients first (mini batch)
+        batchCount += 1;
+
+        if( batchCount < batchSize ) { // e.g. if was zero, then becomes 1, then we clear it and apply the gradients
+            _c.setBatchCount( batchCount );
+            return; // end update
+        }
+
         // now gradient descent in the hidden->output layer
         for( int i = 0; i < inputs; ++i ) {
 
-            float errorGradient = dOutput._values[ i ];
+//            float errorGradient = dOutput._values[ i ];
+            float errorGradient = _inputGradients._values[ i ];
 
 //            if( errorGradient == 0f ) {
 //                continue;
@@ -431,7 +467,8 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
         for( int c = 0; c < cells; ++c ) { // computing error for each "input"
 
-            float errorGradient = dHidden._values[ c ];
+//            float errorGradient = dHidden._values[ c ];
+            float errorGradient = _cellGradients._values[ c ];
 
 //            if( errorGradient == 0f ) {
 //                continue;
@@ -498,6 +535,10 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
 //        System.err.println( "Age: " + this._c.getAge() + " Sparsity: " + k  + " vMax = " + vMax );
 
+        // Clear the accumulated gradients
+        _c.setBatchCount( 0 );
+        _inputGradients.set( 0f );
+        _cellGradients.set( 0f );
     }
 
     protected void reconstruct( Data hiddenActivity, Data inputReconstruction ) {

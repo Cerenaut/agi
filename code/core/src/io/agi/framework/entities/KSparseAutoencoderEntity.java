@@ -60,6 +60,9 @@ public class KSparseAutoencoderEntity extends Entity {
     public static final String RECONSTRUCTION_K = "reconstruction-k";
     public static final String AGES = "ages";
 
+    public static final String OUTPUT_GRADIENTS = "output-gradients";
+    public static final String HIDDEN_GRADIENTS = "hidden-gradients";
+
     public KSparseAutoencoderEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
     }
@@ -86,8 +89,11 @@ public class KSparseAutoencoderEntity extends Entity {
         attributes.add( RECONSTRUCTION_K );
         attributes.add( AGES );
 
-        flags.putFlag( WEIGHTS, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BIASES_1, DataFlags.FLAG_NODE_CACHE );
+        attributes.add( OUTPUT_GRADIENTS );
+        attributes.add( HIDDEN_GRADIENTS );
+
+        flags.putFlag(WEIGHTS, DataFlags.FLAG_NODE_CACHE);
+        flags.putFlag(BIASES_1, DataFlags.FLAG_NODE_CACHE);
         flags.putFlag( BIASES_2, DataFlags.FLAG_NODE_CACHE );
 
         flags.putFlag( WEIGHTS_VELOCITY, DataFlags.FLAG_NODE_CACHE );
@@ -100,6 +106,9 @@ public class KSparseAutoencoderEntity extends Entity {
         flags.putFlag( RECONSTRUCTION_KA, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( RECONSTRUCTION_K, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( AGES, DataFlags.FLAG_NODE_CACHE );
+
+        flags.putFlag( OUTPUT_GRADIENTS, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( HIDDEN_GRADIENTS, DataFlags.FLAG_NODE_CACHE );
     }
 
     @Override
@@ -146,7 +155,8 @@ public class KSparseAutoencoderEntity extends Entity {
                 config.learningRate, config.momentum,
                 config.sparsityOutput, config.sparsity, config.sparsityMin, config.sparsityMax,
                 config.ageMin, config.ageMax, config.age,
-                config.weightsStdDev );
+                config.weightsStdDev,
+                config.batchCount, config.batchSize );
 
         KSparseAutoencoder ksa = new KSparseAutoencoder( name, om );
 
@@ -160,11 +170,12 @@ public class KSparseAutoencoderEntity extends Entity {
             ksa.reset();
         }
 
-        ksa._c.setLearn( config.learn );
+        ksa._c.setLearn(config.learn);
         ksa.update();
 
         // Save computed properties
         config.sparsity = autoencoderConfig.getSparsity();
+        config.batchCount = autoencoderConfig.getBatchCount();
 //        config.age = autoencoderConfig.getAge(); no, let this be advanced by the entity
 
         // Save data
@@ -175,7 +186,7 @@ public class KSparseAutoencoderEntity extends Entity {
 
         ksa._inputValues = getData( INPUT );
 
-        ksa._cellWeights = getDataLazyResize( WEIGHTS, ksa._cellWeights._dataSize );
+        ksa._cellWeights = getDataLazyResize(WEIGHTS, ksa._cellWeights._dataSize);
         ksa._cellBiases1 = getDataLazyResize( BIASES_1, ksa._cellBiases1._dataSize );
         ksa._cellBiases2 = getDataLazyResize( BIASES_2, ksa._cellBiases2._dataSize );
 
@@ -190,6 +201,9 @@ public class KSparseAutoencoderEntity extends Entity {
         ksa._inputReconstructionKA = getDataLazyResize( RECONSTRUCTION_KA, ksa._inputReconstructionKA._dataSize );
         ksa._inputReconstructionK = getDataLazyResize( RECONSTRUCTION_K, ksa._inputReconstructionK._dataSize );
         ksa._cellAges = getDataLazyResize( AGES, ksa._cellAges._dataSize );
+
+        ksa._inputGradients = getDataLazyResize( OUTPUT_GRADIENTS, ksa._inputGradients._dataSize );
+        ksa._cellGradients = getDataLazyResize( HIDDEN_GRADIENTS, ksa._cellGradients._dataSize );
     }
 
     protected void copyDataToPersistence( KSparseAutoencoder ksa ) {
@@ -209,6 +223,9 @@ public class KSparseAutoencoderEntity extends Entity {
         setData( RECONSTRUCTION_KA, ksa._inputReconstructionKA );
         setData( RECONSTRUCTION_K, ksa._inputReconstructionK );
         setData( AGES, ksa._cellAges );
+
+        setData( OUTPUT_GRADIENTS, ksa._inputGradients );
+        setData( HIDDEN_GRADIENTS, ksa._cellGradients );
     }
 
 }

@@ -39,4 +39,7 @@ public class KSparseAutoencoderEntityConfig extends EntityConfig {
     int ageMax = 0;
     float weightsStdDev = 0f; // used at reset
 
+    int batchCount = 0;
+    int batchSize = 0;
+
 }

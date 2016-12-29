@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>agi.io | Growing Neural Gas</title>
+    <title>agi.io | Quilted Growing Neural Gas</title>
     <link rel="icon" href="assets/images/favicon.png">
 
     <!-- Bootstrap -->
@@ -53,6 +53,7 @@ show flush, show age. -->
          <input type="button" id="select-text" class="btn btn-sm btn-primary" style="" onclick="Region.selectText()" value="Select"/>
          <input type="button" id="select-winner" class="btn btn-sm btn-primary" style="" onclick="Region.selectWinner()" value="Winner"/>
          <input type="button" id="select-clear" class="btn btn-sm btn-success" style="" onclick="Region.selectClear()" value="Clear"/>
+         <label for="weight">Weight Factor</label> <input type="number" id="weight" name="weight" min="0.0" max="10.0" step="0.01" value="0.1" style="width:3em;" />
          <label for="threshold">Input Threshold</label> <input type="number" id="threshold" name="threshold" min="-1.0" max="1.0" step="0.01" value="0.5" style="width:3em;" />
          <input type="button" id="select-threshold" class="btn btn-sm btn-primary" style="" onclick="Region.selectThreshold()" value="Invert"/>
          <b>Selected input:</b> <input type="text" id="sel-input" style="width:6em;" class="" placeholder="#1" />
@@ -90,7 +91,7 @@ show flush, show age. -->
     <!-- Our stuff -->
     <script src="assets/scripts/framework.js"></script>
     <script src="assets/scripts/parameters.js"></script>
-    <script src="assets/scripts/gng.js"></script>
+    <script src="assets/scripts/quilt.js"></script>
     <script src="assets/scripts/data-canvas.js"></script>
 
   </body>

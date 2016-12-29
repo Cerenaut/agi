@@ -27,6 +27,8 @@ package io.agi.core.data;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * Functions for viewing and restructuring N-dimensional FloatArray2s as paintable
@@ -36,6 +38,73 @@ import java.util.ArrayList;
  * @author dave
  */
 public class Data2d {
+
+
+    /**
+     * Assuming a row-major matrix (i.e. all cols in a row are contiguous elements),
+     *
+     * Scale the range of values in each col separately. This is useful for normalizing dimensions separately.
+     *
+     * @param matrix
+     * @param rows
+     * @param cols
+     * @return
+     */
+    public static Data columnsScaleRange( Data matrix, int rows, int cols, float min, float max ) {
+        ArrayList< Data > colVectors = matrixToColVectors( matrix, rows, cols );
+
+        for( Data d : colVectors ) {
+            d.scaleRange( min, max );
+        }
+
+        Data matrixScaled = colVectorsToMatrix( colVectors );
+        return matrixScaled;
+    }
+
+    public static ArrayList< Data > matrixToColVectors( Data matrix, int rows, int cols ) {
+//        Point p = getSizeExplicit( matrix._dataSize );
+
+        ArrayList< Data > colVectors = new ArrayList< Data >();
+
+        for( int c = 0; c < cols; ++c ) {
+
+            Data col = new Data( rows );
+
+            for( int r = 0; r < rows; ++r ) {
+                float v = matrix._values[ r * rows + c ];
+                col._values[ r ] = v;
+            }
+
+            colVectors.add( col );
+        }
+
+        return colVectors;
+    }
+
+    public static Data colVectorsToMatrix( Collection< Data > colVectors ) {
+        int cols = colVectors.size();
+        if( cols == 0 ) {
+            return null;
+        }
+
+        Data col0 = colVectors.iterator().next();
+
+        int rows = col0.getSize();
+
+        Data matrix = new Data( cols, rows );
+
+        Iterator i = colVectors.iterator();
+        for( int c = 0; c < cols; ++c ) {
+            Data col = (Data)i.next();
+
+            for( int r = 0; r < rows; ++r ) {
+                float v = col._values[ r ];
+                matrix._values[ r * rows + c ] = v;
+            }
+        }
+
+        return matrix;
+    }
 
     /**
      * Incrementally builds a matrix of vectors x time by appending new vectors as they become available.

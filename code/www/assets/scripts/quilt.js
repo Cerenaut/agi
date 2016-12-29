@@ -41,7 +41,7 @@ var Region = {
   selectedCells : [  ],
   selectedInput1 : [  ],
 
-  regionSuffixes : [ "-input", "-output-error", "-output-mask", "-output-active", "-output-weights" ],
+  regionSuffixes : [ "-input", "-organizer-cell-weights", "-organizer-cell-mask", "-quilt-activity", "-classifier-cell-error", "-classifier-cell-mask", "-classifier-cell-activity", "-classifier-cell-weights" ],
 
   regionSuffixIdx : 0,
   dataMap : {
@@ -97,7 +97,7 @@ var Region = {
   },
 
   selectWinner : function() {
-    Region.selectCells( "-output-active" );
+    Region.selectCells( "-classifier-cell-activity" );
   },
 
   toggleSelectCell : function( offset ) {
@@ -127,7 +127,7 @@ var Region = {
       return;
     }
 
-    var dataWeights = Region.findData( "-output-weights" );
+    var dataWeights = Region.findData( "-classifier-cell-weights" );
     if( !dataWeights ) {
       return; // can't paint
     }
@@ -190,7 +190,7 @@ var Region = {
 
   onMouseClickLeft : function( e, mx, my ) {
 
-    var dataNew = Region.findData( "-output-active" );
+    var dataNew = Region.findData( "-quilt-activity" );
     if( !dataNew ) {
       return; // can't paint
     }
@@ -260,20 +260,23 @@ var Region = {
 
   repaintLeft : function() {
 
-//  regionSuffixes : [ "-input", "-ages", "-weights", "-biases-2", "-spikes-top-ka", "-spikes-top-k", "-reconstruction-ka", "-reconstruction-k" ],
-
-    var active = Region.findData( "-output-active" );
+    var active = Region.findData( "-classifier-cell-activity" );
     if( !active ) {
       return; // can't paint
     }
 
-    var mask = Region.findData( "-output-mask" );
+    var activeQuilt = Region.findData( "-quilt-activity" );
+    if( !activeQuilt ) {
+      return; // can't paint
+    }
+
+    var mask = Region.findData( "-classifier-cell-mask" );
     if( !mask ) {
       return; // can't paint
     }
 
     var panels = 1;
-    var canvasDataSize = Region.resizeCanvas( "#left-canvas", active, 1, panels );
+    var canvasDataSize = Region.resizeCanvas( "#left-canvas", activeQuilt, 1, panels );
     if( !canvasDataSize ) {
       return; // can't paint
     }
@@ -283,7 +286,7 @@ var Region = {
 
 console.log( "Painting left w/h=" + canvasDataSize.w + "," + canvasDataSize.h );
 
-    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, active, active, mask );
+    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, active, activeQuilt, mask );
     DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#00ffff" );
   },
 
@@ -317,7 +320,7 @@ console.log( "Painting left w/h=" + canvasDataSize.w + "," + canvasDataSize.h );
   },
 
   repaintRight : function() {
-    var dataWeights = Region.findData( "-output-weights" );
+    var dataWeights = Region.findData( "-classifier-cell-weights" );
     if( !dataWeights ) {
       return; // can't paint
     }
@@ -338,6 +341,8 @@ console.log( "Painting left w/h=" + canvasDataSize.w + "," + canvasDataSize.h );
 
     var inputDisplay = $('select[name=invert-display]').val();
 
+    var weightGain = $('#weight').val();
+
     var dataSize1 = Framework.getDataSize( data1 );
     var w1 = dataSize1.w;
     var h1 = dataSize1.h;
@@ -351,6 +356,38 @@ console.log( "Painting right w/h=" + w1 + "," + h1 );
     var weightsSize = dataSizeW.w * dataSizeW.h;
     var weightsStride = w1 * h1;
 
+    var dataOrganizerOutputWeights = Region.findData( "-organizer-cell-weights" );
+    if( !dataOrganizerOutputWeights ) {
+      return; // can't paint
+    }
+
+    var dataOrganizerOutputMask = Region.findData( "-organizer-cell-mask" );
+    if( !dataOrganizerOutputMask ) {
+      return; // can't paint
+    }
+
+    var organizerDataSize = Framework.getDataSize( dataOrganizerOutputMask );
+    var ow = organizerDataSize.w;
+    var oh = organizerDataSize.h;
+
+    if( ( ow == 0 ) || ( oh == 0 ) ) {
+      return;
+    }
+
+    var activeQuilt = Region.findData( "-quilt-activity" );
+    if( !activeQuilt ) {
+      return; // can't paint
+    }
+
+    var regionDataSize = Framework.getDataSize( activeQuilt );
+    var rw = regionDataSize.w;
+    var rh = regionDataSize.h;
+    var cw = rw / ow;
+    var ch = rh / oh;
+
+    var classifierInputStride = w1 * h1;// + w2 * h2;
+    var classifierInputOffset = 0;
+
     var x0 = 0;
     var y0 = 0;
 
@@ -359,14 +396,171 @@ console.log( "Painting right w/h=" + w1 + "," + h1 );
     Region.paintInputData( canvasDataSize.ctx, x0, y0, w1, h1, data1 );
 
     if( inputDisplay == "weights" ) {
-      Region.paintInputWeights( canvasDataSize.ctx, x0, y0, w1, h1, inputOffset, data1, weightsSize, weightsStride, dataWeights, Region.selectedCells );
+      Region.paintInputWeights( canvasDataSize.ctx, x0, y0, w1, h1, inputOffset, data1, weightsSize, weightsStride, dataWeights, Region.selectedCells, weightGain );
+//      Region.paintInputWeights( canvasDataSize.ctx, x0, y0, w1, h1, 0, data1, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, Region.selectedInput1, Region.selectedCells, classifierInputStride, classifierInputOffset );
+
     }
     else {
       Region.paintInputErrors( canvasDataSize.ctx, x0, y0, w1, h1, inputOffset, data1, weightsSize, weightsStride, dataWeights, Region.selectedCells );
     }
     Region.paintInputDataSelected( canvasDataSize.ctx, x0, y0, w1, h1, Region.selectedInput1 );
-
   },
+
+/*  paintInputWeights : function( ctx, x0, y0, w, h, inputIndex, dataInput, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, selectedInput, selectedCells, classifierInputStride, classifierInputOffset ) {
+
+    for( var y = 0; y < h; ++y ) {
+      for( var x = 0; x < w; ++x ) {
+        var cx = x * Region.pixelsPerBit;
+        var cy = y * Region.pixelsPerBit;
+        var offset = y * w + x;
+        var value = dataInput.elements.elements[ offset ];
+         
+        ctx.fillStyle = "#000000";
+        if( value > 0.5 ) {
+          ctx.fillStyle = "#FFFFFF";
+        }
+        ctx.fillRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
+        ctx.fill();
+
+        ctx.strokeStyle = "#808080";
+
+        if( selectedInput.length > 0 ) {
+          if( selectedInput[ 0 ] == offset ) { // select one at a time
+            ctx.strokeStyle = "#00FFFF";
+          }
+        }
+
+        ctx.strokeRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
+      }
+    }
+
+    // paint organizer receptive field centroids
+    var rw = ow * cw;
+//    var inputArea = w * h;
+
+    // paint weights of selected cells
+    for( var i = 0; i < selectedCells.length; ++i ) {
+      var regionOffset = selectedCells[ i ]; // a cell within the region     
+      var rx = Math.floor( regionOffset % rw );
+      var ry = Math.floor( regionOffset / rw );
+
+      var ox = Math.floor( rx / cw ); // coordinates of column in grid (region).
+      var oy = Math.floor( ry / ch );    
+
+      var dataClassifierOutputWeights = Region.findData( "-classifier-cell-weights" );
+      if( !dataClassifierOutputWeights ) {
+        continue; // can't paint
+      }
+
+      var cx = rx - ( ox * cw ); // coordinates in column.
+      var cy = ry - ( oy * ch );    
+
+      var classifierHeight = ( ch );/// cd );
+      var classifierY = cy - ( classifierHeight * Math.floor( cy / classifierHeight ) );
+      var classifierOffset = ( ( classifierY * cw ) + cx ) * classifierInputStride;
+
+      var classifierSize = cw * classifierHeight * classifierInputStride; // Each classifier has this number of cells. 
+      var classifierIndex = oy * ow + ox;
+      var packedOffset = classifierIndex * classifierSize;
+
+      // find max input
+      maxWeight = 0.0;
+
+      for( var y = 0; y < h; ++y ) {
+        for( var x = 0; x < w; ++x ) {
+          var inputOffset = y * w + x;
+          var weightsOffset = packedOffset + classifierOffset + inputOffset + classifierInputOffset;
+
+          var value = dataClassifierOutputWeights.elements.elements[ weightsOffset ];
+          if( value > maxWeight ) {
+            maxWeight = value;
+          }
+        }
+      }
+
+      var minWeight = 0.01;
+      if( maxWeight < minWeight ) maxWeight = minWeight;
+      // examine each input:
+      for( var y = 0; y < h; ++y ) {
+        for( var x = 0; x < w; ++x ) {
+          var inputOffset = y * w + x;
+          var weightsOffset = packedOffset + classifierOffset + inputOffset + classifierInputOffset;
+
+          var value = dataClassifierOutputWeights.elements.elements[ weightsOffset ];
+          value = value / maxWeight;
+          if( value < minWeight ) { // if less than this frac of max weight, don't bother drawing
+            continue;
+          }
+
+          ctx.fillStyle = "rgba(255,0,0,"+value.toFixed( 3 ) + ")";
+          var cx = x * Region.pixelsPerBit;
+          var cy = y * Region.pixelsPerBit;
+       
+          ctx.fillRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
+        }
+      }
+
+    }
+
+    for( var oy = 0; oy < oh; ++oy ) {
+      for( var ox = 0; ox < ow; ++ox ) {
+        var offset = oy * ow + ox;
+        var mask = dataOrganizerOutputMask.elements.elements[ offset ];
+        if( mask == 0 ) {
+          continue; // dead, don't paint
+        }
+
+        var organizerDimensions = 2;
+        var organizerInputs = 2;
+        var organizerStride = organizerDimensions * organizerInputs;
+        var organizerWeightsOffset = offset * organizerStride + inputIndex * organizerDimensions;
+
+        var xWeight = dataOrganizerOutputWeights.elements.elements[ organizerWeightsOffset +0 ];
+        var yWeight = dataOrganizerOutputWeights.elements.elements[ organizerWeightsOffset +1 ];
+
+        var x = w * xWeight * Region.pixelsPerBit;
+        var y = h * yWeight * Region.pixelsPerBit;
+
+        ctx.strokeStyle = "rgb(0,255,0)";
+
+        for( var i = 0; i < Region.selectedCells.length; ++i ) {
+          var regionOffset = Region.selectedCells[ i ]; // a cell within the region     
+
+          var rx = Math.floor( regionOffset % rw );
+          var ry = Math.floor( regionOffset / rw );
+
+          var oxSelected = Math.floor( rx / cw ); // coordinates of column in grid (region).
+          var oySelected = Math.floor( ry / ch );    
+
+          if( ( oxSelected == ox ) && ( oySelected == oy ) ) {
+            ctx.strokeStyle = "rgb(255,255,0)";
+            //console.log( "selected col is : " + ox + ", " + oy );
+
+            break;
+          }
+        }
+
+        ctx.beginPath();
+        ctx.moveTo( x0 + x,                              y0 + y -Region.pixelsReceptiveField );
+        ctx.lineTo( x0 + x,                              y0 + y +Region.pixelsReceptiveField );
+        ctx.moveTo( x0 + x -Region.pixelsReceptiveField, y0 + y );
+        ctx.lineTo( x0 + x +Region.pixelsReceptiveField, y0 + y );
+        ctx.stroke();   
+      }
+    }
+
+    // paint selected input bits
+    ctx.strokeStyle = "#0000ff";
+    for( var i = 0; i < selectedInput.length; ++i ) {
+      var offset = selectedInput[ i ];
+      var x = Math.floor( offset % w );
+      var y = Math.floor( offset / w );
+      var cx = x * Region.pixelsPerBit;
+      var cy = y * Region.pixelsPerBit;
+      
+      ctx.strokeRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
+    }
+  },*/
 
   thresholdCellsInputWeights : function( w, h, inputOffset, weightsStride, dataWeights, selectedCells, selectedInputs, threshold ) {
 
@@ -398,7 +592,7 @@ console.log( "Painting right w/h=" + w1 + "," + h1 );
     }
   },
 
-  paintInputWeights : function( ctx, x0, y0, w, h, inputOffset, dataInput, weightsSize, weightsStride, dataWeights, selectedCells ) {
+  paintInputWeights : function( ctx, x0, y0, w, h, inputOffset, dataInput, weightsSize, weightsStride, dataWeights, selectedCells, weightGain ) {
 
     if( selectedCells.length < 1 ) {
       return;
@@ -421,6 +615,8 @@ console.log( "Painting right w/h=" + w1 + "," + h1 );
 
           sumWeight += ( weight * 1 ); // * 1, which doesn't matter
         }
+
+        sumWeight *= weightGain;
  
         sumWeight = Math.min(  1.0, sumWeight );
         sumWeight = Math.max( -1.0, sumWeight );

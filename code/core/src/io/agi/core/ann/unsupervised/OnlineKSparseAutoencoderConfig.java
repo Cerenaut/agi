@@ -43,6 +43,8 @@ public class OnlineKSparseAutoencoderConfig extends CompetitiveLearningConfig {
     public static final String RATE_LEARNING_RATE = "rate-learning-rate";
     public static final String AGE = "age";
     public static final String UNIT_OUTPUT = "unit-output";
+    public static final String BATCH_COUNT = "batch-age";
+    public static final String BATCH_SIZE = "batch-size";
 
     public OnlineKSparseAutoencoderConfig() {
     }
@@ -67,6 +69,8 @@ public class OnlineKSparseAutoencoderConfig extends CompetitiveLearningConfig {
      * @param rateMax
      * @param rateLearningRate
      * @param weightsStdDev
+     * @param batchCount
+     * @param batchSize
      */
     public void setup(
             ObjectMap om,
@@ -88,7 +92,9 @@ public class OnlineKSparseAutoencoderConfig extends CompetitiveLearningConfig {
             float rateMax,
             float rateLearningRate,
             float weightsStdDev,
-            boolean unitOutput ){
+            boolean unitOutput,
+            int batchCount,
+            int batchSize ){
 
         super.setup(om, name, r, inputs, w, h);
 
@@ -98,16 +104,19 @@ public class OnlineKSparseAutoencoderConfig extends CompetitiveLearningConfig {
         setAgeMin(ageMin);
         setAgeMax(ageMax);
         setAge(age);
-        setMomentum( momentum );
+        setMomentum(momentum);
         setWeightsStdDev(weightsStdDev);
 
         // new properties
-        setAgeTruncationFactor( ageTruncationFactor );
+        setAgeTruncationFactor(ageTruncationFactor);
         setAgeScale(ageScale);
         setRateScale(rateScale);
         setRateMax(rateMax);
         setRateLearningRate(rateLearningRate);
-        setUnitOutput( unitOutput );
+        setUnitOutput(unitOutput);
+
+        setBatchCount(batchCount);
+        setBatchSize(batchSize);
     }
 
     public void copyFrom( NetworkConfig nc, String name ) {
@@ -131,6 +140,9 @@ public class OnlineKSparseAutoencoderConfig extends CompetitiveLearningConfig {
         setRateMax( c.getRateMax() );
         setRateLearningRate( c.getRateLearningRate() );
         setUnitOutput( c.getUnitOutput() );
+
+        setBatchCount( c.getBatchCount() );
+        setBatchSize( c.getBatchSize() );
     }
 
     public void setLearningRate( float r ) {
@@ -191,7 +203,7 @@ public class OnlineKSparseAutoencoderConfig extends CompetitiveLearningConfig {
     }
 
     public int getAgeMin() {
-        Integer n = _om.getInteger( getKey( AGE_MIN ) );
+        Integer n = _om.getInteger(getKey(AGE_MIN));
         return n.intValue();
     }
 
@@ -229,6 +241,14 @@ public class OnlineKSparseAutoencoderConfig extends CompetitiveLearningConfig {
         _om.put( getKey( UNIT_OUTPUT ), b );
     }
 
+    public void setBatchCount( int n ) {
+        _om.put( getKey( BATCH_COUNT ), n );
+    }
+
+    public void setBatchSize( int n ) {
+        _om.put( getKey( BATCH_SIZE ), n );
+    }
+
     public float getAgeTruncationFactor() {
         Float r = _om.getFloat( getKey( AGE_TRUNCATION_FACTOR ) );
         return r.floatValue();
@@ -259,4 +279,13 @@ public class OnlineKSparseAutoencoderConfig extends CompetitiveLearningConfig {
         return r.booleanValue();
     }
 
+    public int getBatchCount() {
+        Integer n = _om.getInteger(getKey(BATCH_COUNT));
+        return n.intValue();
+    }
+
+    public int getBatchSize() {
+        Integer n = _om.getInteger(getKey(BATCH_SIZE));
+        return n.intValue();
+    }
 }

@@ -58,6 +58,8 @@ public class ImageLabelEntityConfig extends EntityConfig {
     int trainingEpochs = 1;
     int testingEpochs = 1;
 
+    long shuffleSeed = 0;
+
     int imageLabel = 0;
     int imageIndex = 0;
     int imageRepeat = 0; // index of image repeat

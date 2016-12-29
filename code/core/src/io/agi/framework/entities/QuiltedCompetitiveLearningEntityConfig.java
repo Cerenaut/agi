@@ -22,30 +22,30 @@ package io.agi.framework.entities;
 import io.agi.framework.EntityConfig;
 
 /**
- *
- * Created by dave on 7/07/16.
+ * Created by dave on 23/10/16.
  */
-public class OnlineKSparseAutoencoderEntityConfig extends EntityConfig {
+public class QuiltedCompetitiveLearningEntityConfig extends EntityConfig {
 
-    float learningRate = 0f;
-    float momentum = 0f;
-    int widthCells = 0;
-    int heightCells = 0;
-    int sparsity = 0; // current value, computed
-    float sparsityOutput = 0;
-    int ageMin = 0;
-    int ageMax = 0;
+    int columnWidthCells = 0;
+    int columnHeightCells = 0;
 
-    float ageTruncationFactor = 0f;
-    float ageScale = 0f;
-    float rateScale = 0f;
-    float rateMax = 0f;
-    float rateLearningRate = 0f;
+    int quiltWidthColumns = 0;
+    int quiltHeightColumns = 0;
 
-    float weightsStdDev = 0f; // used at reset
-    boolean unitOutput = false;
+    int intervalsX1 = 0;
+    int intervalsY1 = 0;
+    int intervalsX2 = 0;
+    int intervalsY2 = 0;
 
-    int batchCount = 0;
-    int batchSize = 0;
+    int classifiersPerBit = 0;
+
+    float classifierLearningRate = 0;
+    float classifierLearningRateNeighbours = 0;
+    float classifierNoiseMagnitude = 0;
+    int classifierEdgeMaxAge = 0;
+    float classifierStressLearningRate = 0;
+    float classifierStressSplitLearningRate = 0;
+    float classifierStressThreshold = 0;
+    int classifierGrowthInterval = 0;
 
 }

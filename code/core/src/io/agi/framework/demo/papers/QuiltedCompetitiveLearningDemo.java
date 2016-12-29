@@ -17,7 +17,7 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.demo.ksparse;
+package io.agi.framework.demo.papers;
 
 import io.agi.core.orm.AbstractPair;
 import io.agi.core.util.PropertiesUtil;
@@ -33,9 +33,11 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 /**
+ * Quilted, for reasons of convolutional representation helps.
+ *
  * Created by dave on 8/07/16.
  */
-public class OnlineKSparseDemo {
+public class QuiltedCompetitiveLearningDemo {
 
     /**
      * Usage: Expects some arguments. These are:
@@ -89,33 +91,27 @@ public class OnlineKSparseDemo {
         int terminationAge = 50000;//25000;
         int trainingEpochs = 10;//80; // good for up to 80k
         int testingEpochs = 1;//80; // good for up to 80k
-        boolean unitOutput = true;
+        int imagesPerEpoch = 1000;
 
         // Define some entities
         String experimentName           = Framework.GetEntityName( "experiment" );
         String imageLabelName           = Framework.GetEntityName( "image-class" );
-        String autoencoderName          = Framework.GetEntityName( "autoencoder" );
+        String quiltName                = Framework.GetEntityName( "quilt" );
         String vectorSeriesName         = Framework.GetEntityName( "feature-series" );
-        String valueSeriesName         = Framework.GetEntityName( "label-series" );
+        String valueSeriesName          = Framework.GetEntityName( "label-series" );
 
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         Framework.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), experimentName );
-        Framework.CreateEntity( autoencoderName, OnlineKSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), imageLabelName );
-        Framework.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), autoencoderName ); // 2nd, class region updates after first to get its feedback
+        Framework.CreateEntity( quiltName, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), imageLabelName );
+        Framework.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), quiltName ); // 2nd, class region updates after first to get its feedback
         Framework.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), vectorSeriesName ); // 2nd, class region updates after first to get its feedback
 
         // Connect the entities' data
         // a) Image to image region, and decode
-        Framework.SetDataReference( autoencoderName, OnlineKSparseAutoencoderEntity.INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
+        Framework.SetDataReference( quiltName, QuiltedCompetitiveLearningEntity.INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
 
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList< AbstractPair< String, String > >();
-        if( unitOutput ) {
-            featureDatas.add( new AbstractPair< String, String >( autoencoderName, OnlineKSparseAutoencoderEntity.SPIKES_TOP_KA ) );
-        }
-        else {
-            featureDatas.add( new AbstractPair< String, String >( autoencoderName, OnlineKSparseAutoencoderEntity.TRANSFER_TOP_KA ) );
-        }
-
+        featureDatas.add( new AbstractPair< String, String >( quiltName, QuiltedCompetitiveLearningEntity.QUILT_ACTIVITY ) );
         Framework.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
 
         // Experiment config
@@ -131,7 +127,7 @@ public class OnlineKSparseDemo {
         // cache all data for speed, when enabled
         Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( imageLabelName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( autoencoderName, "cache", String.valueOf( cacheAllData ) );
+        Framework.SetConfig( quiltName, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( vectorSeriesName, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( valueSeriesName, "cache", String.valueOf( cacheAllData ) );
 
@@ -150,60 +146,48 @@ public class OnlineKSparseDemo {
         Framework.SetConfig( imageLabelName, "sourceFilesPathTesting", testingPath );
         Framework.SetConfig( imageLabelName, "trainingEpochs", String.valueOf( trainingEpochs ) );
         Framework.SetConfig( imageLabelName, "testingEpochs", String.valueOf( testingEpochs ) );
-        Framework.SetConfig( imageLabelName, "trainingEntities", String.valueOf( autoencoderName ) );
+        Framework.SetConfig( imageLabelName, "trainingEntities", String.valueOf( quiltName ) );
         Framework.SetConfig( imageLabelName, "testingEntities", vectorSeriesName + "," + valueSeriesName );
 
-        /* Suppose we are aiming for a sparsity level of k = 15.
-        Then, we start off with a large sparsity level (e.g.
-        k = 100) for which the k -sparse autoencoder can train
-        all the hidden units. We then linearly decrease the
-        sparsity level from k = 100 to k = 15 over the first
-        half of the epochs. This initializes the autoencoder in
-        a good regime, for which all of the hidden units have
-        a significant chance of being picked. Then, we keep
-        k = 15 for the second half of the epochs. */
-        int widthCells = 32; // from the paper, 32x32= ~1000 was optimal on MNIST (but with a supervised output layer)
-        int heightCells = 32;
-
-        int ageMin = 0;
-        int ageMax = 1000;
-
-        float sparsity = 25f;
-        float sparsityOutput = 3.f;
-
-        // variables
+        int edgeMaxAge = 500;
+        int growthInterval = 50;
         float learningRate = 0.01f;
-        if( unitOutput ) {
-//            learningRate = learningRate * 0.1f;
-        }
-        float momentum = 0f;//0.9f;
-        float weightsStdDev = 0.01f; // From paper. used at reset (only for biases in online case
+        float learningRateNeighbours = learningRate * 0.2f;
+        float noiseMagnitude = 0.0f;
+        float stressLearningRate = 0.01f; // not used now?
+        float stressSplitLearningRate = 0.5f; // change to stress after a split
+        float stressThreshold = 0.01f; // when it ceases to split
 
-        // TODO set params
-        float ageScale = 15f;
-        float ageTruncationFactor = 0.5f;
-        float rateScale = 12f;
-        float rateMax = 0.05f; // i.e. 1/20th
-        float rateLearningRate = learningRate * 0.1f; // slower than the learning rate
+        // 25 * 49 = 1225
+        int columnWidthCells = 5;  //
+        int columnHeightCells = 5;
 
-        Framework.SetConfig( autoencoderName, "unitOutput", String.valueOf( unitOutput ) );
-        Framework.SetConfig( autoencoderName, "learningRate", String.valueOf( learningRate ) );
-        Framework.SetConfig( autoencoderName, "momentum", String.valueOf( momentum ) );
-        Framework.SetConfig( autoencoderName, "widthCells", String.valueOf( widthCells ) );
-        Framework.SetConfig( autoencoderName, "heightCells", String.valueOf( heightCells ) );
-        Framework.SetConfig( autoencoderName, "weightsStdDev", String.valueOf( weightsStdDev ) );
-        Framework.SetConfig( autoencoderName, "sparsityOutput", String.valueOf( sparsityOutput ) );
-        Framework.SetConfig( autoencoderName, "sparsity", String.valueOf( sparsity ) );
+        int quiltWidthColumns = 7;
+        int quiltHeightColumns = 7; // 49 cols
 
-        Framework.SetConfig( autoencoderName, "ageMin", String.valueOf( ageMin ) );
-        Framework.SetConfig( autoencoderName, "ageMax", String.valueOf( ageMax ) );
+        int classifiersPerBit = 4;
 
-        Framework.SetConfig( autoencoderName, "ageTruncationFactor", String.valueOf( ageTruncationFactor ) );
-        Framework.SetConfig( autoencoderName, "ageScale", String.valueOf( ageScale ) );
+        Framework.SetConfig( quiltName, "columnWidthCells", String.valueOf( columnWidthCells ) );
+        Framework.SetConfig( quiltName, "columnHeightCells", String.valueOf( columnHeightCells ) );
 
-        Framework.SetConfig( autoencoderName, "rateScale", String.valueOf( rateScale ) );
-        Framework.SetConfig( autoencoderName, "rateMax", String.valueOf( rateMax ) );
-        Framework.SetConfig( autoencoderName, "rateLearningRate", String.valueOf( rateLearningRate ) );
+        Framework.SetConfig( quiltName, "quiltWidthColumns", String.valueOf( quiltWidthColumns ) );
+        Framework.SetConfig( quiltName, "quiltHeightColumns", String.valueOf( quiltHeightColumns ) );
+
+        Framework.SetConfig( quiltName, "intervalsX1", String.valueOf( quiltWidthColumns ) );
+        Framework.SetConfig( quiltName, "intervalsY1", String.valueOf( quiltHeightColumns ) );
+        Framework.SetConfig( quiltName, "intervalsX2", String.valueOf( 1 ) );
+        Framework.SetConfig( quiltName, "intervalsY2", String.valueOf( 1 ) );
+
+        Framework.SetConfig( quiltName, "classifiersPerBit", String.valueOf( classifiersPerBit ) );
+
+        Framework.SetConfig( quiltName, "classifierLearningRate", String.valueOf( learningRate ) );
+        Framework.SetConfig( quiltName, "classifierLearningRateNeighbours", String.valueOf( learningRateNeighbours ) );
+        Framework.SetConfig( quiltName, "classifierNoiseMagnitude", String.valueOf( noiseMagnitude ) );
+        Framework.SetConfig( quiltName, "classifierEdgeMaxAge", String.valueOf( edgeMaxAge ) );
+        Framework.SetConfig( quiltName, "classifierStressLearningRate", String.valueOf( stressLearningRate ) );
+        Framework.SetConfig( quiltName, "classifierStressSplitLearningRate", String.valueOf( stressSplitLearningRate ) );
+        Framework.SetConfig( quiltName, "classifierStressThreshold", String.valueOf( stressThreshold ) );
+        Framework.SetConfig( quiltName, "classifierGrowthInterval", String.valueOf( growthInterval ) );
 
         // Log features of the algorithm during all phases
         Framework.SetConfig( vectorSeriesName, "period", String.valueOf( "-1" ) ); // infinite
