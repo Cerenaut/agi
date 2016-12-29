@@ -181,8 +181,6 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
         int m = datasetSize.getSize( DataSize.DIMENSION_Y );        // m = number of data points
         int n = datasetSize.getSize( DataSize.DIMENSION_X );        // n = feature vector size
 
-        featuresMatrix.normalizeFeatures();
-
         Problem problem = new Problem();
         problem.l = m; // number of training examples
         problem.n = n; // number of features

@@ -1721,7 +1721,4 @@ public class FloatArray {
             ++rank;
         }
     }
-
-    public void normalizeFeatures() {
-    }
 }
