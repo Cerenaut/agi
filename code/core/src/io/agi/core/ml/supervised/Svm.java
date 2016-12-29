@@ -58,7 +58,7 @@ public class Svm extends NamedObject implements Callback, Supervised {
     @Override
     public void setup( SupervisedLearningConfig config ) {
         this._config = config;
-        loadModel();
+        loadModel();    // load model if it exists in config object
     }
 
     @Override
@@ -70,7 +70,9 @@ public class Svm extends NamedObject implements Callback, Supervised {
     @Override
     public void loadModel( ) {
         String modelString = _config.getModelString();
-        loadModel( modelString );
+        if ( modelString != null) {
+            loadModel( modelString );
+        }
     }
 
     @Override
@@ -85,11 +87,8 @@ public class Svm extends NamedObject implements Callback, Supervised {
         }
     }
 
-    /**
-     * Save the model to config object.
-     * @return
-     */
-    private String saveModel() {
+    @Override
+    public String saveModel() {
         String modelString = null;
         try {
             modelString = modelString();
@@ -104,8 +103,8 @@ public class Svm extends NamedObject implements Callback, Supervised {
     }
 
     /**
-     * Serialise model to a string and return.
-     * @return
+     * Serialise the model into a string and return.
+     * @return The model as a string.
      * @throws Exception
      */
     public String modelString() throws Exception {
@@ -140,7 +139,7 @@ public class Svm extends NamedObject implements Callback, Supervised {
 
         _model = svm.svm_train( problem, parameters );
 
-        saveModel();
+        saveModel();    // save the model to config object
     }
 
     public void predict( Data featuresMatrix, Data predictionsVector ) {
@@ -149,22 +148,22 @@ public class Svm extends NamedObject implements Callback, Supervised {
         int m = datasetSize.getSize( DataSize.DIMENSION_Y );        // m = number of data points ---> should be 1
         int n = datasetSize.getSize( DataSize.DIMENSION_X );        // n = feature vector size
 
-        svm_node[][] x = new svm_node[ n ][ m ];
+        svm_node[][] x = new svm_node[ m ][ n ];
 
         // iterate data points (vectors in the VectorSeries - each vector is a data point)
-        for ( int i = 0; i < m ; ++i ) {
+        for ( int j = 0; j < m ; ++j ) {
 
             // iterate dimensions of x (elements of the vector)
-            for( int j = 0; j < n; j++ ) {
+            for( int i = 0; i < n; ++i ) {
 
-                float xij = featuresMatrix._values[ i * m + j ];
+                double xi = getFeatureValue( featuresMatrix, n, j, i );
 
-                x[ i ][ j ] = new svm_node();
-                x[ i ][ j ].index = j+1;
-                x[ i ][ j ].value = xij;
+                x[ j ][ i ] = new svm_node();
+                x[ j ][ i ].index = j+1;
+                x[ j ][ i ].value = xi;
             }
 
-            predictionsVector._values[ i ] = ( float ) svm.svm_predict( _model, x[i] );
+            predictionsVector._values[ j ] = ( float ) svm.svm_predict( _model, x[ j ] );
         }
     }
 
@@ -182,22 +181,22 @@ public class Svm extends NamedObject implements Callback, Supervised {
         prob.x = new svm_node[ prob.l ][ n ];
 
         // iterate data points (vectors in the VectorSeries - each vector is a data point)
-        for ( int i = 0; i < m ; ++i ) {
+        for ( int j = 0; j < m ; ++j ) {
 
             // iterate dimensions of x (elements of the vector)
-            for ( int j = 0 ; j < n ; j++ ) {
+            for ( int i = 0 ; i < n ; ++i ) {
 
-                float classTruth = getClassTruth( classTruthVector, i );
-                double xij = getFeatureValue( featuresMatrix, m, i, j );
+                float classTruth = getClassTruth( classTruthVector, j );
+                double xi = getFeatureValue( featuresMatrix, n, j, i );
 
-                if ( xij == 0.f ) {
+                if ( xi == 0.f ) {
                     continue;
                 }
 
-                prob.x[ i ][ j ] = new svm_node();
-                prob.x[ i ][ j ].index = j+1;
-                prob.x[ i ][ j ].value = xij;
-                prob.y[ i ] = classTruth;
+                prob.x[ j ][ i ] = new svm_node();
+                prob.x[ j ][ i ].index = i+1;
+                prob.x[ j ][ i ].value = xi;
+                prob.y[ j ] = classTruth;
             }
         }
 

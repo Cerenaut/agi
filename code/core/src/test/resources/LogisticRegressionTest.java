@@ -17,9 +17,12 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.core.ml.supervised;
+package test.resources;
 
 import io.agi.core.data.Data;
+import io.agi.core.math.FastRandom;
+import io.agi.core.ml.supervised.LogisticRegression;
+import io.agi.core.ml.supervised.SupervisedLearningConfig;
 import io.agi.core.orm.ObjectMap;
 import org.junit.After;
 import org.junit.Before;
@@ -40,38 +43,44 @@ public class LogisticRegressionTest {
 
     Data _featuresMatrixTest = null;
     Data _predictionsVectorTest = null;
+    Data _classTruthVectorTest = null;
 
     float _eps = 0.0000001f;
+    private ObjectMap _om;
+    private FastRandom _r;
 
     @Before
     public void setUp() throws Exception {
 
+        // get data from file
+        String filePath = "src/test/resources/supervised-linear-data.csv";
+        _featuresMatrixTrain = Data.createFromCSV( filePath, 0, 1 );
+        _classTruthVector = Data.createFromCSV( filePath, 2, 2 );
+
+        filePath = "src/test/resources/supervised-linear-data-test.csv";
+        _featuresMatrixTest = Data.createFromCSV( filePath, 0, 1 );
+        _predictionsVectorTest = new Data( _classTruthVector._dataSize );
+        _classTruthVectorTest = new Data( _classTruthVector._dataSize.getSize( "Y" ) );
+
         // instantiate learner
-        ObjectMap om = ObjectMap.GetInstance();
-        _learner = new LogisticRegression( "logisticRegression", om );
+        _om = ObjectMap.GetInstance();
+        _learner = new LogisticRegression( "logisticRegression", _om );
 
         // setup learner
-        SupervisedLearningConfig config = new SupervisedLearningConfig();
-        config.setConstraintsViolation( 0.3f );
+        _r = new FastRandom(  );
+        SupervisedLearningConfig config = new SupervisedLearningConfig( );
+        config.setup( _om, "test-logistic-config", _r, 0.3f);
         _learner.setup( config );
 
+        // train model
         _learner.train( _featuresMatrixTrain, _classTruthVector );
         _modelString = _learner.modelString();
-
         assertTrue( _modelString != null );
     }
 
     @After
     public void tearDown() throws Exception {
 
-    }
-
-    @Test
-    public void loadModel() throws Exception {
-        _learner.loadModel( _modelString );
-        _modelString = _learner.modelString();
-
-        assertTrue( _modelString != null );
     }
 
     /**
@@ -82,13 +91,10 @@ public class LogisticRegressionTest {
     public void predict() throws Exception {
 
         _learner.predict( _featuresMatrixTest, _predictionsVectorTest );
-        float error = calculateError( _predictionsVectorTest, _classTruthVector );
 
-        assertTrue( error - 0.01 < _eps );
-    }
-
-    private float calculateError( Data predictionsVectorTest, Data classTruthVector ) {
-        return 0;
+        // this is temporary 0 i'm sure that predictions are classes, not probabilities
+        float prob = 0.776f;
+        assertTrue( _predictionsVectorTest._values[ 0 ] - prob  < _eps );
     }
 
 }

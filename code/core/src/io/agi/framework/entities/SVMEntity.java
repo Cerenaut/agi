@@ -73,7 +73,7 @@ public class SVMEntity extends SupervisedLearningEntity {
 
         // Create the config object:
         SupervisedLearningConfig svmConfig = new SupervisedLearningConfig();
-        svmConfig.setup( config.C );
+        svmConfig.setup( _om, "svmConfig", _r, config.C );
 
         // Create the implementing object itself, and copy data from persistence into it:
         _svm = new Svm( getName(), _om );

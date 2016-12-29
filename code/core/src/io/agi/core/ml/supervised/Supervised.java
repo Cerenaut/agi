@@ -49,7 +49,13 @@ public interface Supervised {
     void train( Data featuresMatrix, Data classTruthVector );
 
     /**
-     * Load model from config object.
+     * Save the model to config object.
+     * @return the model in serialised form as a string.
+     */
+    String saveModel();
+
+    /**
+     * Load model from config object (if it is not null).
      */
     void loadModel( );
 

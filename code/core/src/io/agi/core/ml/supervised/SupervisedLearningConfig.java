@@ -20,6 +20,9 @@
 package io.agi.core.ml.supervised;
 
 import io.agi.core.ann.NetworkConfig;
+import io.agi.core.orm.ObjectMap;
+
+import java.util.Random;
 
 /**
  * Created by gideon on 23/12/16.
@@ -29,8 +32,12 @@ public class SupervisedLearningConfig extends NetworkConfig {
     public String _keyConstraintsViolation = "constraints-violation";      // used for regularisation. C is the terminology used commonly for SVM.
     public String _keyModelString = "modelString";
 
-    public void setup( float C ) {
-        setConstraintsViolation( C );
+    public void setup( ObjectMap om,
+                       String name,
+                       Random r,
+                       float constraintsViolation) {
+        super.setup( om, name, r );
+        setConstraintsViolation( constraintsViolation );
     }
 
     public void setConstraintsViolation( float C ) {
@@ -38,7 +45,7 @@ public class SupervisedLearningConfig extends NetworkConfig {
     }
 
     public float getConstraintsViolation() {
-        return _om.getFloat( _keyConstraintsViolation );
+        return _om.getFloat( getKey( _keyConstraintsViolation ) );
     }
 
     public void setModelString( String modelString ) {
@@ -46,7 +53,7 @@ public class SupervisedLearningConfig extends NetworkConfig {
     }
 
     public String getModelString() {
-        return _om.getString( _keyModelString );
+        return _om.getString( getKey( _keyModelString ) );
     }
 
 }

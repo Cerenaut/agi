@@ -60,7 +60,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
     @Override
     public void setup( SupervisedLearningConfig config ) {
         this._config = config;
-        loadModel();
+        loadModel();    // load model if it exists in config object
     }
 
     @Override
@@ -72,7 +72,9 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
     @Override
     public void loadModel() {
         String modelString = _config.getModelString();
-        loadModel( modelString );
+        if ( modelString != null ) {
+            loadModel( modelString );
+        }
     }
 
     @Override
@@ -89,7 +91,8 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
         }
     }
 
-    private void saveModel() {
+    @Override
+    public String saveModel() {
         String modelString = null;
         try {
             modelString = modelString();
@@ -100,8 +103,14 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
         }
 
         _config.setModelString( modelString );
+        return modelString;
     }
 
+    /**
+     * Serialise the model into a string and return.
+     * @return The model as a string.
+     * @throws Exception
+     */
     public String modelString() throws Exception {
 
         String modelString = null;
@@ -132,6 +141,8 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
         Problem problem = setupProblem( featuresMatrix, classTruthVector );
 
         _model = Linear.train( problem, parameters );
+
+        saveModel();    // save the model to config object
     }
 
 
@@ -148,19 +159,19 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
         int m = datasetSize.getSize( DataSize.DIMENSION_Y );        // m = number of data points
         int n = datasetSize.getSize( DataSize.DIMENSION_X );        // n = feature vector size
 
-        Feature[][] x = new Feature[ n ][ m ];
+        Feature[][] x = new Feature[ m ][ n ];
 
         // convert input to Feature instance, then predict
         // iterate data points (vectors in the VectorSeries - each vector is a data point)
-        for( int i = 0; i < m; ++i ) {
+        for( int j = 0; j < m; ++j ) {
 
             // iterate dimensions of x (elements of the vector)
-            for( int j = 0; j < n; j++ ) {
-                double xij = getFeatureValue( featuresMatrix, m, i, j );
-                x[ i ][ j ] = new FeatureNode( j+1, xij );
+            for( int i = 0; i < n; ++i ) {
+                double xi = getFeatureValue( featuresMatrix, n, j, i );
+                x[ j ][ i ] = new FeatureNode( i+1, xi );
             }
 
-            predictionsVector._values[ i ] = ( float ) Linear.predict( _model, x[ i ] );
+            predictionsVector._values[ j ] = ( float ) Linear.predict( _model, x[ j ] );
         }
     }
 
@@ -175,22 +186,24 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
         Problem problem = new Problem();
         problem.l = m; // number of training examples
         problem.n = n; // number of features
+        problem.x = new Feature[ m ][ n ];
+        problem.y = new double[ m ];
 
         // iterate data points (vectors in the VectorSeries - each vector is a data point)
-        for( int i = 0; i < n; ++i ) {
+        for( int j = 0; j < m; ++j ) {
 
             // iterate dimensions of x (elements of the vector)
-            for( int j = 0; j < m; j++ ) {
+            for( int i = 0; i < n; ++i ) {
 
-                float classTruth = getClassTruth( classTruthVector, i );
-                double xij = getFeatureValue( featuresMatrix, m, i, j );
+                float classTruth = getClassTruth( classTruthVector, j );
+                double xi = getFeatureValue( featuresMatrix, n, j, i );
 
-                if( xij == 0.f ) {
+                if( xi == 0.f ) {
                     continue;
                 }
 
-                problem.x[ i ][ j ] = new FeatureNode( j + 1, xij );
-                problem.y[ i ] = classTruth;
+                problem.x[ j ][ i ] = new FeatureNode( i+1, xi );
+                problem.y[ j ] = classTruth;
             }
         }
 
@@ -210,8 +223,8 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
     }
 
     // convenience method to get the specific value from featuresMatrix
-    private double getFeatureValue( Data featuresMatrix, int datasetSize, int datapointIndex, int featureIndex ) {
-        float value = featuresMatrix._values[ datapointIndex * datasetSize + featureIndex ];
+    private double getFeatureValue( Data featuresMatrix, int numFeatures, int datapointIndex, int featureIndex ) {
+        float value = featuresMatrix._values[ datapointIndex * numFeatures + featureIndex ];
         return value;
     }
 
