@@ -225,10 +225,164 @@ public class HebbianLearning {
     // * https://en.wikipedia.org/wiki/Oja%27s_rule
     // * http://www.scholarpedia.org/article/Oja_learning_rule
 
-    // I could implement STDP rule
-    // where "early" bits predict and "late" bits inhibit
-    // here we would have traces before and after. Or just prior/next states
-    // So if bit A was active and now bit B is active, then we reduce the weight between bit B -> A
-    // http://www.scholarpedia.org/article/Spike-timing_dependent_plasticity
+    /**
+     * Call this when there is a state change.
+     */
+    public void trainSpikeTiming( Data stateOld, Data stateNew ) {
+
+        // I could implement STDP rule
+        // where "early" bits predict and "late" bits inhibit
+        // here we would have traces before and after. Or just prior/next states
+        // So if bit A was active and now bit B is active, then we reduce the weight between bit B -> A
+        // http://www.scholarpedia.org/article/Spike-timing_dependent_plasticity
+
+        // we treat the old state as synapses (presynaptic spikes) for a postsynaptic cell which is the new state.
+        // The synapse strengthens if the pre-syn. bit is active BEFORE (not simultaneously) the post-syn bit.
+        // If the pre-syn bit is active AFTER the post-syn bit BECOMES active, then it is weakened.
+        //
+        // So the post syn spike occurs when old=0 and new=1
+        //   On a post-syn spike:
+        // The good pre-syn spike occurs when old=1 and new=0                             +w
+        // The  bad pre-syn spike is     when old=1 and new=1                             -w or 0?
+        // If the pre-syn cell is             old=0 and new=0 then no learning occurs
+        // If the pre-syn cell is             old=0 and new=1 then                        -w
+        //
+        // When no post syn spike:
+        // According to STDP, no learning. If they're random (no association) then pre and post will occur in the bad
+        // timing more often, esp if a cell stays active a lot. This means the weight will decay.
+
+        HashSet< Integer > bitsOld = stateOld.indicesMoreThan( 0.5f );
+        HashSet< Integer > bitsNew = stateNew.indicesMoreThan( 0.5f );
+
+        if( bitsOld.equals( bitsNew ) ) {
+            return;
+        }
+
+        int states = stateOld.getSize();
+
+        for( int s1 = 0; s1 < states; ++s1 ) { // pre
+
+            float pre1 = stateOld._values[ s1 ];
+            float pre2 = stateNew._values[ s1 ];
+
+            if( ( pre1 == 0f ) && ( pre2 == 0f ) ) {
+                continue;
+            }
+
+            for( int s2 = 0; s2 < states; ++s2 ) { // post
+
+                float post1 = stateOld._values[ s2 ];
+                float post2 = stateNew._values[ s2 ];
+
+                if( post2 == 0f ) {
+                    continue; // no learning without a post-synaptic spike
+                }
+
+                // post2 = 1.
+
+                if( post1 == 1f ) {
+                    continue; // no learning unless a new post-synaptic spike
+                }
+
+                // post1 = 0., ie post spike just occurred
+
+                // now look at the state of the pre spike.
+                float delta = - _learningRate; // all combos are bad
+
+                if( ( pre1 == 1f ) && ( pre2 == 0f ) ) {
+                    delta = _learningRate; // ... except this one
+                }
+
+                int offset = s1 * states + s2; // the weight from state s1, to state s2.
+
+                float oldWeight = _weights._values[ offset ];
+                float newWeight = oldWeight + delta;
+
+                newWeight = Math.max( 0, Math.min( 1f, newWeight ) );
+
+                _weights._values[ offset ] = newWeight;
+            }
+        }
+    }
+
+    /**
+     * Call this when there is a post-
+     */
+    public void trainSpikeTimingTrace( Data stateOld, Data stateNew ) {
+
+        // I could implement STDP rule
+        // where "early" bits predict and "late" bits inhibit
+        // here we would have traces before and after. Or just prior/next states
+        // So if bit A was active and now bit B is active, then we reduce the weight between bit B -> A
+        // http://www.scholarpedia.org/article/Spike-timing_dependent_plasticity
+
+        // we treat the old state as synapses (presynaptic spikes) for a postsynaptic cell which is the new state.
+        // The synapse strengthens if the pre-syn. bit is active BEFORE (not simultaneously) the post-syn bit.
+        // If the pre-syn bit is active AFTER the post-syn bit BECOMES active, then it is weakened.
+        //
+        // So the post syn spike occurs when old=0 and new=1
+        //   On a post-syn spike:
+        // The good pre-syn spike occurs when old=1 and new=0                             +w
+        // The  bad pre-syn spike is     when old=1 and new=1                             -w or 0?
+        // If the pre-syn cell is             old=0 and new=0 then no learning occurs
+        // If the pre-syn cell is             old=0 and new=1 then                        -w
+        //
+        // When no post syn spike:
+        // According to STDP, no learning. If they're random (no association) then pre and post will occur in the bad
+        // timing more often, esp if a cell stays active a lot. This means the weight will decay.
+
+        HashSet< Integer > bitsOld = stateOld.indicesMoreThan( 0.5f );
+        HashSet< Integer > bitsNew = stateNew.indicesMoreThan( 0.5f );
+
+        if( bitsOld.equals( bitsNew ) ) {
+            return;
+        }
+
+        int states = stateOld.getSize();
+
+        for( int s1 = 0; s1 < states; ++s1 ) { // pre
+
+            float pre1 = stateOld._values[ s1 ];
+            float pre2 = stateNew._values[ s1 ];
+
+            if( ( pre1 == 0f ) && ( pre2 == 0f ) ) {
+                continue;
+            }
+
+            for( int s2 = 0; s2 < states; ++s2 ) { // post
+
+                float post1 = stateOld._values[ s2 ];
+                float post2 = stateNew._values[ s2 ];
+
+                if( post2 == 0f ) {
+                    continue; // no learning without a post-synaptic spike
+                }
+
+                // post2 = 1.
+
+                if( post1 == 1f ) {
+                    continue; // no learning unless a new post-synaptic spike
+                }
+
+                // post1 = 0., ie post spike just occurred
+
+                // now look at the state of the pre spike.
+                float delta = - _learningRate; // all combos are bad
+
+                if( ( pre1 == 1f ) && ( pre2 == 0f ) ) {
+                    delta = _learningRate; // ... except this one
+                }
+
+                int offset = s1 * states + s2; // the weight from state s1, to state s2.
+
+                float oldWeight = _weights._values[ offset ];
+                float newWeight = oldWeight + delta;
+
+                newWeight = Math.max( 0, Math.min( 1f, newWeight ) );
+
+                _weights._values[ offset ] = newWeight;
+            }
+        }
+    }
 
 }
