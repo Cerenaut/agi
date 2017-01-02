@@ -26,5 +26,6 @@ public class SVMEntityConfig extends SupervisedLearningEntityConfig {
 
 // the trained flag no longer needed, because we have batch mode training now
 //    public boolean trained = false;         // once the model has been trained on a dataset, this flag is set to true
-    public float C = 1.f;                   // regularization parameter
+    public float C = 1.f;                     // regularization parameter
+    public boolean bias;
 }

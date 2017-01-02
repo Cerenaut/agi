@@ -142,11 +142,10 @@ public class Svm extends NamedObject implements Callback, Supervised {
         saveModel();    // save the model to config object
     }
 
-    public void predict( Data featuresMatrix, Data predictionsVector ) {
+    public void predict( Data featuresMatrixTrain, Data predictionsVector ) {
 
-        DataSize datasetSize = featuresMatrix._dataSize;
-        int m = datasetSize.getSize( DataSize.DIMENSION_Y );        // m = number of data points ---> should be 1
-        int n = datasetSize.getSize( DataSize.DIMENSION_X );        // n = feature vector size
+        int m = SupervisedUtil.calcMFromFeatureMatrix( featuresMatrixTrain );   // m = number of data points
+        int n = SupervisedUtil.calcNFromFeatureMatrix( featuresMatrixTrain );   // n = feature vector size
 
         svm_node[][] x = new svm_node[ m ][ n ];
 
@@ -156,7 +155,7 @@ public class Svm extends NamedObject implements Callback, Supervised {
             // iterate dimensions of x (elements of the vector)
             for( int i = 0; i < n; ++i ) {
 
-                double xi = getFeatureValue( featuresMatrix, n, j, i );
+                double xi = SupervisedUtil.getFeatureValue( featuresMatrixTrain, n, j, i );
 
                 x[ j ][ i ] = new svm_node();
                 x[ j ][ i ].index = j+1;
@@ -169,9 +168,8 @@ public class Svm extends NamedObject implements Callback, Supervised {
 
     private svm_problem setupProblem( Data featuresMatrix, Data classTruthVector ) {
 
-        DataSize datasetSize = featuresMatrix._dataSize;
-        int m = datasetSize.getSize( DataSize.DIMENSION_Y );        // m = number of data points
-        int n = datasetSize.getSize( DataSize.DIMENSION_X );        // n = feature vector size
+        int m = SupervisedUtil.calcMFromFeatureMatrix( featuresMatrix );   // m = number of data points
+        int n = SupervisedUtil.calcNFromFeatureMatrix( featuresMatrix );   // n = feature vector size
 
         svm_problem prob = new svm_problem();
         prob.l = m;
@@ -184,8 +182,8 @@ public class Svm extends NamedObject implements Callback, Supervised {
             // iterate dimensions of x (elements of the vector)
             for ( int i = 0 ; i < n ; ++i ) {
 
-                float classTruth = getClassTruth( classTruthVector, j );
-                double xi = getFeatureValue( featuresMatrix, n, j, i );
+                float classTruth = SupervisedUtil.getClassTruth( classTruthVector, j );
+                double xi = SupervisedUtil.getFeatureValue( featuresMatrix, n, j, i );
 
                 // sparse representation
                 if ( xi == 0.f ) {
@@ -227,15 +225,4 @@ public class Svm extends NamedObject implements Callback, Supervised {
         return param;
     }
 
-    // convenience method to get the specific value from featuresMatrix
-    private double getFeatureValue( Data featuresMatrix, int datasetSize, int datapointIndex, int featureIndex ) {
-        float value = featuresMatrix._values[ datapointIndex * datasetSize + featureIndex ];
-        return value;
-    }
-
-    // convenience method to get the truth label from classTruthVector
-    private float getClassTruth( Data classTruthVector, int datapointIndex ) {
-        float value = classTruthVector._values[ datapointIndex ];
-        return value;
-    }
 }
