@@ -98,6 +98,10 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
         return str;
     }
 
+    public String getFolderName() {
+        return _folderName;
+    }
+
     /**
      * For this class, return file name.
      *
