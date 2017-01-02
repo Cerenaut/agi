@@ -67,7 +67,7 @@ public class SVMEntity extends SupervisedLearningEntity {
         _svm.reset();
     }
 
-    protected void loadModel( int features, int labels, int labelClasses ) {
+    protected void loadModel( ) {
         // Get all the parameters:
         SVMEntityConfig config = ( SVMEntityConfig ) _config;
 
@@ -99,7 +99,7 @@ public class SVMEntity extends SupervisedLearningEntity {
      * @param labels Latest sample
      */
     protected void trainSample( Data features, Data labels ) {
-        throw new java.lang.UnsupportedOperationException();
+            throw new java.lang.UnsupportedOperationException();
     }
 
     /**
