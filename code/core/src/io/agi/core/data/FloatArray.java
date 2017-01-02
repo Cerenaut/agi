@@ -814,7 +814,7 @@ public class FloatArray {
     /**
      * Makes elements in this equal to abs diff between this and arg fa.
      *
-     * @param v
+     * @param fa
      */
     public void absDiff( FloatArray fa ) {
 
@@ -839,7 +839,7 @@ public class FloatArray {
      * @param tolerance corresponding values must be within tolerance of each other to be considered equal.
      * @return true if equal
      */
-    public boolean approxEquals( FloatArray that, float tolerance ) {
+    public boolean isApproxEquals( FloatArray that, float tolerance ) {
         float maxAbsDiff = maxAbsDiff( that );
         return ( maxAbsDiff < tolerance );
     }
@@ -1260,6 +1260,22 @@ public class FloatArray {
 
             _values[ offset ] = value - _values[ offset ];
 
+            ++offset;
+        }
+    }
+
+    public void approxEquals( FloatArray v, float tolerance ) {
+
+        int offset = 0;
+
+        while( offset < _values.length ) {
+            float diff = _values[ offset ] - v._values[ offset ];
+            if ( diff < tolerance ) {
+                _values[ offset ] = 1.0f;    // set to 'True'
+            }
+            else {
+                _values[ offset ] = 0.0f;   // set to 'False'
+            }
             ++offset;
         }
     }

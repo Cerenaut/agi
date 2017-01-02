@@ -122,7 +122,7 @@ public class SupervisedLearningEntity extends Entity {
         setData( LABELS_BY_TIME, newOutputLabels );
     }
 
-    protected void loadModel( int features, int labels, int labelClasses ) {
+    protected void loadModel( ) {
         // Implement as needed in subclasses
     }
 
@@ -307,7 +307,7 @@ public class SupervisedLearningEntity extends Entity {
 
         Data labels = getLabelData(); // always returns a vector with 1 or more elements
 
-        loadModel( features.getSize(), labels.getSize(), config.labelClasses ); // load a saved model, ie from persistence
+        loadModel( ); // load a saved model, ie from persistence
 
         if( config.learn ) {
 
@@ -315,20 +315,20 @@ public class SupervisedLearningEntity extends Entity {
                 accumulate( features, labels );
             }
 
-            if( config.learningMode == LEARNING_MODE_ONLINE ) {
+            if( config.learningMode.equalsIgnoreCase( LEARNING_MODE_ONLINE ) ) {
                 // train incrementally using one latest sample, continuously forgetting older samples
                 trainOnline( features, labels );
             }
-            else if( config.learningMode == LEARNING_MODE_SAMPLE ) {
+            else if( config.learningMode.equalsIgnoreCase( LEARNING_MODE_SAMPLE ) ) {
                 // train incrementally using one latest sample
                 trainSample( features, labels );
             }
-            else if( config.learningMode == LEARNING_MODE_SAMPLE ) {
+            else if( config.learningMode.equalsIgnoreCase( LEARNING_MODE_BATCH ) ) {
                 // re-train completely using a history of samples
-                if( ( config.learnBatchOnce == true ) && ( config.learnBatchComplete == true ) ) {
+                if( config.learnBatchOnce && config.learnBatchComplete ) {
                     // skip
                 }
-                else { // either learnBatch is "every step" or we didnt do it yet
+                else { // either learnBatch is "every step" or we didn't do it yet
                     Data outputFeatures = getData( FEATURES_BY_TIME );
                     Data outputLabels = getData( FEATURES_BY_TIME );
 

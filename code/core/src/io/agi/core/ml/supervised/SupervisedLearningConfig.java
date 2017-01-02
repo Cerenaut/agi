@@ -20,6 +20,9 @@
 package io.agi.core.ml.supervised;
 
 import io.agi.core.ann.NetworkConfig;
+import io.agi.core.orm.ObjectMap;
+
+import java.util.Random;
 
 /**
  * Created by gideon on 23/12/16.
@@ -27,10 +30,17 @@ import io.agi.core.ann.NetworkConfig;
 public class SupervisedLearningConfig extends NetworkConfig {
 
     public String _keyConstraintsViolation = "constraints-violation";      // used for regularisation. C is the terminology used commonly for SVM.
-    public String _keyModelString = "modelString";
+    public String _keyModelString = "modelString";  // represent the model in serialised form as a string
+    public String _keyAddBias = "addBias";  // add a 'constant' feature, so that there is a bias term in the hypothesis (otherwise linear decision boundary goes through origin)
 
-    public void setup( float C ) {
-        setConstraintsViolation( C );
+    public void setup( ObjectMap om,
+                       String name,
+                       Random r,
+                       boolean addBias,
+                       float constraintsViolation) {
+        super.setup( om, name, r );
+        setAddBias( addBias );
+        setConstraintsViolation( constraintsViolation );
     }
 
     public void setConstraintsViolation( float C ) {
@@ -38,7 +48,15 @@ public class SupervisedLearningConfig extends NetworkConfig {
     }
 
     public float getConstraintsViolation() {
-        return _om.getFloat( _keyConstraintsViolation );
+        return _om.getFloat( getKey( _keyConstraintsViolation ) );
+    }
+
+    public void setAddBias( boolean addBias ) {
+        _om.put( getKey( _keyAddBias ), addBias );
+    }
+
+    public boolean getAddBias() {
+        return _om.getBoolean( getKey( _keyAddBias ) );
     }
 
     public void setModelString( String modelString ) {
@@ -46,7 +64,7 @@ public class SupervisedLearningConfig extends NetworkConfig {
     }
 
     public String getModelString() {
-        return _om.getString( _keyModelString );
+        return _om.getString( getKey( _keyModelString ) );
     }
 
 }

@@ -20,7 +20,6 @@
 package io.agi.core.ml.supervised;
 
 import io.agi.core.data.Data;
-import io.agi.core.data.DataSize;
 import io.agi.core.orm.Callback;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
@@ -60,7 +59,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
     @Override
     public void setup( SupervisedLearningConfig config ) {
         this._config = config;
-        loadModel();
+        loadModel();    // load model if it exists in config object
     }
 
     @Override
@@ -72,7 +71,9 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
     @Override
     public void loadModel() {
         String modelString = _config.getModelString();
-        loadModel( modelString );
+        if ( modelString != null ) {
+            loadModel( modelString );
+        }
     }
 
     @Override
@@ -89,7 +90,8 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
         }
     }
 
-    private void saveModel() {
+    @Override
+    public String saveModel() {
         String modelString = null;
         try {
             modelString = modelString();
@@ -100,8 +102,14 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
         }
 
         _config.setModelString( modelString );
+        return modelString;
     }
 
+    /**
+     * Serialise the model into a string and return.
+     * @return The model as a string.
+     * @throws Exception
+     */
     public String modelString() throws Exception {
 
         String modelString = null;
@@ -124,14 +132,89 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
         return modelString;
     }
 
+    private Problem setupProblem( Data featuresMatrixTrain, Data classTruthVector ) {
+
+        int m = SupervisedUtil.calcMFromFeatureMatrix( featuresMatrixTrain );   // m = number of data points
+        int n = SupervisedUtil.calcNFromFeatureMatrix( featuresMatrixTrain );   // n = feature vector size
+        int n_maxIdx = n;
+
+        Problem problem = new Problem();
+
+        boolean addBias = _config.getAddBias();
+
+        if ( addBias ) {
+
+            // IMPLEMENTATION NOTE:
+            // An alternative implementation is to simply add a column to the features matrix here.
+            // However, we have chosen to mirror the implementation of the cli version of LibLinear,
+            // and add within the problem construction loop.
+            // Predict() should be adjusted accordingly as well.
+            //      Data biasColumn = new Data( 1, m );
+            //      featuresMatrixTrain = Data2d.addColumn( featuresMatrixTrain, biasColumn );
+
+            problem.bias = 1.f;         // if >=0, there is a bias term     --> used, but non cli version does not automatically add the bias terms
+            n++;                        // adjust n
+        }
+        else {
+            problem.bias = -1.f;        // if <0, no bias term
+        }
+
+        problem.l = m;              // number of training examples
+        problem.n = n;              // number of features (including bias feature, if it exists)
+        problem.x = new Feature[ m ][ n ];
+        problem.y = new double[ m ];
+
+        // iterate data points (vectors in the VectorSeries - each vector is a data point)
+        for( int r = 0; r < m; ++r ) {
+
+            float classTruth = SupervisedUtil.getClassTruth( classTruthVector, r );
+
+            // iterate dimensions of x (elements of the vector)
+            for( int c = 0; c < n; ++c ) {
+
+                double xi;
+                if( c == n_maxIdx ) {
+                    xi = 1.f;
+                }
+                else {
+                    xi = SupervisedUtil.getFeatureValue( featuresMatrixTrain, n_maxIdx, r, c );
+                }
+
+                // use sparse representation
+                if( xi == 0.f ) {
+                    continue;
+                }
+
+                problem.x[ r ][ c ] = new FeatureNode( c+1, xi );
+                problem.y[ r ] = classTruth;
+            }
+        }
+
+        return problem;
+    }
+
+    private Parameter setupParameters() {
+
+        SolverType solver = SolverType.L2R_LR; // -s 0
+        double eps = 0.001; // default stopping criteria
+
+        // values from config
+        float C = _config.getConstraintsViolation();        // cost of constraints violation
+
+        Parameter parameter = new Parameter( solver, C, eps );
+        return parameter;
+    }
+
     @Override
-    public void train( Data featuresMatrix, Data classTruthVector ) {
+    public void train( Data featuresMatrixTrain, Data classTruthVector ) {
 
         Parameter parameters = setupParameters();
 
-        Problem problem = setupProblem( featuresMatrix, classTruthVector );
+        Problem problem = setupProblem( featuresMatrixTrain, classTruthVector );
 
         _model = Linear.train( problem, parameters );
+
+        saveModel();    // save the model to config object
     }
 
 
@@ -144,81 +227,41 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
     @Override
     public void predict( Data featuresMatrix, Data predictionsVector ) {
 
-        DataSize datasetSize = featuresMatrix._dataSize;
-        int m = datasetSize.getSize( DataSize.DIMENSION_Y );        // m = number of data points
-        int n = datasetSize.getSize( DataSize.DIMENSION_X );        // n = feature vector size
+        int m = SupervisedUtil.calcMFromFeatureMatrix( featuresMatrix );   // m = number of data points
+        int n = SupervisedUtil.calcNFromFeatureMatrix( featuresMatrix );   // n = feature vector size
+        int n_maxIdx = n;
 
-        Feature[][] x = new Feature[ n ][ m ];
+        boolean addBias = _config.getAddBias();
+
+        if ( addBias ) {
+            n++;                        // adjust n
+        }
+
+
+        Feature[][] x = new Feature[ m ][ n ];
 
         // convert input to Feature instance, then predict
         // iterate data points (vectors in the VectorSeries - each vector is a data point)
-        for( int i = 0; i < m; ++i ) {
+        for( int r = 0; r < m; ++r ) {
 
             // iterate dimensions of x (elements of the vector)
-            for( int j = 0; j < n; j++ ) {
-                double xij = getFeatureValue( featuresMatrix, m, i, j );
-                x[ i ][ j ] = new FeatureNode( j+1, xij );
-            }
+            for( int c = 0; c < n; ++c ) {
 
-            predictionsVector._values[ i ] = ( float ) Linear.predict( _model, x[ i ] );
-        }
-    }
-
-    private Problem setupProblem( Data featuresMatrix, Data classTruthVector ) {
-
-        DataSize datasetSize = featuresMatrix._dataSize;
-        int m = datasetSize.getSize( DataSize.DIMENSION_Y );        // m = number of data points
-        int n = datasetSize.getSize( DataSize.DIMENSION_X );        // n = feature vector size
-
-        featuresMatrix.normalizeFeatures();
-
-        Problem problem = new Problem();
-        problem.l = m; // number of training examples
-        problem.n = n; // number of features
-
-        // iterate data points (vectors in the VectorSeries - each vector is a data point)
-        for( int i = 0; i < n; ++i ) {
-
-            // iterate dimensions of x (elements of the vector)
-            for( int j = 0; j < m; j++ ) {
-
-                float classTruth = getClassTruth( classTruthVector, i );
-                double xij = getFeatureValue( featuresMatrix, m, i, j );
-
-                if( xij == 0.f ) {
-                    continue;
+                double xi;
+                if( c == n_maxIdx ) {
+                    xi = 1.f;
+                }
+                else {
+                    xi = SupervisedUtil.getFeatureValue( featuresMatrix, n_maxIdx, r, c );
                 }
 
-                problem.x[ i ][ j ] = new FeatureNode( j + 1, xij );
-                problem.y[ i ] = classTruth;
+                x[ r ][ c ] = new FeatureNode( c+1, xi );
             }
+
+            predictionsVector._values[ r ] = ( float ) Linear.predict( _model, x[ r ] );
         }
-
-        return problem;
     }
 
-    private Parameter setupParameters() {
 
-        SolverType solver = SolverType.L2R_LR; // -s 0
-        double eps = 0.01; // stopping criteria
-
-        // values from config
-        float C = _config.getConstraintsViolation();        // cost of constraints violation
-
-        Parameter parameter = new Parameter( solver, C, eps );
-        return parameter;
-    }
-
-    // convenience method to get the specific value from featuresMatrix
-    private double getFeatureValue( Data featuresMatrix, int datasetSize, int datapointIndex, int featureIndex ) {
-        float value = featuresMatrix._values[ datapointIndex * datasetSize + featureIndex ];
-        return value;
-    }
-
-    // convenience method to get the truth label from classTruthVector
-    private float getClassTruth( Data classTruthVector, int datapointIndex ) {
-        float value = classTruthVector._values[ datapointIndex ];
-        return value;
-    }
 
 }

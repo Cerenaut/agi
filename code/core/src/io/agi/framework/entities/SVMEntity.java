@@ -67,13 +67,13 @@ public class SVMEntity extends SupervisedLearningEntity {
         _svm.reset();
     }
 
-    protected void loadModel( int features, int labels, int labelClasses ) {
+    protected void loadModel( ) {
         // Get all the parameters:
         SVMEntityConfig config = ( SVMEntityConfig ) _config;
 
         // Create the config object:
         SupervisedLearningConfig svmConfig = new SupervisedLearningConfig();
-        svmConfig.setup( config.C );
+        svmConfig.setup( _om, "svmConfig", _r, config.bias, config.C );
 
         // Create the implementing object itself, and copy data from persistence into it:
         _svm = new Svm( getName(), _om );
@@ -99,7 +99,7 @@ public class SVMEntity extends SupervisedLearningEntity {
      * @param labels Latest sample
      */
     protected void trainSample( Data features, Data labels ) {
-        throw new java.lang.UnsupportedOperationException();
+            throw new java.lang.UnsupportedOperationException();
     }
 
     /**

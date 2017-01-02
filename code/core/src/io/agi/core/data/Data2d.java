@@ -25,10 +25,15 @@
 
 package io.agi.core.data;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Functions for viewing and restructuring N-dimensional FloatArray2s as paintable
@@ -39,6 +44,92 @@ import java.util.Iterator;
  */
 public class Data2d {
 
+    protected static final Logger _logger = LogManager.getLogger();
+
+    /**
+     * Construct and return a 2D Data object by reading in all columns of a csv file/
+     * @param filepath the full name of the file including path.
+     * @return the 2D Data object
+     */
+    public static Data createFromCSV( String filepath ) {
+        Data data = createFromCSV( filepath, -1, -1 );
+        return data;
+    }
+
+    /**
+     * Construct a 2D Data object by reading from a csv within column range specified by colStart and colEnd.
+     * Rows are the first dimension (Y, height) and columns are the second dimension (X, width).
+     *
+     * @param filepath  the full name of the file including path.
+     * @param colIdxMin start of range of columns to read in (inclusive, and uses index style i.e. first column is
+     *                  specified by 0).
+     *                  If less than 0, 0 will be used.
+     *                  If greater than number of columns, limited to max column.
+     * @param colIdxMax end of range of columns to read in (inclusive, and uses index style i.e. first column is
+     *                  specified by 0).
+     *                  If less than 0, less than colStart or greater than idx of last column, read in all columns.
+     * @return the 2D Data object
+     *
+     */
+    public static Data createFromCSV( String filepath, int colIdxMin, int colIdxMax ) {
+
+        Data data = null;
+
+        // read in lines
+        java.util.List< String > lines;
+        try {
+            lines = Files.lines( Paths.get( filepath ) ).collect( Collectors.toList() );
+
+            // calculate size of Data object
+            int numRows = lines.size();
+            int numCols = 0;
+            if( numRows > 0 ) {
+                String line = lines.get( 0 );
+                String[] columns = line.split( "," );
+                numCols = columns.length;
+            }
+
+            int cMin;
+            int cMax;
+
+            cMin = Integer.max( colIdxMin, 0 );       // make sure not less than 0 (min possible)
+            cMax = Integer.min( colIdxMax, numCols );    // make sure not more than max possible
+
+            if( ( colIdxMax < 0 )
+                    || ( colIdxMax < cMin )
+                    || ( colIdxMax >= numCols )
+                    ) {
+                cMax = numCols - 1;
+            }
+
+            // re-calculate numCols
+            numCols = cMax - cMin + 1;
+
+            // create new appropriately sized Data object
+            data = new Data( numCols, numRows );    // Data.(X/width/column) == features of X in ML algorithms (m)
+
+            // copy data from file into Data
+            for( int r = 0; r < lines.size(); ++r ) {
+                String[] columns = lines.get( r ).split( "," );
+                for( int c = cMin; c <= cMax; ++c ) {
+                    float value = Float.valueOf( columns[ c ] );
+                    int cOffset = c - cMin;
+                    data._values[ r * numCols + cOffset ] = value;
+                }
+            }
+
+            DataSize dataSize = data._dataSize;
+            String message = "Created 2d matrix. (X, Y) = (" + dataSize.getSize( DataSize.DIMENSION_X ) + ", " + dataSize.getSize( DataSize.DIMENSION_Y ) + ")";
+            _logger.info( message );
+
+        }
+        catch( IOException e ) {
+            _logger.error( "Unable to open and read the CSV file." );
+            _logger.error( e.toString(), e );
+        }
+
+        return data;
+    }
 
     /**
      * Assuming a row-major matrix (i.e. all cols in a row are contiguous elements),
@@ -71,7 +162,7 @@ public class Data2d {
             Data col = new Data( rows );
 
             for( int r = 0; r < rows; ++r ) {
-                float v = matrix._values[ r * rows + c ];
+                float v = matrix._values[ r * cols + c ];
                 col._values[ r ] = v;
             }
 
@@ -381,4 +472,28 @@ public class Data2d {
         return y;
     }
 
+    public static String toString( Data data ) {
+
+        DataSize datasetSize = data._dataSize;
+        int rows = datasetSize.getSize( DataSize.DIMENSION_Y );
+        int cols = datasetSize.getSize( DataSize.DIMENSION_X );
+
+        String stringMatrix = "";
+
+        for ( int r = 0 ; r < rows ; ++r) {
+            String stringCol = "";
+            for ( int c = 0 ; c < cols ; ++c) {
+                float val = data._values[ r * cols + c];
+                if ( stringCol.equalsIgnoreCase( "") ) {
+                    stringCol += val;
+                }
+                else {
+                    stringCol += ", " + val;
+                }
+            }
+            stringMatrix += stringCol + "\n";
+        }
+
+        return stringMatrix;
+    }
 }

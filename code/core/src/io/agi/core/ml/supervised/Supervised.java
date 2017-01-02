@@ -41,15 +41,21 @@ public interface Supervised {
 
     /**
      * Train the model (subclasses should ensure that the model is saved to config).
-     * @param featuresMatrix the input data points used for training the model.
+     * @param featuresMatrixTrain the input data points used for training the model.
      *                       This is an n x m matrix [n][m], where n = feature vector size and m = number of data points.
      * @param classTruthVector For each data point (m), this is the true label used for supervised learning training.
      *                         m x 1 vector
      */
-    void train( Data featuresMatrix, Data classTruthVector );
+    void train( Data featuresMatrixTrain, Data classTruthVector );
 
     /**
-     * Load model from config object.
+     * Save the model to config object.
+     * @return the model in serialised form as a string.
+     */
+    String saveModel();
+
+    /**
+     * Load model from config object (if it is not null).
      */
     void loadModel( );
 
