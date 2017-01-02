@@ -42,7 +42,6 @@ public class KSparseAutoencoderConfig  extends CompetitiveLearningConfig {
     public static final String BATCH_COUNT = "batch-age";
     public static final String BATCH_SIZE = "batch-size";
 
-
     public KSparseAutoencoderConfig() {
     }
 

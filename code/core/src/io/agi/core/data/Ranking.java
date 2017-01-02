@@ -144,8 +144,6 @@ public class Ranking {
 
         Iterator i = ranking.keySet().iterator();
 
-        int size = 0;
-
         while( i.hasNext() ) {
             Float key = ( Float ) i.next();
             ArrayList< Integer > al = ranking.get( key );
@@ -277,14 +275,6 @@ public class Ranking {
             i = ranking.descendingKeySet().iterator(); // maxima first
         } else { // rank min first
             i = ranking.keySet().iterator(); // ascending values
-        }
-
-        HashMap< Float, ArrayList< Integer > > mutableRankedValues = new HashMap< Float, ArrayList< Integer > >();
-
-        for( Float key : ranking.keySet() ) {
-            ArrayList< Integer > al = ranking.get( key );
-            ArrayList< Integer > copy = new ArrayList< Integer >( al );
-            mutableRankedValues.put( key, copy );
         }
 
         while( i.hasNext() ) {
