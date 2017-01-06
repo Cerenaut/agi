@@ -20,6 +20,7 @@
 package io.agi.framework.entities;
 
 import io.agi.core.data.Data;
+import io.agi.core.ml.supervised.SupervisedBatchTraining;
 import io.agi.core.ml.supervised.SupervisedLearningConfig;
 import io.agi.core.ml.supervised.Svm;
 import io.agi.core.orm.ObjectMap;
@@ -30,23 +31,17 @@ import io.agi.framework.persistence.models.ModelEntity;
 import java.util.Collection;
 
 /**
- * This is a 'learning analytics' Entity
- * These Entities have two main phases, 'learn' on and off
- * <p>
- * In Learn=on (Training) phase - it simply collects the data that it needs (via a VectorSeriesEntity that is an Input)
- * In Learn=off (Testing) phase - train SVM if not already trained, and give predictions (i.e. only train once then predict)
- * <p>
- * <p>
- * <p>
+ *
+ *
  * Created by gideon on 11/07/2016.
  */
-public class SVMEntity extends SupervisedLearningEntity {
+public class SupervisedBatchTrainingEntity extends SupervisedLearningEntity {
 
     public static final String ENTITY_TYPE = "svm-entity";
 
-    Svm _svm;
+    SupervisedBatchTraining _learner;
 
-    public SVMEntity( ObjectMap om, Node n, ModelEntity model ) {
+    public SupervisedBatchTrainingEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
     }
 
@@ -62,12 +57,12 @@ public class SVMEntity extends SupervisedLearningEntity {
         return SVMEntityConfig.class;
     }
 
-    protected void resetModel() {
-        super.resetModel();
-        _svm.reset();
+    protected void reset() {
+        super.reset();
+        _learner.reset();
     }
 
-    protected void loadModel( ) {
+    protected void loadModel( int features, int labels, int labelClasses ) {
         // Get all the parameters:
         SVMEntityConfig config = ( SVMEntityConfig ) _config;
 
@@ -76,9 +71,9 @@ public class SVMEntity extends SupervisedLearningEntity {
         svmConfig.setup( _om, "svmConfig", _r, config.bias, config.C );
 
         // Create the implementing object itself, and copy data from persistence into it:
-        _svm = new Svm( getName(), _om );
-        _svm.setup( svmConfig );
-        _svm.loadModel( );
+        _learner = new Svm( getName(), _om );
+        _learner.setup( svmConfig );
+        _learner.loadModel( );
     }
 
     /**
@@ -89,7 +84,7 @@ public class SVMEntity extends SupervisedLearningEntity {
      * @param features Nbr of features in each sample
      */
     protected void trainBatch( Data featuresTimeMatrix, Data labelsTimeMatrix, int features ) {
-        _svm.train( featuresTimeMatrix, labelsTimeMatrix );
+        _learner.train( featuresTimeMatrix, labelsTimeMatrix );
     }
 
     /**
@@ -120,7 +115,7 @@ public class SVMEntity extends SupervisedLearningEntity {
      */
     protected void predict( Data features, Data predictedLabels ) {
         predictedLabels.set( 0f );
-        _svm.predict( features, predictedLabels );
+        _learner.predict( features, predictedLabels );
     }
 
 }

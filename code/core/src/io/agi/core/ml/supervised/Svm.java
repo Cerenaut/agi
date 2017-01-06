@@ -20,7 +20,6 @@
 package io.agi.core.ml.supervised;
 
 import io.agi.core.data.Data;
-import io.agi.core.data.DataSize;
 import io.agi.core.orm.Callback;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
@@ -35,7 +34,7 @@ import java.io.IOException;
 /**
  * Created by gideon on 14/12/16.
  */
-public class Svm extends NamedObject implements Callback, Supervised {
+public class Svm extends NamedObject implements Callback, SupervisedBatchTraining {
 
     protected static final Logger _logger = LogManager.getLogger();
 

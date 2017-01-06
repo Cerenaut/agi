@@ -23,7 +23,6 @@ import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
-import io.agi.framework.Framework;
 import io.agi.framework.Node;
 import io.agi.framework.persistence.models.ModelEntity;
 
@@ -88,8 +87,8 @@ public class FeatureLabelsCorrelationEntity extends SupervisedLearningEntity {
         return FeatureLabelsCorrelationEntityConfig.class;
     }
 
-    protected void resetModel() {
-        super.resetModel();
+    protected void reset() {
+        super.reset();
         _featureLabelCount.set( 0.f );
     }
 

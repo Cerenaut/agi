@@ -24,7 +24,7 @@ import io.agi.core.data.Data;
 /**
  * Created by gideon on 14/12/16.
  */
-public interface Supervised {
+public interface SupervisedBatchTraining {
 
     void setup( SupervisedLearningConfig config );
 

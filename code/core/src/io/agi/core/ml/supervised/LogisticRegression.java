@@ -36,7 +36,7 @@ import java.io.StringWriter;
 /**
  * Created by gideon on 23/12/16.
  */
-public class LogisticRegression extends NamedObject implements Callback, Supervised {
+public class LogisticRegression extends NamedObject implements Callback, SupervisedBatchTraining {
 
     protected static final Logger _logger = LogManager.getLogger();
 
