@@ -58,8 +58,9 @@ import java.util.Collection;
  * In Batch mode, the algorithm is trained on a large number of samples which are supplied and used in one go.
  *      *NOTE:* currently batch mode uses the accumulated data - it does not support input of a batch of data.
  * <p>
- * The 'model' refers to the parameters of the learning algorithm. They are saved to and loaded form persistence
- * every iteration.
+ * The 'model' refers to the parameters of the learning algorithm - at times not just the hypothesis parameters
+ *      (e.g. for the batch supervised learning algorithms implemented at this time).
+ * They are saved to and loaded form persistence every iteration.
  * <p>
  * <p>
  * Created by gideon on 11/07/2016.

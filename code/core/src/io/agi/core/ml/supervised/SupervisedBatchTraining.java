@@ -26,7 +26,7 @@ import io.agi.core.data.Data;
  */
 public interface SupervisedBatchTraining {
 
-    void setup( SupervisedLearningConfig config );
+    void setup( SupervisedBatchTrainingConfig config );
 
     void reset();
 
@@ -64,4 +64,12 @@ public interface SupervisedBatchTraining {
      * @param modelString
      */
     void loadModel( String modelString );
+
+    /**
+     * Return the up-to-date serialised model that has been created by training the algorithm.
+     * It includes all the parameters of the algorithm.
+     * It is everything required to make predictions plus additional information.
+     * @return
+     */
+    String getModelString();
 }

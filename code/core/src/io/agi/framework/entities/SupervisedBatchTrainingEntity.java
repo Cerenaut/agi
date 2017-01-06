@@ -20,8 +20,9 @@
 package io.agi.framework.entities;
 
 import io.agi.core.data.Data;
+import io.agi.core.ml.supervised.LogisticRegression;
 import io.agi.core.ml.supervised.SupervisedBatchTraining;
-import io.agi.core.ml.supervised.SupervisedLearningConfig;
+import io.agi.core.ml.supervised.SupervisedBatchTrainingConfig;
 import io.agi.core.ml.supervised.Svm;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
@@ -37,7 +38,7 @@ import java.util.Collection;
  */
 public class SupervisedBatchTrainingEntity extends SupervisedLearningEntity {
 
-    public static final String ENTITY_TYPE = "svm-entity";
+    public static final String ENTITY_TYPE = "supervised-batch-training-entity";
 
     SupervisedBatchTraining _learner;
 
@@ -54,7 +55,7 @@ public class SupervisedBatchTrainingEntity extends SupervisedLearningEntity {
     }
 
     public Class getConfigClass() {
-        return SVMEntityConfig.class;
+        return SupervisedBatchTrainingEntityConfig.class;
     }
 
     protected void reset() {
@@ -62,17 +63,41 @@ public class SupervisedBatchTrainingEntity extends SupervisedLearningEntity {
         _learner.reset();
     }
 
+    /**
+     * Override to ensure that model is persisted (get the string representation and set in the entity's config).
+     */
+    protected void saveModel() {
+
+        // Set the model parameter:
+        SupervisedBatchTrainingEntityConfig config = ( SupervisedBatchTrainingEntityConfig ) _config;
+        config.modelString = _learner.getModelString();
+    }
+
+    /**
+     * Override to ensure that the model is loaded from persistence.
+     * Get string from entity's config object, set in learner's config and it will be used by learner.loadModel()
+     */
     protected void loadModel( int features, int labels, int labelClasses ) {
+
         // Get all the parameters:
-        SVMEntityConfig config = ( SVMEntityConfig ) _config;
+        SupervisedBatchTrainingEntityConfig config = ( SupervisedBatchTrainingEntityConfig ) _config;
 
-        // Create the config object:
-        SupervisedLearningConfig svmConfig = new SupervisedLearningConfig();
-        svmConfig.setup( _om, "svmConfig", _r, config.bias, config.C );
+        // Create the config object for the supervised learning algorithm:
+        SupervisedBatchTrainingConfig learnerConfig = new SupervisedBatchTrainingConfig();
+        learnerConfig.setup( _om, "SupervisedBatchTrainingConfig", _r, config.modelString, config.bias, config.C );
 
-        // Create the implementing object itself, and copy data from persistence into it:
-        _learner = new Svm( getName(), _om );
-        _learner.setup( svmConfig );
+        // Create the implementing object itself, using data from persistence:
+        if ( config.algorithm.equalsIgnoreCase( SupervisedBatchTrainingEntityConfig.ALGORITHM_SVM ) ) {
+            _learner = new Svm( getName(), _om );
+        }
+        else if  ( config.algorithm.equalsIgnoreCase( SupervisedBatchTrainingEntityConfig.ALGORITHM_LOGISTIC_REGRESSION ) ) {
+            _learner = new LogisticRegression( getName(), _om );
+        }
+        else {
+            throw new java.lang.UnsupportedOperationException( "Algorithm type not supported" );
+        }
+
+        _learner.setup( learnerConfig );
         _learner.loadModel( );
     }
 
@@ -94,7 +119,7 @@ public class SupervisedBatchTrainingEntity extends SupervisedLearningEntity {
      * @param labels Latest sample
      */
     protected void trainSample( Data features, Data labels ) {
-            throw new java.lang.UnsupportedOperationException();
+            throw new java.lang.UnsupportedOperationException( "Online training is not supported by this algorithm" );
     }
 
     /**
@@ -104,7 +129,7 @@ public class SupervisedBatchTrainingEntity extends SupervisedLearningEntity {
      * @param labels
      */
     protected void trainOnline( Data features, Data labels ) {
-        throw new java.lang.UnsupportedOperationException();
+        throw new java.lang.UnsupportedOperationException( "Online training is not supported by this algorithm" );
     }
 
     /**

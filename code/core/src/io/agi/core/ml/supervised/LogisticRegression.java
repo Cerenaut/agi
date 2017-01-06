@@ -40,7 +40,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
 
     protected static final Logger _logger = LogManager.getLogger();
 
-    private SupervisedLearningConfig _config;
+    private SupervisedBatchTrainingConfig _config;
     private Model _model = null;
 
     public LogisticRegression( String name, ObjectMap om ) {
@@ -57,7 +57,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
     }
 
     @Override
-    public void setup( SupervisedLearningConfig config ) {
+    public void setup( SupervisedBatchTrainingConfig config ) {
         this._config = config;
         loadModel();    // load model if it exists in config object
     }
@@ -91,6 +91,11 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
     }
 
     @Override
+    public String getModelString() {
+        return _config.getModelString();
+    }
+
+    @Override
     public String saveModel() {
         String modelString = null;
         try {
@@ -110,7 +115,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
      * @return The model as a string.
      * @throws Exception
      */
-    public String modelString() throws Exception {
+    private String modelString() throws Exception {
 
         String modelString = null;
         if( _model != null ) {
