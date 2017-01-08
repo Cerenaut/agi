@@ -45,7 +45,7 @@ import java.util.Collection;
  *
  * This entity can terminate an experiment when the test dataset are processed.
  *
- * Created by gideon on 08/01/17.
+ * Created by gideon on 08/01/2017.
  */
 public class AnalyticsEntity extends Entity {
 

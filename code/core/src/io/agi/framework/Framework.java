@@ -22,7 +22,6 @@ package io.agi.framework;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import io.agi.core.orm.AbstractPair;
-import io.agi.core.orm.Keys;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.util.FileUtil;
 import io.agi.framework.coordination.http.HttpExportHandler;
@@ -39,7 +38,6 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Functions used throughout the experimental framework, i.e. not specific to Entity or Node.
@@ -47,7 +45,7 @@ import java.util.stream.Collectors;
  */
 public class Framework {
 
-    protected static final Logger logger = LogManager.getLogger();
+    protected static final Logger _logger = LogManager.getLogger();
 
     public static final String ENTITY_NAME_PREFIX_DELIMITER = "--";
 
@@ -205,16 +203,33 @@ public class Framework {
     }
 
     /**
+     * Allows the config properties to be set with a config object.
+     * WARNING: if the wrong type of config is used (i.e. it has properties not intended for this entity) then there
+     * will be downstream issues.
+     * @param config
+     */
+    public static void SetConfig( String entityName, EntityConfig config ) {
+
+        _logger.info( "Set config of: " + entityName + " to the following: " +
+                new GsonBuilder().setPrettyPrinting().create().toJson( config ) );
+
+        Persistence persistence = Node.NodeInstance().getPersistence();
+        ModelEntity modelEntity = persistence.fetchEntity( entityName );
+        String configAsString = new Gson().toJson( config );
+        modelEntity.config = configAsString;
+    }
+
+    /**
      * Allows a single config property to be modified.
      */
     public static void SetConfig( String entityName, String configPath, String value ) {
 
-        logger.info( "Set config of: " + entityName + " path: " + configPath + " value: " + value );
+        _logger.info( "Set config of: " + entityName + " path: " + configPath + " value: " + value );
 
         Persistence persistence = Node.NodeInstance().getPersistence();
-        ModelEntity me = persistence.fetchEntity( entityName );
+        ModelEntity modelEntity = persistence.fetchEntity( entityName );
         JsonParser parser = new JsonParser();
-        JsonObject root = parser.parse( me.config ).getAsJsonObject();
+        JsonObject root = parser.parse( modelEntity.config ).getAsJsonObject();
 
         // navigate to the nested property
         // N.B. String.split : http://stackoverflow.com/questions/3481828/how-to-split-a-string-in-java
@@ -243,8 +258,8 @@ public class Framework {
         parent.addProperty( part, value );
 
         // re-serialize the whole thing
-        me.config = root.toString();//getAsString();
-        persistence.persistEntity( me );
+        modelEntity.config = root.toString();//getAsString();
+        persistence.persistEntity( modelEntity );
     }
 
     public static JsonElement GetNestedProperty( JsonObject root, String path ) {
@@ -310,7 +325,7 @@ public class Framework {
             ImportEntities( jsonEntities );
         }
         catch( Exception e ) {
-            logger.error( e.getStackTrace() );
+            _logger.error( e.getStackTrace() );
             System.exit( -1 );
         }
     }
@@ -330,7 +345,7 @@ public class Framework {
             List< ModelEntity > entities = gson.fromJson( jsonEntities, listType );
 
             for( ModelEntity modelEntity : entities ) {
-                logger.info( "Persisting Entity of type: " + modelEntity.type + ", that is hosted at Node: " + modelEntity.node );
+                _logger.info( "Persisting Entity of type: " + modelEntity.type + ", that is hosted at Node: " + modelEntity.node );
                 CreateEntity( modelEntity );
             }
         }
@@ -349,7 +364,7 @@ public class Framework {
             ImportData( jsonData );
         }
         catch( Exception e ) {
-            logger.error( e.getStackTrace() );
+            _logger.error( e.getStackTrace() );
             System.exit( -1 );
         }
     }
@@ -390,12 +405,12 @@ public class Framework {
 
             List< ModelDataReference > references = gson.fromJson( jsonEntity, listType );
             for( ModelDataReference modelDataReference : references ) {
-                logger.info( "Persisting data input reference for data: " + modelDataReference.dataKey + " with input data keys: " + modelDataReference.refKeys );
+                _logger.info( "Persisting data input reference for data: " + modelDataReference.dataKey + " with input data keys: " + modelDataReference.refKeys );
                 Framework.SetDataReference( modelDataReference.dataKey, modelDataReference.refKeys );
             }
         }
         catch( Exception e ) {
-            logger.error( e.getStackTrace() );
+            _logger.error( e.getStackTrace() );
             System.exit( -1 );
         }
     }
@@ -411,13 +426,13 @@ public class Framework {
 
             for( ModelEntityConfigPath modelConfig : modelConfigs ) {
 
-                logger.info( "Persisting entity: " + modelConfig.entityName + " config path: " + modelConfig.configPath + " value: " + modelConfig.configValue );
+                _logger.info( "Persisting entity: " + modelConfig.entityName + " config path: " + modelConfig.configPath + " value: " + modelConfig.configValue );
 
                 Framework.SetConfig( modelConfig.entityName, modelConfig.configPath, modelConfig.configValue );
             }
         }
         catch( Exception e ) {
-            logger.error( e.getStackTrace() );
+            _logger.error( e.getStackTrace() );
             System.exit( -1 );
         }
     }
@@ -561,7 +576,7 @@ public class Framework {
             return true;
         }
         catch( Exception e ) {
-            logger.error( e.getStackTrace() );
+            _logger.error( e.getStackTrace() );
             return false;
         }
     }

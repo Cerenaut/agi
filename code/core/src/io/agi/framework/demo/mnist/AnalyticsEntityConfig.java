@@ -22,7 +22,7 @@ package io.agi.framework.demo.mnist;
 import io.agi.framework.EntityConfig;
 
 /**
- * Created by gideon on 27/03/2016.
+ * Created by gideon on 08/01/2017.
  */
 public class AnalyticsEntityConfig extends EntityConfig {
 
@@ -33,6 +33,12 @@ public class AnalyticsEntityConfig extends EntityConfig {
 
     public int trainSetSize = 0;
     public int testSetSize = 0;
+
+    public String trainSetFeaturesMatrix  = "";
+    public String trainSetLabelMatrix = "";
+    public String testSetFeaturesMatrix  = "";
+    public String testSetLabelMatrix = "";
+
 
     public boolean terminate = false;      // trigger to stop the experiment
     public String phase = PHASE_TRAINING;  // can only be in one of two phases
