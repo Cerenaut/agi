@@ -85,6 +85,8 @@ public class EvaluateTrainingDemo {
 
         SupervisedBatchTrainingEntityConfig logisticRegressionEntityConfig = new SupervisedBatchTrainingEntityConfig();
         logisticRegressionEntityConfig.algorithm = SupervisedBatchTrainingEntityConfig.ALGORITHM_LOGISTIC_REGRESSION;
+        logisticRegressionEntityConfig.bias = true;
+        logisticRegressionEntityConfig.C = 100.f;
 
 
         // Define some entities
