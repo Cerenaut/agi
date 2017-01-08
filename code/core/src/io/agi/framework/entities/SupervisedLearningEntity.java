@@ -371,13 +371,13 @@ public class SupervisedLearningEntity extends Entity {
                     accumulate( features, labels );
                 }
 
-                if( config.learningMode.equalsIgnoreCase( LEARNING_MODE_ONLINE ) ) {
+                if( config.learningMode.equals( LEARNING_MODE_ONLINE ) ) {
                     trainOnline( features, labels );
                 }
-                else if( config.learningMode.equalsIgnoreCase( LEARNING_MODE_SAMPLE ) ) {
+                else if( config.learningMode.equals( LEARNING_MODE_SAMPLE ) ) {
                     trainSample( features, labels );
                 }
-                else if( config.learningMode.equalsIgnoreCase( LEARNING_MODE_BATCH ) ) {
+                else if( config.learningMode.equals( LEARNING_MODE_BATCH ) ) {
                     if( config.learnBatchOnce && config.learnBatchComplete ) {
                         // skip
                     }

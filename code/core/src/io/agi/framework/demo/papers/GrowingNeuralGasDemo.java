@@ -131,7 +131,7 @@ public class GrowingNeuralGasDemo {
         Framework.SetConfig( vectorSeriesName, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( valueSeriesName, "cache", String.valueOf( cacheAllData ) );
 
-        // Mnist config
+        // MNIST config
         Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldX", "0" );
         Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldY", "0" );
         Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldW", "28" );

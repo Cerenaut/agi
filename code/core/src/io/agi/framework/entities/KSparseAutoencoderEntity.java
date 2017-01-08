@@ -19,8 +19,6 @@
 
 package io.agi.framework.entities;
 
-import io.agi.core.alg.AutoRegionLayer;
-import io.agi.core.alg.AutoRegionLayerConfig;
 import io.agi.core.ann.unsupervised.KSparseAutoencoder;
 import io.agi.core.ann.unsupervised.KSparseAutoencoderConfig;
 import io.agi.core.data.Data;
@@ -92,8 +90,8 @@ public class KSparseAutoencoderEntity extends Entity {
         attributes.add( OUTPUT_GRADIENTS );
         attributes.add( HIDDEN_GRADIENTS );
 
-        flags.putFlag(WEIGHTS, DataFlags.FLAG_NODE_CACHE);
-        flags.putFlag(BIASES_1, DataFlags.FLAG_NODE_CACHE);
+        flags.putFlag( WEIGHTS, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( BIASES_1, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( BIASES_2, DataFlags.FLAG_NODE_CACHE );
 
         flags.putFlag( WEIGHTS_VELOCITY, DataFlags.FLAG_NODE_CACHE );
@@ -134,7 +132,7 @@ public class KSparseAutoencoderEntity extends Entity {
         // Feedforward size
         Point inputSize = Data2d.getSize( input );
 
-        int inputWidth  = inputSize.x;
+        int inputWidth = inputSize.x;
         int inputHeight = inputSize.y;
         int inputArea = inputWidth * inputHeight;
 
@@ -170,7 +168,7 @@ public class KSparseAutoencoderEntity extends Entity {
             ksa.reset();
         }
 
-        ksa._c.setLearn(config.learn);
+        ksa._c.setLearn( config.learn );
         ksa.update();
 
         // Save computed properties
@@ -186,7 +184,7 @@ public class KSparseAutoencoderEntity extends Entity {
 
         ksa._inputValues = getData( INPUT );
 
-        ksa._cellWeights = getDataLazyResize(WEIGHTS, ksa._cellWeights._dataSize);
+        ksa._cellWeights = getDataLazyResize( WEIGHTS, ksa._cellWeights._dataSize );
         ksa._cellBiases1 = getDataLazyResize( BIASES_1, ksa._cellBiases1._dataSize );
         ksa._cellBiases2 = getDataLazyResize( BIASES_2, ksa._cellBiases2._dataSize );
 

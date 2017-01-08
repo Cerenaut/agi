@@ -22,7 +22,6 @@ package io.agi.framework.demo.mnist;
 import io.agi.core.data.Data;
 import io.agi.core.math.ShuffledIndex;
 import io.agi.core.orm.ObjectMap;
-import io.agi.core.util.images.BufferedImageSource.BufferedImageSource;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceImageFile;
 import io.agi.core.util.images.ImageScreenScraper;
 import io.agi.framework.DataFlags;
@@ -34,8 +33,6 @@ import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Random;
 
 /**
  * A generic setup for a source of images that can be classified.
@@ -77,15 +74,6 @@ public class ImageLabelEntity extends Entity {
        return ImageLabelEntityConfig.class;
     }
 
-    public Collection< String > getEntityNames( String configValue ) {
-        String[] names = configValue.split(",");
-        Collection< String > c = new ArrayList< String >();
-        for( String s : names ) {
-            c.add( s );
-        }
-        return c;
-    }
-
     public int getShuffledIndex( BufferedImageSourceImageFile bis, long shuffleSeed, int imageIndex ) {
         int nbrImages = bis.getNbrImages();
         int shuffled = _shuffledIndex.getShuffledIndexLazy( nbrImages, shuffleSeed, imageIndex );
@@ -112,16 +100,21 @@ public class ImageLabelEntity extends Entity {
         _logger.info( "Testing files folder: " + config.sourceFilesPathTesting );
         BufferedImageSourceImageFile bisTraining = new BufferedImageSourceImageFile( config.sourceFilesPathTraining );
         BufferedImageSourceImageFile bisTesting  = new BufferedImageSourceImageFile( config.sourceFilesPathTesting  );
-        BufferedImageSourceImageFile bis = null;
+        BufferedImageSourceImageFile bis;
 
         int trainingImages = bisTraining.getNbrImages();
         int  testingImages = bisTesting .getNbrImages();
 
         bis = bisTraining;
-        if( config.phase.equals( ImageLabelEntityConfig.PHASE_TRAINING ) ) {
+        if( isTraining() ) {
         }
-        else if( config.phase.equals( ImageLabelEntityConfig.PHASE_TESTING ) ) {
+        else if( isTesting() ) {
             bis = bisTesting;
+        }
+        else {
+            String msg = "phase - '" + config.phase + "' - not supported";
+            _logger.error( msg );
+            throw new java.lang.UnsupportedOperationException( msg );
         }
 
         // catch end of images before it happens:
@@ -134,15 +127,16 @@ public class ImageLabelEntity extends Entity {
             config.imageRepeat = 0;
 
             // check for phase change:
-            if( config.phase.equals( ImageLabelEntityConfig.PHASE_TRAINING ) ) {
+            if( isTraining() ) {
                 if( config.epoch >= config.trainingEpochs ) { // say batches = 3, then 0 1 2 for training, then 3 for testing
                     config.phase = ImageLabelEntityConfig.PHASE_TESTING;
                 }
             }
-            else if( config.phase.equals( ImageLabelEntityConfig.PHASE_TESTING ) ) {
+            else if( isTesting() ) {
                 config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
                 _logger.warn( "=======> Terminating on end of test set. (1)" );
             }
+
         }
 
         // Decide which image set to use via phase
@@ -154,13 +148,13 @@ public class ImageLabelEntity extends Entity {
         boolean learnTraining = false;
         boolean learnTesting = false;
 
-        if( config.phase.equals( ImageLabelEntityConfig.PHASE_TRAINING ) ) {
+        if( isTraining() ) {
             bis = bisTraining;
             learnTraining = true;
         }
-        else if( config.phase.equals( ImageLabelEntityConfig.PHASE_TESTING ) ) {
-            learnTesting = true;
+        else if( isTesting() ) {
             bis = bisTesting;
+            learnTesting = true;
         }
 
         try {
@@ -181,7 +175,7 @@ public class ImageLabelEntity extends Entity {
 
         // detect finished one pass of test set:
         int maxEpochs = config.trainingEpochs + config.testingEpochs;
-        if( config.phase.equals( ImageLabelEntityConfig.PHASE_TESTING ) ) {
+        if( isTesting() ) {
             if( config.epoch >= maxEpochs ) {
                 config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
                 _logger.warn( "=======> Terminating on end of test set. (2)" );
@@ -263,5 +257,15 @@ public class ImageLabelEntity extends Entity {
             _logger.error( e.toString(), e );
             return null;
         }
+    }
+
+    public boolean isTraining() {
+        ImageLabelEntityConfig config = ( ImageLabelEntityConfig ) _config;
+        return config.phase.equals( ImageLabelEntityConfig.PHASE_TRAINING );
+    }
+
+    public boolean isTesting() {
+        ImageLabelEntityConfig config = ( ImageLabelEntityConfig ) _config;
+        return config.phase.equals( ImageLabelEntityConfig.PHASE_TESTING );
     }
 }

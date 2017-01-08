@@ -41,7 +41,7 @@ public class ImageSensorEntity extends Entity {
     public static final String ENTITY_TYPE = "image-sensor";
     public static final String IMAGE_DATA = "image-data";
 
-    protected static HashMap< String, BufferedImageSource > PathBufferedImageSource = new HashMap< String, BufferedImageSource >();
+    protected static HashMap< String, BufferedImageSource > PathBufferedImageSource = new HashMap<>();
 
     public ImageSensorEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );

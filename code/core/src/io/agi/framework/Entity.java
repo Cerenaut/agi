@@ -51,8 +51,8 @@ public abstract class Entity extends NamedObject implements EntityListener {
     protected ModelEntity _model = null;
     protected EntityConfig _config = null;
     protected FastRandom _r;
-    protected HashSet< String > _childrenWaiting = new HashSet< String >();
-    protected HashMap< String, Data > _data = new HashMap< String, Data >();
+    protected HashSet< String > _childrenWaiting = new HashSet<>();
+    protected HashMap< String, Data > _data = new HashMap<>();
     protected DataFlags _dataFlags = new DataFlags();
     protected DataMap _dataCopy = new DataMap(); // used to check for data changes since load.
     protected boolean _flushChildren = false;
@@ -523,6 +523,15 @@ public abstract class Entity extends NamedObject implements EntityListener {
         }
 
         return d;
+    }
+
+    public static Collection< String > getEntityNames( String configValue ) {
+        String[] names = configValue.split(",");
+        Collection< String > c = new ArrayList<>();
+        for( String s : names ) {
+            c.add( s );
+        }
+        return c;
     }
 
     /**
