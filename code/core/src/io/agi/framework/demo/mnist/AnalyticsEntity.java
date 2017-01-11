@@ -19,14 +19,17 @@
 
 package io.agi.framework.demo.mnist;
 
+import io.agi.core.orm.AbstractPair;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
+import io.agi.framework.entities.SupervisedBatchTrainingEntity;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
+import java.util.HashMap;
 
 /**
  * A generic setup for an analytics layer in the hierarchy.
@@ -50,6 +53,10 @@ import java.util.Collection;
 public class AnalyticsEntity extends Entity {
 
     public static final String ENTITY_TYPE = "analytics";
+    public static final String INPUT_FEATURES = "input-features";
+    public static final String INPUT_LABELS = "input-labels";
+    public static final String OUTPUT_FEATURES = "output-features";
+    public static final String OUTPUT_LABELS = "output-labels";
 
     public AnalyticsEntity( ObjectMap om, Node n, ModelEntity model ) {
         super(om, n, model);
@@ -57,10 +64,23 @@ public class AnalyticsEntity extends Entity {
 
     @Override
     public void getInputAttributes( Collection< String > attributes ) {
+        attributes.add( INPUT_FEATURES );
+        attributes.add( INPUT_LABELS );
     }
 
     @Override
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
+        attributes.add( OUTPUT_FEATURES );
+        attributes.add( OUTPUT_LABELS );
+    }
+
+    @Override
+    public void getInputRefs( HashMap< String, AbstractPair< String, String> > input2refs, DataFlags flags ) {
+        AnalyticsEntityConfig config = ( AnalyticsEntityConfig ) _config;
+
+        String dataEntity = Framework.GetEntityNameWithPrefix( config.datasetExpPrefix, config.datasetEntity );
+        input2refs.put( INPUT_FEATURES, new AbstractPair<>( dataEntity, config.datasetFeaturesAttribute) );
+        input2refs.put( INPUT_LABELS, new AbstractPair<>( dataEntity, config.datasetLabelsAttribute) );
     }
 
     @Override
@@ -90,6 +110,9 @@ public class AnalyticsEntity extends Entity {
         }
         catch( Exception e ) {
         } // this is ok, the experiment is just not configured to have a learning flag
+
+
+        // !!! add code to pass through input lables and features, to output labels and features
 
     }
 

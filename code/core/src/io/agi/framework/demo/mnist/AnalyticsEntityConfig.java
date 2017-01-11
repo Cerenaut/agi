@@ -34,11 +34,10 @@ public class AnalyticsEntityConfig extends EntityConfig {
     public int trainSetSize = 0;
     public int testSetSize = 0;
 
-    public String trainSetFeaturesMatrix  = "";
-    public String trainSetLabelMatrix = "";
-    public String testSetFeaturesMatrix  = "";
-    public String testSetLabelMatrix = "";
-
+    public String datasetExpPrefix = "";   // use data from entities in the experiment that used this prefix
+    public String datasetEntity = "";      // the entity that produced the data (e.g. KSparseAutoencoderEntity)
+    public String datasetFeaturesAttribute = "";
+    public String datasetLabelsAttribute = "";
 
     public boolean terminate = false;      // trigger to stop the experiment
     public String phase = PHASE_TRAINING;  // can only be in one of two phases

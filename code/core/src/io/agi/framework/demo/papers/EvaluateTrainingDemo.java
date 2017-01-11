@@ -19,12 +19,14 @@
 
 package io.agi.framework.demo.papers;
 
+import io.agi.core.ml.supervised.SupervisedBatchTraining;
 import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
 import io.agi.framework.demo.mnist.AnalyticsEntity;
 import io.agi.framework.demo.mnist.AnalyticsEntityConfig;
+import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.factories.CommonEntityFactory;
 
@@ -72,48 +74,52 @@ public class EvaluateTrainingDemo {
 
     public static void createEntities( Node n ) {
 
-        // hardcode configuration values here
+        // 1) Configuration values
+        // ---------------------------------------------
         boolean cacheAllData = true;
+
+        // NOTE: The data must be loaded into persistence manually prior to running the experiment
 
         AnalyticsEntityConfig analyticsEntityConfig = new AnalyticsEntityConfig();
         analyticsEntityConfig.trainSetSize = 1;
-        analyticsEntityConfig.trainSetFeaturesMatrix = "";
-        analyticsEntityConfig.trainSetLabelMatrix = "";
         analyticsEntityConfig.testSetSize = 1;
-        analyticsEntityConfig.testSetFeaturesMatrix = "";
-        analyticsEntityConfig.testSetLabelMatrix = "";
+
+        analyticsEntityConfig.datasetExpPrefix = "";   // use data from entities in the experiment that used this prefix
+        analyticsEntityConfig.datasetEntity = "";      // the entity that produced the data (e.g. KSparseAutoencoderEntity)
+        analyticsEntityConfig.datasetFeaturesAttribute = "";
+        analyticsEntityConfig.datasetLabelsAttribute = "";
+
 
         SupervisedBatchTrainingEntityConfig logisticRegressionEntityConfig = new SupervisedBatchTrainingEntityConfig();
         logisticRegressionEntityConfig.algorithm = SupervisedBatchTrainingEntityConfig.ALGORITHM_LOGISTIC_REGRESSION;
         logisticRegressionEntityConfig.bias = true;
         logisticRegressionEntityConfig.C = 100.f;
 
-
-        // Define some entities
+        // 2) Define entities
+        // ---------------------------------------------
         String experimentName   = Framework.GetEntityName( "experiment" );
         String analyticsName    = Framework.GetEntityName( "analytics" );
         String logisticRegressionName = Framework.GetEntityName( "logistic-regression" );
-        String vectorSeriesLabelsName = Framework.GetEntityName( "label-series" );
-        String vectorSeriesClassificationsName = Framework.GetEntityName( "classifications-series" );
+
 
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         Framework.CreateEntity( analyticsName, AnalyticsEntity.ENTITY_TYPE, n.getName(), experimentName );
         Framework.CreateEntity( logisticRegressionName, SupervisedLearningEntity.ENTITY_TYPE, n.getName(), analyticsName );
-        Framework.CreateEntity( vectorSeriesLabelsName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), logisticRegressionName );
-        Framework.CreateEntity( vectorSeriesClassificationsName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), logisticRegressionName );
 
-        // - Connect the 'testing entities' data input to the name training data set - features
-        // - Connect the 'testing entities' data input to the name training data set - labels
+        // 3) Connect entities
+        // ---------------------------------------------
+        // Connect the 'testing entities' data input to the training data set directly
+        Framework.SetDataReference( logisticRegressionName, SupervisedBatchTrainingEntity.INPUT_FEATURES, analyticsName, AnalyticsEntity.OUTPUT_FEATURES );
+        Framework.SetDataReference( logisticRegressionName, SupervisedBatchTrainingEntity.INPUT_LABELS, analyticsName, AnalyticsEntity.OUTPUT_LABELS );
+
+
+        // 4) Set configurations
+        // ---------------------------------------------
 
         // Experiment config
         Framework.SetConfig( experimentName, "terminationEntityName", analyticsName );
         Framework.SetConfig( experimentName, "terminationConfigPath", "terminate" );
         Framework.SetConfig( experimentName, "terminationAge", "-1" ); // wait for analytics entity to decide
-
-        // cache all data for speed, when enabled
-        Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( analyticsName, "cache", String.valueOf( cacheAllData ) );
-        // - same for logisticRegression and vectorSeries
 
         // Analytics config
         Framework.SetConfig( analyticsName, analyticsEntityConfig );
@@ -121,7 +127,11 @@ public class EvaluateTrainingDemo {
         // LogisticRegression config
         Framework.SetConfig( logisticRegressionName, logisticRegressionEntityConfig );
 
-        // - setup vector series to log appropriately
+        // cache all data for speed, when enabled (override this property in configs)
+        Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
+        Framework.SetConfig( analyticsName, "cache", String.valueOf( cacheAllData ) );
+        Framework.SetConfig( logisticRegressionName, "cache", String.valueOf( cacheAllData ) );
+
     }
 
 }
