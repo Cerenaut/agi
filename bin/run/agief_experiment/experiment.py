@@ -1,3 +1,5 @@
+import json
+
 import utils
 import os
 import datetime
@@ -19,10 +21,11 @@ class Experiment:
     agi_data_run_home = "AGI_DATA_RUN_HOME"
     variables_file = "VARIABLES_FILE"
 
-    def __init__(self, log, prefix, prefix_delimiter):
+    def __init__(self, log, prefix, prefix_delimiter, experiments_def_filename):
         self.log = log
         self.prefix = prefix
         self.prefix_delimiter = prefix_delimiter
+        self.experiments_def_filename = experiments_def_filename
 
     def info(self):
 
@@ -70,6 +73,53 @@ class Experiment:
                                          executable="/bin/bash").communicate()
 
         return commit
+
+    def inputfiles_for_generation(self):
+
+        base_entity_filename, base_data_filenames = self.input_filenames_from_exp_definitions(False)
+
+        """ Get the input files, with full path, to be generated """
+
+        entity_filename = self.inputfile(base_entity_filename)
+
+        data_filenames = []
+        for base_data_filename in base_data_filenames:
+            data_filename = self.inputfile(base_data_filename)
+            data_filenames.append(data_filename)
+
+        return entity_filename, data_filenames
+
+    def input_filenames_from_exp_definitions(self, is_import_files):
+        """ Get the input files as defined in the experiments definitions file.
+        i.e. do not compute full path, do not add prefix etc.
+
+        :param is_import_files: boolean to specify whether you want the input files for 'import' or 'generation'
+        :return: entityfilename, datafilenames
+        """
+
+        exps_filename = self.experiment_def_file()
+
+        with open(exps_filename) as exps_file:
+            filedata = json.load(exps_file)
+
+        for exp_i in filedata['experiments']:
+
+            if is_import_files:
+                key = 'import-files'
+            else:
+                key = 'gen-files'
+
+            input_files = exp_i[key]  # import files dictionary
+
+            if self.log:
+                print "LOG: Input Files Dictionary = "
+                print "LOG: ", json.dumps(input_files, indent=4)
+
+            # get experiment file-names, and expand to full path
+            base_entity_filename = input_files['file-entities']
+            base_data_filenames = input_files['file-data']
+
+            return base_entity_filename, base_data_filenames
 
     def inputfile(self, filename):
         """ return the full path to the inputfile specified by simple filename (AGI_RUN_HOME/input/filename) """
@@ -124,30 +174,29 @@ class Experiment:
             else:
                 self.prefix += self.prefix + "i"
 
-    def create_input_files(self, template_prefix, baseentity_filename, basedata_filename):
+    def create_input_files(self, template_prefix, baseentity_filename, basedata_filenames):
         """
         Duplicate input files appending prefix to name of new file,
         and change contents of entities to use the generated prefix
 
-        :param baseentity_filename:
-        :param basedata_filename:
+        :param baseentity_filenames: entity filename to be imported
+        :param basedata_filename:  array of data filenames to be imported
         :return:
         """
 
         self.reset_prefix()
 
         entity_filename = utils.append_before_ext(baseentity_filename, "_" + self.prefix)
-        data_filename = utils.append_before_ext(basedata_filename, "_" + self.prefix)
+        shutil.copyfile(self.inputfile(baseentity_filename), self.inputfile(entity_filename))   # create new input files with prefix in the name
+        utils.replace_in_file(template_prefix, self.prefix, self.inputfile(entity_filename))    # search replace contents for PREFIX and replace with 'prefix'
 
-        # create new input files with prefix in the name
-        shutil.copyfile(self.inputfile(baseentity_filename), self.inputfile(entity_filename))
-        shutil.copyfile(self.inputfile(basedata_filename),   self.inputfile(data_filename))
+        data_filenames = []
+        for basedata_filename in basedata_filenames:
+            data_filename = utils.append_before_ext(basedata_filename, "_" + self.prefix)
+            shutil.copyfile(self.inputfile(basedata_filename),   self.inputfile(data_filename))     # create new input files with prefix in the name
+            utils.replace_in_file(template_prefix, self.prefix, self.inputfile(data_filename))      # search replace contents for PREFIX and replace with 'prefix'
 
-        # search replace contents for PREFIX and replace with 'prefix'
-        utils.replace_in_file(template_prefix, self.prefix, self.inputfile(entity_filename))
-        utils.replace_in_file(template_prefix, self.prefix, self.inputfile(data_filename))
-
-        return entity_filename, data_filename
+        return entity_filename, data_filenames
 
     def variables_filepath(self):
         """ return full filename with path, of the file being used for the variables file """

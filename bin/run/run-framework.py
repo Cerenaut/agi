@@ -27,7 +27,7 @@ Assumptions:
 """
 
 
-def run_parameterset(entity_file, data_file, sweep_param_vals):
+def run_parameterset(entity_file, data_files, sweep_param_vals):
     """
     Import input files
     Run Experiment and Export experiment
@@ -50,7 +50,6 @@ def run_parameterset(entity_file, data_file, sweep_param_vals):
     print "\n"
 
     entity_file_path = _experiment.inputfile(entity_file)
-    data_file_path = _experiment.inputfile(data_file)
 
     if log:
         print "LOG: Entity file full path = " + entity_file_path
@@ -63,7 +62,9 @@ def run_parameterset(entity_file, data_file, sweep_param_vals):
     if (launch_mode is LaunchMode.per_experiment) and args.launch_compute:
         task_arn = launch_compute()
 
-    _compute_node.import_experiment(entity_file_path, data_file_path)
+    for data_file in data_files:
+        data_file_path = _experiment.inputfile(data_file)
+        _compute_node.import_experiment(entity_file_path, data_file_path)
 
     set_dataset(_experiment.experiment_def_file())
 
@@ -118,25 +119,32 @@ def setup_parameter_sweep_counters(param_sweep, counters):
     :return:
     """
 
-    param_i = 0
-    for param in param_sweep['parameter-set']:  # set of params for one 'sweep'
+    key = 'parameter-set'
+    if key not in param_sweep:
+        print "ERROR: attempting to setup parameter sweeps, but there are no parameter sets defined"
+        print "The correct approach is to remove the 'parameter sweeps' section completely."
+        print "Program will abort."
+        exit()
 
-        if False:
-            print "LOG: Parameter sweep set part: " + str(param_i)
-            print json.dumps(param, indent=4)
-        param_i += 1
+        param_i = 0
+        for param in param_sweep['parameter-set']:  # set of params for one 'sweep'
 
-        entity_name = param['entity-name']
-        param_path = param['parameter-path']
-        # exp_type = param['val-type']
-        val_begin = param['val-begin']
-        val_end = param['val-end']
-        val_inc = param['val-inc']
+            if False:
+                print "LOG: Parameter sweep set part: " + str(param_i)
+                print json.dumps(param, indent=4)
+            param_i += 1
 
-        incrementer = valincrementer.ValIncrementer(val_begin, val_end, val_inc)
+            entity_name = param['entity-name']
+            param_path = param['parameter-path']
+            # exp_type = param['val-type']
+            val_begin = param['val-begin']
+            val_end = param['val-end']
+            val_inc = param['val-inc']
 
-        counter = {'incrementer': incrementer, 'entity-name': entity_name, 'param-path': param_path}
-        counters.append(counter)
+            incrementer = valincrementer.ValIncrementer(val_begin, val_end, val_inc)
+
+            counter = {'incrementer': incrementer, 'entity-name': entity_name, 'param-path': param_path}
+            counters.append(counter)
 
 
 def inc_parameter_set(entity_file, counters):
@@ -150,6 +158,11 @@ def inc_parameter_set(entity_file, counters):
     :return: reset (True if any counter has reached above max), description of parameters (string)
                             If reset is False, there MUST be a description of the parameters that have been set
     """
+
+    if len(counters) == 0:
+        print "WARNING: in_parameter_set: there are no counters to use to increment the parameter set."
+        print "         Returning without any action. This may have undersirable consequences."
+        return True, ""
 
     # inc all counters, and set parameter in entity file
     sweep_param_vals = []
@@ -188,20 +201,16 @@ def inc_parameter_set(entity_file, counters):
 
 
 def run_sweeps():
-    """ Perform parameter sweep steps, and run experiment for each step.
-
-    :param exps_file: full path to experiments file
-    :return:
-    """
+    """ Perform parameter sweep steps, and run experiment for each step. """
 
     print "........ Run Sweeps"
 
-    exps_file = _experiment.experiment_def_file()
+    exps_filename = _experiment.experiment_def_file()
 
-    with open(exps_file) as data_exps_file:
-        data = json.load(data_exps_file)
+    with open(exps_filename) as exps_file:
+        filedata = json.load(exps_file)
 
-    for exp_i in data['experiments']:
+    for exp_i in filedata['experiments']:
         import_files = exp_i['import-files']  # import files dictionary
 
         if log:
@@ -210,15 +219,15 @@ def run_sweeps():
 
         # get experiment file-names, and expand to full path
         base_entity_filename = import_files['file-entities']
-        base_data_filename = import_files['file-data']
+        base_data_filenames = import_files['file-data']
 
         if 'parameter-sweeps' not in exp_i or len(exp_i['parameter-sweeps']) == 0:
             print "No parameters to sweep, just run once."
 
-            entity_filename, data_filename = _experiment.create_input_files(TEMPLATE_PREFIX,
+            entity_filename, data_filenames = _experiment.create_input_files(TEMPLATE_PREFIX,
                                                                             base_entity_filename,
-                                                                            base_data_filename)
-            run_parameterset(entity_filename, data_filename, "")
+                                                                            base_data_filenames)
+            run_parameterset(entity_filename, data_filenames, "")
         else:
             for param_sweep in exp_i['parameter-sweeps']:  # array of sweep definitions
 
@@ -228,15 +237,15 @@ def run_sweeps():
                 is_sweeping = True
                 while is_sweeping:
 
-                    entity_filename, data_filename = _experiment.create_input_files(TEMPLATE_PREFIX,
+                    entity_filename, data_filenames = _experiment.create_input_files(TEMPLATE_PREFIX,
                                                                                     base_entity_filename,
-                                                                                    base_data_filename)
+                                                                                    base_data_filenames)
 
                     reset, sweep_param_vals = inc_parameter_set(entity_filename, counters)
                     if reset:
                         is_sweeping = False
                     else:
-                        run_parameterset(entity_filename, data_filename, sweep_param_vals)
+                        run_parameterset(entity_filename, data_filenames, sweep_param_vals)
 
 
 def set_dataset(exps_file):
@@ -362,11 +371,14 @@ def shutdown_compute(task_arn):
 
 
 def generate_input_files_locally():
-    entity_file_path = _experiment.inputfile("entity.json")
-    data_file_path = _experiment.inputfile("data.json")
 
-    root = _experiment.entity_with_prefix("experiment")
-    _compute_node.export_experiment(root, entity_file_path, data_file_path)
+    entity_file_path, data_file_paths = _experiment.inputfiles_for_generation()
+
+    # write to the first listed data path name
+    data_file_path = data_file_paths[0]
+
+    root_entity = _experiment.entity_with_prefix("experiment")
+    _compute_node.export_experiment(root_entity, entity_file_path, data_file_path)
 
 
 def setup_arg_parsing():
@@ -384,7 +396,7 @@ def setup_arg_parsing():
     # main program flow
     parser.add_argument('--step_aws', dest='aws', action='store_true',
                         help='Run AWS instances to run Compute. Then InstanceId and Task need to be specified.')
-    parser.add_argument('--step_exps', dest='exps_file', required=False,
+    parser.add_argument('--exps_file', dest='exps_file', required=False,
                         help='Run experiments, defined in the file that is set with this parameter.'
                              'Filename is within AGI_RUN_HOME that defines the '
                              'experiments to run (with parameter sweeps) in json format (default=%(default)s).')
@@ -485,13 +497,15 @@ if __name__ == '__main__':
             print "--- in any case, aws has not been set, so they have no effect"
         exit()
 
-    _experiment = experiment.Experiment(log, TEMPLATE_PREFIX, PREFIX_DELIMITER)
     _compute_node = compute.Compute(log)
     _cloud = cloud.Cloud(log)
+    if args.exps_file:
+        _experiment = experiment.Experiment(log, TEMPLATE_PREFIX, PREFIX_DELIMITER, args.exps_file)
 
     # 1) Generate input files
     if args.main_class:
-        _compute_node.base_url = utils.getbaseurl(args.host, args.port)
+        _compute_node.host = args.host
+        _compute_node.port = args.port
         launch_compute_local(args.main_class)
         generate_input_files_locally()
         _compute_node.terminate()
@@ -547,7 +561,6 @@ if __name__ == '__main__':
 
     # 5) Run experiments
     if args.exps_file:
-        _experiment.experiments_def_filename = args.exps_file
         if not args.launch_compute:
             print "WARNING: Running experiment is meaningless unless you're already running the Compute node" \
                   "(use param --step_compute)"
