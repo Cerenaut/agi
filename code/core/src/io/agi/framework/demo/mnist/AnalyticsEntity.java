@@ -19,6 +19,7 @@
 
 package io.agi.framework.demo.mnist;
 
+import io.agi.core.data.Data;
 import io.agi.core.orm.AbstractPair;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
@@ -74,14 +75,15 @@ public class AnalyticsEntity extends Entity {
         attributes.add( OUTPUT_LABELS );
     }
 
-    @Override
-    public void getInputRefs( HashMap< String, AbstractPair< String, String> > input2refs, DataFlags flags ) {
-        AnalyticsEntityConfig config = ( AnalyticsEntityConfig ) _config;
-
-        String dataEntity = Framework.GetEntityNameWithPrefix( config.datasetExpPrefix, config.datasetEntity );
-        input2refs.put( INPUT_FEATURES, new AbstractPair<>( dataEntity, config.datasetFeaturesAttribute) );
-        input2refs.put( INPUT_LABELS, new AbstractPair<>( dataEntity, config.datasetLabelsAttribute) );
-    }
+    // DO NOT USE THIS FUNCTIONALITY FOR NOW (may or may not use it)
+//    @Override
+//    public void getInputRefs( HashMap< String, AbstractPair< String, String> > input2refs, DataFlags flags ) {
+//        AnalyticsEntityConfig config = ( AnalyticsEntityConfig ) _config;
+//
+//        String dataEntity = Framework.GetEntityNameWithPrefix( config.datasetExpPrefix, config.datasetEntity );
+//        input2refs.put( INPUT_FEATURES, new AbstractPair<>( dataEntity, config.datasetFeaturesAttribute) );
+//        input2refs.put( INPUT_LABELS, new AbstractPair<>( dataEntity, config.datasetLabelsAttribute) );
+//    }
 
     @Override
     public Class getConfigClass() {
@@ -111,9 +113,12 @@ public class AnalyticsEntity extends Entity {
         catch( Exception e ) {
         } // this is ok, the experiment is just not configured to have a learning flag
 
+        // copy features and labels to output
+        Data features = getData( INPUT_FEATURES );
+        Data labels = getData( INPUT_LABELS );
 
-        // !!! add code to pass through input lables and features, to output labels and features
-
+        setData( OUTPUT_FEATURES, features );
+        setData( OUTPUT_LABELS, labels );
     }
 
     /**

@@ -224,15 +224,13 @@ public abstract class Entity extends NamedObject implements EntityListener {
         }
     }
 
-
     /**
-     * For dynamically connecting entities based on config in entity
+     * For dynamically connecting entities
      */
     public void connectEntities( HashMap< String, AbstractPair< String, String> > input2refs ) {
 
         for ( String input : input2refs.keySet() ) {
             AbstractPair< String, String > ref = input2refs.get( input );
-            Framework.SetDataReference( _name, input, ref._first, ref._second );
             Framework.SetDataReference( _name, input, ref._first, ref._second );
         }
     }
@@ -241,7 +239,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         // get references to create entity connections at run time
         HashMap< String, AbstractPair< String, String> > input2refs = new HashMap<>(  );
-        getInputRefs( input2refs, _dataFlags);
+        getInputRefs( input2refs, _dataFlags );
         connectEntities( input2refs );
 
         // 1. fetch inputs
@@ -308,29 +306,18 @@ public abstract class Entity extends NamedObject implements EntityListener {
         p.persistEntity( _model );
     }
 
-    private void fetchData( Collection< String > attributes ) {
-
-        fetchData( attributes, true );
-    }
-
     /**
      * Populate member object map with the persisted data.
      *
-     * @param identifiers identifier, either the attribute (to be used as a suffix with entity name to produce the key),
-     *                    or the fully defined key
+     * @param attributes to be used as a suffix with entity name to produce the key
      */
-    private void fetchData( Collection< String > identifiers, boolean idAsAttribute ) {
+    private void fetchData( Collection< String > attributes ) {
         Persistence p = _n.getPersistence();
 
-        for( String identifier : identifiers ) {
+        for( String attribute : attributes ) {
 
             String inputKey;
-            if ( idAsAttribute ) {
-                inputKey = getKey( identifier );
-            }
-            else {
-                inputKey = identifier;
-            }
+            inputKey = getKey( attribute );
 
             ModelData modelData;
 
@@ -348,7 +335,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 //            }
 
             // check for no - read
-            if( _dataFlags.hasFlag( identifier, DataFlags.FLAG_PERSIST_ONLY ) ) {
+            if( _dataFlags.hasFlag( attribute, DataFlags.FLAG_PERSIST_ONLY ) ) {
                 _logger.info( "Skipping fetch of Data: " + inputKey );
                 continue;
             }
@@ -377,7 +364,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
                     allRefs.put( refKey, refData );
                 }
 
-                Data combinedData = getCombinedData( identifier, allRefs );
+                Data combinedData = getCombinedData( attribute, allRefs );
 
                 modelData.setData( combinedData, ModelData.ENCODING_DENSE ); // data added to ref keys.
 
