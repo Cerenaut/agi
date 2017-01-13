@@ -52,7 +52,8 @@ public class Framework {
     protected static String entityNamePrefix;
     protected static SecureRandom entityNameRandom;
 
-    public static String GetEntityName( String entityNameSuffix ) {
+
+    public static String GetEntityNameWithPrefix( String entityPrefix, String entityNameSuffix ) {
         String prefix = GetEntityNamePrefix();
         String name = entityNameSuffix;
 
@@ -63,6 +64,11 @@ public class Framework {
         }
 
         return name;
+    }
+
+    public static String GetEntityName( String entityNameSuffix ) {
+        String prefix = GetEntityNamePrefix();
+        return GetEntityNameWithPrefix( prefix, entityNameSuffix );
     }
 
     public static String GetEntityNamePrefix() {

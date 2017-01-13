@@ -74,7 +74,7 @@ public class ModelData {
 
     public HashSet< String > getRefKeys() {
         try {
-            HashSet< String > refKeys = new HashSet< String >();
+            HashSet< String > refKeys = new HashSet<>();
 
             if( this.refKeys != null ) {
                 String[] splitKeys = this.refKeys.split( "," );

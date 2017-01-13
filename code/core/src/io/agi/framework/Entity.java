@@ -23,6 +23,7 @@ import com.google.gson.Gson;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.math.FastRandom;
+import io.agi.core.orm.AbstractPair;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.persistence.Persistence;
@@ -101,6 +102,14 @@ public abstract class Entity extends NamedObject implements EntityListener {
      * @param attributes
      */
     public abstract void getOutputAttributes( Collection< String > attributes, DataFlags flags );
+
+    /**
+     * Override to add data refs at run time, to connect entities.
+     * @param input2refs
+     * @param flags
+     */
+    public void getInputRefs( HashMap< String, AbstractPair< String, String> > input2refs, DataFlags flags ) {
+    }
 
     /**
      * Return the class of the config object for the derived entity.
@@ -215,19 +224,36 @@ public abstract class Entity extends NamedObject implements EntityListener {
         }
     }
 
+    /**
+     * For dynamically connecting entities
+     */
+    public void connectEntities( HashMap< String, AbstractPair< String, String> > input2refs ) {
+
+        for ( String input : input2refs.keySet() ) {
+            AbstractPair< String, String > ref = input2refs.get( input );
+            Framework.SetDataReference( _name, input, ref._first, ref._second );
+        }
+    }
+
     protected void updateSelf() {
+
+        // get references to create entity connections at run time
+        HashMap< String, AbstractPair< String, String> > input2refs = new HashMap<>(  );
+        getInputRefs( input2refs, _dataFlags );
+        connectEntities( input2refs );
 
         // 1. fetch inputs
         // get all the inputs and put them in the object map.
-        Collection< String > inputKeys = new ArrayList< String >();
-        getInputAttributes( inputKeys );
-        fetchData( inputKeys );
+        Collection< String > inputAttributes = new ArrayList<>();
+        getInputAttributes( inputAttributes );
+        fetchData( inputAttributes );
 
         // 2. fetch outputs
         // get all the outputs and put them in the object map.
-        Collection< String > outputKeys = new ArrayList< String >();
-        getOutputAttributes( outputKeys, _dataFlags );
-        fetchData( outputKeys );
+        Collection< String > outputAttributes = new ArrayList<>();
+        getOutputAttributes( outputAttributes, _dataFlags );
+        fetchData( outputAttributes );
+
 
         // Set the random number generator, with the current time (i.e. random), if not loaded.
         if( _config.seed == null ) {
@@ -260,7 +286,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         // 4. persist data
         // write all the outputs back to the persistence system
-        persistData( outputKeys );
+        persistData( outputAttributes );
 
         // 5. persist config of this entity
         persistConfig();
@@ -283,15 +309,17 @@ public abstract class Entity extends NamedObject implements EntityListener {
     /**
      * Populate member object map with the persisted data.
      *
-     * @param attributes
+     * @param attributes to be used as a suffix with entity name to produce the key
      */
     private void fetchData( Collection< String > attributes ) {
         Persistence p = _n.getPersistence();
 
         for( String attribute : attributes ) {
-            String inputKey = getKey( attribute );
 
-            ModelData modelData = null;
+            String inputKey;
+            inputKey = getKey( attribute );
+
+            ModelData modelData;
 
             // check for cache policy
             // Change: just try to read anything available from the data cache.
@@ -299,7 +327,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
                 Data cached = _n.getCachedData( inputKey );
 
                 if( cached != null ) {
-                    //_logger.info( "Skipping fetch of Data: " + inputKey );
+                    _logger.info( "Skipping fetch of Data: " + inputKey );
                     _data.put( inputKey, cached );
                     continue;
                 }
@@ -308,7 +336,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
             // check for no - read
             if( _dataFlags.hasFlag( attribute, DataFlags.FLAG_PERSIST_ONLY ) ) {
-                //_logger.info( "Skipping fetch of Data: " + inputKey );
+                _logger.info( "Skipping fetch of Data: " + inputKey );
                 continue;
             }
 
@@ -325,7 +353,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
                 _data.put( inputKey, d );
             } else {
                 // Create an output matrix which is a composite of all the referenced inputs.
-                HashMap< String, Data > allRefs = new HashMap< String, Data >();
+                HashMap< String, Data > allRefs = new HashMap<>();
 
                 for( String refKey : refKeys ) {
                     ModelData refJson = _n.fetchData( refKey );

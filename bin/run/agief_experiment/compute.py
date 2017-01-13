@@ -122,6 +122,9 @@ class Compute:
     def wait_up(self):
         wait_period = 3
 
+        waitstr = str(wait_period)
+        burlstr = self.base_url()
+
         print "....... Wait till framework has started (try every " + str(wait_period) + " seconds),   at = " \
               + self.base_url()
 
