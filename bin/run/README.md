@@ -80,4 +80,4 @@ python run-framework.py --logging --exps_file experiments.json --step_compute --
 ```
 
 ### local agief (running in node mode i.e. no postgres required), export the output files, upload them to S3
-python run-framework.py --exps_file experiments.json --step_agief --step_export --step_upload --host localhost --port 8491
+python run-framework.py --exps_file experiments.json --step_compute --step_export --step_upload --host localhost --port 8491
