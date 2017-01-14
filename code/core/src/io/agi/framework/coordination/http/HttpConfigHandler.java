@@ -55,11 +55,12 @@ public class HttpConfigHandler implements HttpHandler {
         int status = 400;
         String response = "";
 
+        String request = "";
         try {
             String query = t.getRequestURI().getQuery();
-            //System.err.println("Request: " + HttpCoordinationHandler.CONTEXT + " " + query);
-
             String method = t.getRequestMethod();
+
+            request = "Request (" + method + "): " + HttpCoordinationHandler.CONTEXT + " " + query;
 
             Map< String, String > m = HttpUtil.GetQueryParams( query );
 
@@ -105,7 +106,7 @@ public class HttpConfigHandler implements HttpHandler {
             status = 200;
         }
         catch( Exception e ) {
-            logger.error( "Unable to handle config call.");
+            logger.error( "Unable to handle config request: " + request);
             logger.error( e.toString(), e );
         }
 

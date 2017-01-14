@@ -84,11 +84,10 @@ public class EvaluateTrainingDemo {
         analyticsEntityConfig.trainSetSize = 1;
         analyticsEntityConfig.testSetSize = 1;
 
-        analyticsEntityConfig.datasetExpPrefix = "";   // use data from entities in the experiment that used this prefix
-        analyticsEntityConfig.datasetEntity = "";      // the entity that produced the data (e.g. KSparseAutoencoderEntity)
-        analyticsEntityConfig.datasetFeaturesAttribute = "";
-        analyticsEntityConfig.datasetLabelsAttribute = "";
-
+//        analyticsEntityConfig.datasetExpPrefix = "";   // use data from entities in the experiment that used this prefix
+//        analyticsEntityConfig.datasetEntity = "";      // the entity that produced the data (e.g. KSparseAutoencoderEntity)
+//        analyticsEntityConfig.datasetFeaturesAttribute = "";
+//        analyticsEntityConfig.datasetLabelsAttribute = "";
 
         SupervisedBatchTrainingEntityConfig logisticRegressionEntityConfig = new SupervisedBatchTrainingEntityConfig();
         logisticRegressionEntityConfig.algorithm = SupervisedBatchTrainingEntityConfig.ALGORITHM_LOGISTIC_REGRESSION;
