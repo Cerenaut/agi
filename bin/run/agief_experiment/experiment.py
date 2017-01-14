@@ -195,6 +195,7 @@ class Experiment:
             data_filename = utils.append_before_ext(basedata_filename, "_" + self.prefix)
             shutil.copyfile(self.inputfile(basedata_filename),   self.inputfile(data_filename))     # create new input files with prefix in the name
             utils.replace_in_file(template_prefix, self.prefix, self.inputfile(data_filename))      # search replace contents for PREFIX and replace with 'prefix'
+            data_filenames.append(data_filename)
 
         return entity_filename, data_filenames
 
