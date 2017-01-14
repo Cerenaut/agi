@@ -19,6 +19,7 @@
 
 package io.agi.framework.coordination.http;
 
+import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.agi.framework.Framework;
@@ -54,8 +55,8 @@ public class HttpConfigHandler implements HttpHandler {
     public void handle( HttpExchange t ) throws IOException {
         int status = 400;
         String response = "";
-
         String request = "";
+
         try {
             String query = t.getRequestURI().getQuery();
             String method = t.getRequestMethod();
@@ -64,49 +65,74 @@ public class HttpConfigHandler implements HttpHandler {
 
             Map< String, String > m = HttpUtil.GetQueryParams( query );
 
-            String entityName = m.get( PARAMETER_ENTITY ).trim(); // essential
-            String configPath = null; // optional
-            String configValue = null; // optional
-            String config = null; // optional
+            if ( !m.containsKey( PARAMETER_ENTITY ) ) {
+                String message = "Unable to handle config request: " + request + "\n";
+                message += "No entity was specified.";
 
-            if( m.containsKey( PARAMETER_PATH ) ) {
-                configPath = m.get( PARAMETER_PATH ).trim();
+                HttpError httpError = new HttpError();
+                httpError.status = status;
+                httpError.message = message;
+
+                response = new Gson().toJson( httpError );
             }
+            else {
+                String entityName = m.get( PARAMETER_ENTITY ).trim(); // essential
 
-            if( m.containsKey( PARAMETER_VALUE ) ) {
-                configValue = m.get( PARAMETER_VALUE ).trim();
-            }
+                String configPath = null; // optional
+                String configValue = null; // optional
+                String config = null; // optional
 
-            if( m.containsKey( PARAMETER_CONFIG ) ) {
-                config = m.get( PARAMETER_CONFIG ).trim();
-            }
-
-            ModelEntity me = _p.fetchEntity( entityName );
-
-            if( method.equalsIgnoreCase( "GET" ) ) {
-                configValue = Framework.GetConfig( entityName );
-                if( configValue == null ) {
-                    configValue = "null";
+                if( m.containsKey( PARAMETER_PATH ) ) {
+                    configPath = m.get( PARAMETER_PATH ).trim();
                 }
-                if( configValue.length() == 0 ) {
-                    configValue = "{}";
-                }
-                response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_VALUE + "\" : " + configValue + " }";
-            } else if( method.equalsIgnoreCase( "POST" ) || method.equalsIgnoreCase( "PUT" ) ) {
-                if( config != null ) {
-                    me.config = config; // replace entire config
-                    _p.persistEntity( me );
-                    response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_VALUE + "\" : " + config + " }";
-                } else if( ( configPath != null ) && ( configValue != null ) ) {
-                    Framework.SetConfig( entityName, configPath, configValue );
-                    response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_PATH + "\" : \"" + configPath + "\", \"" + PARAMETER_VALUE + "\" : \"" + configValue + "\" }";
-                }
-            }
 
-            status = 200;
+                if( m.containsKey( PARAMETER_VALUE ) ) {
+                    configValue = m.get( PARAMETER_VALUE ).trim();
+                }
+
+                if( m.containsKey( PARAMETER_CONFIG ) ) {
+                    config = m.get( PARAMETER_CONFIG ).trim();
+                }
+
+                ModelEntity me = _p.fetchEntity( entityName );
+
+                if( method.equalsIgnoreCase( "GET" ) ) {
+                    configValue = Framework.GetConfig( entityName );
+                    if( configValue == null ) {
+                        configValue = "null";
+                    }
+                    if( configValue.length() == 0 ) {
+                        configValue = "{}";
+                    }
+                    response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_VALUE + "\" : " + configValue + " }";
+                }
+                else if( method.equalsIgnoreCase( "POST" ) || method.equalsIgnoreCase( "PUT" ) ) {
+                    if( config != null ) {
+                        me.config = config; // replace entire config
+                        _p.persistEntity( me );
+                        response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_VALUE + "\" : " + config + " }";
+                    }
+                    else if( ( configPath != null ) && ( configValue != null ) ) {
+                        Framework.SetConfig( entityName, configPath, configValue );
+                        response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_PATH + "\" : \"" + configPath + "\", \"" + PARAMETER_VALUE + "\" : \"" + configValue + "\" }";
+                    }
+                }
+
+                status = 200;
+            }
         }
         catch( Exception e ) {
-            logger.error( "Unable to handle config request: " + request);
+
+            String message = "Unable to handle config request: " + request;
+
+            HttpError httpError = new HttpError();
+            httpError.status = status;
+            httpError.message = message;
+
+            response = new Gson().toJson( httpError );
+
+            logger.error( message );
+            logger.error( "Response: " + response );
             logger.error( e.toString(), e );
         }
 

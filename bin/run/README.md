@@ -76,7 +76,7 @@ python run-framework.py --logging --step_aws --exps_file experiments.json --step
 
 ### local agief and local postgres (don't export or upload results)
 ```sh
-python run-framework.py --logging --exps_file experiments.json --step_compute --host localhost --pg_instance localhost --port 8491
+python run-framework.py --logging --exps_file experiments.json --step_compute --host localhost --port 8491 --pg_instance localhost
 ```
 
 ### local agief (running in node mode i.e. no postgres required), export the output files, upload them to S3
