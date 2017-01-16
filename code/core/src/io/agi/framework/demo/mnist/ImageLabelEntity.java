@@ -105,11 +105,13 @@ public class ImageLabelEntity extends Entity {
         int trainingImages = bisTraining.getNbrImages();
         int  testingImages = bisTesting .getNbrImages();
 
-        bis = bisTraining;
         if( isTraining() ) {
+            bis = bisTraining;
+            config.shuffle = true;
         }
         else if( isTesting() ) {
             bis = bisTesting;
+            config.shuffle = false;
         }
         else {
             String msg = "phase - '" + config.phase + "' - not supported";
@@ -120,7 +122,7 @@ public class ImageLabelEntity extends Entity {
         // catch end of images before it happens:
         int images = bis.getNbrImages();
         if( config.imageIndex >= images ) {
-            _logger.info( "End of image dataset: Epoch complete." );
+                _logger.info( "End of image dataset: Epoch complete." );
             config.epoch += 1;
             config.shuffleSeed = _r.nextLong();
             config.imageIndex = 0;
@@ -150,10 +152,12 @@ public class ImageLabelEntity extends Entity {
 
         if( isTraining() ) {
             bis = bisTraining;
+            config.shuffle = true;
             learnTraining = true;
         }
         else if( isTesting() ) {
             bis = bisTesting;
+            config.shuffle = false;
             learnTesting = true;
         }
 
@@ -182,7 +186,11 @@ public class ImageLabelEntity extends Entity {
             }
         }
 
-        int shuffledIndex = getShuffledIndex( bis, config.shuffleSeed, config.imageIndex );
+        int shuffledIndex = config.imageIndex;
+        if( config.shuffle ) {
+            shuffledIndex = getShuffledIndex(bis, config.shuffleSeed, config.imageIndex );
+        }
+
         boolean inRange = bis.seek( shuffledIndex ); // next image
         if( !inRange ) { // occurs if no testing images
             config.shuffleSeed = _r.nextLong();
