@@ -65,7 +65,7 @@ class Compute:
 
             time.sleep(wait_period)  # sleep for n seconds
 
-        print "   -> success, parameter reached value"
+        print "   -> success, parameter reached value" + age_string
 
     def import_experiment(self, entity_filepath=None, data_filepath=None):
         """setup the running instance of AGIEF with the input files"""
