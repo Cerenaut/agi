@@ -119,32 +119,25 @@ def setup_parameter_sweep_counters(param_sweep, counters):
     :return:
     """
 
-    key = 'parameter-set'
-    if key not in param_sweep:
-        print "ERROR: attempting to setup parameter sweeps, but there are no parameter sets defined"
-        print "The correct approach is to remove the 'parameter sweeps' section completely."
-        print "Program will abort."
-        exit()
+    param_i = 0
+    for param in param_sweep['parameter-set']:  # set of params for one 'sweep'
 
-        param_i = 0
-        for param in param_sweep['parameter-set']:  # set of params for one 'sweep'
+        if False:
+            print "LOG: Parameter sweep set part: " + str(param_i)
+            print json.dumps(param, indent=4)
+        param_i += 1
 
-            if False:
-                print "LOG: Parameter sweep set part: " + str(param_i)
-                print json.dumps(param, indent=4)
-            param_i += 1
+        entity_name = param['entity-name']
+        param_path = param['parameter-path']
+        # exp_type = param['val-type']
+        val_begin = param['val-begin']
+        val_end = param['val-end']
+        val_inc = param['val-inc']
 
-            entity_name = param['entity-name']
-            param_path = param['parameter-path']
-            # exp_type = param['val-type']
-            val_begin = param['val-begin']
-            val_end = param['val-end']
-            val_inc = param['val-inc']
+        incrementer = valincrementer.ValIncrementer(val_begin, val_end, val_inc)
 
-            incrementer = valincrementer.ValIncrementer(val_begin, val_end, val_inc)
-
-            counter = {'incrementer': incrementer, 'entity-name': entity_name, 'param-path': param_path}
-            counters.append(counter)
+        counter = {'incrementer': incrementer, 'entity-name': entity_name, 'param-path': param_path}
+        counters.append(counter)
 
 
 def inc_parameter_set(entity_file, counters):
@@ -161,7 +154,7 @@ def inc_parameter_set(entity_file, counters):
 
     if len(counters) == 0:
         print "WARNING: in_parameter_set: there are no counters to use to increment the parameter set."
-        print "         Returning without any action. This may have undersirable consequences."
+        print "         Returning without any action. This may have undesirable consequences."
         return True, ""
 
     # inc all counters, and set parameter in entity file
