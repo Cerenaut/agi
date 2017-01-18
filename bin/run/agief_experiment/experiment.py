@@ -22,6 +22,7 @@ class Experiment:
     variables_file = "VARIABLES_FILE"
 
     def __init__(self, log, prefix, prefix_delimiter, experiments_def_filename):
+        self.logfine = False
         self.log = log
         self.prefix = prefix
         self.prefix_delimiter = prefix_delimiter
@@ -47,7 +48,7 @@ class Experiment:
         if variables_file is "" or variables_file is None:
             print "WARNING: unable to locate variables file." \
 
-        if self.log:
+        if self.log and self.logfine:
             print "experiment:filepath_from_env_variable: variables file = " + variables_file
 
         cmd = "source " + variables_file + " && echo $" + path_env

@@ -160,7 +160,8 @@ class Compute:
         payload = {'entity': entity_name, 'path': param_path, 'value': value}
         response = requests.post(self.base_url() + '/config', params=payload)
         if self.log:
-            print "LOG: set_parameter, response = ", response
+            print "LOG: set_parameter_db: entity_name = " + entity_name + ", param_path = " + param_path + ", value = " + value
+            print "LOG: response = ", response
 
     def set_parameter_inputfile(self, entity_filepath, entity_name, param_path, value):
         """

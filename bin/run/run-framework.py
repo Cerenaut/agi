@@ -259,10 +259,17 @@ def set_dataset(exps_file):
         for param in exp_i['dataset-parameters']:  # array of sweep definitions
             entity_name = param['entity-name']
             param_path = param['parameter-path']
-            data_filename = param['value']
+            data_filenames = param['value']
 
-            data_path = _experiment.datafile(data_filename)
-            _compute_node.set_parameter_db(_experiment.entity_with_prefix(entity_name), param_path, data_path)
+            data_filenames_arr = data_filenames.split(',')
+
+            data_paths = ""
+            for data_filename in data_filenames_arr:
+                if data_paths is not "":
+                    data_paths += ","           # IMPORTANT - if space added here, additional characters ('+') get added probably due to encoding issues on the request
+                data_paths += _experiment.datafile(data_filename)
+
+            _compute_node.set_parameter_db(_experiment.entity_with_prefix(entity_name), param_path, data_paths)
 
 
 def launch_compute_aws_ecs(task_name):
