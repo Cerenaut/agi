@@ -27,6 +27,45 @@ Assumptions:
 """
 
 
+def check_validity(entity_file, data_files):
+    """ Check validity of files, and exit if they do not exist or not specified """
+
+    entity_file_path = _experiment.inputfile(entity_file)
+
+    if log:
+        print "LOG: Entity file full path = " + entity_file_path
+
+    # check validity of entity file
+    if not os.path.isfile(entity_file_path):
+        print "ERROR: The entity file " + entity_file + ", at path " + entity_file_path + \
+              ", does not exist.\nCANNOT CONTINUE."
+        exit()
+
+    # check validity of data files
+    data_file_error = False
+    data_file_paths = []
+
+    if len(data_files) == 0:
+        data_file_error = True
+    else:
+        for data_file in data_files:
+            data_file_path = _experiment.inputfile(data_file)
+
+            if os.path.isfile(data_file_path):
+                data_file_paths.append(data_file_path)
+            else:
+                data_file_error = True
+                break
+
+    if data_file_error:
+        print "ERROR: You have not specified a valid data file: \nCANNOT CONTINUE."
+        print "Data files specified in experiments json file are:  "
+        print json.dumps(data_files)
+        exit()
+
+    return entity_file_path, data_file_paths
+
+
 def run_parameterset(entity_file, data_files, sweep_param_vals):
     """
     Import input files
@@ -49,21 +88,12 @@ def run_parameterset(entity_file, data_files, sweep_param_vals):
         print param_def
     print "\n"
 
-    entity_file_path = _experiment.inputfile(entity_file)
-
-    if log:
-        print "LOG: Entity file full path = " + entity_file_path
-
-    if not os.path.isfile(entity_file_path):
-        print "ERROR: The entity file " + entity_file + ", at path " + entity_file_path + \
-              ", does not exist.\nCANNOT CONTINUE."
-        exit()
+    entity_file_path, data_file_paths = check_validity(entity_file, data_files)
 
     if (launch_mode is LaunchMode.per_experiment) and args.launch_compute:
         task_arn = launch_compute()
 
-    for data_file in data_files:
-        data_file_path = _experiment.inputfile(data_file)
+    for data_file_path in data_file_paths:
         _compute_node.import_experiment(entity_file_path, data_file_path)
 
     set_dataset(_experiment.experiment_def_file())
@@ -72,7 +102,7 @@ def run_parameterset(entity_file, data_files, sweep_param_vals):
 
     if is_export:
         new_entity_file = "exported_" + entity_file  # utils.append_before_ext(entity_file, "___" + param_description)
-        new_data_file = "exported_" + data_file  # utils.append_before_ext(data_file, "___" + param_description)
+        new_data_file = "exported_" + data_files[0]  # utils.append_before_ext(data_file, "___" + param_description)
 
         out_entity_file_path = _experiment.outputfile(new_entity_file)
         out_data_file_path = _experiment.outputfile(new_data_file)

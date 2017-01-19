@@ -180,21 +180,35 @@ class Experiment:
         Duplicate input files appending prefix to name of new file,
         and change contents of entities to use the generated prefix
 
-        :param baseentity_filenames: entity filename to be imported
-        :param basedata_filename:  array of data filenames to be imported
+        :param baseentity_filenames: entity filename to be copied and prefix changed internally
+        :param basedata_filename:  array of data filenames to be copied and prefix changed internally
         :return:
         """
 
         self.reset_prefix()
 
+        baseentity_filepath = self.inputfile(baseentity_filename)
+
+        if not os.path.isfile(baseentity_filepath):
+            print "ERROR: create_input_files(): The data file does not exist" + baseentity_filepath + \
+                  "\nCANNOT CONTINUE."
+            exit()
+
         entity_filename = utils.append_before_ext(baseentity_filename, "_" + self.prefix)
-        shutil.copyfile(self.inputfile(baseentity_filename), self.inputfile(entity_filename))   # create new input files with prefix in the name
+        shutil.copyfile(baseentity_filepath, self.inputfile(entity_filename))   # create new input files with prefix in the name
         utils.replace_in_file(template_prefix, self.prefix, self.inputfile(entity_filename))    # search replace contents for PREFIX and replace with 'prefix'
 
         data_filenames = []
         for basedata_filename in basedata_filenames:
+            basedata_filepath = self.inputfile(basedata_filename)
+
+            if not os.path.isfile(basedata_filepath):
+                print "ERROR: create_input_files(): The data file does not exist" + basedata_filepath + \
+                      "\nCANNOT CONTINUE."
+                exit()
+
             data_filename = utils.append_before_ext(basedata_filename, "_" + self.prefix)
-            shutil.copyfile(self.inputfile(basedata_filename),   self.inputfile(data_filename))     # create new input files with prefix in the name
+            shutil.copyfile(basedata_filepath, self.inputfile(data_filename))     # create new input files with prefix in the name
             utils.replace_in_file(template_prefix, self.prefix, self.inputfile(data_filename))      # search replace contents for PREFIX and replace with 'prefix'
             data_filenames.append(data_filename)
 

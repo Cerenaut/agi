@@ -53,14 +53,14 @@ if [ "$1" = "build" ]; then
 else
         run_script="run.sh"
         
-        # Check if project is built
+        # Check if script exists
         if [ ! -f "$run_script" ]; then
                 echo "ERROR File not found: $run_script"
                 # echo "ERROR Did you forget to './$myname mvn package'?"
                 exit 1
         fi
         
-        cmd="./$run_script"
+        cmd="./$run_script -f"
         args="$@"
 fi
 
