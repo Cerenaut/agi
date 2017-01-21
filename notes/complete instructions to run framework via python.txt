@@ -20,6 +20,10 @@ Go to:
 mvn clean
 mvn package
 
+Or 
+
+mvn clean package
+
 
 3. Edit framework files:
 ===============================================================================
@@ -32,25 +36,11 @@ EDIT variables-dave.sh
 
 EDIT experiments-phase1.json
 
-/home/dave/workspace/agi.io/experiment-definitions/20171201-mnist-ksparse-ph1
+/home/dave/workspace/agi.io/experiment-definitions/20171201-mnist-ksparse
 
 
-          "parameter-path": "sourceFilesPathTraining",
-          "value": "cycle10"
-          "imagesPerEpoch",
-        },
-        {
-          "entity-name": "autoencoder",
-          "parameter-path": "ageMax",
-          "value": "10" // ageMax = ( trainingEpochs * imagesPerEpoch ) / 2;
-        },
-        {
-          "entity-name": "image-class",
-          "parameter-path": "sourceFilesPathTesting",
-          "value": "cycle10x2"
 
-
-4. Run gen input step:
+4. PHASE 1a : Run gen input step:
 ===============================================================================
 
 /home/dave/workspace/agi.io/agi/bin/run
@@ -58,7 +48,22 @@ EDIT experiments-phase1.json
 python run-framework.py --exps_file experiments-phase1.json --step_gen_input io.agi.framework.demo.papers.KSparseDemo
 
 
-4. Run compute step:
+5. PHASE 1b : Run compute step:
 ===============================================================================
 
 python run-framework.py --exps_file experiments-phase1.json --step_compute --step_export --step_upload --host localhost --port 8491
+
+
+
+6. PHASE 2a : Run gen input step:
+===============================================================================
+
+/home/dave/workspace/agi.io/agi/bin/run
+
+python run-framework.py --exps_file experiments-phase2.json --step_gen_input io.agi.framework.demo.papers.EvaluateTrainingDemo
+
+
+7. PHASE 2b : Run compute step:
+===============================================================================
+
+python run-framework.py --exps_file experiments-phase2.json --step_compute --step_export --step_upload --host localhost --port 8491
