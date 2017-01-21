@@ -145,7 +145,7 @@ public class ImageLabelEntity extends Entity {
         // Also set learning status of entities
         // May have changed from training to testing.
         // This can happen because above we may roll over into a new batch
-        _logger.warn( "=======> Phase " + config.phase + ", epoch: " + config.epoch + ", index: " + config.imageIndex + ", repeat: " + config.imageRepeat + "  [Training/Testing set size: (" + trainingImages + ", " + testingImages + ")" + "]" );
+        _logger.warn( "=======> Phase: " + config.phase + ", epoch: " + config.epoch + ", index: " + config.imageIndex + ", repeat: " + config.imageRepeat + "  [Size: (Epochs: Training, Testing) = (" + config.trainingEpochs + ": " + trainingImages + ", " + testingImages + ")" + "]" );
 
         boolean learnTraining = false;
         boolean learnTesting = false;
