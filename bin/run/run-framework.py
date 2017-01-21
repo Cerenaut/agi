@@ -122,27 +122,33 @@ def run_parameterset(entity_file, data_files, sweep_param_vals):
         shutdown_compute(task_arn)
 
     if is_upload:
-        # upload exported output Entity file (if it exists)
-        _cloud.upload_experiment_output_s3(_experiment.prefix,
-                                           new_entity_file,
-                                           out_entity_file_path)
+        if is_export_compute:
+            # TODO implement export compute AND upload to S3
+            print "EXPORT COMPUTE AND UPLOAD TO S3  -------> NOT IMPLEMENTED"
+        else:
+            # upload exported output Entity file (if it exists)
+            _cloud.upload_experiment_output_s3(_experiment.prefix,
+                                               new_entity_file,
+                                               out_entity_file_path)
 
-        # upload exported output Data file (if it exists)
-        _cloud.upload_experiment_output_s3(_experiment.prefix,
-                                           new_data_file,
-                                           out_data_file_path)
+            # upload exported output Data file (if it exists)
+            _cloud.upload_experiment_output_s3(_experiment.prefix,
+                                               new_data_file,
+                                               out_data_file_path)
 
-        # upload experiments definition file (if it exists)
-        _cloud.upload_experiment_output_s3(_experiment.prefix,
-                                           _experiment.experiments_def_filename,
-                                           _experiment.experiment_def_file())
+            # upload experiments definition file (if it exists)
+            _cloud.upload_experiment_output_s3(_experiment.prefix,
+                                               _experiment.experiments_def_filename,
+                                               _experiment.experiment_def_file())
 
-        # upload log4j configuration file that was used (if it exists)
-        log_filename = "log4j2.log"
-        log_filepath = _experiment.experimentfile(log_filename)
-        _cloud.upload_experiment_output_s3(_experiment.prefix,
-                                           log_filename,
-                                           log_filepath)
+            # upload log4j configuration file that was used (if it exists)
+            log_filename = "log4j2.log"
+            log_filepath = _experiment.experimentfile(log_filename)
+
+            if os.path.isfile(log_filepath):
+                _cloud.upload_experiment_output_s3(_experiment.prefix,
+                                                   log_filename,
+                                                   log_filepath)
 
 
 def setup_parameter_sweep_counters(param_sweep, counters):
