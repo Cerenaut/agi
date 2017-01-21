@@ -111,6 +111,19 @@ def run_parameterset(entity_file, data_files, sweep_param_vals):
                                         out_entity_file_path,
                                         out_data_file_path)
 
+    # TODO alternative solution to hardcoding path to run folder on compute node
+    if is_export_compute:
+        _compute_node.export_experiment(_experiment.entity_with_prefix("experiment"),
+                                        "/home/ec2-user/agief-project/run/output",
+                                        "/home/ec2-user/agief-project/run/output",
+                                        True)
+
+        # _compute_node.export_experiment(_experiment.entity_with_prefix("experiment"),
+        #                                 "/Users/gideon/Development/ProjectAGI/AGIEF/experiment-definitions/20171201-mnist-ksparse/output",
+        #                                 "/Users/gideon/Development/ProjectAGI/AGIEF/experiment-definitions/20171201-mnist-ksparse/output",
+        #                                 True)
+
+
     if (launch_mode is LaunchMode.per_experiment) and args.launch_compute:
         shutdown_compute(task_arn)
 
@@ -439,6 +452,10 @@ def setup_arg_parsing():
                         help='Shutdown instances and Compute after other stages.')
     parser.add_argument('--step_export', dest='export', action='store_true',
                         help='Export entity tree and data at the end of each experiment.')
+    parser.add_argument('--step_export_compute', dest='export_compute', action='store_true',
+                        help='Compute should export entity tree and data at the end of each experiment '
+                             '- i.e. saved on the Compute node.')
+
     parser.add_argument('--step_upload', dest='upload', action='store_true',
                         help='Upload exported entity tree and data at the end of each experiment.')
 
@@ -508,6 +525,7 @@ if __name__ == '__main__':
 
     is_aws = args.aws
     is_export = args.export
+    is_export_compute = args.export_compute
     is_upload = args.upload
     remote_keypath = args.ec2_keypath
 

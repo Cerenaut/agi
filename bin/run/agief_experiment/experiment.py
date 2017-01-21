@@ -219,4 +219,3 @@ class Experiment:
         dir_path = os.path.dirname(os.path.realpath(__file__))
         variables_file = os.getenv(self.variables_file, dir_path + '/../../variables.sh')
         return variables_file
-
