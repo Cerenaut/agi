@@ -93,31 +93,48 @@ class Compute:
         # wait for the task to finish (poll API for 'Terminated' config param)
         self.wait_till_param(exp.entity_with_prefix('experiment'), 'terminated', True)
 
-    def export_root_entity(self, filepath, root_entity, export_type):
-        payload = {'entity': root_entity, 'type': export_type}
+    def export_root_entity(self, filepath, root_entity, export_type, is_compute_save=False):
+        """
+        export the subtree specified by root entity - either we save locally, or specify the Compute node to save it itself
+        :param filepath: if specified, then receive a string
+        :param root_entity:
+        :param export_type:
+        :param is_compute_save: boolean, if false (default) then returned as string and then we save the file
+        if true then 'Compute' saves the file, using the path to a folder (for the compute machine) specified by filepath
+        :return:
+        """
+
+        if not is_compute_save:
+            payload = {'entity': root_entity, 'type': export_type}
+        else:
+            payload = {'entity': root_entity, 'type': export_type, "export-location": filepath}
+
         response = requests.get(self.base_url() + '/export', params=payload)
+
         if self.log:
             # print "LOG: Export entity file, response text = ", response.text
             print "  LOG: response = ", response
             print "  LOG: response url = ", response.url
 
-        # write back to file
-        output_json = response.json()
-        utils.create_folder(filepath)
-        with open(filepath, 'w') as data_file:
-            data_file.write(json.dumps(output_json, indent=4))
+        if not is_compute_save:
+            # write back to file
+            output_json = response.json()
+            utils.create_folder(filepath)
+            with open(filepath, 'w') as data_file:
+                data_file.write(json.dumps(output_json, indent=4))
 
-    def export_experiment(self, root_entity, entity_filepath, data_filepath):
+    def export_experiment(self, root_entity, entity_filepath, data_filepath, is_export_compute=False):
         """
         Export the full experiment state from the running instance of AGIEF
         that consists of entity graph and the data
         """
+
         print "....... Export Experiment"
         if self.log:
             print "Exporting data for root entity: " + root_entity
 
-        self.export_root_entity(entity_filepath, root_entity, 'entity')
-        self.export_root_entity(data_filepath, root_entity, 'data')
+        self.export_root_entity(entity_filepath, root_entity, 'entity', is_export_compute)
+        self.export_root_entity(data_filepath, root_entity, 'data', is_export_compute)
 
     def wait_up(self):
         wait_period = 3

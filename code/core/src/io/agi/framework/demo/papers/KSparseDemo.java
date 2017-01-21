@@ -74,11 +74,11 @@ public class KSparseDemo {
 
     public static void createEntities( Node n ) {
 
-//        String trainingPath = "./training";
-//        String testingPath = "./testing";
+        String trainingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small";
+        String testingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small, /Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/testing-small";
 
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
-        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+//        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
 
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";

@@ -30,14 +30,18 @@ import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelDataReference;
 import io.agi.framework.persistence.models.ModelEntity;
 import io.agi.framework.persistence.models.ModelEntityConfigPath;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 
 /**
  * Functions used throughout the experimental framework, i.e. not specific to Entity or Node.
@@ -587,5 +591,20 @@ public class Framework {
         }
     }
 
+    public static boolean SaveSubtree( String entityName, String type, String path ) {
+        boolean success = false;
+        String subtree = Framework.ExportSubtree( entityName, type );
 
+        File file = new File( path );
+        try {
+            FileUtils.writeStringToFile( file, subtree );
+            success = true;
+        }
+        catch( IOException e ) {
+            _logger.error( "Unable to save subtree.");
+            _logger.error( e.toString(), e );
+        }
+
+        return success;
+    }
 }

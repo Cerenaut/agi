@@ -27,6 +27,45 @@ Assumptions:
 """
 
 
+def check_validity(entity_file, data_files):
+    """ Check validity of files, and exit if they do not exist or not specified """
+
+    entity_file_path = _experiment.inputfile(entity_file)
+
+    if log:
+        print "LOG: Entity file full path = " + entity_file_path
+
+    # check validity of entity file
+    if not os.path.isfile(entity_file_path):
+        print "ERROR: The entity file " + entity_file + ", at path " + entity_file_path + \
+              ", does not exist.\nCANNOT CONTINUE."
+        exit()
+
+    # check validity of data files
+    data_file_error = False
+    data_file_paths = []
+
+    if len(data_files) == 0:
+        data_file_error = True
+    else:
+        for data_file in data_files:
+            data_file_path = _experiment.inputfile(data_file)
+
+            if os.path.isfile(data_file_path):
+                data_file_paths.append(data_file_path)
+            else:
+                data_file_error = True
+                break
+
+    if data_file_error:
+        print "ERROR: You have not specified a valid data file: \nCANNOT CONTINUE."
+        print "Data files specified in experiments json file are:  "
+        print json.dumps(data_files)
+        exit()
+
+    return entity_file_path, data_file_paths
+
+
 def run_parameterset(entity_file, data_files, sweep_param_vals):
     """
     Import input files
@@ -49,21 +88,12 @@ def run_parameterset(entity_file, data_files, sweep_param_vals):
         print param_def
     print "\n"
 
-    entity_file_path = _experiment.inputfile(entity_file)
-
-    if log:
-        print "LOG: Entity file full path = " + entity_file_path
-
-    if not os.path.isfile(entity_file_path):
-        print "ERROR: The entity file " + entity_file + ", at path " + entity_file_path + \
-              ", does not exist.\nCANNOT CONTINUE."
-        exit()
+    entity_file_path, data_file_paths = check_validity(entity_file, data_files)
 
     if (launch_mode is LaunchMode.per_experiment) and args.launch_compute:
         task_arn = launch_compute()
 
-    for data_file in data_files:
-        data_file_path = _experiment.inputfile(data_file)
+    for data_file_path in data_file_paths:
         _compute_node.import_experiment(entity_file_path, data_file_path)
 
     set_dataset(_experiment.experiment_def_file())
@@ -72,7 +102,7 @@ def run_parameterset(entity_file, data_files, sweep_param_vals):
 
     if is_export:
         new_entity_file = "exported_" + entity_file  # utils.append_before_ext(entity_file, "___" + param_description)
-        new_data_file = "exported_" + data_file  # utils.append_before_ext(data_file, "___" + param_description)
+        new_data_file = "exported_" + data_files[0]  # utils.append_before_ext(data_file, "___" + param_description)
 
         out_entity_file_path = _experiment.outputfile(new_entity_file)
         out_data_file_path = _experiment.outputfile(new_data_file)
@@ -81,31 +111,44 @@ def run_parameterset(entity_file, data_files, sweep_param_vals):
                                         out_entity_file_path,
                                         out_data_file_path)
 
+    # TODO alternative solution to hardcoding path to run folder on compute node
+    if is_export_compute:
+        _compute_node.export_experiment(_experiment.entity_with_prefix("experiment"),
+                                        _experiment.runfolder("output"),
+                                        _experiment.runfolder("output"),
+                                        True)
+
     if (launch_mode is LaunchMode.per_experiment) and args.launch_compute:
         shutdown_compute(task_arn)
 
     if is_upload:
-        # upload exported output Entity file (if it exists)
-        _cloud.upload_experiment_output_s3(_experiment.prefix,
-                                           new_entity_file,
-                                           out_entity_file_path)
+        if is_export_compute:
+            # TODO implement export compute AND upload to S3
+            print "EXPORT COMPUTE AND UPLOAD TO S3  -------> NOT IMPLEMENTED"
+        else:
+            # upload exported output Entity file (if it exists)
+            _cloud.upload_experiment_output_s3(_experiment.prefix,
+                                               new_entity_file,
+                                               out_entity_file_path)
 
-        # upload exported output Data file (if it exists)
-        _cloud.upload_experiment_output_s3(_experiment.prefix,
-                                           new_data_file,
-                                           out_data_file_path)
+            # upload exported output Data file (if it exists)
+            _cloud.upload_experiment_output_s3(_experiment.prefix,
+                                               new_data_file,
+                                               out_data_file_path)
 
-        # upload experiments definition file (if it exists)
-        _cloud.upload_experiment_output_s3(_experiment.prefix,
-                                           _experiment.experiments_def_filename,
-                                           _experiment.experiment_def_file())
+            # upload experiments definition file (if it exists)
+            _cloud.upload_experiment_output_s3(_experiment.prefix,
+                                               _experiment.experiments_def_filename,
+                                               _experiment.experiment_def_file())
 
-        # upload log4j configuration file that was used (if it exists)
-        log_filename = "log4j2.log"
-        log_filepath = _experiment.experimentfile(log_filename)
-        _cloud.upload_experiment_output_s3(_experiment.prefix,
-                                           log_filename,
-                                           log_filepath)
+            # upload log4j configuration file that was used (if it exists)
+            log_filename = "log4j2.log"
+            log_filepath = _experiment.experimentfile(log_filename)
+
+            if os.path.isfile(log_filepath):
+                _cloud.upload_experiment_output_s3(_experiment.prefix,
+                                                   log_filename,
+                                                   log_filepath)
 
 
 def setup_parameter_sweep_counters(param_sweep, counters):
@@ -409,6 +452,10 @@ def setup_arg_parsing():
                         help='Shutdown instances and Compute after other stages.')
     parser.add_argument('--step_export', dest='export', action='store_true',
                         help='Export entity tree and data at the end of each experiment.')
+    parser.add_argument('--step_export_compute', dest='export_compute', action='store_true',
+                        help='Compute should export entity tree and data at the end of each experiment '
+                             '- i.e. saved on the Compute node.')
+
     parser.add_argument('--step_upload', dest='upload', action='store_true',
                         help='Upload exported entity tree and data at the end of each experiment.')
 
@@ -478,6 +525,7 @@ if __name__ == '__main__':
 
     is_aws = args.aws
     is_export = args.export
+    is_export_compute = args.export_compute
     is_upload = args.upload
     remote_keypath = args.ec2_keypath
 

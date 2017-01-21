@@ -53,14 +53,14 @@ if [ "$1" = "build" ]; then
 else
         run_script="run.sh"
         
-        # Check if project is built
+        # Check if script exists
         if [ ! -f "$run_script" ]; then
                 echo "ERROR File not found: $run_script"
                 # echo "ERROR Did you forget to './$myname mvn package'?"
                 exit 1
         fi
         
-        cmd="./$run_script"
+        cmd="./$run_script -f"
         args="$@"
 fi
 
@@ -87,7 +87,7 @@ dcmd="docker run $switch
         -e VARIABLES_FILE='/root/dev/variables/variables-docker.sh'
         -v $AGI_HOME:/root/dev/agi
         -v $AGI_DATA_HOME:/root/dev/data
-        -v $AGI_RUN_HOME/../variables:/root/dev/variables
+        -v $AGI_EXP_HOME/../variables:/root/dev/variables
         -v $AGI_RUN_HOME:/root/dev/run
         -v '${maven_cache_repo}:/root/.m2/repository'
         -p 8491:8491 -p 5432:5432

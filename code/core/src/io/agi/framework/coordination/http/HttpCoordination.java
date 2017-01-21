@@ -41,7 +41,7 @@ import java.util.concurrent.Future;
  */
 public class HttpCoordination implements Coordination {
 
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger _logger = LogManager.getLogger();
 
     public Node _n;
     public HttpServer _s;
@@ -112,7 +112,7 @@ public class HttpCoordination implements Coordination {
      * @param entityName
      */
     public void doUpdate( String entityName ) {
-        logger.info( "Coordination.doUpdate( " + entityName + ")" );
+        _logger.info( "Coordination.doUpdate( " + entityName + ")" );
         _n.doUpdate( entityName );
         doUpdateBroadcast( entityName );
     }
@@ -123,7 +123,7 @@ public class HttpCoordination implements Coordination {
      * @param entityName
      */
     public void doUpdateBroadcast( String entityName ) {
-        logger.info( "Coordination.doUpdateBroadcast( " + entityName + ")" );
+        _logger.info( "Coordination.doUpdateBroadcast( " + entityName + ")" );
         String query = getQuery( entityName, HttpCoordinationHandler.VALUE_UPDATE, _n.getName() );
         broadcast( query );
     }
@@ -135,7 +135,7 @@ public class HttpCoordination implements Coordination {
      * @param origin
      */
     public void doUpdateExternal( String entityName, String origin ) {
-        logger.info( "Coordination.doUpdateExternal( " + entityName + ", " + origin + " )" );
+        _logger.info( "Coordination.doUpdateExternal( " + entityName + ", " + origin + " )" );
         if( origin != null ) {
             if( origin.equals( _n.getName() ) ) {
                 return; // ignore self events
@@ -145,7 +145,7 @@ public class HttpCoordination implements Coordination {
             doUpdateBroadcast( entityName );
         }
 
-        logger.info( "Coordinate.doUpdateExternal(): Updating locally." );
+        _logger.info( "Coordinate.doUpdateExternal(): Updating locally." );
         _n.doUpdate( entityName );
     }
 
@@ -155,7 +155,7 @@ public class HttpCoordination implements Coordination {
      * @param entityName
      */
     public void onUpdated( String entityName ) {
-        logger.info( "Coordination.onUpdated( " + entityName + ")" );
+        _logger.info( "Coordination.onUpdated( " + entityName + ")" );
         _n.onUpdated( entityName );
         onUpdatedBroadcast( entityName );
     }
@@ -166,7 +166,7 @@ public class HttpCoordination implements Coordination {
      * @param entityName
      */
     public void onUpdatedBroadcast( String entityName ) {
-        logger.info( "Coordination.onUpdatedBroadcast( " + entityName + ")" );
+        _logger.info( "Coordination.onUpdatedBroadcast( " + entityName + ")" );
         String query = getQuery( entityName, HttpCoordinationHandler.VALUE_UPDATED, _n.getName() );
         broadcast( query );
     }
@@ -178,7 +178,7 @@ public class HttpCoordination implements Coordination {
      * @param origin
      */
     public void onUpdatedExternal( String entityName, String origin ) {
-        logger.info( "Coordination.onUpdatedExternal( " + entityName + ", " + origin + " )" );
+        _logger.info( "Coordination.onUpdatedExternal( " + entityName + ", " + origin + " )" );
         if( origin != null ) {
             if( origin.equals( _n.getName() ) ) {
                 return; // ignore self events
@@ -281,8 +281,8 @@ public class HttpCoordination implements Coordination {
 //        }
         }
         catch( MalformedURLException e ) {
-            logger.error( "Unable to handle HTTP Coordination - malformed URL.");
-            logger.error( e.toString(), e );
+            _logger.error( "Unable to handle HTTP Coordination - malformed URL.");
+            _logger.error( e.toString(), e );
         }
     }
 }
