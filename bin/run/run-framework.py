@@ -114,15 +114,9 @@ def run_parameterset(entity_file, data_files, sweep_param_vals):
     # TODO alternative solution to hardcoding path to run folder on compute node
     if is_export_compute:
         _compute_node.export_experiment(_experiment.entity_with_prefix("experiment"),
-                                        "/home/ec2-user/agief-project/run/output",
-                                        "/home/ec2-user/agief-project/run/output",
+                                        _experiment.runfolder("output"),
+                                        _experiment.runfolder("output"),
                                         True)
-
-        # _compute_node.export_experiment(_experiment.entity_with_prefix("experiment"),
-        #                                 "/Users/gideon/Development/ProjectAGI/AGIEF/experiment-definitions/20171201-mnist-ksparse/output",
-        #                                 "/Users/gideon/Development/ProjectAGI/AGIEF/experiment-definitions/20171201-mnist-ksparse/output",
-        #                                 True)
-
 
     if (launch_mode is LaunchMode.per_experiment) and args.launch_compute:
         shutdown_compute(task_arn)

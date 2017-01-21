@@ -16,9 +16,11 @@ class Experiment:
     experiments_def_filename = None     # the filename of the experiment definition (usually experiments.json)
 
     # environment variables
-    agi_run_home = "AGI_RUN_HOME"
+    agi_exp_home = "AGI_EXP_HOME"
     agi_home = "AGI_HOME"
+    agi_run_home = "AGI_RUN_HOME"
     agi_data_run_home = "AGI_DATA_RUN_HOME"
+    agi_data_exp_home = "AGI_EXP_HOME"
     variables_file = "VARIABLES_FILE"
 
     def __init__(self, log, prefix, prefix_delimiter, experiments_def_filename):
@@ -123,12 +125,16 @@ class Experiment:
             return base_entity_filename, base_data_filenames
 
     def inputfile(self, filename):
-        """ return the full path to the inputfile specified by simple filename (AGI_RUN_HOME/input/filename) """
-        return self.filepath_from_exp_variable("input/" + filename, self.agi_run_home)
+        """ return the full path to the inputfile specified by simple filename (AGI_EXP_HOME/input/filename) """
+        return self.filepath_from_exp_variable("input/" + filename, self.agi_exp_home)
 
     def outputfile(self, filename):
-        """ return the full path to the output file specified by simple filename (AGI_RUN_HOME/output/filename) """
-        return self.filepath_from_exp_variable("output/" + filename, self.agi_run_home)
+        """ return the full path to the output file specified by simple filename (AGI_EXP_HOME/output/filename) """
+        return self.filepath_from_exp_variable("output/" + filename, self.agi_exp_home)
+
+    def runfolder(self, subfolder):
+        """ return absolute path to a subfolder in the AGI_RUN_HOME/ folder """
+        return self.filepath_from_exp_variable(subfolder, self.agi_run_home)
 
     def datafile(self, filename):
         """ return the file in the data folder, on the system where compute is running """
@@ -136,15 +142,15 @@ class Experiment:
 
     def experiment_def_file(self):
         """ return the full path to the experiments definition file """
-        return self.filepath_from_exp_variable(self.experiments_def_filename, self.agi_run_home)
+        return self.filepath_from_exp_variable(self.experiments_def_filename, self.agi_exp_home)
 
     def experiment_folder(self):
         """ return the full path to the experiments folder """
-        return self.filepath_from_exp_variable("", self.agi_run_home)
+        return self.filepath_from_exp_variable("", self.agi_exp_home)
 
     def experimentfile(self, filename):
-        """ return the full path to a file in the folder AGI_RUN_HOME """
-        return self.filepath_from_exp_variable(filename, self.agi_run_home)
+        """ return the full path to a file in the folder AGI_EXP_HOME """
+        return self.filepath_from_exp_variable(filename, self.agi_exp_home)
 
     def entity_with_prefix(self, entity_name):
         if self.prefix is None or self.prefix is "":
@@ -159,7 +165,7 @@ class Experiment:
 
         use_prefix_file = False
         if use_prefix_file:
-            prefix_filepath = self.filepath_from_exp_variable('prefix.txt', self.agi_run_home)
+            prefix_filepath = self.filepath_from_exp_variable('prefix.txt', self.agi_exp_home)
 
             if not os.path.isfile(prefix_filepath):
                 print """WARNING ****   no prefix.txt file could be found,
