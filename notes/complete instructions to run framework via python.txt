@@ -66,4 +66,19 @@ python run-framework.py --exps_file experiments-phase2.json --step_gen_input io.
 7. PHASE 2b : Run compute step:
 ===============================================================================
 
+- Modify experiments-phase2.json import files, so that it will correctly get the output from Phase 1 (see third data input below)
+
+      "import-files": {
+        "file-entities": "entities-phase2.json",
+        "file-data": [
+            "data-phase2.json",
+            "datarefs-phase2.json",
+            "../output/exported_data-phase1_170122-1250.json"
+          ]
+      },
+
+- Modify datarefs-phase2.json so that refKey of the feature-series has the correct prefix (i.e. the prefix from the Phase 1 run, that you want the data from)
+
+
+
 python run-framework.py --exps_file experiments-phase2.json --step_compute --step_export
