@@ -51,7 +51,7 @@ python run-framework.py --exps_file experiments-phase1.json --step_gen_input io.
 5. PHASE 1b : Run compute step:
 ===============================================================================
 
-python run-framework.py --exps_file experiments-phase1.json --step_compute --step_export --step_upload --host localhost --port 8491
+python run-framework.py --exps_file experiments-phase1.json --step_compute --step_export
 
 
 
@@ -66,4 +66,4 @@ python run-framework.py --exps_file experiments-phase2.json --step_gen_input io.
 7. PHASE 2b : Run compute step:
 ===============================================================================
 
-python run-framework.py --exps_file experiments-phase2.json --step_compute --step_export --step_upload --host localhost --port 8491
+python run-framework.py --exps_file experiments-phase2.json --step_compute --step_export

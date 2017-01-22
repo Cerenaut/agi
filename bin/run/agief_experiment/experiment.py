@@ -132,8 +132,8 @@ class Experiment:
         """ return the full path to the output file specified by simple filename (AGI_EXP_HOME/output/filename) """
         return self.filepath_from_exp_variable("output/" + filename, self.agi_exp_home)
 
-    def runfolder(self, subfolder):
-        """ return absolute path to a subfolder in the AGI_RUN_HOME/ folder """
+    def runpath(self, path):
+        """ return absolute path to a file or folder in the AGI_RUN_HOME/ folder """
         return self.filepath_from_exp_variable(subfolder, self.agi_run_home)
 
     def datafile(self, filename):

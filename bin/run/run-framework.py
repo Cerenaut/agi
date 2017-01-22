@@ -93,8 +93,7 @@ def run_parameterset(entity_file, data_files, sweep_param_vals):
     if (launch_mode is LaunchMode.per_experiment) and args.launch_compute:
         task_arn = launch_compute()
 
-    for data_file_path in data_file_paths:
-        _compute_node.import_experiment(entity_file_path, data_file_path)
+    _compute_node.import_experiment(entity_file_path, data_file_paths)
 
     set_dataset(_experiment.experiment_def_file())
 
@@ -111,11 +110,10 @@ def run_parameterset(entity_file, data_files, sweep_param_vals):
                                         out_entity_file_path,
                                         out_data_file_path)
 
-    # TODO alternative solution to hardcoding path to run folder on compute node
     if is_export_compute:
         _compute_node.export_experiment(_experiment.entity_with_prefix("experiment"),
-                                        _experiment.runfolder("output"),
-                                        _experiment.runfolder("output"),
+                                        _experiment.runpath("output"),
+                                        _experiment.runpath("output"),
                                         True)
 
     if (launch_mode is LaunchMode.per_experiment) and args.launch_compute:
@@ -123,8 +121,8 @@ def run_parameterset(entity_file, data_files, sweep_param_vals):
 
     if is_upload:
         if is_export_compute:
-            # TODO implement export compute AND upload to S3
-            print "EXPORT COMPUTE AND UPLOAD TO S3  -------> NOT IMPLEMENTED"
+            # TODO implement upload to S3 with 'export compute'
+            print "UPLOAD TO S3 NOT IMPLEMENTED ----> for the case of 'EXPORT COMPUTE'"
         else:
             # upload exported output Entity file (if it exists)
             _cloud.upload_experiment_output_s3(_experiment.prefix,
@@ -141,14 +139,14 @@ def run_parameterset(entity_file, data_files, sweep_param_vals):
                                                _experiment.experiments_def_filename,
                                                _experiment.experiment_def_file())
 
-            # upload log4j configuration file that was used (if it exists)
-            log_filename = "log4j2.log"
-            log_filepath = _experiment.experimentfile(log_filename)
+        # upload log4j configuration file that was used (if it exists)
+        log_filename = "log4j2.log"
+        log_filepath = _experiment.runpath(log_filename)
 
-            if os.path.isfile(log_filepath):
-                _cloud.upload_experiment_output_s3(_experiment.prefix,
-                                                   log_filename,
-                                                   log_filepath)
+        if os.path.isfile(log_filepath):
+            _cloud.upload_experiment_output_s3(_experiment.prefix,
+                                               log_filename,
+                                               log_filepath)
 
 
 def setup_parameter_sweep_counters(param_sweep, counters):
@@ -360,7 +358,7 @@ def launch_compute_local(main_class=""):
     """
 
     print "launching Compute locally"
-    print "NOTE: generating run_stdout.log and run_stderr.log"
+    print "NOTE: generating run_stdout.log and run_stderr.log (in the current folder)"
 
     cmd = "../node_coordinator/run.sh "
     if main_class is not "":

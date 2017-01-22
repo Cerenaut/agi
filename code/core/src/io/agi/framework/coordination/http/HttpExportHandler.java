@@ -67,7 +67,7 @@ public class HttpExportHandler implements HttpHandler {
                 String entityName = m.get( PARAMETER_ENTITY ).trim(); // essential
                 String type = m.get( PARAMETER_TYPE ).trim(); // essential
 
-                String filename = entityName + "-" + type + ".json";
+                String filename = "saved__" + entityName + "-" + type + ".json";
                 if ( m.containsKey( PARAMETER_EXPORT_LOCATION ) ) {
                     String path = m.get( PARAMETER_EXPORT_LOCATION ).trim(); // essential
 

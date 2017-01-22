@@ -103,7 +103,8 @@ public class EvaluateTrainingDemo {
 
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         Framework.CreateEntity( analyticsName, AnalyticsEntity.ENTITY_TYPE, n.getName(), experimentName );
-        Framework.CreateEntity( logisticRegressionName, SupervisedLearningEntity.ENTITY_TYPE, n.getName(), analyticsName );
+        Framework.CreateEntity( logisticRegressionName, SupervisedBatchTrainingEntity.ENTITY_TYPE, n.getName(), analyticsName );
+
 
         // 3) Connect entities
         // ---------------------------------------------

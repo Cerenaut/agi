@@ -1,3 +1,5 @@
+import os
+
 import requests
 import time
 import json
@@ -67,19 +69,52 @@ class Compute:
 
         print "   -> success, parameter reached value" + age_string
 
-    def import_experiment(self, entity_filepath=None, data_filepath=None):
+    def import_experiment(self, entity_filepath=None, data_filepaths=None):
         """setup the running instance of AGIEF with the input files"""
 
+        is_entity_file = entity_filepath
+        is_data_files = data_filepaths is not None or len(data_filepaths) != 0
+
         print "....... Import Experiment"
-        with open(entity_filepath, 'rb') as entity_data_file:
-            with open(data_filepath, 'rb') as data_data_file:
-                files = {'entity-file': entity_data_file, 'data-file': data_data_file}
+
+        if not is_entity_file and not is_data_files:
+            print "        WARNING: no input files specified (that may be intentional)"
+            return
+
+        print "     Input files: "
+        if is_entity_file:
+            print "        Entities:" + entity_filepath
+        if is_data_files:
+            print "        Data: " + json.dumps(data_filepaths)
+
+        if is_entity_file:
+            if not os.path.isfile(entity_filepath):
+                print "ERROR: entity file does not exist. CANNOT CONTINUE"
+                exit()
+
+            with open(entity_filepath, 'rb') as entity_data_file:
+                files = {'entity-file': entity_data_file}
                 response = requests.post(self.base_url() + '/import', files=files)
                 if self.log:
                     print "LOG: Import entity file, response = ", response
                     print "  LOG: response text = ", response.text
                     print "  LOG: url: ", response.url
                     print "  LOG: post body = ", files
+
+        if is_data_files:
+            for data_filepath in data_filepaths:
+                if not os.path.isfile(data_filepath):
+                    print "ERROR: entity file does not exist. CANNOT CONTINUE"
+                    exit()
+
+                with open(data_filepath, 'rb') as data_data_file:
+                    files = {'data-file': data_data_file}
+                    response = requests.post(self.base_url() + '/import', files=files)
+                    if self.log:
+                        print "LOG: Import data file, response = ", response
+                        print "  LOG: response text = ", response.text
+                        print "  LOG: url: ", response.url
+                        print "  LOG: post body = ", files
 
     def run_experiment(self, exp):
 

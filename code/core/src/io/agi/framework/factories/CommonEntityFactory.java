@@ -170,6 +170,10 @@ public class CommonEntityFactory implements EntityFactory {
             return new AnalyticsEntity( objectMap, _n, modelEntity );
         }
 
+        if( entityType.equals( SupervisedBatchTrainingEntity.ENTITY_TYPE ) ) {
+            return new SupervisedBatchTrainingEntity( objectMap, _n, modelEntity );
+        }
+
         return null;
     }
 
