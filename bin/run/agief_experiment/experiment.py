@@ -134,7 +134,7 @@ class Experiment:
 
     def runpath(self, path):
         """ return absolute path to a file or folder in the AGI_RUN_HOME/ folder """
-        return self.filepath_from_exp_variable(subfolder, self.agi_run_home)
+        return self.filepath_from_exp_variable(path, self.agi_run_home)
 
     def datafile(self, filename):
         """ return the file in the data folder, on the system where compute is running """
