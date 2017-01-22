@@ -195,7 +195,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
     protected void beforeUpdate() {
         String entityName = getName();
         int age = _config.age; // getPropertyInt( SUFFIX_AGE, 1 );
-        _logger.info( "START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName );
+        _logger.info("START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName);
     }
 
     protected void afterUpdate() {
@@ -203,7 +203,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
         int age = _config.age; // getPropertyInt(SUFFIX_AGE, 1);
         _logger.info( "END   T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity updated: " + entityName );
 
-        _n.notifyUpdated( entityName ); // this entity, the parent, is now complete
+        _n.notifyUpdated(entityName); // this entity, the parent, is now complete
     }
 
     public void onEntityUpdated( String entityName ) {
@@ -296,7 +296,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
     public static String SerializeConfig( EntityConfig entityConfig ) {
         Gson gson = new Gson();
-        String config = gson.toJson( entityConfig );
+        String config = gson.toJson(entityConfig);
         return config;
     }
 
@@ -400,14 +400,25 @@ public abstract class Entity extends NamedObject implements EntityListener {
             String inputKey = getKey( keySuffix );
             Data d = _data.get( inputKey );
 
+            boolean cached = false;
+
             if( _config.cache ) {
+                // even if I'm gonna flush it, cache it so next time (when flush maybe false) I read non-stale data from the cache.
                 _n.setCachedData( inputKey, d ); // cache this one, so we don't need to read it next time.
-                continue;
+
+                cached = true;
+
+                if( _config.flush == false ) {
+                    continue;
+                }
+                // else: continue to persist
             }
 
             // check for cache policy
             if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_NODE_CACHE ) ) {
-                _n.setCachedData( inputKey, d ); // cache this one, so we don't need to read it next time.
+                if( !cached ) {
+                    _n.setCachedData( inputKey, d ); // cache this one, so we don't need to read it next time.
+                }
             }
 
             if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_LAZY_PERSIST ) ) {
@@ -416,7 +427,9 @@ public abstract class Entity extends NamedObject implements EntityListener {
                 if( copy != null ) {
                     if( copy.isSameAs( d ) ) {
                         //System.err.println( "Skipping persist of Data: " + inputKey + " because: Not changed." );
-                        continue; // don't persist.
+                        if( _config.cache == false ) { // if cache = true, we only get here if flush is true.
+                            continue; // don't persist.
+                        }
                     }
                 }
             }
