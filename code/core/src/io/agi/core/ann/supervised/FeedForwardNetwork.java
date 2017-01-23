@@ -53,15 +53,28 @@ public class FeedForwardNetwork extends NamedObject {
         _c = c;
         _aff = aff;
 
+        int inputs = _c.getNbrInputs();
         int outputs = _c.getNbrOutputs();
         int layers = _c.getNbrLayers();
+//        float learningRate = _c.getLearningRate();
 
         _ideals = new Data( outputs );
 
+        // instantiate layers
         for( int l = 0; l < layers; ++l ) {
             String layerName = getLayerName( l );
             NetworkLayer nl = new NetworkLayer( layerName, _om );
             _layers.add( nl );
+        }
+
+        // setup layers:
+        int layerInputs = inputs;
+
+        for( int l = 0; l < layers; ++l ) {
+            String activationFunction = _c.getLayerTransferFn(l);
+            int layerSize = _c.getLayerSize(l);
+            setupLayer( _c._r, l, layerInputs, layerSize, activationFunction );
+            layerInputs = layerSize; // for next time
         }
 
     }
@@ -69,9 +82,11 @@ public class FeedForwardNetwork extends NamedObject {
     public void reset() {
         int layers = _c.getNbrLayers();
 
+        float weightsStdDev = 0.01f; // TODO make param
+
         for( int l = 0; l < layers; ++l ) {
             NetworkLayer nl = _layers.get( l );
-            nl.reset( _c._r );
+            nl.reset( _c._r, weightsStdDev );
         }
     }
 
@@ -80,16 +95,17 @@ public class FeedForwardNetwork extends NamedObject {
      *
      * @param layer
      * @param cells
-     * @param learningRate
      * @param activationFunction
      */
-    public void setupLayer( Random r, int layer, int inputs, int cells, float learningRate, String activationFunction ) {
+    public void setupLayer( Random r, int layer, int inputs, int cells, String activationFunction ) {
 
         String layerName = getLayerName( layer );
 
         NetworkLayerConfig nlc = new NetworkLayerConfig();
 
-        nlc.setup( _om, layerName, r, inputs, cells, learningRate, activationFunction );
+        float learningRate = _c.getLearningRate();
+        float regularization = _c.getL2Regularization();
+        nlc.setup( _om, layerName, r, inputs, cells, learningRate, regularization, activationFunction );
 
         NetworkLayer nl = _layers.get( layer );
         nl.setup( nlc, _aff );
@@ -195,16 +211,16 @@ public class FeedForwardNetwork extends NamedObject {
         for( int layer = L; layer >= 0; --layer ) {
 
             NetworkLayer nl = _layers.get( layer );
-            TransferFunction af = nl.getActivationFunction();
+            ActivationFunction af = nl.getActivationFunction();
             if( layer == L ) {
-                String lossFunction = _c.getLossFunction();
-                BackPropagation.OutputErrorGradient( nl._weightedSums, nl._outputs, _ideals, nl._errorGradients, af, lossFunction, l2R, sumSqWeights );
+                String costFunction = _c.getCostFunction();
+                BackPropagation.CostGradientExternal( nl._weightedSums, nl._costGradients, nl._outputs, _ideals, af, costFunction, l2R, sumSqWeights );
             } else { // layer < L
-                NetworkLayer nl2 = _layers.get( layer + 1 );
-                BackPropagation.ErrorGradient( nl._weightedSums, nl._errorGradients, nl2._weights, nl2._errorGradients, af, l2R );
+                NetworkLayer nlNext = _layers.get( layer + 1 );
+                BackPropagation.CostGradientInternal( nl._weightedSums, nl._costGradients, nlNext._weights, nlNext._costGradients, af, l2R );
             }
 
-            nl.train( l2R ); // using the error gradients, d
+            nl.train(); // using the error gradients, d
         }
     }
 

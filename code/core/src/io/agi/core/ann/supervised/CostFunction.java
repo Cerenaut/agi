@@ -26,23 +26,34 @@ package io.agi.core.ann.supervised;
  * <p/>
  * Created by dave on 4/01/16.
  */
-public abstract class LossFunction {
+public abstract class CostFunction {
 
     public static final String QUADRATIC = "quadratic";
     public static final String CROSS_ENTROPY = "cross-entropy";
     public static final String LOG_LIKELIHOOD = "log-likelihood";
 
-    public static float quadratic( float output, float ideal ) {
+    public static float quadratic(float output, float ideal) {
         // per-sample x, where x is a vector, cost C_x = 0.5 * ||y-a^L||^2
         // C = average over all C_x i.e. C = 1/n * sum_x C_x
         // delta_aC = a^L -y
-        return output - ideal;
+        return (1f/2f) * ( (output - ideal) * (output - ideal) );
+    }
+
+    public static float quadraticOutputErrorGradient( float output, float ideal, float outputDerivative ) {
+        float cost = output - ideal; // per sample
+        cost = cost * outputDerivative;
+        return cost;
+    }
+
+    public static float crossEntropyOutputErrorGradient( float output, float ideal ) {
+        // cancels the derivative part
+        return output - ideal; // per sample
     }
 
     public static float crossEntropy( float output, float ideal ) {
         // a = output
         // y = ideal
-        // C = y * ln( a ) + (1-y) * ln( 1-a )
+        // C =     y * ln( a      ) + (1-y    ) * ln( 1-a      )
         // C = ideal * ln( output ) + (1-ideal) * ln( 1-output )
         double term1 = ideal * Math.log( output );
         double term2 = ( 1.0 - ideal ) * Math.log( 1.0 - output );

@@ -31,62 +31,75 @@ public class FeedForwardNetworkConfig extends NetworkConfig {
 
     public String _keyNbrLayers = "nbr-layers";
     public String _keyNbrInputs = "nbr-inputs";
-    public String _keyNbrOutputs = "nbr-outputs";
+//    public String _keyNbrOutputs = "nbr-outputs";
     public String _keyLayerSizes = "layer-sizes"; // comma separated list of layer sizes
-    public String _keyLossFunction = "loss-function";
+    public String _keyLayerTransferFns = "layer-transfer-functions";
+    public String _keyCostFunction = "cost-function";
     public String _keyL2Regularization = "l2-regularization";
     public String _keyLearningRate = "learning-rate";
-    public String _keyActivationFunction = "activation-function";
 
     public FeedForwardNetworkConfig() {
     }
 
-    public void setup( ObjectMap om, String name, Random r, String lossFunction, String activationFunction, int inputs, int outputs, int layers, String layerSizes, float l2Regularization, float learningRate ) {
-        super.setup( om, name, r );
+    public void setup( ObjectMap om, String name, Random r, String costFunction, int inputs, int layers, String layerSizes, String layerActivationFunctions, float l2Regularization, float learningRate ) {
+        super.setup(om, name, r);
 
-        setLossFunction( lossFunction );
-        setActivationFunction( activationFunction );
-        setNbrLayers( layers );
-        setLayerSizes( layerSizes );
-        setNbrInputs( inputs );
-        setNbrOutputs( outputs );
+        setCostFunction(costFunction);
+        setLayerTransferFns(layerActivationFunctions);
+        setNbrLayers(layers);
+        setLayerSizes(layerSizes);
+        setNbrInputs(inputs);
+//        setNbrOutputs( outputs );
         setL2Regularization( l2Regularization );
-        setLearningRate( learningRate );
+        setLearningRate(learningRate);
     }
 
     public void copyFrom( NetworkConfig nc, String name ) {
-        super.copyFrom( nc, name );
+        super.copyFrom(nc, name);
 
         FeedForwardNetworkConfig c = ( FeedForwardNetworkConfig ) nc;
 
-        setLossFunction( c.getLossFunction() );
-        setActivationFunction( c.getActivationFunction() );
+        setCostFunction(c.getCostFunction());
+        setLayerTransferFns(c.getLayerTransferFns());
         setNbrLayers( c.getNbrLayers() );
-        setLayerSizes( c.getLayerSizes() );
-        setNbrInputs( c.getNbrInputs() );
-        setNbrOutputs( c.getNbrOutputs() );
+        setLayerSizes(c.getLayerSizes());
+        setNbrInputs(c.getNbrInputs());
+//        setNbrOutputs( c.getNbrOutputs() );
         setL2Regularization( c.getL2Regularization() );
-        setLearningRate( c.getLearningRate() );
+        setLearningRate(c.getLearningRate());
     }
 
-    public void setLossFunction( String f ) {
-        _om.put( getKey( _keyLossFunction ), f );
+    public void setCostFunction(String f) {
+        _om.put(getKey(_keyCostFunction), f);
     }
 
-    public void setActivationFunction( String f ) {
-        _om.put( getKey( _keyActivationFunction ), f );
+    public void setLayerTransferFns( String f ) {
+        _om.put( getKey( _keyLayerTransferFns ), f );
     }
 
-    public String getLossFunction() {
-        return ( String ) _om.get( getKey( _keyLossFunction ) );
+    public String getCostFunction() {
+        return ( String ) _om.get( getKey(_keyCostFunction) );
     }
 
-    public String getActivationFunction() {
-        return ( String ) _om.get( getKey( _keyActivationFunction ) );
+    public String getLayerTransferFn( int layer ) {
+        String fns = getLayerTransferFns();
+        String[] names = fns.split( "," );
+        return names[ layer ];
+    }
+
+    public String getLayerTransferFns() {
+        return ( String ) _om.get( getKey( _keyLayerTransferFns ) );
     }
 
     public void setLayerSizes( String f ) {
         _om.put( getKey( _keyLayerSizes ), f );
+    }
+
+    public int getLayerSize( int layer ) {
+        String fns = getLayerSizes();
+        String[] sizes = fns.split( "," );
+        String size = sizes[ layer ];
+        return Integer.valueOf( size );
     }
 
     public String getLayerSizes() {
@@ -118,12 +131,15 @@ public class FeedForwardNetworkConfig extends NetworkConfig {
         return ( Integer ) _om.get( getKey( _keyNbrInputs ) );
     }
 
-    public void setNbrOutputs( int layers ) {
-        _om.put( getKey( _keyNbrOutputs ), layers );
-    }
+//    public void setNbrOutputs( int layers ) {
+//        _om.put( getKey( _keyNbrOutputs ), layers );
+//    }
 
     public Integer getNbrOutputs() {
-        return ( Integer ) _om.get( getKey( _keyNbrOutputs ) );
+//        return ( Integer ) _om.get( getKey( _keyNbrOutputs ) );
+        int layers = getNbrLayers();
+        int outputs = getLayerSize( layers -1 );
+        return outputs;
     }
 
     public void setL2Regularization( float r ) {
