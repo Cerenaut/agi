@@ -149,7 +149,11 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
      */
     public String getImageFileName( int idx ) {
         try {
-            return _fileNames.get( idx );
+//            return _fileNames.get( idx );
+            String filePath = _fileNames.get( idx );
+            File f = new File( filePath );
+            String fileName = f.getName();
+            return fileName;
         }
         catch( Exception e ) {
             _logger.error( "Unable to get image file name.");
