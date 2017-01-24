@@ -31,7 +31,7 @@
         <label for="entity">Entity</label>
         <input type="text" id="entity" style="" class="" placeholder="Entity name"/>
         <label for="update">Update</label>
-        <input type="button" id="update" class="btn btn-sm btn-danger" style="" onclick="Experiment.update()" value="Once"/>
+        <input type="button" id="update" class="btn btn-sm btn-danger" style="" onclick="Subtree.update()" value="Once"/>
         <input type="button" id="pause" class="btn btn-sm btn-danger" style="" onclick="Loop.togglePause()" value="Resume"/>
         <label for="interval">every (ms)</label>
         <input type="number" id="interval" style="display:inline;width:5em;" class="" placeholder="Update interval" value="50"/>
@@ -42,7 +42,7 @@
         <input id="reset" type="checkbox" name="reset" />
         <label for="learn">Learn</label>
         <input id="learn" type="checkbox" name="learn" />
-        <input type="button" id="pause" class="btn btn-sm btn-success" style="" onclick="Experiment.setFlushAndReset()" value="Set"/>
+        <input type="button" id="pause" class="btn btn-sm btn-success" style="" onclick="Subtree.setFlushAndReset()" value="Set"/>
        </span>
         &nbsp;<small>
          <i>Type</i> <span id="entity-type">?</span>
@@ -64,10 +64,12 @@
        <input type="file" name="data-file" id="data-file" style="display:inline;" class="btn btn-sm" placeholder="Data file name"/>
        </p>
        <p>
-       <input type="button" id="import" class="btn btn-sm btn-success" style="" onclick="Experiment.importEntity()" value="Import Files"/>
-       <input type="button" id="exportEntity" class="btn btn-sm btn-primary" style="" onclick="Experiment.exportEntity()" value="Export Entities"/>
-       <input type="button" id="exportData" class="btn btn-sm btn-primary" style="" onclick="Experiment.exportData()" value="Export Data"/>
-       <input type="button" id="exportDataRefs" class="btn btn-sm btn-primary" style="" onclick="Experiment.exportDataRefs()" value="Export Data Refs"/>
+       <input type="button" id="importBoth" class="btn btn-success" style="" onclick="Subtree.importEntityAndData(); console.log( 'bla');" value="Import Files"/>
+       <input type="button" id="importEntity" class="btn btn-sm btn-success" style="" onclick="Subtree.importEntity()" value="Import Entities file only"/>
+       <input type="button" id="importData" class="btn btn-sm btn-success" style="" onclick="Subtree.importData()" value="Import Data file only "/>
+       <input type="button" id="exportEntity" class="btn btn-primary" style="" onclick="Subtree.exportEntity()" value="Export Entities"/>
+       <input type="button" id="exportData" class="btn btn-primary" style="" onclick="Subtree.exportData()" value="Export Data"/>
+       <input type="button" id="exportDataRefs" class="btn btn-sm btn-primary" style="" onclick="Subtree.exportDataRefs()" value="Export Data Refs"/>
        </p>
        </form>
        </div>
@@ -93,7 +95,7 @@
     <script src="assets/scripts/framework.js"></script>
     <script src="assets/scripts/parameters.js"></script>
     <script src="assets/scripts/loop.js"></script>
-    <script src="assets/scripts/experiment.js"></script>
+    <script src="assets/scripts/subtree.js"></script>
 
   </body>
 </html>
