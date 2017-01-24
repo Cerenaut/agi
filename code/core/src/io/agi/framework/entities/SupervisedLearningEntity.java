@@ -172,7 +172,6 @@ public class SupervisedLearningEntity extends Entity {
         _logger.warn( "saveModel has not been overridden by your supervised learning algorithm - model will not be persisted" );
     }
 
-
     /**
      * Train the algorithm given the entire history of training samples provided.
      *
@@ -182,6 +181,7 @@ public class SupervisedLearningEntity extends Entity {
      */
     protected void trainBatch( Data featuresTimeMatrix, Data labelsTimeMatrix, int features ) {
         // Implement as needed in subclasses
+        throw new java.lang.UnsupportedOperationException( "train batch is not supported by this algorithm" );
     }
 
     /**
@@ -192,6 +192,7 @@ public class SupervisedLearningEntity extends Entity {
      */
     protected void trainSample( Data features, Data labels ) {
         // Implement as needed in subclasses
+        throw new java.lang.UnsupportedOperationException( "train sample is not supported by this algorithm" );
     }
 
     /**
@@ -202,6 +203,7 @@ public class SupervisedLearningEntity extends Entity {
      */
     protected void trainOnline( Data features, Data labels ) {
         // Implement as needed in subclasses
+        throw new java.lang.UnsupportedOperationException( "Online training is not supported by this algorithm" );
     }
 
     /**
@@ -212,6 +214,7 @@ public class SupervisedLearningEntity extends Entity {
      */
     protected void predict( Data features, Data predictedLabels ) {
         // Implement as needed in subclasses
+        throw new java.lang.UnsupportedOperationException( "Prediction not supported by this algorithm" );
     }
 
     protected void accumulate( Data features, Data labels ) {
@@ -362,10 +365,10 @@ public class SupervisedLearningEntity extends Entity {
         }
         else {
 
+            loadModel( features.getSize(), labels.getSize(), config.labelClasses ); // load a saved model, ie from persistence
+
             // If learning mode, then update model
             if( config.learn ) {
-
-                loadModel( features.getSize(), labels.getSize(), config.labelClasses ); // load a saved model, ie from persistence
 
                 if( config.accumulateSamples ) {
                     accumulate( features, labels );
@@ -387,12 +390,11 @@ public class SupervisedLearningEntity extends Entity {
 
                         trainBatch( outputFeatures, outputLabels, features.getSize() ); // train on a batch of data.
 
-                        config.learnBatchComplete = true; // note that it doesn't need to be done again
+                        config.learnBatchComplete = true; // it doesn't need to be done again
                     }
                 }
 
                 saveModel();
-
             }
         }
 
