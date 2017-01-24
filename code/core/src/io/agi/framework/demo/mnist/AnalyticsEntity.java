@@ -20,17 +20,15 @@
 package io.agi.framework.demo.mnist;
 
 import io.agi.core.data.Data;
-import io.agi.core.orm.AbstractPair;
+import io.agi.core.ml.supervised.SupervisedUtil;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
-import io.agi.framework.entities.SupervisedBatchTrainingEntity;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
-import java.util.HashMap;
 
 /**
  * A generic setup for an analytics layer in the hierarchy.
@@ -42,12 +40,11 @@ import java.util.HashMap;
  * - training dataset, and a
  * - testing dataset
  *
- * We perform 1 pass over the training dataset to train any subscribed 'testing entities'
+ * Default is 'batch mode' where presence of the full dataset is required, and the subscribed 'testing entities'
+ * must process in batch mode.
+ * In non-'batch mode', iteratively pass over the dataset emitting one feature vector and class label at a time
  *
- * At each step, one 'feature' is emitted (as a Data structure) and one class label (as a Data structure).
- * ----> or rather tell the subscribed entity to take another one from its input (so it can get it directly from the source)
- *
- * This entity can terminate an experiment when the test dataset are processed.
+ * This entity terminates an experiment when the test dataset are processed.
  *
  * Created by gideon on 08/01/2017.
  */
@@ -90,7 +87,7 @@ public class AnalyticsEntity extends Entity {
         return AnalyticsEntityConfig.class;
     }
 
-    public void doUpdateSelf() {
+    protected void doUpdateSelf() {
 
         // Check for a reset (to start of sequence and re-train)
         AnalyticsEntityConfig config = ( AnalyticsEntityConfig ) _config;
@@ -99,69 +96,91 @@ public class AnalyticsEntity extends Entity {
             config.terminate = false;
             config.phase = AnalyticsEntityConfig.PHASE_TRAINING;
             config.count = 0;
+            config.reset = false;
         }
 
-        increment();
+        Data features = getData( INPUT_FEATURES );
+        Data labels = getData( INPUT_LABELS );
+
+        int numDataPoints = SupervisedUtil.calcMFromFeatureMatrix( features );
+        if ( config.batchMode )
+        {
+            if (numDataPoints < (config.trainSetSize + config.testSetSize) ) {
+                String message = "batch mode, but there are not enough features to train and test";
+                _logger.error( message );
+                throw new java.lang.UnsupportedOperationException( message );
+            }
+        }
+
+        _logger.warn( "=======> Phase: " + config.phase + ", index: " + config.count );
+        calcPhase();
 
         // inform subscribed testing entities, whether they are in 'learn' or 'test' mode
         try {
             Collection< String > entityNames = getEntityNames( config.testingEntities );
             for( String entityName : entityNames ) {
-                Framework.SetConfig( entityName, "learn", String.valueOf( isTraining() ) );
+                boolean isTraining = config.phase.equals( AnalyticsEntityConfig.PHASE_TRAINING );
+                Framework.SetConfig( entityName, "learn", String.valueOf( isTraining ) );
             }
         }
         catch( Exception e ) {
         } // this is ok, the experiment is just not configured to have a learning flag
 
-        // copy features and labels to output
-        Data features = getData( INPUT_FEATURES );
-        Data labels = getData( INPUT_LABELS );
+        incrementCount();
 
-        setData( OUTPUT_FEATURES, features );
-        setData( OUTPUT_LABELS, labels );
+        if ( config.batchMode ) {
+            // copy features and labels to output
+            setData( OUTPUT_FEATURES, features );
+            setData( OUTPUT_LABELS, labels );
+        }
+        else {
+            // all we need to do is to go through the features and labels matrices one data point at a time
+            String message = "non batch mode not implemented.";
+            _logger.error( message );
+            throw new java.lang.UnsupportedOperationException( message );
+        }
     }
 
     /**
-     * Perform one iteration, calculate the phase we should be in, and set the correct phase.
-     * At the appropriate point, transition from 'training' to 'testing', and from 'testing' to 'terminate'
-     *
-     * @return
+     * Use phase and count to determine current phase (perform transition if necessary).
+     * This is meant to be run at the start of the run loop (phase value from previous iteration)
      */
-    public void increment() {
-        AnalyticsEntityConfig config = ( AnalyticsEntityConfig )_config;
+    private void calcPhase( ) {
+        AnalyticsEntityConfig config = ( AnalyticsEntityConfig ) _config;
 
-        _logger.warn( "=======> Phase: " + AnalyticsEntityConfig.PHASE_TESTING + ", index: " + config.count );
-
-        if ( isTraining() ) {
-            if ( config.count >= config.trainSetSize ) {
-                config.phase = AnalyticsEntityConfig.PHASE_TESTING;
-                _logger.warn( "=======> Transition to test phase. (1)" );
+        // set current phase (transition if necessary)
+        if( config.phase.equals( AnalyticsEntityConfig.PHASE_TRAINING ) ) {
+            if( config.count >= config.trainSetSize ) {
+                config.phase = AnalyticsEntityConfig.PHASE_TESTING; // transition to testing
+                _logger.warn( "=======> Transition to test phase. (2)" );
             }
         }
-        else {
-            if ( config.count >= config.testSetSize ) {
-                config.phase = null;
-                config.terminate = true;
-                _logger.warn( "=======> Terminating on end of test set (2)" );
+        else {   // if( config.phase.equals( AnalyticsEntityConfig.PHASE_TESTING ) ) {
+            if( config.count >= config.testSetSize ) {
+                config.terminate = true;                            // terminate
+                _logger.warn( "=======> Terminating on end of test set (3)" );
             }
         }
-
-        config.count++;
     }
 
     /**
-     * Can only be in one of two phases, so return true if training, false if testing.
-     * This is a pure getter, it does not calculate the phase that we should be in.
-     * @return true if training, false if testing.
+     * Increment count based on current phase.
      */
-    public boolean isTraining() {
-        AnalyticsEntityConfig config = ( AnalyticsEntityConfig )_config;
-        if ( config.phase.equals( AnalyticsEntityConfig.PHASE_TRAINING ) ) {
-            return true;
+    private void incrementCount( ) {
+        AnalyticsEntityConfig config = ( AnalyticsEntityConfig ) _config;
+
+        if ( config.batchMode ) {
+            if( config.phase.equals( AnalyticsEntityConfig.PHASE_TRAINING ) ) {
+                config.count += config.trainSetSize;
+            }
+            else {
+                config.count += config.testSetSize;
+            }
         }
         else {
-            return false;
+            ++config.count;
         }
     }
+
 
 }

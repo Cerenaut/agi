@@ -92,9 +92,13 @@ public class FeatureLabelsCorrelationEntity extends SupervisedLearningEntity {
         _featureLabelCount.set( 0.f );
     }
 
-    protected void loadModel( int features, int labels, int labelClasses ) {
+    protected void initModel( int features, int labels, int labelClasses ) {
         DataSize dataSizeFeatureLabels = DataSize.create( features * labels );
         _featureLabelCount = getDataLazyResize( FEATURE_LABEL_COUNT, dataSizeFeatureLabels );
+    }
+
+    protected void loadModel() {
+        // nothing separate needs to be done to load from persistence
     }
 
     protected void saveModel() {

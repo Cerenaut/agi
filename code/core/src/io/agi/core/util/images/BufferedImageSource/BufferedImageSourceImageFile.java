@@ -75,7 +75,6 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
 
                     directoryStream = Files.newDirectoryStream( Paths.get( folderName ) );
                     for( Path path : directoryStream ) {
-                        //_fileNames.add( path.getFileName().toString() );
                         _fileNames.add( path.toAbsolutePath().toString() );
                     }
                 }
@@ -149,7 +148,6 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
      */
     public String getImageFileName( int idx ) {
         try {
-//            return _fileNames.get( idx );
             String filePath = _fileNames.get( idx );
             File f = new File( filePath );
             String fileName = f.getName();

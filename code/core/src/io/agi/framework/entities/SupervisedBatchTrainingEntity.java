@@ -75,7 +75,7 @@ public class SupervisedBatchTrainingEntity extends SupervisedLearningEntity {
 
     /**
      * Override to ensure that the model is loaded from persistence.
-     * Get string from entity's config object, set in learner's config and it will be used by learner.loadModel()
+     * Get string from entity's config object, set in learner's config and it will be used by learner.initModel()
      */
     protected void loadModel( int features, int labels, int labelClasses ) {
 
@@ -113,26 +113,6 @@ public class SupervisedBatchTrainingEntity extends SupervisedLearningEntity {
     }
 
     /**
-     * Incrementally train the model with one additional sample.
-     *
-     * @param features Latest sample
-     * @param labels Latest sample
-     */
-    protected void trainSample( Data features, Data labels ) {
-            throw new java.lang.UnsupportedOperationException( "Online training is not supported by this algorithm" );
-    }
-
-    /**
-     * Train the algorithm using an online update, which implies forgetting older updates.
-     *
-     * @param features
-     * @param labels
-     */
-    protected void trainOnline( Data features, Data labels ) {
-        throw new java.lang.UnsupportedOperationException( "Online training is not supported by this algorithm" );
-    }
-
-    /**
      * Generate a prediction from the model and copy it into predictedLabels.
      *
      * @param features
@@ -141,6 +121,14 @@ public class SupervisedBatchTrainingEntity extends SupervisedLearningEntity {
     protected void predict( Data features, Data predictedLabels ) {
         predictedLabels.set( 0f );
         _learner.predict( features, predictedLabels );
+    }
+
+    protected void doUpdateSelf() {
+        SupervisedBatchTrainingEntityConfig config = ( SupervisedBatchTrainingEntityConfig ) _config;
+        config.learningMode = SupervisedLearningEntity.LEARNING_MODE_BATCH;
+        config.learnBatchOnce = true;
+
+        super.doUpdateSelf();
     }
 
 }

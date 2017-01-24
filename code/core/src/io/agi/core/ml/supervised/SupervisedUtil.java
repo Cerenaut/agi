@@ -45,15 +45,15 @@ public class SupervisedUtil {
     }
 
     // m = number of data points
-    public static int calcMFromFeatureMatrix( Data featuresMatrixTrain ) {
-        DataSize datasetSize = featuresMatrixTrain._dataSize;
+    public static int calcMFromFeatureMatrix( Data featuresMatrix ) {
+        DataSize datasetSize = featuresMatrix._dataSize;
         int m = datasetSize.getSize( DataSize.DIMENSION_Y );
         return m;
     }
 
     // n = feature vector size
-    public static int calcNFromFeatureMatrix( Data featuresMatrixTrain ) {
-        DataSize datasetSize = featuresMatrixTrain._dataSize;
+    public static int calcNFromFeatureMatrix( Data featuresMatrix ) {
+        DataSize datasetSize = featuresMatrix._dataSize;
         int n = datasetSize.getSize( DataSize.DIMENSION_X );
         return n;
     }
