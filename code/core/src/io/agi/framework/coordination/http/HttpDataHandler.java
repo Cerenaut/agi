@@ -23,7 +23,6 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.agi.core.orm.AbstractPair;
 import io.agi.framework.Node;
-import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.models.ModelData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,18 +36,14 @@ import java.util.Collection;
  */
 public class HttpDataHandler implements HttpHandler {
 
-    protected static final Logger logger = LogManager.getLogger();
+    protected static final Logger _logger = LogManager.getLogger();
 
     public static final String CONTEXT = "/data";
 
     public static final String PARAMETER_NAME = "name";
     public static final String PARAMETER_FILTER = "filter";
 
-//    public Persistence _p;
-
-    public HttpDataHandler() {//} Persistence p ) {
-//        _p = p;
-    }
+    public HttpDataHandler() {}
 
     @Override
     public void handle( HttpExchange t ) throws IOException {
@@ -59,19 +54,18 @@ public class HttpDataHandler implements HttpHandler {
             Node n = Node.NodeInstance();
 
             String query = t.getRequestURI().getQuery();
-            //System.err.println("Request: " + HttpCoordinationHandler.CONTEXT + " " + query);
+            _logger.info("Request: " + HttpCoordinationHandler.CONTEXT + " " + query);
 
             String method = t.getRequestMethod();
 
             ArrayList< AbstractPair< String, String > > parameters = HttpUtil.GetDuplicateQueryParams( query );
 
-            Collection< ModelData > results = new ArrayList< ModelData >();
+            Collection< ModelData > results = new ArrayList<>();
 
             for( AbstractPair< String, String > ap : parameters ) {
                 String key = ap._first;
                 String value = ap._second;
                 if( key.equalsIgnoreCase( PARAMETER_NAME ) ) {
-//                    ModelData m = _p.fetchData( value );
                     ModelData m = n.fetchData( value );
 
                     if( m != null ) {
@@ -79,7 +73,6 @@ public class HttpDataHandler implements HttpHandler {
                     }
                 }
                 else if( key.equalsIgnoreCase( PARAMETER_FILTER ) ) {
-//                    Collection< ModelData > c = _p.getDataMeta( value );
                     Collection< ModelData > c = n.getDataMeta( value );
                     results.addAll( c );
                 }
@@ -87,7 +80,6 @@ public class HttpDataHandler implements HttpHandler {
 
             // if no data specified, get all data names.
             if( results.isEmpty() ) {
-//                Collection< String > names = _p.getData();
                 Collection< String > names = n.getData();
 
                 for( String name : names ) {
@@ -128,8 +120,8 @@ public class HttpDataHandler implements HttpHandler {
             status = 200;
         }
         catch( Exception e ) {
-            logger.error( "Unable to handle data call.");
-            logger.error( e.toString(), e );
+            _logger.error( "Unable to handle data call.");
+            _logger.error( e.toString(), e );
         }
 
         HttpUtil.SendResponse( t, status, response );
