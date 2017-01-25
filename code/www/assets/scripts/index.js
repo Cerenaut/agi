@@ -75,7 +75,7 @@ var Search = {
         if( root ) {
           linksValue = linksValue 
                      + " / <a href='graph.html?entity="+ objectName + "' title='Open as Graph' target='_blank'>Graph</a>"
-                     + " / <a href='root.html?entity="+ objectName + "' title='Open as Root' target='_blank'><b>Root</b></a>";
+                     + " / <a href='subtree.html?entity="+ objectName + "' title='Open as subtree Root' target='_blank'><b>Subtree</b></a>";
         }
         if( type ) {
           if( type == "hq-cl-region-layer" ) {
