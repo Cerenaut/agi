@@ -24,6 +24,7 @@ import com.sun.net.httpserver.HttpHandler;
 import io.agi.core.orm.AbstractPair;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
+import io.agi.framework.persistence.DenseDataDeserializer;
 import io.agi.framework.persistence.models.ModelData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -62,7 +63,7 @@ public class HttpDataHandler implements HttpHandler {
 
             ArrayList< AbstractPair< String, String > > parameters = HttpUtil.GetDuplicateQueryParams( query );
 
-            if( method.equalsIgnoreCase("GET") ) {
+            if( method.equalsIgnoreCase( "GET" ) ) {
 
                 // fetch any existing data mentioned..
                 Collection< ModelData > results = new ArrayList<>();
@@ -71,7 +72,7 @@ public class HttpDataHandler implements HttpHandler {
                     String key = ap._first;
                     String value = ap._second;
                     if( key.equalsIgnoreCase( PARAMETER_NAME ) ) {
-                        ModelData m = n.fetchData( value );
+                        ModelData m = n.getModelData( value, new DenseDataDeserializer() );
 
                         if( m != null ) {
                             results.add( m ); // a complete data (specifically fetched)
@@ -85,7 +86,7 @@ public class HttpDataHandler implements HttpHandler {
 
                 // if no data specified, get all data names.
                 if( results.isEmpty() ) {
-                    Collection< String > names = n.getData();
+                    Collection< String > names = n.getDataNames();
 
                     for( String name : names ) {
                         ModelData m = new ModelData();

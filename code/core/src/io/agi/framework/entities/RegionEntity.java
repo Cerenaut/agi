@@ -117,9 +117,9 @@ public class RegionEntity extends Entity {
         flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( ACTIVITY,     DataFlags.FLAG_SPARSE_BINARY );
 
-        flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_LAZY_PERSIST );
-        flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_LAZY_PERSIST );
-        flags.putFlag( ACTIVITY, DataFlags.FLAG_LAZY_PERSIST );
+//        flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_LAZY_PERSIST );
+//        flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_LAZY_PERSIST );
+//        flags.putFlag( ACTIVITY, DataFlags.FLAG_LAZY_PERSIST );
 
         attributes.add( PREDICTION_OLD );
         attributes.add( PREDICTION_NEW );
@@ -216,7 +216,7 @@ public class RegionEntity extends Entity {
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), DataFlags.FLAG_SPARSE_REAL );
 
         // These rarely change:
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), DataFlags.FLAG_LAZY_PERSIST );
+//        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), DataFlags.FLAG_LAZY_PERSIST );
 
         // These are written by only me, so can be cached, avoiding the read.
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), DataFlags.FLAG_NODE_CACHE );

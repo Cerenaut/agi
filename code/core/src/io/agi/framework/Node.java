@@ -22,6 +22,8 @@ package io.agi.framework;
 import io.agi.core.data.Data;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.coordination.Coordination;
+import io.agi.framework.persistence.DataModelData;
+import io.agi.framework.persistence.DataDeserializer;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
@@ -142,119 +144,38 @@ public class Node {
         return _c;
     }
 
-    /**
-     * Retrieves any Data object of this name that is cached.
-     *
-     * @param name
-     * @return
-     */
-    public Data getCachedData( String name ) {
-        Data d = _dataCache.getData( name );
-        return d;
-    }
+//
+//    public ModelData fetchData( String key ) {
+//            Data d = _dataCache._cache.get( key );
+//            if( d == null ) {//!_dataCache._cache.keySet().contains( key ) ) {
+//                return _p.fetchData( key );
+//            }
+//
+//            // ok it's in the cache. Persist it and return it from persistence
+//            String encoding = ModelData.ENCODING_DENSE;
+//            ModelData modelData = new ModelData( key, d, encoding ); // converts to json
+//            return modelData;
+//        }
+//    }
 
-    /**
-     * Caches this Data object within the Node.
-     *
-     * @param name
-     * @param d
-     */
-    public void setCachedData( String name, Data d ) {
-        _dataCache.putData(name, d);
-    }
-
-    /**
-     * Remove any cached data.
-     *
-     * @param name
-     */
-    public void clearCachedData( String name ) {
+//    public void setDataCache( DataModelData dmd ) {
+//        _dataCache.setData( dmd._md.name, dmd );
+//    }
+//
+    public void clearDataCache( String name ) {
         _dataCache.removeData( name );
     }
 
-    /**
-     * Set this data in cache, and persist.
-     *
-     * @param modelData
-     */
-    public void persistData( ModelData modelData ) {
-
-        _p.persistData( modelData );
-
-        Data d = modelData.getData(); // can't deal with references, as no rebuilder. So may be null.
-
-        if( d != null ) {
-            setCachedData( modelData.name, d );
-        }
-        else {
-            clearCachedData( modelData.name );
-        }
+    public void flushDataCache( String name ) {
+        // TODO
     }
 
     /**
-     * Persists, and uses the existing Object form in addition to the model to avoid serialization work.
+     * Returns all names, whether in cache or persistence.
      *
-     * @param modelData
-     * @param d
+     * @return
      */
-    public void persistData( ModelData modelData, Data d ) {
-
-        _p.persistData( modelData );
-
-        setCachedData( modelData.name, d );
-    }
-
-    public ModelData fetchData( String key ) {
-        if( key.equals( "autoencoder-input" ) ) {
-            int g = 0;
-            g++;
-        }
-        synchronized ( _dataCache._cache ) {
-            Data d = _dataCache._cache.get( key );
-            if( d == null ) {//!_dataCache._cache.keySet().contains( key ) ) {
-                return _p.fetchData( key );
-            }
-
-            // ok it's in the cache. Persist it and return it from persistence
-            String encoding = ModelData.ENCODING_DENSE;
-            ModelData modelData = new ModelData( key, d, encoding ); // converts to json
-            return modelData;
-        }
-    }
-
-    public Collection< ModelData > getDataMeta( String filter ) {
-        HashMap< String, ModelData > keyModelData = new HashMap< String, ModelData >();
-
-        // lock the cache
-        synchronized ( _dataCache._cache ) {
-
-            // get everything from persistence
-            Collection< ModelData > c = _p.getDataMeta( filter );
-            for( ModelData md : c ) {
-                keyModelData.put( md.name, md );
-            }
-
-            // replace anything stale in persistence
-            Set< String > keySet = _dataCache._cache.keySet();
-            for( String key : keySet ) {
-                if( key.indexOf( filter ) >= 0 ) {
-                    Data d = _dataCache._cache.get( key );
-
-                    String encoding = ModelData.ENCODING_DENSE;
-                    ModelData md = new ModelData( key, d, encoding ); // converts to json
-                    ModelData md2 = new ModelData( md.name, md.refKeys, md.sizes, null ); // sans actual data
-                    keyModelData.put( md2.name, md2 );
-                }
-            }
-
-        }
-
-        ArrayList< ModelData > al = new ArrayList< ModelData >();
-        al.addAll(keyModelData.values());
-        return al;
-    }
-
-    public Collection< String > getData() {
+    public Collection< String > getDataNames() {
         HashSet< String > keys = new HashSet< String >();
 
         // lock the cache
@@ -263,7 +184,7 @@ public class Node {
             // get everything from persistence
             Collection< String > c = _p.getData();
             for( String key : c ) {
-                keys.add( key );
+                keys.add(key);
             }
 
             // replace anything stale in persistence
@@ -278,6 +199,200 @@ public class Node {
         ArrayList< String > al = new ArrayList< String >();
         al.addAll(keys);
         return al;
+    }
+
+    public Collection< ModelData > getDataMeta( String filter ) {
+
+        HashMap< String, ModelData > keyModelData = new HashMap< String, ModelData >();
+
+        // lock the cache
+        synchronized ( _dataCache._cache ) {
+
+            // get everything from persistence
+            Collection< ModelData > c = _p.getDataMeta( filter );
+            for( ModelData md : c ) {
+                keyModelData.put( md.name, md );
+            }
+
+            // replace anything stale in persistence
+            Set< String > keySet = _dataCache._cache.keySet();
+
+            for( String key : keySet ) {
+
+                if( key.indexOf( filter ) >= 0 ) {
+                    DataModelData dmd = _dataCache._cache.get( key );
+
+                    ModelData mdMeta = keyModelData.get( key );
+
+                    if( mdMeta == null ) {
+                        mdMeta = new ModelData();
+                    }
+
+//                    mdMeta.name = dmd.name; // replace ref keys
+                    mdMeta.refKeys = dmd._refKeys; // replace ref keys
+
+                    // now figure out the sizes..
+                    if( dmd._md != null ) {
+                        // compute size by coping from serialized size
+                        mdMeta.sizes = dmd._md.sizes; // replace sizes
+                    }
+                    else if( dmd._d != null ) {
+                        // compute size by serializing size
+                        if( dmd._d._dataSize != null ) {
+                            mdMeta.sizes = ModelData.DataSizeToString( dmd._d._dataSize );
+                        }
+                    }
+
+                    keyModelData.put( mdMeta.name, mdMeta );
+
+//                    String encoding = ModelData.ENCODING_DENSE;
+//                    ModelData md = new ModelData( key, dmd., encoding ); // converts to json
+//                    ModelData md2 = new ModelData( md.name, md.refKeys, md.sizes, null ); // sans actual data
+//                    keyModelData.put(md2.name, md2);
+                }
+            }
+
+        }
+
+        ArrayList< ModelData > al = new ArrayList< ModelData >();
+        al.addAll( keyModelData.values() );
+        return al;
+    }
+
+    public ModelData getModelData( String name, DataDeserializer deserializer ) {
+
+        // Look in cache first, then persistence
+        synchronized ( _dataCache._cache ) {
+            DataModelData dmd = _dataCache._cache.get( name );
+
+            if( dmd == null ) {
+                dmd = new DataModelData();
+            }
+            else { // existing one - it is cached
+
+                // already serialized
+                if( dmd._md != null ) {
+                    return dmd._md;
+                }
+
+                // in cache, but not serialized.
+                if( dmd._d != null ) {
+                    String encoding = deserializer.getEncoding( name );
+                    dmd._md = new ModelData( name, dmd._d, encoding ); // serialize it
+                    dmd._encoding = encoding;
+                    dmd._md.refKeys = dmd._refKeys;
+                    return dmd._md;
+                }
+            }
+
+            // not found: Fetch it.
+            ModelData md = _p.fetchData( name );
+
+            dmd._md = md; // serialized form.
+            dmd._encoding = null;
+            if( md != null ) {
+                dmd._refKeys = md.refKeys;
+            }
+            dmd._d = null; // don't deserialize unless necessary       //dmd._md.getData( this, deserializer );
+
+            _dataCache._cache.put( name, dmd );
+
+            return dmd._md;
+        }
+    }
+
+    public Data getData( String name, DataDeserializer deserializer ) {
+
+        // Look in cache first, then persistence
+        synchronized ( _dataCache._cache ) {
+            DataModelData dmd = _dataCache._cache.get( name );
+
+            if( dmd == null ) {
+                dmd = new DataModelData();
+            }
+            else { // existing one
+                if( dmd._d != null ) {
+                    return dmd._d;
+                }
+                if( dmd._md != null ) {
+                    dmd._d = dmd._md.getData( this, deserializer ); // serialize on demand
+                    return dmd._d;
+                }
+            }
+
+            // not found: Fetch it.
+            ModelData md = _p.fetchData( name );
+
+            dmd._md = md;
+            dmd._encoding = null;
+            if( md != null ) {
+                dmd._refKeys = md.refKeys;
+                dmd._d = dmd._md.getData( this, deserializer ); // serialize on demand
+            }
+
+            _dataCache._cache.put( name, dmd );
+
+            return dmd._d; // may be null, if md was null and nothing in cache.
+        }
+    }
+
+    public void setDataCache( String name, Data d, String encoding ) {
+        synchronized ( _dataCache._cache ) {
+            DataModelData dmd = _dataCache._cache.get( name );
+
+            if( dmd == null ) {
+                dmd = new DataModelData();
+            }
+            else { // existing one
+            }
+
+            // refkeys unchanged or unknown
+            dmd._encoding = encoding;
+            dmd._d = d;
+            dmd._md = null; // invalidated
+
+            _dataCache._cache.put( name, dmd );
+        }
+
+        // not serialized yet
+    }
+
+    public void setDataPersist( String name, Data d, String encoding ) {
+        // need to remember the extra properties.
+        // Look for a model data in the cache
+        ModelData md = new ModelData( name, d, encoding ); // serialize this data
+
+        synchronized ( _dataCache._cache ) {
+
+            DataModelData dmd = _dataCache._cache.get( name );
+
+            if( dmd == null ) {
+                dmd = new DataModelData();
+            }
+            else { // existing one
+                if( dmd._refKeys != null ) {
+                    md.refKeys = dmd._refKeys;
+                }
+            }
+
+            // refkeys unchanged or unknown
+            dmd._encoding = encoding;
+            dmd._d = d; // store updated data
+            dmd._md = md; // replace previous
+
+            _dataCache._cache.put( name, dmd );
+        }
+
+        _p.persistData( md ); // overwrite
+    }
+
+    /**
+     * Since this is the superset of data, it overrides whatever else is there.
+     * @param md
+     */
+    public void setModelDataPersist( ModelData md ) {
+        clearDataCache( md.name ); // may be stale
+        _p.persistData( md ); // overwrite
     }
 
     /**

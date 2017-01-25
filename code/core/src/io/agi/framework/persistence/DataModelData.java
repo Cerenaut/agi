@@ -20,15 +20,18 @@
 package io.agi.framework.persistence;
 
 import io.agi.core.data.Data;
-
-import java.util.HashMap;
+import io.agi.framework.persistence.models.ModelData;
 
 /**
+ * An object that combines both the Object and serialized form of Data.
+ *
  * Created by dave on 25/01/17.
  */
-public interface DataReferenceBuilder {
+public class DataModelData {
 
-    Data getCombinedData( String name, HashMap< String, Data > allRefs );
-    String getCombinedEncoding( String name, HashMap< String, Data > allRefs );
+    public String _encoding;
+    public String _refKeys;
+    public Data _d;
+    public ModelData _md;
 
 }

@@ -20,8 +20,13 @@
 package io.agi.framework;
 
 import io.agi.core.data.Data;
+import io.agi.framework.persistence.DataModelData;
+import io.agi.framework.persistence.models.ModelData;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * An in-memory cache of data structures, using their unique keys.
@@ -30,7 +35,7 @@ import java.util.HashMap;
  */
 public class DataMap {
 
-    HashMap< String, Data > _cache = new HashMap< String, Data >();
+    HashMap< String, DataModelData> _cache = new HashMap< String, DataModelData >();
 
     public DataMap() {
 
@@ -42,14 +47,14 @@ public class DataMap {
         }
     }
 
-    public Data getData( String name ) {
+    public DataModelData getData( String name ) {
         synchronized( _cache ) {
-            Data d = _cache.get( name );
+            DataModelData d = _cache.get( name );
             return d;
         }
     }
 
-    public void putData( String name, Data d ) {
+    public void setData( String name, DataModelData d ) {
         synchronized( _cache ) {
             _cache.put( name, d );
         }

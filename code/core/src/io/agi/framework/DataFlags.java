@@ -47,7 +47,7 @@ import java.util.HashSet;
  */
 public class DataFlags {
 
-    public static final String FLAG_LAZY_PERSIST = "lazy-persist"; /// will only persist if the Data has changed. Creates a copy on fetch to check for changes.
+//    public static final String FLAG_LAZY_PERSIST = "lazy-persist"; /// will only persist if the Data has changed. Creates a copy on fetch to check for changes.
     public static final String FLAG_NODE_CACHE = "node-cache"; /// Keeps a copy of the Data in the Node, and assumes it hasn't changed. Reloads from Cache.
     public static final String FLAG_SPARSE_BINARY = "sparse-binary"; /// When writing the Data, it will be converted to sparse unit encoding (reduces size hugely).
     public static final String FLAG_SPARSE_REAL = "sparse-real"; /// When writing the Data, it will be converted to sparse unit encoding (reduces size hugely).

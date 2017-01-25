@@ -21,11 +21,11 @@ package io.agi.framework;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
-import io.agi.core.data.Data;
 import io.agi.core.orm.AbstractPair;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.util.FileUtil;
 import io.agi.framework.coordination.http.HttpExportHandler;
+import io.agi.framework.persistence.DenseDataDeserializer;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelDataReference;
@@ -157,7 +157,8 @@ public class Framework {
             String dataKey,
             String refKeys ) {
         Node n = Node.NodeInstance();
-        ModelData modelData = n.fetchData( dataKey );
+//        ModelData modelData = n.fetchData( dataKey );
+        ModelData modelData = n.getModelData( dataKey, new DenseDataDeserializer() );
 
         if( modelData == null ) {
             modelData = new ModelData( dataKey, refKeys );
@@ -166,7 +167,8 @@ public class Framework {
         modelData.refKeys = refKeys;
 //        Persistence persistence = n.getPersistence();
 //        persistence.persistData(modelData);
-        n.persistData( modelData ); // ensure cache is cleared
+//        n.persistData( modelData ); // ensure cache is cleared
+        n.setModelDataPersist( modelData );
     }
 
     /**
@@ -177,7 +179,8 @@ public class Framework {
      */
     public static void SetData( ModelData modelData ) {
         Node n = Node.NodeInstance();
-        n.persistData( modelData );
+//        n.persistData( modelData );
+        n.setModelDataPersist(modelData);
 //        Persistence persistence = Node.NodeInstance().getPersistence();
 //        persistence.persistData( modelData );
     }
@@ -520,7 +523,7 @@ public class Framework {
         attributes.addAll( attributesOut );
         for( String attribute : attributes ) {
             String outputKey = entity.getKey( attribute );
-            ModelData modelData = node.fetchData( outputKey );
+            ModelData modelData = node.getModelData( outputKey, new DenseDataDeserializer() );
 
             if( modelData != null ) {
                 modelDatas.add( modelData );

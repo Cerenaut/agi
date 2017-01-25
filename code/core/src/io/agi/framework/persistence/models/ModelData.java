@@ -25,7 +25,8 @@ import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.data.FloatArray;
 import io.agi.framework.Node;
-import io.agi.framework.persistence.DataReferenceBuilder;
+import io.agi.framework.persistence.DataModelData;
+import io.agi.framework.persistence.DataDeserializer;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -139,7 +140,7 @@ public class ModelData {
         }
     }
 
-    public Data getData( Node n, DataReferenceBuilder builder ) {
+    public Data getData( Node n, DataDeserializer deserializer ) {
         HashSet< String > refKeys = getRefKeys();
 
         if( refKeys.isEmpty() ) {
@@ -150,7 +151,7 @@ public class ModelData {
             HashMap< String, Data > allRefs = new HashMap<>();
 
             for( String refKey : refKeys ) {
-                ModelData refJson = n.fetchData( refKey );
+                ModelData refJson = n.getModelData( refKey, deserializer );
                 if( refJson == null ) {
                     continue; // don't put in data store
                 }
@@ -158,8 +159,8 @@ public class ModelData {
                 allRefs.put( refKey, refData );
             }
 
-            Data combinedData = builder.getCombinedData( name, allRefs );
-            String combinedEncoding = builder.getCombinedEncoding(name, allRefs);
+            Data combinedData = deserializer.getCombinedData( name, allRefs );
+            String combinedEncoding = deserializer.getEncoding( name );
             setData( combinedData, combinedEncoding ); // data added to ref keys.
 
 // NOTE: If i put this in the cache, it loses the refkeys and becomes constant.
@@ -167,7 +168,12 @@ public class ModelData {
 //                    _n.setCachedData( inputKey, combinedData ); // DAVE: BUG? It writes it back out.. I guess we wanna see this, but seems excessive.
 //                }
 //                else {
-            n.persistData( this, combinedData ); // save the pre existing object to cache
+//            n.persistData( this, combinedData ); // save the pre existing object to cache
+
+//            DataModelData dmd = new DataModelData();
+//            dmd._d = combinedData;
+//            dmd._md = this;
+            n.setDataCache( this.name, combinedData, combinedEncoding ); // save the pre existing object to cache
 //                }
 
             return combinedData;
