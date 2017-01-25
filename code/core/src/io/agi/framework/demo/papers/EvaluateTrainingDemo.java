@@ -110,6 +110,9 @@ public class EvaluateTrainingDemo {
         Framework.SetDataReference( logisticRegressionName, SupervisedBatchTrainingEntity.INPUT_FEATURES, analyticsName, AnalyticsEntity.OUTPUT_FEATURES );
         Framework.SetDataReference( logisticRegressionName, SupervisedBatchTrainingEntity.INPUT_LABELS, analyticsName, AnalyticsEntity.OUTPUT_LABELS );
 
+        Framework.SetDataReference( analyticsName, AnalyticsEntity.INPUT_FEATURES, "unknownEntity", "unknownAttribute" );
+        Framework.SetDataReference( analyticsName, AnalyticsEntity.INPUT_LABELS, "unknownEntity", "unknownAttribute" );
+
 
         // 4) Set configurations
         // ---------------------------------------------
