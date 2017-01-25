@@ -102,6 +102,16 @@ public class AnalyticsEntity extends Entity {
         Data features = getData( INPUT_FEATURES );
         Data labels = getData( INPUT_LABELS );
 
+        if ( features == null || labels == null )
+        {
+
+            // TODO    it's always getting to here and the data is empty
+
+            String message = "Features or Labels are empty";
+            _logger.error( message );
+            return;
+        }
+
         int numDataPoints = SupervisedUtil.calcMFromFeatureMatrix( features );
         if ( config.batchMode )
         {
@@ -130,6 +140,11 @@ public class AnalyticsEntity extends Entity {
 
         if ( config.batchMode ) {
             // copy features and labels to output
+
+
+            // TODO    just copy the relevant portion using config.phase  and  config.trainSetSize, config.testSetSize
+
+
             setData( OUTPUT_FEATURES, features );
             setData( OUTPUT_LABELS, labels );
         }
@@ -138,6 +153,8 @@ public class AnalyticsEntity extends Entity {
             String message = "non batch mode not implemented.";
             _logger.error( message );
             throw new java.lang.UnsupportedOperationException( message );
+
+            // TODO    just copy one feature vector at a time, use config.count as the index
         }
     }
 
