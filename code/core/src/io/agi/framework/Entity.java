@@ -26,6 +26,7 @@ import io.agi.core.math.FastRandom;
 import io.agi.core.orm.AbstractPair;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
+import io.agi.framework.persistence.DataReferenceBuilder;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
@@ -41,7 +42,7 @@ import java.util.*;
  * <p/>
  * Created by dave on 14/02/16.
  */
-public abstract class Entity extends NamedObject implements EntityListener {
+public abstract class Entity extends NamedObject implements EntityListener, DataReferenceBuilder {
 
     protected static final Logger _logger = LogManager.getLogger();
 
@@ -207,7 +208,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
     }
 
     public void onEntityUpdated( String entityName ) {
-        _logger.info( "Entity: " + getName() + " being notified about: " + entityName );
+        _logger.info("Entity: " + getName() + " being notified about: " + entityName);
         synchronized( _childrenWaiting ) {
             _childrenWaiting.remove( entityName );
 
@@ -346,7 +347,10 @@ public abstract class Entity extends NamedObject implements EntityListener {
                 continue; // truthfully represent as null.
             }
 
-            HashSet< String > refKeys = modelData.getRefKeys();
+            Data d = modelData.getData( _n, this );
+            _data.put( inputKey, d );
+
+/*            HashSet< String > refKeys = modelData.getRefKeys();
 
             if( refKeys.isEmpty() ) {
                 Data d = modelData.getData();
@@ -377,7 +381,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 //                }
 
                 _data.put( inputKey, combinedData );
-            }
+            }*/
         }
 
         // check to see whether we need a backup of these structures, to implement the lazy-persist policy.
@@ -474,7 +478,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
      * @param allRefs
      * @return
      */
-    protected Data getCombinedData( String inputAttribute, HashMap< String, Data > allRefs ) {
+    public Data getCombinedData( String inputAttribute, HashMap< String, Data > allRefs ) {
 
         // case 1: No input.
         int nbrRefs = allRefs.size();
@@ -519,6 +523,10 @@ public abstract class Entity extends NamedObject implements EntityListener {
         }
 
         return d;
+    }
+
+    public String getCombinedEncoding( String inputAttribute, HashMap< String, Data > allRefs ) {
+        return ModelData.ENCODING_DENSE;
     }
 
     public Data getData( String keySuffix ) {

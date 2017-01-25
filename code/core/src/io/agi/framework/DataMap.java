@@ -54,4 +54,10 @@ public class DataMap {
             _cache.put( name, d );
         }
     }
+
+    public void removeData( String name ) {
+        synchronized( _cache ) {
+            _cache.remove( name );
+        }
+    }
 }

@@ -66,7 +66,7 @@ public class Node {
      */
     public void stop() {
         logger.info( "Stopping process on request." );
-        System.exit( 0 );
+        System.exit(0);
     }
 
     /**
@@ -93,7 +93,7 @@ public class Node {
         _p = p;
 
         ModelNode jn = new ModelNode( _name, _host, _port );
-        _p.persistNode( jn );
+        _p.persistNode(jn);
     }
 
     public static Node NodeInstance() {
@@ -160,7 +160,48 @@ public class Node {
      * @param d
      */
     public void setCachedData( String name, Data d ) {
-        _dataCache.putData( name, d );
+        _dataCache.putData(name, d);
+    }
+
+    /**
+     * Remove any cached data.
+     *
+     * @param name
+     */
+    public void clearCachedData( String name ) {
+        _dataCache.removeData( name );
+    }
+
+    /**
+     * Set this data in cache, and persist.
+     *
+     * @param modelData
+     */
+    public void persistData( ModelData modelData ) {
+
+        _p.persistData( modelData );
+
+        Data d = modelData.getData(); // can't deal with references, as no rebuilder. So may be null.
+
+        if( d != null ) {
+            setCachedData( modelData.name, d );
+        }
+        else {
+            clearCachedData( modelData.name );
+        }
+    }
+
+    /**
+     * Persists, and uses the existing Object form in addition to the model to avoid serialization work.
+     *
+     * @param modelData
+     * @param d
+     */
+    public void persistData( ModelData modelData, Data d ) {
+
+        _p.persistData( modelData );
+
+        setCachedData( modelData.name, d );
     }
 
     public ModelData fetchData( String key ) {
@@ -209,7 +250,7 @@ public class Node {
         }
 
         ArrayList< ModelData > al = new ArrayList< ModelData >();
-        al.addAll( keyModelData.values() );
+        al.addAll(keyModelData.values());
         return al;
     }
 
@@ -235,7 +276,7 @@ public class Node {
         }
 
         ArrayList< String > al = new ArrayList< String >();
-        al.addAll( keys );
+        al.addAll(keys);
         return al;
     }
 

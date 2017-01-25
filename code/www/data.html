@@ -44,10 +44,13 @@
       <input type="text" id="data" style="display:inline;" class="" placeholder="Data name" value=""/>
       <label for="interval">Interval</label>
       <input type="number" id="interval" style="display:inline;width:5em;" class="" placeholder="Update interval" value="500"/>
-      <input type="button" id="pause" class="btn btn-sm btn-danger" style="" onclick="Loop.togglePause();" value="Resume"/>
-      <input type="button" id="update" class="btn btn-sm btn-danger" style="" onclick="Loop.update();" value="Refresh"/>
+      <input type="button" id="pause" class="btn btn-sm btn-success" style="" onclick="Loop.togglePause();" value="Resume"/>
+      <input type="button" id="update" class="btn btn-sm btn-success" style="" onclick="Loop.update();" value="Refresh"/>
       <label for="decode">Decode?</label>
       <input id="decode" type="checkbox" name="decode" checked />
+      <input type="button" id="persist" class="btn btn-sm btn-danger" style="" onclick="Data.persist();" value="Persist"/>
+      <label for="result">Result</label>
+      <input type="text" id="result" style="display:inline;" class="" placeholder="n/a" value=""/>
      </div>
      <div id="container" style="width: 1280px; height: 800px; margin: 0 auto">
       <textarea id="data-json" style="width:100%; height:100%;"></textarea>

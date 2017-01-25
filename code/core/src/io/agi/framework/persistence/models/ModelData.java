@@ -24,9 +24,12 @@ package io.agi.framework.persistence.models;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.data.FloatArray;
+import io.agi.framework.Node;
+import io.agi.framework.persistence.DataReferenceBuilder;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 /**
@@ -135,6 +138,42 @@ public class ModelData {
             return null;
         }
     }
+
+    public Data getData( Node n, DataReferenceBuilder builder ) {
+        HashSet< String > refKeys = getRefKeys();
+
+        if( refKeys.isEmpty() ) {
+            return getData();
+        }
+        else {
+            // Create an output matrix which is a composite of all the referenced inputs.
+            HashMap< String, Data > allRefs = new HashMap<>();
+
+            for( String refKey : refKeys ) {
+                ModelData refJson = n.fetchData( refKey );
+                if( refJson == null ) {
+                    continue; // don't put in data store
+                }
+                Data refData = refJson.getData();
+                allRefs.put( refKey, refData );
+            }
+
+            Data combinedData = builder.getCombinedData( name, allRefs );
+            String combinedEncoding = builder.getCombinedEncoding(name, allRefs);
+            setData( combinedData, combinedEncoding ); // data added to ref keys.
+
+// NOTE: If i put this in the cache, it loses the refkeys and becomes constant.
+//                if( _config.cache ) {
+//                    _n.setCachedData( inputKey, combinedData ); // DAVE: BUG? It writes it back out.. I guess we wanna see this, but seems excessive.
+//                }
+//                else {
+            n.persistData( this, combinedData ); // save the pre existing object to cache
+//                }
+
+            return combinedData;
+        }
+    }
+
 
     /**
      * Convert a DataSize object to the serialized form.

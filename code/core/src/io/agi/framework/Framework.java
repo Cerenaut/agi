@@ -21,6 +21,7 @@ package io.agi.framework;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import io.agi.core.data.Data;
 import io.agi.core.orm.AbstractPair;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.util.FileUtil;
@@ -130,7 +131,7 @@ public class Framework {
             String inputEntity,
             String inputSuffix,
             ArrayList< AbstractPair< String, String > > referenceEntitySuffixes ) {
-        String inputKey = NamedObject.GetKey( inputEntity, inputSuffix );
+        String inputKey = NamedObject.GetKey(inputEntity, inputSuffix);
         String refKeys = "";
 
         for( AbstractPair< String, String > ap : referenceEntitySuffixes ) {
@@ -143,7 +144,7 @@ public class Framework {
             refKeys = refKeys + refKey;
         }
 
-        SetDataReference( inputKey, refKeys );
+        SetDataReference(inputKey, refKeys);
     }
 
     /**
@@ -163,8 +164,9 @@ public class Framework {
         }
 
         modelData.refKeys = refKeys;
-        Persistence persistence = n.getPersistence();
-        persistence.persistData( modelData );
+//        Persistence persistence = n.getPersistence();
+//        persistence.persistData(modelData);
+        n.persistData( modelData ); // ensure cache is cleared
     }
 
     /**
@@ -174,8 +176,10 @@ public class Framework {
      * @param modelData
      */
     public static void SetData( ModelData modelData ) {
-        Persistence persistence = Node.NodeInstance().getPersistence();
-        persistence.persistData( modelData );
+        Node n = Node.NodeInstance();
+        n.persistData( modelData );
+//        Persistence persistence = Node.NodeInstance().getPersistence();
+//        persistence.persistData( modelData );
     }
 
     /**

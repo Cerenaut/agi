@@ -22,6 +22,7 @@ package io.agi.framework.coordination.http;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.agi.core.orm.AbstractPair;
+import io.agi.framework.Framework;
 import io.agi.framework.Node;
 import io.agi.framework.persistence.models.ModelData;
 import org.apache.logging.log4j.LogManager;
@@ -41,6 +42,7 @@ public class HttpDataHandler implements HttpHandler {
     public static final String CONTEXT = "/data";
 
     public static final String PARAMETER_NAME = "name";
+    public static final String PARAMETER_MODEL = "model";
     public static final String PARAMETER_FILTER = "filter";
 
     public HttpDataHandler() {}
@@ -60,37 +62,40 @@ public class HttpDataHandler implements HttpHandler {
 
             ArrayList< AbstractPair< String, String > > parameters = HttpUtil.GetDuplicateQueryParams( query );
 
-            Collection< ModelData > results = new ArrayList<>();
+            if( method.equalsIgnoreCase("GET") ) {
 
-            for( AbstractPair< String, String > ap : parameters ) {
-                String key = ap._first;
-                String value = ap._second;
-                if( key.equalsIgnoreCase( PARAMETER_NAME ) ) {
-                    ModelData m = n.fetchData( value );
+                // fetch any existing data mentioned..
+                Collection< ModelData > results = new ArrayList<>();
 
-                    if( m != null ) {
-                        results.add( m ); // a complete data (specifically fetched)
+                for( AbstractPair< String, String > ap : parameters ) {
+                    String key = ap._first;
+                    String value = ap._second;
+                    if( key.equalsIgnoreCase( PARAMETER_NAME ) ) {
+                        ModelData m = n.fetchData( value );
+
+                        if( m != null ) {
+                            results.add( m ); // a complete data (specifically fetched)
+                        }
+                    }
+                    else if( key.equalsIgnoreCase( PARAMETER_FILTER ) ) {
+                        Collection< ModelData > c = n.getDataMeta( value );
+                        results.addAll( c );
                     }
                 }
-                else if( key.equalsIgnoreCase( PARAMETER_FILTER ) ) {
-                    Collection< ModelData > c = n.getDataMeta( value );
-                    results.addAll( c );
+
+                // if no data specified, get all data names.
+                if( results.isEmpty() ) {
+                    Collection< String > names = n.getData();
+
+                    for( String name : names ) {
+                        ModelData m = new ModelData();
+                        m.name = name;
+                        results.add( m );
+                    }
                 }
-            }
 
-            // if no data specified, get all data names.
-            if( results.isEmpty() ) {
-                Collection< String > names = n.getData();
-
-                for( String name : names ) {
-                    ModelData m = new ModelData();
-                    m.name = name;
-                    results.add( m );
-                }
-            }
-
-            boolean first = true;
-            if( method.equalsIgnoreCase( "GET" ) ) {
+                // build the response
+                boolean first = true;
 
                 // TODO change to the faster StringBuilder approach
                 response += "[ ";
@@ -99,7 +104,7 @@ public class HttpDataHandler implements HttpHandler {
                     if( first ) {
                         first = false;
                     } else {
-                        response += ", ";
+                        response += ",";
                     }
 
                     response += "{ ";
@@ -116,8 +121,23 @@ public class HttpDataHandler implements HttpHandler {
 
                 status = 200;
             }
+            else if( method.equalsIgnoreCase( "POST" ) ) {
 
-            status = 200;
+                for( AbstractPair< String, String > ap : parameters ) {
+                    String key = ap._first;
+                    String value = ap._second;
+
+                    if( key.equalsIgnoreCase( PARAMETER_MODEL ) ) {
+                        String jsonData = value;
+                        Framework.ImportData( jsonData );
+                    }
+                }
+
+                response = "Persisted data OK.";
+
+                status = 200;
+            }
+
         }
         catch( Exception e ) {
             _logger.error( "Unable to handle data call.");

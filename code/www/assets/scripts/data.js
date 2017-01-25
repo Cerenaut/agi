@@ -1,6 +1,16 @@
 
 var Data = {
 
+  persist : function() {
+    var string = $( "#data-json" ).val();
+    var json = JSON.parse( string ); // strips whitespace etc, makes it nice
+    var dataName = json.name;
+    var jsonString = "[" + JSON.stringify( json ) + "]";
+    console.log( "persisting: " + dataName + " as: " + jsonString );
+    Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
+    Framework.setData( jsonString, Data.onSetData );
+  },
+
   update : function() {
     var names = $( "#data" ).val();
     var nameList = names.split( "," );
@@ -14,6 +24,10 @@ var Data = {
     }
     Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
     Framework.getDataList( suffix, Data.onGetData );
+  },
+
+  onSetData : function( json ) {
+    $("#result").val( json.responseText );
   },
 
   onGetData : function( json ) {
