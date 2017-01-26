@@ -40,7 +40,7 @@ public class AnalyticsEntityConfig extends EntityConfig {
 //    public String datasetFeaturesAttribute = "";
 //    public String datasetLabelsAttribute = "";
 
-    public boolean batchMode = false;
+    public boolean batchMode = true;
     public boolean terminate = false;      // trigger to stop the experiment
     public String phase = PHASE_TRAINING;  // can be training or testing
     public int count = 0;                  // dataset index count within the current phase

@@ -155,7 +155,7 @@ public class Data2d {
     public static ArrayList< Data > matrixToColVectors( Data matrix, int rows, int cols ) {
 //        Point p = getSizeExplicit( matrix._dataSize );
 
-        ArrayList< Data > colVectors = new ArrayList< Data >();
+        ArrayList< Data > colVectors = new ArrayList<>();
 
         for( int c = 0; c < cols; ++c ) {
 
@@ -495,5 +495,31 @@ public class Data2d {
         }
 
         return stringMatrix;
+    }
+
+    /**
+     *
+     * @param matrix
+     * @param row_start inclusive
+     * @param row_end inclusive
+     * @return
+     */
+    public static Data subset( Data matrix, int row_start, int row_end ) {
+        Point p = getSizeExplicit( matrix._dataSize );
+
+        int rows = row_end - row_start + 1;
+        int cols = p.x;
+
+        Data matrix_sub = new Data( rows, cols );
+
+        int rsub = 0;
+        for( int r = row_start ; r < row_end ; ++r ) {
+            ++rsub;
+            for( int c = 0; c < cols; ++c ) {
+                matrix_sub._values[ rsub * cols + c ] = matrix._values[ r * cols + c ];
+            }
+        }
+
+        return matrix_sub;
     }
 }

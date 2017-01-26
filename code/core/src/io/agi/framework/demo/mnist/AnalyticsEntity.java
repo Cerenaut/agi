@@ -20,6 +20,7 @@
 package io.agi.framework.demo.mnist;
 
 import io.agi.core.data.Data;
+import io.agi.core.data.Data2d;
 import io.agi.core.ml.supervised.SupervisedUtil;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
@@ -104,9 +105,6 @@ public class AnalyticsEntity extends Entity {
 
         if ( features == null || labels == null )
         {
-
-            // TODO    it's always getting to here and the data is empty
-
             String message = "Features or Labels are empty";
             _logger.error( message );
             return;
@@ -129,8 +127,7 @@ public class AnalyticsEntity extends Entity {
         try {
             Collection< String > entityNames = getEntityNames( config.testingEntities );
             for( String entityName : entityNames ) {
-                boolean isTraining = config.phase.equals( AnalyticsEntityConfig.PHASE_TRAINING );
-                Framework.SetConfig( entityName, "learn", String.valueOf( isTraining ) );
+                Framework.SetConfig( entityName, "learn", String.valueOf( isTraining() ) );
             }
         }
         catch( Exception e ) {
@@ -138,24 +135,28 @@ public class AnalyticsEntity extends Entity {
 
         incrementCount();
 
+        Data featuresOut, labelsOut;
         if ( config.batchMode ) {
-            // copy features and labels to output
-
-
-            // TODO    just copy the relevant portion using config.phase  and  config.trainSetSize, config.testSetSize
-
-
-            setData( OUTPUT_FEATURES, features );
-            setData( OUTPUT_LABELS, labels );
+            // copy relevant section of features and labels to output
+            if ( isTraining() )
+            {
+                featuresOut = Data2d.subset( features, 0, config.trainSetSize - 1 );
+                labelsOut = Data2d.subset( labels, 0, config.trainSetSize - 1 );
+            }
+            else
+            {
+                featuresOut = Data2d.subset( features, config.trainSetSize, config.testSetSize - 1 );
+                labelsOut = Data2d.subset( labels, config.trainSetSize, config.testSetSize - 1 );
+            }
         }
         else {
-            // all we need to do is to go through the features and labels matrices one data point at a time
-            String message = "non batch mode not implemented.";
-            _logger.error( message );
-            throw new java.lang.UnsupportedOperationException( message );
-
-            // TODO    just copy one feature vector at a time, use config.count as the index
+            // go through the features and labels matrices one data point at a time
+            featuresOut = Data2d.subset( features, 0, config.testSetSize );
+            labelsOut = Data2d.subset( labels, 0, config.testSetSize );
         }
+
+        setData( OUTPUT_FEATURES, featuresOut );
+        setData( OUTPUT_LABELS, labelsOut );
     }
 
     /**
@@ -166,13 +167,13 @@ public class AnalyticsEntity extends Entity {
         AnalyticsEntityConfig config = ( AnalyticsEntityConfig ) _config;
 
         // set current phase (transition if necessary)
-        if( config.phase.equals( AnalyticsEntityConfig.PHASE_TRAINING ) ) {
+        if( isTraining() ) {
             if( config.count >= config.trainSetSize ) {
                 config.phase = AnalyticsEntityConfig.PHASE_TESTING; // transition to testing
                 _logger.warn( "=======> Transition to test phase. (2)" );
             }
         }
-        else {   // if( config.phase.equals( AnalyticsEntityConfig.PHASE_TESTING ) ) {
+        else {
             if( config.count >= config.testSetSize ) {
                 config.terminate = true;                            // terminate
                 _logger.warn( "=======> Terminating on end of test set (3)" );
@@ -187,7 +188,7 @@ public class AnalyticsEntity extends Entity {
         AnalyticsEntityConfig config = ( AnalyticsEntityConfig ) _config;
 
         if ( config.batchMode ) {
-            if( config.phase.equals( AnalyticsEntityConfig.PHASE_TRAINING ) ) {
+            if( isTraining() ) {
                 config.count += config.trainSetSize;
             }
             else {
@@ -199,5 +200,8 @@ public class AnalyticsEntity extends Entity {
         }
     }
 
-
+    public boolean isTraining() {
+        AnalyticsEntityConfig config = ( AnalyticsEntityConfig ) _config;
+        return config.phase.equals( AnalyticsEntityConfig.PHASE_TRAINING );
+    }
 }

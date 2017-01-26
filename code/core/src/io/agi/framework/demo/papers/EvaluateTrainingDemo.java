@@ -91,8 +91,9 @@ public class EvaluateTrainingDemo {
         experimentConfig.terminationAge = -1;       // wait for analytics entity to decide
 
         AnalyticsEntityConfig analyticsEntityConfig = new AnalyticsEntityConfig();
-        analyticsEntityConfig.trainSetSize = 1;
-        analyticsEntityConfig.testSetSize = 1;
+        analyticsEntityConfig.batchMode = true;
+        analyticsEntityConfig.trainSetSize = 4;
+        analyticsEntityConfig.testSetSize = 2;
 
         SupervisedBatchTrainingEntityConfig logisticRegressionEntityConfig = new SupervisedBatchTrainingEntityConfig();
         logisticRegressionEntityConfig.algorithm = SupervisedBatchTrainingEntityConfig.ALGORITHM_LOGISTIC_REGRESSION;
@@ -110,8 +111,8 @@ public class EvaluateTrainingDemo {
         Framework.SetDataReference( logisticRegressionName, SupervisedBatchTrainingEntity.INPUT_FEATURES, analyticsName, AnalyticsEntity.OUTPUT_FEATURES );
         Framework.SetDataReference( logisticRegressionName, SupervisedBatchTrainingEntity.INPUT_LABELS, analyticsName, AnalyticsEntity.OUTPUT_LABELS );
 
-        Framework.SetDataReference( analyticsName, AnalyticsEntity.INPUT_FEATURES, "unknownEntity", "unknownAttribute" );
-        Framework.SetDataReference( analyticsName, AnalyticsEntity.INPUT_LABELS, "unknownEntity", "unknownAttribute" );
+        Framework.SetDataReference( analyticsName, AnalyticsEntity.INPUT_FEATURES, "170126-1726--feature-series", "output" );
+        Framework.SetDataReference( analyticsName, AnalyticsEntity.INPUT_LABELS, "170126-1726--label-series", "output" );
 
 
         // 4) Set configurations
