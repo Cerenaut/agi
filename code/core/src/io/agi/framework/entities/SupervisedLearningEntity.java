@@ -310,7 +310,7 @@ public class SupervisedLearningEntity extends Entity {
         SupervisedLearningEntityConfig config = ( SupervisedLearningEntityConfig ) _config;
 
         // First look for a reference Data that contains labels.
-        if( config.labelEntityName.length() == 0 ) {
+        if( config.labelEntityName == null || config.labelEntityName.length() == 0 ) {
             // get labels from supplied data
             Data labels = getData( INPUT_LABELS );
             return labels;

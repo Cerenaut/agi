@@ -77,7 +77,7 @@ public class DataSize {
 
     // Implementation
     public int[] _sizes = null;
-    public HashMap< String, Integer > _labels = new HashMap< String, Integer >();
+    public HashMap< String, Integer > _labels = new HashMap<>();
 
     public DataSize( int dimensions ) {
         setDimensions( dimensions );

@@ -21,6 +21,7 @@ package io.agi.framework.demo.mnist;
 
 import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
+import io.agi.core.data.DataSize;
 import io.agi.core.ml.supervised.SupervisedUtil;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
@@ -29,6 +30,7 @@ import io.agi.framework.Framework;
 import io.agi.framework.Node;
 import io.agi.framework.persistence.models.ModelEntity;
 
+import java.awt.*;
 import java.util.Collection;
 
 /**
@@ -103,6 +105,13 @@ public class AnalyticsEntity extends Entity {
         Data features = getData( INPUT_FEATURES );
         Data labels = getData( INPUT_LABELS );
 
+        // if labels is 1 dimensional, then convert to column matrix (form expected by supervised learning)
+        if ( labels._dataSize.getDimensions() == 1 )
+        {
+            int length = labels._dataSize.getSize( DataSize.DIMENSION_X );
+            labels.setSize( DataSize.create( 1, length ) );
+        }
+
         if ( features == null || labels == null )
         {
             String message = "Features or Labels are empty";
@@ -140,19 +149,19 @@ public class AnalyticsEntity extends Entity {
             // copy relevant section of features and labels to output
             if ( isTraining() )
             {
-                featuresOut = Data2d.subset( features, 0, config.trainSetSize - 1 );
-                labelsOut = Data2d.subset( labels, 0, config.trainSetSize - 1 );
+                featuresOut = Data2d.copyRows( features, 0, config.trainSetSize - 1 );
+                labelsOut = Data2d.copyRows( labels, 0, config.trainSetSize - 1 );
             }
             else
             {
-                featuresOut = Data2d.subset( features, config.trainSetSize, config.testSetSize - 1 );
-                labelsOut = Data2d.subset( labels, config.trainSetSize, config.testSetSize - 1 );
+                featuresOut = Data2d.copyRows( features, config.trainSetSize, config.testSetSize - 1 );
+                labelsOut = Data2d.copyRows( labels, config.trainSetSize, config.testSetSize - 1 );
             }
         }
         else {
             // go through the features and labels matrices one data point at a time
-            featuresOut = Data2d.subset( features, 0, config.testSetSize );
-            labelsOut = Data2d.subset( labels, 0, config.testSetSize );
+            featuresOut = Data2d.copyRows( features, 0, config.testSetSize );
+            labelsOut = Data2d.copyRows( labels, 0, config.testSetSize );
         }
 
         setData( OUTPUT_FEATURES, featuresOut );
