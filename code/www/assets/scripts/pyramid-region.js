@@ -42,7 +42,7 @@ var Region = {
   selectedInput1 : [  ],
   selectedInput2 : [  ],
 
-  regionSuffixes : [ "-input-c1", "-input-c2", "-input-p1", "-input-p2", "-classifier-weights", "-classifier-biases-2", "-classifier-spikes-top-ka",  "-prediction-error-fp", "-prediction-error-fn", "-prediction-old", "-prediction-new", "-output-spikes-new", "-output-spikes-old" ],
+  regionSuffixes : [ "-input-c1", "-input-c2", "-input-p1", "-input-p2", "-output", "-classifier-weights", "-classifier-biases-2", "-classifier-spikes-top-ka",  "-prediction-error-fp", "-prediction-error-fn", "-prediction-old", "-prediction-new", "-output-spikes-new", "-output-spikes-old" ],
 
   regionSuffixIdx : 0,
   dataMap : {
@@ -344,6 +344,11 @@ var Region = {
       return; // can't paint
     }
 
+    var output = Region.findData( "-output" );
+    if( !output ) {
+      return; // can't paint
+    }
+
     var predictionErrorFn = Region.findData( "-prediction-error-fn" );
     if( !predictionErrorFn ) {
       return; // can't paint
@@ -358,7 +363,7 @@ var Region = {
     var x0 = 0;
     var y0 = 0;
 
-    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, predictionErrorFn, outputSpikesNew, null );
+    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, output, outputSpikesNew, null );
     DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#00ffff" );
 
   },
@@ -554,6 +559,10 @@ var Region = {
       return;
     }
 
+    var minWeight = 0.0;
+    var maxWeight = 0.0;
+    var allWeights = new Array( w * h );
+
     for( var y = 0; y < h; ++y ) {
       for( var x = 0; x < w; ++x ) {
         var inputBit = y * w + x;
@@ -569,35 +578,54 @@ var Region = {
                             + inputOffset 
                             + inputBit;//*/
 
-/*          var weightsOffset = weightsStride * e 
-                            + inputOffset 
-                            + inputBit;//*/
-//          var weightsOffset = ( inputOffset + inputBit ) * weightsSize + e;
-
           var weight = dataWeights.elements.elements[ weightsOffset ];
-//          if( weight > 0.0 ) {
-////            sumMaxWeight += weight;//Math.min( minWeight, weight );
-//console.log( "weight: " + weight );
-//          }
-//          else {
-//           sumMinWeight += Math.abs( weight );//Math.max( maxWeight, weight );
-//          }
+
           sumWeight += ( weight * r ); // * 1, which doesn't matter
-  
-//          minWeight = Math.min( weight, minWeight );
-//          maxWeight = Math.max( weight, maxWeight );
         }
  
         var biasesOffset = inputOffset + inputBit;
         var bias = dataBiases.elements.elements[ biasesOffset ];
         sumWeight += bias;      
-//        minWeight = minWeight / minWeightGlobal;        
-//        maxWeight = maxWeight / maxWeightGlobal;        
-//        var meanWeight = sumWeight / selectedElements.length;
-//        var maxWeight = maxWeight / weightScale;
-//        var minWeight = minWeight / weightScale;
 
-//sumWeight = sumWeight * 0.5;
+        allWeights[ y * w + x ] = sumWeight;
+
+        if( sumWeight < 0.0 ) {
+          minWeight = Math.min( minWeight, sumWeight );
+        }
+        else {
+          maxWeight = Math.max( maxWeight, sumWeight );
+        }
+      }
+    }
+    
+//    minWeight = Math.abs( minWeight );
+    var rngWeight = maxWeight - minWeight;
+    var midWeight = rngWeight * 0.5;
+
+console.log( "min: " + minWeight + " max: " + maxWeight + " rng: " + rngWeight );
+    for( var y = 0; y < h; ++y ) {
+      for( var x = 0; x < w; ++x ) {
+        var inputBit = y * w + x;
+
+        var sumWeight = allWeights[ y * w + x ];
+
+//if( sumWeight > 0.5 ) {
+//var xsss = 0;
+//}
+        sumWeight = sumWeight - minWeight;
+        sumWeight /= rngWeight;        
+//          sumWeight = ( sumWeight );// * 2.0; // 0 to 1/2 maxWeight
+
+console.log( "w=" + sumWeight );
+        if( sumWeight >= 0.5 ) {
+//          sumWeight = ( sumWeight - midWeight ) * 2.0; // 0 to 1/2 maxWeight
+//          sumWeight = ( sumWeight ) * 2.0; // 0 to 1/2 maxWeight
+        }
+        else {
+//sumWeight = sumWeight - 0.5;
+          sumWeight = 0.0 -( sumWeight );
+        }
+        
 
         sumWeight = Math.min(  1.0, sumWeight );
         sumWeight = Math.max( -1.0, sumWeight );
@@ -605,12 +633,19 @@ var Region = {
         var cx = x * Region.pixelsPerBit;
         var cy = y * Region.pixelsPerBit;
 
-        if( sumWeight > 0.0 ) {
+        if( sumWeight >= 0.0 ) {
+//          sumWeight = sumWeight / maxWeight; // e.g. 0.01 / 0.02 = 0.5               
+//          sumWeight = Math.min(  1.0, sumWeight );
+//sumWeight = 1;
           ctx.fillStyle = "rgba(255,0,0,"+sumWeight+")";
 //          ctx.fillRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
         }
         else {
-          ctx.fillStyle = "rgba(0,0,255,"+Math.abs( sumWeight )+")";
+//          sumWeight = Math.abs( sumWeight ) / minWeight; // e.g. 0.01 / 0.02 = 0.5               
+//          sumWeight = Math.min(  1.0, sumWeight );
+          sumWeight = Math.abs( sumWeight );
+
+          ctx.fillStyle = "rgba(0,0,255,"+ sumWeight+")";
         }
 
         ctx.fillRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
