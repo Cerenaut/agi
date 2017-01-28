@@ -28,6 +28,8 @@ import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
 import io.agi.framework.persistence.models.ModelEntity;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Collection;
 
@@ -66,6 +68,8 @@ import java.util.Collection;
  * Created by gideon on 11/07/2016.
  */
 public class SupervisedLearningEntity extends Entity {
+
+    protected static final Logger _logger = LogManager.getLogger();
 
     public static final String ENTITY_TYPE = "supervised-learning-entity";
 
@@ -386,6 +390,8 @@ public class SupervisedLearningEntity extends Entity {
                     }
                     else { // either learnBatch is "every step" or we didn't do it yet
 
+                        _logger.info( "Train learner, batch mode");
+
                         trainBatch( features, labels, features.getSize() ); // train on a batch of data.
 
                         config.learnBatchComplete = true; // it doesn't need to be done again
@@ -402,6 +408,9 @@ public class SupervisedLearningEntity extends Entity {
         Data predictedLabels = new Data( new DataSize( labels._dataSize ) );
 
         if( config.predict ) { // optional switch
+
+            _logger.info( "Make predictions");
+
             predict( features, predictedLabels );
         }
 

@@ -94,6 +94,7 @@ public class EvaluateTrainingDemo {
         analyticsEntityConfig.batchMode = true;
         analyticsEntityConfig.trainSetSize = 4;
         analyticsEntityConfig.testSetSize = 2;
+        analyticsEntityConfig.testingEntities = logisticRegressionName;
 
         SupervisedBatchTrainingEntityConfig logisticRegressionEntityConfig = new SupervisedBatchTrainingEntityConfig();
         logisticRegressionEntityConfig.algorithm = SupervisedBatchTrainingEntityConfig.ALGORITHM_LOGISTIC_REGRESSION;

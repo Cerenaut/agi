@@ -29,8 +29,9 @@ import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
 import io.agi.framework.persistence.models.ModelEntity;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.awt.*;
 import java.util.Collection;
 
 /**
@@ -52,6 +53,8 @@ import java.util.Collection;
  * Created by gideon on 08/01/2017.
  */
 public class AnalyticsEntity extends Entity {
+
+    protected static final Logger _logger = LogManager.getLogger();
 
     public static final String ENTITY_TYPE = "analytics";
     public static final String INPUT_FEATURES = "input-features";
@@ -129,66 +132,93 @@ public class AnalyticsEntity extends Entity {
             }
         }
 
-        _logger.warn( "=======> Phase: " + config.phase + ", index: " + config.count );
-        calcPhase();
+        _logger.warn( "====> Phase: " + config.phase + ", idx: " + config.count +
+                ", Sizes:[Train,Test] = [" + config.trainSetSize + ", " + config.testSetSize + "]" );
 
-        // inform subscribed testing entities, whether they are in 'learn' or 'test' mode
-        try {
-            Collection< String > entityNames = getEntityNames( config.testingEntities );
-            for( String entityName : entityNames ) {
-                Framework.SetConfig( entityName, "learn", String.valueOf( isTraining() ) );
+        boolean isTerminate = calcPhase();
+
+        if ( !isTerminate ) {
+
+            // inform subscribed testing entities, whether they should TRAIN or PREDICT
+            try {
+                Collection< String > entityNames = getEntityNames( config.testingEntities );
+                for( String entityName : entityNames ) {
+
+                    boolean isTraining = isTraining();
+
+                    _logger.info( "Set testing entity 'learn' flag: Entity = " + entityName + ", " + isTraining );
+                    _logger.info( "Set testing entity  'predict' flag: Entity = " + entityName + ", " + !isTraining );
+
+                    Framework.SetConfig( entityName, "learn", String.valueOf( isTraining ) );
+                    Framework.SetConfig( entityName, "predict", String.valueOf( !isTraining ) );
+                }
             }
-        }
-        catch( Exception e ) {
-        } // this is ok, the experiment is just not configured to have a learning flag
+            catch( Exception e ) {
+            } // this is ok, the experiment is just not configured to have a learning flag
 
-        incrementCount();
+            incrementCount();
 
-        Data featuresOut, labelsOut;
-        if ( config.batchMode ) {
-            // copy relevant section of features and labels to output
-            if ( isTraining() )
-            {
-                featuresOut = Data2d.copyRows( features, 0, config.trainSetSize - 1 );
-                labelsOut = Data2d.copyRows( labels, 0, config.trainSetSize - 1 );
+            Data featuresOut, labelsOut;
+            int startIdx;
+            int endIdx;
+
+            if( config.batchMode ) {
+
+                // copy relevant section of features and labels to output
+                if( isTraining() ) {
+                    startIdx = 0;
+                    endIdx = config.trainSetSize - 1;
+                }
+                else {
+                    startIdx = config.trainSetSize;
+                    endIdx = config.trainSetSize + config.testSetSize - 1;
+                }
             }
-            else
-            {
-                featuresOut = Data2d.copyRows( features, config.trainSetSize, config.testSetSize - 1 );
-                labelsOut = Data2d.copyRows( labels, config.trainSetSize, config.testSetSize - 1 );
+            else {
+                // go through the features and labels matrices one data point at a time
+                startIdx = config.count;
+                endIdx = config.count;
             }
-        }
-        else {
-            // go through the features and labels matrices one data point at a time
-            featuresOut = Data2d.copyRows( features, 0, config.testSetSize );
-            labelsOut = Data2d.copyRows( labels, 0, config.testSetSize );
-        }
 
-        setData( OUTPUT_FEATURES, featuresOut );
-        setData( OUTPUT_LABELS, labelsOut );
+            _logger.info( "Output datapoints in idx range: (" + startIdx + ", " + endIdx + ")" );
+
+            featuresOut = Data2d.copyRows( features, startIdx, endIdx );
+            labelsOut = Data2d.copyRows( labels, startIdx, endIdx );
+
+            setData( OUTPUT_FEATURES, featuresOut );
+            setData( OUTPUT_LABELS, labelsOut );
+        }
     }
 
     /**
-     * Use phase and count to determine current phase (perform transition if necessary).
+     * Use phase and count to determine current phase
+     *  - perform transition if necessary
+     *  - terminate when finished test phase
      * This is meant to be run at the start of the run loop (phase value from previous iteration)
      */
-    private void calcPhase( ) {
+    private boolean calcPhase( ) {
         AnalyticsEntityConfig config = ( AnalyticsEntityConfig ) _config;
+
+        boolean terminate = false;
 
         // set current phase (transition if necessary)
         if( isTraining() ) {
             if( config.count >= config.trainSetSize ) {
                 config.phase = AnalyticsEntityConfig.PHASE_TESTING; // transition to testing
-                _logger.warn( "=======> Transition to test phase. (2)" );
+                _logger.warn( "========> Transition to test phase. (2)" );
             }
         }
         else {
             if( config.count >= config.testSetSize ) {
                 config.terminate = true;                            // terminate
-                _logger.warn( "=======> Terminating on end of test set (3)" );
+                _logger.warn( "========> Terminating on end of test set (3)" );
+                terminate = true;
             }
         }
+
+        return terminate;
     }
+
 
     /**
      * Increment count based on current phase.

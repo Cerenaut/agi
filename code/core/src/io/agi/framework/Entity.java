@@ -542,10 +542,21 @@ public abstract class Entity extends NamedObject implements EntityListener, Data
     }
 
     public static Collection< String > getEntityNames( String configValue ) {
-        String[] names = configValue.split(",");
+
         Collection< String > c = new ArrayList<>();
+
+        if ( configValue.length() == 0 ) {
+            return c;
+        }
+
+        String[] names = configValue.split(",");
         for( String s : names ) {
-            c.add( s );
+
+            if ( s.length() == 0 ) {
+                continue;
+            }
+
+            c.add( s.trim() );
         }
         return c;
     }
