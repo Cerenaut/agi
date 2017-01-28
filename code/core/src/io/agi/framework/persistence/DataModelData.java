@@ -34,4 +34,13 @@ public class DataModelData {
     public Data _d;
     public ModelData _md;
 
+    public boolean hasReferences() {
+        if( _refKeys != null ) {
+            if( _refKeys.length() > 0 ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

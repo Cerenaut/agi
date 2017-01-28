@@ -269,14 +269,13 @@ public class Node {
                 dmd = new DataModelData();
             }
             else { // existing one - it is cached
-
-                // already serialized
-                if( dmd._md != null ) {
+                if( dmd.hasReferences() ) {
+                    // never cache
+                }
+                else if( dmd._md != null ) { // already serialized
                     return dmd._md;
                 }
-
-                // in cache, but not serialized.
-                if( dmd._d != null ) {
+                else if( dmd._d != null ) { // in cache, but not serialized.
                     String encoding = deserializer.getEncoding( name );
                     dmd._md = new ModelData( name, dmd._d, encoding ); // serialize it
                     dmd._encoding = encoding;
@@ -311,10 +310,13 @@ public class Node {
                 dmd = new DataModelData();
             }
             else { // existing one
-                if( dmd._d != null ) {
+                if( dmd.hasReferences() ) {
+                    // never cache
+                }
+                else if( dmd._d != null ) {
                     return dmd._d;
                 }
-                if( dmd._md != null ) {
+                else if( dmd._md != null ) {
                     dmd._d = dmd._md.getData( this, deserializer ); // serialize on demand
                     return dmd._d;
                 }
