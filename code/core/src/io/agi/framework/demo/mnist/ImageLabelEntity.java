@@ -47,6 +47,10 @@ import java.util.Random;
  *
  * This entity can terminate an experiment when the images are all processed, or it can loop around and process forever.
  *
+ * Images are emitted in order and the label is obtained for each image from the filename.
+ *
+ * You can optionally shuffle the image order every epoch: This randomizes the image ordering.
+ *
  * Created by dave on 8/07/16.
  */
 public class ImageLabelEntity extends Entity {
@@ -57,6 +61,9 @@ public class ImageLabelEntity extends Entity {
     public static final String OUTPUT_LABEL = "output-label";
 
     protected static ShuffledIndex _shuffledIndex = new ShuffledIndex();
+
+    protected BufferedImageSourceImageFile _bisTraining;
+    protected BufferedImageSourceImageFile _bisTesting;
 
     public ImageLabelEntity( ObjectMap om, Node n, ModelEntity model ) {
         super(om, n, model);
@@ -93,9 +100,34 @@ public class ImageLabelEntity extends Entity {
         return shuffled;
     }
 
-    public void doUpdateSelf() {
-
+    protected void createBufferedImageSources() {
         // Check for a reset (to start of sequence and re-train)
+        ImageLabelEntityConfig config = (ImageLabelEntityConfig) _config;
+
+        // Load all files in training and testing folders.
+        _logger.info( "Training files folder: " + config.sourceFilesPathTraining );
+        _logger.info( "Testing files folder: " + config.sourceFilesPathTesting );
+        _bisTraining = new BufferedImageSourceImageFile( config.sourceFilesPathTraining );
+        _bisTesting  = new BufferedImageSourceImageFile( config.sourceFilesPathTesting  );
+    }
+
+    protected BufferedImageSourceImageFile getBufferedImageSource() {
+        ImageLabelEntityConfig config = ( ImageLabelEntityConfig ) _config;
+
+        BufferedImageSourceImageFile bis = _bisTraining;
+
+        if( config.phase.equals( ImageLabelEntityConfig.PHASE_TRAINING ) ) {
+            bis = _bisTraining;
+        }
+        else if( config.phase.equals( ImageLabelEntityConfig.PHASE_TESTING ) ) {
+            bis = _bisTesting;
+        }
+
+        return bis;
+    }
+
+    public void resetSelf() {
+
         ImageLabelEntityConfig config = (ImageLabelEntityConfig ) _config;
 
         if( config.reset ) {
@@ -106,43 +138,112 @@ public class ImageLabelEntity extends Entity {
             config.epoch = 0;
             config.phase = ImageLabelEntityConfig.PHASE_TRAINING;
         }
+    }
 
-        // Load all files in training and testing folders.
-        _logger.info( "Training files folder: " + config.sourceFilesPathTraining );
-        _logger.info( "Testing files folder: " + config.sourceFilesPathTesting );
-        BufferedImageSourceImageFile bisTraining = new BufferedImageSourceImageFile( config.sourceFilesPathTraining );
-        BufferedImageSourceImageFile bisTesting  = new BufferedImageSourceImageFile( config.sourceFilesPathTesting  );
-        BufferedImageSourceImageFile bis = null;
+    protected void onEpochComplete() {
+        ImageLabelEntityConfig config = ( ImageLabelEntityConfig ) _config;
 
-        int trainingImages = bisTraining.getNbrImages();
-        int  testingImages = bisTesting .getNbrImages();
-
-        bis = bisTraining;
+        // check for phase change:
         if( config.phase.equals( ImageLabelEntityConfig.PHASE_TRAINING ) ) {
+            if( config.epoch >= config.trainingEpochs ) { // say batches = 3, then 0 1 2 for training, then 3 for testing
+                config.phase = ImageLabelEntityConfig.PHASE_TESTING;
+            }
         }
         else if( config.phase.equals( ImageLabelEntityConfig.PHASE_TESTING ) ) {
-            bis = bisTesting;
+            config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
+            _logger.warn( "=======> Terminating on end of test set. (1)" );
+        }
+    }
+
+    protected void onPhaseChange() {
+        ImageLabelEntityConfig config = ( ImageLabelEntityConfig ) _config;
+
+        boolean learnTraining = false;
+        boolean learnTesting = false;
+
+        if( config.phase.equals( ImageLabelEntityConfig.PHASE_TRAINING ) ) {
+            config.shuffle = true;
+            learnTraining = true;
+        }
+        else if( config.phase.equals( ImageLabelEntityConfig.PHASE_TESTING ) ) {
+            config.shuffle = false;
+            learnTesting = true;
         }
 
-        // catch end of images before it happens:
+        try {
+            Collection< String > entityNames = getEntityNames(config.trainingEntities);
+            for( String entityName : entityNames ) {
+                Framework.SetConfig( entityName, "learn", String.valueOf( learnTraining ) );
+            }
+        }
+        catch( Exception e ) {} // this is ok, the experiment is just not configured to have a learning flag
+
+        try {
+            Collection< String > entityNames = getEntityNames(config.testingEntities);
+            for( String entityName : entityNames ) {
+                Framework.SetConfig( entityName, "learn", String.valueOf( learnTesting ) );
+            }
+        }
+        catch( Exception e ) {} // this is ok, the experiment is just not configured to have a learning flag
+    }
+
+    protected ImageScreenScraper createImageScreenScraper( BufferedImageSourceImageFile bis ) {
+        ImageLabelEntityConfig config = ( ImageLabelEntityConfig ) _config;
+
+        ImageScreenScraper imageScreenScraper = new ImageScreenScraper();
+
+        boolean receptiveFieldSet = ImageSensorEntity.isReceptiveFieldSet(
+                config.receptiveField.receptiveFieldX, config.receptiveField.receptiveFieldY,
+                config.receptiveField.receptiveFieldW, config.receptiveField.receptiveFieldH );
+        if( receptiveFieldSet ) {
+            imageScreenScraper.setup( bis, config.getReceptiveField(), config.getResolution(), config.greyscale, config.invert );
+        } else {
+            imageScreenScraper.setup( bis, config.resolution.resolutionX, config.resolution.resolutionY, config.greyscale, config.invert );
+        }
+
+        return imageScreenScraper;
+    }
+
+    protected void onImageOutOfBounds() {
+        ImageLabelEntityConfig config = (ImageLabelEntityConfig ) _config;
+        config.shuffleSeed = _r.nextLong();
+        config.imageIndex = 0;
+        config.imageRepeat = 0;
+    }
+
+    protected void checkEpochsComplete() {
+        ImageLabelEntityConfig config = (ImageLabelEntityConfig ) _config;
+
+        int maxEpochs = config.trainingEpochs + config.testingEpochs;
+        if( config.phase.equals( ImageLabelEntityConfig.PHASE_TESTING ) ) {
+            if( config.epoch >= maxEpochs ) {
+                config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
+                _logger.warn( "=======> Terminating on end of test set. (2)" );
+            }
+        }
+    }
+
+    public void doUpdateSelf() {
+
+        // Check for a reset (to start of sequence and re-train)
+        ImageLabelEntityConfig config = (ImageLabelEntityConfig ) _config;
+
+        resetSelf();
+
+        // Load all files in training and testing folders.
+        createBufferedImageSources();
+
+        int trainingImages = _bisTraining.getNbrImages();
+        int  testingImages = _bisTesting .getNbrImages();
+
+        BufferedImageSourceImageFile bis = getBufferedImageSource();
         int images = bis.getNbrImages();
+
         if( config.imageIndex >= images ) {
             _logger.info( "End of image dataset: Epoch complete." );
+            onImageOutOfBounds();
             config.epoch += 1;
-            config.shuffleSeed = _r.nextLong();
-            config.imageIndex = 0;
-            config.imageRepeat = 0;
-
-            // check for phase change:
-            if( config.phase.equals( ImageLabelEntityConfig.PHASE_TRAINING ) ) {
-                if( config.epoch >= config.trainingEpochs ) { // say batches = 3, then 0 1 2 for training, then 3 for testing
-                    config.phase = ImageLabelEntityConfig.PHASE_TESTING;
-                }
-            }
-            else if( config.phase.equals( ImageLabelEntityConfig.PHASE_TESTING ) ) {
-                config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
-                _logger.warn( "=======> Terminating on end of test set. (1)" );
-            }
+            onEpochComplete();
         }
 
         // Decide which image set to use via phase
@@ -151,95 +252,72 @@ public class ImageLabelEntity extends Entity {
         // This can happen because above we may roll over into a new batch
         _logger.warn( "=======> Training set: " + trainingImages + " testing set: " + testingImages + " epoch: " + config.epoch + " index: " + config.imageIndex + " repeat: " + config.imageRepeat + " phase " + config.phase );
 
-        boolean learnTraining = false;
-        boolean learnTesting = false;
+        onPhaseChange(); // sets up learn flags for entities
 
-        if( config.phase.equals( ImageLabelEntityConfig.PHASE_TRAINING ) ) {
-            bis = bisTraining;
-            learnTraining = true;
-        }
-        else if( config.phase.equals( ImageLabelEntityConfig.PHASE_TESTING ) ) {
-            learnTesting = true;
-            bis = bisTesting;
-        }
-
-        try {
-            Collection< String > entityNames = getEntityNames( config.trainingEntities );
-            for( String entityName : entityNames ) {
-                Framework.SetConfig( entityName, "learn", String.valueOf( learnTraining ) );
-            }
-        }
-        catch( Exception e ) {} // this is ok, the experiment is just not configured to have a learning flag
-
-        try {
-            Collection< String > entityNames = getEntityNames( config.testingEntities );
-            for( String entityName : entityNames ) {
-                Framework.SetConfig( entityName, "learn", String.valueOf( learnTesting ) );
-            }
-        }
-        catch( Exception e ) {} // this is ok, the experiment is just not configured to have a learning flag
-
-        // detect finished one pass of test set:
+        checkEpochsComplete();
+/*        // detect finished one pass of test set:
         int maxEpochs = config.trainingEpochs + config.testingEpochs;
         if( config.phase.equals( ImageLabelEntityConfig.PHASE_TESTING ) ) {
             if( config.epoch >= maxEpochs ) {
                 config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
                 _logger.warn( "=======> Terminating on end of test set. (2)" );
             }
+        }*/
+
+        bis = getBufferedImageSource(); // phase may have changed
+
+        int shuffledIndex = config.imageIndex;
+        if( config.shuffle ) {
+            shuffledIndex = getShuffledIndex(bis, config.shuffleSeed, config.imageIndex );
         }
 
-        int shuffledIndex = getShuffledIndex( bis, config.shuffleSeed, config.imageIndex );
-        boolean inRange = bis.seek( shuffledIndex ); // next image
+        boolean inRange = bis.seek(shuffledIndex); // next image
         if( !inRange ) { // occurs if no testing images
-            config.shuffleSeed = _r.nextLong();
-            config.imageIndex = 0; // reset the index to allow further updates:
-            config.imageRepeat = 0;
+            onImageOutOfBounds();
             config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
             _logger.warn( "=======> Terminating on no more images to serve. (3)" );
             shuffledIndex = getShuffledIndex( bis, config.shuffleSeed, config.imageIndex );
             bis.seek( shuffledIndex ); // seek first image
         }
 
-        // Setup screen scraper
-        ImageScreenScraper imageScreenScraper = new ImageScreenScraper();
-
-        boolean receptiveFieldSet = ImageSensorEntity.isReceptiveFieldSet(
-            config.receptiveField.receptiveFieldX, config.receptiveField.receptiveFieldY,
-            config.receptiveField.receptiveFieldW, config.receptiveField.receptiveFieldH );
-        if( receptiveFieldSet ) {
-            imageScreenScraper.setup( bis, config.getReceptiveField(), config.getResolution(), config.greyscale, config.invert );
-        }
-        else {
-            imageScreenScraper.setup( bis, config.resolution.resolutionX, config.resolution.resolutionY, config.greyscale, config.invert );
-        }
-
-        // get all data
-        boolean scraped = imageScreenScraper.scrape(); // get the current image
-
-        if (!scraped) {
-            _logger.error("=======> !! Could not scrape image, so unable to do anything useful this update");
-            return;
-        }
-
+        // Setup screen scraper, grab image
         String imageFileName = bis.getImageFileName();
         Integer imageLabel = getClassification( imageFileName ); //, config.sourceFilesPrefix );
 
-        if( imageLabel == null ) {
-            _logger.error("=======> !! Could not get image classification, so unable to do anything useful this update");
-            return;
-        }
+        updateImageLabelOutput( bis, imageLabel );
 
-        Data image = imageScreenScraper.getData();
-
-        _logger.info( "Emitting image " + bis.getIdx() + " label: " + imageLabel );
-
+        // update auto config properties
         config.imageRepeat += 1;
         if( config.imageRepeat == config.imageRepeats ) {
             config.imageRepeat = 0;
             config.imageIndex = config.imageIndex +1; // set to fetch next image
         }
+    }
+
+    protected void updateImageLabelOutput( BufferedImageSourceImageFile bis, Integer imageLabel ) {
+
+        if( imageLabel == null ) {
+            _logger.error( "=======> !! Could not get image classification, so unable to output an image or label. (a)" );
+            return;
+        }
+
+        ImageScreenScraper imageScreenScraper = createImageScreenScraper( bis );
+        boolean scraped = imageScreenScraper.scrape(); // get the current image
+        if( !scraped ) {
+            _logger.error( "=======> !! Could not scrape image, so unable to output an image or label. (b)" );
+            return;
+        }
+
+        Data image = imageScreenScraper.getData();
+
+        if( image == null ) {
+            _logger.error( "=======> !! Could not get image, so unable to output an image or label. (c)" );
+            return;
+        }
 
         // write outputs back to persistence
+        ImageLabelEntityConfig config = (ImageLabelEntityConfig ) _config;
+
         Data label = new Data( 1 );
         label.set( imageLabel );
 

@@ -38,11 +38,14 @@ public class FeedForwardNetworkConfig extends NetworkConfig {
     public String _keyL2Regularization = "l2-regularization";
     public String _keyLearningRate = "learning-rate";
 
+    public static final String BATCH_COUNT = "batch-age";
+    public static final String BATCH_SIZE = "batch-size";
+
     public FeedForwardNetworkConfig() {
     }
 
-    public void setup( ObjectMap om, String name, Random r, String costFunction, int inputs, int layers, String layerSizes, String layerActivationFunctions, float l2Regularization, float learningRate ) {
-        super.setup(om, name, r);
+    public void setup( ObjectMap om, String name, Random r, String costFunction, int inputs, int layers, String layerSizes, String layerActivationFunctions, float l2Regularization, float learningRate, int batchSize ) {
+        super.setup( om, name, r );
 
         setCostFunction(costFunction);
         setLayerTransferFns(layerActivationFunctions);
@@ -52,6 +55,9 @@ public class FeedForwardNetworkConfig extends NetworkConfig {
 //        setNbrOutputs( outputs );
         setL2Regularization( l2Regularization );
         setLearningRate(learningRate);
+
+        setBatchCount( 0 );
+        setBatchSize( batchSize );
     }
 
     public void copyFrom( NetworkConfig nc, String name ) {
@@ -61,12 +67,15 @@ public class FeedForwardNetworkConfig extends NetworkConfig {
 
         setCostFunction(c.getCostFunction());
         setLayerTransferFns(c.getLayerTransferFns());
-        setNbrLayers( c.getNbrLayers() );
+        setNbrLayers(c.getNbrLayers());
         setLayerSizes(c.getLayerSizes());
         setNbrInputs(c.getNbrInputs());
 //        setNbrOutputs( c.getNbrOutputs() );
-        setL2Regularization( c.getL2Regularization() );
+        setL2Regularization(c.getL2Regularization());
         setLearningRate(c.getLearningRate());
+
+        setBatchCount( c.getBatchCount() );
+        setBatchSize( c.getBatchSize() );
     }
 
     public void setCostFunction(String f) {
@@ -148,5 +157,23 @@ public class FeedForwardNetworkConfig extends NetworkConfig {
 
     public Float getL2Regularization() {
         return ( Float ) _om.get( getKey( _keyL2Regularization ) );
+    }
+
+    public void setBatchCount( int n ) {
+        _om.put( getKey( BATCH_COUNT ), n );
+    }
+
+    public void setBatchSize( int n ) {
+        _om.put( getKey( BATCH_SIZE ), n );
+    }
+
+    public int getBatchCount() {
+        Integer n = _om.getInteger(getKey(BATCH_COUNT));
+        return n.intValue();
+    }
+
+    public int getBatchSize() {
+        Integer n = _om.getInteger(getKey(BATCH_SIZE));
+        return n.intValue();
     }
 }

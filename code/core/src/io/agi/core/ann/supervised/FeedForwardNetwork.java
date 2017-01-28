@@ -25,6 +25,7 @@ import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 /**
@@ -205,22 +206,56 @@ public class FeedForwardNetwork extends NamedObject {
             sumSqWeights = getWeightsSquared();
         }
 
+        // check for end of a mini-batch
+        int batchSize = _c.getBatchSize();
+        int batchCount = _c.getBatchCount();
+        batchCount += 1;
+
+        boolean batchComplete = false;
+        if( batchCount >= batchSize ) { // e.g. if was zero, then becomes 1, then we clear it and apply the gradients
+            batchCount = 0;
+            batchComplete = true;
+        }
+
+        _c.setBatchCount( batchCount );
+
+        // update layer by layer
         int layers = _layers.size();
         int L = layers - 1;
+
+        HashMap< Integer, Data > costGradients = new HashMap< Integer, Data >();
 
         for( int layer = L; layer >= 0; --layer ) {
 
             NetworkLayer nl = _layers.get( layer );
             ActivationFunction af = nl.getActivationFunction();
+
+            Data layerCostGradients = new Data( nl._costGradients._dataSize ); // same shape
+
             if( layer == L ) {
                 String costFunction = _c.getCostFunction();
-                BackPropagation.CostGradientExternal( nl._weightedSums, nl._costGradients, nl._outputs, _ideals, af, costFunction, l2R, sumSqWeights );
+                BackPropagation.CostGradientExternal( nl._weightedSums, layerCostGradients, nl._outputs, _ideals, af, costFunction, l2R, sumSqWeights );
             } else { // layer < L
-                NetworkLayer nlNext = _layers.get( layer + 1 );
-                BackPropagation.CostGradientInternal( nl._weightedSums, nl._costGradients, nlNext._weights, nlNext._costGradients, af, l2R );
+                NetworkLayer nlForward = _layers.get( layer +1 );
+                Data forwardCostGradients = costGradients.get( layer +1 );
+                BackPropagation.CostGradientInternal( nl._weightedSums, layerCostGradients, nlForward._weights, forwardCostGradients, af, l2R );
             }
 
-            nl.train(); // using the error gradients, d
+            costGradients.put( layer, layerCostGradients );
+        }
+
+        for( int layer = L; layer >= 0; --layer ) {
+
+            NetworkLayer nl = _layers.get( layer );
+
+            Data layerCostGradients = costGradients.get( layer );
+
+            nl._costGradients.add( layerCostGradients ); // add the latest gradients
+
+            if( batchComplete ) {
+                nl.train(); // using the error gradients, d
+                nl._costGradients.set( 0f );
+            }
         }
     }
 

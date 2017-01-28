@@ -445,7 +445,7 @@ public class RegionEntity extends Entity {
             nl._biases         = getData( Keys.concatenate( prefix, NetworkLayer.BIASES ), nl._biases._dataSize );
             nl._weightedSums   = getData( Keys.concatenate( prefix, NetworkLayer.WEIGHTED_SUMS ), nl._weightedSums._dataSize );
             nl._outputs        = getData( Keys.concatenate( prefix, NetworkLayer.OUTPUTS ), nl._outputs._dataSize );
-            nl._errorGradients = getData( Keys.concatenate( prefix, NetworkLayer.ERROR_GRADIENTS ), nl._errorGradients._dataSize );
+            nl._costGradients = getData( Keys.concatenate( prefix, NetworkLayer.ERROR_GRADIENTS ), nl._costGradients._dataSize );
         }*/
     }
 
@@ -574,7 +574,7 @@ public class RegionEntity extends Entity {
             setData( Keys.concatenate( prefix, NetworkLayer.BIASES ), nl._biases );
             setData( Keys.concatenate( prefix, NetworkLayer.WEIGHTED_SUMS ), nl._weightedSums );
             setData( Keys.concatenate( prefix, NetworkLayer.OUTPUTS ), nl._outputs );
-            setData( Keys.concatenate( prefix, NetworkLayer.ERROR_GRADIENTS ), nl._errorGradients );
+            setData( Keys.concatenate( prefix, NetworkLayer.ERROR_GRADIENTS ), nl._costGradients );
         }*/
     }
 

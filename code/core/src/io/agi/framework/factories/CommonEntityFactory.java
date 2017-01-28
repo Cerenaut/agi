@@ -19,12 +19,15 @@
 
 package io.agi.framework.factories;
 
+import io.agi.core.alg.PyramidRegionLayer;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.Entity;
 import io.agi.framework.EntityFactory;
 import io.agi.framework.Node;
 import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.demo.mnist.MnistEntity;
+import io.agi.framework.demo.mnist.NumberSequence2ImageLabelEntity;
+import io.agi.framework.demo.mnist.Text2ImageLabelEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.persistence.models.ModelEntity;
 import org.apache.logging.log4j.LogManager;
@@ -154,6 +157,14 @@ public class CommonEntityFactory implements EntityFactory {
             return new ImageLabelEntity( objectMap, _n, modelEntity );
         }
 
+        if( entityType.equals( NumberSequence2ImageLabelEntity.ENTITY_TYPE ) ) {
+            return new NumberSequence2ImageLabelEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( Text2ImageLabelEntity.ENTITY_TYPE ) ) {
+            return new Text2ImageLabelEntity( objectMap, _n, modelEntity );
+        }
+
         if( entityType.equals( KSparseAutoencoderEntity.ENTITY_TYPE ) ) {
             return new KSparseAutoencoderEntity( objectMap, _n, modelEntity );
         }
@@ -164,6 +175,10 @@ public class CommonEntityFactory implements EntityFactory {
 
         if( entityType.equals( QuiltedCompetitiveLearningEntity.ENTITY_TYPE ) ) {
             return new QuiltedCompetitiveLearningEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( PyramidRegionLayerEntity.ENTITY_TYPE ) ) {
+            return new PyramidRegionLayerEntity( objectMap, _n, modelEntity );
         }
 
         return null;

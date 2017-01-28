@@ -43,9 +43,10 @@ public class FeedForwardNetworkTest implements UnitTest {
         Logic l = Logic.XOR;
 //        Logic l = Logic.AND;
 
-        int epochs = 5000;
+        int epochs = 50000;
         int batch = 100;
         int hidden = 0;
+        int miniBatchSize = 1;
         float meanErrorThreshold = 0.01f;
         float learningRate = 0.1f;
         float regularization = 0.0f;
@@ -76,7 +77,7 @@ public class FeedForwardNetworkTest implements UnitTest {
 //            learningRate = 0.1f;
 //        }
 
-        setup( l, epochs, batch, hidden, learningRate, meanErrorThreshold, regularization, costFunction, activationFunctions );
+        setup( l, epochs, batch, hidden, learningRate, meanErrorThreshold, regularization, costFunction, activationFunctions, miniBatchSize );
 
         epochs();
     }
@@ -89,7 +90,7 @@ public class FeedForwardNetworkTest implements UnitTest {
     public float _meanErrorThreshold;
     public FeedForwardNetwork _ffn;
 
-    public void setup( Logic l, int epochs, int batch, int hidden, float learningRate, float meanErrorThreshold, float regularization, String costFunction, String activationFunctions ) {
+    public void setup( Logic l, int epochs, int batch, int hidden, float learningRate, float meanErrorThreshold, float regularization, String costFunction, String activationFunctions, int batchSize ) {
 
         _l = l;
         _epochs = epochs;
@@ -117,10 +118,12 @@ public class FeedForwardNetworkTest implements UnitTest {
 
         float l2R = regularization;//0.0001f;
 
+        learningRate /= (float)batchSize;
+
         ObjectMap om = new ObjectMap();
         Random r = RandomInstance.getInstance();
         FeedForwardNetworkConfig ffnc = new FeedForwardNetworkConfig();
-        ffnc.setup( om, name, r, costFunction, inputs, layers, layerSizes, activationFunctions, l2R, learningRate );
+        ffnc.setup( om, name, r, costFunction, inputs, layers, layerSizes, activationFunctions, l2R, learningRate, batchSize );
         ActivationFunctionFactory aff = new ActivationFunctionFactory();
 
         _ffn = new FeedForwardNetwork( name, om );
