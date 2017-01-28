@@ -71,7 +71,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
     @Override
     public void loadModel() {
         String modelString = _config.getModelString();
-        if ( modelString != null ) {
+        if ( modelString != null && modelString.length() != 0 ) {
             loadModel( modelString );
         }
     }
@@ -130,8 +130,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
             }
         } else {
             String errorMessage = "Cannot save LibLinear model as it is undefined";
-            _logger.error( errorMessage );
-            throw new Exception( errorMessage );
+            _logger.warn( errorMessage );
         }
 
         return modelString;
@@ -172,7 +171,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
         // iterate data points (vectors in the VectorSeries - each vector is a data point)
         for( int r = 0; r < m; ++r ) {
 
-            float classTruth = SupervisedUtil.getClassTruth( classTruthVector, r );
+            float label = SupervisedUtil.getClassTruth( classTruthVector, r );
 
             // iterate dimensions of x (elements of the vector)
             for( int c = 0; c < n; ++c ) {
@@ -191,8 +190,9 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
                 }
 
                 problem.x[ r ][ c ] = new FeatureNode( c+1, xi );
-                problem.y[ r ] = classTruth;
             }
+
+            problem.y[ r ] = label;
         }
 
         return problem;

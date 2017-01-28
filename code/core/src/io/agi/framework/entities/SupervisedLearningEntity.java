@@ -385,10 +385,8 @@ public class SupervisedLearningEntity extends Entity {
                         // skip
                     }
                     else { // either learnBatch is "every step" or we didn't do it yet
-                        Data outputFeatures = getData( FEATURES_BY_TIME );
-                        Data outputLabels = getData( FEATURES_BY_TIME );
 
-                        trainBatch( outputFeatures, outputLabels, features.getSize() ); // train on a batch of data.
+                        trainBatch( features, labels, features.getSize() ); // train on a batch of data.
 
                         config.learnBatchComplete = true; // it doesn't need to be done again
                     }
