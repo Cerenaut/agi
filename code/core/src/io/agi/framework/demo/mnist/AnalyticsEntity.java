@@ -48,7 +48,8 @@ import java.util.Collection;
  * must process in batch mode.
  * In non-'batch mode', iteratively pass over the dataset emitting one feature vector and class label at a time
  *
- * This entity terminates an experiment when the test dataset are processed.
+ * This entity terminates an experiment after testing phase (learn=false).
+ * In 'Test phase', run the test on both Training and Testing data sets.
  *
  * Created by gideon on 08/01/2017.
  */
@@ -170,7 +171,7 @@ public class AnalyticsEntity extends Entity {
                     endIdx = config.trainSetSize - 1;
                 }
                 else {
-                    startIdx = config.trainSetSize;
+                    startIdx = 0;
                     endIdx = config.trainSetSize + config.testSetSize - 1;
                 }
             }
