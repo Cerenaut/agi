@@ -2,13 +2,12 @@ import json
 import os
 import subprocess
 from enum import Enum
-import time
 
 from agief_experiment import compute
 from agief_experiment import cloud
 from agief_experiment import experiment
 from agief_experiment import utils
-from agief_experiment import valincrementer
+from agief_experiment import valueseries
 
 help_generic = """
 run-framework.py allows you to run each step of the AGIEF (AGI Experimental Framework), locally and on AWS.
@@ -122,7 +121,7 @@ def run_parameterset(entity_file, data_files, sweep_param_vals):
     if is_upload:
         if is_export_compute:
             # TODO implement upload to S3 with 'export compute'
-            print "UPLOAD TO S3 NOT IMPLEMENTED ----> for the case of 'EXPORT COMPUTE'"
+            print "WARNING: UPLOAD TO S3 NOT IMPLEMENTED ----> for the case of 'EXPORT COMPUTE'"
         else:
             # upload exported output Entity file (if it exists)
             _cloud.upload_experiment_output_s3(_experiment.prefix,
@@ -149,14 +148,14 @@ def run_parameterset(entity_file, data_files, sweep_param_vals):
                                                log_filepath)
 
 
-def setup_parameter_sweep_counters(param_sweep, counters):
+def setup_parameter_sweepers(param_sweep, val_sweepers):
     """
     For each 'param' in a set, get details and setup counter
     The result is an array of counters
     Each counter represents one parameter
 
     :param param_sweep:
-    :param counters:
+    :param val_sweepers:
     :return:
     """
 
@@ -170,30 +169,34 @@ def setup_parameter_sweep_counters(param_sweep, counters):
 
         entity_name = param['entity-name']
         param_path = param['parameter-path']
-        # exp_type = param['val-type']
-        val_begin = param['val-begin']
-        val_end = param['val-end']
-        val_inc = param['val-inc']
 
-        incrementer = valincrementer.ValIncrementer(val_begin, val_end, val_inc)
+        if 'val-series' in param.keys():
+            val_series = param['val-series']
+            value_series = valueseries.ValueSeries(val_series)
+        else:
+            val_begin = param['val-begin']
+            val_end = param['val-end']
+            val_inc = param['val-inc']
 
-        counter = {'incrementer': incrementer, 'entity-name': entity_name, 'param-path': param_path}
-        counters.append(counter)
+            value_series = valueseries.ValueSeries.from_range(val_begin, val_end, val_inc)
+
+        val_sweeper = {'value-series': value_series, 'entity-name': entity_name, 'param-path': param_path}
+        val_sweepers.append(val_sweeper)
 
 
-def inc_parameter_set(entity_file, counters):
+def inc_parameter_set(entity_file, val_sweepers):
     """
     Iterate through counters, incrementing each parameter in the set
     Set the new values in the input file, and then run the experiment
     First counter to reset, return False
 
     :param entity_file:
-    :param counters:
+    :param val_sweepers:
     :return: reset (True if any counter has reached above max), description of parameters (string)
                             If reset is False, there MUST be a description of the parameters that have been set
     """
 
-    if len(counters) == 0:
+    if len(val_sweepers) == 0:
         print "WARNING: in_parameter_set: there are no counters to use to increment the parameter set."
         print "         Returning without any action. This may have undesirable consequences."
         return True, ""
@@ -201,23 +204,27 @@ def inc_parameter_set(entity_file, counters):
     # inc all counters, and set parameter in entity file
     sweep_param_vals = []
     reset = False
-    for counter in counters:
-        incrementer = counter['incrementer']
-        is_counting = incrementer.increment()
-        if is_counting is False:
+    for val_sweeper in val_sweepers:
+        val_series = val_sweeper['value-series']
+
+        # check if it overflowed last time it was incremented
+        overflowed = val_series.overflowed()
+
+        if overflowed:
             if log:
                 print "LOG: Sweeping has concluded for this sweep-set, due to the parameter: " + \
-                      counter['entity-name'] + '.' + counter['param-path']
+                      val_sweeper['entity-name'] + '.' + val_sweeper['param-path']
             reset = True
             break
 
-        val = incrementer.value()
+        val = val_series.value()
         entity_file_path = _experiment.inputfile(entity_file)
         set_param = _compute_node.set_parameter_inputfile(entity_file_path,
-                                                          _experiment.entity_with_prefix(counter['entity-name']),
-                                                          counter['param-path'],
+                                                          _experiment.entity_with_prefix(val_sweeper['entity-name']),
+                                                          val_sweeper['param-path'],
                                                           val)
         sweep_param_vals.append(set_param)
+        val_series.next_val()
 
     if len(sweep_param_vals) == 0:
         print "WARNING: no parameters were changed."
@@ -266,7 +273,7 @@ def run_sweeps():
             for param_sweep in exp_i['parameter-sweeps']:  # array of sweep definitions
 
                 counters = []
-                setup_parameter_sweep_counters(param_sweep, counters)
+                setup_parameter_sweepers(param_sweep, counters)
 
                 is_sweeping = True
                 while is_sweeping:
