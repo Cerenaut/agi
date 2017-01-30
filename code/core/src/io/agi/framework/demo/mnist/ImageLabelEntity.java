@@ -120,6 +120,7 @@ public class ImageLabelEntity extends Entity {
         }
 
         // catch end of images before it happens:
+        int maxEpochs = config.trainingEpochs + config.testingEpochs;
         int images = bis.getNbrImages();
         if( config.imageIndex >= images ) {
                 _logger.info( "End of image dataset: Epoch complete." );
@@ -135,8 +136,10 @@ public class ImageLabelEntity extends Entity {
                 }
             }
             else if( isTesting() ) {
-                config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
-                _logger.warn( "=======> Terminating on end of test set. (1)" );
+                if( config.epoch >= maxEpochs ) {
+                    config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
+                    _logger.warn("=======> Terminating on end of test set. (1)");
+                }
             }
 
         }
@@ -178,7 +181,6 @@ public class ImageLabelEntity extends Entity {
         catch( Exception e ) {} // this is ok, the experiment is just not configured to have a learning flag
 
         // detect finished one pass of test set:
-        int maxEpochs = config.trainingEpochs + config.testingEpochs;
         if( isTesting() ) {
             if( config.epoch >= maxEpochs ) {
                 config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
