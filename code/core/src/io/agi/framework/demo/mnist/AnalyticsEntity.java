@@ -126,15 +126,17 @@ public class AnalyticsEntity extends Entity {
         int numDataPoints = SupervisedUtil.calcMFromFeatureMatrix( features );
         if ( config.batchMode )
         {
-            if (numDataPoints < (config.trainSetSize + config.testSetSize) ) {
-                String message = "batch mode, but there are not enough features to train and test";
+            if (    numDataPoints < config.trainSetSize
+                    || numDataPoints < config.testSetSize - config.testSetOffset ) {
+                String message = "Batch mode, but there are not enough features to train and test.";
+                message += "\nSizes: [Dataset, Train, Test, Test Offset] = [" + numDataPoints + ", " + config.trainSetSize + ", " + config.testSetSize + ", " + config.testSetOffset + "]";
                 _logger.error( message );
                 throw new java.lang.UnsupportedOperationException( message );
             }
         }
 
-        _logger.warn( "====> Phase: " + config.phase + ", idx: " + config.count +
-                ", Sizes:[Train,Test] = [" + config.trainSetSize + ", " + config.testSetSize + "]" );
+        _logger.warn( "====> Phase: " + config.phase + ", idx: " + config.count + " of " + numDataPoints +
+                ", Sizes:[Train,Test,Offset] = [" + config.trainSetSize + ", " + config.testSetSize + ", " + config.testSetOffset + "]" );
 
         boolean isTerminate = calcPhase();
 
@@ -206,11 +208,12 @@ public class AnalyticsEntity extends Entity {
         if( isTraining() ) {
             if( config.count >= config.trainSetSize ) {
                 config.phase = AnalyticsEntityConfig.PHASE_TESTING; // transition to testing
+                config.count = config.testSetOffset;
                 _logger.warn( "========> Transition to test phase. (2)" );
             }
         }
         else {
-            if( config.count >= config.testSetSize ) {
+            if( config.count >= config.testSetOffset + config.testSetSize ) {
                 config.terminate = true;                            // terminate
                 _logger.warn( "========> Terminating on end of test set (3)" );
                 terminate = true;

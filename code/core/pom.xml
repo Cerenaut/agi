@@ -25,7 +25,7 @@
 
     <groupId>io.agi.core</groupId>
     <artifactId>agief</artifactId>
-    <version>1.0.91(239586b)</version>
+    <version>1.0.94(4c314ea)</version>
 
     <build>
         <sourceDirectory>src</sourceDirectory>
