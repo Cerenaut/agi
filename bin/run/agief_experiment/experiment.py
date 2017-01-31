@@ -47,7 +47,7 @@ class Experiment:
 
         variables_file = self.variables_filepath()
 
-        if variables_file is "" or variables_file is None:
+        if variables_file == "" or variables_file is None:
             print "WARNING: unable to locate variables file." \
 
         if self.log and self.logfine:
@@ -136,9 +136,9 @@ class Experiment:
         """ return absolute path to a file or folder in the AGI_RUN_HOME/ folder """
         return self.filepath_from_exp_variable(path, self.agi_run_home)
 
-    def datafile(self, filename):
+    def datapath(self, path):
         """ return the file in the data folder, on the system where compute is running """
-        return self.filepath_from_exp_variable(filename, self.agi_data_run_home)
+        return self.filepath_from_exp_variable(path, self.agi_data_run_home)
 
     def experiment_def_file(self):
         """ return the full path to the experiments definition file """
@@ -148,12 +148,12 @@ class Experiment:
         """ return the full path to the experiments folder """
         return self.filepath_from_exp_variable("", self.agi_exp_home)
 
-    def experimentfile(self, filename):
+    def experiment_path(self, path):
         """ return the full path to a file in the folder AGI_EXP_HOME """
-        return self.filepath_from_exp_variable(filename, self.agi_exp_home)
+        return self.filepath_from_exp_variable(path, self.agi_exp_home)
 
     def entity_with_prefix(self, entity_name):
-        if self.prefix is None or self.prefix is "":
+        if self.prefix is None or self.prefix == "":
             return entity_name
         else:
             return self.prefix + self.prefix_delimiter + entity_name
@@ -206,6 +206,7 @@ class Experiment:
 
         data_filenames = []
         for basedata_filename in basedata_filenames:
+
             basedata_filepath = self.inputfile(basedata_filename)
 
             if not os.path.isfile(basedata_filepath):
@@ -213,10 +214,17 @@ class Experiment:
                       "\nCANNOT CONTINUE."
                 exit()
 
-            data_filename = utils.append_before_ext(basedata_filename, "_" + self.prefix)
-            shutil.copyfile(basedata_filepath, self.inputfile(data_filename))     # create new input files with prefix in the name
-            utils.replace_in_file(template_prefix, self.prefix, self.inputfile(data_filename))      # search replace contents for PREFIX and replace with 'prefix'
-            data_filenames.append(data_filename)
+
+            full_dirname = os.path.dirname(os.path.normpath(basedata_filepath))      # full dirname
+            dirname = os.path.basename(full_dirname)        # take just the last part
+
+            if dirname != "output":
+                data_filename = utils.append_before_ext(basedata_filename, "_" + self.prefix)
+                shutil.copyfile(basedata_filepath, self.inputfile(data_filename))     # create new input files with prefix in the name
+                utils.replace_in_file(template_prefix, self.prefix, self.inputfile(data_filename))      # search replace contents for PREFIX and replace with 'prefix'
+                data_filenames.append(data_filename)
+            else:
+                data_filenames.append(basedata_filename)
 
         return entity_filename, data_filenames
 

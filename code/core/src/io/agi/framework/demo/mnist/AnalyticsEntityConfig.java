@@ -33,6 +33,8 @@ public class AnalyticsEntityConfig extends EntityConfig {
 
     public int trainSetSize = 0;
     public int testSetSize = 0;
+    public int testSetOffset = 0;          // offset in the dataset from which to start using the data for testing
+                                            // if you want to test on the entire dataset (training+testing), then make this zero
 
     // REMOVING THIS FUNCTIONALITY FOR NOW (may or may not use it)
 //    public String datasetExpPrefix = "";   // use data from entities in the experiment that used this prefix
@@ -44,4 +46,5 @@ public class AnalyticsEntityConfig extends EntityConfig {
     public boolean terminate = false;      // trigger to stop the experiment
     public String phase = PHASE_TRAINING;  // can be training or testing
     public int count = 0;                  // dataset index count within the current phase
+
 }

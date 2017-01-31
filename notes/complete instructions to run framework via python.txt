@@ -77,8 +77,8 @@ python run-framework.py --exps_file experiments-phase2.json --step_gen_input io.
           ]
       },
 
-- Modify datarefs-phase2.json so that refKey of the feature-series has the correct prefix (i.e. the prefix from the Phase 1 run, that you want the data from)
-
+- Modify data refs so that refKey of the feature-series has the correct prefix (i.e. the prefix from the Phase 1 run, that you want the data from)
+There is a placeholder already in the exported data-phase2.json file, but it could be accomplished with a separate input file (e.g. datarefs-phase2.json).
 
 
 python run-framework.py --exps_file experiments-phase2.json --step_compute --step_export

@@ -19,14 +19,12 @@
 
 package io.agi.framework.demo.papers;
 
-import io.agi.core.ml.supervised.SupervisedBatchTraining;
 import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
 import io.agi.framework.demo.mnist.AnalyticsEntity;
 import io.agi.framework.demo.mnist.AnalyticsEntityConfig;
-import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.factories.CommonEntityFactory;
 
@@ -92,8 +90,9 @@ public class EvaluateTrainingDemo {
 
         AnalyticsEntityConfig analyticsEntityConfig = new AnalyticsEntityConfig();
         analyticsEntityConfig.batchMode = true;
-        analyticsEntityConfig.trainSetSize = 4;
-        analyticsEntityConfig.testSetSize = 2;
+        analyticsEntityConfig.testSetOffset = 0;           // test on the training set as well
+        analyticsEntityConfig.trainSetSize = 60000;
+        analyticsEntityConfig.testSetSize = 70000;
         analyticsEntityConfig.testingEntities = logisticRegressionName;
 
         SupervisedBatchTrainingEntityConfig logisticRegressionEntityConfig = new SupervisedBatchTrainingEntityConfig();
@@ -112,8 +111,8 @@ public class EvaluateTrainingDemo {
         Framework.SetDataReference( logisticRegressionName, SupervisedBatchTrainingEntity.INPUT_FEATURES, analyticsName, AnalyticsEntity.OUTPUT_FEATURES );
         Framework.SetDataReference( logisticRegressionName, SupervisedBatchTrainingEntity.INPUT_LABELS, analyticsName, AnalyticsEntity.OUTPUT_LABELS );
 
-        Framework.SetDataReference( analyticsName, AnalyticsEntity.INPUT_FEATURES, "170126-1726--feature-series", "output" );
-        Framework.SetDataReference( analyticsName, AnalyticsEntity.INPUT_LABELS, "170126-1726--label-series", "output" );
+        Framework.SetDataReference( analyticsName, AnalyticsEntity.INPUT_FEATURES, "PREFIX--feature-series", "output" );
+        Framework.SetDataReference( analyticsName, AnalyticsEntity.INPUT_LABELS, "PREFIX--label-series", "output" );
 
 
         // 4) Set configurations

@@ -171,8 +171,8 @@ public class AnalyticsEntity extends Entity {
                     endIdx = config.trainSetSize - 1;
                 }
                 else {
-                    startIdx = 0;
-                    endIdx = config.trainSetSize + config.testSetSize - 1;
+                    startIdx = config.testSetOffset;
+                    endIdx = config.testSetOffset + config.testSetSize - 1;
                 }
             }
             else {

@@ -315,7 +315,7 @@ def set_dataset(exps_file):
             for data_filename in data_filenames_arr:
                 if data_paths is not "":
                     data_paths += ","           # IMPORTANT - if space added here, additional characters ('+') get added probably due to encoding issues on the request
-                data_paths += _experiment.datafile(data_filename)
+                data_paths += _experiment.datapath(data_filename)
 
             _compute_node.set_parameter_db(_experiment.entity_with_prefix(entity_name), param_path, data_paths)
 
