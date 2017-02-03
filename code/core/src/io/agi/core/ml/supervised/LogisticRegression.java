@@ -262,13 +262,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
     public void predict( Data featuresMatrix, Data predictionsVector ) {
 
         int m = SupervisedUtil.calcMFromFeatureMatrix( featuresMatrix );   // m = number of data points
-        int n = SupervisedUtil.calcNFromFeatureMatrix( featuresMatrix );   // n = feature vector size
-        int n_maxIdx = n;
-
         boolean addBias = _config.getAddBias();
-        if ( addBias ) {
-            ++n;                        // adjust n
-        }
 
         Feature[][] x = setupFeatureNodes( featuresMatrix, addBias );
 

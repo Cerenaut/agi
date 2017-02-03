@@ -135,10 +135,11 @@ public class AnalyticsEntity extends Entity {
             }
         }
 
-        _logger.warn( "====> Phase: " + config.phase + ", idx: " + config.count + " of " + numDataPoints +
-                ", Sizes:[Train,Test,Offset] = [" + config.trainSetSize + ", " + config.testSetSize + ", " + config.testSetOffset + "]" );
+        _logger.warn( "=====> Age = " + _config.age + ", Phase: " + config.phase + ", " + idxMessage( numDataPoints ) + ", " + sizeMessage() );
 
         boolean isTerminate = calcPhase();
+
+        _logger.warn( "=====> Update to: " + idxMessage( numDataPoints ) );
 
         if ( !isTerminate ) {
 
@@ -193,6 +194,17 @@ public class AnalyticsEntity extends Entity {
         }
     }
 
+    private String idxMessage( int numDataPoints ) {
+        AnalyticsEntityConfig config = ( AnalyticsEntityConfig ) _config;
+        return "idx: " + config.count + " of " + numDataPoints;
+    }
+
+    private String sizeMessage( ) {
+        AnalyticsEntityConfig config = ( AnalyticsEntityConfig ) _config;
+        String message = "Sizes:[Train,Test,Offset] = [" + config.trainSetSize + ", " + config.testSetSize + ", " + config.testSetOffset + "]";
+        return message;
+    }
+
     /**
      * Use phase and count to determine current phase
      *  - perform transition if necessary
@@ -209,13 +221,13 @@ public class AnalyticsEntity extends Entity {
             if( config.count >= config.trainSetSize ) {
                 config.phase = AnalyticsEntityConfig.PHASE_TESTING; // transition to testing
                 config.count = config.testSetOffset;
-                _logger.warn( "========> Transition to test phase. (2)" );
+                _logger.warn( "===> Transition to test phase. (2)" );
             }
         }
         else {
             if( config.count >= config.testSetOffset + config.testSetSize ) {
                 config.terminate = true;                            // terminate
-                _logger.warn( "========> Terminating on end of test set (3)" );
+                _logger.warn( "===> Terminating on end of test set (3)" );
                 terminate = true;
             }
         }

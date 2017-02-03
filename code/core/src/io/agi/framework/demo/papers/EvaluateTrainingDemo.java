@@ -90,8 +90,8 @@ public class EvaluateTrainingDemo {
 
         AnalyticsEntityConfig analyticsEntityConfig = new AnalyticsEntityConfig();
         analyticsEntityConfig.batchMode = true;
-        analyticsEntityConfig.testSetOffset = 0;           // test on the training set as well
         analyticsEntityConfig.trainSetSize = 60000;
+        analyticsEntityConfig.testSetOffset = 0;           // test on the training set as well
         analyticsEntityConfig.testSetSize = 70000;
         analyticsEntityConfig.testingEntities = logisticRegressionName;
 

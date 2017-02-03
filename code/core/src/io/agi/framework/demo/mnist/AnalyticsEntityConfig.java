@@ -31,9 +31,11 @@ public class AnalyticsEntityConfig extends EntityConfig {
 
     public String testingEntities = "";    // the subscribed entities for performing the analytics
 
+    // there is one feature and one label matrix, that is segmented into training and test sets using these params
+    // the sets can overlap, using testSetOffset
     public int trainSetSize = 0;
     public int testSetSize = 0;
-    public int testSetOffset = 0;          // offset in the dataset from which to start using the data for testing
+    public int testSetOffset = 0;           // offset in the dataset from which to start using the data for testing
                                             // if you want to test on the entire dataset (training+testing), then make this zero
 
     // REMOVING THIS FUNCTIONALITY FOR NOW (may or may not use it)
