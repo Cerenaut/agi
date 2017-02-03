@@ -1,22 +1,27 @@
 {
   "experiments": [
     {
-      "import-files": {     // Used for Import/Export
-                            // The files used to **import** into agief before running experiment and export at the end
-                            // They are copied and the copy renamed with the prefix timedate (and the entity prefixes replaced with generated prefix) before being used to import
-                            // These are also used for basename for **export** at the end. The filename will be a modified version (i.e. prefixed with export__ or saved__ and the timedate)
-
+      "import-files": {     // Input files - used for Import/Export
+                            // These are the base input files
+                            // --> relative to    "run/input"
+                            // 
+                            // Before an experiment, these 'base input files' are copied and the copy renamed with the prefix timedate 
+                            // (and the entity prefixes replaced with generated prefix) 
+                            // before being used to **import** into agief before running experiment
+                            // --> imported (experiment) input files created into:      "run/input/prefix"
+                            //
+                            // These are also used for basename for **export** at the end. 
+                            // The filename will be a modified version (i.e. prefixed with export__ or saved__ and the timedate)
                             // if the last component of path is 'output' then don't copy/rename/search-replace-prefix, just use file to import data
+                            // --> exported input files created into:      "run/output/prefix"
 
-                            // Relateive to run/input
         "file-entities": "entities-phase1.json",
         "file-data": [
-            "data-phase1.json"
+            "data-phase1.json"    // uses the first filename in this array for export filename
           ]
       },
       "gen-files": {      // used for 'Export Demo'
                           // use this name when exporting files when generating from a Demo
-                          // all relative to run/input
         "file-entities": "entities-phase1.json",
         "file-data": [
             "data-phase1.json"    // only uses the first filename in this array

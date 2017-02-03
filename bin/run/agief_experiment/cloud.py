@@ -136,37 +136,28 @@ class Cloud:
         if self.log:
             print "self.log: stop ec2: ", response
 
-    def upload_experiment_output_s3(self, prefix, filename, file_path):
-        print "...... Uploading experiment file to S3"
+    def upload_experiment_s3(self, prefix, dest_name, source_filepath):
+        """
+        Upload experiment.
+        :param prefix: experiment prefix (used in the full name of uploaded bucket)
+        :param dest_name: the name for the eventual uploaded s3 object (it can be file or folder)
+        :param source_filepath: the file or folder to be uploaded
+        :return:
+        """
 
-        if not os.path.isfile(file_path):
-            print "ERROR: the file: " + file_path + ", DOES NOT EXIST!"
-            return
+        print "...... Uploading experiment to S3"
 
-        s3 = boto3.resource('s3')
         bucket_name = "agief-project"
+        key = "experiment-output/" + prefix + "/" + dest_name
 
-        exists = True
-        try:
-            s3.meta.client.head_bucket(Bucket=bucket_name)
-        except botocore.exceptions.ClientError as e:
-            # If a client error is thrown, then check that it was a 404 error.
-            # If it was a 404 error, then the bucket does not exist.
-            error_code = int(e.response['Error']['Code'])
-            if error_code == 404:
-                exists = False
-
-        if not exists:
-            print "WARNING: s3 bucket " + bucket_name + " does not exist, creating it now."
-            s3.create_bucket(Bucket=bucket_name)
-
-        key = "experiment-output/" + prefix + "/" + filename
-
-        print " ... file = " + file_path + ", to bucket = " + bucket_name + ", key = " + key
-        response = s3.Object(bucket_name=bucket_name, key=key).put(Body=open(file_path, 'rb'))
-
-        if self.log:
-            print response
+        if os.path.isfile(source_filepath):
+            self.upload_file_s3(bucket_name, key, source_filepath, self.log)
+        else:
+            for root, dirs, files in os.walk(source_filepath):
+                for file in files:
+                    filepath = os.path.join(source_filepath, file)
+                    filekey = os.path.join(key, file)
+                    self.upload_file_s3(bucket_name, filekey, filepath, self.log)
 
     def launch_from_ami_ec2(self, name, ami_id, min_ram):
         """
@@ -246,3 +237,31 @@ class Cloud:
 
         ips = self.wait_till_running_ec2(instance_id)
         return ips, instance_id
+
+    def upload_file_s3(self, bucket_name, key, source_filepath, log=False):
+
+        if not os.path.exists(source_filepath):
+            print "WARNING: file does not exist, cannot upload: " + source_filepath
+            return
+
+        s3 = boto3.resource('s3')
+
+        exists = True
+        try:
+            s3.meta.client.head_bucket(Bucket=bucket_name)
+        except botocore.exceptions.ClientError as e:
+            # If a client error is thrown, then check that it was a 404 error.
+            # If it was a 404 error, then the bucket does not exist.
+            error_code = int(e.response['Error']['Code'])
+            if error_code == 404:
+                exists = False
+
+        if not exists:
+            print "WARNING: s3 bucket " + bucket_name + " does not exist, creating it now."
+            s3.create_bucket(Bucket=bucket_name)
+
+        print " ... file = " + source_filepath + ", to bucket = " + bucket_name + ", key = " + key
+        response = s3.Object(bucket_name=bucket_name, key=key).put(Body=open(source_filepath, 'rb'))
+
+        if self.log:
+            print response

@@ -11,9 +11,9 @@ class ValueSeries:
         self.series = series
 
     @classmethod
-    def from_range(vi, minv, maxv, deltav):
+    def from_range(cls, minv, maxv, deltav):
         series = numpy.arange(minv, maxv, deltav)
-        return vi(series)
+        return cls(series)
 
     def value(self):
         return self.series[self.idx]

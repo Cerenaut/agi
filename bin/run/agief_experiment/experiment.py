@@ -11,7 +11,8 @@ class Experiment:
 
     log = False
 
-    prefix = None
+    prefix_base = None
+    prefix_modifier = ""
     prefix_delimiter = None
     experiments_def_filename = None     # the filename of the experiment definition (usually experiments.json)
 
@@ -26,22 +27,32 @@ class Experiment:
     def __init__(self, log, prefix, prefix_delimiter, experiments_def_filename):
         self.logfine = False
         self.log = log
-        self.prefix = prefix
+        self.prefix_base = prefix
+        self.prefix_modifier = ""
         self.prefix_delimiter = prefix_delimiter
         self.experiments_def_filename = experiments_def_filename
 
-    def info(self):
+    def info(self, sweep_param_vals):
 
-        print "=============================================="
-        print "Experiment Information"
-        print "=============================================="
+        message = ""
+        message += "==============================================\n"
+        message += "Experiment Information\n"
+        message += "==============================================\n"
 
-        print "Datetime: " + datetime.datetime.now().strftime("%y %m %d - %H %M")
-        print "Folder: " + self.experiment_folder()
-        print "Githash: " + self.githash()
-        print "Variables file: " + self.variables_filepath()
-        print "Prefix: " + self.prefix
-        print "=============================================="
+        message += "Datetime: " + datetime.datetime.now().strftime("%y %m %d - %H %M") + "\n"
+        message += "Folder: " + self.experiment_folder() + "\n"
+        message += "Githash: " + self.githash() + "\n"
+        message += "Variables file: " + self.variables_filepath() + "\n"
+        message += "Prefix: " + self.prefix() + "\n"
+        message += "==============================================\n"
+
+        if sweep_param_vals:
+            message += "\nSweep Parameters:"
+            for param_def in sweep_param_vals:
+                message += "\n" + param_def
+            message += "\n"
+
+        return message
 
     def filepath_from_exp_variable(self, filename, path_env):
 
@@ -83,11 +94,11 @@ class Experiment:
 
         """ Get the input files, with full path, to be generated """
 
-        entity_filename = self.inputfile(base_entity_filename)
+        entity_filename = self.inputfile_base(base_entity_filename)
 
         data_filenames = []
         for base_data_filename in base_data_filenames:
-            data_filename = self.inputfile(base_data_filename)
+            data_filename = self.inputfile_base(base_data_filename)
             data_filenames.append(data_filename)
 
         return entity_filename, data_filenames
@@ -124,11 +135,28 @@ class Experiment:
 
             return base_entity_filename, base_data_filenames
 
-    def inputfile(self, filename):
-        """ return the full path to the inputfile specified by simple filename (AGI_EXP_HOME/input/filename) """
+    def inputfile_base(self, filename):
+        """
+        Return the full path to the base inputfile specified by simple filename (AGI_EXP_HOME/input/filename)
+        The base input file will be used to generate input files specific to the experiment (i.e. replace generic prefix with actual prefix)
+        """
         return self.filepath_from_exp_variable("input/" + filename, self.agi_exp_home)
 
+    def inputfile(self, filename):
+        """
+        Return the full path to the inputfile that is to be created by this experiment,
+        specified by simple filename (AGI_EXP_HOME/input/prefix/filename).
+        """
+        return self.filepath_from_exp_variable("input/" + self.prefix() + "/" + filename, self.agi_exp_home)
+
     def outputfile(self, filename):
+        """
+        Return the full path to the output file that is to be created by this experiment,
+        specified by simple filename (AGI_EXP_HOME/output/filename)
+        """
+        return self.filepath_from_exp_variable("output/" + self.prefix() + "/" + filename, self.agi_exp_home)
+
+    def outputfile_base(self, filename):
         """ return the full path to the output file specified by simple filename (AGI_EXP_HOME/output/filename) """
         return self.filepath_from_exp_variable("output/" + filename, self.agi_exp_home)
 
@@ -153,10 +181,10 @@ class Experiment:
         return self.filepath_from_exp_variable(path, self.agi_exp_home)
 
     def entity_with_prefix(self, entity_name):
-        if self.prefix is None or self.prefix == "":
+        if self.prefix() is None or self.prefix() == "":
             return entity_name
         else:
-            return self.prefix + self.prefix_delimiter + entity_name
+            return self.prefix() + self.prefix_delimiter + entity_name
 
     def reset_prefix(self):
 
@@ -167,66 +195,65 @@ class Experiment:
         if use_prefix_file:
             prefix_filepath = self.filepath_from_exp_variable('prefix.txt', self.agi_exp_home)
 
-            if not os.path.isfile(prefix_filepath):
+            if not os.path.isfile(prefix_filepath) or not os.path.exists(prefix_filepath):
                 print """WARNING ****   no prefix.txt file could be found,
                       using the default root entity name: 'experiment'"""
                 return None
 
             with open(prefix_filepath, 'r') as myfile:
-                self.prefix = myfile.read()
+                self.prefix_base = myfile.read()
         else:
             new_prefix = datetime.datetime.now().strftime("%y%m%d-%H%M")
-            if new_prefix != self.prefix:
-                self.prefix = new_prefix
+            if new_prefix != self.prefix_base:
+                self.prefix_base = new_prefix
+                self.prefix_modifier = ""
             else:
-                self.prefix += self.prefix + "i"
+                self.prefix_modifier += "i"
 
-    def create_input_files(self, template_prefix, baseentity_filename, basedata_filenames):
+    def prefix(self):
+        return self.prefix_base + self.prefix_modifier
+
+    def create_input_files(self, template_prefix, base_filenames):
         """
+        Create 'experiment input files' from the 'base input files'.
+
         Duplicate input files appending prefix to name of new file,
-        and change contents of entities to use the generated prefix
+        and change contents of entities to use the generated prefix.
+        If they are in the /output subfolder, then do not modify.
 
-        :param baseentity_filenames: entity filename to be copied and prefix changed internally
-        :param basedata_filename:  array of data filenames to be copied and prefix changed internally
-        :return:
+        Base input files are located in:  'experiment-folder/input'
+        Experiment input files are located in subfolder:   'experiment-folder/input/prefix'
+
+        :param filenames:  array of filenames (not full path) to be copied and prefix changed internally
+        :return: array of modified filepaths (full path)
         """
 
-        self.reset_prefix()
+        filenames = []
+        for base_filename in base_filenames:
 
-        baseentity_filepath = self.inputfile(baseentity_filename)
+            base_filepath = self.inputfile_base(base_filename)
 
-        if not os.path.isfile(baseentity_filepath):
-            print "ERROR: create_input_files(): The data file does not exist" + baseentity_filepath + \
-                  "\nCANNOT CONTINUE."
-            exit()
-
-        entity_filename = utils.append_before_ext(baseentity_filename, "_" + self.prefix)
-        shutil.copyfile(baseentity_filepath, self.inputfile(entity_filename))   # create new input files with prefix in the name
-        utils.replace_in_file(template_prefix, self.prefix, self.inputfile(entity_filename))    # search replace contents for PREFIX and replace with 'prefix'
-
-        data_filenames = []
-        for basedata_filename in basedata_filenames:
-
-            basedata_filepath = self.inputfile(basedata_filename)
-
-            if not os.path.isfile(basedata_filepath):
-                print "ERROR: create_input_files(): The data file does not exist" + basedata_filepath + \
+            if not os.path.isfile(base_filepath):
+                print "ERROR: create_input_files(): The file does not exist" + base_filepath + \
                       "\nCANNOT CONTINUE."
                 exit()
 
+            # get the containing folder, and it's parent folder
+            full_dirname = os.path.dirname(os.path.normpath(base_filepath))      # full dirname
+            full_parentpath, dirname = os.path.split(full_dirname)      # take just the last part - next subfolder up
+            parent_dirname = os.path.basename(full_parentpath)          # take just the last part - subfolder
 
-            full_dirname = os.path.dirname(os.path.normpath(basedata_filepath))      # full dirname
-            dirname = os.path.basename(full_dirname)        # take just the last part
-
-            if dirname != "output":
-                data_filename = utils.append_before_ext(basedata_filename, "_" + self.prefix)
-                shutil.copyfile(basedata_filepath, self.inputfile(data_filename))     # create new input files with prefix in the name
-                utils.replace_in_file(template_prefix, self.prefix, self.inputfile(data_filename))      # search replace contents for PREFIX and replace with 'prefix'
-                data_filenames.append(data_filename)
+            if dirname != "output" and parent_dirname != "output":
+                filename = utils.append_before_ext(base_filename, "_" + self.prefix())
+                filepath = self.inputfile(filename)
+                utils.create_folder(filepath)   # create path if it doesn't exist
+                shutil.copyfile(base_filepath, filepath)     # create new input files with prefix in the name
+                utils.replace_in_file(template_prefix, self.prefix(), filepath)      # search replace contents for PREFIX and replace with 'prefix'
+                filenames.append(filepath)
             else:
-                data_filenames.append(basedata_filename)
+                filenames.append(base_filepath)
 
-        return entity_filename, data_filenames
+        return filenames
 
     def variables_filepath(self):
         """ return full filename with path, of the file being used for the variables file """

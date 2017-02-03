@@ -26,46 +26,7 @@ Assumptions:
 """
 
 
-def check_validity(entity_file, data_files):
-    """ Check validity of files, and exit if they do not exist or not specified """
-
-    entity_file_path = _experiment.inputfile(entity_file)
-
-    if log:
-        print "LOG: Entity file full path = " + entity_file_path
-
-    # check validity of entity file
-    if not os.path.isfile(entity_file_path):
-        print "ERROR: The entity file " + entity_file + ", at path " + entity_file_path + \
-              ", does not exist.\nCANNOT CONTINUE."
-        exit()
-
-    # check validity of data files
-    data_file_error = False
-    data_file_paths = []
-
-    if len(data_files) == 0:
-        data_file_error = True
-    else:
-        for data_file in data_files:
-            data_file_path = _experiment.inputfile(data_file)
-
-            if os.path.isfile(data_file_path):
-                data_file_paths.append(data_file_path)
-            else:
-                data_file_error = True
-                break
-
-    if data_file_error:
-        print "ERROR: You have not specified a valid data file: \nCANNOT CONTINUE."
-        print "Data files specified in experiments json file are:  "
-        print json.dumps(data_files)
-        exit()
-
-    return entity_file_path, data_file_paths
-
-
-def run_parameterset(entity_file, data_files, sweep_param_vals):
+def run_parameterset(entity_filepath, data_filepaths, sweep_param_vals):
     """
     Import input files
     Run Experiment and Export experiment
@@ -80,27 +41,37 @@ def run_parameterset(entity_file, data_files, sweep_param_vals):
 
     print "........ Run parameter set."
 
-    _experiment.info()
+    info = _experiment.info(sweep_param_vals)
 
-    print "\nSweep Parameters:"
-    for param_def in sweep_param_vals:
-        print param_def
-    print "\n"
+    info_filepath = _experiment.outputfile("experiment-info.txt")
+    utils.create_folder(info_filepath)
+    with open(info_filepath, 'w') as data:
+        data.write(info)
 
-    entity_file_path, data_file_paths = check_validity(entity_file, data_files)
+    is_valid = utils.check_validity([entity_filepath]) and utils.check_validity(data_filepaths)
+
+    if not is_valid:
+        print "ERROR: One of the input files are not valid:"
+        print entity_filepath
+        print json.dumps(data_filepaths)
+        exit()
 
     if (launch_mode is LaunchMode.per_experiment) and args.launch_compute:
         task_arn = launch_compute()
 
-    _compute_node.import_experiment(entity_file_path, data_file_paths)
+    _compute_node.import_experiment(entity_filepath, data_filepaths)
 
     set_dataset(_experiment.experiment_def_file())
 
     _compute_node.run_experiment(_experiment)
 
     if is_export:
-        new_entity_file = "exported_" + entity_file  # utils.append_before_ext(entity_file, "___" + param_description)
-        new_data_file = "exported_" + data_files[0]  # utils.append_before_ext(data_file, "___" + param_description)
+
+        entity_filename = os.path.basename(entity_filepath)
+        data_filename = os.path.basename(data_filepaths[0])
+
+        new_entity_file = "exported_" + entity_filename
+        new_data_file = "exported_" + data_filename
 
         out_entity_file_path = _experiment.outputfile(new_entity_file)
         out_data_file_path = _experiment.outputfile(new_data_file)
@@ -123,29 +94,32 @@ def run_parameterset(entity_file, data_files, sweep_param_vals):
             # TODO implement upload to S3 with 'export compute'
             print "WARNING: UPLOAD TO S3 NOT IMPLEMENTED ----> for the case of 'EXPORT COMPUTE'"
         else:
-            # upload exported output Entity file (if it exists)
-            _cloud.upload_experiment_output_s3(_experiment.prefix,
-                                               new_entity_file,
-                                               out_entity_file_path)
 
-            # upload exported output Data file (if it exists)
-            _cloud.upload_experiment_output_s3(_experiment.prefix,
-                                               new_data_file,
-                                               out_data_file_path)
+            # TODO: upload whole folders - is it possible, or do we need to walk all the files and upload them separately .... ?
+
+            folder_path = _experiment.outputfile("")
+            _cloud.upload_experiment_s3(_experiment.prefix(),
+                                               "output",
+                                               folder_path)
+
+            folder_path = _experiment.inputfile("")
+            _cloud.upload_experiment_s3(_experiment.prefix(),
+                                               "input",
+                                               folder_path)
 
             # upload experiments definition file (if it exists)
-            _cloud.upload_experiment_output_s3(_experiment.prefix,
-                                               _experiment.experiments_def_filename,
-                                               _experiment.experiment_def_file())
+            _cloud.upload_experiment_s3(_experiment.prefix(),
+                                        _experiment.experiments_def_filename,
+                                        _experiment.experiment_def_file())
 
         # upload log4j configuration file that was used (if it exists)
         log_filename = "log4j2.log"
         log_filepath = _experiment.runpath(log_filename)
 
         if os.path.isfile(log_filepath):
-            _cloud.upload_experiment_output_s3(_experiment.prefix,
-                                               log_filename,
-                                               log_filepath)
+            _cloud.upload_experiment_s3(_experiment.prefix(),
+                                        log_filename,
+                                        log_filepath)
 
 
 def setup_parameter_sweepers(param_sweep, val_sweepers):
@@ -184,13 +158,13 @@ def setup_parameter_sweepers(param_sweep, val_sweepers):
         val_sweepers.append(val_sweeper)
 
 
-def inc_parameter_set(entity_file, val_sweepers):
+def inc_parameter_set(entity_filepath, val_sweepers):
     """
     Iterate through counters, incrementing each parameter in the set
     Set the new values in the input file, and then run the experiment
     First counter to reset, return False
 
-    :param entity_file:
+    :param entity_filepath:
     :param val_sweepers:
     :return: reset (True if any counter has reached above max), description of parameters (string)
                             If reset is False, there MUST be a description of the parameters that have been set
@@ -218,8 +192,7 @@ def inc_parameter_set(entity_file, val_sweepers):
             break
 
         val = val_series.value()
-        entity_file_path = _experiment.inputfile(entity_file)
-        set_param = _compute_node.set_parameter_inputfile(entity_file_path,
+        set_param = _compute_node.set_parameter_inputfile(entity_filepath,
                                                           _experiment.entity_with_prefix(val_sweeper['entity-name']),
                                                           val_sweeper['param-path'],
                                                           val)
@@ -241,6 +214,12 @@ def inc_parameter_set(entity_file, val_sweepers):
     return reset, sweep_param_vals
 
 
+def create_all_input_files(TEMPLATE_PREFIX, base_entity_filename, base_data_filenames):
+    exp_entity_filepaths = _experiment.create_input_files(TEMPLATE_PREFIX, [base_entity_filename])
+    exp_entity_filepath = exp_entity_filepaths[0]
+    exp_data_filepaths = _experiment.create_input_files(TEMPLATE_PREFIX, base_data_filenames)
+    return exp_entity_filepath, exp_data_filepaths
+
 def run_sweeps():
     """ Perform parameter sweep steps, and run experiment for each step. """
 
@@ -258,17 +237,17 @@ def run_sweeps():
             print "LOG: Import Files Dictionary = "
             print "LOG: ", json.dumps(import_files, indent=4)
 
-        # get experiment file-names, and expand to full path
         base_entity_filename = import_files['file-entities']
         base_data_filenames = import_files['file-data']
 
         if 'parameter-sweeps' not in exp_i or len(exp_i['parameter-sweeps']) == 0:
             print "No parameters to sweep, just run once."
 
-            entity_filename, data_filenames = _experiment.create_input_files(TEMPLATE_PREFIX,
-                                                                            base_entity_filename,
-                                                                            base_data_filenames)
-            run_parameterset(entity_filename, data_filenames, "")
+            _experiment.reset_prefix()
+            exp_entity_filepath, exp_data_filepaths = create_all_input_files(TEMPLATE_PREFIX,
+                                                                           base_entity_filename,
+                                                                           base_data_filenames )
+            run_parameterset(exp_entity_filepath, exp_data_filepaths, "")
         else:
             for param_sweep in exp_i['parameter-sweeps']:  # array of sweep definitions
 
@@ -278,15 +257,17 @@ def run_sweeps():
                 is_sweeping = True
                 while is_sweeping:
 
-                    entity_filename, data_filenames = _experiment.create_input_files(TEMPLATE_PREFIX,
-                                                                                    base_entity_filename,
-                                                                                    base_data_filenames)
+                    _experiment.reset_prefix()
 
-                    reset, sweep_param_vals = inc_parameter_set(entity_filename, counters)
+                    exp_entity_filepath, exp_data_filepaths = create_all_input_files(TEMPLATE_PREFIX,
+                                                                                   base_entity_filename,
+                                                                                   base_data_filenames)
+
+                    reset, sweep_param_vals = inc_parameter_set(exp_entity_filepath, counters)
                     if reset:
                         is_sweeping = False
                     else:
-                        run_parameterset(entity_filename, data_filenames, sweep_param_vals)
+                        run_parameterset(exp_entity_filepath, exp_data_filepaths, sweep_param_vals)
 
 
 def set_dataset(exps_file):
@@ -314,7 +295,7 @@ def set_dataset(exps_file):
             data_paths = ""
             for data_filename in data_filenames_arr:
                 if data_paths is not "":
-                    data_paths += ","           # IMPORTANT - if space added here, additional characters ('+') get added probably due to encoding issues on the request
+                    data_paths += ","  # IMPORTANT - if space added here, additional characters ('+') get added probably due to encoding issues on the request
                 data_paths += _experiment.datapath(data_filename)
 
             _compute_node.set_parameter_db(_experiment.entity_with_prefix(entity_name), param_path, data_paths)
@@ -419,7 +400,6 @@ def shutdown_compute(task_arn):
 
 
 def generate_input_files_locally():
-
     entity_file_path, data_file_paths = _experiment.inputfiles_for_generation()
 
     # write to the first listed data path name

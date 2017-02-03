@@ -72,7 +72,7 @@ class Compute:
     def import_experiment(self, entity_filepath=None, data_filepaths=None):
         """setup the running instance of AGIEF with the input files"""
 
-        is_entity_file = entity_filepath
+        is_entity_file = entity_filepath is not None
         is_data_files = data_filepaths is not None or len(data_filepaths) != 0
 
         print "....... Import Experiment"
