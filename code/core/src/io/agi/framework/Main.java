@@ -20,6 +20,7 @@
 package io.agi.framework;
 
 import io.agi.core.orm.ObjectMap;
+import io.agi.core.util.MemoryUtil;
 import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.coordination.Coordination;
 import io.agi.framework.coordination.CoordinationFactory;
@@ -65,11 +66,7 @@ public class Main {
         String version = Main.getPackageVersion();
         _logger.warn( "---------- AGIEF Package version = " + version + "------------" );
 
-        long total = Runtime.getRuntime().totalMemory() / 1000000;
-        long free = Runtime.getRuntime().freeMemory() / 1000000;
-        long used = total - free;
-
-        _logger.warn( "Memory (mb) (total, free, used) = (" + total + ", " +  free + ", " + used + ")" );
+        MemoryUtil.logMemory( _logger );
     }
 
     public void setup( Properties properties, ObjectMap om, EntityFactory ef ) {

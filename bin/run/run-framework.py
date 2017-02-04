@@ -43,6 +43,8 @@ def run_parameterset(entity_filepath, data_filepaths, sweep_param_vals):
 
     info = _experiment.info(sweep_param_vals)
 
+    print info
+
     info_filepath = _experiment.outputfile("experiment-info.txt")
     utils.create_folder(info_filepath)
     with open(info_filepath, 'w') as data:
@@ -66,7 +68,6 @@ def run_parameterset(entity_filepath, data_filepaths, sweep_param_vals):
     _compute_node.run_experiment(_experiment)
 
     if is_export:
-
         entity_filename = os.path.basename(entity_filepath)
         data_filename = os.path.basename(data_filepaths[0])
 
@@ -94,18 +95,15 @@ def run_parameterset(entity_filepath, data_filepaths, sweep_param_vals):
             # TODO implement upload to S3 with 'export compute'
             print "WARNING: UPLOAD TO S3 NOT IMPLEMENTED ----> for the case of 'EXPORT COMPUTE'"
         else:
-
-            # TODO: upload whole folders - is it possible, or do we need to walk all the files and upload them separately .... ?
-
             folder_path = _experiment.outputfile("")
             _cloud.upload_experiment_s3(_experiment.prefix(),
-                                               "output",
-                                               folder_path)
+                                        "output",
+                                        folder_path)
 
             folder_path = _experiment.inputfile("")
             _cloud.upload_experiment_s3(_experiment.prefix(),
-                                               "input",
-                                               folder_path)
+                                        "input",
+                                        folder_path)
 
             # upload experiments definition file (if it exists)
             _cloud.upload_experiment_s3(_experiment.prefix(),
@@ -220,6 +218,7 @@ def create_all_input_files(TEMPLATE_PREFIX, base_entity_filename, base_data_file
     exp_data_filepaths = _experiment.create_input_files(TEMPLATE_PREFIX, base_data_filenames)
     return exp_entity_filepath, exp_data_filepaths
 
+
 def run_sweeps():
     """ Perform parameter sweep steps, and run experiment for each step. """
 
@@ -245,8 +244,8 @@ def run_sweeps():
 
             _experiment.reset_prefix()
             exp_entity_filepath, exp_data_filepaths = create_all_input_files(TEMPLATE_PREFIX,
-                                                                           base_entity_filename,
-                                                                           base_data_filenames )
+                                                                             base_entity_filename,
+                                                                             base_data_filenames)
             run_parameterset(exp_entity_filepath, exp_data_filepaths, "")
         else:
             for param_sweep in exp_i['parameter-sweeps']:  # array of sweep definitions
@@ -260,8 +259,8 @@ def run_sweeps():
                     _experiment.reset_prefix()
 
                     exp_entity_filepath, exp_data_filepaths = create_all_input_files(TEMPLATE_PREFIX,
-                                                                                   base_entity_filename,
-                                                                                   base_data_filenames)
+                                                                                     base_entity_filename,
+                                                                                     base_data_filenames)
 
                     reset, sweep_param_vals = inc_parameter_set(exp_entity_filepath, counters)
                     if reset:

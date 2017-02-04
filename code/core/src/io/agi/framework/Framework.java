@@ -24,6 +24,7 @@ import com.google.gson.reflect.TypeToken;
 import io.agi.core.orm.AbstractPair;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.util.FileUtil;
+import io.agi.core.util.MemoryUtil;
 import io.agi.framework.coordination.http.HttpExportHandler;
 import io.agi.framework.persistence.DenseDataDeserializer;
 import io.agi.framework.persistence.Persistence;
@@ -458,12 +459,10 @@ public class Framework {
 
         Collection< ModelData > modelDatas = new ArrayList<>();
 
-        GetEntityDataSubtree( entityName, modelDatas );
-
-        if ( onlyDataRefs ) {
-
-            // Collection< ModelData > modelDatasFiltered = modelDatas.stream().filter( modelData -> modelData.isReference() ).collect( Collectors.toCollection( ArrayList::new ) );
-
+        if ( !onlyDataRefs ) {
+            GetEntityDataSubtree( entityName, modelDatas );
+        }
+        else {
             Collection< ModelData > modelDatasFiltered = new ArrayList<>( );
             for ( ModelData modelData : modelDatas ) {
                 if (modelData.isReference()) {
@@ -495,8 +494,11 @@ public class Framework {
      */
     protected static void GetEntityDataSubtree( String entityName, Collection< ModelData > modelDatas ) {
         Node node = Node.NodeInstance();
-        AddEntityData( entityName, modelDatas );
 
+        _logger.warn( "Entity = " + entityName );
+        MemoryUtil.logMemory( _logger );
+
+        AddEntityData( entityName, modelDatas );
         Collection< String > childNames = node.getPersistence().getChildEntities( entityName );
         for( String childName : childNames ) {
             GetEntityDataSubtree( childName, modelDatas );

@@ -24,6 +24,7 @@ import io.agi.core.data.Data2d;
 import io.agi.core.data.DataSize;
 import io.agi.core.ml.supervised.SupervisedUtil;
 import io.agi.core.orm.ObjectMap;
+import io.agi.core.util.MemoryUtil;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Framework;
@@ -77,6 +78,13 @@ public class AnalyticsEntity extends Entity {
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
         attributes.add( OUTPUT_FEATURES );
         attributes.add( OUTPUT_LABELS );
+
+        // don't serialise each update
+        flags.putFlag( OUTPUT_FEATURES, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( OUTPUT_LABELS, DataFlags.FLAG_NODE_CACHE );
+
+        flags.putFlag( OUTPUT_FEATURES, DataFlags.FLAG_SPARSE_BINARY );
+
     }
 
     // DO NOT USE THIS FUNCTIONALITY FOR NOW (may or may not use it)
@@ -134,6 +142,8 @@ public class AnalyticsEntity extends Entity {
                 throw new java.lang.UnsupportedOperationException( message );
             }
         }
+
+        MemoryUtil.logMemory( _logger );
 
         _logger.warn( "=====> Age = " + _config.age + ", Phase: " + config.phase + ", " + idxMessage( numDataPoints ) + ", " + sizeMessage() );
 

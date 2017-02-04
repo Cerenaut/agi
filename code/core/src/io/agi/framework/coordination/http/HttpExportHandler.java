@@ -22,6 +22,7 @@ package io.agi.framework.coordination.http;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import io.agi.core.util.MemoryUtil;
 import io.agi.framework.Framework;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,7 +38,7 @@ import java.util.Map;
  */
 public class HttpExportHandler implements HttpHandler {
 
-    protected static final Logger logger = LogManager.getLogger();
+    protected static final Logger _logger = LogManager.getLogger();
 
     public static final String CONTEXT = "/export";
 
@@ -61,6 +62,8 @@ public class HttpExportHandler implements HttpHandler {
         try {
             String query = t.getRequestURI().getQuery();
             Map< String, String > m = HttpUtil.GetQueryParams( query );
+
+            MemoryUtil.logMemory( _logger );
 
             if( ( m.containsKey( PARAMETER_TYPE ) )
                     && ( m.containsKey( PARAMETER_ENTITY ) ) ) {
@@ -97,13 +100,16 @@ public class HttpExportHandler implements HttpHandler {
                     t.getResponseHeaders().add( "Content-Disposition", "attachment; filename=" + filename );
                     status = 200;
                 }
+
+                _logger.warn( "Created response" );
+                MemoryUtil.logMemory( _logger );
             }
 
             HttpUtil.SendResponse( t, status, response );
         }
         catch( Exception e ) {
-            logger.error( "Unable to export entities or data.");
-            logger.error( e.toString(), e );
+            _logger.error( "Unable to export entities or data.");
+            _logger.error( e.toString(), e );
         }
 
     }

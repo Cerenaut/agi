@@ -45,7 +45,7 @@ while getopts ":p:e:d:l:m:k:v:c:f" opt; do
     f)  # redirect stdout and stderr to log files
       std_stream=" > stdout.log 2> stderr.log "
       ;;
-    r)  # specify minimum RAM available to JVM
+    r)  # specify RAM available to JVM
       opt_r=$OPTARG
       ;;
     \?)
@@ -65,9 +65,9 @@ data_file=${opt_d:-null}	   		# if it was not defined, that is ok, it is passed 
 config_file=${opt_c:-null}			# if it was not defined, that is ok, it is passed as null and ignored
 log_config=${opt_l:-log4j2.xml}
 main_class=${opt_m:-io.agi.framework.Main}
-min_ram=${opt_r:-12}
+max_ram=${opt_r:-12}
 
-mem=" -Xms"$min_ram"g -Xmx"$min_ram"g "     # set min and max to be the same to minimise garbage collection
+mem="-Xmx"$max_ram"g" #" -Xms"$min_ram"g -Xmx"$min_ram"g "     # set min and max to be the same to minimise garbage collection
 dburl_default="jdbc:postgresql://$DB_HOST:$DB_PORT/agidb"
 
 # e.g. key: database-url value: jdbc:postgresql://localhost:5432/agidb
