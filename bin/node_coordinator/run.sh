@@ -65,7 +65,7 @@ data_file=${opt_d:-null}	   		# if it was not defined, that is ok, it is passed 
 config_file=${opt_c:-null}			# if it was not defined, that is ok, it is passed as null and ignored
 log_config=${opt_l:-log4j2.xml}
 main_class=${opt_m:-io.agi.framework.Main}
-max_ram=${opt_r:-12}
+max_ram=${opt_r:-20}
 
 mem="-Xmx"$max_ram"g" #" -Xms"$min_ram"g -Xmx"$min_ram"g "     # set min and max to be the same to minimise garbage collection
 dburl_default="jdbc:postgresql://$DB_HOST:$DB_PORT/agidb"

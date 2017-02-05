@@ -104,7 +104,7 @@ class Compute:
         if is_data_files:
             for data_filepath in data_filepaths:
                 if not os.path.isfile(data_filepath):
-                    print "ERROR: entity file does not exist. CANNOT CONTINUE"
+                    print "ERROR: data file does not exist. CANNOT CONTINUE"
                     exit()
 
                 with open(data_filepath, 'rb') as data_data_file:
@@ -115,6 +115,40 @@ class Compute:
                         print "  LOG: response text = ", response.text
                         print "  LOG: url: ", response.url
                         print "  LOG: post body = ", files
+
+    def import_compute_experiment(self, filepaths, is_data):
+        """
+        Load data files into AGIEF compute node,
+        by requesting it to load a local file (i.e. file on the compute machine)
+
+        :param filepaths: full path to file on compute node
+        :param is_data: if true, then load 'data', otherwise load 'entity'
+        :return:
+        """
+
+        print "....... Import Data on Compute node into Experiment "
+
+        import_type = 'entity'
+        if is_data:
+            import_type = 'data'
+
+        is_data_files = filepaths is not None or len(filepaths) != 0
+
+        if is_data_files:
+            print "     Input files: "
+            print "      Data: " + json.dumps(filepaths)
+        else:
+            print "      No files to import"
+            return
+
+        for filepath in filepaths:
+            payload = {'type': import_type, 'file': filepath }
+            response = requests.get(self.base_url() + '/import-local', params=payload)
+
+            if self.log:
+                print "LOG: Import data file, response = ", response
+                print "  LOG: response text = ", response.text
+                print "  LOG: url: ", response.url
 
     def run_experiment(self, exp):
 

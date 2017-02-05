@@ -26,7 +26,7 @@ Assumptions:
 """
 
 
-def run_parameterset(entity_filepath, data_filepaths, sweep_param_vals):
+def run_parameterset(entity_filepath, data_filepaths, compute_data_filepaths, sweep_param_vals):
     """
     Import input files
     Run Experiment and Export experiment
@@ -35,6 +35,7 @@ def run_parameterset(entity_filepath, data_filepaths, sweep_param_vals):
 
     :param entity_file:
     :param data_file:
+    :param compute_data_filepaths:      data files on the compute machine, relative to run folder
     :param param_description:
     :return:
     """
@@ -62,6 +63,7 @@ def run_parameterset(entity_filepath, data_filepaths, sweep_param_vals):
         task_arn = launch_compute()
 
     _compute_node.import_experiment(entity_filepath, data_filepaths)
+    _compute_node.import_compute_experiment(compute_data_filepaths, is_data=True)
 
     set_dataset(_experiment.experiment_def_file())
 
@@ -239,6 +241,12 @@ def run_sweeps():
         base_entity_filename = import_files['file-entities']
         base_data_filenames = import_files['file-data']
 
+        base_ll_data_filenames = []
+        if 'load-local-files' in exp_i.keys():
+            load_local_files = exp_i['load-local-files']
+            base_ll_data_filenames = load_local_files['file-data']
+            exp_ll_data_filepaths = map(_experiment.runpath, base_ll_data_filenames)
+
         if 'parameter-sweeps' not in exp_i or len(exp_i['parameter-sweeps']) == 0:
             print "No parameters to sweep, just run once."
 
@@ -246,7 +254,7 @@ def run_sweeps():
             exp_entity_filepath, exp_data_filepaths = create_all_input_files(TEMPLATE_PREFIX,
                                                                              base_entity_filename,
                                                                              base_data_filenames)
-            run_parameterset(exp_entity_filepath, exp_data_filepaths, "")
+            run_parameterset(exp_entity_filepath, exp_data_filepaths, exp_ll_data_filepaths, "")
         else:
             for param_sweep in exp_i['parameter-sweeps']:  # array of sweep definitions
 
@@ -266,7 +274,7 @@ def run_sweeps():
                     if reset:
                         is_sweeping = False
                     else:
-                        run_parameterset(exp_entity_filepath, exp_data_filepaths, sweep_param_vals)
+                        run_parameterset(exp_entity_filepath, exp_data_filepaths, exp_ll_data_filepaths, sweep_param_vals)
 
 
 def set_dataset(exps_file):
@@ -433,7 +441,7 @@ def setup_arg_parsing():
     parser.add_argument('--step_compute', dest='launch_compute', action='store_true',
                         help='Launch the Compute node.')
     parser.add_argument('--step_shutdown', dest='shutdown', action='store_true',
-                        help='Shutdown instances and Compute after other stages.')
+                        help='Shutdown instances and Compute (if --launch_per_session) after other stages.')
     parser.add_argument('--step_export', dest='export', action='store_true',
                         help='Export entity tree and data at the end of each experiment.')
     parser.add_argument('--step_export_compute', dest='export_compute', action='store_true',
