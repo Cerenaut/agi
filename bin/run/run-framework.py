@@ -93,24 +93,16 @@ def run_parameterset(entity_filepath, data_filepaths, compute_data_filepaths, sw
         shutdown_compute(task_arn)
 
     if is_upload:
-        if is_export_compute:
-            # TODO implement upload to S3 with 'export compute'
-            print "WARNING: UPLOAD TO S3 NOT IMPLEMENTED ----> for the case of 'EXPORT COMPUTE'"
-        else:
-            folder_path = _experiment.outputfile("")
-            _cloud.upload_experiment_s3(_experiment.prefix(),
-                                        "output",
-                                        folder_path)
 
-            folder_path = _experiment.inputfile("")
-            _cloud.upload_experiment_s3(_experiment.prefix(),
-                                        "input",
-                                        folder_path)
+        folder_path = _experiment.inputfile("")
+        _cloud.upload_experiment_s3(_experiment.prefix(),
+                                    "input",
+                                    folder_path)
 
-            # upload experiments definition file (if it exists)
-            _cloud.upload_experiment_s3(_experiment.prefix(),
-                                        _experiment.experiments_def_filename,
-                                        _experiment.experiment_def_file())
+        # upload experiments definition file (if it exists)
+        _cloud.upload_experiment_s3(_experiment.prefix(),
+                                    _experiment.experiments_def_filename,
+                                    _experiment.experiment_def_file())
 
         # upload log4j configuration file that was used (if it exists)
         log_filename = "log4j2.log"
@@ -121,6 +113,14 @@ def run_parameterset(entity_filepath, data_filepaths, compute_data_filepaths, sw
                                         log_filename,
                                         log_filepath)
 
+        if is_export_compute:
+            # TODO implement upload of /output to S3 with 'export compute'
+            print "WARNING: UPLOAD TO S3 NOT IMPLEMENTED ----> for the case of 'EXPORT COMPUTE'"
+        else:
+            folder_path = _experiment.outputfile("")
+            _cloud.upload_experiment_s3(_experiment.prefix(),
+                                        "output",
+                                        folder_path)
 
 def setup_parameter_sweepers(param_sweep, val_sweepers):
     """
