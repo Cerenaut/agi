@@ -343,8 +343,7 @@ public class Framework {
             ImportEntities( jsonEntities );
         }
         catch( Exception e ) {
-            _logger.error( e.getStackTrace() );
-            System.exit( -1 );
+            _logger.error( e.toString(), e );
         }
     }
 
@@ -382,8 +381,7 @@ public class Framework {
             ImportData( jsonData );
         }
         catch( Exception e ) {
-            _logger.error( e.getStackTrace() );
-            System.exit( -1 );
+            _logger.error( e.toString(), e );
         }
     }
 

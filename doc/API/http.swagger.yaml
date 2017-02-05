@@ -184,6 +184,26 @@ paths:
           description: OK
         '400':
           description: Invalid request
+  /import-local:
+    get:
+      summary: Import a subtree of entities and/or data to the framework, via a file local to the running process.
+      description: Import a subtree of entities and/or data to the framework, via a file local to the running process.
+      parameters:
+        - name: type
+          in: query
+          description: Set to 'entity' or 'data' - specifies whether to import entities or data
+          required: true
+          type: string
+        - name: import-file
+          in: query
+          description: The file containing entities/data
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Invalid request
   /nodes:
     get:
       summary: Retrieves a list of all Nodes in the system

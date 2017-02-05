@@ -72,9 +72,9 @@ public class HttpExportHandler implements HttpHandler {
 
                 String filename = "saved__" + entityName + "-" + type + ".json";
                 if ( m.containsKey( PARAMETER_EXPORT_LOCATION ) ) {
-                    String path = m.get( PARAMETER_EXPORT_LOCATION ).trim(); // essential
+                    String folderPath = m.get( PARAMETER_EXPORT_LOCATION ).trim(); // essential
 
-                    Path filepath = Paths.get( path, filename );
+                    Path filepath = Paths.get( folderPath, filename );
 
                     // todo check that path is valid
 
@@ -83,7 +83,7 @@ public class HttpExportHandler implements HttpHandler {
                     HashMap< String, String > responseMap = new HashMap<>();
                     responseMap.put( "entity", entityName );
                     responseMap.put( "type", type );
-                    responseMap.put( "path", path );
+                    responseMap.put( "folder", folderPath );
                     responseMap.put( "filepath", filepath.toString() );
 
                     if ( success ) {

@@ -86,6 +86,7 @@ public class HttpCoordination implements Coordination {
         HttpConfigHandler ch = new HttpConfigHandler( _n.getPersistence() );
         HttpVersionHandler vh = new HttpVersionHandler();
         HttpStopHandler sh = new HttpStopHandler( _n );
+        HttpImportFileHandler fh = new HttpImportFileHandler();
 
         HttpUtil.AddHandler( _s, HttpConfigHandler.CONTEXT, ph );
         HttpUtil.AddHandler( _s, HttpDataHandler.CONTEXT, dh );
@@ -96,6 +97,7 @@ public class HttpCoordination implements Coordination {
         HttpUtil.AddHandler( _s, HttpConfigHandler.CONTEXT, ch );
         HttpUtil.AddHandler( _s, HttpVersionHandler.CONTEXT, vh );
         HttpUtil.AddHandler( _s, HttpStopHandler.CONTEXT, sh );
+        HttpUtil.AddHandler( _s, HttpImportFileHandler.CONTEXT, fh );
     }
 
     /**
