@@ -194,9 +194,9 @@ paths:
           description: Set to 'entity' or 'data' - specifies whether to import entities or data
           required: true
           type: string
-        - name: import-file
+        - name: file
           in: query
-          description: The file containing entities/data
+          description: The file containing entities/data (specify full path, do not use ~)
           required: true
           type: string
       responses:

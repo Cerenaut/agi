@@ -20,6 +20,14 @@
             "data-phase1.json"    // uses the first filename in this array for export filename
           ]
       },
+
+      "load-local-files": {   // To specify a Data file, residing on the compute machine, that will be loaded at the 'import experiment' stage
+                              // relative to AGI_RUN_HOME, the run folder on the compute node
+        "file-data": [
+            "/output/170122-0412/saved__170122-0412--experiment-data.json"
+          ]
+      },      
+
       "gen-files": {      // used for 'Export Demo'
                           // use this name when exporting files when generating from a Demo
         "file-entities": "entities-phase1.json",
