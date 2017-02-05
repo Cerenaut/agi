@@ -132,7 +132,18 @@ public class ResultsAnalyzer {
         // build an empty confusion matrix
         HashMap< Float, HashMap< Float, Integer > > errorTypeCount = new HashMap< Float, HashMap< Float, Integer > >();
 
+        HashMap< Float, Integer > labelCount = new HashMap< Float, Integer >();
+        HashMap< Float, Integer > labelCountPredictions = new HashMap< Float, Integer >();
+        HashMap< Float, Integer > labelErrorFP = new HashMap< Float, Integer >();
+        HashMap< Float, Integer > labelErrorFN = new HashMap< Float, Integer >();
+
         for( Float f : labels ) {
+
+            labelCount.put( f, 0 );
+            labelCountPredictions.put( f, 0 );
+            labelErrorFP.put( f, 0 );
+            labelErrorFN.put( f, 0 );
+
             HashMap< Float, Integer > hm = new HashMap< Float, Integer >();
 
             for( Float f2 : labels ) {
@@ -157,6 +168,10 @@ public class ResultsAnalyzer {
             System.exit( -1 );
         }
 
+        // per class:
+        // prec = tp / all pos in test.
+        // recall = tp / truth pos.
+
         for( int i = i0; i < i1; ++i ) {
             float t = truth._values[ i ];
             float p = predicted._values[ i ];
@@ -171,7 +186,21 @@ public class ResultsAnalyzer {
                 int n2 = n1 +1; // increment frequency
 
                 hm.put( p, n2 );
+
+                Integer n1p = labelErrorFP.get( p );
+                int n2p = n1p +1; // increment frequency
+                labelErrorFP.put( p, n2p );
+
+                Integer n1n = labelErrorFN.get( t );
+                int n2n = n1n +1; // increment frequency
+                labelErrorFN.put( t, n2n );
             }
+            else {
+                Integer n1 = labelCount.get( t );
+                int n2 = n1 +1; // increment frequency
+                labelCount.put( t, n2 );
+            }
+
 
             errors._values[ i ] = error;
         }
@@ -215,6 +244,36 @@ public class ResultsAnalyzer {
             }
 
             System.out.println();
+        }
+
+        System.out.println();
+        System.out.println( "F-Score:" );
+        System.out.println();
+        // per class:
+        // prec = tp / all pos in test.
+        // recall = tp / truth pos.
+
+        System.out.println( " Label, Err, TP, FP, TN, FN, T, F, F-Score"  );
+
+        float b2 = 0;
+
+        for( Float label : sorted ) {
+
+            int fp = (int)labelErrorFP.get( label );
+            int fn = (int)labelErrorFN.get( label );
+            int t = (int)labelCount.get( label );
+            int f = (int)count - t;
+
+            int tp = t-fn;
+            int tn = f-fp;
+            int e = fp + fn;
+            float denominator = (1f + b2) * tp + b2 * fn + fp;
+            float score = (1f + b2)* tp / denominator;
+
+            System.out.print( String.format( "%.1f", label ) + ", " + e  + ", " + tp + ", " + fp + ", " + tn + ", " + fn + ", " + t + ", " + f + ", " + score );
+
+            System.out.println();
+
         }
 
     }
