@@ -119,7 +119,8 @@ public class ModelData {
     }
 
     /**
-     * Retrieves the object form of this data concept. Since the data may be a reference to one or more other
+     * Retrieves the object form of this data concept. If the data is a reference to other data, the contents cannot be
+     * resolved.
      *
      * @return
      */
@@ -140,6 +141,14 @@ public class ModelData {
         }
     }
 
+    /**
+     * Retrieves the object form of this data concept. If the data is a reference to other data, the contents will be
+     * resolved by deserializing the referenced Data via a Node and a DataDeserializer object.
+     *
+     * @param n
+     * @param deserializer
+     * @return
+     */
     public Data getData( Node n, DataDeserializer deserializer ) {
         HashSet< String > refKeys = getRefKeys();
 
