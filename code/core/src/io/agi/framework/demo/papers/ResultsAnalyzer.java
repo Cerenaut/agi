@@ -53,18 +53,22 @@ public class ResultsAnalyzer {
     public static void main( String[] args ) {
 
         // Optionally set a global prefix for entities
-        if( args.length != 3 ) {
-            System.err.println( "Bad arguments. Should be: data_file data_name_truth data_name_predicted" );
+        if( args.length != 5 ) {
+            System.err.println( "Bad arguments. Should be: data_file data_name_truth data_name_predicted OFFSET LENGTH " );
             System.exit( -1 );
         }
 
         String dataFile = args[ 0 ];
         String dataNameTruth = args[ 1 ];
         String dataNamePredicted = args[ 2 ];
+        int offset = Integer.parseInt( args[ 3 ] );
+        int length = Integer.parseInt( args[ 4 ] );
 
         System.out.println( "Data file: " + dataFile );
         System.out.println( "Data name truth: " + dataNameTruth );
         System.out.println( "Data name predicted: " + dataNamePredicted );
+        System.out.println( "Data offset: " + offset );
+        System.out.println( "Data length: " + length );
 
         try {
             Gson gson = new Gson();
@@ -80,17 +84,17 @@ public class ResultsAnalyzer {
 
             for( ModelData modelData : modelDatas ) {
                 if( modelData.name.equals( dataNameTruth ) ) {
-                    System.err.println( "Found data: " + modelData.name );
+                    System.out.println( "Found data: " + modelData.name );
 
                     truth = modelData.getData();
                 }
                 else if( modelData.name.equals( dataNamePredicted ) ) {
-                    System.err.println( "Found data: " + modelData.name );
+                    System.out.println( "Found data: " + modelData.name );
 
                     predicted = modelData.getData();
                 }
                 else {
-                    System.err.println( "Skipping data: " + modelData.name );
+                    System.out.println( "Skipping data: " + modelData.name );
                 }
             }
 
@@ -106,7 +110,7 @@ public class ResultsAnalyzer {
                 System.exit( -1 );
             }
 
-            analyze( truth, predicted );
+            analyze( truth, predicted, offset, length );
         }
         catch( Exception e ) {
             System.err.println( e.getStackTrace() );
@@ -115,20 +119,31 @@ public class ResultsAnalyzer {
 
     }
 
-    public static void analyze( Data truth, Data predicted ) {
+    public static void analyze( Data truth, Data predicted, int offset, int length ) {
         //
         // F-score (precision+recall), confusion matrix
         // find unique labels in truth
         HashSet< Float > labels = Statistics.unique( truth );
 
         ArrayList< Float > sorted = new ArrayList< Float >();
-        sorted.addAll( labels );
+        sorted.addAll( labels ); // all unique labels in order
         Collections.sort( sorted );
 
         // build an empty confusion matrix
         HashMap< Float, HashMap< Float, Integer > > errorTypeCount = new HashMap< Float, HashMap< Float, Integer > >();
 
+        HashMap< Float, Integer > labelCount = new HashMap< Float, Integer >();
+        HashMap< Float, Integer > labelCountPredictions = new HashMap< Float, Integer >();
+        HashMap< Float, Integer > labelErrorFP = new HashMap< Float, Integer >();
+        HashMap< Float, Integer > labelErrorFN = new HashMap< Float, Integer >();
+
         for( Float f : labels ) {
+
+            labelCount.put( f, 0 );
+            labelCountPredictions.put( f, 0 );
+            labelErrorFP.put( f, 0 );
+            labelErrorFN.put( f, 0 );
+
             HashMap< Float, Integer > hm = new HashMap< Float, Integer >();
 
             for( Float f2 : labels ) {
@@ -141,7 +156,23 @@ public class ResultsAnalyzer {
         // calculate errors
         FloatArray errors = new FloatArray( truth.getSize() );
 
-        for( int i = 0; i < truth._values.length; ++i ) {
+        int i0 = offset;
+        int i1 = offset + length;
+
+        if( offset < 0 ) {
+            System.err.println( "Bad offset: Negative." );
+            System.exit( -1 );
+        }
+        if( i1 > truth._values.length ) {
+            System.err.println( "Bad offset/length combination: Out of range (size="+truth._values.length + ")." );
+            System.exit( -1 );
+        }
+
+        // per class:
+        // prec = tp / all pos in test.
+        // recall = tp / truth pos.
+
+        for( int i = i0; i < i1; ++i ) {
             float t = truth._values[ i ];
             float p = predicted._values[ i ];
 
@@ -155,14 +186,28 @@ public class ResultsAnalyzer {
                 int n2 = n1 +1; // increment frequency
 
                 hm.put( p, n2 );
+
+                Integer n1p = labelErrorFP.get( p );
+                int n2p = n1p +1; // increment frequency
+                labelErrorFP.put( p, n2p );
+
+                Integer n1n = labelErrorFN.get( t );
+                int n2n = n1n +1; // increment frequency
+                labelErrorFN.put( t, n2n );
             }
+            else {
+                Integer n1 = labelCount.get( t );
+                int n2 = n1 +1; // increment frequency
+                labelCount.put( t, n2 );
+            }
+
 
             errors._values[ i ] = error;
         }
 
         // display stats.
         float sum = errors.sum();
-        float count = errors.getSize();
+        float count = length;//errors.getSize();
         float pc = 1f - ( sum / count );
         pc *= 100f;
         System.out.println();
@@ -199,6 +244,36 @@ public class ResultsAnalyzer {
             }
 
             System.out.println();
+        }
+
+        System.out.println();
+        System.out.println( "F-Score:" );
+        System.out.println();
+        // per class:
+        // prec = tp / all pos in test.
+        // recall = tp / truth pos.
+
+        System.out.println( " Label, Err, TP, FP, TN, FN, T, F, F-Score"  );
+
+        float b2 = 0;
+
+        for( Float label : sorted ) {
+
+            int fp = (int)labelErrorFP.get( label );
+            int fn = (int)labelErrorFN.get( label );
+            int t = (int)labelCount.get( label );
+            int f = (int)count - t;
+
+            int tp = t-fn;
+            int tn = f-fp;
+            int e = fp + fn;
+            float denominator = (1f + b2) * tp + b2 * fn + fp;
+            float score = (1f + b2)* tp / denominator;
+
+            System.out.print( String.format( "%.1f", label ) + ", " + e  + ", " + tp + ", " + fp + ", " + tn + ", " + fn + ", " + t + ", " + f + ", " + score );
+
+            System.out.println();
+
         }
 
     }
