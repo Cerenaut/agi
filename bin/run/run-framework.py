@@ -241,11 +241,12 @@ def run_sweeps():
         base_entity_filename = import_files['file-entities']
         base_data_filenames = import_files['file-data']
 
-        base_ll_data_filenames = []
+        exp_ll_data_filepaths = []
         if 'load-local-files' in exp_i.keys():
             load_local_files = exp_i['load-local-files']
-            base_ll_data_filenames = load_local_files['file-data']
-            exp_ll_data_filepaths = map(_experiment.runpath, base_ll_data_filenames)
+            if 'file-data' in load_local_files.keys():
+                base_ll_data_filenames = load_local_files['file-data']
+                exp_ll_data_filepaths = map(_experiment.runpath, base_ll_data_filenames)
 
         if 'parameter-sweeps' not in exp_i or len(exp_i['parameter-sweeps']) == 0:
             print "No parameters to sweep, just run once."
@@ -256,7 +257,8 @@ def run_sweeps():
                                                                              base_data_filenames)
             run_parameterset(exp_entity_filepath, exp_data_filepaths, exp_ll_data_filepaths, "")
         else:
-            for param_sweep in exp_i['parameter-sweeps']:  # array of sweep definitions
+            param_sweeps = exp_i['parameter-sweeps']
+            for param_sweep in param_sweeps:  # array of sweep definitions
 
                 counters = []
                 setup_parameter_sweepers(param_sweep, counters)
