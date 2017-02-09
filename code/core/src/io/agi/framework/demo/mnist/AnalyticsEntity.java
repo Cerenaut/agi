@@ -117,18 +117,18 @@ public class AnalyticsEntity extends Entity {
         Data features = getData( INPUT_FEATURES );
         Data labels = getData( INPUT_LABELS );
 
-        // if labels is 1 dimensional, then convert to column matrix (form expected by supervised learning)
-        if ( labels._dataSize.getDimensions() == 1 )
-        {
-            int length = labels._dataSize.getSize( DataSize.DIMENSION_X );
-            labels.setSize( DataSize.create( 1, length ) );
-        }
-
         if ( features == null || labels == null )
         {
             String message = "Features or Labels are empty";
             _logger.error( message );
             return;
+        }
+
+        // if labels is 1 dimensional, then convert to column matrix (form expected by supervised learning)
+        if ( labels._dataSize.getDimensions() == 1 )
+        {
+            int length = labels._dataSize.getSize( DataSize.DIMENSION_X );
+            labels.setSize( DataSize.create( 1, length ) );
         }
 
         int numDataPoints = SupervisedUtil.calcMFromFeatureMatrix( features );
