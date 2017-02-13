@@ -85,8 +85,8 @@ def run_parameterset(entity_filepath, data_filepaths, compute_data_filepaths, sw
 
     if is_export_compute:
         _compute_node.export_experiment(_experiment.entity_with_prefix("experiment"),
-                                        _experiment.runpath("output"),
-                                        _experiment.runpath("output"),
+                                        _experiment.outputfile_remote(),
+                                        _experiment.outputfile_remote(),
                                         True)
 
     if (launch_mode is LaunchMode.per_experiment) and args.launch_compute:
@@ -94,6 +94,7 @@ def run_parameterset(entity_filepath, data_filepaths, compute_data_filepaths, sw
 
     if is_upload:
 
+        # upload /input folder (contains input files entity.json, data.json)
         folder_path = _experiment.inputfile("")
         _cloud.upload_experiment_s3(_experiment.prefix(),
                                     "input",
@@ -113,9 +114,18 @@ def run_parameterset(entity_filepath, data_filepaths, compute_data_filepaths, sw
                                         log_filename,
                                         log_filepath)
 
+        # upload /output files (entity.json, data.json and experiment-info.txt)
         if is_export_compute:
-            # TODO implement upload of /output to S3 with 'export compute'
-            print "WARNING: UPLOAD TO S3 NOT IMPLEMENTED ----> for the case of 'EXPORT COMPUTE'"
+            # remote upload of /output/prefix folder
+            folder = _experiment.outputfile_remote()
+            cmd = "../aws/upload-output.sh " + " " + _experiment.prefix() + " " + _compute_node.host + " " + remote_keypath
+            utils.run_bashscript_repeat(cmd, 3, 3, verbose=log)
+
+            # experiment-info.txt : upload the contents of the /output folder on the machine this is running on
+            folder_path = _experiment.outputfile("")
+            _cloud.upload_experiment_s3(_experiment.prefix(),
+                                        "output",
+                                        folder_path)
         else:
             folder_path = _experiment.outputfile("")
             _cloud.upload_experiment_s3(_experiment.prefix(),
