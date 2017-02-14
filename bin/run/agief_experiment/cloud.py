@@ -19,12 +19,20 @@ class Cloud:
     def __init__(self, log):
         self.log = log
 
-    def sync_experiment(self, host, keypath):
-        """ Assumes there exists a private key for the given ec2 instance, at keypath """
+    def sync_experiment_rsync(self, host, keypath):
+        """
+        Sync experiment from this machine to remote machine
+        Assumes there exists a private key for the given ec2 instance, at keypath
+        """
 
         print "....... Use ecs-sync-experiment.sh to rsync relevant folders."
 
         cmd = "../aws/ecs-sync-experiment.sh " + host + " " + keypath
+        utils.run_bashscript_repeat(cmd, 15, 6, verbose=self.log)
+
+    def sync_experiment_s3(self, prefix, host, remote_keypath):
+        # remote upload of /output/prefix folder
+        cmd = "../aws/remote-download-output.sh " + " " + prefix + " " + host + " " + remote_keypath
         utils.run_bashscript_repeat(cmd, 15, 6, verbose=self.log)
 
     def launch_compute_docker(self, host, keypath):

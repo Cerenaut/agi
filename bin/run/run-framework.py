@@ -118,7 +118,7 @@ def run_parameterset(entity_filepath, data_filepaths, compute_data_filepaths, sw
         if is_export_compute:
             # remote upload of /output/prefix folder
             folder = _experiment.outputfile_remote()
-            cmd = "../aws/upload-output.sh " + " " + _experiment.prefix() + " " + _compute_node.host + " " + remote_keypath
+            cmd = "../aws/remote-upload-output.sh " + " " + _experiment.prefix() + " " + _compute_node.host + " " + remote_keypath
             utils.run_bashscript_repeat(cmd, 3, 3, verbose=log)
 
             # experiment-info.txt : upload the contents of the /output folder on the machine this is running on
@@ -448,8 +448,11 @@ def setup_arg_parsing():
                              'Filename is within AGI_RUN_HOME that defines the '
                              'experiments to run (with parameter sweeps) in json format (default=%(default)s).')
     parser.add_argument('--step_sync', dest='sync', action='store_true',
-                        help='Sync the code and run folder (relevant for --step_aws).'
-                             'Requires setting key path with --ec2_keypath')
+                        help='Sync the code and run folder (relevant for --step_aws). i.e. copy from local machine to '
+                             'ec2. Requires setting key path with --ec2_keypath')
+    parser.add_argument('--step_sync_s3_prefix', dest='sync_s3_prefix', required=False,
+                        help='Sync the code and run folder (relevant for --step_aws). i.e. download relevant output '
+                             'files from a previous phase determined by prefix, to the ec2 machine.')
     parser.add_argument('--step_compute', dest='launch_compute', action='store_true',
                         help='Launch the Compute node.')
     parser.add_argument('--step_shutdown', dest='shutdown', action='store_true',
@@ -532,6 +535,7 @@ if __name__ == '__main__':
     is_export_compute = args.export_compute
     is_upload = args.upload
     remote_keypath = args.ec2_keypath
+    sync_s3_prefix = args.sync_s3_prefix
 
     if is_upload and not is_export:
         print "WARNING: Uploading experiment to S3 is enabled, but 'export experiment' is not, so the most " \
@@ -605,7 +609,11 @@ if __name__ == '__main__':
         if not args.aws:
             print "ERROR: Syncing is meaningless unless you're running aws (use param --step_aws)"
             exit()
-        _cloud.sync_experiment(_compute_node.host, remote_keypath)
+        _cloud.sync_experiment_rsync(_compute_node.host, remote_keypath)
+
+    # 3.5) Sync data from S3 (typically used to download output files from a previous experiment to be used as input)
+    if sync_s3_prefix:
+        _cloud.sync_experiment_s3(sync_s3_prefix, _compute_node.host, remote_keypath)
 
     # 4) Launch Compute (on AWS or locally) - *** IF Mode == 'Per Session' ***
     if (launch_mode is LaunchMode.per_session) and args.launch_compute:
