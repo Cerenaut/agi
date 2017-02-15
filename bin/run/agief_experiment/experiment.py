@@ -149,12 +149,19 @@ class Experiment:
         """
         return self.filepath_from_exp_variable("input/" + self.prefix() + "/" + filename, self.agi_exp_home)
 
-    def outputfile(self, filename):
+    def outputfile(self, filename=""):
         """
         Return the full path to the output file that is to be created by this experiment,
-        specified by simple filename (AGI_EXP_HOME/output/filename)
+        specified by simple filename (AGI_EXP_HOME/output/prefix/filename)
         """
         return self.filepath_from_exp_variable("output/" + self.prefix() + "/" + filename, self.agi_exp_home)
+
+    def outputfile_remote(self, filename=""):
+        """
+        Return the full path to the output file if it was exported/saved on remote machine, that is to be created by this experiment,
+        specified by simple filename (AGI_RUN_HOME/output/prefix/filename)
+        """
+        return self.filepath_from_exp_variable("output/" + self.prefix() + "/" + filename, self.agi_run_home)
 
     def outputfile_base(self, filename):
         """ return the full path to the output file specified by simple filename (AGI_EXP_HOME/output/filename) """

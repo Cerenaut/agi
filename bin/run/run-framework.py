@@ -85,32 +85,25 @@ def run_parameterset(entity_filepath, data_filepaths, compute_data_filepaths, sw
 
     if is_export_compute:
         _compute_node.export_experiment(_experiment.entity_with_prefix("experiment"),
-                                        _experiment.runpath("output"),
-                                        _experiment.runpath("output"),
+                                        _experiment.outputfile_remote(),
+                                        _experiment.outputfile_remote(),
                                         True)
 
     if (launch_mode is LaunchMode.per_experiment) and args.launch_compute:
         shutdown_compute(task_arn)
 
     if is_upload:
-        if is_export_compute:
-            # TODO implement upload to S3 with 'export compute'
-            print "WARNING: UPLOAD TO S3 NOT IMPLEMENTED ----> for the case of 'EXPORT COMPUTE'"
-        else:
-            folder_path = _experiment.outputfile("")
-            _cloud.upload_experiment_s3(_experiment.prefix(),
-                                        "output",
-                                        folder_path)
 
-            folder_path = _experiment.inputfile("")
-            _cloud.upload_experiment_s3(_experiment.prefix(),
-                                        "input",
-                                        folder_path)
+        # upload /input folder (contains input files entity.json, data.json)
+        folder_path = _experiment.inputfile("")
+        _cloud.upload_experiment_s3(_experiment.prefix(),
+                                    "input",
+                                    folder_path)
 
-            # upload experiments definition file (if it exists)
-            _cloud.upload_experiment_s3(_experiment.prefix(),
-                                        _experiment.experiments_def_filename,
-                                        _experiment.experiment_def_file())
+        # upload experiments definition file (if it exists)
+        _cloud.upload_experiment_s3(_experiment.prefix(),
+                                    _experiment.experiments_def_filename,
+                                    _experiment.experiment_def_file())
 
         # upload log4j configuration file that was used (if it exists)
         log_filename = "log4j2.log"
@@ -121,6 +114,23 @@ def run_parameterset(entity_filepath, data_filepaths, compute_data_filepaths, sw
                                         log_filename,
                                         log_filepath)
 
+        # upload /output files (entity.json, data.json and experiment-info.txt)
+        if is_export_compute:
+            # remote upload of /output/prefix folder
+            folder = _experiment.outputfile_remote()
+            cmd = "../aws/remote-upload-output.sh " + " " + _experiment.prefix() + " " + _compute_node.host + " " + remote_keypath
+            utils.run_bashscript_repeat(cmd, 3, 3, verbose=log)
+
+            # experiment-info.txt : upload the contents of the /output folder on the machine this is running on
+            folder_path = _experiment.outputfile("")
+            _cloud.upload_experiment_s3(_experiment.prefix(),
+                                        "output",
+                                        folder_path)
+        else:
+            folder_path = _experiment.outputfile("")
+            _cloud.upload_experiment_s3(_experiment.prefix(),
+                                        "output",
+                                        folder_path)
 
 def setup_parameter_sweepers(param_sweep, val_sweepers):
     """
@@ -241,11 +251,12 @@ def run_sweeps():
         base_entity_filename = import_files['file-entities']
         base_data_filenames = import_files['file-data']
 
-        base_ll_data_filenames = []
+        exp_ll_data_filepaths = []
         if 'load-local-files' in exp_i.keys():
             load_local_files = exp_i['load-local-files']
-            base_ll_data_filenames = load_local_files['file-data']
-            exp_ll_data_filepaths = map(_experiment.runpath, base_ll_data_filenames)
+            if 'file-data' in load_local_files.keys():
+                base_ll_data_filenames = load_local_files['file-data']
+                exp_ll_data_filepaths = map(_experiment.runpath, base_ll_data_filenames)
 
         if 'parameter-sweeps' not in exp_i or len(exp_i['parameter-sweeps']) == 0:
             print "No parameters to sweep, just run once."
@@ -256,7 +267,8 @@ def run_sweeps():
                                                                              base_data_filenames)
             run_parameterset(exp_entity_filepath, exp_data_filepaths, exp_ll_data_filepaths, "")
         else:
-            for param_sweep in exp_i['parameter-sweeps']:  # array of sweep definitions
+            param_sweeps = exp_i['parameter-sweeps']
+            for param_sweep in param_sweeps:  # array of sweep definitions
 
                 counters = []
                 setup_parameter_sweepers(param_sweep, counters)
@@ -436,8 +448,11 @@ def setup_arg_parsing():
                              'Filename is within AGI_RUN_HOME that defines the '
                              'experiments to run (with parameter sweeps) in json format (default=%(default)s).')
     parser.add_argument('--step_sync', dest='sync', action='store_true',
-                        help='Sync the code and run folder (relevant for --step_aws).'
-                             'Requires setting key path with --ec2_keypath')
+                        help='Sync the code and run folder (relevant for --step_aws). i.e. copy from local machine to '
+                             'ec2. Requires setting key path with --ec2_keypath')
+    parser.add_argument('--step_sync_s3_prefix', dest='sync_s3_prefix', required=False,
+                        help='Sync the code and run folder (relevant for --step_aws). i.e. download relevant output '
+                             'files from a previous phase determined by prefix, to the ec2 machine.')
     parser.add_argument('--step_compute', dest='launch_compute', action='store_true',
                         help='Launch the Compute node.')
     parser.add_argument('--step_shutdown', dest='shutdown', action='store_true',
@@ -520,6 +535,7 @@ if __name__ == '__main__':
     is_export_compute = args.export_compute
     is_upload = args.upload
     remote_keypath = args.ec2_keypath
+    sync_s3_prefix = args.sync_s3_prefix
 
     if is_upload and not is_export:
         print "WARNING: Uploading experiment to S3 is enabled, but 'export experiment' is not, so the most " \
@@ -593,7 +609,11 @@ if __name__ == '__main__':
         if not args.aws:
             print "ERROR: Syncing is meaningless unless you're running aws (use param --step_aws)"
             exit()
-        _cloud.sync_experiment(_compute_node.host, remote_keypath)
+        _cloud.sync_experiment_rsync(_compute_node.host, remote_keypath)
+
+    # 3.5) Sync data from S3 (typically used to download output files from a previous experiment to be used as input)
+    if sync_s3_prefix:
+        _cloud.sync_experiment_s3(sync_s3_prefix, _compute_node.host, remote_keypath)
 
     # 4) Launch Compute (on AWS or locally) - *** IF Mode == 'Per Session' ***
     if (launch_mode is LaunchMode.per_session) and args.launch_compute:
