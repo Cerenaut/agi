@@ -24,6 +24,7 @@ import io.agi.framework.Entity;
 import io.agi.framework.EntityFactory;
 import io.agi.framework.Node;
 import io.agi.framework.demo.mnist.AnalyticsEntity;
+import io.agi.framework.demo.mnist.ClassificationAnalysisEntity;
 import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.demo.mnist.MnistEntity;
 import io.agi.framework.entities.*;
@@ -172,6 +173,10 @@ public class CommonEntityFactory implements EntityFactory {
 
         if( entityType.equals( SupervisedBatchTrainingEntity.ENTITY_TYPE ) ) {
             return new SupervisedBatchTrainingEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( ClassificationAnalysisEntity.ENTITY_TYPE ) ) {
+            return new ClassificationAnalysisEntity( objectMap, _n, modelEntity );
         }
 
         return null;
