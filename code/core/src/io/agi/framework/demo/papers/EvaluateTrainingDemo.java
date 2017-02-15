@@ -25,6 +25,7 @@ import io.agi.framework.Main;
 import io.agi.framework.Node;
 import io.agi.framework.demo.mnist.AnalyticsEntity;
 import io.agi.framework.demo.mnist.AnalyticsEntityConfig;
+import io.agi.framework.demo.mnist.ClassificationAnalysisEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.factories.CommonEntityFactory;
 
@@ -77,6 +78,7 @@ public class EvaluateTrainingDemo {
         String experimentName   = Framework.GetEntityName( "experiment" );
         String analyticsName    = Framework.GetEntityName( "analytics" );
         String logisticRegressionName = Framework.GetEntityName( "logistic-regression" );
+        String classificationAnalysisName = Framework.GetEntityName( "classification-analysis" );
 
 
         // 2) Configuration values
@@ -103,16 +105,20 @@ public class EvaluateTrainingDemo {
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         Framework.CreateEntity( analyticsName, AnalyticsEntity.ENTITY_TYPE, n.getName(), experimentName );
         Framework.CreateEntity( logisticRegressionName, SupervisedBatchTrainingEntity.ENTITY_TYPE, n.getName(), analyticsName );
+        Framework.CreateEntity( classificationAnalysisName, ClassificationAnalysisEntity.ENTITY_TYPE, n.getName(), logisticRegressionName );
 
 
         // 3) Connect entities
         // ---------------------------------------------
         // Connect the 'testing entities' data input to the training data set directly
+        Framework.SetDataReference( analyticsName, AnalyticsEntity.INPUT_FEATURES, "PREFIX--feature-series", "output" );
+        Framework.SetDataReference( analyticsName, AnalyticsEntity.INPUT_LABELS, "PREFIX--label-series", "output" );
+
         Framework.SetDataReference( logisticRegressionName, SupervisedBatchTrainingEntity.INPUT_FEATURES, analyticsName, AnalyticsEntity.OUTPUT_FEATURES );
         Framework.SetDataReference( logisticRegressionName, SupervisedBatchTrainingEntity.INPUT_LABELS, analyticsName, AnalyticsEntity.OUTPUT_LABELS );
 
-        Framework.SetDataReference( analyticsName, AnalyticsEntity.INPUT_FEATURES, "PREFIX--feature-series", "output" );
-        Framework.SetDataReference( analyticsName, AnalyticsEntity.INPUT_LABELS, "PREFIX--label-series", "output" );
+        Framework.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_TRUTH, logisticRegressionName, SupervisedBatchTrainingEntity.OUTPUT_LABELS_TRUTH );
+        Framework.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_PREDICTED, logisticRegressionName, SupervisedBatchTrainingEntity.OUTPUT_LABELS_PREDICTED );
 
 
         // 4) Set configurations
