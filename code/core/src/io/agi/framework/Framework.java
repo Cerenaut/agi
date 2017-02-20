@@ -377,6 +377,40 @@ public class Framework {
     }
 
     /**
+     * Imports serialized data from elsewhere, and saves it to persistence under a new key.
+     * Since there may me many data in the imported JSON, we select one using its original key.
+     * We then replace the old key (name) with a new one and save it to the current persistence layer.
+     *
+     * @param jsonData Serialized Data
+     * @param oldKey Key when it was originally serialized
+     * @param newKey Key for use in current application - data will be saved to this key.
+     * @throws Exception
+     */
+    public static void ImportDataWithKey( String jsonData, String oldKey, String newKey ) throws Exception {
+        Gson gson = new Gson();
+        try {
+            Type listType = new TypeToken< List< ModelData > >() {
+            }.getType();
+
+            List< ModelData > modelDatas = gson.fromJson( jsonData, listType );
+
+            for( ModelData modelData : modelDatas ) {
+
+                if( !modelData.name.equals( oldKey ) ) {
+                    continue;
+                }
+
+                modelData.name = newKey;
+
+                Framework.SetData( modelData );
+            }
+        }
+        catch( Exception e ) {
+            throw( e );
+        }
+    }
+
+    /**
      * Load data references from file, which allows data to be mapped from one entity to another (input and outputs).
      * @param file
      */
