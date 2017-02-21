@@ -42,7 +42,7 @@ var Region = {
   selectedInput1 : [  ],
   selectedInput2 : [  ],
 
-  regionSuffixes : [ "-input-c1", "-input-c2", "-input-p1", "-input-p2", "-spike-age", "-classifier-mask", "-classifier-response", "-classifier-weights", "-classifier-biases-2", "-classifier-spikes-new", "-classifier-spikes-old", "-prediction-error-fp", "-prediction-error-fn", "-prediction-old", "-prediction-new-real", "-prediction-new", "-output-spikes-new", "-output-spikes-old", "-output-spikes-age" ],
+  regionSuffixes : [ "-input-c1", "-input-c2", "-input-p1", "-input-p2", "-output", "-classifier-weights", "-classifier-biases-2", "-classifier-spikes-top-ka",  "-prediction-error-fp", "-prediction-error-fn", "-prediction-old", "-prediction-new", "-output-spikes-new", "-output-spikes-old" ],
 
   regionSuffixIdx : 0,
   dataMap : {
@@ -98,11 +98,11 @@ var Region = {
   },
 
   selectPrevious : function() {
-    Region.selectCells( "-classifier-spikes-old" );
+//    Region.selectCells( "-classifier-spikes-old" );
   },
 
   selectActive : function() {
-    Region.selectCells( "-classifier-spikes-new" );
+    Region.selectCells( "-classifier-spikes-top-ka" );
   },
   selectPredictionOld : function() {
     Region.selectCells( "-prediction-old" );
@@ -243,7 +243,7 @@ var Region = {
 
   onMouseClickCentre : function( e, mx, my ) {
 
-    var dataNew = Region.findData( "-classifier-spikes-new" );
+    var dataNew = Region.findData( "-classifier-spikes-top-ka" );
     if( !dataNew ) {
       return; // can't paint
     }
@@ -335,7 +335,7 @@ var Region = {
     DataCanvas.pxPerElement = Region.pixelsPerBit;
     Region.repaintLeft();
     Region.repaintMiddle();
-    Region.repaintInput();
+    Region.repaintRight();
   },
 
   repaintLeft : function() {
@@ -344,27 +344,17 @@ var Region = {
       return; // can't paint
     }
 
-    var outputSpikesOld = Region.findData( "-output-spikes-old" );
-    if( !outputSpikesOld ) {
+    var output = Region.findData( "-output" );
+    if( !output ) {
       return; // can't paint
     }
 
-    var outputSpikesAge = Region.findData( "-output-spikes-age" );
-    if( !outputSpikesAge ) {
+    var predictionErrorFn = Region.findData( "-prediction-error-fn" );
+    if( !predictionErrorFn ) {
       return; // can't paint
     }
 
-//    var dataFp = Region.findData( "-prediction-error-fp" );
-//    if( !dataFp ) {
-//      return; // can't paint
-//    }
-//
-//    var dataFn = Region.findData( "-prediction-error-fn" );
-//    if( !dataFn ) {
-//      return; // can't paint
-//    }
-
-    var panels = 2;
+    var panels = 1;
     var canvasDataSize = Region.resizeCanvas( "#left-canvas", outputSpikesNew, 1, panels );
     if( !canvasDataSize ) {
       return; // can't paint
@@ -373,46 +363,15 @@ var Region = {
     var x0 = 0;
     var y0 = 0;
 
-    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, outputSpikesNew, outputSpikesOld, null );
+    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, output, outputSpikesNew, null );
     DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#00ffff" );
 
-    y0 += ( Region.pixelsPerBit * canvasDataSize.h ); 
-    y0 += ( Region.pixelsPerGap );
-
-//    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataFp, dataFn, null );//, null );
-    DataCanvas.fillElementsAlpha( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, outputSpikesAge, 255,0,0, true );
-    DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#00ffff" );
   },
-
-  // general GUI design:
-  // interesting data:
-  // ----------------------------------------
-  // Cprediction-new /old           --- (binary) what it expects/ed to fire next 
-  // Cprediction-error-fp / fn      --- (binary) attempts to predict the current input
-  // C classifier-spikes-new         --- (binary) the bottom-up classification of current input NOW
-  // C classifier-spikes-integrated  --- (real)   how it's managing per cell with the combination of input and output
-  // L output-spikes-new             --- (binary) the output spikes this iter
-  // L predictor-output-traces       --- (real)   history of recent output spikes
-  // R input-c1 / c2                 --- the P1/2 inputs are not so interesting.
-
-  // LEFT: R: output-spikes-new, G-fill: predictor-output-traces (ie the output of the RL)
-  //       R-outline: classifier-spikes-new, G: integrated (latter is fill, spikes are outline)
-  // 
-  // MIDDLE: R: classifier-spikes-new, G: pred-old (so R = FN error, G = FP error, Y = good.
-  //                                2nd outline (small) is pred-old (generates errors) with colouring by error type (FP/FN)? 
-  //         2nd row: prediction-old + 
-  // RIGHT: input c1, c2 of selected cells. + current inputs
-
 
   repaintMiddle : function() {
 
-    var dataSpikesNew = Region.findData( "-classifier-spikes-new" );
+    var dataSpikesNew = Region.findData( "-classifier-spikes-top-ka" );
     if( !dataSpikesNew ) {
-      return; // can't paint
-    }
-
-    var dataSpikesOld = Region.findData( "-classifier-spikes-old" );
-    if( !dataSpikesOld ) {
       return; // can't paint
     }
 
@@ -476,7 +435,7 @@ var Region = {
     return size;
   },
 
-  repaintInput : function() {
+  repaintRight : function() {
     var c = $( "#right-canvas" )[ 0 ];
 
     var data1 = Region.findData( "-input-c1" );
@@ -523,11 +482,6 @@ var Region = {
       return; // can't paint
     }
 
-    var dataResponse = Region.findData( "-classifier-response" );
-    if( !dataResponse ) {
-      return; // can't paint
-    }
-
     var gain = $( "#gain" ).val();
     var inputDisplay = $('select[name=invert-display]').val();
 
@@ -543,10 +497,10 @@ var Region = {
     Region.paintInputData( ctx, x0, y0, w1, h1, data1 );
 
     if( inputDisplay == "weights" ) {
-      Region.paintInputWeights( ctx, x0, y0, w1, h1, inputOffset, data1, weightsSize, weightsStride, dataWeights, dataBiases, dataResponse, Region.selectedCells, gain );
+      Region.paintInputWeights( ctx, x0, y0, w1, h1, inputOffset, data1, weightsSize, weightsStride, dataWeights, dataBiases, Region.selectedCells, gain );
     }
     else {
-      Region.paintInputErrors( ctx, x0, y0, w1, h1, inputOffset, data1, weightsSize, weightsStride, dataWeights, dataBiases, dataResponse, Region.selectedCells, gain );
+      Region.paintInputErrors( ctx, x0, y0, w1, h1, inputOffset, data1, weightsSize, weightsStride, dataWeights, dataBiases, Region.selectedCells, gain );
     }
     Region.paintInputDataSelected( ctx, x0, y0, w1, h1, Region.selectedInput1 );
 
@@ -555,10 +509,10 @@ var Region = {
 
     Region.paintInputData( ctx, x0, y0, w2, h2, data2 );
     if( inputDisplay == "weights" ) {
-      Region.paintInputWeights( ctx, x0, y0, w2, h2, inputOffset, data2, weightsSize, weightsStride, dataWeights, dataBiases, dataResponse, Region.selectedCells, gain );
+      Region.paintInputWeights( ctx, x0, y0, w2, h2, inputOffset, data2, weightsSize, weightsStride, dataWeights, dataBiases, Region.selectedCells, gain );
     }
     else {
-      Region.paintInputErrors( ctx, x0, y0, w2, h2, inputOffset, data2, weightsSize, weightsStride, dataWeights, dataBiases, dataResponse, Region.selectedCells, gain );
+      Region.paintInputErrors( ctx, x0, y0, w2, h2, inputOffset, data2, weightsSize, weightsStride, dataWeights, dataBiases, Region.selectedCells, gain );
     }
     Region.paintInputDataSelected( ctx, x0, y0, w2, h2, Region.selectedInput2 );
   },
@@ -599,11 +553,15 @@ var Region = {
     }
   },
 
-  paintInputWeights : function( ctx, x0, y0, w, h, inputOffset, dataInput, weightsSize, weightsStride, dataWeights, dataBiases, dataResponse, selectedCells, gain ) {
+  paintInputWeights : function( ctx, x0, y0, w, h, inputOffset, dataInput, weightsSize, weightsStride, dataWeights, dataBiases, selectedCells, gain ) {
 
     if( selectedCells.length < 1 ) {
       return;
     }
+
+    var minWeight = 0.0;
+    var maxWeight = 0.0;
+    var allWeights = new Array( w * h );
 
     for( var y = 0; y < h; ++y ) {
       for( var x = 0; x < w; ++x ) {
@@ -614,45 +572,60 @@ var Region = {
         for( var i = 0; i < selectedCells.length; ++i ) {
           var e = selectedCells[ i ];
 
-          //var r = dataResponse.elements.elements[ e ];
 	  var r = gain;
-//          if( e <= 0.0 ) {
-//            r = 0.0;
-//          }
 
           var weightsOffset = weightsStride * e 
                             + inputOffset 
                             + inputBit;//*/
 
-/*          var weightsOffset = weightsStride * e 
-                            + inputOffset 
-                            + inputBit;//*/
-//          var weightsOffset = ( inputOffset + inputBit ) * weightsSize + e;
-
           var weight = dataWeights.elements.elements[ weightsOffset ];
-//          if( weight > 0.0 ) {
-////            sumMaxWeight += weight;//Math.min( minWeight, weight );
-//console.log( "weight: " + weight );
-//          }
-//          else {
-//           sumMinWeight += Math.abs( weight );//Math.max( maxWeight, weight );
-//          }
+
           sumWeight += ( weight * r ); // * 1, which doesn't matter
-  
-//          minWeight = Math.min( weight, minWeight );
-//          maxWeight = Math.max( weight, maxWeight );
         }
  
         var biasesOffset = inputOffset + inputBit;
         var bias = dataBiases.elements.elements[ biasesOffset ];
         sumWeight += bias;      
-//        minWeight = minWeight / minWeightGlobal;        
-//        maxWeight = maxWeight / maxWeightGlobal;        
-//        var meanWeight = sumWeight / selectedElements.length;
-//        var maxWeight = maxWeight / weightScale;
-//        var minWeight = minWeight / weightScale;
 
-//sumWeight = sumWeight * 0.5;
+        allWeights[ y * w + x ] = sumWeight;
+
+        if( sumWeight < 0.0 ) {
+          minWeight = Math.min( minWeight, sumWeight );
+        }
+        else {
+          maxWeight = Math.max( maxWeight, sumWeight );
+        }
+      }
+    }
+    
+//    minWeight = Math.abs( minWeight );
+    var rngWeight = maxWeight - minWeight;
+    var midWeight = rngWeight * 0.5;
+
+console.log( "min: " + minWeight + " max: " + maxWeight + " rng: " + rngWeight );
+    for( var y = 0; y < h; ++y ) {
+      for( var x = 0; x < w; ++x ) {
+        var inputBit = y * w + x;
+
+        var sumWeight = allWeights[ y * w + x ];
+
+//if( sumWeight > 0.5 ) {
+//var xsss = 0;
+//}
+        sumWeight = sumWeight - minWeight;
+        sumWeight /= rngWeight;        
+//          sumWeight = ( sumWeight );// * 2.0; // 0 to 1/2 maxWeight
+
+console.log( "w=" + sumWeight );
+        if( sumWeight >= 0.5 ) {
+//          sumWeight = ( sumWeight - midWeight ) * 2.0; // 0 to 1/2 maxWeight
+//          sumWeight = ( sumWeight ) * 2.0; // 0 to 1/2 maxWeight
+        }
+        else {
+//sumWeight = sumWeight - 0.5;
+          sumWeight = 0.0 -( sumWeight );
+        }
+        
 
         sumWeight = Math.min(  1.0, sumWeight );
         sumWeight = Math.max( -1.0, sumWeight );
@@ -660,12 +633,19 @@ var Region = {
         var cx = x * Region.pixelsPerBit;
         var cy = y * Region.pixelsPerBit;
 
-        if( sumWeight > 0.0 ) {
+        if( sumWeight >= 0.0 ) {
+//          sumWeight = sumWeight / maxWeight; // e.g. 0.01 / 0.02 = 0.5               
+//          sumWeight = Math.min(  1.0, sumWeight );
+//sumWeight = 1;
           ctx.fillStyle = "rgba(255,0,0,"+sumWeight+")";
 //          ctx.fillRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
         }
         else {
-          ctx.fillStyle = "rgba(0,0,255,"+Math.abs( sumWeight )+")";
+//          sumWeight = Math.abs( sumWeight ) / minWeight; // e.g. 0.01 / 0.02 = 0.5               
+//          sumWeight = Math.min(  1.0, sumWeight );
+          sumWeight = Math.abs( sumWeight );
+
+          ctx.fillStyle = "rgba(0,0,255,"+ sumWeight+")";
         }
 
         ctx.fillRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
@@ -751,7 +731,7 @@ var Region = {
     }*/
   },
 
-  paintInputErrors : function( ctx, x0, y0, w, h, inputOffset, dataInput, weightsSize, weightsStride, dataWeights, dataBiases, dataResponse, selectedCells, gain ) {
+  paintInputErrors : function( ctx, x0, y0, w, h, inputOffset, dataInput, weightsSize, weightsStride, dataWeights, dataBiases, selectedCells, gain ) {
 
     if( selectedCells.length < 1 ) {
       return;

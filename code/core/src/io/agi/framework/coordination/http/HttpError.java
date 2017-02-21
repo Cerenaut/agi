@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016.
+ * Copyright (c) 2017.
  *
  * This file is part of Project AGI. <http://agi.io>
  *
@@ -17,15 +17,12 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.entities;
+package io.agi.framework.coordination.http;
 
 /**
- * Created by dave on 9/07/16.
+ * Created by gideon on 14/1/17.
  */
-public class SVMEntityConfig extends SupervisedLearningEntityConfig {
-
-// the trained flag no longer needed, because we have batch mode training now
-//    public boolean trained = false;         // once the model has been trained on a dataset, this flag is set to true
-    public float C = 1.f;                     // regularization parameter
-    public boolean bias;
+public class HttpError {
+    public Integer status;
+    public String message;
 }

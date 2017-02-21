@@ -110,10 +110,10 @@ public class OnlineKSparseDemo {
 
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList< AbstractPair< String, String > >();
         if( unitOutput ) {
-            featureDatas.add( new AbstractPair< String, String >( autoencoderName, OnlineKSparseAutoencoderEntity.SPIKES_TOP_KA ) );
+            featureDatas.add( new AbstractPair<>( autoencoderName, OnlineKSparseAutoencoderEntity.SPIKES_TOP_KA ) );
         }
         else {
-            featureDatas.add( new AbstractPair< String, String >( autoencoderName, OnlineKSparseAutoencoderEntity.TRANSFER_TOP_KA ) );
+            featureDatas.add( new AbstractPair<>( autoencoderName, OnlineKSparseAutoencoderEntity.TRANSFER_TOP_KA ) );
         }
 
         Framework.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
@@ -135,7 +135,7 @@ public class OnlineKSparseDemo {
         Framework.SetConfig( vectorSeriesName, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( valueSeriesName, "cache", String.valueOf( cacheAllData ) );
 
-        // Mnist config
+        // MNIST config
         Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldX", "0" );
         Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldY", "0" );
         Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldW", "28" );
@@ -215,8 +215,8 @@ public class OnlineKSparseDemo {
         Framework.SetConfig( vectorSeriesName, "learn", String.valueOf( "true" ) ); // infinite
 
         // Log labels of each image produced during all phases
-        Framework.SetConfig( valueSeriesName, "period", "-1" );
-        Framework.SetConfig( valueSeriesName, "learn", String.valueOf( "true" ) ); // infinite
+        Framework.SetConfig( valueSeriesName, "period", "-1" ); // infinite
+        Framework.SetConfig( valueSeriesName, "learn", String.valueOf( "true" ) );
         Framework.SetConfig( valueSeriesName, "entityName", imageLabelName ); // log forever
         Framework.SetConfig( valueSeriesName, "configPath", "imageLabel" ); // log forever
 

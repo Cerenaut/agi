@@ -25,6 +25,9 @@
 
 package io.agi.core.math;
 
+import io.agi.core.data.FloatArray;
+
+import java.util.HashSet;
 import java.util.Random;
 
 /**
@@ -182,6 +185,23 @@ public class Statistics {
      */
     public static int gaussianKernelSize( double rSigma ) {
         return ( 1 + 2 * ( ( int ) ( 3.0 * rSigma ) ) );
+    }
+
+    /**
+     * Returns a collection of all the unique values in a floatarray
+     *
+     * @param fa
+     * @return
+     */
+    public static HashSet< Float > unique( FloatArray fa ) {
+        HashSet< Float > hs = new HashSet< Float >();
+
+        for( int i = 0; i < fa._values.length; ++i ) {
+            float r = fa._values[ i ];
+            hs.add( r );
+        }
+
+        return hs;
     }
 
 }

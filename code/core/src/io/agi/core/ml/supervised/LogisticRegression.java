@@ -32,15 +32,16 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.ArrayList;
 
 /**
  * Created by gideon on 23/12/16.
  */
-public class LogisticRegression extends NamedObject implements Callback, Supervised {
+public class LogisticRegression extends NamedObject implements Callback, SupervisedBatchTraining {
 
     protected static final Logger _logger = LogManager.getLogger();
 
-    private SupervisedLearningConfig _config;
+    private SupervisedBatchTrainingConfig _config;
     private Model _model = null;
 
     public LogisticRegression( String name, ObjectMap om ) {
@@ -57,7 +58,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
     }
 
     @Override
-    public void setup( SupervisedLearningConfig config ) {
+    public void setup( SupervisedBatchTrainingConfig config ) {
         this._config = config;
         loadModel();    // load model if it exists in config object
     }
@@ -71,7 +72,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
     @Override
     public void loadModel() {
         String modelString = _config.getModelString();
-        if ( modelString != null ) {
+        if ( modelString != null && modelString.length() != 0 ) {
             loadModel( modelString );
         }
     }
@@ -88,6 +89,11 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
             _logger.error( "Unable to load LibLinear model." );
             _logger.error( e.toString(), e );
         }
+    }
+
+    @Override
+    public String getModelString() {
+        return _config.getModelString();
     }
 
     @Override
@@ -110,7 +116,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
      * @return The model as a string.
      * @throws Exception
      */
-    public String modelString() throws Exception {
+    private String modelString() throws Exception {
 
         String modelString = null;
         if( _model != null ) {
@@ -125,8 +131,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
             }
         } else {
             String errorMessage = "Cannot save LibLinear model as it is undefined";
-            _logger.error( errorMessage );
-            throw new Exception( errorMessage );
+            _logger.warn( errorMessage );
         }
 
         return modelString;
@@ -136,11 +141,39 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
 
         int m = SupervisedUtil.calcMFromFeatureMatrix( featuresMatrixTrain );   // m = number of data points
         int n = SupervisedUtil.calcNFromFeatureMatrix( featuresMatrixTrain );   // n = feature vector size
-        int n_maxIdx = n;
 
         Problem problem = new Problem();
 
         boolean addBias = _config.getAddBias();
+
+        if ( addBias ) {
+            problem.bias = 1.f;         // if >=0, there is a bias term     --> used, but non cli version does not automatically add the bias terms
+            ++n;                        // adjust n
+        }
+        else {
+            problem.bias = -1.f;        // if <0, no bias term
+        }
+
+        problem.l = m;              // number of training examples
+        problem.n = n;              // number of features (including bias feature, if it exists)
+        problem.x = setupFeatureNodes( featuresMatrixTrain, addBias );
+        problem.y = new double[ m ];
+
+        // set labels vector
+        for( int r = 0; r < m; ++r ) {
+            float label = SupervisedUtil.getClassTruth( classTruthVector, r );
+            problem.y[ r ] = label;
+        }
+
+        return problem;
+    }
+
+
+    private Feature[][] setupFeatureNodes( Data featuresMatrixTrain, boolean addBias ) {
+
+        int m = SupervisedUtil.calcMFromFeatureMatrix( featuresMatrixTrain );   // m = number of data points
+        int n = SupervisedUtil.calcNFromFeatureMatrix( featuresMatrixTrain );   // n = feature vector size
+        int n_maxIdx = n;
 
         if ( addBias ) {
 
@@ -152,32 +185,26 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
             //      Data biasColumn = new Data( 1, m );
             //      featuresMatrixTrain = Data2d.addColumn( featuresMatrixTrain, biasColumn );
 
-            problem.bias = 1.f;         // if >=0, there is a bias term     --> used, but non cli version does not automatically add the bias terms
             n++;                        // adjust n
         }
-        else {
-            problem.bias = -1.f;        // if <0, no bias term
-        }
 
-        problem.l = m;              // number of training examples
-        problem.n = n;              // number of features (including bias feature, if it exists)
-        problem.x = new Feature[ m ][ n ];
-        problem.y = new double[ m ];
+        Feature[][] x = new Feature[ m ][ ];
 
         // iterate data points (vectors in the VectorSeries - each vector is a data point)
-        for( int r = 0; r < m; ++r ) {
+        for( int mi = 0; mi < m; ++mi ) {
 
-            float classTruth = SupervisedUtil.getClassTruth( classTruthVector, r );
+            ArrayList< FeatureNode > tempFeatureNodes = new ArrayList<>();
 
             // iterate dimensions of x (elements of the vector)
-            for( int c = 0; c < n; ++c ) {
+            // put feature nodes in a temp array
+            for( int ni = 0; ni < n; ++ni ) {
 
                 double xi;
-                if( c == n_maxIdx ) {
+                if( ni == n_maxIdx ) {
                     xi = 1.f;
                 }
                 else {
-                    xi = SupervisedUtil.getFeatureValue( featuresMatrixTrain, n_maxIdx, r, c );
+                    xi = SupervisedUtil.getFeatureValue( featuresMatrixTrain, n_maxIdx, mi, ni );
                 }
 
                 // use sparse representation
@@ -185,12 +212,19 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
                     continue;
                 }
 
-                problem.x[ r ][ c ] = new FeatureNode( c+1, xi );
-                problem.y[ r ] = classTruth;
+                FeatureNode fn = new FeatureNode( ni + 1, xi );
+                tempFeatureNodes.add( fn );
+            }
+
+            // add the feature nodes to the Problem data structure
+            x[ mi ] = new FeatureNode[ tempFeatureNodes.size() ];
+            for( int i = 0; i < tempFeatureNodes.size(); ++i ) {
+                FeatureNode fn = tempFeatureNodes.get( i );
+                x[ mi ][ i ] = fn;
             }
         }
 
-        return problem;
+        return x;
     }
 
     private Parameter setupParameters() {
@@ -228,37 +262,12 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
     public void predict( Data featuresMatrix, Data predictionsVector ) {
 
         int m = SupervisedUtil.calcMFromFeatureMatrix( featuresMatrix );   // m = number of data points
-        int n = SupervisedUtil.calcNFromFeatureMatrix( featuresMatrix );   // n = feature vector size
-        int n_maxIdx = n;
-
         boolean addBias = _config.getAddBias();
 
-        if ( addBias ) {
-            n++;                        // adjust n
-        }
+        Feature[][] x = setupFeatureNodes( featuresMatrix, addBias );
 
-
-        Feature[][] x = new Feature[ m ][ n ];
-
-        // convert input to Feature instance, then predict
-        // iterate data points (vectors in the VectorSeries - each vector is a data point)
-        for( int r = 0; r < m; ++r ) {
-
-            // iterate dimensions of x (elements of the vector)
-            for( int c = 0; c < n; ++c ) {
-
-                double xi;
-                if( c == n_maxIdx ) {
-                    xi = 1.f;
-                }
-                else {
-                    xi = SupervisedUtil.getFeatureValue( featuresMatrix, n_maxIdx, r, c );
-                }
-
-                x[ r ][ c ] = new FeatureNode( c+1, xi );
-            }
-
-            predictionsVector._values[ r ] = ( float ) Linear.predict( _model, x[ r ] );
+        for( int mi = 0; mi < m; ++mi ) {
+            predictionsVector._values[ mi ] = ( float ) Linear.predict( _model, x[ mi ] );
         }
     }
 

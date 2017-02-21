@@ -34,7 +34,7 @@ public class Text2ImageLabelEntityConfig extends ImageLabelEntityConfig {
 
     // defaults, automatically updated
     public int charIndex = -1;
-    public int digitIndex = 2; // 0,1,2 depending on which part of ASCII coding
+//    public int digitIndex = 2; // 0,1,2 depending on which part of ASCII coding
 
     // generated - do not set manually
     public String character = "?";

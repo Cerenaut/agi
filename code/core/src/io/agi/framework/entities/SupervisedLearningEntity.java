@@ -28,37 +28,48 @@ import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
 import io.agi.framework.persistence.models.ModelEntity;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Collection;
 
+
 /**
  * This is a 'learning analytics' Entity which uses a provided label to classify input and measure correct label prediction.
- *
- * There are 2 inputs: Features, and Labels. Features are real or binary values that represent the state of some algorithm
- * or system. Labels are the output we desire the supervised learning entity to produce given a particular sample.
- *
- * It can do any combination of training and testing simultaneously. Normal use case is train +test, then test only.
- * This allows you to view progress on incomplete training (and e.g. abort early).
- *
+ * <p>
+ * There are 2 inputs: Features, and Labels. Features are vectors of real or binary values that comprise the input
+ * data set. Labels are the associated classes for classification or values in the case of regression.
+ * <p>
+ * It can support training and testing simultaneously. Standard use case of supervised learning is train then test.
+ * Some algorithms can be trained online, in which case training and testing can be done simultaneously.
+ * <p>
  * It optionally can accumulate the training data into a batch, and train once at the end.
- *
+ * <p>
  * It has 3 modes for accumulating data:
- *
+ * <p>
  * a) ONLINE
  * b) SAMPLE
  * c) BATCH
- *
+ * <p>
  * In Online mode samples are presented one at a time. It is assumed that the input features may change in meaning over
  * time, therefore some amount of forgetting is required / implied.
- *
+ * <p>
  * In Sample mode it is the same as Online except no forgetting factor is required. Every sample is judged to be valid
  * which occurs if the algorithm generating the samples is fixed and no longer learning.
- *
+ * <p>
  * In Batch mode, the algorithm is trained on a large number of samples which are supplied and used in one go.
- *
+ *      *NOTE:* currently batch mode uses the accumulated data - it does not support input of a batch of data.
+ * <p>
+ * The 'model' refers to the parameters of the learning algorithm - at times not just the hypothesis parameters
+ *      (e.g. for the batch supervised learning algorithms implemented at this time).
+ * They are saved to and loaded form persistence every iteration.
+ * <p>
+ * <p>
  * Created by gideon on 11/07/2016.
  */
 public class SupervisedLearningEntity extends Entity {
+
+    protected static final Logger _logger = LogManager.getLogger();
 
     public static final String ENTITY_TYPE = "supervised-learning-entity";
 
@@ -66,12 +77,15 @@ public class SupervisedLearningEntity extends Entity {
     public static final String LEARNING_MODE_SAMPLE = "sample";
     public static final String LEARNING_MODE_BATCH = "batch";
 
-    // This is the input data set implemented with a VectorSeries.
-    // It is a series of data points (each one a feature vector).
+    // Features and Labels by time comprise the input data set.
+
+    // Features_by_time is a series of data points (each one a feature vector).
     // It can be viewed as a matrix of size: 'number of features' x 'number of data points', or n x m in standard ML terminology
     public static final String FEATURES_BY_TIME = "features-by-time";
+    // Labels_by_time is a series of labels (either single label or label vector)
     public static final String LABELS_BY_TIME = "labels-by-time";
 
+    // In 'accumulate' mode, INPUT_FEATURES/LABELS comprise the feature vector and input label at an instant in time
     public static final String INPUT_FEATURES = "input-features";
     public static final String INPUT_LABELS = "input-labels";
 
@@ -79,10 +93,9 @@ public class SupervisedLearningEntity extends Entity {
     public static final String OUTPUT_LABELS_PREDICTED = "output-labels-predicted";
     public static final String OUTPUT_LABELS_ERROR = "output-labels-error";
 
-    public SupervisedLearningEntity( ObjectMap om, Node n, ModelEntity model ) {
+    protected SupervisedLearningEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
     }
-
 
     @Override
     public void getInputAttributes( Collection< String > attributes ) {
@@ -127,9 +140,9 @@ public class SupervisedLearningEntity extends Entity {
     }
 
     /**
-     * Default implementation clears accumulated training data; override to clear any additional model data.
+     * Default implementation clears accumulated training data; override to clear model data of the given algorithm.
      */
-    protected void resetModel() {
+    protected void reset() {
         SupervisedLearningEntityConfig config = ( SupervisedLearningEntityConfig ) _config;
 
         config.learnBatchComplete = false;
@@ -142,19 +155,37 @@ public class SupervisedLearningEntity extends Entity {
         setData( LABELS_BY_TIME, newOutputLabels );
     }
 
-    protected void loadModel( ) {
+    /**
+     * Initialise model data structure, and load it with parameters from persistence.
+     * It should be ready for training if not already trained.
+     *
+     * @param features
+     * @param labels
+     * @param labelClasses
+     */
+    protected void loadModel( int features, int labels, int labelClasses ) {
         // Implement as needed in subclasses
+        _logger.warn( "loadModel has not been overridden by your supervised learning algorithm - model will not be loaded from persistence" );
+    }
+
+    /**
+     * Save the model to persistence.
+     */
+    protected void saveModel() {
+        // Implement as needed in subclasses
+        _logger.warn( "saveModel has not been overridden by your supervised learning algorithm - model will not be persisted" );
     }
 
     /**
      * Train the algorithm given the entire history of training samples provided.
      *
      * @param featuresTimeMatrix History of features
-     * @param labelsTimeMatrix History of labels
-     * @param features Nbr of features in each sample
+     * @param labelsTimeMatrix   History of labels
+     * @param features           Nbr of features in each sample
      */
     protected void trainBatch( Data featuresTimeMatrix, Data labelsTimeMatrix, int features ) {
         // Implement as needed in subclasses
+        throw new java.lang.UnsupportedOperationException( "train batch is not supported by this algorithm" );
     }
 
     /**
@@ -165,6 +196,7 @@ public class SupervisedLearningEntity extends Entity {
      */
     protected void trainSample( Data features, Data labels ) {
         // Implement as needed in subclasses
+        throw new java.lang.UnsupportedOperationException( "train sample is not supported by this algorithm" );
     }
 
     /**
@@ -175,6 +207,7 @@ public class SupervisedLearningEntity extends Entity {
      */
     protected void trainOnline( Data features, Data labels ) {
         // Implement as needed in subclasses
+        throw new java.lang.UnsupportedOperationException( "Online training is not supported by this algorithm" );
     }
 
     /**
@@ -185,6 +218,7 @@ public class SupervisedLearningEntity extends Entity {
      */
     protected void predict( Data features, Data predictedLabels ) {
         // Implement as needed in subclasses
+        throw new java.lang.UnsupportedOperationException( "Prediction not supported by this algorithm" );
     }
 
     protected void accumulate( Data features, Data labels ) {
@@ -245,8 +279,8 @@ public class SupervisedLearningEntity extends Entity {
                 errors._values[ i ] = errorValue;
 
                 if( elements == 1 ) {
-                    config.labelsPredicted = (int)predictedLabelValue; // the predicted class given the input features
-                    config.labelsTruth = (int)labelValue;
+                    config.labelsPredicted = ( int ) predictedLabelValue; // the predicted class given the input features
+                    config.labelsTruth = ( int ) labelValue;
                 }
                 else {
                     config.labelsPredicted = 0; // can't be expressed
@@ -262,17 +296,17 @@ public class SupervisedLearningEntity extends Entity {
     }
 
     /**
-     * The purpose of this method is to obtain a vector of labels from EITHER config properties or from a Data reference.
-     *
+     * Obtain a vector of labels from EITHER config properties or from a Data reference.
+     * <p>
      * If the label comes from a config property, we can encode it as a binary vector or as an integer.
-     *
+     * <p>
      * e.g. label = 5, possible labels = 10
-     *
-     *  One hot:
-     *  [0,0,0,0,0,1,0,0,0,0]
-     *
-     *  Integer:
-     *  [5]
+     * <p>
+     * One hot:
+     * [0,0,0,0,0,1,0,0,0,0]
+     * <p>
+     * Integer:
+     * [5]
      *
      * @return
      */
@@ -280,7 +314,7 @@ public class SupervisedLearningEntity extends Entity {
         SupervisedLearningEntityConfig config = ( SupervisedLearningEntityConfig ) _config;
 
         // First look for a reference Data that contains labels.
-        if( config.labelEntityName.length() == 0 ) {
+        if( config.labelEntityName == null || config.labelEntityName.length() == 0 ) {
             // get labels from supplied data
             Data labels = getData( INPUT_LABELS );
             return labels;
@@ -320,8 +354,7 @@ public class SupervisedLearningEntity extends Entity {
 
         SupervisedLearningEntityConfig config = ( SupervisedLearningEntityConfig ) _config;
 
-        // Has 2 inputs: FEATURES x TIME and LABELS x TIME
-        // However, labels *may* be generated from a config property rather than a data.
+        // Note that labels *may* be generated from a config property rather than a data.
         // Therefore, we directly get the features data and have a method to get the label data.
         Data features = getData( INPUT_FEATURES ); // only appended when learning enabled
         if( features == null ) {
@@ -330,69 +363,58 @@ public class SupervisedLearningEntity extends Entity {
 
         Data labels = getLabelData(); // always returns a vector with 1 or more elements
 
-        // If we are incrementally building a model from a store of data, we need to load it now from persistence.
-        // This means loading any Data objects that are the serialized form of the model. The model is e.g. the weights
-        // of the supervised learning algorithm.
-        loadModel( ); // load a saved model, ie from persistence
+        // If optionally resetting the model, don't train and therefore modify it again
+        if( config.reset ) {
+            reset();           // reset the model
+        }
+        else {
 
-        // Now decide if we are updating the model, or just testing it. If learn == true, we are updating the model.
-        if( config.learn ) {
+            loadModel( features.getSize(), labels.getSize(), config.labelClasses ); // load a saved model, ie from persistence
 
-            // We might need to train the model, but not want to accumulate any more data (it might already be a complete set)
-            // Therefore we have a switch that decides whether to add more samples to the training data.
-            if( config.accumulateSamples ) {
-                accumulate( features, labels );
-            }
+            // If learning mode, then update model
+            if( config.learn ) {
 
-            // We have 3 learning modes: ONLINE, SAMPLE and BATCH. Each has different interface and rules.
-            // The implementing algorithm may only be able to support some modes, depending on what it's API looks like.
-            if( config.learningMode.equalsIgnoreCase( LEARNING_MODE_ONLINE ) ) {
-                // train incrementally using one latest sample, continuously forgetting older samples
-                trainOnline( features, labels );
-            }
-            else if( config.learningMode.equalsIgnoreCase( LEARNING_MODE_SAMPLE ) ) {
-                // train incrementally using one latest sample
-                trainSample( features, labels );
-            }
-            else if( config.learningMode.equalsIgnoreCase( LEARNING_MODE_BATCH ) ) {
-
-                // Batch: re-train completely using a history of samples
-                // In batch mode, we might only want to do this once and then skip further retrainings. Therefore we have
-                // a switch to turn it off once it has run once.
-                if( config.learnBatchOnce && config.learnBatchComplete ) {
-                    // skip
+                if( config.accumulateSamples ) {
+                    accumulate( features, labels );
                 }
-                else { // either learnBatch is "every step" or we didn't do it yet
-                    Data outputFeatures = getData( FEATURES_BY_TIME );
-                    Data outputLabels = getData( FEATURES_BY_TIME );
 
-                    trainBatch( outputFeatures, outputLabels, features.getSize() ); // train on a batch of data.
-
-                    config.learnBatchComplete = true; // note that it doesn't need to be done again
+                if( config.learningMode.equals( LEARNING_MODE_ONLINE ) ) {
+                    trainOnline( features, labels );
                 }
+                else if( config.learningMode.equals( LEARNING_MODE_SAMPLE ) ) {
+                    trainSample( features, labels );
+                }
+                else if( config.learningMode.equals( LEARNING_MODE_BATCH ) ) {
+                    if( config.learnBatchOnce && config.learnBatchComplete ) {
+                        // skip
+                    }
+                    else { // either learnBatch is "every step" or we didn't do it yet
+
+                        _logger.info( "Train learner, batch mode");
+
+                        trainBatch( features, labels, features.getSize() ); // train on a batch of data.
+
+                        config.learnBatchComplete = true; // it doesn't need to be done again
+                    }
+                }
+
+                saveModel();
             }
         }
 
-        // We might optionally be reseting the model. Do that now. This means the resulting model will be completely empty
-        // (no samples).
-        if ( config.reset ) {
-            resetModel(); // reset the model. Will be saved later
-        }
 
         // We may be doing predictions during training (i.e. with an incomplete model, to see how it is progressing) or
-        // during testing (with the presumably complete model). Produce some
+        // during testing (with the presumably complete model).
         Data predictedLabels = new Data( new DataSize( labels._dataSize ) );
 
         if( config.predict ) { // optional switch
+
+            _logger.info( "Make predictions");
+
             predict( features, predictedLabels );
         }
 
-        // Evaluates and outputs the predicted model against the true label. This is convenient to do here because we
-        // have access to a) the features b) the correct label and c) the predicted label. We can therefore compute the
-        // error. Also we pretty much have to compute the error here if we have some kinda error feedback.
-        evaluate( features, labels, predictedLabels );
-
+        evaluate( features, labels, predictedLabels );      // convenient here and necessary if there is some type of error feedback
     }
-
 
 }

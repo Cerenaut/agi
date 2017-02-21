@@ -155,7 +155,7 @@ public class Data2d {
     public static ArrayList< Data > matrixToColVectors( Data matrix, int rows, int cols ) {
 //        Point p = getSizeExplicit( matrix._dataSize );
 
-        ArrayList< Data > colVectors = new ArrayList< Data >();
+        ArrayList< Data > colVectors = new ArrayList<>();
 
         for( int c = 0; c < cols; ++c ) {
 
@@ -379,6 +379,7 @@ public class Data2d {
         if( d == null ) {
             return null;
         }
+
         if( d.getDimensions() == 2 ) {
             Integer ix = d.getIndex( DataSize.DIMENSION_X );
             Integer iy = d.getIndex( DataSize.DIMENSION_Y );
@@ -395,7 +396,7 @@ public class Data2d {
     }
 
     public static boolean is2D( DataSize d ) {
-        return ( getSizeExplicit( d ) != null );
+        return ( d.getDimensions() == 2 );
     }
 
     public static Point getSizeSquare( int volume ) {
@@ -496,4 +497,69 @@ public class Data2d {
 
         return stringMatrix;
     }
+
+    /**
+     * Copy a set of contiguous rows of a matrix.
+     * @param matrix
+     * @param row_start inclusive
+     * @param row_end inclusive
+     * @return the copied rows
+     */
+    public static Data copyRows( Data matrix, int row_start, int row_end ) {
+        Point p = getSizeExplicit( matrix );
+
+        int rows = row_end - row_start + 1;
+        int cols = p.x;
+
+        Data matrix_subset = new Data( cols, rows );
+
+        for( int r = row_start, rsub = 0 ; r <= row_end ; ++r, ++rsub ) {
+            for( int c = 0; c < cols; ++c ) {
+                matrix_subset._values[ rsub * cols + c ] = matrix._values[ r * cols + c ];
+            }
+        }
+        return matrix_subset;
+    }
+
+    /**
+     * Copy a set of contiguous cols of a matrix.
+     * @param matrix
+     * @param col_start inclusive
+     * @param col_end inclusive
+     * @return the copied cols
+     */
+    public static Data copyCols( Data matrix, int col_start, int col_end ) {
+        Point p = getSizeExplicit( matrix );
+
+        int rows = p.y;
+        int cols = col_end - col_start + 1;
+
+        Data matrix_subset = new Data( rows, cols );
+
+        for( int r = 0, csub = 0; r < rows; ++r, ++csub ) {
+            for( int c = col_start ; c <= col_end ; ++c ) {
+                matrix_subset._values[ r * cols + csub ] = matrix._values[ r * cols + c ];
+            }
+        }
+
+        return matrix_subset;
+    }
+
+    public static Data transpose( Data matrix ) {
+
+        Point p = getSizeExplicit( matrix );
+        int rows = p.y;
+        int cols = p.x;
+
+        Data matrix_subset = new Data( cols, rows );
+
+        for( int r = 0; r < rows; ++r ) {
+            for( int c = 0 ; c <= cols ; ++c ) {
+                matrix_subset._values[ c * rows + r ] = matrix._values[ r * cols + c ];
+            }
+        }
+
+        return matrix_subset;
+    }
+
 }

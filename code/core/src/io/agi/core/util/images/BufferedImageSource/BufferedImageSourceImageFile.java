@@ -35,51 +35,67 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+
 
 /**
  * Created by gideon on 1/10/14.
  */
 public class BufferedImageSourceImageFile extends BufferedImageSource {
 
-    protected static final Logger logger = LogManager.getLogger();
+    protected static final Logger _logger = LogManager.getLogger();
 
-    protected ArrayList< String > _fileNames = new ArrayList< String >();
-    protected String _folderName = null;
+    protected ArrayList< String > _fileNames = new ArrayList<>();
+    protected String _folderNames = null;
     protected BufferedImage _image = null;
     protected int _idx = 0;
 
-    public BufferedImageSourceImageFile( String folderName ) {
-        _folderName = folderName;
-        _fileNames = new ArrayList< String >();
+    /**
+     *
+     * @param folderNames comma separated list of folder names
+     */
+    public BufferedImageSourceImageFile( String folderNames ) {
+        _folderNames = folderNames;
+        _fileNames = new ArrayList<>();
 
-        File folder = new File( _folderName );
-        boolean isFile = folder.isFile();
+        _logger.info( "Folder names = " + folderNames );
 
-        if( !isFile ) {
-            DirectoryStream< Path > directoryStream = null;
-            try {
-                directoryStream = Files.newDirectoryStream( Paths.get( _folderName ) );
-                for( Path path : directoryStream ) {
-                    _fileNames.add( path.getFileName().toString() );
-                }
-            } catch( IOException ex ) {
-                System.err.println( "IO Exception reading files in folder: " + _folderName );
-            }
-            finally {
-                if( directoryStream != null ) {
-                    try {
-                        directoryStream.close();
+        String[] folders = folderNames.split( "," );
+        for( String folderName : folders ) {
+
+            folderName = folderName.trim();
+
+            File folder = new File( folderName );
+            boolean isFile = folder.isFile();
+
+            if( !isFile ) {
+                DirectoryStream< Path > directoryStream = null;
+                try {
+
+                    _logger.info( "Reading files in folder: " + folderName );
+
+                    directoryStream = Files.newDirectoryStream( Paths.get( folderName ) );
+                    for( Path path : directoryStream ) {
+                        _fileNames.add( path.toAbsolutePath().toString() );
                     }
-                    catch( Exception e ) {
-                        System.err.println( "Exception closing directory stream from folder: " + _folderName );
-                        e.printStackTrace();
+                }
+                catch( IOException ex ) {
+                    System.err.println( "IO Exception reading files in folder: " + folderName );
+                }
+                finally {
+                    if( directoryStream != null ) {
+                        try {
+                            directoryStream.close();
+                        }
+                        catch( Exception e ) {
+                            System.err.println( "Exception closing directory stream from folder: " + folderName );
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
-        }
-        else {
-            System.err.println( "ERROR: " + _folderName + " is a file but should be a directory." );
+            else {
+                System.err.println( "ERROR: " + folderName + " is a file but should be a directory." );
+            }
         }
         Collections.sort( _fileNames );
     }
@@ -98,8 +114,8 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
         return str;
     }
 
-    public String getFolderName() {
-        return _folderName;
+    public String getFolderNames() {
+        return _folderNames;
     }
 
     /**
@@ -114,7 +130,7 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
     public String getImageFilePath( int idx ) {
         String fullFileName = "undefined";
         if( idx >= 0 && idx < _fileNames.size() ) {
-            fullFileName = _folderName + "/" + _fileNames.get( idx );
+            fullFileName = _fileNames.get( idx );
         }
         else {
             System.err.println( "Invalid iDX:" + idx + " of " + _fileNames.size() );
@@ -132,11 +148,14 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
      */
     public String getImageFileName( int idx ) {
         try {
-            return _fileNames.get( idx );
+            String filePath = _fileNames.get( idx );
+            File f = new File( filePath );
+            String fileName = f.getName();
+            return fileName;
         }
         catch( Exception e ) {
-            logger.error( "Unable to get image file name.");
-            logger.error( e.toString(), e );
+            _logger.error( "Unable to get image file name.");
+            _logger.error( e.toString(), e );
 
             return null;
         }
@@ -160,8 +179,8 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
                 _image = ImageIO.read( stream );
             }
             catch( IOException e ) {
-                logger.error( "Unable to get image.");
-                logger.error( e.toString(), e );
+                _logger.error( "Unable to get image.");
+                _logger.error( e.toString(), e );
 
                 _image = null;
             }

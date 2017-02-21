@@ -27,8 +27,6 @@ package io.agi.core.data;
 
 import io.agi.core.math.RandomInstance;
 import io.agi.core.orm.AbstractPair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;

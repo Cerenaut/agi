@@ -24,7 +24,7 @@ import io.agi.core.data.Data2d;
 import io.agi.core.data.DataSize;
 import io.agi.core.math.FastRandom;
 import io.agi.core.ml.supervised.LogisticRegression;
-import io.agi.core.ml.supervised.SupervisedLearningConfig;
+import io.agi.core.ml.supervised.SupervisedBatchTrainingConfig;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.orm.UnitTest;
 import org.junit.After;
@@ -92,13 +92,13 @@ public class LogisticRegressionTest implements UnitTest {
 
         // setup learner
         _r = new FastRandom(  );
-        SupervisedLearningConfig config = new SupervisedLearningConfig( );
-        config.setup( _om, "test-logistic-config", _r, true, 100f);
+        SupervisedBatchTrainingConfig config = new SupervisedBatchTrainingConfig( );
+        config.setup( _om, "test-logistic-config", _r, "", true, 100f);
         _learner.setup( config );
 
         // train model
         _learner.train( _featuresMatrixTrain, _classTruthVector );
-        _modelString = _learner.modelString();
+        _modelString = _learner.getModelString();
         assertTrue( _modelString != null );
     }
 
@@ -148,7 +148,7 @@ public class LogisticRegressionTest implements UnitTest {
         // count how many errors - an error is where the diff between prediction and label is greater than eps
         double meanError = _predictionsVectorTest.mean();
 
-        System.out.println( "Model = " + _learner.modelString() );
+        System.out.println( "Model = " + _learner.getModelString() );
         System.out.println( "Accuracy = " + meanError * 100 + "%" );
 
         assertTrue( meanError > 0.89 );

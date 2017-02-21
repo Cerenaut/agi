@@ -1,0 +1,72 @@
+{
+  "experiments": [
+    {
+      "import-files": {     // Input files - used for Import/Export
+                            // These are the base input files
+                            // --> relative to    "run/input"
+                            // 
+                            // Before an experiment, these 'base input files' are copied and the copy renamed with the prefix timedate 
+                            // (and the entity prefixes replaced with generated prefix) 
+                            // before being used to **import** into agief before running experiment
+                            // --> imported (experiment) input files created into:      "run/input/prefix"
+                            //
+                            // These are also used for basename for **export** at the end. 
+                            // The filename will be a modified version (i.e. prefixed with export__ or saved__ and the timedate)
+                            // if the last component of path is 'output' then don't copy/rename/search-replace-prefix, just use file to import data
+                            // --> exported input files created into:      "run/output/prefix"
+
+        "file-entities": "entities-phase1.json",
+        "file-data": [
+            "data-phase1.json"    // uses the first filename in this array for export filename
+          ]
+      },
+
+      "load-local-files": {   // To specify a Data file, residing on the compute machine, that will be loaded at the 'import experiment' stage
+                              // relative to AGI_RUN_HOME, the run folder on the compute node
+        "file-data": [
+            "/output/170122-0412/saved__170122-0412--experiment-data.json"
+          ]
+      },      
+
+      "gen-files": {      // used for 'Export Demo'
+                          // use this name when exporting files when generating from a Demo
+        "file-entities": "entities-phase1.json",
+        "file-data": [
+            "data-phase1.json"    // only uses the first filename in this array
+          ]
+      },
+      "dataset-parameters": [   // use this to set the path to the data set, resolvable in the running environment, from the run folder (on aws, this is the path in the docker container)
+        {
+          "entity-name": "image-class",
+          "parameter-path": "sourceFilesPathTraining",
+          "value": "training-small"
+        },
+        {
+          "entity-name": "image-class",
+          "parameter-path": "sourceFilesPathTesting",
+          "value": "training-small, testing-small"
+        }
+      ],
+      "parameter-sweeps": [   // the parameters to sweep. 
+        // There can be multiple sets, each set explored independently.
+        // All params within a set are incremented in parallel, and the run will terminate when any of the param incrementers raaches the end.
+        {
+          "parameter-set": [
+            {
+              "entity-name": "autoencoder",
+              "parameter-path": "ageMax",
+              "val-begin": 30000, // inclusive
+              "val-end": 30000,   // NOT inclusive
+              "val-inc": 1
+            },
+            {
+              "entity-name": "image-class",
+              "parameter-path": "trainingEpochs",
+              "val-series": [0.1, 0.3, 0.9, 3, 9, 30, 100]  // If val-series defined, use it (ignore val-begin/end and inc)
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

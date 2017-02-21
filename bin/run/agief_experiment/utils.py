@@ -69,14 +69,14 @@ def run_bashscript_repeat(cmd, max_repeats, wait_period, verbose=False):
         print "run_bashscript_repeat, running cmd = " + cmd
 
     success = False
-    for i in range(1, max_repeats+1):
+    for i in range(1, max_repeats + 1):
         child = subprocess.Popen(cmd,
                                  shell=True,
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE,
                                  executable="/bin/bash")
 
-        output, error = child.communicate()     # get the outputs. NOTE: This will block until shell command returns.
+        output, error = child.communicate()  # get the outputs. NOTE: This will block until shell command returns.
 
         exit_status = child.returncode
 
@@ -99,3 +99,20 @@ def run_bashscript_repeat(cmd, max_repeats, wait_period, verbose=False):
         print "ERROR: was not able run shell command: " + cmd
         print " Exit status = " + str(exit_status)
         exit()
+
+
+def check_validity(files, log=False):
+    """ Check validity of files, and exit if they do not exist or not specified """
+
+    is_valid = True
+    file_paths = []
+
+    for file in files:
+        if os.path.isfile(file) and os.path.exists(file):       # TODO for some reason exists() not working
+            file_paths.append(file)
+        else:
+            is_valid = False
+            print "ERROR: check_validity(), this file is not valid: " + file
+            break
+
+    return is_valid

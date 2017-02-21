@@ -110,8 +110,8 @@ public class GrowingNeuralGasDemo {
         // a) Image to image region, and decode
         Framework.SetDataReference( competitiveLearningName, GrowingNeuralGasEntity.INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
 
-        ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList< AbstractPair< String, String > >();
-        featureDatas.add( new AbstractPair< String, String >( competitiveLearningName, GrowingNeuralGasEntity.OUTPUT_ACTIVE ) );
+        ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList<>();
+        featureDatas.add( new AbstractPair<>( competitiveLearningName, GrowingNeuralGasEntity.OUTPUT_ACTIVE ) );
         Framework.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
 
         // Experiment config
@@ -131,7 +131,7 @@ public class GrowingNeuralGasDemo {
         Framework.SetConfig( vectorSeriesName, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( valueSeriesName, "cache", String.valueOf( cacheAllData ) );
 
-        // Mnist config
+        // MNIST config
         Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldX", "0" );
         Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldY", "0" );
         Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldW", "28" );
@@ -152,9 +152,9 @@ public class GrowingNeuralGasDemo {
         int widthCells = 32;
         int heightCells = 32;
         int edgeMaxAge = 500;
-        int growthInterval = 50;
-        float learningRate = 0.01f;
-        float learningRateNeighbours = learningRate * 0.2f;
+        int growthInterval = 50;                                        // split two most stressed after growthInterval steps
+        float learningRate = 0.01f;                                     // winner, make similar to input
+        float learningRateNeighbours = learningRate * 0.2f;             // all connected neighbours make similar by this amount
         float noiseMagnitude = 0.0f;
         float stressLearningRate = 0.01f; // not used now?
         float stressSplitLearningRate = 0.5f; // change to stress after a split

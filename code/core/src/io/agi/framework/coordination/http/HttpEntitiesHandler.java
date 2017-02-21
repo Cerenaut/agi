@@ -36,7 +36,7 @@ import java.util.Collection;
  */
 public class HttpEntitiesHandler implements HttpHandler {
 
-    protected static final Logger logger = LogManager.getLogger();
+    protected static final Logger _logger = LogManager.getLogger();
 
     public static final String CONTEXT = "/entities";
 
@@ -124,8 +124,8 @@ public class HttpEntitiesHandler implements HttpHandler {
             }
         }
         catch( Exception e ) {
-            logger.error( "Unable to return handle entities call.");
-            logger.error( e.toString(), e );
+            _logger.error( "Unable to return handle entities call.");
+            _logger.error( e.toString(), e );
         }
 
         HttpUtil.SendResponse( t, status, response );

@@ -155,9 +155,9 @@ public class RegionLayerEntity extends Entity {
 //        flags.putFlag( ACTIVITY_1, DataFlags.FLAG_SPARSE_BINARY );
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_LAZY_PERSIST );
-        flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_LAZY_PERSIST );
-        flags.putFlag( ACTIVITY, DataFlags.FLAG_LAZY_PERSIST );
+//        flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_LAZY_PERSIST );
+//        flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_LAZY_PERSIST );
+//        flags.putFlag( ACTIVITY, DataFlags.FLAG_LAZY_PERSIST );
 
         attributes.add( PREDICTION_OLD );
         attributes.add( PREDICTION_NEW );

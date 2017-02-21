@@ -22,24 +22,28 @@ package io.agi.framework;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import io.agi.core.orm.AbstractPair;
-import io.agi.core.orm.Keys;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.util.FileUtil;
+import io.agi.core.util.MemoryUtil;
 import io.agi.framework.coordination.http.HttpExportHandler;
+import io.agi.framework.persistence.DenseDataDeserializer;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelDataReference;
 import io.agi.framework.persistence.models.ModelEntity;
 import io.agi.framework.persistence.models.ModelEntityConfigPath;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
 
 /**
  * Functions used throughout the experimental framework, i.e. not specific to Entity or Node.
@@ -47,14 +51,15 @@ import java.util.stream.Collectors;
  */
 public class Framework {
 
-    protected static final Logger logger = LogManager.getLogger();
+    protected static final Logger _logger = LogManager.getLogger();
 
     public static final String ENTITY_NAME_PREFIX_DELIMITER = "--";
 
     protected static String entityNamePrefix;
     protected static SecureRandom entityNameRandom;
 
-    public static String GetEntityName( String entityNameSuffix ) {
+
+    public static String GetEntityNameWithPrefix( String entityPrefix, String entityNameSuffix ) {
         String prefix = GetEntityNamePrefix();
         String name = entityNameSuffix;
 
@@ -65,6 +70,11 @@ public class Framework {
         }
 
         return name;
+    }
+
+    public static String GetEntityName( String entityNameSuffix ) {
+        String prefix = GetEntityNamePrefix();
+        return GetEntityNameWithPrefix( prefix, entityNameSuffix );
     }
 
     public static String GetEntityNamePrefix() {
@@ -122,7 +132,7 @@ public class Framework {
             String inputEntity,
             String inputSuffix,
             ArrayList< AbstractPair< String, String > > referenceEntitySuffixes ) {
-        String inputKey = NamedObject.GetKey( inputEntity, inputSuffix );
+        String inputKey = NamedObject.GetKey(inputEntity, inputSuffix);
         String refKeys = "";
 
         for( AbstractPair< String, String > ap : referenceEntitySuffixes ) {
@@ -135,7 +145,7 @@ public class Framework {
             refKeys = refKeys + refKey;
         }
 
-        SetDataReference( inputKey, refKeys );
+        SetDataReference(inputKey, refKeys);
     }
 
     /**
@@ -148,15 +158,18 @@ public class Framework {
             String dataKey,
             String refKeys ) {
         Node n = Node.NodeInstance();
-        ModelData modelData = n.fetchData( dataKey );
+//        ModelData modelData = n.fetchData( dataKey );
+        ModelData modelData = n.getModelData( dataKey, new DenseDataDeserializer() );
 
         if( modelData == null ) {
             modelData = new ModelData( dataKey, refKeys );
         }
 
         modelData.refKeys = refKeys;
-        Persistence persistence = n.getPersistence();
-        persistence.persistData( modelData );
+//        Persistence persistence = n.getPersistence();
+//        persistence.persistData(modelData);
+//        n.persistData( modelData ); // ensure cache is cleared
+        n.setModelDataPersist( modelData );
     }
 
     /**
@@ -166,8 +179,11 @@ public class Framework {
      * @param modelData
      */
     public static void SetData( ModelData modelData ) {
-        Persistence persistence = Node.NodeInstance().getPersistence();
-        persistence.persistData( modelData );
+        Node n = Node.NodeInstance();
+//        n.persistData( modelData );
+        n.setModelDataPersist(modelData);
+//        Persistence persistence = Node.NodeInstance().getPersistence();
+//        persistence.persistData( modelData );
     }
 
     /**
@@ -205,16 +221,33 @@ public class Framework {
     }
 
     /**
+     * Allows the config properties to be set with a config object.
+     * WARNING: if the wrong type of config is used (i.e. it has properties not intended for this entity) then there
+     * will be downstream issues.
+     * @param config
+     */
+    public static void SetConfig( String entityName, EntityConfig config ) {
+
+        _logger.info( "Set config of: " + entityName + " to the following: " +
+                new GsonBuilder().setPrettyPrinting().create().toJson( config ) );
+
+        Persistence persistence = Node.NodeInstance().getPersistence();
+        ModelEntity modelEntity = persistence.fetchEntity( entityName );
+        String configAsString = new Gson().toJson( config );
+        modelEntity.config = configAsString;
+    }
+
+    /**
      * Allows a single config property to be modified.
      */
     public static void SetConfig( String entityName, String configPath, String value ) {
 
-        logger.info( "Set config of: " + entityName + " path: " + configPath + " value: " + value );
+        _logger.info( "Set config of: " + entityName + " path: " + configPath + " value: " + value );
 
         Persistence persistence = Node.NodeInstance().getPersistence();
-        ModelEntity me = persistence.fetchEntity( entityName );
+        ModelEntity modelEntity = persistence.fetchEntity( entityName );
         JsonParser parser = new JsonParser();
-        JsonObject root = parser.parse( me.config ).getAsJsonObject();
+        JsonObject root = parser.parse( modelEntity.config ).getAsJsonObject();
 
         // navigate to the nested property
         // N.B. String.split : http://stackoverflow.com/questions/3481828/how-to-split-a-string-in-java
@@ -243,8 +276,8 @@ public class Framework {
         parent.addProperty( part, value );
 
         // re-serialize the whole thing
-        me.config = root.toString();//getAsString();
-        persistence.persistEntity( me );
+        modelEntity.config = root.toString();//getAsString();
+        persistence.persistEntity( modelEntity );
     }
 
     public static JsonElement GetNestedProperty( JsonObject root, String path ) {
@@ -310,8 +343,7 @@ public class Framework {
             ImportEntities( jsonEntities );
         }
         catch( Exception e ) {
-            logger.error( e.getStackTrace() );
-            System.exit( -1 );
+            _logger.error( e.toString(), e );
         }
     }
 
@@ -330,7 +362,7 @@ public class Framework {
             List< ModelEntity > entities = gson.fromJson( jsonEntities, listType );
 
             for( ModelEntity modelEntity : entities ) {
-                logger.info( "Persisting Entity of type: " + modelEntity.type + ", that is hosted at Node: " + modelEntity.node );
+                _logger.info( "Persisting Entity of type: " + modelEntity.type + ", that is hosted at Node: " + modelEntity.node );
                 CreateEntity( modelEntity );
             }
         }
@@ -349,8 +381,7 @@ public class Framework {
             ImportData( jsonData );
         }
         catch( Exception e ) {
-            logger.error( e.getStackTrace() );
-            System.exit( -1 );
+            _logger.error( e.toString(), e );
         }
     }
 
@@ -424,12 +455,12 @@ public class Framework {
 
             List< ModelDataReference > references = gson.fromJson( jsonEntity, listType );
             for( ModelDataReference modelDataReference : references ) {
-                logger.info( "Persisting data input reference for data: " + modelDataReference.dataKey + " with input data keys: " + modelDataReference.refKeys );
+                _logger.info( "Persisting data input reference for data: " + modelDataReference.dataKey + " with input data keys: " + modelDataReference.refKeys );
                 Framework.SetDataReference( modelDataReference.dataKey, modelDataReference.refKeys );
             }
         }
         catch( Exception e ) {
-            logger.error( e.getStackTrace() );
+            _logger.error( e.getStackTrace() );
             System.exit( -1 );
         }
     }
@@ -445,13 +476,13 @@ public class Framework {
 
             for( ModelEntityConfigPath modelConfig : modelConfigs ) {
 
-                logger.info( "Persisting entity: " + modelConfig.entityName + " config path: " + modelConfig.configPath + " value: " + modelConfig.configValue );
+                _logger.info( "Persisting entity: " + modelConfig.entityName + " config path: " + modelConfig.configPath + " value: " + modelConfig.configValue );
 
                 Framework.SetConfig( modelConfig.entityName, modelConfig.configPath, modelConfig.configValue );
             }
         }
         catch( Exception e ) {
-            logger.error( e.getStackTrace() );
+            _logger.error( e.getStackTrace() );
             System.exit( -1 );
         }
     }
@@ -460,12 +491,10 @@ public class Framework {
 
         Collection< ModelData > modelDatas = new ArrayList<>();
 
-        GetEntityDataSubtree( entityName, modelDatas );
-
-        if ( onlyDataRefs ) {
-
-            // Collection< ModelData > modelDatasFiltered = modelDatas.stream().filter( modelData -> modelData.isReference() ).collect( Collectors.toCollection( ArrayList::new ) );
-
+        if ( !onlyDataRefs ) {
+            GetEntityDataSubtree( entityName, modelDatas );
+        }
+        else {
             Collection< ModelData > modelDatasFiltered = new ArrayList<>( );
             for ( ModelData modelData : modelDatas ) {
                 if (modelData.isReference()) {
@@ -497,8 +526,11 @@ public class Framework {
      */
     protected static void GetEntityDataSubtree( String entityName, Collection< ModelData > modelDatas ) {
         Node node = Node.NodeInstance();
-        AddEntityData( entityName, modelDatas );
 
+        _logger.warn( "Entity = " + entityName );
+        MemoryUtil.logMemory( _logger );
+
+        AddEntityData( entityName, modelDatas );
         Collection< String > childNames = node.getPersistence().getChildEntities( entityName );
         for( String childName : childNames ) {
             GetEntityDataSubtree( childName, modelDatas );
@@ -525,7 +557,7 @@ public class Framework {
         attributes.addAll( attributesOut );
         for( String attribute : attributes ) {
             String outputKey = entity.getKey( attribute );
-            ModelData modelData = node.fetchData( outputKey );
+            ModelData modelData = node.getModelData( outputKey, new DenseDataDeserializer() );
 
             if( modelData != null ) {
                 modelDatas.add( modelData );
@@ -595,10 +627,25 @@ public class Framework {
             return true;
         }
         catch( Exception e ) {
-            logger.error( e.getStackTrace() );
+            _logger.error( e.getStackTrace() );
             return false;
         }
     }
 
+    public static boolean SaveSubtree( String entityName, String type, String path ) {
+        boolean success = false;
+        String subtree = Framework.ExportSubtree( entityName, type );
 
+        File file = new File( path );
+        try {
+            FileUtils.writeStringToFile( file, subtree );
+            success = true;
+        }
+        catch( IOException e ) {
+            _logger.error( "Unable to save subtree.");
+            _logger.error( e.toString(), e );
+        }
+
+        return success;
+    }
 }

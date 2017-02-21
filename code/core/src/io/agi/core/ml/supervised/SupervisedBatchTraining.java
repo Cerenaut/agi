@@ -24,9 +24,9 @@ import io.agi.core.data.Data;
 /**
  * Created by gideon on 14/12/16.
  */
-public interface Supervised {
+public interface SupervisedBatchTraining {
 
-    void setup( SupervisedLearningConfig config );
+    void setup( SupervisedBatchTrainingConfig config );
 
     void reset();
 
@@ -64,4 +64,12 @@ public interface Supervised {
      * @param modelString
      */
     void loadModel( String modelString );
+
+    /**
+     * Return the up-to-date serialised model that has been created by training the algorithm.
+     * It includes all the parameters of the algorithm.
+     * It is everything required to make predictions plus additional information.
+     * @return
+     */
+    String getModelString();
 }

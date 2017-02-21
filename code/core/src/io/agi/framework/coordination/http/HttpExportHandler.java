@@ -19,13 +19,18 @@
 
 package io.agi.framework.coordination.http;
 
+import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import io.agi.core.util.MemoryUtil;
 import io.agi.framework.Framework;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -33,9 +38,11 @@ import java.util.Map;
  */
 public class HttpExportHandler implements HttpHandler {
 
-    protected static final Logger logger = LogManager.getLogger();
+    protected static final Logger _logger = LogManager.getLogger();
 
     public static final String CONTEXT = "/export";
+
+    public static final String PARAMETER_EXPORT_LOCATION = "export-location";
 
     public static final String PARAMETER_ENTITY = "entity";
     public static final String PARAMETER_TYPE = "type";
@@ -56,24 +63,53 @@ public class HttpExportHandler implements HttpHandler {
             String query = t.getRequestURI().getQuery();
             Map< String, String > m = HttpUtil.GetQueryParams( query );
 
+            MemoryUtil.logMemory( _logger );
+
             if( ( m.containsKey( PARAMETER_TYPE ) )
                     && ( m.containsKey( PARAMETER_ENTITY ) ) ) {
                 String entityName = m.get( PARAMETER_ENTITY ).trim(); // essential
                 String type = m.get( PARAMETER_TYPE ).trim(); // essential
-                response = Framework.ExportSubtree( entityName, type );
 
-                String filename = entityName + "-" + type + ".json";
-                t.getResponseHeaders().add( "Content-type", "text/json/force-download" );
-                t.getResponseHeaders().add( "Content-Disposition", "attachment; filename=" + filename );
+                String filename = "saved__" + entityName + "-" + type + ".json";
+                if ( m.containsKey( PARAMETER_EXPORT_LOCATION ) ) {
+                    String folderPath = m.get( PARAMETER_EXPORT_LOCATION ).trim(); // essential
 
-                status = 200;
+                    Path filepath = Paths.get( folderPath, filename );
+
+                    // todo check that path is valid
+
+                    boolean success = Framework.SaveSubtree( entityName, type, filepath.toString() );
+
+                    HashMap< String, String > responseMap = new HashMap<>();
+                    responseMap.put( "entity", entityName );
+                    responseMap.put( "type", type );
+                    responseMap.put( "folder", folderPath );
+                    responseMap.put( "filepath", filepath.toString() );
+
+                    if ( success ) {
+                        responseMap.put( "message", "Success: Saved subtree" );
+                    }
+                    else {
+                        responseMap.put( "message", "Error: Could not save subtree");
+                    }
+                    response = new Gson().toJson( responseMap );
+                }
+                else {
+                    response = Framework.ExportSubtree( entityName, type );
+                    t.getResponseHeaders().add( "Content-type", "text/json/force-download" );
+                    t.getResponseHeaders().add( "Content-Disposition", "attachment; filename=" + filename );
+                    status = 200;
+                }
+
+                _logger.warn( "Created response" );
+                MemoryUtil.logMemory( _logger );
             }
 
             HttpUtil.SendResponse( t, status, response );
         }
         catch( Exception e ) {
-            logger.error( "Unable to export entities or data.");
-            logger.error( e.toString(), e );
+            _logger.error( "Unable to export entities or data.");
+            _logger.error( e.toString(), e );
         }
 
     }

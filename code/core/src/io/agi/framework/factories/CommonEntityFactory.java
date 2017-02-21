@@ -24,6 +24,8 @@ import io.agi.core.orm.ObjectMap;
 import io.agi.framework.Entity;
 import io.agi.framework.EntityFactory;
 import io.agi.framework.Node;
+import io.agi.framework.demo.mnist.AnalyticsEntity;
+import io.agi.framework.demo.mnist.ClassificationAnalysisEntity;
 import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.demo.mnist.MnistEntity;
 import io.agi.framework.demo.mnist.NumberSequence2ImageLabelEntity;
@@ -40,7 +42,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class CommonEntityFactory implements EntityFactory {
 
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger _logger = LogManager.getLogger();
 
     protected Node _n;
 
@@ -54,7 +56,6 @@ public class CommonEntityFactory implements EntityFactory {
 
     public Entity create( ObjectMap objectMap, ModelEntity modelEntity ) {
 
-        String entityName = modelEntity.name;
         String entityType = modelEntity.type;
 
         if( entityType.equals( ExperimentEntity.ENTITY_TYPE ) ) {
@@ -178,7 +179,19 @@ public class CommonEntityFactory implements EntityFactory {
         }
 
         if( entityType.equals( PyramidRegionLayerEntity.ENTITY_TYPE ) ) {
-            return new PyramidRegionLayerEntity( objectMap, _n, modelEntity );
+            return new PyramidRegionLayerEntity(objectMap, _n, modelEntity);
+        }
+
+        if( entityType.equals( AnalyticsEntity.ENTITY_TYPE ) ) {
+            return new AnalyticsEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( SupervisedBatchTrainingEntity.ENTITY_TYPE ) ) {
+            return new SupervisedBatchTrainingEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( ClassificationAnalysisEntity.ENTITY_TYPE ) ) {
+            return new ClassificationAnalysisEntity( objectMap, _n, modelEntity );
         }
 
         return null;

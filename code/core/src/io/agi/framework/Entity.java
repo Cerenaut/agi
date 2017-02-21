@@ -23,8 +23,11 @@ import com.google.gson.Gson;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.math.FastRandom;
+import io.agi.core.orm.AbstractPair;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
+import io.agi.framework.persistence.DataDeserializer;
+import io.agi.framework.persistence.DenseDataDeserializer;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
@@ -40,7 +43,7 @@ import java.util.*;
  * <p/>
  * Created by dave on 14/02/16.
  */
-public abstract class Entity extends NamedObject implements EntityListener {
+public abstract class Entity extends NamedObject implements EntityListener, DataDeserializer {
 
     protected static final Logger _logger = LogManager.getLogger();
 
@@ -51,10 +54,10 @@ public abstract class Entity extends NamedObject implements EntityListener {
     protected ModelEntity _model = null;
     protected EntityConfig _config = null;
     protected FastRandom _r;
-    protected HashSet< String > _childrenWaiting = new HashSet< String >();
-    protected HashMap< String, Data > _data = new HashMap< String, Data >();
+    protected HashSet< String > _childrenWaiting = new HashSet<>();
+    protected HashMap< String, Data > _data = new HashMap<>();
     protected DataFlags _dataFlags = new DataFlags();
-    protected DataMap _dataCopy = new DataMap(); // used to check for data changes since load.
+//    protected DataMap _dataCopy = new DataMap(); // used to check for data changes since load.
     protected boolean _flushChildren = false;
     protected boolean _resetChildren = false;
 
@@ -101,6 +104,14 @@ public abstract class Entity extends NamedObject implements EntityListener {
      * @param attributes
      */
     public abstract void getOutputAttributes( Collection< String > attributes, DataFlags flags );
+
+    /**
+     * Override to add data refs at run time, to connect entities.
+     * @param input2refs
+     * @param flags
+     */
+    public void getInputRefs( HashMap< String, AbstractPair< String, String> > input2refs, DataFlags flags ) {
+    }
 
     /**
      * Return the class of the config object for the derived entity.
@@ -186,7 +197,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
     protected void beforeUpdate() {
         String entityName = getName();
         int age = _config.age; // getPropertyInt( SUFFIX_AGE, 1 );
-        _logger.info( "START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName );
+        _logger.info("START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName);
     }
 
     protected void afterUpdate() {
@@ -194,11 +205,11 @@ public abstract class Entity extends NamedObject implements EntityListener {
         int age = _config.age; // getPropertyInt(SUFFIX_AGE, 1);
         _logger.info( "END   T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity updated: " + entityName );
 
-        _n.notifyUpdated( entityName ); // this entity, the parent, is now complete
+        _n.notifyUpdated(entityName); // this entity, the parent, is now complete
     }
 
     public void onEntityUpdated( String entityName ) {
-        _logger.info( "Entity: " + getName() + " being notified about: " + entityName );
+        _logger.info("Entity: " + getName() + " being notified about: " + entityName);
         synchronized( _childrenWaiting ) {
             _childrenWaiting.remove( entityName );
 
@@ -215,19 +226,36 @@ public abstract class Entity extends NamedObject implements EntityListener {
         }
     }
 
+    /**
+     * For dynamically connecting entities
+     */
+    public void connectEntities( HashMap< String, AbstractPair< String, String> > input2refs ) {
+
+        for ( String input : input2refs.keySet() ) {
+            AbstractPair< String, String > ref = input2refs.get( input );
+            Framework.SetDataReference( _name, input, ref._first, ref._second );
+        }
+    }
+
     protected void updateSelf() {
+
+        // get references to create entity connections at run time
+        HashMap< String, AbstractPair< String, String> > input2refs = new HashMap<>(  );
+        getInputRefs( input2refs, _dataFlags );
+        connectEntities( input2refs );
 
         // 1. fetch inputs
         // get all the inputs and put them in the object map.
-        Collection< String > inputKeys = new ArrayList< String >();
-        getInputAttributes( inputKeys );
-        fetchData( inputKeys );
+        Collection< String > inputAttributes = new ArrayList<>();
+        getInputAttributes( inputAttributes );
+        fetchData( inputAttributes );
 
         // 2. fetch outputs
         // get all the outputs and put them in the object map.
-        Collection< String > outputKeys = new ArrayList< String >();
-        getOutputAttributes( outputKeys, _dataFlags );
-        fetchData( outputKeys );
+        Collection< String > outputAttributes = new ArrayList<>();
+        getOutputAttributes( outputAttributes, _dataFlags );
+        fetchData( outputAttributes );
+
 
         // Set the random number generator, with the current time (i.e. random), if not loaded.
         if( _config.seed == null ) {
@@ -260,7 +288,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
         // 4. persist data
         // write all the outputs back to the persistence system
-        persistData( outputKeys );
+        persistData( outputAttributes );
 
         // 5. persist config of this entity
         persistConfig();
@@ -270,7 +298,7 @@ public abstract class Entity extends NamedObject implements EntityListener {
 
     public static String SerializeConfig( EntityConfig entityConfig ) {
         Gson gson = new Gson();
-        String config = gson.toJson( entityConfig );
+        String config = gson.toJson(entityConfig);
         return config;
     }
 
@@ -283,56 +311,67 @@ public abstract class Entity extends NamedObject implements EntityListener {
     /**
      * Populate member object map with the persisted data.
      *
-     * @param attributes
+     * @param attributes to be used as a suffix with entity name to produce the key
      */
     private void fetchData( Collection< String > attributes ) {
         Persistence p = _n.getPersistence();
 
         for( String attribute : attributes ) {
-            String inputKey = getKey( attribute );
 
-            ModelData modelData = null;
+            String inputKey;
+            inputKey = getKey( attribute );
 
-            // check for cache policy
-            // Change: just try to read anything available from the data cache.
-//            if( _dataFlags.hasFlag( attribute, DataFlags.FLAG_NODE_CACHE ) ) {
-                Data cached = _n.getCachedData( inputKey );
+//            ModelData modelData;
 
-                if( cached != null ) {
-                    //_logger.info( "Skipping fetch of Data: " + inputKey );
-                    _data.put( inputKey, cached );
-                    continue;
-                }
-                // else: allow read
-//            }
+//            // check for cache policy
+//            // Change: just try to read anything available from the data cache.
+////            if( _dataFlags.hasFlag( attribute, DataFlags.FLAG_NODE_CACHE ) ) {
+//                Data cached = _n.getCachedData( inputKey );
+//
+//                if( cached != null ) {
+//                    _logger.info( "Skipping fetch of Data: " + inputKey );
+//                    _data.put( inputKey, cached );
+//                    continue;
+//                }
+//                // else: allow read
+////            }
 
             // check for no - read
             if( _dataFlags.hasFlag( attribute, DataFlags.FLAG_PERSIST_ONLY ) ) {
-                //_logger.info( "Skipping fetch of Data: " + inputKey );
+                _logger.info( "Skipping fetch of Data: " + inputKey );
                 continue;
             }
 
-            modelData = p.fetchData( inputKey );
+//            Data d = _n.getCachedDataLazy( inputKey ); // gets and caches the data.
+            Data d = _n.getData( inputKey, this ); // gets data, from cache if available
 
-            if( modelData == null ) { // not found
-                continue; // truthfully represent as null.
+            if( d == null ) {
+                continue;
             }
+//            modelData = p.fetchData( inputKey );
+//
+//            if( modelData == null ) { // not found
+//                continue; // truthfully represent as null.
+//            }
+//
+//            Data d = modelData.getDataNames( _n, this );
+            _data.put( inputKey, d );
 
-            HashSet< String > refKeys = modelData.getRefKeys();
+/*            HashSet< String > refKeys = modelData.getRefKeys();
 
             if( refKeys.isEmpty() ) {
-                Data d = modelData.getData();
+                Data d = modelData.getDataNames();
                 _data.put( inputKey, d );
             } else {
                 // Create an output matrix which is a composite of all the referenced inputs.
-                HashMap< String, Data > allRefs = new HashMap< String, Data >();
+                HashMap< String, Data > allRefs = new HashMap<>();
 
                 for( String refKey : refKeys ) {
                     ModelData refJson = _n.fetchData( refKey );
                     if( refJson == null ) {
                         continue; // don't put in data store
                     }
-                    Data refData = refJson.getData();
+                    Data refData = refJson.getDataNames();
                     allRefs.put( refKey, refData );
                 }
 
@@ -349,20 +388,20 @@ public abstract class Entity extends NamedObject implements EntityListener {
 //                }
 
                 _data.put( inputKey, combinedData );
-            }
+            }*/
         }
 
         // check to see whether we need a backup of these structures, to implement the lazy-persist policy.
-        for( String keySuffix : _dataFlags._dataFlags.keySet() ) {
-            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_LAZY_PERSIST ) ) {
-                String inputKey = getKey( keySuffix );
-                Data d = _data.get( inputKey );
-                if( d != null ) {
-                    Data copy = new Data( d ); // make a deep copy
-                    _dataCopy.putData( inputKey, copy );
-                }
-            }
-        }
+//        for( String keySuffix : _dataFlags._dataFlags.keySet() ) {
+//            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_LAZY_PERSIST ) ) {
+//                String inputKey = getKey( keySuffix );
+//                Data d = _data.get( inputKey );
+//                if( d != null ) {
+//                    Data copy = new Data( d ); // make a deep copy
+//                    _dataCopy.putData( inputKey, copy );
+//                }
+//            }
+//        }
     }
 
     public void persistData( Collection< String > attributes ) {
@@ -371,34 +410,6 @@ public abstract class Entity extends NamedObject implements EntityListener {
         for( String keySuffix : attributes ) {
             String inputKey = getKey( keySuffix );
             Data d = _data.get( inputKey );
-
-            if( _config.cache ) {
-                _n.setCachedData( inputKey, d ); // cache this one, so we don't need to read it next time.
-                continue;
-            }
-
-            // check for cache policy
-            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_NODE_CACHE ) ) {
-                _n.setCachedData( inputKey, d ); // cache this one, so we don't need to read it next time.
-            }
-
-            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_LAZY_PERSIST ) ) {
-                Data copy = _dataCopy.getData( inputKey );
-
-                if( copy != null ) {
-                    if( copy.isSameAs( d ) ) {
-                        //System.err.println( "Skipping persist of Data: " + inputKey + " because: Not changed." );
-                        continue; // don't persist.
-                    }
-                }
-            }
-
-            if( _config.flush == false ) {
-                if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_PERSIST_ON_FLUSH ) ) {
-                    //System.err.println( "Skipping persist of Data: " + inputKey + " because: Only on flush, and not a flush." );
-                    continue;
-                }
-            }
 
             String encoding = ModelData.ENCODING_DENSE;
 
@@ -409,8 +420,51 @@ public abstract class Entity extends NamedObject implements EntityListener {
                 encoding = ModelData.ENCODING_SPARSE_REAL;
             }
 
-            ModelData modelData = new ModelData( inputKey, d, encoding ); // converts to json
-            p.persistData( modelData );
+            boolean cached = false;
+
+            if( _config.cache ) {
+                // even if I'm gonna flush it, cache it so next time (when flush maybe false) I read non-stale data from the cache.
+                _n.setDataCache( inputKey, d, encoding ); // cache this one, so we don't need to read it next time.
+
+                cached = true;
+
+                if( _config.flush == false ) {
+                    continue;
+                }
+                // else: continue to persist
+            }
+
+            // check for cache policy
+            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_NODE_CACHE ) ) {
+                if( !cached ) {
+//                    _n.setCachedData( inputKey, d ); // cache this one, so we don't need to read it next time.
+                    _n.setDataCache( inputKey, d, encoding ); // cache this one, so we don't need to read it next time.
+                }
+            }
+
+//            if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_LAZY_PERSIST ) ) {
+//                Data copy = _dataCopy.getDataNames( inputKey );
+//
+//                if( copy != null ) {
+//                    if( copy.isSameAs( d ) ) {
+//                        //System.err.println( "Skipping persist of Data: " + inputKey + " because: Not changed." );
+//                        if( _config.cache == false ) { // if cache = true, we only get here if flush is true.
+//                            continue; // don't persist.
+//                        }
+//                    }
+//                }
+//            }
+
+            if( _config.flush == false ) {
+                if( _dataFlags.hasFlag( keySuffix, DataFlags.FLAG_PERSIST_ON_FLUSH ) ) {
+                    //System.err.println( "Skipping persist of Data: " + inputKey + " because: Only on flush, and not a flush." );
+                    continue;
+                }
+            }
+
+            _n.setDataPersist(inputKey, d, encoding);
+//            ModelData modelData = new ModelData( inputKey, d, encoding ); // converts to json
+//            p.persistData( modelData );
         }
     }
 
@@ -433,51 +487,13 @@ public abstract class Entity extends NamedObject implements EntityListener {
      * @param allRefs
      * @return
      */
-    protected Data getCombinedData( String inputAttribute, HashMap< String, Data > allRefs ) {
+    public Data getCombinedData( String inputAttribute, HashMap< String, Data > allRefs ) {
+        DataDeserializer dds = new DenseDataDeserializer();
+        return dds.getCombinedData( inputAttribute, allRefs );
+    }
 
-        // case 1: No input.
-        int nbrRefs = allRefs.size();
-        if( nbrRefs == 0 ) {
-            return null;
-        }
-
-        // case 2: Single input
-        if( nbrRefs == 1 ) {
-            String refKey = allRefs.keySet().iterator().next();
-            Data refData = allRefs.get( refKey );
-            if( refData == null ) {
-                return null;
-            }
-            Data d = new Data( refData );
-            return d;
-        }
-
-        // case 3: Multiple inputs (combine as vector)
-        int sumVolume = 0;
-
-        for( String refKey : allRefs.keySet() ) {
-            Data refData = allRefs.get( refKey );
-            if( refData == null ) {
-                return null;
-            }
-            int volume = refData.getSize();
-            sumVolume += volume;
-        }
-
-        Data d = new Data( sumVolume );
-
-        int offset = 0;
-
-        for( String refKey : allRefs.keySet() ) {
-            Data refData = allRefs.get( refKey );
-            int volume = refData.getSize();
-
-            d.copyRange( refData, offset, 0, volume );
-
-            offset += volume;
-        }
-
-        return d;
+    public String getEncoding( String inputAttribute ) {
+        return ModelData.ENCODING_DENSE;
     }
 
     public Data getData( String keySuffix ) {
@@ -523,6 +539,26 @@ public abstract class Entity extends NamedObject implements EntityListener {
         }
 
         return d;
+    }
+
+    public static Collection< String > getEntityNames( String configValue ) {
+
+        Collection< String > c = new ArrayList<>();
+
+        if ( configValue.length() == 0 ) {
+            return c;
+        }
+
+        String[] names = configValue.split(",");
+        for( String s : names ) {
+
+            if ( s.length() == 0 ) {
+                continue;
+            }
+
+            c.add( s.trim() );
+        }
+        return c;
     }
 
     /**

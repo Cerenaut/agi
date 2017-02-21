@@ -98,21 +98,27 @@ public class PyramidRegionLayerLabelsDemo {
 //        String trainingImageSeqPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
 //        String testingImageSeqPath = "/home/dave/workspace/agi.io/data/mnist/5k_test";
 
-        String trainingImageSeqPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train";
-        String testingImageSeqPath = "/home/dave/workspace/agi.io/data/mnist/all/all_t10k";
+//        String trainingImageSeqPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train";
+//        String testingImageSeqPath = "/home/dave/workspace/agi.io/data/mnist/all/all_t10k";
+//        String trainingImageSeqPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+//        String testingImageSeqPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+//        int labelIndex = 2;
+        String trainingDigitSeqPath = "/home/dave/workspace/agi.io/data/number-sequence/10.txt";
+        String testingDigitSeqPath = "/home/dave/workspace/agi.io/data/number-sequence/10.txt";
+
+        String trainingImageSeqPath = "/home/dave/workspace/agi.io/data/nist-sd19/a2z_1x";
+        String testingImageSeqPath = "/home/dave/workspace/agi.io/data/nist-sd19/a2z_1x";
+        int labelIndex = 1;
 
         String trainingTextSeqPath = "/home/dave/workspace/agi.io/data/text/the.txt";
         String testingTextSeqPath = "/home/dave/workspace/agi.io/data/text/the.txt";
 
-        String trainingDigitSeqPath = "/home/dave/workspace/agi.io/data/number-sequence/10.txt";
-        String testingDigitSeqPath = "/home/dave/workspace/agi.io/data/number-sequence/10.txt";
-
 //        int testType = TEST_TYPE_IMAGE_SEQUENCE;
-        int testType = TEST_TYPE_DIGIT_SEQUENCE;
-//        int testType = TEST_TYPE_TEXT_SEQUENCE;
+//        int testType = TEST_TYPE_DIGIT_SEQUENCE;
+        int testType = TEST_TYPE_TEXT_SEQUENCE;
         int terminationAge = 5000;//25000;
-        int trainingEpochs = 60000 / 10;
-        int testingEpochs = 100;//10;//80; // good for up to 80k
+        int trainingEpochs = 5;
+        int testingEpochs = 2;//10;//80; // good for up to 80k
         boolean shuffleImages = false;
         boolean terminateByAge = false;
 //        boolean encodeZero = false;
@@ -194,7 +200,7 @@ public class PyramidRegionLayerLabelsDemo {
 //        String supervisedLearningName   = Framework.GetEntityName( "supervised" );
 //        String valueSeriesPredictedName = Framework.GetEntityName( "value-series-predicted" );
 //        String valueSeriesErrorName     = Framework.GetEntityName( "value-series-error" );
-//        String valueSeriesTruthName     = Framework.GetEntityName( "value-series-truth" );
+        String valueSeriesTruthName     = Framework.GetEntityName( "value-series-truth" );
 
         String regionLayer1Name         = Framework.GetEntityName( "region-layer-1" );
         String regionLayer2Name         = Framework.GetEntityName( "region-layer-2" );
@@ -252,7 +258,7 @@ public class PyramidRegionLayerLabelsDemo {
 
 //        Framework.CreateEntity( valueSeriesPredictedName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName );
 //        Framework.CreateEntity( valueSeriesErrorName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName );
-//        Framework.CreateEntity( valueSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName );
+        Framework.CreateEntity( valueSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName );
 
 //        Framework.CreateEntity( valueSeriesClassifierError1, ValueSeriesEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName );
 //        Framework.CreateEntity( valueSeriesClassifierError2, ValueSeriesEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName );
@@ -360,6 +366,7 @@ public class PyramidRegionLayerLabelsDemo {
         Framework.SetConfig( imageSourceName, "sourceFilesPrefix", "postproc" );
         Framework.SetConfig( imageSourceName, "sourceFilesPathTraining", trainingImageSeqPath );
         Framework.SetConfig( imageSourceName, "sourceFilesPathTesting", testingImageSeqPath );
+        Framework.SetConfig( imageSourceName, "sourceFilesLabelIndex", String.valueOf( labelIndex ) );
         Framework.SetConfig( imageSourceName, "trainingEpochs", String.valueOf( trainingEpochs ) );
         Framework.SetConfig( imageSourceName, "testingEpochs", String.valueOf( testingEpochs ) );
         Framework.SetConfig( imageSourceName, "shuffle", String.valueOf( shuffleImages ) );
@@ -421,7 +428,7 @@ public class PyramidRegionLayerLabelsDemo {
         // data series logging
 //        Framework.SetConfig( valueSeriesPredictedName, "period", "-1" ); // log forever
 //        Framework.SetConfig( valueSeriesErrorName, "period", "-1" );
-//        Framework.SetConfig( valueSeriesTruthName, "period", "-1" );
+        Framework.SetConfig( valueSeriesTruthName, "period", "-1" );
 
 //        Framework.SetConfig( valueSeriesClassifierError1, "period", "-1" );
 //        Framework.SetConfig( valueSeriesClassifierError2, "period", "-1" );
@@ -433,7 +440,7 @@ public class PyramidRegionLayerLabelsDemo {
 //
 //        Framework.SetConfig( valueSeriesPredictedName, "entityName", featureLabelsName );
 //        Framework.SetConfig( valueSeriesErrorName, "entityName", featureLabelsName );
-//        Framework.SetConfig( valueSeriesTruthName, "entityName", featureLabelsName );
+        Framework.SetConfig( valueSeriesTruthName, "entityName", imageSourceName );
 
 //        Framework.SetConfig( valueSeriesClassifierError1, "entityName", regionLayer1Name );
 //        Framework.SetConfig( valueSeriesClassifierError2, "entityName", regionLayer2Name );
@@ -445,7 +452,7 @@ public class PyramidRegionLayerLabelsDemo {
 //
 //        Framework.SetConfig( valueSeriesPredictedName, "configPath", "classPredicted" );
 //        Framework.SetConfig( valueSeriesErrorName, "configPath", "classError" );
-//        Framework.SetConfig( valueSeriesTruthName, "configPath", "classTruth" );
+        Framework.SetConfig( valueSeriesTruthName, "configPath", "imageLabel" );
 
 //        Framework.SetConfig( valueSeriesClassifierError1, "configPath", "sumClassifierError" );
 //        Framework.SetConfig( valueSeriesClassifierError2, "configPath", "sumClassifierError" );
@@ -518,7 +525,7 @@ public class PyramidRegionLayerLabelsDemo {
                 outputDecayRate );
 
     }
-// TODO test with repeat images to check timing - can add more layers for longer term timing?
+
     public static void setRegionLayerConfig(
             String regionLayerName,
             int widthCells,
@@ -543,7 +550,6 @@ public class PyramidRegionLayerLabelsDemo {
             int predictorBatchSize,
             float outputDecayRate ) {
 
-        boolean unitOutput = true;
         Framework.SetConfig( regionLayerName, "widthCells", String.valueOf( widthCells ) );
         Framework.SetConfig( regionLayerName, "heightCells", String.valueOf( heightCells ) );
 

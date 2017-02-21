@@ -1,3 +1,7 @@
 Gotchas
 
 * The node.properties node name should match node name in json input files.
+
+* run-framework.py generates a new input file before it sweeps to next value (to set in the input file). If sweep is over, there will not be another experiment, but the input file already exists.
+
+* There is a new prefix for every parameter sweep iteration

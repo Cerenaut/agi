@@ -1,0 +1,84 @@
+1. Modify shell:
+===============================================================================
+
+export JAVA_HOME=/home/dave/workspace/agi.io/java/jdk1.8.0_60
+export MAVEN_HOME=/home/dave/workspace/maven/apache-maven-3.3.3
+
+export PATH=${JAVA_HOME}/bin:${PATH}
+export PATH=${MAVEN_HOME}/bin:${PATH}
+
+export VARIABLES_FILE=/home/dave/workspace/agi.io/experiment-definitions/variables/variables-dave.sh
+
+
+2. Rebuild on console
+===============================================================================
+
+Go to:
+
+/home/dave/workspace/agi.io/agi/code/core
+
+mvn clean
+mvn package
+
+Or 
+
+mvn clean package
+
+
+3. Edit framework files:
+===============================================================================
+
+EDIT variables-dave.sh
+
+/home/dave/workspace/agi.io/experiment-definitions/variables
+
+ set all paths.
+
+EDIT experiments-phase1.json
+
+/home/dave/workspace/agi.io/experiment-definitions/20171201-mnist-ksparse
+
+
+
+4. PHASE 1a : Run gen input step:
+===============================================================================
+
+/home/dave/workspace/agi.io/agi/bin/run
+
+python run-framework.py --exps_file experiments-phase1.json --step_gen_input io.agi.framework.demo.papers.KSparseDemo
+
+
+5. PHASE 1b : Run compute step:
+===============================================================================
+
+python run-framework.py --exps_file experiments-phase1.json --step_compute --step_export
+
+
+
+6. PHASE 2a : Run gen input step:
+===============================================================================
+
+/home/dave/workspace/agi.io/agi/bin/run
+
+python run-framework.py --exps_file experiments-phase2.json --step_gen_input io.agi.framework.demo.papers.EvaluateTrainingDemo
+
+
+7. PHASE 2b : Run compute step:
+===============================================================================
+
+- Modify experiments-phase2.json import files, so that it will correctly get the output from Phase 1 (see third data input below)
+
+      "import-files": {
+        "file-entities": "entities-phase2.json",
+        "file-data": [
+            "data-phase2.json",
+            "datarefs-phase2.json",
+            "../output/exported_data-phase1_170122-1250.json"
+          ]
+      },
+
+- Modify data refs so that refKey of the feature-series has the correct prefix (i.e. the prefix from the Phase 1 run, that you want the data from)
+There is a placeholder already in the exported data-phase2.json file, but it could be accomplished with a separate input file (e.g. datarefs-phase2.json).
+
+
+python run-framework.py --exps_file experiments-phase2.json --step_compute --step_export

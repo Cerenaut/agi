@@ -74,11 +74,11 @@ public class KSparseDemo {
 
     public static void createEntities( Node n ) {
 
-//        String trainingPath = "./training";
-//        String testingPath = "./testing";
+        String trainingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small";
+        String testingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small, /Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/testing-small";
 
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
-        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+//        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
 
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
@@ -96,7 +96,7 @@ public class KSparseDemo {
         String imageLabelName           = Framework.GetEntityName( "image-class" );
         String autoencoderName          = Framework.GetEntityName( "autoencoder" );
         String vectorSeriesName         = Framework.GetEntityName( "feature-series" );
-        String valueSeriesName         = Framework.GetEntityName( "label-series" );
+        String valueSeriesName          = Framework.GetEntityName( "label-series" );
 
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         Framework.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), experimentName );
@@ -108,8 +108,8 @@ public class KSparseDemo {
         // a) Image to image region, and decode
         Framework.SetDataReference( autoencoderName, KSparseAutoencoderEntity.INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
 
-        ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList< AbstractPair< String, String > >();
-        featureDatas.add( new AbstractPair< String, String >( autoencoderName, KSparseAutoencoderEntity.SPIKES_TOP_KA ) );
+        ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList<>();
+        featureDatas.add( new AbstractPair<>( autoencoderName, KSparseAutoencoderEntity.SPIKES_TOP_KA ) );
         Framework.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
 
         // Experiment config
@@ -129,7 +129,7 @@ public class KSparseDemo {
         Framework.SetConfig( vectorSeriesName, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( valueSeriesName, "cache", String.valueOf( cacheAllData ) );
 
-        // Mnist config
+        // MNIST config
         Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldX", "0" );
         Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldY", "0" );
         Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldW", "28" );
@@ -188,8 +188,8 @@ public class KSparseDemo {
         Framework.SetConfig( vectorSeriesName, "learn", String.valueOf( "true" ) ); // infinite
 
         // Log labels of each image produced during all phases
-        Framework.SetConfig( valueSeriesName, "period", "-1" );
-        Framework.SetConfig( valueSeriesName, "learn", String.valueOf( "true" ) ); // infinite
+        Framework.SetConfig( valueSeriesName, "period", "-1" ); // infinite
+        Framework.SetConfig( valueSeriesName, "learn", String.valueOf( "true" ) );
         Framework.SetConfig( valueSeriesName, "entityName", imageLabelName ); // log forever
         Framework.SetConfig( valueSeriesName, "configPath", "imageLabel" ); // log forever
 

@@ -55,6 +55,11 @@ var Framework = {
     return size;
   },
 
+  setData : function( dataJson, callback ) {
+    var suffix = Framework.contextData + "?model=" + dataJson;
+    Framework.doAjaxJson( suffix, callback, "POST" );
+  },
+
   getDataNames : function( callback ) {
     var suffix = Framework.contextData;
     Framework.doAjaxJson( suffix, callback, "GET" );

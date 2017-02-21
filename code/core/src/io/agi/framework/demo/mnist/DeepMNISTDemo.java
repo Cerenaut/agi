@@ -161,7 +161,7 @@ public class DeepMNISTDemo {
         String svmEntityName = null;
         if (learningEntitiesAnalyticsTypes.contains( LearningEntitiesAnalyticsType.SvmEntity ) ) {
             svmEntityName = Framework.GetEntityName( "svm-eval" );
-            Framework.CreateEntity( svmEntityName, SVMEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
+            Framework.CreateEntity( svmEntityName, SupervisedBatchTrainingEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
 
             Framework.CreateEntity( svmEntitySeriesPredictedName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), svmEntityName ); // 2nd, class region updates after first to get its feedback
             Framework.CreateEntity( svmEntitySeriesErrorName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), svmEntityName ); // 2nd, class region updates after first to get its feedback

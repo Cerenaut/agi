@@ -138,7 +138,7 @@ paths:
   /export:
     get:
       summary: Exports a subtree of entities to a JSON file.
-      description: "Exports a subtree of entities to a JSON file.\n"
+      description: Exports a subtree of entities to a JSON file (or saved as JSON file by the node itself, when parameter export-location is defined).
       parameters:
         - name: entity
           in: query
@@ -150,6 +150,11 @@ paths:
           description: Either 'data' or 'entity' or 'data-refs'
           required: true
           type: string
+        - name: export-location
+          in: query
+          description: This is optional. If it is defined, then the node saves the data itself. The value of the parameter is used as the absolute path to the folder where the data is to be saved.
+          required: false
+          type: string          
       responses:
         '200':
           description: OK
@@ -173,6 +178,26 @@ paths:
           in: query
           description: The file containing data, if present
           required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Invalid request
+  /import-local:
+    get:
+      summary: Import a subtree of entities and/or data to the framework, via a file local to the running process.
+      description: Import a subtree of entities and/or data to the framework, via a file local to the running process.
+      parameters:
+        - name: type
+          in: query
+          description: Set to 'entity' or 'data' - specifies whether to import entities or data
+          required: true
+          type: string
+        - name: file
+          in: query
+          description: The file containing entities/data (specify full path, do not use ~)
+          required: true
           type: string
       responses:
         '200':

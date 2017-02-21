@@ -19,11 +19,9 @@
 
 package io.agi.framework.demo.mnist;
 
-import io.agi.core.data.Data;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.util.FileUtil;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceImageFile;
-import io.agi.core.util.images.ImageScreenScraper;
 import io.agi.framework.*;
 import io.agi.framework.persistence.models.ModelEntity;
 
@@ -51,7 +49,7 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
         super( om, n, model );
     }
 
-    public static String filenamesFolder = null;
+//    public static String filenamesFolder = null;
     public static HashMap< Integer, ArrayList< Integer > > labelFileIndices = new HashMap< Integer, ArrayList< Integer > >();
 
     @Override
@@ -62,29 +60,40 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
     public void resetDigitIndex() {
         Text2ImageLabelEntityConfig config = ( Text2ImageLabelEntityConfig ) _config;
 
-        config.digitIndex = 2; // will flip
+//        config.digitIndex = 2; // will flip
         config.charIndex = -1; // will advance to 0
     }
 
-    public void updateDigitIndex() {
-        Text2ImageLabelEntityConfig config = ( Text2ImageLabelEntityConfig ) _config;
+//    public void updateDigitIndex() {
+//        Text2ImageLabelEntityConfig config = ( Text2ImageLabelEntityConfig ) _config;
+//
+//        config.digitIndex += 1;
+//        if( config.digitIndex > 2 ) {
+//            config.digitIndex = 0;
+//            config.charIndex += 1; // next character
+//        }
+//    }
 
-        config.digitIndex += 1;
-        if( config.digitIndex > 2 ) {
-            config.digitIndex = 0;
-            config.charIndex += 1; // next character
-        }
+    public void resetCharIndex() {
+        Text2ImageLabelEntityConfig config = ( Text2ImageLabelEntityConfig ) _config;
+        config.charIndex = 0; // next character
     }
 
-    public void resetSelf() {
+    public void updateCharIndex() {
+        Text2ImageLabelEntityConfig config = ( Text2ImageLabelEntityConfig ) _config;
+        config.charIndex += 1; // next character
+    }
 
-        super.resetSelf();
+    public void checkReset() {
+
+        super.checkReset();
 
         // Check for a reset (to start of sequence and re-train)
         Text2ImageLabelEntityConfig config = ( Text2ImageLabelEntityConfig ) _config;
 
         if( config.reset ) {
-            resetDigitIndex();
+//            resetDigitIndex();
+            resetCharIndex();
         }
     }
 
@@ -94,7 +103,7 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
 
         // Load all files in training and testing folders.
         _logger.info( "Training files folder: " + config.sourceTextFileTraining );
-        _logger.info( "Testing files folder: " + config.sourceTextFileTesting );
+        _logger.info("Testing files folder: " + config.sourceTextFileTesting);
 
         try {
             _textTraining = FileUtil.readFile( config.sourceTextFileTraining );
@@ -129,22 +138,24 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
         Text2ImageLabelEntityConfig config = ( Text2ImageLabelEntityConfig ) _config;
 
         char c = text.charAt( config.charIndex );
+        c = Character.toUpperCase(c);
         int code = (int)c;
 
         config.character = String.valueOf( c );
         config.characterCode = code;
 
-        code = Math.min( 255, code );
+        code = Math.min(255, code);
         code = Math.max( 0, code );
 
-        String codeString = String.valueOf( code );
-
-        while( codeString.length() < 3 ) {
-            codeString = "0" + codeString;
-        }
-
-        String digitString = codeString.substring( config.digitIndex, config.digitIndex +1 );
-        int digit = Integer.parseInt( digitString );
+        return code;
+//        String codeString = String.valueOf( code );
+//
+//        while( codeString.length() < 3 ) {
+//            codeString = "0" + codeString;
+//        }
+//
+//        String digitString = codeString.substring( config.digitIndex, config.digitIndex +1 );
+//        int digit = Integer.parseInt( digitString );
 //        int digit1 = codeString.charAt( config.digitIndex );//code % 10; // 0..9
 //        int digit2 = codeString.charAt( 1 );//( code - digit1 ) / 10; // 0,10,20,..,90
 //        int digit3 = codeString.charAt( 2 );//( code - digit1 ) / 10;
@@ -154,8 +165,13 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
 //        if(  == 0 ) {
 //            digit = digit2;
 //        }
+//
+//        return digit;
+    }
 
-        return digit;
+    protected void onPhaseChange( String phase ) {
+        super.onPhaseChange( phase );
+        labelFileIndices.clear();
     }
 
     protected void findRandomImageForDigit( BufferedImageSourceImageFile bis, int digit ) {
@@ -164,11 +180,8 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
         // 2. I could randomly pick images til I find one with the right label. Assumes not very many labels.
         // 3. I could build a list of filename labels every step (too slow)
 
-        // 1/ build the cache
-        if( ( filenamesFolder == null ) || ( !bis.getFolderName().equals( filenamesFolder ) ) ) {
-            filenamesFolder = bis.getFolderName();
-            labelFileIndices.clear();
-
+        // 1/ Lazily build the cache
+        if( labelFileIndices.isEmpty() ) {
             int nbrImages = bis.getNbrImages();
 
             for( int i = 0; i < nbrImages; ++i ) {
@@ -206,7 +219,7 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
         // Check for a reset (to start of sequence and re-train)
         Text2ImageLabelEntityConfig config = ( Text2ImageLabelEntityConfig ) _config;
 
-        resetSelf();
+        checkReset();
 
         // catch end of images before it happens:
         createBufferedImageSources();
@@ -215,9 +228,6 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
         // pick a character from the text and convert it to a digit.
         String text = getText();
 
-        // update the index:
-        updateDigitIndex();
-
         if( config.charIndex >= text.length() ) {
             _logger.info( "End of text: Epoch complete." );
             onImageOutOfBounds();
@@ -225,16 +235,17 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
             onEpochComplete();
 
             // text is complete.
-            resetDigitIndex();
-            updateDigitIndex();
+            resetCharIndex();
+//            resetDigitIndex();
+//            updateDigitIndex();
         }
 
         text = getText();; // phase may have changed
-        onPhaseChange();
+        checkPhase();
 
-        _logger.warn( "=======> Training text: " + _textTraining.length() + " testing text: " + _textTesting.length() + " index: " + config.charIndex + " digit: " + config.digitIndex + " phase " + config.phase );
+        _logger.warn( "=======> Training text: " + _textTraining.length() + " testing text: " + _textTesting.length() + " index: " + config.charIndex + " phase " + config.phase );
 
-        checkEpochsComplete();
+        checkAllEpochsComplete();
 /*        // detect finished one pass of test set:
         if( config.phase.equals( ImageLabelEntityConfig.PHASE_TESTING ) ) {
             if( config.epoch > 0 ) {
@@ -248,14 +259,15 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
 
         if( !inRange ) { // occurs if no testing images
             onImageOutOfBounds();
-            resetDigitIndex();
-            updateDigitIndex();
+//            resetDigitIndex();
+            resetCharIndex();
+//            updateDigitIndex();
             config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
             _logger.warn( "=======> Terminating on no more images to serve. (3)" );
         }
 
         // get the digits
-        int digit = getDigit( text ); // 0..9
+        int digit = getDigit( text ); // 0..9 or uppercase ASCII
 
         BufferedImageSourceImageFile bis = getBufferedImageSource();
 
@@ -266,6 +278,11 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
         Integer imageLabel = getClassification( imageFileName ); //, config.sourceFilesPrefix );
 
         updateImageLabelOutput( bis, imageLabel );
+
+        // update the index:
+//        updateDigitIndex();
+        updateCharIndex();
+
 
         // Setup screen scraper, grab image
 /*        ImageScreenScraper imageScreenScraper = createImageScreenScraper( bis );

@@ -45,7 +45,7 @@ then
 fi
 
 # the specific experiment folder
-cmd="rsync -ave 'ssh -i $keyfile -o \"StrictHostKeyChecking no\"' $AGI_RUN_HOME/ ec2-user@${host}:~/agief-project/run --exclude={\"*.git/*\"}"
+cmd="rsync -ave 'ssh -i $keyfile -o \"StrictHostKeyChecking no\"' $AGI_EXP_HOME/ ec2-user@${host}:~/agief-project/run --exclude={\"*.git/*\"}"
 echo $cmd
 eval $cmd
 status=$?
@@ -59,7 +59,7 @@ then
 fi
 
 # the variables folder (with variables.sh files)
-cmd="rsync -ave 'ssh -i $keyfile -o \"StrictHostKeyChecking no\"' $AGI_RUN_HOME/../variables/ ec2-user@${host}:~/agief-project/variables --exclude={\"*.git/*\"}"
+cmd="rsync -ave 'ssh -i $keyfile -o \"StrictHostKeyChecking no\"' $AGI_EXP_HOME/../variables/ ec2-user@${host}:~/agief-project/variables --exclude={\"*.git/*\"}"
 echo $cmd
 eval $cmd
 status=$?

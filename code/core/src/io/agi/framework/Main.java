@@ -20,6 +20,7 @@
 package io.agi.framework;
 
 import io.agi.core.orm.ObjectMap;
+import io.agi.core.util.MemoryUtil;
 import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.coordination.Coordination;
 import io.agi.framework.coordination.CoordinationFactory;
@@ -34,7 +35,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.io.IoBuilder;
 
 import java.io.FileInputStream;
-import java.io.PrintStream;
 import java.util.Properties;
 
 
@@ -47,7 +47,7 @@ import java.util.Properties;
  */
 public class Main {
 
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger _logger = LogManager.getLogger();
 
     public static final String PROPERTY_NODE_NAME = "node-name";
     public static final String PROPERTY_NODE_HOST = "node-host";
@@ -64,7 +64,9 @@ public class Main {
 
     public Main() {
         String version = Main.getPackageVersion();
-        System.out.println( "---------- AGIEF Package version = " + version + "------------" );
+        _logger.warn( "---------- AGIEF Package version = " + version + "------------" );
+
+        MemoryUtil.logMemory( _logger );
     }
 
     public void setup( Properties properties, ObjectMap om, EntityFactory ef ) {
@@ -102,8 +104,8 @@ public class Main {
             properties.load( new FileInputStream( propertiesFile ) );
         }
         catch( Exception e ) {
-            logger.error( "Error reading properties for Persistence from: " + propertiesFile );
-            logger.error( e.toString(), e );
+            _logger.error( "Error reading properties for Persistence from: " + propertiesFile );
+            _logger.error( e.toString(), e );
             System.exit( -1 );
         }
 
@@ -126,8 +128,8 @@ public class Main {
             }
         }
         catch( Exception e ) {
-            logger.error( "Could not setup HttpCoordination in Main.run()" );
-            logger.error( e.toString(), e );
+            _logger.error( "Could not setup HttpCoordination in Main.run()" );
+            _logger.error( e.toString(), e );
             System.exit( -1 );
         }
     }
@@ -137,7 +139,7 @@ public class Main {
         String version = Main.class.getPackage().getImplementationVersion();
 
         if( version == null ) {
-            logger.error( "Could not load package properties file to query code version." );
+            _logger.error( "Could not load package properties file to query code version." );
             version = "No version found.";
         }
 

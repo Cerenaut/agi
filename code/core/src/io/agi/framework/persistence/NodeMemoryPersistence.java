@@ -44,7 +44,7 @@ public class NodeMemoryPersistence implements Persistence {
     protected HashMap< String, ModelEntity > _entityMap = new HashMap< String, ModelEntity >();
     protected HashMap< String, ModelData > _dataMap = new HashMap< String, ModelData >();
 
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger _logger = LogManager.getLogger();
 
     public NodeMemoryPersistence() {
     }

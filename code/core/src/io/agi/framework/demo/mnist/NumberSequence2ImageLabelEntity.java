@@ -19,11 +19,9 @@
 
 package io.agi.framework.demo.mnist;
 
-import io.agi.core.data.Data;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.util.FileUtil;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceImageFile;
-import io.agi.core.util.images.ImageScreenScraper;
 import io.agi.framework.Node;
 import io.agi.framework.persistence.models.ModelEntity;
 
@@ -54,7 +52,6 @@ public class NumberSequence2ImageLabelEntity extends ImageLabelEntity {
         super( om, n, model );
     }
 
-    public static String filenamesFolder = null;
     public static HashMap< Integer, ArrayList< Integer > > labelFileIndices = new HashMap< Integer, ArrayList< Integer > >();
 
     @Override
@@ -72,9 +69,9 @@ public class NumberSequence2ImageLabelEntity extends ImageLabelEntity {
         config.charIndex += 1; // next character
     }
 
-    public void resetSelf() {
+    public void checkReset() {
         // Check for a reset (to start of sequence and re-train)
-        super.resetSelf();
+        super.checkReset();
 
         NumberSequence2ImageLabelEntityConfig config = ( NumberSequence2ImageLabelEntityConfig ) _config;
 
@@ -132,6 +129,11 @@ public class NumberSequence2ImageLabelEntity extends ImageLabelEntity {
         return digit;
     }
 
+    protected void onPhaseChange( String phase ) {
+        super.onPhaseChange( phase );
+        labelFileIndices.clear();
+    }
+
     protected void findRandomImageForDigit( BufferedImageSourceImageFile bis, int digit ) {
         // there are 3 ways I could do this.
         // 1. I could cache all the images (chosen method)
@@ -139,10 +141,7 @@ public class NumberSequence2ImageLabelEntity extends ImageLabelEntity {
         // 3. I could build a list of filename labels every step (too slow)
 
         // 1/ build the cache
-        if( ( filenamesFolder == null ) || ( !bis.getFolderName().equals( filenamesFolder ) ) ) {
-            filenamesFolder = bis.getFolderName();
-            labelFileIndices.clear();
-
+        if( labelFileIndices.isEmpty() ) {
             int nbrImages = bis.getNbrImages();
 
             for( int i = 0; i < nbrImages; ++i ) {
@@ -180,7 +179,7 @@ public class NumberSequence2ImageLabelEntity extends ImageLabelEntity {
         // Check for a reset (to start of sequence and re-train)
         NumberSequence2ImageLabelEntityConfig config = ( NumberSequence2ImageLabelEntityConfig ) _config;
 
-        resetSelf();
+        checkReset();
 
         // catch end of images before it happens:
         createBufferedImageSources();
@@ -204,11 +203,11 @@ public class NumberSequence2ImageLabelEntity extends ImageLabelEntity {
         }
 
         text = getText(); // phase may have changed
-        onPhaseChange();
+        checkPhase();
 
         _logger.warn( "=======> Training text: " + _textTraining.length() + " testing text: " + _textTesting.length() + " index: " + config.charIndex + " phase " + config.phase );
 
-        checkEpochsComplete();
+        checkAllEpochsComplete();
 /*        // detect finished one pass of test set:
         int maxEpochs = config.trainingEpochs + config.testingEpochs;
         if( config.phase.equals( ImageLabelEntityConfig.PHASE_TESTING ) ) {

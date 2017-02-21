@@ -27,7 +27,7 @@ import java.util.Random;
 /**
  * Created by gideon on 23/12/16.
  */
-public class SupervisedLearningConfig extends NetworkConfig {
+public class SupervisedBatchTrainingConfig extends NetworkConfig {
 
     public String _keyConstraintsViolation = "constraints-violation";      // used for regularisation. C is the terminology used commonly for SVM.
     public String _keyModelString = "modelString";  // represent the model in serialised form as a string
@@ -36,9 +36,11 @@ public class SupervisedLearningConfig extends NetworkConfig {
     public void setup( ObjectMap om,
                        String name,
                        Random r,
+                       String modelString,
                        boolean addBias,
                        float constraintsViolation) {
         super.setup( om, name, r );
+        setModelString( modelString );
         setAddBias( addBias );
         setConstraintsViolation( constraintsViolation );
     }
