@@ -42,6 +42,8 @@ public class PyramidRegionLayerEntity extends Entity {
 
     public static final String INPUT_C1 = "input-c1";
     public static final String INPUT_C2 = "input-c2";
+    public static final String INPUT_C1_PREDICTED = "input-c1-predicted";
+    public static final String INPUT_C2_PREDICTED = "input-c2-predicted";
     public static final String INPUT_P1 = "input-p1";
     public static final String INPUT_P2 = "input-p2";
 
@@ -117,6 +119,12 @@ public class PyramidRegionLayerEntity extends Entity {
 
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
 
+        attributes.add( INPUT_C1_PREDICTED );
+        attributes.add( INPUT_C2_PREDICTED );
+
+        flags.putFlag( INPUT_C1_PREDICTED, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( INPUT_C2_PREDICTED, DataFlags.FLAG_NODE_CACHE );
+
         attributes.add( INPUT_P_OLD );
         attributes.add( INPUT_P_NEW );
 
@@ -179,13 +187,13 @@ public class PyramidRegionLayerEntity extends Entity {
 ////        flags.putFlag( PREDICTOR_OUTPUT_TRACES, DataFlags.FLAG_PERSIST_ON_FLUSH );
 //        flags.putFlag( PREDICTOR_INPUT_OUTPUT_TRACES, DataFlags.FLAG_PERSIST_ON_FLUSH );
 
-        attributes.add(PREDICTOR_IDEALS);
-        attributes.add(PREDICTOR_WEIGHTS_1);
-        attributes.add(PREDICTOR_WEIGHTS_2);
-        attributes.add(PREDICTOR_BIASES_1);
-        attributes.add(PREDICTOR_BIASES_2);
-        attributes.add(ERROR_GRADIENTS_1);
-        attributes.add(ERROR_GRADIENTS_2);
+        attributes.add( PREDICTOR_IDEALS );
+        attributes.add( PREDICTOR_WEIGHTS_1 );
+        attributes.add( PREDICTOR_WEIGHTS_2 );
+        attributes.add( PREDICTOR_BIASES_1 );
+        attributes.add( PREDICTOR_BIASES_2 );
+        attributes.add( ERROR_GRADIENTS_1 );
+        attributes.add( ERROR_GRADIENTS_2 );
 
         // K sparse autoencoder data
         attributes.add( CLASSIFIER_WEIGHTS );
@@ -419,6 +427,9 @@ public class PyramidRegionLayerEntity extends Entity {
 
         setData( INPUT_P_OLD, rl._inputPOld );
         setData( INPUT_P_NEW, rl._inputPNew );
+
+        setData( INPUT_C1_PREDICTED, rl._inputC1Predicted );
+        setData( INPUT_C2_PREDICTED, rl._inputC2Predicted );
 
         setData( CLASSIFIER_SPIKES_OLD, rl._spikesOld );
         setData( CLASSIFIER_SPIKES_NEW, rl._spikesNew );

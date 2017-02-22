@@ -134,7 +134,7 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
         return text;
     }
 
-    public int getDigit( String text ) {
+    public int getCharCode( String text ) {
         Text2ImageLabelEntityConfig config = ( Text2ImageLabelEntityConfig ) _config;
 
         char c = text.charAt( config.charIndex );
@@ -144,8 +144,8 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
         config.character = String.valueOf( c );
         config.characterCode = code;
 
-        code = Math.min(255, code);
-        code = Math.max( 0, code );
+        code = Math.min( 255, code );
+        code = Math.max(   0, code );
 
         return code;
 //        String codeString = String.valueOf( code );
@@ -174,7 +174,7 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
         labelFileIndices.clear();
     }
 
-    protected void findRandomImageForDigit( BufferedImageSourceImageFile bis, int digit ) {
+    protected void findRandomImageForDigit( BufferedImageSourceImageFile bis, int digit, int defaultDigit ) {
         // there are 3 ways I could do this.
         // 1. I could cache all the images (chosen method)
         // 2. I could randomly pick images til I find one with the right label. Assumes not very many labels.
@@ -201,6 +201,15 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
 
         // 2/ select a random exemplar
         ArrayList< Integer > fileIndices = labelFileIndices.get( digit );
+
+        if( ( fileIndices == null ) || ( fileIndices.isEmpty() ) ) {
+            fileIndices = labelFileIndices.get( defaultDigit );
+        }
+
+        if( fileIndices == null ) {
+            _logger.error( "Can't find images for character code: " + digit + " or default code: " + defaultDigit );
+            System.exit( -1 );
+        }
 
         int files = fileIndices.size();
         int r = _r.nextInt( files );
@@ -267,12 +276,12 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
         }
 
         // get the digits
-        int digit = getDigit( text ); // 0..9 or uppercase ASCII
+        int charCode = getCharCode( text ); // 0..9 or uppercase ASCII
 
         BufferedImageSourceImageFile bis = getBufferedImageSource();
 
         // convert the digit to a random image for the specific label
-        findRandomImageForDigit( bis, digit );
+        findRandomImageForDigit( bis, charCode, config.defaultCharacterCode );
 
         String imageFileName = bis.getImageFileName();
         Integer imageLabel = getClassification( imageFileName ); //, config.sourceFilesPrefix );

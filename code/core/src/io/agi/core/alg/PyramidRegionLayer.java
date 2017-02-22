@@ -53,6 +53,8 @@ public class PyramidRegionLayer extends NamedObject {
 
     public Data _inputC1; // real, unit
     public Data _inputC2;
+    public Data _inputC1Predicted; // a prediction of what the input will be
+    public Data _inputC2Predicted; // a prediction of what the input will be
 
     public Data _inputP1; // real, unit
     public Data _inputP2;
@@ -81,7 +83,7 @@ public class PyramidRegionLayer extends NamedObject {
     public float _sumOutputSpikes = 0;
     public float _sumPredictionErrorFP = 0;
     public float _sumPredictionErrorFN = 0;
-    public float _sumIntegration = 0;
+//    public float _sumIntegration = 0;
 
     // Member objects
     public PyramidRegionLayerConfig _rc;
@@ -132,6 +134,9 @@ public class PyramidRegionLayer extends NamedObject {
         _inputC1 = new Data( dataSizeInputC1 );
         _inputC2 = new Data( dataSizeInputC2 );
 
+        _inputC1Predicted = new Data( dataSizeInputC1 );
+        _inputC2Predicted = new Data( dataSizeInputC2 );
+
         _inputP1 = new Data( dataSizeInputP1 );
         _inputP2 = new Data( dataSizeInputP2 );
 
@@ -172,6 +177,8 @@ public class PyramidRegionLayer extends NamedObject {
 //        _outputSpikesAge.set( 0f );
         _output.set( 0f );
 
+        _inputC1Predicted.set( 0f );
+        _inputC2Predicted.set( 0f );
         // classifier cell mask will be reset to all 1 also.
     }
 
@@ -206,6 +213,7 @@ public class PyramidRegionLayer extends NamedObject {
         updateClassification();
         //updateIntegration();
         updatePrediction();
+        invertPrediction();
         updateOutput();
     }
 
@@ -222,11 +230,11 @@ public class PyramidRegionLayer extends NamedObject {
         // real:
         _classifier._inputValues.copyRange( _inputC1, offset, 0, size1 );
         offset += size1;
-        _classifier._inputValues.copyRange(_inputC2, offset, 0, size2);
+        _classifier._inputValues.copyRange( _inputC2, offset, 0, size2 );
 
         // update
         _classifier.update(); // produces a new classification
-        _spikesOld.copy(_spikesNew);
+        _spikesOld.copy( _spikesNew );
         _spikesNew.copy( _classifier._cellSpikesTopKA );
 
         _transient._spikesNew = _spikesNew.indicesMoreThan( 0.5f );
@@ -234,6 +242,36 @@ public class PyramidRegionLayer extends NamedObject {
 
 //        _sumClassifierError = _classifier._sumTopKError;
 //        _sumClassifierResponse = _classifier._sumResponse;
+    }
+
+    protected void invertPrediction() {
+
+        // find top K outputs and invert through the classifier
+        // I can do it by threshold OR by ranking. Trying threshold for now
+        HashSet< Integer > predictions = _predictionOld.indicesMoreThan( 0.5f ); //_predictor._statePredicted.indicesMoreThan( 0.5f );
+
+        Data hiddenActivity = new Data( _classifier._cellSpikesTopK._dataSize );
+
+        for( Integer p : predictions ) {
+            hiddenActivity._values[ p ] = 1f;
+        }
+
+        Data inputReconstructionWeightedSum = new Data( _classifier._inputValues._dataSize ); // not used
+        Data inputReconstructionTransfer = new Data( _classifier._inputValues._dataSize );
+
+        _classifier.reconstruct( hiddenActivity, inputReconstructionWeightedSum, inputReconstructionTransfer );
+
+        inputReconstructionTransfer.clipRange( 0f, 1f ); // as NN may go wildly beyond that
+
+        // now split the reconstruction back into the 2 inputs
+        int size1 = _inputC1.getSize();
+        int size2 = _inputC2.getSize();
+        int offset = 0;
+
+        // real:
+        _inputC1Predicted.copyRange( inputReconstructionTransfer, offset, 0, size1 );
+        offset += size1;
+        _inputC2Predicted.copyRange( inputReconstructionTransfer, offset, 0, size2 );
     }
 
     protected void updatePrediction() {
@@ -261,7 +299,7 @@ public class PyramidRegionLayer extends NamedObject {
         offset += cells;
         _inputPNew.copyRange( _inputP1, offset, 0, inputP1Volume );
         offset += inputP1Volume;
-        _inputPNew.copyRange(_inputP2, offset, 0, inputP2Volume);
+        _inputPNew.copyRange( _inputP2, offset, 0, inputP2Volume );
         //offset += inputP2Volume;
 
         // train the predictor

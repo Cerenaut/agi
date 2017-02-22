@@ -174,11 +174,11 @@ public class ImageLabelEntity extends Entity {
         boolean learnTesting = false;
 
         if( isTraining() ) {
-            config.shuffle = true;
+            config.shuffle = config.shuffleTraining;
             learnTraining = true;
         }
         else if( isTesting() ) {
-            config.shuffle = false;
+            config.shuffle = config.shuffleTesting;
             learnTesting = true;
         }
 

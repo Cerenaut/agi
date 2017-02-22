@@ -50,8 +50,7 @@ public class PyramidRegionLayerLabelsDemo {
 // Added old FN-only (but with persistence) (excluding predicted) output .
 
     public static final int TEST_TYPE_IMAGE_SEQUENCE = 0;
-    public static final int TEST_TYPE_DIGIT_SEQUENCE = 1;
-    public static final int TEST_TYPE_TEXT_SEQUENCE  = 2;
+    public static final int TEST_TYPE_TEXT_SEQUENCE  = 1;
 
     /**
      * Usage: Expects some arguments. These are:
@@ -90,142 +89,70 @@ public class PyramidRegionLayerLabelsDemo {
 
     public static void createEntities( Node n ) {
 
-        // Test #1: predictable test same exemplars each time
-        String trainingImagesPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-        String testingImagesPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+//        TESTS:
+//        test prediction of sequence learning ( in progress )  22-feb-17 variable order looking good on quick.txt
+//        test classification of characters (in progress) 22-feb-17 looks good
+//        test higher order prediction of sequence (with fixed images?) 22-feb-17 variable order looking good on quick.txt
+//        test higher order prediction of sequence ( mutable images?)
+//        invert output into input both current and predicted.
 
-        // Test #2: predictable, varying digit images.
-//        String trainingImageSeqPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
-//        String testingImageSeqPath = "/home/dave/workspace/agi.io/data/mnist/5k_test";
 
-//        String trainingImageSeqPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train";
-//        String testingImageSeqPath = "/home/dave/workspace/agi.io/data/mnist/all/all_t10k";
-//        String trainingImageSeqPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-//        String testingImageSeqPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-//        int labelIndex = 2;
-        String trainingDigitSeqPath = "/home/dave/workspace/agi.io/data/number-sequence/10.txt";
-        String testingDigitSeqPath = "/home/dave/workspace/agi.io/data/number-sequence/10.txt";
+//        int testType = TEST_TYPE_IMAGE_SEQUENCE; // a sequence of images, regardless of content
+        int testType = TEST_TYPE_TEXT_SEQUENCE; // a sequence of characters e.g. A..Z or 0..9. Random exemplar for each
+        int sourceFilesLabelIndex = 2; // depends on the naming format of the images used
 
-        String trainingImageSeqPath = "/home/dave/workspace/agi.io/data/nist-sd19/a2z_1x";
-        String testingImageSeqPath = "/home/dave/workspace/agi.io/data/nist-sd19/a2z_1x";
-        int labelIndex = 1;
+        boolean shuffleTrainingImages = false;
+        boolean shuffleTestingImages = false;
 
-        String trainingTextSeqPath = "/home/dave/workspace/agi.io/data/text/the.txt";
-        String testingTextSeqPath = "/home/dave/workspace/agi.io/data/text/the.txt";
+        String imagesPathTraining = null;
+        String imagesPathTesting = null;
 
-//        int testType = TEST_TYPE_IMAGE_SEQUENCE;
-//        int testType = TEST_TYPE_DIGIT_SEQUENCE;
-        int testType = TEST_TYPE_TEXT_SEQUENCE;
+        String textFileTraining = null;
+        String textFileTesting = null;
+
+        if( testType == TEST_TYPE_IMAGE_SEQUENCE ) {
+            sourceFilesLabelIndex = 2;
+            shuffleTrainingImages = true;
+
+            // Same exemplars each time
+            imagesPathTraining = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+            imagesPathTesting = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+
+            // Varying digit images
+//            imagesPathTraining = "/home/dave/workspace/agi.io/data/mnist/10k_train";
+//            imagesPathTesting = "/home/dave/workspace/agi.io/data/mnist/5k_test";
+
+            // Full set of digit images
+//            imagesPathTraining = "/home/dave/workspace/agi.io/data/mnist/all/all_train";
+//            imagesPathTesting = "/home/dave/workspace/agi.io/data/mnist/all/all_t10k";
+        }
+        else if( testType == TEST_TYPE_TEXT_SEQUENCE ) {
+            sourceFilesLabelIndex = 1;
+            textFileTraining = "/home/dave/workspace/agi.io/data/text/quick.txt";
+            textFileTesting = "/home/dave/workspace/agi.io/data/text/quick.txt";
+
+            imagesPathTraining = "/home/dave/workspace/agi.io/data/nist-sd19/a2z_1x";
+            imagesPathTesting = "/home/dave/workspace/agi.io/data/nist-sd19/a2z_1x";
+        }
+
+        int trainingEpochs = 1000;
+        int testingEpochs = 1;//10;//80; // good for up to 80k
         int terminationAge = 5000;//25000;
-        int trainingEpochs = 5;
-        int testingEpochs = 2;//10;//80; // good for up to 80k
-        boolean shuffleImages = false;
         boolean terminateByAge = false;
-//        boolean encodeZero = false;
-//        boolean featureLabelsOnline = true;
-//        int labelBits = 8;
+
         int imageRepeats = 1;//50;
         boolean cacheAllData = true;
-
-        // http://stats.stackexchange.com/questions/176794/how-does-rectilinear-activation-function-solve-the-vanishing-gradient-problem-in
-        // http://mochajl.readthedocs.io/en/latest/user-guide/neuron.html
-        // https://en.wikipedia.org/wiki/Softmax_function
-        // Probably I should have a 3 layer network for prediction: input, hidden and output.
-        // hidden layer would be leaky-relu to prevent saturation. Then softmax layer to classify output as a probability?
-        // The leaky layer would probably be OK, but the softmax layer - could it saturate?
-        // Not if it doesn't have any weights. http://stats.stackexchange.com/questions/79454/softmax-layer-in-a-neural-network
-        // According to this, softmax doesn't make any sense due to need to norm outputs. So better with a single hidden layer of ReLUs. https://www.reddit.com/r/MachineLearning/comments/37ardy/softmax_vs_sigmoid_for_output_of_a_neural_network/
-
-        // So how to measure... a label that is usually there but sometimes not? But then it has the occasionaly labels as a latch to the sequence.
-        // The only thing I can think of is to classify the predictions to ensure it knows what the next label is.
-
-        // Now for hierarchy. We have these configs:
-        //  a)          b)
-        //     RL2          RL2
-        //      |           / \
-        //     RL1      RL1a   RL1b   In (b) both RL1 get a random image input for the same digit.
-        //
-        // TP output is spike-decay with real clock. i.e. temporal slowness. 0.9, 0.8 etc. Only errors spike?
-        // Prediction depends on both same-layer output (because now we have slowness so latest spikes are visible)
-        // and feedback output
-        //
-        // If we assume prediction is within the cells themselves, via basal dendrite computation, then we have access to
-        // both predicted and FP spikes. We concatenate these as the input.
-        //
-        // Now for higher order context, we'd like to ensure we don't miss anything.
-        // But the next layer cells only spike on prediction errors.
-        // What do they use to predict? Lower output (which is also available) and higher feedback
-        // So they do have additional info.
-        // *** how can we get that additional context without P-encoding? ***
-        // Well from the previous 1-bit to the next it is deterministic. So theoretically are we missing nothing by taking the
-        // PC output from higher level?
-        //
-        // State   AAABBBBBBBBBBBAAAAAAA
-        // HIGHER  000100000000001000000
-        // LOWER   000100010001001010000
-        // State   AAABBBBCCCCDDDEEAAAAA
-        //
-        // i,j,k,l,E,m      E = error, not really in this case but whatever.
-        // 0 0 0 0 1 0
-        //
-        // LOWER
-        //
-        //  0 0 0 0 1 0
-        //
-        // SEQUENCE
-        //  a-b-a-b-z-b-
-        //
-        // But for stable encoding, it would be better not to fiddle with the FF encoding and instead have a separate
-        // layer to integrate feedback. Confirmed with consilience, L2/3 axons branch into L5 (a lot, actually). But the
-        // stuff that's predicted accurately in L2/3 isn't available
-        //
-        //
-
-
-
-
-
-
-
+        boolean doLogging = true;
 
         // Define some entities
         String experimentName           = Framework.GetEntityName( "experiment" );
         String constantName             = Framework.GetEntityName( "constant" );
         String imageSourceName          = Framework.GetEntityName( "image-source" );
-//        String imageEncoderName         = Framework.GetEntityName( "image-encoder" );
-//        String labelEncoderName         = Framework.GetEntityName( "label-encoder" );
-//        String labelDecoderName         = Framework.GetEntityName( "label-decoder" );
-//        String classResultName          = Framework.GetEntityName( "class-result" );
-//        String configProductName        = Framework.GetEntityName( "config-product" ); // allows you to turn off provision of the training labels
-//        String supervisedLearningName   = Framework.GetEntityName( "supervised" );
-//        String valueSeriesPredictedName = Framework.GetEntityName( "value-series-predicted" );
-//        String valueSeriesErrorName     = Framework.GetEntityName( "value-series-error" );
         String valueSeriesTruthName     = Framework.GetEntityName( "value-series-truth" );
 
         String regionLayer1Name         = Framework.GetEntityName( "region-layer-1" );
         String regionLayer2Name         = Framework.GetEntityName( "region-layer-2" );
 //        String regionLayer3Name         = Framework.GetEntityName( "region-layer-3" );
-
-        // These are the properties of a pyramid region-layer that can be logged:
-        // float sumClassifierError = 0;    **** this tells us whether it's learning effectively, or it is unable to find structure within the input data.
-        // float sumClassifierResponse = 0; ---- ignore this one for now
-        // float sumOutputSpikes = 0;       **** this would tell us whether it's predictable or random
-        // float sumPredictionErrorFP = 0;  ---- ignore this one for now because we assume the learning keeps it honest (not too many FP)
-        // float sumPredictionErrorFN = 0;  ---- ignore this one for now because it's a fn of output spikes.
-        // float sumIntegration = 0;        ---- this would tell us how the integration dynamics works but since it's linear + and exp - maybe we can imagine.
-        //                                   Actually, the above is less useful because it's a sum over all the cells which will be out of sync.0
-//        String valueSeriesClassifierError1 = Framework.GetEntityName( "value-series-classifier-error-1" );
-//        String valueSeriesClassifierError2 = Framework.GetEntityName( "value-series-classifier-error-2" );
-//        String valueSeriesClassifierError3 = Framework.GetEntityName( "value-series-classifier-error-3" );
-//
-//        String valueSeriesOutputSpikes1 = Framework.GetEntityName( "value-series-output-spikes-1" );
-//        String valueSeriesOutputSpikes2 = Framework.GetEntityName( "value-series-output-spikes-2" );
-//        String valueSeriesOutputSpikes3 = Framework.GetEntityName( "value-series-output-spikes-3" );
-
-        // build a history of spikes.
-//        String spikes1Name        = Framework.GetEntityName( "spikes-1" );
-//        String spikes2Name        = Framework.GetEntityName( "spikes-2" );
-//        String spikes3Name        = Framework.GetEntityName( "spikes-3" );
 
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), experimentName ); // ok all input to the regions is ready
@@ -233,16 +160,9 @@ public class PyramidRegionLayerLabelsDemo {
         if( testType == TEST_TYPE_IMAGE_SEQUENCE ) {
             Framework.CreateEntity( imageSourceName, ImageLabelEntity.ENTITY_TYPE, n.getName(), constantName );
         }
-        else if( testType == TEST_TYPE_DIGIT_SEQUENCE ) {
-            Framework.CreateEntity( imageSourceName, NumberSequence2ImageLabelEntity.ENTITY_TYPE, n.getName(), constantName );
-        }
         else if( testType == TEST_TYPE_TEXT_SEQUENCE ) {
             Framework.CreateEntity( imageSourceName, Text2ImageLabelEntity.ENTITY_TYPE, n.getName(), constantName );
         }
-
-//        Framework.CreateEntity( imageEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), imageSourceName );
-//        Framework.CreateEntity( labelEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), constantName );
-//        Framework.CreateEntity( configProductName, ConfigProductEntity.ENTITY_TYPE, n.getName(), labelEncoderName ); // ok all input to the regions is ready
 
         // Region-layers
         Framework.CreateEntity( regionLayer1Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), imageSourceName );
@@ -254,47 +174,12 @@ public class PyramidRegionLayerLabelsDemo {
         learningEntitiesAlgorithm = learningEntitiesAlgorithm + "," + regionLayer2Name;
         // Region-layers
 
-//        Framework.CreateEntity( supervisedLearningName, SupervisedLearningEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName );
-
-//        Framework.CreateEntity( valueSeriesPredictedName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName );
-//        Framework.CreateEntity( valueSeriesErrorName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName );
-        Framework.CreateEntity( valueSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName );
-
-//        Framework.CreateEntity( valueSeriesClassifierError1, ValueSeriesEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName );
-//        Framework.CreateEntity( valueSeriesClassifierError2, ValueSeriesEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName );
-//        Framework.CreateEntity( valueSeriesClassifierError3, ValueSeriesEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName );
-//
-//        Framework.CreateEntity( valueSeriesOutputSpikes1, ValueSeriesEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName );
-//        Framework.CreateEntity( valueSeriesOutputSpikes2, ValueSeriesEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName );
-//        Framework.CreateEntity( valueSeriesOutputSpikes3, ValueSeriesEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName );
-//
-//        Framework.CreateEntity( spikes1Name, VectorSeriesEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName ); // ok all input to the regions is ready
-//        Framework.CreateEntity( spikes2Name, VectorSeriesEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName ); // ok all input to the regions is ready
-//        Framework.CreateEntity( spikes3Name, VectorSeriesEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName ); // ok all input to the regions is ready
-//
-//        Framework.SetDataReference( spikes1Name, VectorSeriesEntity.INPUT, regionLayer1Name, PyramidRegionLayerEntity.OUTPUT_SPIKES_NEW );
-//        Framework.SetDataReference( spikes2Name, VectorSeriesEntity.INPUT, regionLayer2Name, PyramidRegionLayerEntity.OUTPUT_SPIKES_NEW );
-//        Framework.SetDataReference( spikes3Name, VectorSeriesEntity.INPUT, regionLayer3Name, PyramidRegionLayerEntity.OUTPUT_SPIKES_NEW );
-
-//        Framework.CreateEntity( labelDecoderName, DecoderEntity.ENTITY_TYPE, n.getName(), topLayerName ); // produce the predicted classification for inspection by mnist next time
-//        Framework.CreateEntity( classResultName, ClassificationResultEntity.ENTITY_TYPE, n.getName(), labelDecoderName ); // produce the predicted classification for inspection by mnist next time
-//
-        // Connect the entities' data
-        // a) Image to image region, and decode
-//        if( testType == TEST_TYPE_IMAGE_SEQUENCE ) {
-//            Framework.SetDataReference( regionLayer1Name, PyramidRegionLayerEntity.INPUT_C1, imageSourceName, ImageLabelEntity.OUTPUT_IMAGE );
-//        }
-//        else if( testType == TEST_TYPE_DIGIT_SEQUENCE ) {
-//            Framework.SetDataReference( regionLayer1Name, PyramidRegionLayerEntity.INPUT_C1, imageSourceName, NumberSequence2ImageLabelEntity.OUTPUT_IMAGE );
-//        }
-//        else if( testType == TEST_TYPE_TEXT_SEQUENCE ) {
-//            Framework.SetDataReference( regionLayer1Name, PyramidRegionLayerEntity.INPUT_C1, imageSourceName, Text2ImageLabelEntity.OUTPUT_IMAGE );
-//        }
-
-//        Framework.SetDataReference( labelEncoderName, EncoderEntity.DATA_INPUT, imageSourceName, ImageLabelEntity.OUTPUT_LABEL );
-//
-////                Framework.SetDataReference( region2FfName, AutoRegionLayerEntity.INPUT_2, labelEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
-//        Framework.SetDataReference( configProductName, ConfigProductEntity.INPUT, labelEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
+        if( doLogging ) {
+            Framework.CreateEntity( valueSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName );
+            if( cacheAllData ) {
+                Framework.SetConfig( valueSeriesTruthName, "cache", String.valueOf( cacheAllData ) );
+            }
+        }
 
         // cache all data for speed, when enabled
         Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
@@ -326,23 +211,6 @@ public class PyramidRegionLayerLabelsDemo {
 //        Framework.SetDataReference( regionLayer3Name, PyramidRegionLayerEntity.INPUT_P1, constantName, ConstantMatrixEntity.OUTPUT );
 //        Framework.SetDataReference( regionLayer3Name, PyramidRegionLayerEntity.INPUT_P2, constantName, ConstantMatrixEntity.OUTPUT );
 
-        // train the featureLabels entity to associate bits in the region-layers with the
-//        ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList< AbstractPair< String, String > >();
-//        featureDatas.add( new AbstractPair< String, String >( regionLayer1Name, PyramidRegionLayerEntity.CLASSIFIER_SPIKES_NEW ) );
-//        //featureDatas.add( new AbstractPair< String, String >( regionLayer2Name, PyramidRegionLayerEntity.CLASSIFIER_SPIKES_NEW ) );
-//        //featureDatas.add( new AbstractPair< String, String >( regionLayer3Name, PyramidRegionLayerEntity.CLASSIFIER_SPIKES_NEW ) );
-//        Framework.SetDataReferences( supervisedLearningName, SupervisedLearningEntity.INPUT_FEATURES, featureDatas ); // get current state from the region to be used to predict
-
-        // invert the hidden layer state to produce the predicted label
-//        Framework.SetDataReference( labelDecoderName, DecoderEntity.DATA_INPUT_ENCODED, topLayerName, AutoRegionLayerEntity.OUTPUT_INPUT_2 ); // the prediction of the next state
-//
-//        Framework.SetDataReference( classResultName, ClassificationResultEntity.INPUT_LABEL, imageClassName, ImageClassEntity.OUTPUT_LABEL ); // get current state from the region to be used to predict
-//        Framework.SetDataReference( classResultName, ClassificationResultEntity.INPUT_CLASS, labelDecoderName, DecoderEntity.DATA_OUTPUT_DECODED ); // get current state from the region to be used to predict
-
-        // Label filter - disable labels during test time
-//        Framework.SetConfig( configProductName, "entityName", regionLayer2Name );
-//        Framework.SetConfig( configProductName, "configPath", "learn" ); // so the value is '1' when the region is learning, and 0 otherwise.
-
         // Experiment config
         if( !terminateByAge ) {
             Framework.SetConfig( experimentName, "terminationEntityName", imageSourceName );
@@ -364,111 +232,28 @@ public class PyramidRegionLayerLabelsDemo {
         Framework.SetConfig( imageSourceName, "invert", "true" );
         Framework.SetConfig( imageSourceName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
         Framework.SetConfig( imageSourceName, "sourceFilesPrefix", "postproc" );
-        Framework.SetConfig( imageSourceName, "sourceFilesPathTraining", trainingImageSeqPath );
-        Framework.SetConfig( imageSourceName, "sourceFilesPathTesting", testingImageSeqPath );
-        Framework.SetConfig( imageSourceName, "sourceFilesLabelIndex", String.valueOf( labelIndex ) );
+        Framework.SetConfig( imageSourceName, "sourceFilesPathTraining", imagesPathTraining );
+        Framework.SetConfig( imageSourceName, "sourceFilesPathTesting", imagesPathTesting );
+        Framework.SetConfig( imageSourceName, "sourceFilesLabelIndex", String.valueOf( sourceFilesLabelIndex ) );
         Framework.SetConfig( imageSourceName, "trainingEpochs", String.valueOf( trainingEpochs ) );
         Framework.SetConfig( imageSourceName, "testingEpochs", String.valueOf( testingEpochs ) );
-        Framework.SetConfig( imageSourceName, "shuffle", String.valueOf( shuffleImages ) );
+        Framework.SetConfig( imageSourceName, "shuffleTraining", String.valueOf( shuffleTrainingImages ) );
+        Framework.SetConfig( imageSourceName, "shuffleTesting", String.valueOf( shuffleTestingImages ) );
         Framework.SetConfig( imageSourceName, "imageRepeats", String.valueOf( imageRepeats ) );
 
         if( testType == TEST_TYPE_IMAGE_SEQUENCE ) {
-            Framework.SetConfig( imageSourceName, "sourceFilesPathTraining", trainingImagesPath );
-            Framework.SetConfig( imageSourceName, "sourceFilesPathTesting", testingImagesPath );
-        }
-        else if( testType == TEST_TYPE_DIGIT_SEQUENCE ) {
-            Framework.SetConfig( imageSourceName, "sourceTextFileTraining", trainingDigitSeqPath );
-            Framework.SetConfig( imageSourceName, "sourceTextFileTesting", testingDigitSeqPath );
         }
         else if( testType == TEST_TYPE_TEXT_SEQUENCE ) {
-            Framework.SetConfig( imageSourceName, "sourceTextFileTraining", trainingTextSeqPath );
-            Framework.SetConfig( imageSourceName, "sourceTextFileTesting", testingTextSeqPath );
+            Framework.SetConfig( imageSourceName, "sourceTextFileTraining", textFileTraining );
+            Framework.SetConfig( imageSourceName, "sourceTextFileTesting", textFileTesting );
         }
 
-/*        String learningEntitiesAnalytics = featureLabelsName;
-        Framework.SetConfig( imageSourceName, "learningEntitiesAlgorithm", String.valueOf( learningEntitiesAlgorithm ) );
-        Framework.SetConfig( imageSourceName, "learningEntitiesAnalytics", String.valueOf( learningEntitiesAnalytics ) );
-*/
-        // constant config
-//        if( encodeZero ) {
-//            // image encoder config
-//            Framework.SetConfig( imageEncoderName, "density", "1" );
-//            Framework.SetConfig( imageEncoderName, "bits", "2" );
-//            Framework.SetConfig( imageEncoderName, "encodeZero", "true" );
-//        }
-//        else {
-//            // image encoder config
-//            Framework.SetConfig( imageEncoderName, "density", "1" );
-//            Framework.SetConfig( imageEncoderName, "bits", "1" );
-//            Framework.SetConfig( imageEncoderName, "encodeZero", "false" );
-//        }
-
-//do mrf/loopy BP calculation for predicted state vs actual
-
-//        // Label encoder
-//        Framework.SetConfig( labelEncoderName, "encoderType", IntegerEncoder.class.getSimpleName() );
-//        Framework.SetConfig( labelEncoderName, "minValue", "0" );
-//        Framework.SetConfig( labelEncoderName, "maxValue", "9" );
-//        Framework.SetConfig( labelEncoderName, "rows", String.valueOf( labelBits ) );
-
-        // Label DEcoder
-//        Framework.SetConfig( labelDecoderName, "encoderType", IntegerEncoder.class.getSimpleName() );
-//        Framework.SetConfig( labelDecoderName, "minValue", "0" );
-//        Framework.SetConfig( labelDecoderName, "maxValue", "9" );
-//        Framework.SetConfig( labelDecoderName, "rows", String.valueOf( labelBits ) );
-
-//        // feature-labels config
-//        Framework.SetConfig( featureLabelsName, "classEntityName", imageSourceName );
-//        Framework.SetConfig( featureLabelsName, "classConfigPath", "imageClass" );
-//        Framework.SetConfig( featureLabelsName, "classes", "10" );
-//        Framework.SetConfig( featureLabelsName, "onlineLearning", String.valueOf( featureLabelsOnline ) );
-////        Framework.SetConfig( featureLabelsName, "onlineLearningRate", "0.02" );
-//        Framework.SetConfig( featureLabelsName, "onlineLearningRate", "0.005" );
-
         // data series logging
-//        Framework.SetConfig( valueSeriesPredictedName, "period", "-1" ); // log forever
-//        Framework.SetConfig( valueSeriesErrorName, "period", "-1" );
-        Framework.SetConfig( valueSeriesTruthName, "period", "-1" );
-
-//        Framework.SetConfig( valueSeriesClassifierError1, "period", "-1" );
-//        Framework.SetConfig( valueSeriesClassifierError2, "period", "-1" );
-//        Framework.SetConfig( valueSeriesClassifierError3, "period", "-1" );
-//
-//        Framework.SetConfig( valueSeriesOutputSpikes1, "period", "-1" );
-//        Framework.SetConfig( valueSeriesOutputSpikes2, "period", "-1" );
-//        Framework.SetConfig( valueSeriesOutputSpikes3, "period", "-1" );
-//
-//        Framework.SetConfig( valueSeriesPredictedName, "entityName", featureLabelsName );
-//        Framework.SetConfig( valueSeriesErrorName, "entityName", featureLabelsName );
-        Framework.SetConfig( valueSeriesTruthName, "entityName", imageSourceName );
-
-//        Framework.SetConfig( valueSeriesClassifierError1, "entityName", regionLayer1Name );
-//        Framework.SetConfig( valueSeriesClassifierError2, "entityName", regionLayer2Name );
-//        Framework.SetConfig( valueSeriesClassifierError3, "entityName", regionLayer3Name );
-//
-//        Framework.SetConfig( valueSeriesOutputSpikes1, "entityName", regionLayer1Name );
-//        Framework.SetConfig( valueSeriesOutputSpikes2, "entityName", regionLayer2Name );
-//        Framework.SetConfig( valueSeriesOutputSpikes3, "entityName", regionLayer3Name );
-//
-//        Framework.SetConfig( valueSeriesPredictedName, "configPath", "classPredicted" );
-//        Framework.SetConfig( valueSeriesErrorName, "configPath", "classError" );
-        Framework.SetConfig( valueSeriesTruthName, "configPath", "imageLabel" );
-
-//        Framework.SetConfig( valueSeriesClassifierError1, "configPath", "sumClassifierError" );
-//        Framework.SetConfig( valueSeriesClassifierError2, "configPath", "sumClassifierError" );
-//        Framework.SetConfig( valueSeriesClassifierError3, "configPath", "sumClassifierError" );
-//
-//        Framework.SetConfig( valueSeriesOutputSpikes1, "configPath", "sumOutputSpikes" );
-//        Framework.SetConfig( valueSeriesOutputSpikes2, "configPath", "sumOutputSpikes" );
-//        Framework.SetConfig( valueSeriesOutputSpikes3, "configPath", "sumOutputSpikes" );
-//
-        // Spike logging matrices
-//        int spikeHistory = imageRepeats * 4;
-//        Framework.SetConfig( spikes1Name, "period", String.valueOf( spikeHistory ) );
-//        Framework.SetConfig( spikes2Name, "period", String.valueOf( spikeHistory ) );
-//        Framework.SetConfig( spikes3Name, "period", String.valueOf( spikeHistory ) );
-
-//test without sequence info - random images, same alg. No feedback. This shows how much the sequence is helping or not.
+        if( doLogging ) {
+            Framework.SetConfig( valueSeriesTruthName, "period", "-1" );
+            Framework.SetConfig( valueSeriesTruthName, "entityName", imageSourceName );
+            Framework.SetConfig( valueSeriesTruthName, "configPath", "imageLabel" );
+        }
 
         // region layer config
         // effective constants:

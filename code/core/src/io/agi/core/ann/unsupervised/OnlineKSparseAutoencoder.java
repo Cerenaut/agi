@@ -663,7 +663,7 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
         _cellGradients.set( 0f );
     }
 
-    protected void reconstruct( Data hiddenActivity, Data inputReconstructionWeightedSum, Data inputReconstructionTransfer ) {
+    public void reconstruct( Data hiddenActivity, Data inputReconstructionWeightedSum, Data inputReconstructionTransfer ) {
         int inputs = _c.getNbrInputs();
         int cells = _c.getNbrCells();
 

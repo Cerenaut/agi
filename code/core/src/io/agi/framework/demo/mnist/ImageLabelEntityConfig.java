@@ -61,6 +61,8 @@ public class ImageLabelEntityConfig extends EntityConfig {
     int testingEpochs = 1;
 
     boolean shuffle = true;
+    boolean shuffleTraining = true;
+    boolean shuffleTesting = false;
     long shuffleSeed = 0;
 
     int imageLabel = 0;

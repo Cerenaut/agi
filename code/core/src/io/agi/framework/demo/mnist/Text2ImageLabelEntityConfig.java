@@ -39,5 +39,6 @@ public class Text2ImageLabelEntityConfig extends ImageLabelEntityConfig {
     // generated - do not set manually
     public String character = "?";
     public int characterCode = 0;
+    public int defaultCharacterCode = 10; // newline, but a blank image
 
 }
