@@ -80,5 +80,25 @@ python run-framework.py --exps_file experiments-phase2.json --step_gen_input io.
 - Modify data refs so that refKey of the feature-series has the correct prefix (i.e. the prefix from the Phase 1 run, that you want the data from)
 There is a placeholder already in the exported data-phase2.json file, but it could be accomplished with a separate input file (e.g. datarefs-phase2.json).
 
+e.g. 
+
+[
+    {
+        "refKeys": "170208-1309i--feature-series-output", 
+        "name": "SPAGHETTI--analytics-input-features"
+    }, 
+    {
+        "refKeys": "170208-1309i--label-series-output", 
+        "name": "SPAGHETTI--analytics-input-labels"
+    }, 
+    {
+        "refKeys": "SPAGHETTI--analytics-output-features", 
+        "name": "SPAGHETTI--logistic-regression-input-features"
+    }, 
+    {
+        "refKeys": "SPAGHETTI--analytics-output-labels", 
+        "name": "SPAGHETTI--logistic-regression-input-labels"
+    }
+]
 
 python run-framework.py --exps_file experiments-phase2.json --step_compute --step_export
