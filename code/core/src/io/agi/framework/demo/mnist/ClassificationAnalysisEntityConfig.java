@@ -35,7 +35,7 @@ public class ClassificationAnalysisEntityConfig extends EntityConfig {
     public float errorCount = 0;
     public float errorFraction = 0;
     public float errorPercentage = 0;
-    public float samples = 0;
+    public int samples = 0;
 
     public float betaSq = 0; // used to calculate F-score see https://en.wikipedia.org/wiki/F1_score
 
