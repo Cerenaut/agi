@@ -277,6 +277,9 @@ public class Node {
                 }
                 else if( dmd._d != null ) { // in cache, but not serialized.
                     String encoding = deserializer.getEncoding( name );
+                    if( dmd._encoding != null ) {
+                        encoding = dmd._encoding;
+                    }
                     dmd._md = new ModelData( name, dmd._d, encoding ); // serialize it
                     dmd._encoding = encoding;
                     dmd._md.refKeys = dmd._refKeys;
