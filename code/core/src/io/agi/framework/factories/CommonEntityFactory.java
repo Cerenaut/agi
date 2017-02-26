@@ -188,6 +188,10 @@ public class CommonEntityFactory implements EntityFactory {
             return new ClassificationAnalysisEntity( objectMap, _n, modelEntity );
         }
 
+        if( entityType.equals( FeedForwardNetworkEntity.ENTITY_TYPE ) ) {
+            return new FeedForwardNetworkEntity( objectMap, _n, modelEntity );
+        }
+
         return null;
     }
 

@@ -95,7 +95,7 @@ public class PyramidRegionLayerLabelsDemo {
 //        test higher order prediction of sequence (with fixed images?) 22-feb-17 variable order looking good on quick.txt
 //        test higher order prediction of sequence ( mutable images?)
 //        invert output into input both current and predicted.
-
+//        L5 motor control demo, encoding corrective output (needs attention? + RL module); maybe there's a corrective output based on character..?
 
 //        int testType = TEST_TYPE_IMAGE_SEQUENCE; // a sequence of images, regardless of content
         int testType = TEST_TYPE_TEXT_SEQUENCE; // a sequence of characters e.g. A..Z or 0..9. Random exemplar for each
@@ -149,6 +149,7 @@ public class PyramidRegionLayerLabelsDemo {
         String constantName             = Framework.GetEntityName( "constant" );
         String imageSourceName          = Framework.GetEntityName( "image-source" );
         String valueSeriesTruthName     = Framework.GetEntityName( "value-series-truth" );
+        String classifierName           = Framework.GetEntityName( "classifier" );
 
         String regionLayer1Name         = Framework.GetEntityName( "region-layer-1" );
         String regionLayer2Name         = Framework.GetEntityName( "region-layer-2" );
@@ -174,8 +175,10 @@ public class PyramidRegionLayerLabelsDemo {
         learningEntitiesAlgorithm = learningEntitiesAlgorithm + "," + regionLayer2Name;
         // Region-layers
 
+        Framework.CreateEntity( classifierName, FeedForwardNetworkEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName ); // ok all input to the regions is ready
+
         if( doLogging ) {
-            Framework.CreateEntity( valueSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName );
+            Framework.CreateEntity( valueSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), classifierName );
             if( cacheAllData ) {
                 Framework.SetConfig( valueSeriesTruthName, "cache", String.valueOf( cacheAllData ) );
             }
@@ -186,6 +189,7 @@ public class PyramidRegionLayerLabelsDemo {
         Framework.SetConfig( imageSourceName, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( regionLayer1Name, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( regionLayer2Name, "cache", String.valueOf( cacheAllData ) );
+        Framework.SetConfig( classifierName, "cache", String.valueOf( cacheAllData ) );
 
         // RL1
         // it is more stable with the current spikes only as feedback.. ?
@@ -247,6 +251,39 @@ public class PyramidRegionLayerLabelsDemo {
             Framework.SetConfig( imageSourceName, "sourceTextFileTraining", textFileTraining );
             Framework.SetConfig( imageSourceName, "sourceTextFileTesting", textFileTesting );
         }
+
+        // Classifier config
+        // Train the classifier to predict the current label given the previously generated prediction of the input.
+        // i.e. the algorithm will generate an image of the character it thinks will happen next.
+        // Is this worth it? I could just train it on the features? Well there might be different features that are the same digit...?
+//        Need a delay entity?
+//        Framework.SetDataReference( classifierName, FeedForwardNetworkEntity.INPUT_FEATURES, regionLayer1Name, PyramidRegionLayerEntity.INPUT_C1_PREDICTED_OLD );
+//I could digitize with the reconstruction of input - actually with label prediction I could digitize either.
+//        Framework.SetConfig( classifierName, "imageRepeats", String.valueOf(  ) );
+//
+//        int hiddenLayerSize = 0;
+//        float regularization = 0;
+//        float learningRate = 0;
+//        int batchSize = 0;
+//        float leakiness = 0;
+//
+//        public String learningMode = SupervisedLearningEntity.LEARNING_MODE_SAMPLE;
+//
+//        public boolean predict = false;
+////    public boolean learnOnline = false; // have a forgetting factor that means older samples are forgotten
+////    public boolean learnBatch = false; // accumulate and (re) train on a batch of samples at once
+//        public boolean learnBatchOnce = false; // if set to true, then after one "learn batch" it won't learn again
+//        public boolean learnBatchComplete = false; // was: trained
+//
+//        public boolean accumulateSamples = false; // whether to build a matrix of samples over time
+//        public int learningPeriod = -1; // -1 = accumulate data forever, otherwise becomes a rolling window.
+////    public boolean labelOneHot = false; // produces a 1-hot vector
+//        public int labelClasses = 0; // number of distinct label values, or classes
+//
+//        // alternate source for labels: A config property
+//        public String labelEntityName;
+//        public String labelConfigPath;
+
 
         // data series logging
         if( doLogging ) {

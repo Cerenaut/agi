@@ -24,5 +24,12 @@ import io.agi.framework.EntityConfig;
 /**
  * Created by dave on 2/04/16.
  */
-public class FeedForwardNetworkEntityConfig extends EntityConfig {
+public class FeedForwardNetworkEntityConfig extends SupervisedLearningEntityConfig {
+
+    int hiddenLayerSize = 0;
+    float regularization = 0;
+    float learningRate = 0;
+    int batchSize = 0;
+    float leakiness = 0;
+
 }

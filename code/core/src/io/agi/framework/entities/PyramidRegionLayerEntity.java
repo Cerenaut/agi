@@ -207,7 +207,7 @@ public class PyramidRegionLayerEntity extends Entity {
         attributes.add( CLASSIFIER_AGES );
         attributes.add( CLASSIFIER_RATES );
         attributes.add( CLASSIFIER_PROMOTION );
-        attributes.add(CLASSIFIER_INHIBITION);
+        attributes.add( CLASSIFIER_INHIBITION );
 
         flags.putFlag(CLASSIFIER_WEIGHTS, DataFlags.FLAG_NODE_CACHE);
         flags.putFlag( CLASSIFIER_BIASES_1, DataFlags.FLAG_NODE_CACHE );

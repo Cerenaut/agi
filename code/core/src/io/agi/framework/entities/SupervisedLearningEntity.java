@@ -142,7 +142,7 @@ public class SupervisedLearningEntity extends Entity {
     /**
      * Default implementation clears accumulated training data; override to clear model data of the given algorithm.
      */
-    protected void reset() {
+    protected void reset( int features, int labelClasses ) {
         SupervisedLearningEntityConfig config = ( SupervisedLearningEntityConfig ) _config;
 
         config.learnBatchComplete = false;
@@ -160,10 +160,9 @@ public class SupervisedLearningEntity extends Entity {
      * It should be ready for training if not already trained.
      *
      * @param features
-     * @param labels
      * @param labelClasses
      */
-    protected void loadModel( int features, int labels, int labelClasses ) {
+    protected void loadModel( int features, int labelClasses ) {
         // Implement as needed in subclasses
         _logger.warn( "loadModel has not been overridden by your supervised learning algorithm - model will not be loaded from persistence" );
     }
@@ -249,7 +248,7 @@ public class SupervisedLearningEntity extends Entity {
 
         config.labelsError = 0;
 
-        if( config.labelOneHot ) {
+//        if( config.labelOneHot ) {
             int maxAt = labels.maxAt().offset();
             int maxAtPredicted = predictedLabels.maxAt().offset();
             if( maxAt != maxAtPredicted ) {
@@ -261,33 +260,33 @@ public class SupervisedLearningEntity extends Entity {
 
             config.labelsPredicted = maxAtPredicted; // the predicted class given the input features
             config.labelsTruth = maxAt;
-        }
-        else {
-            int elements = labels.getSize();
-
-            errors = new Data( elements );
-
-            for( int i = 0; i < elements; ++i ) {
-                float labelValue = labels._values[ i ];
-                float predictedLabelValue = predictedLabels._values[ i ];
-                int errorValue = 0;
-                if( labelValue != predictedLabelValue ) {
-                    errorValue = 1;
-                }
-
-                config.labelsError += errorValue;
-                errors._values[ i ] = errorValue;
-
-                if( elements == 1 ) {
-                    config.labelsPredicted = ( int ) predictedLabelValue; // the predicted class given the input features
-                    config.labelsTruth = ( int ) labelValue;
-                }
-                else {
-                    config.labelsPredicted = 0; // can't be expressed
-                    config.labelsTruth = 0; // can't be expressed
-                }
-            }
-        }
+//        }
+//        else {
+//            int elements = labels.getSize();
+//
+//            errors = new Data( elements );
+//
+//            for( int i = 0; i < elements; ++i ) {
+//                float labelValue = labels._values[ i ];
+//                float predictedLabelValue = predictedLabels._values[ i ];
+//                int errorValue = 0;
+//                if( labelValue != predictedLabelValue ) {
+//                    errorValue = 1;
+//                }
+//
+//                config.labelsError += errorValue;
+//                errors._values[ i ] = errorValue;
+//
+//                if( elements == 1 ) {
+//                    config.labelsPredicted = ( int ) predictedLabelValue; // the predicted class given the input features
+//                    config.labelsTruth = ( int ) labelValue;
+//                }
+//                else {
+//                    config.labelsPredicted = 0; // can't be expressed
+//                    config.labelsTruth = 0; // can't be expressed
+//                }
+//            }
+//        }
 
         // Data outputs
         setData( OUTPUT_LABELS_TRUTH, labels );
@@ -298,55 +297,60 @@ public class SupervisedLearningEntity extends Entity {
     /**
      * Obtain a vector of labels from EITHER config properties or from a Data reference.
      * <p>
-     * If the label comes from a config property, we can encode it as a binary vector or as an integer.
+     * We always encode the label class as a 1-hot binary vector.
      * <p>
-     * e.g. label = 5, possible labels = 10
+     * e.g. label = 5, possible label classes = 10
      * <p>
      * One hot:
      * [0,0,0,0,0,1,0,0,0,0]
-     * <p>
-     * Integer:
-     * [5]
      *
      * @return
      */
-    protected Data getLabelData() {
+    protected int getInputLabelClass() {
         SupervisedLearningEntityConfig config = ( SupervisedLearningEntityConfig ) _config;
 
         // First look for a reference Data that contains labels.
+        Integer labelClass = null;
+
         if( config.labelEntityName == null || config.labelEntityName.length() == 0 ) {
             // get labels from supplied data
-            Data labels = getData( INPUT_LABELS );
-            return labels;
+            Data input = getData( INPUT_LABELS );
+            int inputSize = input.getSize();
+            if( inputSize == config.labelClasses ) { // option 1: input is already a vector of class values or 1-hot
+                int maxAt = input.maxAt().offset();
+                labelClass = maxAt;
+            }
+            else if( inputSize == 1 ) {
+                labelClass = (int)( input._values[ 0 ] );
+            }
+        }
+        else {         // Failing that, get labels from config-path
+            String stringLabelValue = Framework.GetConfig( config.labelEntityName, config.labelConfigPath );
+            labelClass = Integer.valueOf( stringLabelValue );
         }
 
-        // Failing that, get labels from config-path
-        String stringLabelValue = Framework.GetConfig( config.labelEntityName, config.labelConfigPath );
-        Integer labelValue = Integer.valueOf( stringLabelValue );
-
+        // Now sanitize
         // catch bad value
-        if( labelValue == null ) {
-            labelValue = 0;
+        if( labelClass == null ) {
+            labelClass = 0;
         }
 
         // catch value outside range
-        if( labelValue >= config.labelClasses ) {
-            labelValue = 0;
+        if( labelClass >= config.labelClasses ) {
+            labelClass = 0;
         }
 
+        return labelClass.intValue();
         // now decide if a 1-hot class vector or a single integer label
         // 1-hot means a single '1' bit. The alternative is to put an integer value in a single element (see below).
-        if( config.labelOneHot ) {
-            Data labels = new Data( config.labelClasses );
-            labels._values[ labelValue ] = 1f;
-            return labels;
-        }
-
-        // return a single element with the appropriate integer value
-        Data labels = new Data( 1 );
-        labels._values[ 0 ] = labelValue;
-
-        return labels;
+//        if( config.labelOneHot ) {
+//        }
+//
+//        // return a single element with the appropriate integer value
+//        Data labels = new Data( 1 );
+//        labels._values[ 0 ] = labelValue;
+//
+//        return labels;
     }
 
     @Override
@@ -361,15 +365,17 @@ public class SupervisedLearningEntity extends Entity {
             return;
         }
 
-        Data labels = getLabelData(); // always returns a vector with 1 or more elements
+        int labelClass = getInputLabelClass();
+        Data labels = new Data( config.labelClasses );
+        labels._values[ labelClass ] = 1f;
 
         // If optionally resetting the model, don't train and therefore modify it again
         if( config.reset ) {
-            reset();           // reset the model
+            reset( features.getSize(), config.labelClasses );           // reset the model
         }
         else {
 
-            loadModel( features.getSize(), labels.getSize(), config.labelClasses ); // load a saved model, ie from persistence
+            loadModel( features.getSize(), config.labelClasses ); // load a saved model, ie from persistence
 
             // If learning mode, then update model
             if( config.learn ) {
@@ -390,9 +396,12 @@ public class SupervisedLearningEntity extends Entity {
                     }
                     else { // either learnBatch is "every step" or we didn't do it yet
 
-                        _logger.info( "Train learner, batch mode");
+                        _logger.info( "Train learner, batch mode" );
 
-                        trainBatch( features, labels, features.getSize() ); // train on a batch of data.
+                        Data featuresByTime = getData( FEATURES_BY_TIME );
+                        Data   labelsByTime = getData(   LABELS_BY_TIME );
+
+                        trainBatch( featuresByTime, labelsByTime, features.getSize() ); // train on a batch of data.
 
                         config.learnBatchComplete = true; // it doesn't need to be done again
                     }
@@ -405,7 +414,7 @@ public class SupervisedLearningEntity extends Entity {
 
         // We may be doing predictions during training (i.e. with an incomplete model, to see how it is progressing) or
         // during testing (with the presumably complete model).
-        Data predictedLabels = new Data( new DataSize( labels._dataSize ) );
+        Data predictedLabels = new Data( config.labelClasses );
 
         if( config.predict ) { // optional switch
 
@@ -416,5 +425,30 @@ public class SupervisedLearningEntity extends Entity {
 
         evaluate( features, labels, predictedLabels );      // convenient here and necessary if there is some type of error feedback
     }
+
+//    /**
+//     * There are 3 possible ways to express the labels:
+//     *
+//     * - One-hot: A single bit of N=classes bits represents the correct label (sparse coding)
+//     * - Integer: A single element contains an integer value (as a float)
+//     * - Vector: There are many labels, one per element, each with a different class. Not supported
+//     *
+//     * @param labels
+//     * @return
+//     */
+//    protected int getLabelClass( Data labels ) {
+//
+//        FeatureLabelsCorrelationEntityConfig config = ( FeatureLabelsCorrelationEntityConfig ) _config;
+//
+//        int labelClass = 0;
+//        if( config.labelOneHot ) {
+//            labelClass = labels.maxAt().offset();
+//        }
+//        else {
+//            labelClass = (int)labels._values[ 0 ];
+//        }
+//
+//        return labelClass;
+//    }
 
 }

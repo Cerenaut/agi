@@ -97,7 +97,7 @@ public class PyramidRegionLayerPredictor {
      */
     public void predict( Data inputNew, int density, Data outputPrediction ) {
         Data input = _ffn.getInput();
-        input.copy(inputNew);
+        input.copy( inputNew );
         _ffn.feedForward();
         Data output = _ffn.getOutput();
         outputPrediction.copy( output );
