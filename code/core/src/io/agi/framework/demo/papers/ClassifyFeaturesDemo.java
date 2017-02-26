@@ -32,9 +32,13 @@ import io.agi.framework.factories.CommonEntityFactory;
 import java.util.Properties;
 
 /**
+ * Learns to assign labels to a set of recorded features.
+ *
+ * Assumes features and labels over time have already been recorded.
+ *
  * Created by gideon on 08/01/17.
  */
-public class EvaluateTrainingDemo {
+public class ClassifyFeaturesDemo {
 
     /**
      * Usage: Expects some arguments. These are:

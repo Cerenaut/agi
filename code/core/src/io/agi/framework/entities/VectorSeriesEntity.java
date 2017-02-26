@@ -27,6 +27,7 @@ import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
+import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
@@ -53,9 +54,21 @@ public class VectorSeriesEntity extends Entity {
     }
 
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
+
+        VectorSeriesEntityConfig config = ( VectorSeriesEntityConfig ) _config;
+
         attributes.add( OUTPUT );
 
-        flags.putFlag( OUTPUT, DataFlags.FLAG_SPARSE_BINARY );
+        if( config.encoding.equals( ModelData.ENCODING_SPARSE_BINARY ) ) {
+            flags.putFlag( OUTPUT, DataFlags.FLAG_SPARSE_BINARY );
+        }
+        else if( config.encoding.equals( ModelData.ENCODING_SPARSE_REAL ) ) {
+            flags.putFlag( OUTPUT, DataFlags.FLAG_SPARSE_REAL );
+        }
+        else { // remove existing flag, if any
+            flags.removeFlag( OUTPUT, DataFlags.FLAG_SPARSE_BINARY );
+            flags.removeFlag( OUTPUT, DataFlags.FLAG_SPARSE_REAL );
+        }
     }
 
     public Class getConfigClass() {
