@@ -118,24 +118,25 @@ public class FeatureLabelsCorrelationEntity extends SupervisedLearningEntity {
 
         int size = featuresTimeMatrix.getSize();
         int samples = size / features;
-        int labels = config.labelClasses;
+//        int labels = config.labelClasses;
 
         _featureLabelCount.set( 0f );
 
         for( int s = 0; s < samples; ++s ) {
 
             Data featuresData = new Data( features );
-            Data labelsData = new Data( labels );
+            Data labelsData = new Data( 1 );//labels );
 
             int offsetThis = 0;
             int offsetThat = s * features;
             int range = features;
             featuresData.copyRange( featuresTimeMatrix, offsetThis, offsetThat, range );
 
-            offsetThis = 0;
-            offsetThat = s * labels;
-            range = labels;
-            labelsData.copyRange( labelsTimeMatrix, offsetThis, offsetThat, range );
+//            offsetThis = 0;
+//            offsetThat = s * labels;
+//            range = labels;
+//            labelsData.copyRange( labelsTimeMatrix, offsetThis, offsetThat, range );
+            labelsData._values[ 0 ] = labelsTimeMatrix._values[ s ];
 
             trainSample( featuresData, labelsData );
         }
@@ -152,7 +153,8 @@ public class FeatureLabelsCorrelationEntity extends SupervisedLearningEntity {
 
         // Due to the way this model works, I can EITHER train on the history of values, or on
         int labelClasses = config.labelClasses;
-        int labelClass = labels.maxAt().offset();//getLabelClass( labels );
+//        int labelClass = labels.maxAt().offset();//getLabelClass( labels );
+        int labelClass = (int)labels._values[ 0 ];
         int nbrFeatures = features.getSize();
 
         for( int i = 0; i < nbrFeatures; ++i ) {
@@ -178,7 +180,8 @@ public class FeatureLabelsCorrelationEntity extends SupervisedLearningEntity {
 
         // adjust all classes based on the most recent observation
         int labelClasses = config.labelClasses;
-        int labelClass = labels.maxAt().offset();//getLabelClass( labels );
+//        int labelClass = labels.maxAt().offset();//getLabelClass( labels );
+        int labelClass = (int)labels._values[ 0 ];
         int nbrFeatures = features.getSize();
 
         for( int i = 0; i < nbrFeatures; ++i ) {
@@ -214,6 +217,18 @@ public class FeatureLabelsCorrelationEntity extends SupervisedLearningEntity {
      * @param predictedLabels
      */
     protected void predict( Data features, Data predictedLabels ) {
+        FeatureLabelsCorrelationEntityConfig config = ( FeatureLabelsCorrelationEntityConfig ) _config;
+
+        Data predictedDistribution = new Data( config.labelClasses );
+
+        predictDistribution( features, predictedDistribution );
+
+        int predictedLabel = predictedDistribution.maxAt().offset();
+
+        predictedLabels._values[ 0 ] = predictedLabel;
+    }
+
+    public void predictDistribution( Data features, Data predictedLabels ) {
         FeatureLabelsCorrelationEntityConfig config = ( FeatureLabelsCorrelationEntityConfig ) _config;
 
         predictedLabels.set( 0.f );

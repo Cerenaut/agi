@@ -35,6 +35,8 @@ public class SupervisedLearningEntityConfig extends EntityConfig {
     public boolean learnBatchComplete = false; // was: trained
 
     public boolean accumulateSamples = false; // whether to build a matrix of samples over time
+    public boolean learnAccumulatedSamples = false; // whether to use the accumulated samples for training
+
     public int learningPeriod = -1; // -1 = accumulate data forever, otherwise becomes a rolling window.
 //    public boolean labelOneHot = false; // produces a 1-hot vector
     public int labelClasses = 0; // number of distinct label values, or classes
