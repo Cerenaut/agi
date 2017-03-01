@@ -78,21 +78,20 @@ public class KSparseDemo {
 //        String trainingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small";
 //        String testingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small, /Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/testing-small";
 
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
-//        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
-
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
         String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
+//        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
 
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 
         boolean cacheAllData = true;
         boolean terminateByAge = false;
-//        int terminationAge = 10;//9000;
-        int terminationAge = 50000;//25000;
-        int trainingEpochs = 15;//80; // good for up to 80k
-        int testingEpochs = 3;//80; // good for up to 80k
+        int terminationAge = -1;//50000;//25000;
+        int trainingEpochs = 2;
+        int testingEpochs = 1;
         int imagesPerEpoch = 1000;
 
         // Define some entities
