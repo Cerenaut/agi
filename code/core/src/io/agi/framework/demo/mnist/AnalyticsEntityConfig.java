@@ -28,6 +28,7 @@ public class AnalyticsEntityConfig extends EntityConfig {
 
     public static final String PHASE_TRAINING = "training";
     public static final String PHASE_TESTING = "testing";
+    public static final String PHASE_TERMINATING = "terminating";
 
     public String testingEntities = "";    // the subscribed entities for performing the analytics
 
@@ -35,6 +36,7 @@ public class AnalyticsEntityConfig extends EntityConfig {
     // the sets can overlap, using testSetOffset
     public int trainSetSize = 0;
     public int testSetSize = 0;
+    public int trainSetOffset = 0;           // offset in the dataset from which to start using the data for training
     public int testSetOffset = 0;           // offset in the dataset from which to start using the data for testing
                                             // if you want to test on the entire dataset (training+testing), then make this zero
 
@@ -44,6 +46,7 @@ public class AnalyticsEntityConfig extends EntityConfig {
 //    public String datasetFeaturesAttribute = "";
 //    public String datasetLabelsAttribute = "";
 
+    public boolean predictDuringTraining = false;
     public boolean batchMode = true;
     public boolean terminate = false;      // trigger to stop the experiment
     public String phase = PHASE_TRAINING;  // can be training or testing
