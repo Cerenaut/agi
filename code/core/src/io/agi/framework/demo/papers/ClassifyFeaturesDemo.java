@@ -89,6 +89,9 @@ public class ClassifyFeaturesDemo {
         // ---------------------------------------------
         boolean cacheAllData = true;
 
+        int trainingSamples = 60000;
+        int testingSamples = 70000;
+
         ExperimentEntityConfig experimentConfig = new ExperimentEntityConfig();
         experimentConfig.terminationEntityName = analyticsName;
         experimentConfig.terminationConfigPath = "terminate";
@@ -96,15 +99,18 @@ public class ClassifyFeaturesDemo {
 
         AnalyticsEntityConfig analyticsEntityConfig = new AnalyticsEntityConfig();
         analyticsEntityConfig.batchMode = true;
-        analyticsEntityConfig.trainSetSize = 60000;
-        analyticsEntityConfig.testSetOffset = 0;           // test on the training set as well
-        analyticsEntityConfig.testSetSize = 70000;
+        analyticsEntityConfig.trainSetOffset = 0;
+        analyticsEntityConfig.testSetOffset = trainingSamples;           // test on the training set as well
+        analyticsEntityConfig.trainSetSize = trainingSamples;//60000;
+        analyticsEntityConfig.testSetSize = testingSamples;// 70000;
         analyticsEntityConfig.testingEntities = logisticRegressionName;
+        analyticsEntityConfig.predictDuringTraining = true;
 
         SupervisedBatchTrainingEntityConfig logisticRegressionEntityConfig = new SupervisedBatchTrainingEntityConfig();
         logisticRegressionEntityConfig.algorithm = SupervisedBatchTrainingEntityConfig.ALGORITHM_LOGISTIC_REGRESSION;
         logisticRegressionEntityConfig.bias = true;
         logisticRegressionEntityConfig.C = 100.f;
+        logisticRegressionEntityConfig.labelClasses = 10;
 
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         Framework.CreateEntity( analyticsName, AnalyticsEntity.ENTITY_TYPE, n.getName(), experimentName );
