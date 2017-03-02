@@ -98,7 +98,7 @@ public class ClassifyFeaturesAnalysisDemo {
         // 3) Connect entities
         // ---------------------------------------------
         // Connect the 'testing entities' data input to the training data set directly
-// TODO: Set this programmatically
+        // TODO: Set this programmatically
         Framework.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_TRUTH, "classifier", "truth" );
         Framework.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_PREDICTED, "classifier", "predicted" );
 

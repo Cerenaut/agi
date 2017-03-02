@@ -29,16 +29,26 @@ public class ActivationFunctionFactory {
     public static final String LOG_SIGMOID = "log-sigmoid";
     public static final String TAN_H = "tan-h";
     public static final String SOFTMAX = "softmax";
+    public static final String LEAKY_RELU = "leaky-relu";
 
-    public TransferFunction create( String function ) {
+    public float leak = 0.01f;
+
+    public ActivationFunctionFactory() {
+
+    }
+
+    public ActivationFunction create( String function ) {
         if( function.equals( LOG_SIGMOID ) ) {
-            return TransferFunction.createLogisticSigmoid();
+            return ActivationFunction.createLogisticSigmoid();
         }
         if( function.equals( TAN_H ) ) {
-            return TransferFunction.createTanh();
+            return ActivationFunction.createTanh();
         }
         if( function.equals( SOFTMAX ) ) {
-            return TransferFunction.createSoftmax();
+            return ActivationFunction.createSoftmax();
+        }
+        if( function.equals( LEAKY_RELU ) ) {
+            return ActivationFunction.createLeakyReLU(leak);
         }
         return null;
     }

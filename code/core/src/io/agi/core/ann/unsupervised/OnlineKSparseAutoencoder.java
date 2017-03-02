@@ -19,7 +19,7 @@
 
 package io.agi.core.ann.unsupervised;
 
-import io.agi.core.ann.supervised.TransferFunction;
+import io.agi.core.ann.supervised.ActivationFunction;
 import io.agi.core.data.Data;
 import io.agi.core.data.FloatArray;
 import io.agi.core.data.Ranking;
@@ -325,7 +325,7 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
 
             _cellWeightedSum._values[ c ] = sum;
 
-            float transfer = (float)TransferFunction.logisticSigmoid( sum );
+            float transfer = (float) ActivationFunction.logisticSigmoid(sum);
 
             _cellTransfer._values[ c ] = transfer;
 
@@ -429,7 +429,7 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
             if( unit ) {
                 float transfer = _inputReconstructionTransfer._values[ i ]; //output; // z
                 output = transfer;
-                derivative = (float)TransferFunction.logisticSigmoidDerivative( weightedSum );
+                derivative = (float) ActivationFunction.logisticSigmoidDerivative(weightedSum);
             }
             else {
                 output = weightedSum;
@@ -459,7 +459,7 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
 
                 float derivative = 1f;
                 if( unit ) {
-                    derivative = (float)TransferFunction.logisticSigmoidDerivative( weightedSumTopK );
+                    derivative = (float) ActivationFunction.logisticSigmoidDerivative(weightedSumTopK);
                 }
 
                 for( int i = 0; i < inputs; ++i ) {
@@ -663,7 +663,7 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
         _cellGradients.set( 0f );
     }
 
-    protected void reconstruct( Data hiddenActivity, Data inputReconstructionWeightedSum, Data inputReconstructionTransfer ) {
+    public void reconstruct( Data hiddenActivity, Data inputReconstructionWeightedSum, Data inputReconstructionTransfer ) {
         int inputs = _c.getNbrInputs();
         int cells = _c.getNbrCells();
 
@@ -686,7 +686,7 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
 
             inputReconstructionWeightedSum._values[ i ] = sum;
 
-            float transfer = (float)TransferFunction.logisticSigmoid( sum );
+            float transfer = (float) ActivationFunction.logisticSigmoid(sum);
 
             inputReconstructionTransfer._values[ i ] = transfer;
         }

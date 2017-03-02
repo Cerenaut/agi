@@ -215,7 +215,7 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
 
     protected void copyDataFromPersistence( OnlineKSparseAutoencoder ksa ) {
 
-        ksa._inputValues = getData( INPUT );
+        ksa._inputValues = getData(INPUT);
 
         ksa._cellWeights = getDataLazyResize(WEIGHTS, ksa._cellWeights._dataSize);
         ksa._cellBiases1 = getDataLazyResize(BIASES_1, ksa._cellBiases1._dataSize);
@@ -227,13 +227,13 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
 
         ksa._cellErrors = getDataLazyResize( ERRORS, ksa._cellErrors._dataSize );
         ksa._cellWeightedSum = getDataLazyResize( WEIGHTED_SUM, ksa._cellWeightedSum._dataSize );
-        ksa._cellSpikesTopKA = getDataLazyResize( SPIKES_TOP_KA, ksa._cellSpikesTopKA._dataSize );
         ksa._cellSpikesTopK = getDataLazyResize( SPIKES_TOP_K, ksa._cellSpikesTopK._dataSize );
+        ksa._cellSpikesTopKA = getDataLazyResize( SPIKES_TOP_KA, ksa._cellSpikesTopKA._dataSize );
 
         ksa._cellTransfer = getDataLazyResize( TRANSFER, ksa._cellTransfer._dataSize );
         ksa._cellTransferPromoted = getDataLazyResize( TRANSFER_PROMOTED, ksa._cellTransferPromoted._dataSize );
         ksa._cellTransferTopK = getDataLazyResize( TRANSFER_TOP_K, ksa._cellTransferTopK._dataSize );
-        ksa._cellTransferTopKA = getDataLazyResize( TRANSFER_TOP_K, ksa._cellTransferTopKA._dataSize );
+        ksa._cellTransferTopKA = getDataLazyResize( TRANSFER_TOP_KA, ksa._cellTransferTopKA._dataSize );
 
         ksa._inputReconstructionWeightedSum = getDataLazyResize( RECONSTRUCTION_WEIGHTED_SUM, ksa._inputReconstructionWeightedSum._dataSize );
         ksa._inputReconstructionTransfer = getDataLazyResize( RECONSTRUCTION_TRANSFER, ksa._inputReconstructionTransfer._dataSize );

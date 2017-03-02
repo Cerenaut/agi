@@ -27,6 +27,7 @@ import io.agi.framework.demo.mnist.AnalyticsEntity;
 import io.agi.framework.demo.mnist.ClassificationAnalysisEntity;
 import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.demo.mnist.MnistEntity;
+import io.agi.framework.demo.mnist.Text2ImageLabelEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.persistence.models.ModelEntity;
 import org.apache.logging.log4j.LogManager;
@@ -155,6 +156,10 @@ public class CommonEntityFactory implements EntityFactory {
             return new ImageLabelEntity( objectMap, _n, modelEntity );
         }
 
+        if( entityType.equals( Text2ImageLabelEntity.ENTITY_TYPE ) ) {
+            return new Text2ImageLabelEntity( objectMap, _n, modelEntity );
+        }
+
         if( entityType.equals( KSparseAutoencoderEntity.ENTITY_TYPE ) ) {
             return new KSparseAutoencoderEntity( objectMap, _n, modelEntity );
         }
@@ -167,6 +172,10 @@ public class CommonEntityFactory implements EntityFactory {
             return new QuiltedCompetitiveLearningEntity( objectMap, _n, modelEntity );
         }
 
+        if( entityType.equals( PyramidRegionLayerEntity.ENTITY_TYPE ) ) {
+            return new PyramidRegionLayerEntity(objectMap, _n, modelEntity);
+        }
+
         if( entityType.equals( AnalyticsEntity.ENTITY_TYPE ) ) {
             return new AnalyticsEntity( objectMap, _n, modelEntity );
         }
@@ -177,6 +186,14 @@ public class CommonEntityFactory implements EntityFactory {
 
         if( entityType.equals( ClassificationAnalysisEntity.ENTITY_TYPE ) ) {
             return new ClassificationAnalysisEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( FeedForwardNetworkEntity.ENTITY_TYPE ) ) {
+            return new FeedForwardNetworkEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( DataQueueEntity.ENTITY_TYPE ) ) {
+            return new DataQueueEntity( objectMap, _n, modelEntity );
         }
 
         return null;

@@ -125,7 +125,7 @@ public class AnalyticsEntity extends Entity {
         }
 
         // if labels is 1 dimensional, then convert to column matrix (form expected by supervised learning)
-        if ( labels._dataSize.getDimensions() == 1 )
+        if( labels._dataSize.getDimensions() == 1 )
         {
             int length = labels._dataSize.getSize( DataSize.DIMENSION_X );
             labels.setSize( DataSize.create( 1, length ) );
@@ -145,31 +145,46 @@ public class AnalyticsEntity extends Entity {
 
         MemoryUtil.logMemory( _logger );
 
-        _logger.warn( "=====> Age = " + _config.age + ", Phase: " + config.phase + ", " + idxMessage( numDataPoints ) + ", " + sizeMessage() );
+        updatePhase();
+        boolean isTerminate = isTerminating();
 
-        boolean isTerminate = calcPhase();
+        _logger.info( "=====> Age = " + _config.age + ", Phase: " + config.phase + ", " + idxMessage( numDataPoints ) + ", " + sizeMessage() );
+        _logger.info( "=====> Update to: " + idxMessage( numDataPoints ) );
 
-        _logger.warn( "=====> Update to: " + idxMessage( numDataPoints ) );
+        // inform subscribed testing entities, whether they should TRAIN or PREDICT
+        try {
+            Collection< String > entityNames = getEntityNames( config.testingEntities );
+            for( String entityName : entityNames ) {
 
-        if ( !isTerminate ) {
+                boolean doReset = config.reset;
+                boolean doLearn = isTraining();
+                boolean doPredict = true;
 
-            // inform subscribed testing entities, whether they should TRAIN or PREDICT
-            try {
-                Collection< String > entityNames = getEntityNames( config.testingEntities );
-                for( String entityName : entityNames ) {
-
-                    boolean isTraining = isTraining();
-
-                    _logger.info( "Set testing entity 'learn' flag: Entity = " + entityName + ", " + isTraining );
-                    _logger.info( "Set testing entity  'predict' flag: Entity = " + entityName + ", " + !isTraining );
-
-                    Framework.SetConfig( entityName, "learn", String.valueOf( isTraining ) );
-                    Framework.SetConfig( entityName, "predict", String.valueOf( !isTraining ) );
+                if( doLearn ) {
+                    if( !config.predictDuringTraining ) {
+                        doPredict = false;
+                    }
                 }
-            }
-            catch( Exception e ) {
-            } // this is ok, the experiment is just not configured to have a learning flag
 
+                if( isTerminate ) {
+                    doReset = false;
+                    doLearn = false;
+                    doPredict = false;
+                }
+
+                // NB: Need to intersperse these, or the log will be inaccurate in the event of an exception. (not needed, framework logs anyway)
+                //_logger.info( "Set entity flag: 'reset', Entity = " + entityName + ", " + doReset );
+                Framework.SetConfig( entityName, "predict", String.valueOf( doReset ) );
+                //_logger.info( "Set entity flag: 'learn', Entity = " + entityName + ", " + doLearn );
+                Framework.SetConfig( entityName, "learn", String.valueOf( doLearn ) );
+                //_logger.info( "Set entity flag: 'predict', Entity = " + entityName + ", " + doPredict );
+                Framework.SetConfig( entityName, "predict", String.valueOf( doPredict ) );
+            }
+        }
+        catch( Exception e ) {
+        } // this is ok, the experiment is just not configured to have a learning flag
+
+        if( !isTerminate ) {
             incrementCount();
 
             Data featuresOut, labelsOut;
@@ -180,12 +195,12 @@ public class AnalyticsEntity extends Entity {
 
                 // copy relevant section of features and labels to output
                 if( isTraining() ) {
-                    startIdx = 0;
-                    endIdx = config.trainSetSize - 1;
+                    startIdx = config.trainSetOffset;
+                    endIdx = startIdx + config.trainSetSize - 1;
                 }
                 else {
                     startIdx = config.testSetOffset;
-                    endIdx = config.testSetOffset + config.testSetSize - 1;
+                    endIdx = startIdx + config.testSetSize - 1;
                 }
             }
             else {
@@ -194,7 +209,7 @@ public class AnalyticsEntity extends Entity {
                 endIdx = config.count;
             }
 
-            _logger.info( "Output datapoints in idx range: (" + startIdx + ", " + endIdx + ")" );
+            _logger.info( "Output datapoints in idx range (incl.): (" + startIdx + ", " + endIdx + ")" );
 
             featuresOut = Data2d.copyRows( features, startIdx, endIdx );
             labelsOut = Data2d.copyRows( labels, startIdx, endIdx );
@@ -221,10 +236,8 @@ public class AnalyticsEntity extends Entity {
      *  - terminate when finished test phase
      * This is meant to be run at the start of the run loop (phase value from previous iteration)
      */
-    private boolean calcPhase( ) {
+    private void updatePhase() {
         AnalyticsEntityConfig config = ( AnalyticsEntityConfig ) _config;
-
-        boolean terminate = false;
 
         // set current phase (transition if necessary)
         if( isTraining() ) {
@@ -234,15 +247,13 @@ public class AnalyticsEntity extends Entity {
                 _logger.warn( "===> Transition to test phase. (2)" );
             }
         }
-        else {
+        else if( isTesting() ) {
             if( config.count >= config.testSetOffset + config.testSetSize ) {
+                config.phase = AnalyticsEntityConfig.PHASE_TERMINATING;
                 config.terminate = true;                            // terminate
-                _logger.warn( "===> Terminating on end of test set (3)" );
-                terminate = true;
+                _logger.warn( "===> Transition to terminate phase. (3)" );
             }
         }
-
-        return terminate;
     }
 
 
@@ -269,4 +280,15 @@ public class AnalyticsEntity extends Entity {
         AnalyticsEntityConfig config = ( AnalyticsEntityConfig ) _config;
         return config.phase.equals( AnalyticsEntityConfig.PHASE_TRAINING );
     }
+
+    public boolean isTesting() {
+        AnalyticsEntityConfig config = ( AnalyticsEntityConfig ) _config;
+        return config.phase.equals( AnalyticsEntityConfig.PHASE_TESTING );
+    }
+
+    public boolean isTerminating() {
+        AnalyticsEntityConfig config = ( AnalyticsEntityConfig ) _config;
+        return config.phase.equals( AnalyticsEntityConfig.PHASE_TERMINATING );
+    }
 }
+

@@ -60,7 +60,7 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
         _logger.info( "Folder names = " + folderNames );
 
         String[] folders = folderNames.split( "," );
-        for ( String folderName : folders ) {
+        for( String folderName : folders ) {
 
             folderName = folderName.trim();
 

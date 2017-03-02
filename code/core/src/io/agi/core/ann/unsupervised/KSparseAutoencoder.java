@@ -19,7 +19,6 @@
 
 package io.agi.core.ann.unsupervised;
 
-import io.agi.core.ann.supervised.TransferFunction;
 import io.agi.core.data.*;
 import io.agi.core.math.Useful;
 import io.agi.core.orm.ObjectMap;

@@ -58,8 +58,10 @@ public class SupervisedBatchTrainingEntity extends SupervisedLearningEntity {
         return SupervisedBatchTrainingEntityConfig.class;
     }
 
-    protected void reset() {
-        super.reset();
+    protected void reset( int features, int labelClasses ) {
+
+        super.reset( features, labelClasses );
+
         _learner.reset();
     }
 
@@ -77,7 +79,7 @@ public class SupervisedBatchTrainingEntity extends SupervisedLearningEntity {
      * Override to ensure that the model is loaded from persistence.
      * Get string from entity's config object, set in learner's config and it will be used by learner.initModel()
      */
-    protected void loadModel( int features, int labels, int labelClasses ) {
+    protected void loadModel( int features, int labelClasses ) {
 
         // Get all the parameters:
         SupervisedBatchTrainingEntityConfig config = ( SupervisedBatchTrainingEntityConfig ) _config;
@@ -87,10 +89,10 @@ public class SupervisedBatchTrainingEntity extends SupervisedLearningEntity {
         learnerConfig.setup( _om, "SupervisedBatchTrainingConfig", _r, config.modelString, config.bias, config.C );
 
         // Create the implementing object itself, using data from persistence:
-        if ( config.algorithm.equals( SupervisedBatchTrainingEntityConfig.ALGORITHM_SVM ) ) {
+        if( config.algorithm.equals( SupervisedBatchTrainingEntityConfig.ALGORITHM_SVM ) ) {
             _learner = new Svm( getName(), _om );
         }
-        else if  ( config.algorithm.equals( SupervisedBatchTrainingEntityConfig.ALGORITHM_LOGISTIC_REGRESSION ) ) {
+        else if( config.algorithm.equals( SupervisedBatchTrainingEntityConfig.ALGORITHM_LOGISTIC_REGRESSION ) ) {
             _learner = new LogisticRegression( getName(), _om );
         }
         else {
@@ -98,7 +100,6 @@ public class SupervisedBatchTrainingEntity extends SupervisedLearningEntity {
         }
 
         _learner.setup( learnerConfig );
-
     }
 
     /**

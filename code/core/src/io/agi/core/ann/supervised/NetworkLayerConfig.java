@@ -33,18 +33,20 @@ public class NetworkLayerConfig extends NetworkConfig {
 
     public static final String ACTIVATION_FUNCTION = "activation-function";
     public static final String LEARNING_RATE = "learning-rate";
+    public static final String REGULARIZATION = "regularization";
     public static final String INPUTS = "i";
     public static final String CELLS = "w";
 
     public NetworkLayerConfig() {
     }
 
-    public void setup( ObjectMap om, String name, Random r, int inputs, int cells, float learningRate, String activationFunction ) {
+    public void setup( ObjectMap om, String name, Random r, int inputs, int cells, float learningRate, float regularization, String activationFunction ) {
         super.setup( om, name, r );
 
         setInputs( inputs );
         setCells( cells );
         setLearningRate( learningRate );
+        setRegularization( regularization );
         setActivationFunction( activationFunction );
     }
 
@@ -56,7 +58,16 @@ public class NetworkLayerConfig extends NetworkConfig {
         setInputs( c.getInputs() );
         setCells( c.getCells() );
         setLearningRate( c.getLearningRate() );
+        setRegularization( c.getRegularization() );
         setActivationFunction( c.getActivationFunction() );
+    }
+
+    public void setRegularization( float r ) {
+        _om.put(getKey(REGULARIZATION), r);
+    }
+
+    public Float getRegularization() {
+        return ( Float ) _om.get( getKey( REGULARIZATION ) );
     }
 
     public int getInputs() {

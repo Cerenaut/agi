@@ -50,6 +50,8 @@ public class ImageLabelEntityConfig extends EntityConfig {
 
     String sourceFilesPathTraining;
     String sourceFilesPathTesting;
+    String sourceFilesLabelDelimiter = "_";
+    int sourceFilesLabelIndex = 2;
 
     String trainingEntities = "";
     String testingEntities = "";
@@ -59,6 +61,8 @@ public class ImageLabelEntityConfig extends EntityConfig {
     int testingEpochs = 1;
 
     boolean shuffle = true;
+    boolean shuffleTraining = true;
+    boolean shuffleTesting = false;
     long shuffleSeed = 0;
 
     int imageLabel = 0;
