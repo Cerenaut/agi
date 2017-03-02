@@ -19,10 +19,6 @@
 
 package io.agi.core.alg;
 
-import io.agi.core.ann.supervised.ActivationFunctionFactory;
-import io.agi.core.ann.supervised.FeedForwardNetwork;
-import io.agi.core.ann.supervised.FeedForwardNetworkConfig;
-import io.agi.core.ann.supervised.LossFunction;
 import io.agi.core.ann.unsupervised.GrowingNeuralGas;
 import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
 import io.agi.core.orm.ObjectMap;
@@ -186,7 +182,7 @@ public class RegionFactory {
 //        ffn.setup( c, aff );
 //
 //        // Twin layer test:
-//        String lossFunction = c.getLossFunction();
+//        String lossFunction = c.getCostFunction();
 //        String activationFunction = c.getActivationFunction();
 //        float learningRate = c.getLearningRate();
 //        int inputs = c.getNbrInputs();

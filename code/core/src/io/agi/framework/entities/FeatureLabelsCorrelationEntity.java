@@ -87,13 +87,13 @@ public class FeatureLabelsCorrelationEntity extends SupervisedLearningEntity {
         return FeatureLabelsCorrelationEntityConfig.class;
     }
 
-    protected void reset() {
-        super.reset();
+    protected void reset( int features, int labelClasses ) {
+        super.reset( features, labelClasses );
         _featureLabelCount.set( 0.f );
     }
 
-    protected void initModel( int features, int labels, int labelClasses ) {
-        DataSize dataSizeFeatureLabels = DataSize.create( features * labels );
+    protected void initModel( int features, int labelClasses ) {
+        DataSize dataSizeFeatureLabels = DataSize.create( features * labelClasses );
         _featureLabelCount = getDataLazyResize( FEATURE_LABEL_COUNT, dataSizeFeatureLabels );
     }
 
@@ -118,24 +118,25 @@ public class FeatureLabelsCorrelationEntity extends SupervisedLearningEntity {
 
         int size = featuresTimeMatrix.getSize();
         int samples = size / features;
-        int labels = config.labelClasses;
+//        int labels = config.labelClasses;
 
         _featureLabelCount.set( 0f );
 
         for( int s = 0; s < samples; ++s ) {
 
             Data featuresData = new Data( features );
-            Data labelsData = new Data( labels );
+            Data labelsData = new Data( 1 );//labels );
 
             int offsetThis = 0;
             int offsetThat = s * features;
             int range = features;
             featuresData.copyRange( featuresTimeMatrix, offsetThis, offsetThat, range );
 
-            offsetThis = 0;
-            offsetThat = s * labels;
-            range = features;
-            featuresData.copyRange( featuresTimeMatrix, offsetThis, offsetThat, range );
+//            offsetThis = 0;
+//            offsetThat = s * labels;
+//            range = labels;
+//            labelsData.copyRange( labelsTimeMatrix, offsetThis, offsetThat, range );
+            labelsData._values[ 0 ] = labelsTimeMatrix._values[ s ];
 
             trainSample( featuresData, labelsData );
         }
@@ -152,7 +153,8 @@ public class FeatureLabelsCorrelationEntity extends SupervisedLearningEntity {
 
         // Due to the way this model works, I can EITHER train on the history of values, or on
         int labelClasses = config.labelClasses;
-        int labelClass = getLabelClass( labels );
+//        int labelClass = labels.maxAt().offset();//getLabelClass( labels );
+        int labelClass = (int)labels._values[ 0 ];
         int nbrFeatures = features.getSize();
 
         for( int i = 0; i < nbrFeatures; ++i ) {
@@ -178,7 +180,8 @@ public class FeatureLabelsCorrelationEntity extends SupervisedLearningEntity {
 
         // adjust all classes based on the most recent observation
         int labelClasses = config.labelClasses;
-        int labelClass = getLabelClass( labels );
+//        int labelClass = labels.maxAt().offset();//getLabelClass( labels );
+        int labelClass = (int)labels._values[ 0 ];
         int nbrFeatures = features.getSize();
 
         for( int i = 0; i < nbrFeatures; ++i ) {
@@ -208,37 +211,24 @@ public class FeatureLabelsCorrelationEntity extends SupervisedLearningEntity {
     }
 
     /**
-     * There are 3 possible ways to express the labels:
-     *
-     * - One-hot: A single bit of N=classes bits represents the correct label (sparse coding)
-     * - Integer: A single element contains an integer value (as a float)
-     * - Vector: There are many labels, one per element, each with a different class. Not supported
-     *
-     * @param labels
-     * @return
-     */
-    protected int getLabelClass( Data labels ) {
-
-        FeatureLabelsCorrelationEntityConfig config = ( FeatureLabelsCorrelationEntityConfig ) _config;
-
-        int labelClass = 0;
-        if( config.labelOneHot ) {
-            labelClass = labels.maxAt().offset();
-        }
-        else {
-            labelClass = (int)labels._values[ 0 ];
-        }
-
-        return labelClass;
-    }
-
-    /**
      * Generate a prediction from the model and copy it into predictedLabels.
      *
      * @param features
      * @param predictedLabels
      */
     protected void predict( Data features, Data predictedLabels ) {
+        FeatureLabelsCorrelationEntityConfig config = ( FeatureLabelsCorrelationEntityConfig ) _config;
+
+        Data predictedDistribution = new Data( config.labelClasses );
+
+        predictDistribution( features, predictedDistribution );
+
+        int predictedLabel = predictedDistribution.maxAt().offset();
+
+        predictedLabels._values[ 0 ] = predictedLabel;
+    }
+
+    public void predictDistribution( Data features, Data predictedLabels ) {
         FeatureLabelsCorrelationEntityConfig config = ( FeatureLabelsCorrelationEntityConfig ) _config;
 
         predictedLabels.set( 0.f );

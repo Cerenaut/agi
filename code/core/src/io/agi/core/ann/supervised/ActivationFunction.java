@@ -40,7 +40,7 @@ import io.agi.core.data.FloatArray;
  * <p/>
  * Created by dave on 3/01/16.
  */
-public abstract class TransferFunction {
+public abstract class ActivationFunction {
 
     /**
      * Returns a nonlinear scalar function of r.
@@ -81,51 +81,86 @@ public abstract class TransferFunction {
      */
     public abstract double fDerivative( double r );
 
-    public static TransferFunction createLinear() {
-        return new TransferFunction() {
+//    public static TransferFunction createLinear() {
+//        return new TransferFunction() {
+//            public double f( double r ) {
+//                return r;
+//            }
+//            public double fDerivative( double r ) {
+//                return 1.0;
+//            }
+//        };
+//    }
+
+    public static ActivationFunction createLogisticSigmoid() {
+        return new ActivationFunction() {
             public double f( double r ) {
-                return r;
+                return ActivationFunction.logisticSigmoid(r);
             }
+
             public double fDerivative( double r ) {
-                return 1.0;
+                return ActivationFunction.logisticSigmoidDerivative(r);
             }
         };
     }
 
-    public static TransferFunction createLogisticSigmoid() {
-        return new TransferFunction() {
+    public static ActivationFunction createTanh() {
+        return new ActivationFunction() {
             public double f( double r ) {
-                return TransferFunction.logisticSigmoid( r );
+                return ActivationFunction.tanh(r);
             }
 
             public double fDerivative( double r ) {
-                return TransferFunction.logisticSigmoidDerivative( r );
+                return ActivationFunction.tanhDerivative(r);
             }
         };
     }
 
-    public static TransferFunction createTanh() {
-        return new TransferFunction() {
-            public double f( double r ) {
-                return TransferFunction.tanh( r );
-            }
-
-            public double fDerivative( double r ) {
-                return TransferFunction.tanhDerivative( r );
-            }
-        };
-    }
-
-    public static TransferFunction createSoftmax() {
-        return new TransferFunction() {
+    public static ActivationFunction createSoftmax() {
+        return new ActivationFunction() {
             public void f( FloatArray weightedSums, FloatArray outputs ) {
-                softmax( weightedSums, outputs );
+                softmax(weightedSums, outputs);
             }
 
             public double fDerivative( double r ) {
-                return TransferFunction.softmaxDerivative( r );
+                return ActivationFunction.softmaxDerivative(r);
             }
         };
+    }
+
+    public static ActivationFunction createLeakyReLU( final float leak ) {
+        return new ActivationFunction() {
+            public void f( FloatArray weightedSums, FloatArray outputs ) {
+                leakyReLU(weightedSums, outputs, leak );
+            }
+
+            public double fDerivative( double r ) {
+                return ActivationFunction.leakyReLUDerivative(r, leak);
+            }
+        };
+    }
+
+    public static void leakyReLU( FloatArray weightedSums, FloatArray outputs, float leak ) {
+        int J = weightedSums.getSize();
+
+        assert ( outputs.getSize() == J );
+
+        for( int j = 0; j < J; ++j ) {
+
+            float z = weightedSums._values[ j ];
+            float a = z; // linear
+            if( a < 0f ) {
+                a *= leak; //
+            }
+            outputs._values[ j ] = a;
+        }
+    }
+
+    public static double leakyReLUDerivative( double x, float leak ) {
+        if( x < 0f ) {
+            return leak;
+        }
+        return 1f;
     }
 
     public static void softmax( FloatArray weightedSums, FloatArray outputs ) {
@@ -167,7 +202,7 @@ public abstract class TransferFunction {
     }
 
     public static double tanhDerivative( double x ) {
-        double r = TransferFunction.tanh( x );
+        double r = ActivationFunction.tanh(x);
         double d = 1.0 - ( r * r ); // equation 3.6
         return d;
     }

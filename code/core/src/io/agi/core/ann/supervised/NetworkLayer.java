@@ -44,17 +44,17 @@ public class NetworkLayer extends NamedObject {
     public static final String BIASES = "biases";
     public static final String WEIGHTED_SUMS = "weighted-sums";
     public static final String OUTPUTS = "outputs";
-    public static final String ERROR_GRADIENTS = "error-gradients";
+    public static final String ERROR_GRADIENTS = "error-gradients"; // derivative of cost with respect to weighted sums z
 
     public Data _inputs; // x
     public Data _weights; // w
     public Data _biases; // b
     public Data _weightedSums; // z = sum of w * i +b
     public Data _outputs; // a = f( z )
-    public Data _errorGradients; // d
+    public Data _costGradients; // d = dC / dz = derivative of cost with respect to weighted sums z
 
     public NetworkLayer( String name, ObjectMap om ) {
-        super( name, om );
+        super(name, om);
     }
 
     public void setup( NetworkLayerConfig c, ActivationFunctionFactory aff ) {
@@ -69,17 +69,27 @@ public class NetworkLayer extends NamedObject {
         _biases = new Data( cells );
         _weightedSums = new Data( cells );
         _outputs = new Data( cells );
-        _errorGradients = new Data( cells );
-
-        reset( c._r );
+        _costGradients = new Data( cells );
     }
 
-    public void reset( Random r ) {
-        _weights.setRandom( r );
-        _biases.setRandom( r );
+    public void reset( Random r, float weightsStdDev ) {
+//        _weights.setRandom( r );
+//        _biases.setRandom( r );
+
+        for( int i = 0; i < _weights.getSize(); ++i ) {
+            double w = _c._r.nextGaussian(); // mean: 0, SD: 1
+            w *= weightsStdDev;
+            _weights._values[i] = (float) w;// / sqRtInputs;
+        }
+
+        for( int i = 0; i < _biases.getSize(); ++i ) {
+            double w = _c._r.nextGaussian(); // mean: 0, SD: 1
+            w *= weightsStdDev;
+            _biases._values[ i ] = (float)w;
+        }
 
         _outputs.set( 0.f );
-        _errorGradients.set( 0.f );
+        _costGradients.set( 0.f );
     }
 
     public float getWeightsSquared() {
@@ -100,9 +110,9 @@ public class NetworkLayer extends NamedObject {
      *
      * @return
      */
-    public TransferFunction getActivationFunction() {
+    public ActivationFunction getActivationFunction() {
         String costFunction = _c.getActivationFunction();
-        TransferFunction af = _aff.create( costFunction );
+        ActivationFunction af = _aff.create( costFunction );
         return af;
     }
 
@@ -110,7 +120,7 @@ public class NetworkLayer extends NamedObject {
      * Compute the forward output of the layer.
      */
     public void feedForward() {
-        TransferFunction af = getActivationFunction();
+        ActivationFunction af = getActivationFunction();
 //        BackPropagation.feedForward(_weights, _inputs, _biases, _weightedSums, af, _outputs);
         WeightedSum( _weights, _inputs, _biases, _weightedSums );
         Activate( _weightedSums, af, _outputs );
@@ -158,15 +168,17 @@ public class NetworkLayer extends NamedObject {
      * @param af
      * @param outputs
      */
-    public static void Activate( FloatArray weightedSums, TransferFunction af, FloatArray outputs ) {
+    public static void Activate( FloatArray weightedSums, ActivationFunction af, FloatArray outputs ) {
         af.f( weightedSums, outputs );
     }
 
     /**
      * Train the layer's weights given the error gradients.
      */
-    public void train( float l2R ) {
+    public void train() {
         float learningRate = _c.getLearningRate();
-//        BackPropagation.train( _inputs, _weights, _biases, _errorGradients, learningRate, l2R );
+        float regularization = _c.getRegularization();
+        //BackPropagation.train( _inputs, _weights, _biases, _costGradients, learningRate, l2R );
+        BackPropagation.StochasticGradientDescent( _costGradients, _weights, _biases, _inputs, learningRate, regularization );
     }
 }

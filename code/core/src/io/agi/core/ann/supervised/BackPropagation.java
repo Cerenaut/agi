@@ -69,64 +69,81 @@ public abstract class BackPropagation {
 //        }
 //    }
 
-    public static void OutputErrorGradient(
-            FloatArray weightedSums,
+    /**
+     * Note we don't actually need to compute the cost, only the derivative of cost with respect to the values
+     * in the output layer. We are calling this the cost gradient, but it's also the error we're trying to minimize.
+     *
+     * @param outputWeightedSums
+     * @param outputCostGradients
+     * @param outputs
+     * @param ideals
+     * @param af
+     * @param lossFunction
+     * @param l2R
+     * @param sumSqWeights
+     */
+    public static void CostGradientExternal(
+            FloatArray outputWeightedSums,
+            FloatArray outputCostGradients,
             FloatArray outputs,
             FloatArray ideals,
-//            FloatArray2 losses,
-            FloatArray errors,
-            TransferFunction af,
-            String lossFunction,
-            float l2R,
-            float sumSqWeights ) {
+            ActivationFunction af,
+            String costFunction,
+            float l2Regularization,
+            float sumSqWeights) {
 
-        l2R = 0.5f * l2R * sumSqWeights; // http://cs231n.github.io/neural-networks-2/ and http://neuralnetworksanddeeplearning.com/chap3.html
+        l2Regularization = 0.5f * l2Regularization * sumSqWeights; // http://cs231n.github.io/neural-networks-2/ and http://neuralnetworksanddeeplearning.com/chap3.html
 
-        if( lossFunction.equals( LossFunction.QUADRATIC ) ) {
-            OutputErrorGradientQuadratic( weightedSums, outputs, ideals, errors, af, l2R );
-        } else if( lossFunction.equals( LossFunction.CROSS_ENTROPY ) ) {
-            OutputErrorGradientDifference( outputs, ideals, errors, l2R );
-        } else if( lossFunction.equals( LossFunction.LOG_LIKELIHOOD ) ) {
-            OutputErrorGradientDifference( outputs, ideals, errors, l2R );
-        }
-    }
+        int J = outputWeightedSums.getSize();
+        assert ( outputCostGradients.getSize() == J );
 
-    public static void OutputErrorGradientQuadratic(
-            FloatArray weightedSums,
-            FloatArray outputs,
-            FloatArray ideals,
-            FloatArray errors,
-            TransferFunction af,
-            float l2R ) {
-        int J = weightedSums.getSize();
-        assert ( errors.getSize() == J );
+        // Cx = 1/2n * ( ( sum y-a ) ^2 )
+        // if 1 element:
+        // Cx = 0.5 * ( ( y-a ) ^2 )
+        // Need to compute dC / dW ie derivative of cost with respect to a weight
 
         // d = loss * derivative( weightedSum )
         for( int j = 0; j < J; ++j ) {
             float output = outputs._values[ j ];
             float ideal = ideals._values[ j ];
-            float loss = LossFunction.quadratic( output, ideal );
-            loss += l2R;
-            float z = weightedSums._values[ j ];
-            float d = ( float ) af.fDerivative( z );
-            errors._values[ j ] = loss * d;
+
+            float z = outputWeightedSums._values[ j ];
+            float df = ( float ) af.fDerivative( z );
+
+            float cost = 0f;
+
+            if( costFunction.equals( CostFunction.QUADRATIC ) ) {
+                cost = CostFunction.quadraticOutputErrorGradient( output, ideal, df );
+            }
+            else if( costFunction.equals( CostFunction.CROSS_ENTROPY ) ) {
+                cost = CostFunction.crossEntropyOutputErrorGradient(output, ideal);
+            }
+//            else if( costFunction.equals( CostFunction.LOG_LIKELIHOOD ) ) {
+//                cost = CostFunction.logLikelihood( ideal );
+//            }
+
+            cost += l2Regularization;
+
+            outputCostGradients._values[ j ] = cost;
+
+            // now make it with respect to the weights and biases, by calculating the derivative of the activation fn
         }
     }
 
-    public static void OutputErrorGradientDifference(
-            FloatArray outputs,
-            FloatArray ideals,
-            FloatArray errors,
-            float l2R ) {
-        int J = ideals.getSize();
-        assert ( outputs.getSize() == J );
-
-        for( int j = 0; j < J; ++j ) {
-            float y = ideals._values[ j ];
-            float a = outputs._values[ j ];
-            errors._values[ j ] = ( a - y ) + l2R;
-        }
-    }
+//    public static void OutputErrorGradientDifference(
+//            FloatArray outputs,
+//            FloatArray ideals,
+//            FloatArray errors,
+//            float l2R ) {
+//        int J = ideals.getSize();
+//        assert ( outputs.getSize() == J );
+//
+//        for( int j = 0; j < J; ++j ) {
+//            float y = ideals._values[ j ];
+//            float a = outputs._values[ j ];
+//            errors._values[ j ] = ( a - y ) + l2R;
+//        }
+//    }
 
     // TODO replace with Stochastic Gradient Descent
 /*    public static void train(
@@ -166,7 +183,6 @@ public abstract class BackPropagation {
     /**
      * Trains by gradient descent towards a local minima. A single layer is trained.
      *
-     * @param m Mask of the live cells in the layer (0 = dead)
      * @param d The derivative of the cost function with respect to the weighted sum z
      * @param w The weights of the layer
      * @param b The biases of the layer
@@ -174,12 +190,13 @@ public abstract class BackPropagation {
      * @param learningRate
      */
     public static void StochasticGradientDescent(
-            FloatArray m,
+//            FloatArray m,
             FloatArray d,
             FloatArray w,
             FloatArray b,
             FloatArray i,
-            float learningRate ) {
+            float learningRate,
+            float regularization ) {
 
         int K = i.getSize(); // layer inputs ie neurons in layer l-1
         int J = d.getSize(); // layer outputs ie neurons in this layer l
@@ -192,13 +209,13 @@ public abstract class BackPropagation {
 
         for( int j = 0; j < J; ++j ) {
 
-            float mask = m._values[ j ];
+//            float mask = m._values[ j ];
+//
+//            if( mask == 0.f ) {
+//                continue;
+//            }
 
-            if( mask == 0.f ) {
-                continue;
-            }
-
-            float change = d._values[ j ];
+            float errorGradient = d._values[ j ];
 
             for( int k = 0; k < K; ++k ) {
 
@@ -207,7 +224,8 @@ public abstract class BackPropagation {
                 float a = i._values[ k ];
                 float wOld = w._values[ offset ];
 
-                float wDelta = learningRate * change * a;
+                float wDelta = learningRate * errorGradient * a;
+//                wDelta += ( regularization * wOld );
                 float wNew = wOld - wDelta;//learningRate * change * a;
 
 // weight clipping
@@ -221,7 +239,7 @@ public abstract class BackPropagation {
             }
 
             float bOld = b._values[ j ];
-            float bNew = bOld - learningRate * change;
+            float bNew = bOld - learningRate * errorGradient;
 
             b._values[ j ] = bNew;
         }
@@ -232,19 +250,19 @@ public abstract class BackPropagation {
      * Therefore, the error gradient is backpropagated from layer 2 to layer 1
      *
      * @param z_l1 The weighted sum of layer 1
-     * @param d_l1 The error gradient in layer 1 (the output)
+     * @param d_l1 The cost gradient in layer 1 (the output)
      * @param w_l2 The weights in layer 2.
-     * @param d_l2 The error gradient in layer 2.
+     * @param d_l2 The cost gradient in layer 2.
      * @param f_l1 The transfer function and its derivative.
      * @param l2R Regularization factor. Make it zero to turn off.
      */
-    public static void ErrorGradient(
+    public static void CostGradientInternal(
             FloatArray z_l1,
             FloatArray d_l1,
             FloatArray w_l2,
             FloatArray d_l2,
-            TransferFunction f_l1,
-            float l2R ) {
+            ActivationFunction f_l1,
+            float l2R) {
 
         int K = d_l1.getSize(); // layer inputs ie neurons in layer l-1
         int J = d_l2.getSize(); // layer outputs ie neurons in this layer l

@@ -17,19 +17,28 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.entities;
+package io.agi.framework.demo.mnist;
 
 import io.agi.framework.EntityConfig;
 
-/**
- * Created by dave on 2/04/16.
- */
-public class FeedForwardNetworkEntityConfig extends SupervisedLearningEntityConfig {
+import java.awt.*;
 
-    int hiddenLayerSize = 0;
-    float regularization = 0;
-    float learningRate = 0;
-    int batchSize = 0;
-    float leakiness = 0;
+/**
+ * Created by dave on 10/07/16.
+ */
+public class Text2ImageLabelEntityConfig extends ImageLabelEntityConfig {
+
+    // Set these
+    public String sourceTextFileTraining;
+    public String sourceTextFileTesting;
+
+    // defaults, automatically updated
+    public int charIndex = -1;
+//    public int digitIndex = 2; // 0,1,2 depending on which part of ASCII coding
+
+    // generated - do not set manually
+    public String character = "?";
+    public int characterCode = 0;
+    public int defaultCharacterCode = 10; // newline, but a blank image
 
 }
