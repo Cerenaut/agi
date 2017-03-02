@@ -31,7 +31,11 @@ class Cloud:
         utils.run_bashscript_repeat(cmd, 15, 6, verbose=self.log)
 
     def sync_experiment_s3(self, prefix, host, remote_keypath):
-        # remote upload of /output/prefix folder
+        # remote download of /output/prefix folder
+
+        print "....... Use sync_experiment_s3.sh to copy files from s3 (typically input and data files) with prefix = "\
+              + prefix
+
         cmd = "../aws/remote-download-output.sh " + " " + prefix + " " + host + " " + remote_keypath
         utils.run_bashscript_repeat(cmd, 15, 6, verbose=self.log)
 
