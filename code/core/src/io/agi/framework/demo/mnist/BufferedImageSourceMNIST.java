@@ -61,13 +61,9 @@ public class BufferedImageSourceMNIST extends BufferedImageSource {
             _inLabel = new FileInputStream( _labelFilePath );
             _inImage = new FileInputStream( _imageFilePath );
 
-            int magicNumberImages = ( _inImage.read() << 24 ) | ( _inImage.read() << 16 ) | ( _inImage.read() << 8 ) | ( _inImage.read() );
             _numberOfImages = ( _inImage.read() << 24 ) | ( _inImage.read() << 16 ) | ( _inImage.read() << 8 ) | ( _inImage.read() );
             _numberOfRows = ( _inImage.read() << 24 ) | ( _inImage.read() << 16 ) | ( _inImage.read() << 8 ) | ( _inImage.read() );
             _numberOfColumns = ( _inImage.read() << 24 ) | ( _inImage.read() << 16 ) | ( _inImage.read() << 8 ) | ( _inImage.read() );
-
-            int magicNumberLabels = ( _inLabel.read() << 24 ) | ( _inLabel.read() << 16 ) | ( _inLabel.read() << 8 ) | ( _inLabel.read() );
-            int numberOfLabels = ( _inLabel.read() << 24 ) | ( _inLabel.read() << 16 ) | ( _inLabel.read() << 8 ) | ( _inLabel.read() );
 
             _numberOfPixels = _numberOfRows * _numberOfColumns;
         }
