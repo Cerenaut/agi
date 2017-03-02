@@ -20,6 +20,7 @@
 package io.agi.framework.entities;
 
 import io.agi.framework.EntityConfig;
+import io.agi.framework.persistence.models.ModelData;
 
 /**
  * Created by dave on 2/04/16.
@@ -27,5 +28,7 @@ import io.agi.framework.EntityConfig;
 public class VectorSeriesEntityConfig extends EntityConfig {
 
     public int period = 100; // number of samples before it wraps. -1 for infinite
+
+    public String encoding = ModelData.ENCODING_DENSE;
 
 }

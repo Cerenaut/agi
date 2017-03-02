@@ -107,6 +107,10 @@ public class KSparseAutoencoderEntity extends Entity {
 
         flags.putFlag( OUTPUT_GRADIENTS, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( HIDDEN_GRADIENTS, DataFlags.FLAG_NODE_CACHE );
+
+        flags.putFlag( SPIKES_TOP_KA, DataFlags.FLAG_SPARSE_REAL );
+        flags.putFlag( SPIKES_TOP_K, DataFlags.FLAG_SPARSE_REAL );
+
     }
 
     @Override

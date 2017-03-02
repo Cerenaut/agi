@@ -76,13 +76,6 @@ public class ClassificationAnalysisEntity extends Entity {
             return;
         }
 
-        int samples = truth.getSize();
-
-        if( predicted.getSize() != samples ) {
-            _logger.error( "Truth and predicted vectors have different length." );
-            return;
-        }
-
         ClassificationAnalysis ca = new ClassificationAnalysis();
 
         // Check for a reset (to start of sequence and re-train)
@@ -90,11 +83,6 @@ public class ClassificationAnalysisEntity extends Entity {
 
         int offset = config.sampleOffset;
         int length = config.sampleLength;
-
-        if( length <= 0 ) {
-            length = samples - offset; // all remaining samples
-            length = Math.max( 0, length );
-        }
 
         String errorMessage = ca.analyze( truth, predicted, offset, length );
 
@@ -115,7 +103,7 @@ public class ClassificationAnalysisEntity extends Entity {
         config.errorCount = errors;
         config.errorFraction = fraction;
         config.errorPercentage = pc;
-        config.samples = samples;
+        config.samples = ca.getSampleCount();
 
         config.sortedLabels.clear();
         for( Float label : ca._sortedLabels ) {
@@ -161,7 +149,7 @@ public class ClassificationAnalysisEntity extends Entity {
             int fp = ca._labelErrorFP.get( label );
             int fn = ca._labelErrorFN.get( label );
             int t = ca._labelFrequency.get( label );
-            int f = samples - t;
+            int f = config.samples - t;
 
             int tp = t-fn;
             int tn = f-fp;

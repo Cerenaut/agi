@@ -135,13 +135,15 @@ public class ClassificationAnalysis {
 //    public HashMap< Float, Integer > _labelPredictions;
     public HashMap< Float, Integer > _labelErrorFP;
     public HashMap< Float, Integer > _labelErrorFN;
+    public int _sampleOffset = 0;
+    public int _sampleLength = 0;
 
     public int getErrorCount() {
         return (int)_errors.sum();
     }
 
     public int getSampleCount() {
-        return _errors.getSize();
+        return _sampleLength; //_errors.getSize();
     }
 
     public float getErrorFraction() {
@@ -152,6 +154,20 @@ public class ClassificationAnalysis {
     }
 
     public String analyze( Data truth, Data predicted, int offset, int length ) {
+
+        int samples = truth.getSize();
+
+        if( predicted.getSize() != samples ) {
+            return new String( "Truth and predicted vectors have different length." );
+        }
+
+        if( length <= 0 ) {
+            length = samples - offset; // all remaining samples
+            length = Math.max( 0, length );
+        }
+
+        _sampleOffset = offset;
+        _sampleLength = length;
 
         // F-score (precision+recall), confusion matrix
         // find unique labels in truth
