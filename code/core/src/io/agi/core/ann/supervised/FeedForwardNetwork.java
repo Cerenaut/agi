@@ -25,6 +25,7 @@ import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 /**
@@ -53,15 +54,28 @@ public class FeedForwardNetwork extends NamedObject {
         _c = c;
         _aff = aff;
 
+        int inputs = _c.getNbrInputs();
         int outputs = _c.getNbrOutputs();
         int layers = _c.getNbrLayers();
+//        float learningRate = _c.getLearningRate();
 
         _ideals = new Data( outputs );
 
+        // instantiate layers
         for( int l = 0; l < layers; ++l ) {
             String layerName = getLayerName( l );
             NetworkLayer nl = new NetworkLayer( layerName, _om );
             _layers.add( nl );
+        }
+
+        // setup layers:
+        int layerInputs = inputs;
+
+        for( int l = 0; l < layers; ++l ) {
+            String activationFunction = _c.getLayerTransferFn(l);
+            int layerSize = _c.getLayerSize(l);
+            setupLayer( _c._r, l, layerInputs, layerSize, activationFunction );
+            layerInputs = layerSize; // for next time
         }
 
     }
@@ -69,9 +83,11 @@ public class FeedForwardNetwork extends NamedObject {
     public void reset() {
         int layers = _c.getNbrLayers();
 
+        float weightsStdDev = 0.01f; // TODO make param
+
         for( int l = 0; l < layers; ++l ) {
             NetworkLayer nl = _layers.get( l );
-            nl.reset( _c._r );
+            nl.reset( _c._r, weightsStdDev );
         }
     }
 
@@ -80,16 +96,17 @@ public class FeedForwardNetwork extends NamedObject {
      *
      * @param layer
      * @param cells
-     * @param learningRate
      * @param activationFunction
      */
-    public void setupLayer( Random r, int layer, int inputs, int cells, float learningRate, String activationFunction ) {
+    public void setupLayer( Random r, int layer, int inputs, int cells, String activationFunction ) {
 
         String layerName = getLayerName( layer );
 
         NetworkLayerConfig nlc = new NetworkLayerConfig();
 
-        nlc.setup( _om, layerName, r, inputs, cells, learningRate, activationFunction );
+        float learningRate = _c.getLearningRate();
+        float regularization = _c.getL2Regularization();
+        nlc.setup( _om, layerName, r, inputs, cells, learningRate, regularization, activationFunction );
 
         NetworkLayer nl = _layers.get( layer );
         nl.setup( nlc, _aff );
@@ -189,22 +206,56 @@ public class FeedForwardNetwork extends NamedObject {
             sumSqWeights = getWeightsSquared();
         }
 
+        // check for end of a mini-batch
+        int batchSize = _c.getBatchSize();
+        int batchCount = _c.getBatchCount();
+        batchCount += 1;
+
+        boolean batchComplete = false;
+        if( batchCount >= batchSize ) { // e.g. if was zero, then becomes 1, then we clear it and apply the gradients
+            batchCount = 0;
+            batchComplete = true;
+        }
+
+        _c.setBatchCount( batchCount );
+
+        // update layer by layer
         int layers = _layers.size();
         int L = layers - 1;
+
+        HashMap< Integer, Data > costGradients = new HashMap< Integer, Data >();
 
         for( int layer = L; layer >= 0; --layer ) {
 
             NetworkLayer nl = _layers.get( layer );
-            TransferFunction af = nl.getActivationFunction();
+            ActivationFunction af = nl.getActivationFunction();
+
+            Data layerCostGradients = new Data( nl._costGradients._dataSize ); // same shape
+
             if( layer == L ) {
-                String lossFunction = _c.getLossFunction();
-                BackPropagation.OutputErrorGradient( nl._weightedSums, nl._outputs, _ideals, nl._errorGradients, af, lossFunction, l2R, sumSqWeights );
+                String costFunction = _c.getCostFunction();
+                BackPropagation.CostGradientExternal( nl._weightedSums, layerCostGradients, nl._outputs, _ideals, af, costFunction, l2R, sumSqWeights );
             } else { // layer < L
-                NetworkLayer nl2 = _layers.get( layer + 1 );
-                BackPropagation.ErrorGradient( nl._weightedSums, nl._errorGradients, nl2._weights, nl2._errorGradients, af, l2R );
+                NetworkLayer nlForward = _layers.get( layer +1 );
+                Data forwardCostGradients = costGradients.get( layer +1 );
+                BackPropagation.CostGradientInternal( nl._weightedSums, layerCostGradients, nlForward._weights, forwardCostGradients, af, l2R );
             }
 
-            nl.train( l2R ); // using the error gradients, d
+            costGradients.put( layer, layerCostGradients );
+        }
+
+        for( int layer = L; layer >= 0; --layer ) {
+
+            NetworkLayer nl = _layers.get( layer );
+
+            Data layerCostGradients = costGradients.get( layer );
+
+            nl._costGradients.add( layerCostGradients ); // add the latest gradients
+
+            if( batchComplete ) {
+                nl.train(); // using the error gradients, d
+                nl._costGradients.set( 0f );
+            }
         }
     }
 

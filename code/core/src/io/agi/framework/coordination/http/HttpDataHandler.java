@@ -57,7 +57,7 @@ public class HttpDataHandler implements HttpHandler {
             Node n = Node.NodeInstance();
 
             String query = t.getRequestURI().getQuery();
-            _logger.info("Request: " + HttpCoordinationHandler.CONTEXT + " " + query);
+            _logger.info("Request: " + HttpDataHandler.CONTEXT + " " + query);
 
             String method = t.getRequestMethod();
 

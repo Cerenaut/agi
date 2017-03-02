@@ -17,19 +17,26 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.entities;
+package io.agi.core.alg;
 
-import io.agi.framework.EntityConfig;
+import java.util.HashSet;
 
 /**
- * Created by dave on 2/04/16.
+ * Created by dave on 6/07/16.
  */
-public class FeedForwardNetworkEntityConfig extends SupervisedLearningEntityConfig {
+public class PyramidRegionLayerTransient {
 
-    int hiddenLayerSize = 0;
-    float regularization = 0;
-    float learningRate = 0;
-    int batchSize = 0;
-    float leakiness = 0;
+//    public HashSet< Integer > _inputC1Active;
+//    public HashSet< Integer > _inputC2Active;
+//
+//    public HashSet< Integer > _inputP1Active;
+//    public HashSet< Integer > _inputP2Active;
+
+    public HashSet< Integer > _spikesNew;
+    public HashSet< Integer > _spikesOld;
+    public HashSet< Integer > _spikesOut;
+
+    public HashSet< Integer > _predictionErrorFP;
+    public HashSet< Integer > _predictionErrorFN;
 
 }

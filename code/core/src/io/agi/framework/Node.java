@@ -409,7 +409,7 @@ public class Node {
 //        int count = _p.getEntityAge(entityName);
 //        count += 1;
 //        _p.setEntityAge(entityName, count);
-        logger.info( " %%Unlock%% " + entityName );
+        logger.debug( " %%Unlock%% " + entityName );
         unlock( entityName );
 
         // broadcast to any distributed listeners:
@@ -470,7 +470,7 @@ public class Node {
                     return;
                 }
 
-                logger.info( " %%Lock%% " + entityName );
+                logger.debug( " %%Lock%% " + entityName );
 
                 ModelEntity modelEntity = _p.fetchEntity( entityName ); // NOTE: Can't get the model entity UNTIL I have the lock, or the model might be out of date.
 
@@ -485,16 +485,16 @@ public class Node {
     public boolean lock( String entityName ) {
         Semaphore s = getLock( entityName );
 
-        logger.info( "Thread " + Thread.currentThread().hashCode() + " waiting for " + entityName );
+        logger.debug( "Thread " + Thread.currentThread().hashCode() + " waiting for " + entityName );
         try {
             s.acquire();
         }
         catch( InterruptedException ie ) {
-            logger.info( "Thread " + Thread.currentThread().hashCode() + " cant get lock for " + entityName );
+            logger.debug( "Thread " + Thread.currentThread().hashCode() + " cant get lock for " + entityName );
             return false;
         }
 
-        logger.info( "Thread " + Thread.currentThread().hashCode() + " has lock for " + entityName );
+        logger.debug( "Thread " + Thread.currentThread().hashCode() + " has lock for " + entityName );
 
         return true;
     }

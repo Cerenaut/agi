@@ -78,6 +78,9 @@ var Search = {
                      + " / <a href='subtree.html?entity="+ objectName + "' title='Open as subtree Root' target='_blank'><b>Subtree</b></a>";
         }
         if( type ) {
+          if( type == "data-queue" ) {
+            linksValue = linksValue + " / <a href='data-queue.html?entity="+ objectName + "' title='Open Data Queue UI' target='_blank'><b>DataQueue</b></a>"
+          }
           if( type == "hq-cl-region-layer" ) {
             linksValue = linksValue + " / <a href='hqcl-region.html?entity="+ objectName + "' title='Open Region-Layer UI' target='_blank'><b>Region</b></a>"
           }

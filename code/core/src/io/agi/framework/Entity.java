@@ -188,7 +188,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Data
 
         // update all the children (Note, they will update on other Nodes potentially, and definitely in another thread.
         for( String childName : childNames ) {
-            _logger.info( "Request update of child: " + childName );
+            _logger.debug( "Request update of child: " + childName );
             _n.requestUpdate( childName ); // schedule an update, may have already occurred
             // update to child may occur any time after this, because only 1 parent so waiting for me to call the update.
         }
@@ -209,7 +209,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Data
     }
 
     public void onEntityUpdated( String entityName ) {
-        _logger.info("Entity: " + getName() + " being notified about: " + entityName);
+        _logger.debug("Entity: " + getName() + " being notified about: " + entityName);
         synchronized( _childrenWaiting ) {
             _childrenWaiting.remove( entityName );
 
@@ -293,7 +293,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Data
         // 5. persist config of this entity
         persistConfig();
 
-        _logger.info( "Update: " + getName() + " age: " + _config.age );
+        _logger.debug( "Updated: " + getName() + " age after update: " + _config.age );
     }
 
     public static String SerializeConfig( EntityConfig entityConfig ) {
@@ -338,7 +338,7 @@ public abstract class Entity extends NamedObject implements EntityListener, Data
 
             // check for no - read
             if( _dataFlags.hasFlag( attribute, DataFlags.FLAG_PERSIST_ONLY ) ) {
-                _logger.info( "Skipping fetch of Data: " + inputKey );
+                _logger.debug( "Skipping fetch of Data: " + inputKey );
                 continue;
             }
 

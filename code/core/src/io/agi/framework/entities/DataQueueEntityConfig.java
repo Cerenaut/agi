@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016.
+ * Copyright (c) 2017.
  *
  * This file is part of Project AGI. <http://agi.io>
  *
@@ -19,17 +19,15 @@
 
 package io.agi.framework.entities;
 
+import io.agi.core.sdr.ScalarEncoder;
 import io.agi.framework.EntityConfig;
 
 /**
  * Created by dave on 2/04/16.
  */
-public class FeedForwardNetworkEntityConfig extends SupervisedLearningEntityConfig {
+public class DataQueueEntityConfig extends EntityConfig {
 
-    int hiddenLayerSize = 0;
-    float regularization = 0;
-    float learningRate = 0;
-    int batchSize = 0;
-    float leakiness = 0;
+        public int queueHead = 0; // head of the queue. Must be <= length
+        public int queueLength = 0; // queue length in data items
 
 }
