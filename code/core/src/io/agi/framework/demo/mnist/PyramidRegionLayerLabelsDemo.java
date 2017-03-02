@@ -38,17 +38,6 @@ import java.util.Properties;
  */
 public class PyramidRegionLayerLabelsDemo {
 
-// LOG
-//seems to work OK and recognize sequence and produce generic digits.
-//made what looked like 3->4 and 8->9 prediction errors
-//Try making the output without the sticky bits and use the old FN only coding scheme, but this time allowing bidirectional links?
-//    Why would this work? Well we get the history to make a prediction.
-//      Why doesnt it throw it off when we lose the history because we predicted correctly? well we wont predict all the time
-//      so it will be self-correcting?
-//        eg a rare 3 happens. It looks like an 8. All our error bits will be rare-3-related error bits
-//
-// Added old FN-only (but with persistence) (excluding predicted) output .
-
     public static final int TEST_TYPE_IMAGE_SEQUENCE = 0;
     public static final int TEST_TYPE_TEXT_SEQUENCE  = 1;
 
@@ -93,8 +82,11 @@ public class PyramidRegionLayerLabelsDemo {
 //        test prediction of sequence learning ( in progress )  22-feb-17 variable order looking good on quick.txt
 //        test classification of characters (in progress) 22-feb-17 looks good
 //        test higher order prediction of sequence (with fixed images?) 22-feb-17 variable order looking good on quick.txt
-//        test higher order prediction of sequence ( mutable images?)
-//        invert output into input both current and predicted.
+//        test higher order prediction of sequence ( mutable images?) READY.
+// *      invert output into input both current and predicted.
+// *      make a rolling log of text produced. Like a round-robin mode. Be able to view recent predictions and so forth.
+// *      Classify predictions with another ANN.
+//        \----> dream (generative) sequence (turn off input, or give it predicted input and let it go)
 //        L5 motor control demo, encoding corrective output (needs attention? + RL module); maybe there's a corrective output based on character..?
 
 //        int testType = TEST_TYPE_IMAGE_SEQUENCE; // a sequence of images, regardless of content
@@ -131,8 +123,10 @@ public class PyramidRegionLayerLabelsDemo {
             textFileTraining = "/home/dave/workspace/agi.io/data/text/quick.txt";
             textFileTesting = "/home/dave/workspace/agi.io/data/text/quick.txt";
 
-            imagesPathTraining = "/home/dave/workspace/agi.io/data/nist-sd19/a2z_1x";
-            imagesPathTesting = "/home/dave/workspace/agi.io/data/nist-sd19/a2z_1x";
+//            imagesPathTraining = "/home/dave/workspace/agi.io/data/nist-sd19/a2z_1x";
+//            imagesPathTesting = "/home/dave/workspace/agi.io/data/nist-sd19/a2z_1x";
+            imagesPathTraining = "/home/dave/workspace/agi.io/data/nist-sd19/a2z_10x";
+            imagesPathTesting = "/home/dave/workspace/agi.io/data/nist-sd19/a2z_10x";
         }
 
         int trainingEpochs = 1000;
@@ -143,6 +137,7 @@ public class PyramidRegionLayerLabelsDemo {
         int imageRepeats = 1;//50;
         boolean cacheAllData = true;
         boolean doLogging = true;
+        int queueLength = 46;
 
         // Define some entities
         String experimentName           = Framework.GetEntityName( "experiment" );
@@ -150,6 +145,7 @@ public class PyramidRegionLayerLabelsDemo {
         String imageSourceName          = Framework.GetEntityName( "image-source" );
         String valueSeriesTruthName     = Framework.GetEntityName( "value-series-truth" );
         String classifierName           = Framework.GetEntityName( "classifier" );
+        String dataQueueName           = Framework.GetEntityName( "data-queue" );
 
         String regionLayer1Name         = Framework.GetEntityName( "region-layer-1" );
         String regionLayer2Name         = Framework.GetEntityName( "region-layer-2" );
@@ -179,9 +175,15 @@ public class PyramidRegionLayerLabelsDemo {
 
         if( doLogging ) {
             Framework.CreateEntity( valueSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), classifierName );
+            Framework.CreateEntity( dataQueueName, DataQueueEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName );
+
             if( cacheAllData ) {
                 Framework.SetConfig( valueSeriesTruthName, "cache", String.valueOf( cacheAllData ) );
+                Framework.SetConfig( dataQueueName, "cache", String.valueOf( cacheAllData ) );
             }
+
+            Framework.SetConfig( dataQueueName, "queueLength", String.valueOf( queueLength) );
+            Framework.SetDataReference( dataQueueName, DataQueueEntity.DATA_INPUT, regionLayer1Name, PyramidRegionLayerEntity.INPUT_C1_PREDICTED );
         }
 
         // cache all data for speed, when enabled

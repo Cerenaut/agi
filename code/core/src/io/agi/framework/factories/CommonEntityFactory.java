@@ -192,6 +192,10 @@ public class CommonEntityFactory implements EntityFactory {
             return new FeedForwardNetworkEntity( objectMap, _n, modelEntity );
         }
 
+        if( entityType.equals( DataQueueEntity.ENTITY_TYPE ) ) {
+            return new DataQueueEntity( objectMap, _n, modelEntity );
+        }
+
         return null;
     }
 
