@@ -537,7 +537,7 @@ if __name__ == '__main__':
     remote_keypath = args.ec2_keypath
     sync_s3_prefix = args.sync_s3_prefix
 
-    if is_upload and not is_export:
+    if is_upload and not (is_export or is_export_compute):
         print "WARNING: Uploading experiment to S3 is enabled, but 'export experiment' is not, so the most " \
               "important files (output entity.json and data.json) will be missing"
 
