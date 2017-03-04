@@ -105,23 +105,27 @@ def run_parameterset(entity_filepath, data_filepaths, compute_data_filepaths, sw
                                     _experiment.experiments_def_filename,
                                     _experiment.experiment_def_file())
 
-        # upload log4j configuration file that was used (if it exists)
+        # upload log4j configuration file that was used
         log_filename = "log4j2.log"
         log_filepath = _experiment.runpath(log_filename)
 
-        if os.path.isfile(log_filepath):
+        if is_aws:
+            cmd = "../remote/remote-upload-output.sh " + " " + log_filepath + " " + _compute_node.host + " " + remote_keypath
+            utils.run_bashscript_repeat(cmd, 3, 3, verbose=log)
+        else:
             _cloud.upload_experiment_s3(_experiment.prefix(),
                                         log_filename,
                                         log_filepath)
 
         # upload /output files (entity.json, data.json and experiment-info.txt)
         if is_export_compute:
-            # remote upload of /output/prefix folder
+            # remote upload of /output/[prefix] folder
             folder = _experiment.outputfile_remote()
-            cmd = "../aws/remote-upload-output.sh " + " " + _experiment.prefix() + " " + _compute_node.host + " " + remote_keypath
+            cmd = "../remote/remote-upload-output.sh " + " " + _experiment.prefix() + " " + _compute_node.host + " " + remote_keypath
             utils.run_bashscript_repeat(cmd, 3, 3, verbose=log)
 
-            # experiment-info.txt : upload the contents of the /output folder on the machine this is running on
+            # experiment-info.txt : upload the contents of the /output folder on the machine THIS (python script)
+            # is running on
             folder_path = _experiment.outputfile("")
             _cloud.upload_experiment_s3(_experiment.prefix(),
                                         "output",
@@ -574,8 +578,8 @@ if __name__ == '__main__':
 
     if args.pg_instance:
         is_pg_ec2 = (args.pg_instance[:2] == 'i-')
-    if is_aws:
 
+    if is_aws:
         # start Compute ec2 either from instanceid or amiid
         if args.instanceid:
             ips = _cloud.run_ec2(args.instanceid)

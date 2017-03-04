@@ -25,9 +25,9 @@ class Cloud:
         Assumes there exists a private key for the given ec2 instance, at keypath
         """
 
-        print "....... Use ecs-sync-experiment.sh to rsync relevant folders."
+        print "....... Use remote-sync-experiment.sh to rsync relevant folders."
 
-        cmd = "../aws/ecs-sync-experiment.sh " + host + " " + keypath
+        cmd = "../remote/remote-sync-experiment.sh " + host + " " + keypath
         utils.run_bashscript_repeat(cmd, 15, 6, verbose=self.log)
 
     def sync_experiment_s3(self, prefix, host, remote_keypath):
@@ -36,15 +36,15 @@ class Cloud:
         print "....... Use sync_experiment_s3.sh to copy files from s3 (typically input and data files) with prefix = "\
               + prefix
 
-        cmd = "../aws/remote-download-output.sh " + " " + prefix + " " + host + " " + remote_keypath
+        cmd = "../remote/remote-download-output.sh " + " " + prefix + " " + host + " " + remote_keypath
         utils.run_bashscript_repeat(cmd, 15, 6, verbose=self.log)
 
     def launch_compute_docker(self, host, keypath):
         """ Assumes there exists a private key for the given ec2 instance, at keypath """
 
-        print "....... Use run-remote.sh to launch compute node in a docker container on a remote host."
+        print "....... Use remote-run.sh to launch compute node in a docker container on a remote host."
 
-        cmd = "../aws/run-remote.sh " + host + " " + keypath
+        cmd = "../remote/remote-run.sh " + host + " " + keypath
         utils.run_bashscript_repeat(cmd, 15, 6, verbose=self.log)
 
     def run_task_ecs(self, task_name):
