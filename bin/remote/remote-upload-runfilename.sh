@@ -26,7 +26,7 @@ echo "Using keyfile = " $keyfile
 
 # WARNING: hardcoded path on remote machine in shell commands below (to be run on remote host via ssh)
 
-ssh -v -i $keyfile ec2-user@${host} -o 'StrictHostKeyChecking no' prefix=$prefix 'bash -s' <<'ENDSSH' 
+ssh -v -i $keyfile ec2-user@${host} -o 'StrictHostKeyChecking no' prefix=$prefix filename=$filename 'bash -s' <<'ENDSSH' 
 	export VARIABLES_FILE="/home/ec2-user/agief-project/variables/variables-ec2.sh"
 	source $VARIABLES_FILE
 
