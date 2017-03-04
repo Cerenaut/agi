@@ -110,7 +110,7 @@ def run_parameterset(entity_filepath, data_filepaths, compute_data_filepaths, sw
         log_filepath = _experiment.runpath(log_filename)
 
         if is_aws:
-            cmd = "../remote/remote-upload-output.sh " + " " + log_filepath + " " + _compute_node.host + " " + remote_keypath
+            cmd = "../remote/remote-upload-runfilename.sh " + " " + _experiment.prefix() + " " + log_filepath + " " + _compute_node.host + " " + remote_keypath
             utils.run_bashscript_repeat(cmd, 3, 3, verbose=log)
         else:
             _cloud.upload_experiment_s3(_experiment.prefix(),
