@@ -31,11 +31,16 @@ ssh -v -i $keyfile ec2-user@${host} -o 'StrictHostKeyChecking no' prefix=$prefix
 	source $VARIABLES_FILE
 
 	upload_file=$AGI_RUN_HOME/$filename
-	echo "Calculated upload-file = " $upload_file
+	echo "Calculated upload_file = " $upload_file
 
-	cmd="aws s3 cp $upload_file s3://agief-project/experiment-output/$prefix/$filename"
-	echo $cmd >> remote-upload-cmd.log
-	eval $cmd >> remote-upload-stdout.log 2>> remote-upload-stderr.log
+	if [ -f $upload_file ]; then
+		cmd="aws s3 cp $upload_file s3://agief-project/experiment-output/$prefix/$filename"
+		echo $cmd >> remote-upload-rfname-cmd.log
+		eval $cmd >> remote-upload-rfname-stdout.log 2>> remote-upload-stderr.log
+	else
+	 	echo $upload_file >> remote-upload-rfname-cmd.log
+	 	echo "File does not exist" >> remote-upload-rfname-cmd.log
+	fi
 ENDSSH
 
 status=$?
