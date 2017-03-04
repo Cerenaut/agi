@@ -68,11 +68,11 @@ class Cloud:
             print "reason = " + response['failures'][0]['reason']
             print "arn = " + response['failures'][0]['arn']
             print " ----- exiting -------"
-            exit()
+            exit(1)
 
         if len(response['tasks']) <= 0:
             print "ERROR: could not retrieve task arn when initiating task on AWS - something has gone wrong."
-            exit()
+            exit(1)
 
         task_arn = response['tasks'][0]['taskArn']
         return task_arn
@@ -189,7 +189,7 @@ class Cloud:
             instance_type = 'r3.xlarge'     # 30.5
         else:
             print "ERROR: cannot create an ec2 instance with that much RAM"
-            exit()
+            exit(1)
 
         ec2 = boto3.resource('ec2')
         subnet = ec2.Subnet(self.subnet_id)

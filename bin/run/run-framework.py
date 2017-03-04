@@ -57,7 +57,7 @@ def run_parameterset(entity_filepath, data_filepaths, compute_data_filepaths, sw
         print "ERROR: One of the input files are not valid:"
         print entity_filepath
         print json.dumps(data_filepaths)
-        exit()
+        exit(1)
 
     if (launch_mode is LaunchMode.per_experiment) and args.launch_compute:
         task_arn = launch_compute()
@@ -223,7 +223,7 @@ def inc_parameter_set(entity_filepath, val_sweepers):
     if reset is False and len(sweep_param_vals) == 0:
         print "Error: inc_parameter_set() indeterminate state, reset is False, but parameter_description indicates " \
               "no parameters have been modified. If there is no sweep to conduct, reset should be True."
-        exit()
+        exit(1)
 
     return reset, sweep_param_vals
 
@@ -338,7 +338,7 @@ def launch_compute_aws_ecs(task_name):
 
     if task_name is None:
         print "ERROR: you must specify a Task Name to run on aws-ecs"
-        exit()
+        exit(1)
 
     task_arn = _cloud.run_task_ecs(task_name)
     _compute_node.wait_up()
@@ -555,7 +555,7 @@ if __name__ == '__main__':
               "a running ec2 instance"
         if args.aws:
             print "--- in any case, aws has not been set, so they have no effect"
-        exit()
+        exit(1)
 
     _compute_node = compute.Compute(log)
     _cloud = cloud.Cloud(log)
@@ -569,7 +569,7 @@ if __name__ == '__main__':
         launch_compute_local(args.main_class)
         generate_input_files_locally()
         _compute_node.terminate()
-        exit()
+        exit(1)
 
     # 2) Setup infrastructure (on AWS or nothing to do locally)
     ips = {'ip_public': args.host, 'ip_private': None}
@@ -596,7 +596,7 @@ if __name__ == '__main__':
     elif args.pg_instance:
         if is_pg_ec2:
             print "ERROR: the pg instance is set to an ec2 instance id, but you are not running AWS."
-            exit()
+            exit(1)
 
         ips_pg = {'ip_public': args.pg_instance, 'ip_private': args.pg_instance}
 
@@ -612,7 +612,7 @@ if __name__ == '__main__':
     if args.sync:
         if not args.aws:
             print "ERROR: Syncing is meaningless unless you're running aws (use param --step_aws)"
-            exit()
+            exit(1)
         _cloud.sync_experiment_rsync(_compute_node.host, remote_keypath)
 
     # 3.5) Sync data from S3 (typically used to download output files from a previous experiment to be used as input)

@@ -90,7 +90,7 @@ class Compute:
         if is_entity_file:
             if not os.path.isfile(entity_filepath):
                 print "ERROR: entity file does not exist. CANNOT CONTINUE"
-                exit()
+                exit(1)
 
             with open(entity_filepath, 'rb') as entity_data_file:
                 files = {'entity-file': entity_data_file}
@@ -105,7 +105,7 @@ class Compute:
             for data_filepath in data_filepaths:
                 if not os.path.isfile(data_filepath):
                     print "ERROR: data file does not exist. CANNOT CONTINUE"
-                    exit()
+                    exit(1)
 
                 with open(data_filepath, 'rb') as data_data_file:
                     files = {'data-file': data_data_file}
@@ -217,7 +217,7 @@ class Compute:
             i += 1
             if i > 120:
                 print "\nError: could not start framework, cannot continue."
-                exit()
+                exit(1)
 
             version = self.version(True)
 
@@ -285,7 +285,7 @@ class Compute:
             print "\tEntity input file: " + entity_filepath
             print "\tEntity name: " + entity_name
             print "CANNOT CONTINUE"
-            exit()
+            exit(1)
 
         # get the config field, and turn it into valid JSON
         config_str = entity["config"]

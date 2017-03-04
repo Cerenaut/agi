@@ -243,7 +243,7 @@ class Experiment:
             if not os.path.isfile(base_filepath):
                 print "ERROR: create_input_files(): The file does not exist" + base_filepath + \
                       "\nCANNOT CONTINUE."
-                exit()
+                exit(1)
 
             # get the containing folder, and it's parent folder
             full_dirname = os.path.dirname(os.path.normpath(base_filepath))      # full dirname
