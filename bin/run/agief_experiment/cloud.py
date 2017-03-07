@@ -25,22 +25,26 @@ class Cloud:
         Assumes there exists a private key for the given ec2 instance, at keypath
         """
 
-        print "....... Use ecs-sync-experiment.sh to rsync relevant folders."
+        print "....... Use remote-sync-experiment.sh to rsync relevant folders."
 
-        cmd = "../aws/ecs-sync-experiment.sh " + host + " " + keypath
+        cmd = "../remote/remote-sync-experiment.sh " + host + " " + keypath
         utils.run_bashscript_repeat(cmd, 15, 6, verbose=self.log)
 
     def sync_experiment_s3(self, prefix, host, remote_keypath):
-        # remote upload of /output/prefix folder
-        cmd = "../aws/remote-download-output.sh " + " " + prefix + " " + host + " " + remote_keypath
+        # remote download of /output/prefix folder
+
+        print "....... Use sync_experiment_s3.sh to copy files from s3 (typically input and data files) with prefix = "\
+              + prefix
+
+        cmd = "../remote/remote-download-output.sh " + " " + prefix + " " + host + " " + remote_keypath
         utils.run_bashscript_repeat(cmd, 15, 6, verbose=self.log)
 
     def launch_compute_docker(self, host, keypath):
         """ Assumes there exists a private key for the given ec2 instance, at keypath """
 
-        print "....... Use run-remote.sh to launch compute node in a docker container on a remote host."
+        print "....... Use remote-run.sh to launch compute node in a docker container on a remote host."
 
-        cmd = "../aws/run-remote.sh " + host + " " + keypath
+        cmd = "../remote/remote-run.sh " + host + " " + keypath
         utils.run_bashscript_repeat(cmd, 15, 6, verbose=self.log)
 
     def run_task_ecs(self, task_name):
@@ -64,11 +68,11 @@ class Cloud:
             print "reason = " + response['failures'][0]['reason']
             print "arn = " + response['failures'][0]['arn']
             print " ----- exiting -------"
-            exit()
+            exit(1)
 
         if len(response['tasks']) <= 0:
             print "ERROR: could not retrieve task arn when initiating task on AWS - something has gone wrong."
-            exit()
+            exit(1)
 
         task_arn = response['tasks'][0]['taskArn']
         return task_arn
@@ -185,7 +189,7 @@ class Cloud:
             instance_type = 'r3.xlarge'     # 30.5
         else:
             print "ERROR: cannot create an ec2 instance with that much RAM"
-            exit()
+            exit(1)
 
         ec2 = boto3.resource('ec2')
         subnet = ec2.Subnet(self.subnet_id)

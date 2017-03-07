@@ -57,7 +57,7 @@ def run_parameterset(entity_filepath, data_filepaths, compute_data_filepaths, sw
         print "ERROR: One of the input files are not valid:"
         print entity_filepath
         print json.dumps(data_filepaths)
-        exit()
+        exit(1)
 
     if (launch_mode is LaunchMode.per_experiment) and args.launch_compute:
         task_arn = launch_compute()
@@ -105,23 +105,27 @@ def run_parameterset(entity_filepath, data_filepaths, compute_data_filepaths, sw
                                     _experiment.experiments_def_filename,
                                     _experiment.experiment_def_file())
 
-        # upload log4j configuration file that was used (if it exists)
+        # upload log4j configuration file that was used
         log_filename = "log4j2.log"
-        log_filepath = _experiment.runpath(log_filename)
 
-        if os.path.isfile(log_filepath):
+        if is_aws:
+            cmd = "../remote/remote-upload-runfilename.sh " + " " + _experiment.prefix() + " " + log_filename + " " + _compute_node.host + " " + remote_keypath
+            utils.run_bashscript_repeat(cmd, 3, 3, verbose=log)
+        else:
+            log_filepath = _experiment.runpath(log_filename)
             _cloud.upload_experiment_s3(_experiment.prefix(),
                                         log_filename,
                                         log_filepath)
 
         # upload /output files (entity.json, data.json and experiment-info.txt)
         if is_export_compute:
-            # remote upload of /output/prefix folder
+            # remote upload of /output/[prefix] folder
             folder = _experiment.outputfile_remote()
-            cmd = "../aws/remote-upload-output.sh " + " " + _experiment.prefix() + " " + _compute_node.host + " " + remote_keypath
+            cmd = "../remote/remote-upload-output.sh " + " " + _experiment.prefix() + " " + _compute_node.host + " " + remote_keypath
             utils.run_bashscript_repeat(cmd, 3, 3, verbose=log)
 
-            # experiment-info.txt : upload the contents of the /output folder on the machine this is running on
+            # experiment-info.txt : upload the contents of the /output folder on the machine THIS (python script)
+            # is running on
             folder_path = _experiment.outputfile("")
             _cloud.upload_experiment_s3(_experiment.prefix(),
                                         "output",
@@ -219,7 +223,7 @@ def inc_parameter_set(entity_filepath, val_sweepers):
     if reset is False and len(sweep_param_vals) == 0:
         print "Error: inc_parameter_set() indeterminate state, reset is False, but parameter_description indicates " \
               "no parameters have been modified. If there is no sweep to conduct, reset should be True."
-        exit()
+        exit(1)
 
     return reset, sweep_param_vals
 
@@ -334,7 +338,7 @@ def launch_compute_aws_ecs(task_name):
 
     if task_name is None:
         print "ERROR: you must specify a Task Name to run on aws-ecs"
-        exit()
+        exit(1)
 
     task_arn = _cloud.run_task_ecs(task_name)
     _compute_node.wait_up()
@@ -551,7 +555,7 @@ if __name__ == '__main__':
               "a running ec2 instance"
         if args.aws:
             print "--- in any case, aws has not been set, so they have no effect"
-        exit()
+        exit(1)
 
     _compute_node = compute.Compute(log)
     _cloud = cloud.Cloud(log)
@@ -565,7 +569,7 @@ if __name__ == '__main__':
         launch_compute_local(args.main_class)
         generate_input_files_locally()
         _compute_node.terminate()
-        exit()
+        exit(1)
 
     # 2) Setup infrastructure (on AWS or nothing to do locally)
     ips = {'ip_public': args.host, 'ip_private': None}
@@ -574,8 +578,8 @@ if __name__ == '__main__':
 
     if args.pg_instance:
         is_pg_ec2 = (args.pg_instance[:2] == 'i-')
-    if is_aws:
 
+    if is_aws:
         # start Compute ec2 either from instanceid or amiid
         if args.instanceid:
             ips = _cloud.run_ec2(args.instanceid)
@@ -592,7 +596,7 @@ if __name__ == '__main__':
     elif args.pg_instance:
         if is_pg_ec2:
             print "ERROR: the pg instance is set to an ec2 instance id, but you are not running AWS."
-            exit()
+            exit(1)
 
         ips_pg = {'ip_public': args.pg_instance, 'ip_private': args.pg_instance}
 
@@ -608,7 +612,7 @@ if __name__ == '__main__':
     if args.sync:
         if not args.aws:
             print "ERROR: Syncing is meaningless unless you're running aws (use param --step_aws)"
-            exit()
+            exit(1)
         _cloud.sync_experiment_rsync(_compute_node.host, remote_keypath)
 
     # 3.5) Sync data from S3 (typically used to download output files from a previous experiment to be used as input)

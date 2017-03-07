@@ -18,5 +18,5 @@ In future we can use $AGI_DATA_HOME and automate pulling down from S3, and setti
 
 General
 ---------------------
-run-remote.sh hardcodes the location of the AGI_HOME folder on ec2
+remote-run.sh hardcodes the location of the AGI_HOME folder on ec2
 that script is used by run-framework.py to launch the framework on remote host
