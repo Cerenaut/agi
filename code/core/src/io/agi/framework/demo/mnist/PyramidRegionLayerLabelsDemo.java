@@ -83,6 +83,13 @@ public class PyramidRegionLayerLabelsDemo {
 //        test classification of characters (in progress) 22-feb-17 looks good
 //        test higher order prediction of sequence (with fixed images?) 22-feb-17 variable order looking good on quick.txt
 //        test higher order prediction of sequence ( mutable images?) READY.
+        // todo try rank based prediction not value DONE
+        // Todo try longer history = more levels of feedback to predictor
+        // TODO try giving it its own output trace, + level above ?trace or prediction?
+        //      Higher cells represent longer history. So dont need current + output, only output.
+        //      level above predictor gets ...?
+        // connect the right feedback for prediction?
+        // use density-dependent forgetting factor in output TP
 // *      invert output into input both current and predicted.
 // *      make a rolling log of text produced. Like a round-robin mode. Be able to view recent predictions and so forth.
 // *      Classify predictions with another ANN.
@@ -129,11 +136,10 @@ public class PyramidRegionLayerLabelsDemo {
             imagesPathTesting = "/home/dave/workspace/agi.io/data/nist-sd19/a2z_10x";
         }
 
-        int trainingEpochs = 1000;
+        int trainingEpochs = 4000;//2000; // doubled the training time
         int testingEpochs = 1;//10;//80; // good for up to 80k
         int terminationAge = 5000;//25000;
         boolean terminateByAge = false;
-
         int imageRepeats = 1;//50;
         boolean cacheAllData = true;
         boolean doLogging = true;
@@ -149,7 +155,7 @@ public class PyramidRegionLayerLabelsDemo {
 
         String regionLayer1Name         = Framework.GetEntityName( "region-layer-1" );
         String regionLayer2Name         = Framework.GetEntityName( "region-layer-2" );
-//        String regionLayer3Name         = Framework.GetEntityName( "region-layer-3" );
+        String regionLayer3Name         = Framework.GetEntityName( "region-layer-3" );
 
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), experimentName ); // ok all input to the regions is ready
@@ -162,13 +168,19 @@ public class PyramidRegionLayerLabelsDemo {
         }
 
         // Region-layers
+        String learningEntitiesAlgorithm = "";
+        String lastRegionLayerName = "";
         Framework.CreateEntity( regionLayer1Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), imageSourceName );
-        String lastRegionLayerName = regionLayer1Name;
-        String learningEntitiesAlgorithm = regionLayer1Name;
+        lastRegionLayerName = regionLayer1Name;
+        learningEntitiesAlgorithm = regionLayer1Name;
 
         Framework.CreateEntity( regionLayer2Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), regionLayer1Name );
         lastRegionLayerName = regionLayer2Name;
         learningEntitiesAlgorithm = learningEntitiesAlgorithm + "," + regionLayer2Name;
+
+        Framework.CreateEntity( regionLayer3Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), regionLayer2Name );
+        lastRegionLayerName = regionLayer3Name;
+        learningEntitiesAlgorithm = learningEntitiesAlgorithm + "," + regionLayer3Name;
         // Region-layers
 
         Framework.CreateEntity( classifierName, FeedForwardNetworkEntity.ENTITY_TYPE, n.getName(), lastRegionLayerName ); // ok all input to the regions is ready
@@ -191,31 +203,30 @@ public class PyramidRegionLayerLabelsDemo {
         Framework.SetConfig( imageSourceName, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( regionLayer1Name, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( regionLayer2Name, "cache", String.valueOf( cacheAllData ) );
+        Framework.SetConfig( regionLayer3Name, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( classifierName, "cache", String.valueOf( cacheAllData ) );
 
         // RL1
         // it is more stable with the current spikes only as feedback.. ?
         String ffInputData = PyramidRegionLayerEntity.OUTPUT;
-        String fbInputData = PyramidRegionLayerEntity.OUTPUT;
+        String fbInputData = PyramidRegionLayerEntity.CLASSIFIER_SPIKES_NEW; // this represents a trace of the output from the lower layer over time
 //        String fbInputData = PyramidRegionLayerEntity.CLASSIFIER_SPIKES_NEW; // instantaneous output
         Framework.SetDataReference( regionLayer1Name, PyramidRegionLayerEntity.INPUT_C1, imageSourceName, ImageLabelEntity.OUTPUT_IMAGE );
         Framework.SetDataReference( regionLayer1Name, PyramidRegionLayerEntity.INPUT_C2, constantName, ConstantMatrixEntity.OUTPUT );
         Framework.SetDataReference( regionLayer1Name, PyramidRegionLayerEntity.INPUT_P1, regionLayer2Name, fbInputData );
-        Framework.SetDataReference( regionLayer1Name, PyramidRegionLayerEntity.INPUT_P2, constantName, ConstantMatrixEntity.OUTPUT );
+        Framework.SetDataReference( regionLayer1Name, PyramidRegionLayerEntity.INPUT_P2, regionLayer3Name, fbInputData );
 
         // RL2
         Framework.SetDataReference( regionLayer2Name, PyramidRegionLayerEntity.INPUT_C1, regionLayer1Name, ffInputData );
         Framework.SetDataReference( regionLayer2Name, PyramidRegionLayerEntity.INPUT_C2, constantName, ConstantMatrixEntity.OUTPUT );
-        Framework.SetDataReference( regionLayer2Name, PyramidRegionLayerEntity.INPUT_P1, regionLayer1Name, fbInputData );
+        Framework.SetDataReference( regionLayer2Name, PyramidRegionLayerEntity.INPUT_P1, regionLayer2Name, fbInputData ); // Feedback from above
         Framework.SetDataReference( regionLayer2Name, PyramidRegionLayerEntity.INPUT_P2, constantName, ConstantMatrixEntity.OUTPUT );
-//
-//        // RL3
-//        Framework.SetDataReference( regionLayer3Name, PyramidRegionLayerEntity.INPUT_C1, regionLayer1Name, ffInputData );
-////        Framework.SetDataReference( regionLayer3Name, PyramidRegionLayerEntity.INPUT_C2, regionLayer2Name, PyramidRegionLayerEntity.OUTPUT_SPIKES_NEW );
-//        Framework.SetDataReference( regionLayer3Name, PyramidRegionLayerEntity.INPUT_C2, constantName, ConstantMatrixEntity.OUTPUT );
-//
-//        Framework.SetDataReference( regionLayer3Name, PyramidRegionLayerEntity.INPUT_P1, constantName, ConstantMatrixEntity.OUTPUT );
-//        Framework.SetDataReference( regionLayer3Name, PyramidRegionLayerEntity.INPUT_P2, constantName, ConstantMatrixEntity.OUTPUT );
+
+        // RL3
+        Framework.SetDataReference( regionLayer3Name, PyramidRegionLayerEntity.INPUT_C1, regionLayer2Name, ffInputData );
+        Framework.SetDataReference( regionLayer3Name, PyramidRegionLayerEntity.INPUT_C2, constantName, ConstantMatrixEntity.OUTPUT );
+        Framework.SetDataReference( regionLayer3Name, PyramidRegionLayerEntity.INPUT_P1, constantName, ConstantMatrixEntity.OUTPUT ); // Top layer gets no feedback
+        Framework.SetDataReference( regionLayer3Name, PyramidRegionLayerEntity.INPUT_P2, constantName, ConstantMatrixEntity.OUTPUT );
 
         // Experiment config
         if( !terminateByAge ) {
@@ -300,7 +311,7 @@ public class PyramidRegionLayerLabelsDemo {
         float classifierMomentum = 0f;
         float classifierWeightsStdDev = 0.01f;
         int classifierAgeMin = 0; // age of disuse where we start to promote cells
-        int classifierAgeMax = 1000;//2000/1000; // age of disuse where we maximally promote cells
+        int classifierAgeMax = 2000;//1000;//2000/1000; // age of disuse where we maximally promote cells
         float classifierAgeTruncationFactor = 0.5f;
         float classifierAgeScale = 12f; // promotion nonlinearity
         float classifierRateScale = 5f; // inhibition nonlinearity
@@ -309,17 +320,22 @@ public class PyramidRegionLayerLabelsDemo {
 
         float predictorLearningRate = 0.002f; // 1/5 the classifier learning rate
         int predictorHiddenCells = 500;
+        int predictorBatchSize = 1; //64; =32, at 80k not very trained. CBF waiting so long.
         float predictorLeakiness = 0.01f;
         float predictorRegularization = 0.f;
 
 //        float outputCodingSparsityFactor = 2.0f; // how sticky the output is, ie a trace of historical errors
-        float outputDecayRate = 0.6f; // 1, 0.8, 0.64, 0.51, 0.4, 0.32, 0.26,
+//                                      //       1  2    3     4     5     6     7
+//        float outputDecayRate = 0.6f; // 0.8:  1, 0.8, 0.64, 0.51, 0.40, 0.32, 0.26,
+//                                      // 0.6:  1, 0.6, 0.36, 0.21, 0.12, 0.07, 0.04,
+        float outputDecayRate = 0.9f;
+        // 0.6:  1, 0.6, 0.36, 0.21, 0.12, 0.07, 0.04,
 
         // variables
         int widthCells = 32;//20;
         int heightCells = 32;//20;
-        int batchSize = 1;
-        int classifierSparsity = 20;//15; // k, the number of active cells each step
+        int classifierBatchSize = 1;
+        int classifierSparsity = 20;//15; // k, the number of active cells each step 20/1024=1.9% or 2.9% with alpha factor
         float classifierSparsityOutput = 1.5f; // a factor determining the output sparsity
 
         String regionLayerName = regionLayer1Name;
@@ -330,9 +346,9 @@ public class PyramidRegionLayerLabelsDemo {
                 classifierSparsityOutput, classifierSparsity,
                 classifierAgeMin, classifierAgeMax, classifierAgeTruncationFactor, classifierAgeScale,
                 classifierRateScale, classifierRateMax, classifierRateLearningRate,
-                batchSize,
+                classifierBatchSize,
                 predictorLearningRate, predictorHiddenCells, predictorLeakiness, predictorRegularization,
-                batchSize,
+                predictorBatchSize,
                 outputDecayRate );
 
         regionLayerName = regionLayer2Name;
@@ -343,11 +359,23 @@ public class PyramidRegionLayerLabelsDemo {
                 classifierSparsityOutput, classifierSparsity,
                 classifierAgeMin, classifierAgeMax, classifierAgeTruncationFactor, classifierAgeScale,
                 classifierRateScale, classifierRateMax, classifierRateLearningRate,
-                batchSize,
+                classifierBatchSize,
                 predictorLearningRate, predictorHiddenCells, predictorLeakiness, predictorRegularization,
-                batchSize,
+                predictorBatchSize,
                 outputDecayRate );
 
+        regionLayerName = regionLayer3Name;
+
+        setRegionLayerConfig(
+                regionLayerName, widthCells, heightCells,
+                classifierLearningRate, classifierMomentum, classifierWeightsStdDev,
+                classifierSparsityOutput, classifierSparsity,
+                classifierAgeMin, classifierAgeMax, classifierAgeTruncationFactor, classifierAgeScale,
+                classifierRateScale, classifierRateMax, classifierRateLearningRate,
+                classifierBatchSize,
+                predictorLearningRate, predictorHiddenCells, predictorLeakiness, predictorRegularization,
+                predictorBatchSize,
+                outputDecayRate );
     }
 
     public static void setRegionLayerConfig(
