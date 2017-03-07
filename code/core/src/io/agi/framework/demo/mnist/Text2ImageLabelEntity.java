@@ -240,7 +240,6 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
         if( config.charIndex >= text.length() ) {
             _logger.info( "End of text: Epoch complete." );
             onImageOutOfBounds();
-            config.epoch += 1;
             onEpochComplete();
 
             // text is complete.
@@ -255,13 +254,6 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
         _logger.warn( "=======> Training text: " + _textTraining.length() + " testing text: " + _textTesting.length() + " index: " + config.charIndex + " phase " + config.phase );
 
         checkAllEpochsComplete();
-/*        // detect finished one pass of test set:
-        if( config.phase.equals( ImageLabelEntityConfig.PHASE_TESTING ) ) {
-            if( config.epoch > 0 ) {
-                config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
-                _logger.warn( "=======> Terminating on end of test set. (2)" );
-            }
-        }*/
 
         int textLength = text.length();
         boolean inRange = config.charIndex < textLength;
@@ -291,37 +283,6 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
         // update the index:
 //        updateDigitIndex();
         updateCharIndex();
-
-
-        // Setup screen scraper, grab image
-/*        ImageScreenScraper imageScreenScraper = createImageScreenScraper( bis );
-        boolean scraped = imageScreenScraper.scrape(); // get the current image
-        if( !scraped ) {
-            _logger.error( "Could not scrape image, so unable to do anything useful this update" );
-            return;
-        }
-
-        String imageFileName = bis.getImageFileName();
-        Integer imageClass = getClassification( imageFileName ); //, config.sourceFilesPrefix );
-
-        if( imageClass == null ) {
-            _logger.error( "Could not get image classification, so unable to do anything useful this update" );
-            return;
-        }
-
-        Data image = imageScreenScraper.getData();
-
-        // write outputs back to persistence
-        Data label = new Data( 1 );
-        label.set( imageClass );
-
-        setData( OUTPUT_LABEL, label );
-        setData( OUTPUT_IMAGE, image );
-
-        _logger.info( "Emitting image " + bis.getIdx() + " class.: " + imageClass );
-
-        // write classification
-        config.imageLabel = imageClass;*/
     }
 
 }
