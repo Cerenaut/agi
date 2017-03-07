@@ -24,9 +24,12 @@ import io.agi.core.ann.supervised.FeedForwardNetwork;
 import io.agi.core.ann.supervised.FeedForwardNetworkConfig;
 import io.agi.core.ann.supervised.CostFunction;
 import io.agi.core.data.Data;
+import io.agi.core.data.Ranking;
 import io.agi.core.orm.ObjectMap;
 
+import java.util.ArrayList;
 import java.util.Random;
+import java.util.TreeMap;
 
 /**
  * Created by dave on 20/01/17.
@@ -100,8 +103,28 @@ public class PyramidRegionLayerPredictor {
         input.copy( inputNew );
         _ffn.feedForward();
         Data output = _ffn.getOutput();
-        outputPrediction.copy( output );
-        outputPrediction.clipRange( 0f, 1f ); // as NN may go wildly beyond that
+// keep all:
+//        outputPrediction.copy( output );
+//        outputPrediction.clipRange( 0f, 1f ); // as NN may go wildly beyond that
+// keep sparse set:
+        outputPrediction.set( 0f );
+
+        // rank predictions
+        TreeMap< Float, ArrayList< Integer > > ranking = new TreeMap< Float, ArrayList< Integer > >();
+        int cells = output.getSize();
+        for( int c = 0; c < cells; ++c ){
+            float p = output._values[ c ];
+            Ranking.add( ranking, p, c );
+        }
+
+        // keep top n most predicted cells
+        boolean findMaxima = true;
+        int maxRank = density;
+        ArrayList< Integer > predictedCells = Ranking.getBestValues( ranking, findMaxima, maxRank );
+
+        for( Integer c : predictedCells ) {
+            outputPrediction._values[ c ] = 1f;
+        }
     }
 
 }

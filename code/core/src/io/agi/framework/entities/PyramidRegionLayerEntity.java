@@ -256,11 +256,15 @@ public class PyramidRegionLayerEntity extends Entity {
 
         if( ( inputC1 == null ) || ( inputC2 == null ) || ( inputP1 == null ) || ( inputP2 == null ) ) {
             // we need to produce our output even if we can't write to it yet, to allow circular dependencies to be formed.
+            Data classifierSpikesOld = new Data( config.widthCells, config.heightCells );
+            Data classifierSpikesNew = new Data( config.widthCells, config.heightCells );
             Data outputSpikesOld = new Data( config.widthCells, config.heightCells );
             Data outputSpikesNew = new Data( config.widthCells, config.heightCells );
             Data output          = new Data( config.widthCells, config.heightCells );
             setData( OUTPUT_SPIKES_OLD, outputSpikesOld );
             setData( OUTPUT_SPIKES_NEW, outputSpikesNew );
+            setData( CLASSIFIER_SPIKES_OLD, classifierSpikesOld );
+            setData( CLASSIFIER_SPIKES_NEW, classifierSpikesNew );
             setData( OUTPUT, output );
 
             if( config.reset ) {
@@ -368,8 +372,8 @@ public class PyramidRegionLayerEntity extends Entity {
         rl._inputPOld = getDataLazyResize( INPUT_P_OLD, rl._inputPOld._dataSize );
         rl._inputPNew = getDataLazyResize( INPUT_P_NEW, rl._inputPNew._dataSize );
 
-        rl._spikesOld = getDataLazyResize( CLASSIFIER_SPIKES_OLD, rl._spikesOld._dataSize );
-        rl._spikesNew = getDataLazyResize(CLASSIFIER_SPIKES_NEW, rl._spikesNew._dataSize);
+        rl._classifierSpikesOld = getDataLazyResize( CLASSIFIER_SPIKES_OLD, rl._classifierSpikesOld._dataSize );
+        rl._classifierSpikesNew = getDataLazyResize( CLASSIFIER_SPIKES_NEW, rl._classifierSpikesNew._dataSize );
 //        rl._spikesIntegrated = getDataLazyResize( CLASSIFIER_SPIKES_INTEGRATED, rl._spikesIntegrated._dataSize );
 
         rl._outputSpikesOld = getDataLazyResize( OUTPUT_SPIKES_OLD, rl._outputSpikesOld._dataSize );
@@ -431,8 +435,8 @@ public class PyramidRegionLayerEntity extends Entity {
         setData( INPUT_C1_PREDICTED, rl._inputC1Predicted );
         setData( INPUT_C2_PREDICTED, rl._inputC2Predicted );
 
-        setData( CLASSIFIER_SPIKES_OLD, rl._spikesOld );
-        setData( CLASSIFIER_SPIKES_NEW, rl._spikesNew );
+        setData( CLASSIFIER_SPIKES_OLD, rl._classifierSpikesOld );
+        setData( CLASSIFIER_SPIKES_NEW, rl._classifierSpikesNew );
 //        setData( CLASSIFIER_SPIKES_INTEGRATED, rl._spikesIntegrated );
 
         setData( OUTPUT_SPIKES_OLD, rl._outputSpikesOld );
