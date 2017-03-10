@@ -1,7 +1,8 @@
-Gotchas
+This is stuff you need to know for running experiments.
+The gotcha's.
 
-* The node.properties node name should match node name in json input files.
-
-* run-framework.py generates a new input file before it sweeps to next value (to set in the input file). If sweep is over, there will not be another experiment, but the input file already exists.
-
-* There is a new prefix for every parameter sweep iteration
+If using Postgres separate database:
+DB Host
+---------------------
+DB_HOST env variable needs to be set in the shell environment of the python script
+If the script is run on one machine, and launches the task on AWS, then it must be done from outside of script. Therefore, it is in variables-docker.sh, but set by the python script explicitly by python script for local execution (which requires it to be commented out locally in variables.)

@@ -25,12 +25,7 @@ import io.agi.core.data.Data;
 import io.agi.core.data.FloatArray;
 import io.agi.core.math.Statistics;
 import io.agi.core.util.FileUtil;
-import io.agi.core.util.PropertiesUtil;
-import io.agi.framework.Framework;
-import io.agi.framework.Main;
-import io.agi.framework.factories.CommonEntityFactory;
 import io.agi.framework.persistence.models.ModelData;
-import io.agi.framework.persistence.models.ModelEntity;
 
 import java.lang.reflect.Type;
 import java.util.*;
@@ -158,7 +153,7 @@ public class ClassificationAnalysis {
         int samples = truth.getSize();
 
         if( predicted.getSize() != samples ) {
-            return new String( "Truth and predicted vectors have different length." );
+            return "Truth and predicted vectors have different length.";
         }
 
         if( length <= 0 ) {
