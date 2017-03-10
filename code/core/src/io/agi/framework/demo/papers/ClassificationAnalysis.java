@@ -215,14 +215,14 @@ public class ClassificationAnalysis {
             float t = truth._values[ i ];
             float p = predicted._values[ i ];
 
+            HashMap< Float, Integer > hm = _confusionMatrix.get( t );
+            Integer np = hm.get( p );
+
             float error = 0f;
-            if( t != p ) {
+            if( t != p ) { // error
                 error = 1f;
 
-                HashMap< Float, Integer > hm = _confusionMatrix.get( t );
-
-                Integer n1 = hm.get( p );
-                int n2 = n1 + 1; // increment frequency
+                int n2 = np + 1; // increment frequency
 
                 hm.put( p, n2 );
 
@@ -234,11 +234,15 @@ public class ClassificationAnalysis {
                 int n2n = n1n + 1; // increment frequency
                 _labelErrorFN.put( t, n2n );
             }
-//            else {
+            else { // correct
+                int n2 = np + 1; // increment frequency
+
+                hm.put( p, n2 );
+            }
+
             Integer n1 = _labelFrequency.get( t );
             int n2 = n1 + 1; // increment frequency
             _labelFrequency.put( t, n2 );
-//            }
 
             _errors._values[ i ] = error;
         }
@@ -316,7 +320,9 @@ public class ClassificationAnalysis {
             int e = fp + fn;
             float denominator = (1f + b2) * tp + b2 * fn + fp;
             float score = (1f + b2)* tp / denominator;
-
+            if( denominator <= 0f ) { // catch /0 error
+                score = 0f;
+            }
             result += ( String.format( "%.1f", label ) + ", " + e  + ", " + tp + ", " + fp + ", " + tn + ", " + fn + ", " + t + ", " + f + ", " + score );
             result += "\n";
         }

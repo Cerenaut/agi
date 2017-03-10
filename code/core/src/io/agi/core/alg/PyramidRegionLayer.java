@@ -20,17 +20,13 @@
 package io.agi.core.alg;
 
 import io.agi.core.ann.unsupervised.OnlineKSparseAutoencoder;
-import io.agi.core.ann.unsupervised.SpikeOrderLearning;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
-import io.agi.core.data.Ranking;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.TreeMap;
 
 /**
  * A rough simulation of one layer of Pyramidal cells and associated interneurons.
@@ -62,8 +58,8 @@ public class PyramidRegionLayer extends NamedObject {
     public Data _inputPOld; // all input
     public Data _inputPNew;
 
-    public Data _spikesOld; // apical dendrite spikes
-    public Data _spikesNew;
+    public Data _classifierSpikesOld; // apical dendrite spikes
+    public Data _classifierSpikesNew;
 //    public Data _spikesIntegrated; // apical dendrite spikes
     public Data _outputSpikesOld; // axon spikes
     public Data _outputSpikesNew; // axon spikes
@@ -145,8 +141,8 @@ public class PyramidRegionLayer extends NamedObject {
         _inputPOld = new Data( dataSizeInputP );
         _inputPNew = new Data( dataSizeInputP );
 
-        _spikesOld = new Data( dataSizeCells );
-        _spikesNew = new Data( dataSizeCells );
+        _classifierSpikesOld = new Data( dataSizeCells );
+        _classifierSpikesNew = new Data( dataSizeCells );
 //        _spikesIntegrated = new Data( dataSizeCells );
 
         _outputSpikesOld = new Data( dataSizeCells );
@@ -234,11 +230,11 @@ public class PyramidRegionLayer extends NamedObject {
 
         // update
         _classifier.update(); // produces a new classification
-        _spikesOld.copy( _spikesNew );
-        _spikesNew.copy( _classifier._cellSpikesTopKA );
+        _classifierSpikesOld.copy( _classifierSpikesNew );
+        _classifierSpikesNew.copy( _classifier._cellSpikesTopKA );
 
-        _transient._spikesNew = _spikesNew.indicesMoreThan( 0.5f );
-        _transient._spikesOld = _spikesOld.indicesMoreThan( 0.5f );
+        _transient._spikesNew = _classifierSpikesNew.indicesMoreThan( 0.5f );
+        _transient._spikesOld = _classifierSpikesOld.indicesMoreThan( 0.5f );
 
 //        _sumClassifierError = _classifier._sumTopKError;
 //        _sumClassifierResponse = _classifier._sumResponse;
@@ -275,7 +271,7 @@ public class PyramidRegionLayer extends NamedObject {
     }
 
     protected void updatePrediction() {
-        int density = _spikesNew.indicesMoreThan( 0f ).size();
+        int density = _classifierSpikesNew.indicesMoreThan( 0f ).size();
         //     public void predict( Data inputSpikes, int density )
         //     public void train( Data inputSpikes, Data outputSpikes )
         Point inputP1Size = _rc.getInputP1Size();
@@ -295,7 +291,7 @@ public class PyramidRegionLayer extends NamedObject {
         _inputPOld.copy( _inputPNew ); // a complete copy
 
         int offset = 0;
-        _inputPNew.copyRange( _spikesNew, offset, 0, cells );
+        _inputPNew.copyRange( _classifierSpikesNew, offset, 0, cells );
         offset += cells;
         _inputPNew.copyRange( _inputP1, offset, 0, inputP1Volume );
         offset += inputP1Volume;
@@ -303,7 +299,7 @@ public class PyramidRegionLayer extends NamedObject {
         //offset += inputP2Volume;
 
         // train the predictor
-        _predictor.train( _inputPOld, density, _spikesNew );//_inputOld, _inputNew, _spikesOld, _spikesNew );
+        _predictor.train( _inputPOld, density, _classifierSpikesNew );//_inputOld, _inputNew, _classifierSpikesOld, _classifierSpikesNew );
 
         // generate a new prediction
         _predictionOld .copy( _predictionNew );
@@ -332,7 +328,7 @@ public class PyramidRegionLayer extends NamedObject {
 
         for( int c = 0; c < cells; ++c ) {
             float classifierSpike = 0f;
-            if( _transient._spikesNew.contains( c ) ) {
+            if( _transient._classifierSpikesNew.contains( c ) ) {
                 classifierSpike = 1f;
             }
 
@@ -437,7 +433,7 @@ public class PyramidRegionLayer extends NamedObject {
             // But, this is kinda irrelevant because there's now a refractory period in the classification. [NOT TRUE]
             // So, there's not much point in this, because it means the classification has changed
             // at least N times before the bit can become active again anyway, so it'd be a genuine re-activation.
-//            if( _transient._spikesOld.contains( i ) ) {
+//            if( _transient._classifierSpikesOld.contains( i ) ) {
 //                errorFN = false; // if already active before, don't re-add it.
 //            }
 
@@ -464,9 +460,13 @@ public class PyramidRegionLayer extends NamedObject {
             }
         }
 
+        // decay existing values depending on how many new bits are introduced
+        // this means that when stability is achieved, history can become arbitrarily long..
+        // http://www.wolframalpha.com/input/?i=y+%3D+0.9%5Ex+for+x+%3D+0+to+20
         float outputDecayRate = this._rc.getOutputDecayRate();
-
-        _output.mul( outputDecayRate );
+        float errorBits = (float)_transient._predictionErrorFN.size();
+        float decayRate = (float)Math.pow( outputDecayRate, errorBits ); // N.B if errorBits = 0 then decayRate = 1 (unchanged)
+        _output.mul( decayRate );
 
         _transient._spikesOut = new HashSet< Integer >();
 
@@ -493,7 +493,7 @@ public class PyramidRegionLayer extends NamedObject {
         _transient._predictionErrorFN = new HashSet< Integer >();
 
         // calculate FP and FN errors
-        for( Integer i : _transient._spikesNew ) {
+        for( Integer i : _transient._classifierSpikesNew ) {
 
             // To cause a break in cycles where cells might be continuously output, we inhibit the output of any cell
             // that becomes predicted. Since we already updated the prediction, the OLD prediction is the one we need
@@ -517,7 +517,7 @@ public class PyramidRegionLayer extends NamedObject {
             // But, this is kinda irrelevant because there's now a refractory period in the classification.
             // So, there's not much point in this, because it means the classification has changed
             // at least N times before the bit can become active again anyway, so it'd be a genuine re-activation.
-            if( _transient._spikesOld.contains( i ) ) {
+            if( _transient._classifierSpikesOld.contains( i ) ) {
                 errorFN = false; // if already active before, don't re-add it.
             }
 
@@ -534,7 +534,7 @@ public class PyramidRegionLayer extends NamedObject {
 
             boolean errorFP = false;
 
-            if( !_transient._spikesNew.contains( p ) ) {
+            if( !_transient._classifierSpikesNew.contains( p ) ) {
                 errorFP = true; // predicted, but not active
             }
 
@@ -604,7 +604,7 @@ public class PyramidRegionLayer extends NamedObject {
         // Now we want to limit the number of bits. We do this by age.
         // 4. Prune output by age (removing oldest) until desired sparsity is reached.
         float outputCodingSparsityFactor = _rc.getOutputCodingSparsityFactor();
-        float currentSparsity = _transient._spikesNew.size(); // the number of spikes added per step
+        float currentSparsity = _transient._classifierSpikesNew.size(); // the number of spikes added per step
         int maxRank = (int)( currentSparsity * outputCodingSparsityFactor );
         boolean findMaxima = false; // keep the youngest
 
