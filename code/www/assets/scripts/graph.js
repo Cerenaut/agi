@@ -46,6 +46,7 @@ function AgiGraph( elementId, nodes, links, typesArray, _width, _height, _arrows
     self.force = d3.layout.force()
       .nodes( d3.values( self.nodes ) )
       .links(links)
+      .linkStrength(0.02)
       .size([width, height])
       .linkDistance(180)
       .charge(-600)
