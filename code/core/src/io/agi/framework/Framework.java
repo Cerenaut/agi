@@ -140,7 +140,7 @@ public class Framework {
             String referenceSuffix = ap._second;
             String refKey = NamedObject.GetKey( referenceEntity, referenceSuffix );
             if( refKeys.length() > 0 ) {
-                refKeys = refKeys + ", ";
+                refKeys = refKeys + ",";
             }
             refKeys = refKeys + refKey;
         }
