@@ -26,6 +26,8 @@ import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 
 /**
@@ -47,19 +49,24 @@ import java.util.HashSet;
  */
 public class PyramidRegionLayer extends NamedObject {
 
-    public Data _inputC1; // real, unit
-    public Data _inputC2;
-    public Data _inputC1Predicted; // a prediction of what the input will be
-    public Data _inputC2Predicted; // a prediction of what the input will be
+    public Data _inputC; // real, unit
+//    public Data _inputCPredicted; // a prediction of what the input will be
+//    public Data _inputC1; // real, unit
+//    public Data _inputC2;
+//    public Data _inputC1Predicted; // a prediction of what the input will be
+//    public Data _inputC2Predicted; // a prediction of what the input will be
 
-    public Data _inputP1; // real, unit
-    public Data _inputP2;
+//    public Data _inputClassifierSpikes; // a prediction of what the input will be
+
+//    public Data _inputP1; // real, unit
+//    public Data _inputP2;
+    public Data _inputP; // real, unit
 
     public Data _inputPOld; // all input
     public Data _inputPNew;
 
-    public Data _classifierSpikesOld; // apical dendrite spikes
-    public Data _classifierSpikesNew;
+//    public Data _classifierSpikesOld; // apical dendrite spikes
+//    public Data _classifierSpikesNew;
 //    public Data _spikesIntegrated; // apical dendrite spikes
     public Data _outputSpikesOld; // axon spikes
     public Data _outputSpikesNew; // axon spikes
@@ -70,12 +77,12 @@ public class PyramidRegionLayer extends NamedObject {
     public Data _predictionErrorFN;
     public Data _predictionOld;
     public Data _predictionNew;
-//    public Data _predictionNewReal;
+    public Data _predictionNewUnit;
 
     //    todo add something - maybe an external entity - that keeps a rolling history of some of these datas
 
-    public float _sumClassifierError = 0;
-    public float _sumClassifierResponse = 0;
+//    public float _sumClassifierError = 0;
+//    public float _sumClassifierResponse = 0;
     public float _sumOutputSpikes = 0;
     public float _sumPredictionErrorFP = 0;
     public float _sumPredictionErrorFN = 0;
@@ -84,7 +91,7 @@ public class PyramidRegionLayer extends NamedObject {
     // Member objects
     public PyramidRegionLayerConfig _rc;
     public PyramidRegionLayerTransient _transient = null;
-    public OnlineKSparseAutoencoder _classifier;
+//    public OnlineKSparseAutoencoder _classifier;
 //    public SpikeOrderLearning _predictor;
     public PyramidRegionLayerPredictor _predictor;
 
@@ -95,25 +102,30 @@ public class PyramidRegionLayer extends NamedObject {
     public void setup( PyramidRegionLayerConfig rc ) {
         _rc = rc;
 
-        _classifier = new OnlineKSparseAutoencoder( getKey( PyramidRegionLayerConfig.SUFFIX_CLASSIFIER ), _rc._om );
-        _classifier.setup( _rc._classifierConfig );
+//        _classifier = new OnlineKSparseAutoencoder( getKey( PyramidRegionLayerConfig.SUFFIX_CLASSIFIER ), _rc._om );
+//        _classifier.setup( _rc._classifierConfig );
 
         // Get dimensions
-        Point inputC1Size = _rc.getInputC1Size();
-        Point inputC2Size = _rc.getInputC2Size();
-        Point inputP1Size = _rc.getInputP1Size();
-        Point inputP2Size = _rc.getInputP2Size();
+//        Point inputC1Size = _rc.getInputC1Size();
+//        Point inputC2Size = _rc.getInputC2Size();
+//        Point inputP1Size = _rc.getInputP1Size();
+//        Point inputP2Size = _rc.getInputP2Size();
+        Point inputCSize = _rc.getInputCSize();
+        int inputPSize = _rc.getInputPSize();
 
-        DataSize dataSizeInputC1 = DataSize.create( inputC1Size.x, inputC1Size.y );
-        DataSize dataSizeInputC2 = DataSize.create( inputC2Size.x, inputC2Size.y );
+//        DataSize dataSizeInputC1 = DataSize.create( inputC1Size.x, inputC1Size.y );
+//        DataSize dataSizeInputC2 = DataSize.create( inputC2Size.x, inputC2Size.y );
+//
+//        DataSize dataSizeInputP1 = DataSize.create( inputP1Size.x, inputP1Size.y );
+//        DataSize dataSizeInputP2 = DataSize.create( inputP2Size.x, inputP2Size.y );
 
-        DataSize dataSizeInputP1 = DataSize.create( inputP1Size.x, inputP1Size.y );
-        DataSize dataSizeInputP2 = DataSize.create( inputP2Size.x, inputP2Size.y );
+        DataSize dataSizeInputC = DataSize.create( inputCSize.x, inputCSize.y );
+        DataSize dataSizeInputP = DataSize.create( inputPSize );
 
 
         // Predictor
-        int cells = _rc._classifierConfig.getNbrCells();
-        int predictorInputs = dataSizeInputP1.getVolume() + dataSizeInputP2.getVolume() + cells;
+        int cells = dataSizeInputC.getVolume(); //_rc._classifierConfig.getNbrCells();
+        int predictorInputs = dataSizeInputP.getVolume() + cells;
         int predictorOutputs = cells;
         float predictorLearningRate = rc.getPredictorLearningRate();
 //        float predictorDecayRate = rc.getPredictorTraceDecayRate();
@@ -125,24 +137,26 @@ public class PyramidRegionLayer extends NamedObject {
         _predictor.setup( _rc.getKey( PyramidRegionLayerConfig.SUFFIX_PREDICTOR ), _rc._om, _rc._r, predictorInputs, predictorHiddenCells, predictorOutputs, predictorLearningRate, predictorLeakiness, predictorRegularization, predictorBatchSize );//, predictorDecayRate );
     // public void setup( String name, ObjectMap om, Random r, int inputs, int hidden, int outputs, float learningRate, float leakiness, float regularization ) {
 
-        DataSize dataSizeCells = DataSize.create( _rc._classifierConfig.getWidthCells(), _rc._classifierConfig.getHeightCells() );
+//        DataSize dataSizeCells = DataSize.create( _rc._classifierConfig.getWidthCells(), _rc._classifierConfig.getHeightCells() );
+        DataSize dataSizeCells = DataSize.create( inputCSize.x, inputCSize.y );
 
-        _inputC1 = new Data( dataSizeInputC1 );
-        _inputC2 = new Data( dataSizeInputC2 );
+//        _inputC1 = new Data( dataSizeInputC1 );
+//        _inputC2 = new Data( dataSizeInputC2 );
+//
+//        _inputC1Predicted = new Data( dataSizeInputC1 );
+//        _inputC2Predicted = new Data( dataSizeInputC2 );
 
-        _inputC1Predicted = new Data( dataSizeInputC1 );
-        _inputC2Predicted = new Data( dataSizeInputC2 );
+//        _inputP1 = new Data( dataSizeInputP1 );
+//        _inputP2 = new Data( dataSizeInputP2 );
+        _inputP = new Data( dataSizeInputP );
 
-        _inputP1 = new Data( dataSizeInputP1 );
-        _inputP2 = new Data( dataSizeInputP2 );
+//        DataSize dataSizeInputP = DataSize.create( predictorInputs );
+//
+        _inputPOld = new Data( predictorInputs );
+        _inputPNew = new Data( predictorInputs );
 
-        DataSize dataSizeInputP = DataSize.create( predictorInputs );
-
-        _inputPOld = new Data( dataSizeInputP );
-        _inputPNew = new Data( dataSizeInputP );
-
-        _classifierSpikesOld = new Data( dataSizeCells );
-        _classifierSpikesNew = new Data( dataSizeCells );
+//        _classifierSpikesOld = new Data( dataSizeCells );
+//        _classifierSpikesNew = new Data( dataSizeCells );
 //        _spikesIntegrated = new Data( dataSizeCells );
 
         _outputSpikesOld = new Data( dataSizeCells );
@@ -154,13 +168,22 @@ public class PyramidRegionLayer extends NamedObject {
         _predictionErrorFN = new Data( dataSizeCells );
         _predictionOld = new Data( dataSizeCells );
         _predictionNew = new Data( dataSizeCells );
-//        _predictionNewReal = new Data( dataSizeCells );
+        _predictionNewUnit = new Data( dataSizeCells );
     }
 
     public void reset() {
         _transient = null;
-        _classifier.reset();
-        _predictor.reset();
+//        _classifier.reset();
+
+        int density = 0; // hmm, not sure where this should come from on a reset.
+        Point inputSize = _rc.getInputCSize();
+        int regionWidth = inputSize.x;
+        int regionHeight = inputSize.y;
+        Point inputColumnSize = _rc.getInputCColumnSize();
+        int columnWidth = inputColumnSize.x;
+        int columnHeight = inputColumnSize.y;
+
+        _predictor.reset( density, regionWidth, regionHeight, columnWidth, columnHeight );
 
         _predictionErrorFP.set( 0.f );
         _predictionErrorFN.set( 0.f );
@@ -173,8 +196,8 @@ public class PyramidRegionLayer extends NamedObject {
 //        _outputSpikesAge.set( 0f );
         _output.set( 0f );
 
-        _inputC1Predicted.set( 0f );
-        _inputC2Predicted.set( 0f );
+//        _inputC1Predicted.set( 0f );
+//        _inputC2Predicted.set( 0f );
         // classifier cell mask will be reset to all 1 also.
     }
 
@@ -204,16 +227,18 @@ public class PyramidRegionLayer extends NamedObject {
         // layer 2: 1 inputs every n steps (where n is max firing rate)
         // layer 3: 1 inputs every n*n steps . So it has temporal slowness also.
 
-        _classifier._c.setLearn( _rc.getLearn() );
+//        _classifier._c.setLearn( _rc.getLearn() );
+        _transient = new PyramidRegionLayerTransient();
+        _transient._spikesNew = _inputC.indicesMoreThan( 0.5f );
 
-        updateClassification();
+//        updateClassification();
         //updateIntegration();
-        updatePrediction();
-        invertPrediction();
+        updatePrediction( _inputC );//_inputClassifierSpikes );
+//        invertPrediction();
         updateOutput();
     }
 
-    protected void updateClassification() {
+/*    protected void updateClassification() {
         _transient = new PyramidRegionLayerTransient();
 //        _transient._inputC1Active = _inputC1.indicesMoreThan( 0.f ); // find all the active bits.
 //        _transient._inputC2Active = _inputC2.indicesMoreThan( 0.f ); // find all the active bits.
@@ -238,9 +263,9 @@ public class PyramidRegionLayer extends NamedObject {
 
 //        _sumClassifierError = _classifier._sumTopKError;
 //        _sumClassifierResponse = _classifier._sumResponse;
-    }
+    }*/
 
-    protected void invertPrediction() {
+/*    protected void invertPrediction() {
 
         // find top K outputs and invert through the classifier
         // I can do it by threshold OR by ranking. Trying threshold for now
@@ -268,42 +293,85 @@ public class PyramidRegionLayer extends NamedObject {
         _inputC1Predicted.copyRange( inputReconstructionTransfer, offset, 0, size1 );
         offset += size1;
         _inputC2Predicted.copyRange( inputReconstructionTransfer, offset, 0, size2 );
-    }
+    }*/
 
-    protected void updatePrediction() {
-        int density = _classifierSpikesNew.indicesMoreThan( 0f ).size();
+    protected void updatePrediction( Data classifierSpikesNew ) {
+        int density = classifierSpikesNew.indicesMoreThan( 0f ).size();
         //     public void predict( Data inputSpikes, int density )
         //     public void train( Data inputSpikes, Data outputSpikes )
-        Point inputP1Size = _rc.getInputP1Size();
-        Point inputP2Size = _rc.getInputP2Size();
+//        Point inputP1Size = _rc.getInputP1Size();
+//        Point inputP2Size = _rc.getInputP2Size();
+//
+//        DataSize dataSizeInputP1 = DataSize.create( inputP1Size.x, inputP1Size.y );
+//        DataSize dataSizeInputP2 = DataSize.create(inputP2Size.x, inputP2Size.y);
+//
+//        int inputP1Volume = dataSizeInputP1.getVolume();
+//        int inputP2Volume = dataSizeInputP2.getVolume();
+//        int inputPVolume = dataSizeInputP.getVolume();
+        int inputPSize = _rc.getInputPSize();
+        int cells = _rc.getInputCArea();
+        Point inputSize = _rc.getInputCSize();
+        int regionWidth = inputSize.x;
+        int regionHeight = inputSize.y;
+        Point inputColumnSize = _rc.getInputCColumnSize();
+        int columnWidth = inputColumnSize.x;
+        int columnHeight = inputColumnSize.y;
 
-        DataSize dataSizeInputP1 = DataSize.create( inputP1Size.x, inputP1Size.y );
-        DataSize dataSizeInputP2 = DataSize.create(inputP2Size.x, inputP2Size.y);
-
-        int inputP1Volume = dataSizeInputP1.getVolume();
-        int inputP2Volume = dataSizeInputP2.getVolume();
-
-        int cells = _rc._classifierConfig.getNbrCells();
+//        int cells = _rc._classifierConfig.getNbrCells();
 //        int inputs = inputP1Volume + inputP2Volume + cells;
 //        Data inputSpikes = new Data( inputs );
+
 
         // copy the input spike data.
         _inputPOld.copy( _inputPNew ); // a complete copy
 
         int offset = 0;
-        _inputPNew.copyRange( _classifierSpikesNew, offset, 0, cells );
+        _inputPNew.copyRange( classifierSpikesNew, offset, 0, cells );
         offset += cells;
-        _inputPNew.copyRange( _inputP1, offset, 0, inputP1Volume );
-        offset += inputP1Volume;
-        _inputPNew.copyRange( _inputP2, offset, 0, inputP2Volume );
+        _inputPNew.copyRange( _inputP, offset, 0, inputPSize );
+//        _inputPNew.copyRange( _inputP1, offset, 0, inputP1Volume );
+//        offset += inputP1Volume;
+//        _inputPNew.copyRange( _inputP2, offset, 0, inputP2Volume );
         //offset += inputP2Volume;
 
         // train the predictor
-        _predictor.train( _inputPOld, density, _classifierSpikesNew );//_inputOld, _inputNew, _classifierSpikesOld, _classifierSpikesNew );
+        _predictor.train( _inputPOld, classifierSpikesNew, density, regionWidth, regionHeight, columnWidth, columnHeight );//_inputOld, _inputNew, _classifierSpikesOld, _classifierSpikesNew );
+
+/*        if( getName().endsWith( "1" ) ) {
+            HashSet< Integer > n = classifierSpikesNew.indicesMoreThan( 0.5f );
+            ArrayList< Integer > nSort = new ArrayList< Integer >();
+            nSort.addAll( n );
+            Collections.sort( nSort );
+            System.err.print( "clas.. spikes " );
+            for( Integer ii : nSort ) {
+                System.err.print( ii + "," );
+            }
+            System.err.println();
+            System.err.print( "_inputPNew " );
+            HashSet< Integer > n2 = _inputPNew.indicesMoreThan( 0.5f );
+            ArrayList< Integer > nSort2 = new ArrayList< Integer >();
+            nSort2.addAll( n2 );
+            Collections.sort( nSort2 );
+            for( Integer ii : nSort2 ) {
+                System.err.print( ii + "," );
+            }
+            System.err.println();
+            System.err.print( "_inputPOld " );
+            HashSet< Integer > n3 = _inputPOld.indicesMoreThan( 0.5f );
+            ArrayList< Integer > nSort3 = new ArrayList< Integer >();
+            nSort3.addAll( n3 );
+            Collections.sort( nSort3 );
+            for( Integer ii : nSort3 ) {
+                System.err.print( ii + "," );
+            }
+            System.err.println();
+            int g = 0;
+            g++;
+        }*/
 
         // generate a new prediction
-        _predictionOld .copy( _predictionNew );
-        _predictor.predict( _inputPNew, density, _predictionNew );
+        _predictionOld.copy( _predictionNew );
+        _predictor.predict( _inputPNew, _predictionNewUnit, _predictionNew, density, regionWidth, regionHeight, columnWidth, columnHeight );
 //        _predictionNew .copy( _predictor._outputPredicted ); // copy the new prediction
 //        _predictionNewReal.copy( _predictor._outputPredictedReal ); // copy the new prediction
     }
@@ -404,6 +472,7 @@ public class PyramidRegionLayer extends NamedObject {
         // 1. Set FP / FN status of all currently active bits.
         _predictionErrorFP.set( 0.f );
         _predictionErrorFN.set( 0.f );
+
 
         _transient._predictionErrorFP = new HashSet< Integer >();
         _transient._predictionErrorFN = new HashSet< Integer >();

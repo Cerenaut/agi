@@ -160,7 +160,7 @@ public class RegionLayerFactory {
 //
 //        String name = r.getKey( RegionLayerConfig.SUFFIX_ORGANIZER );
 //        GrowingNeuralGasConfig c = new GrowingNeuralGasConfig();
-//        c.copyFrom( _rc._organizerConfig, name );
+//        c.copyFrom( _rc._quiltConfig, name );
 //
 //        GrowingNeuralGas gng = new GrowingNeuralGas( c._name, c._om );
 //        gng.setup( c );
@@ -172,7 +172,7 @@ public class RegionLayerFactory {
 //
 //        String name = r.getKey( RegionLayerConfig.SUFFIX_ORGANIZER );
 //        DynamicSelfOrganizingMapConfig c = new DynamicSelfOrganizingMapConfig();
-//        c.copyFrom( _rc._organizerConfig, name );
+//        c.copyFrom( _rc._quiltConfig, name );
 //
 //        DynamicSelfOrganizingMap dsom = new DynamicSelfOrganizingMap( c._name, c._om );
 //        dsom.setup( c );

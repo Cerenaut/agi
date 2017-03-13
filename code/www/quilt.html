@@ -52,14 +52,16 @@ show flush, show age. -->
          <input type="text" id="sel-cells" style="width:10em;" class="" placeholder="Selected Cells" />
          <input type="button" id="select-text" class="btn btn-sm btn-primary" style="" onclick="Region.selectText()" value="Select"/>
          <input type="button" id="select-winner" class="btn btn-sm btn-primary" style="" onclick="Region.selectWinner()" value="Winner"/>
+         <input type="button" id="select-feedback" class="btn btn-sm btn-primary" style="" onclick="Region.selectFeedback()" value="Feedback"/>
+         <input type="button" id="select-quilt" class="btn btn-sm btn-primary" style="" onclick="Region.selectQuilt()" value="Quilt"/>
          <input type="button" id="select-clear" class="btn btn-sm btn-success" style="" onclick="Region.selectClear()" value="Clear"/>
          <label for="weight">Weight Factor</label> <input type="number" id="weight" name="weight" min="0.0" max="10.0" step="0.01" value="0.1" style="width:3em;" />
          <label for="threshold">Input Threshold</label> <input type="number" id="threshold" name="threshold" min="-1.0" max="1.0" step="0.01" value="0.5" style="width:3em;" />
          <input type="button" id="select-threshold" class="btn btn-sm btn-primary" style="" onclick="Region.selectThreshold()" value="Invert"/>
          <b>Selected input:</b> <input type="text" id="sel-input" style="width:6em;" class="" placeholder="#1" />
          <select id="invert-display" name="invert-display">
-           <option value="weights">Weights</option>
-           <option value="errors" selected>Errors</option>
+           <option value="weights" selected>Weights</option>
+           <option value="errors" >Errors</option>
          </select>
          <br>
          <small><span id="mouse-left"></span> &#9668;&#9644;&#9658; <span id="mouse-right"></span></small>

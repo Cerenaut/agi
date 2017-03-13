@@ -19,15 +19,9 @@
 
 package io.agi.core.alg;
 
-import io.agi.core.ann.unsupervised.GrowingNeuralGas;
-import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
-import io.agi.core.ann.unsupervised.HierarchicalQuilt;
-import io.agi.core.ann.unsupervised.HierarchicalQuiltConfig;
+import io.agi.core.ann.unsupervised.*;
 import io.agi.core.data.Data;
-import io.agi.core.data.Data2d;
 import io.agi.core.data.DataSize;
-import io.agi.core.data.Ranking;
-import io.agi.core.math.Geometry;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 
@@ -43,20 +37,23 @@ import java.util.*;
 public class QuiltedCompetitiveLearning extends NamedObject {
 
     // Data structures
+    public Data _input1;
+    public Data _input2;
     public Data _input;
-    public Data _quilt;
+    public Data _quiltCells;
 
     public QuiltedCompetitiveLearningConfig _config;
-    public HierarchicalQuilt _organizer;
-    public HashMap< Integer, GrowingNeuralGas > _classifiers = new HashMap< Integer, GrowingNeuralGas >();
+    public BinaryTreeQuilt _quilt;
+    public HashMap< Integer, GrowingNeuralGas > _classifiers = new HashMap< Integer, GrowingNeuralGas >(); // apart from in first layer, there will be no commonality of input distributions
+//    public GrowingNeuralGas _classifier;
 
     // computed transient state
-    protected HashSet< Integer > _inputActive;
-    protected HashMap< Integer, ArrayList< Integer > > _classifierActiveInput = new HashMap< Integer, ArrayList< Integer > >();
-    protected HashMap< Integer, TreeMap< Float, ArrayList< Integer > > > _activeInputClassifierRanking = new HashMap< Integer, TreeMap< Float, ArrayList< Integer > > >();
+//    protected HashSet< Integer > _inputActive;
+//    protected HashMap< Integer, ArrayList< Integer > > _classifierActiveInput = new HashMap< Integer, ArrayList< Integer > >();
+//    protected HashMap< Integer, TreeMap< Float, ArrayList< Integer > > > _activeInputClassifierRanking = new HashMap< Integer, TreeMap< Float, ArrayList< Integer > > >();
 
-    public QuiltedCompetitiveLearning(String name, ObjectMap om) {
-        super(name, om);
+    public QuiltedCompetitiveLearning( String name, ObjectMap om ) {
+        super( name, om );
     }
 
     public void setup( QuiltedCompetitiveLearningConfig config ) {
@@ -69,53 +66,62 @@ public class QuiltedCompetitiveLearning extends NamedObject {
 
     protected void setupObjects() {
 
-        String organizerName = getKey(_config.ORGANIZER);
-        HierarchicalQuiltConfig hqc = new HierarchicalQuiltConfig();
-        hqc.copyFrom(_config._organizerConfig, organizerName);
+        String quiltName = getKey( _config.QUILT );
 
-        HierarchicalQuilt hq = new HierarchicalQuilt( hqc._name, hqc._om );
-        hq.setup(hqc);
-        _organizer = hq;
+        BinaryTreeQuiltConfig hqc = new BinaryTreeQuiltConfig();
+        hqc.copyFrom( _config._quiltConfig, quiltName );
 
-        Point organizerSizeCells = _config.getOrganizerSizeCells();
+        BinaryTreeQuilt btq = new BinaryTreeQuilt();
+        btq.setup( hqc );
+        _quilt = btq;
 
-        for( int y = 0; y < organizerSizeCells.y; ++y ) {
-            for( int x = 0; x < organizerSizeCells.x; ++x ) {
+        Point p = _config._quiltConfig.getQuiltSize();
+
+        for( int y = 0; y < p.y; ++y ) {
+            for( int x = 0; x < p.x; ++x ) {
 
                 String name = getKey( _config.CLASSIFIER );
+
                 GrowingNeuralGasConfig gngc = new GrowingNeuralGasConfig();
                 gngc.copyFrom( _config._classifierConfig, name );
 
-                GrowingNeuralGas gng = new GrowingNeuralGas( gngc._name, gngc._om );
-                gng.setup( gngc );
+                GrowingNeuralGas classifier = new GrowingNeuralGas( gngc._name, gngc._om );
+                classifier.setup( gngc );
 
-                int classifierOffset = _config.getOrganizerOffset( x, y );
-                _classifiers.put( classifierOffset, gng );
+                int quiltOffset = _config._quiltConfig.getQuiltOffset( x, y );
+                _classifiers.put( quiltOffset, classifier );
             }
         }
     }
 
     protected void setupData() {
-        Point inputSize = _config.getInputSize();
-        Point regionSize = _config.getQuiltSizeCells();
+        int inputArea = _config._quiltConfig.getInputArea();
+        Point input1Size = _config._quiltConfig.getInput1Size();
+        Point input2Size = _config._quiltConfig.getInput2Size();
+        Point regionSize = _config.getCellsSize();
 
-        DataSize dataSizeInput = DataSize.create(inputSize.x, inputSize.y);
-        DataSize dataSizeQuilt = DataSize.create(regionSize.x, regionSize.y);
+        DataSize dataSizeInput  = DataSize.create( inputArea );
+        DataSize dataSizeInput1 = DataSize.create( input1Size.x, input1Size.y );
+        DataSize dataSizeInput2 = DataSize.create( input2Size.x, input2Size.y );
+        DataSize dataSizeQuilt  = DataSize.create( regionSize.x, regionSize.y );
 
         // external inputs
-        _input = new Data( dataSizeInput );
-        _quilt = new Data( dataSizeQuilt );
+        _input1     = new Data( dataSizeInput1 );
+        _input2     = new Data( dataSizeInput2 );
+        _input      = new Data( dataSizeInput  );
+        _quiltCells = new Data( dataSizeQuilt  );
     }
 
     public void reset() {
-        organizerReset();
+//        organizerReset();
+        _quilt.reset();
 
-        Point p = _config.getOrganizerSizeCells();
+        Point p = _config._quiltConfig.getQuiltSize();
 
         for( int y = 0; y < p.y; ++y ) {
             for( int x = 0; x < p.x; ++x ) {
-                int classifierOffset = _config.getOrganizerOffset( x, y );
-                GrowingNeuralGas classifier = _classifiers.get( classifierOffset );
+                int quiltOffset = _config._quiltConfig.getQuiltOffset( x, y );
+                GrowingNeuralGas classifier = _classifiers.get( quiltOffset );
                 classifier.reset();
             }
         }
@@ -123,20 +129,28 @@ public class QuiltedCompetitiveLearning extends NamedObject {
 
     public void update() {
 
-        _inputActive = _input.indicesMoreThan( 0.f ); // find all the active bits.
+        // combine inputs into one structure
+        int inputOffset = 0;
+        int input1Area = _config._quiltConfig.getInput1Area();
+        int input2Area = _config._quiltConfig.getInput2Area();
+        _input.copyRange( _input1, inputOffset, 0, input1Area );
+        inputOffset = input1Area;
+        _input.copyRange( _input2, inputOffset, 0, input2Area );
+//        _inputActive = _input.indicesMoreThan( 0.f ); // find all the active bits.
 
-        organizerUpdate();
+        _quilt.update(); // train receptive fields (if not fixed)
+
         classifierUpdate();
     }
 
-    /**
+/*    /**
      * Returns the receptive field centroid, in pixels, of the specified classifier.
      *
      * @param xClassifier
      * @param yClassifier
      * @return
      */
-    public float[] getClassifierReceptiveField( int xClassifier, int yClassifier ) {
+/*    public float[] getClassifierReceptiveField( int xClassifier, int yClassifier ) {
 
         int dimensions = 2;
         int inputs = 2;
@@ -166,46 +180,64 @@ public class QuiltedCompetitiveLearning extends NamedObject {
         rf[ 3 ] = rf2_y;
 
         return rf;
-    }
+    }*/
 
     protected void classifierUpdate() {
         // update all the classifiers and thus the set of active cells in the region
-        _quilt.set(0.f); // clear
+        _quiltCells.set( 0.f ); // clear
 
-        Point p = _config.getOrganizerSizeCells();
-
-        for( int y = 0; y < p.y; ++y ) {
-            for( int x = 0; x < p.x; ++x ) {
-
-                // only update active
-                int classifierOffset = _config.getOrganizerOffset( x, y );
-                float mask = _organizer._cellMask._values[ classifierOffset ];
-                if( mask != 1.f ) {
-                    continue; // because the cell is "dead" or inactive. We already set the region output to zero, so no action required.
-                }
-
-                rankClassifierReceptiveFields( x, y );
-            }
-        }
-
-        updateClassifierInput();
+        Point p = _config._quiltConfig.getQuiltSize();
 
         for( int y = 0; y < p.y; ++y ) {
             for( int x = 0; x < p.x; ++x ) {
 
                 // only update active
-                int classifierOffset = _config.getOrganizerOffset( x, y );
-                float mask = _organizer._cellMask._values[ classifierOffset ];
+                int classifierOffset = _config._quiltConfig.getQuiltOffset( x, y );
+                float mask = _quilt._quiltMask._values[ classifierOffset ];
                 if( mask != 1.f ) {
                     continue; // because the cell is "dead" or inactive. We already set the region output to zero, so no action required.
                 }
 
-                updateClassifier( x, y ); // adds to _transient._regionActiveCells and _regionActivity
+////                rankClassifierReceptiveFields( x, y );
+//            }
+//        }
+//
+////        updateClassifierInput();
+//
+//        for( int y = 0; y < p.y; ++y ) {
+//            for( int x = 0; x < p.x; ++x ) {
+
+                // only update active
+//                int classifierOffset = _config.getOrganizerOffset( x, y );
+//                float mask = _organizer._cellMask._values[ classifierOffset ];
+//                if( mask != 1.f ) {
+//                    continue; // because the cell is "dead" or inactive. We already set the region output to zero, so no action required.
+//                }
+
+                Data inputMask = getClassifierMask( x, y );
+                Data input = getClassifierInput( _input, inputMask );
+
+                updateClassifier( input, x, y ); // adds to _transient._regionActiveCells and _regionActivity
             }
         }
     }
 
-    protected void rankClassifierReceptiveFields( int xClassifier, int yClassifier ) {
+    public Data getClassifierMask( int x, int y ) {
+        Data inputMask = _quilt.getInputMask( x, y );
+        return inputMask;
+    }
+
+    public Data getClassifierInput( Data input, Data mask ) {
+        Data maskedInput = new Data( input._dataSize );
+
+        float maskValue = 0f; // if mask == 0, then
+        float maskedValue = 0f; // input --> maskedValue
+
+        maskedInput.mask( input, mask, maskValue, maskedValue );
+
+        return maskedInput;
+    }
+/*    protected void rankClassifierReceptiveFields( int xClassifier, int yClassifier ) {
 
         // find the closest N cols to each active input bit
         float[] rf = getClassifierReceptiveField( xClassifier, yClassifier ); // in pixels units
@@ -217,9 +249,9 @@ public class QuiltedCompetitiveLearning extends NamedObject {
         int inputOffset = 0;
 
         rankClassifierReceptiveField( xClassifier, yClassifier, _input, _inputActive, _activeInputClassifierRanking, xField1, yField1, inputOffset );
-    }
+    }*/
 
-    protected void rankClassifierReceptiveField(
+/*    protected void rankClassifierReceptiveField(
             int xClassifier,
             int yClassifier,
             Data ffInput,
@@ -242,9 +274,9 @@ public class QuiltedCompetitiveLearning extends NamedObject {
             Ranking.add( activeInputRanking, d, classifierOffset ); // add classifier with quality d (distance) to i.
         }
 
-    }
+    }*/
 
-    protected void updateClassifierInput() {
+/*    protected void updateClassifierInput() {
         updateClassifierInput( _activeInputClassifierRanking, _classifierActiveInput );
 //        updateClassifierInput( _transient._activeInputClassifierRankingOld, _transient._classifierActiveInputOld );
     }
@@ -276,76 +308,160 @@ public class QuiltedCompetitiveLearning extends NamedObject {
                 addClassifierActiveInput( classifierOffset, inputBit, classifierActiveInput );
             }
         }
-    }
+    }*/
 
-    protected void updateClassifier( int xClassifier, int yClassifier ) {
+    protected void updateClassifier( Data input, int xClassifier, int yClassifier ) {
 
-        Point classifierOrigin = _config.getQuiltClassifierOrigin(xClassifier, yClassifier);
-        int classifierOffset = _config.getOrganizerOffset(xClassifier, yClassifier);
+        Point cellsOrigin = _config.getCellsOriginOfQuilt( xClassifier, yClassifier );
+        int quiltOffset = _config._quiltConfig.getQuiltOffset( xClassifier, yClassifier );
 
-        ArrayList< Integer > activeInput = getClassifierActiveInput(classifierOffset);//_classifierActiveInput.get( classifierOffset );
+//        ArrayList< Integer > activeInput = getClassifierActiveInput(classifierOffset);//_classifierActiveInput.get( classifierOffset );
+//
+//        Collections.sort( activeInput );
 
-        Collections.sort( activeInput );
-
-        GrowingNeuralGas classifier = _classifiers.get( classifierOffset );
+        GrowingNeuralGas classifier = _classifiers.get( quiltOffset );
+//        GrowingNeuralGas classifier = _classifier;
 
         boolean learn = _config.getLearn();
 
         classifier._c.setLearn( learn );
-        classifier.setSparseUnitInput( activeInput );
-//        classifier._inputValues.copy( _input );
+//        classifier.setSparseUnitInput( activeInput );
+        classifier._inputValues.copy( input );
         classifier.update(); // trains with this sparse input.
 
         // map the best cell into the region/quilt
         int bestColumnCell = classifier.getBestCell();
         int bestColumnCellX = classifier._c.getCellX( bestColumnCell );
         int bestColumnCellY = classifier._c.getCellY( bestColumnCell );
-        int regionX = classifierOrigin.x + bestColumnCellX;
-        int regionY = classifierOrigin.y + bestColumnCellY;
-        int regionOffset = _config.getQuiltOffset(regionX, regionY);
+        int cellX = cellsOrigin.x + bestColumnCellX;
+        int cellY = cellsOrigin.y + bestColumnCellY;
+        int cellOffset = _config.getCellsOffset( cellX, cellY );
 
-        _quilt._values[ regionOffset ] = 1.f;
+        _quiltCells._values[ cellOffset ] = 1.f;
     }
 
-    protected void organizerReset() {
-        // uniform quilt
-        _organizer.reset();
-    }
+    public void invert( Data quiltCells, Data input1, Data input2 ) {
+        Data input      = new Data( _input._dataSize );
+        Data inputCount = new Data( _input._dataSize );
 
-    /**
-     * Trains the receptive fields of the classifiers via a specified number of samples.
-     */
-    protected void organizerUpdate() {
-        // uniform quilt
-        _organizer.update();
-    }
+        Point quiltSize = _config._quiltConfig.getQuiltSize();
+        Point classifierSize = _config._classifierConfig.getSizeCells();
 
-    public static TreeMap< Float, ArrayList< Integer > > getRankingLazy( HashMap< Integer, TreeMap< Float, ArrayList< Integer > > > rankingMap, int i ) {
-        TreeMap< Float, ArrayList< Integer > > ranking = rankingMap.get(i);
-        if( ranking == null ) {
-            ranking = Ranking.CreateRanking();
-            rankingMap.put( i, ranking );
+        int inputArea = _input.getSize();
+
+        for( int qy = 0; qy < quiltSize.y; ++qy ) {
+            for( int qx = 0; qx < quiltSize.x; ++qx ) {
+
+                // only update active
+                int classifierOffset = _config._quiltConfig.getQuiltOffset( qx, qy );
+                float m = _quilt._quiltMask._values[ classifierOffset ];
+                if( m != 1.f ) {
+                    continue; // because the cell is "dead" or inactive. We already set the region output to zero, so no action required.
+                }
+
+                // apply inversion for this classifier
+                int quiltOffset = _config._quiltConfig.getQuiltOffset( qx, qy );
+                GrowingNeuralGas classifier = _classifiers.get( quiltOffset );
+
+                // find the max prediction for this classifier. That will be the cell that's inverted.
+                float cellMaxValue = 0f;
+                int cellMaxX = 0;
+                int cellMaxY = 0;
+
+                Point cellsOrigin = _config.getCellsOriginOfQuilt( qx, qy );
+
+                for( int cy = 0; cy < classifierSize.y; ++cy ) {
+                    for( int cx = 0; cx < classifierSize.x; ++cx ) {
+                        int cellX = cellsOrigin.x + cx;
+                        int cellY = cellsOrigin.y + cy;
+                        int cellOffset = _config.getCellsOffset( cellX, cellY );
+
+                        float quiltValue = quiltCells._values[ cellOffset ];
+
+                        if( quiltValue >= cellMaxValue ) {
+                            cellMaxValue = quiltValue;
+                            cellMaxX = cx;
+                            cellMaxY = cy;
+                        }
+                    }
+                }
+
+                int cellMaxOffset = classifier._c.getCell( cellMaxX, cellMaxY );
+                Data inputOfCell = CompetitiveLearning.invert( cellMaxOffset, _input._dataSize, classifier._cellMask, classifier._cellWeights );
+                Data inputMask = getClassifierMask( qx, qy );
+
+                for( int i = 0; i < inputArea; ++i ) {
+                    float im = inputMask._values[ i ];
+                    if( im > 0f ) {
+                        float temp = inputOfCell._values[ i ];
+                        input._values[ i ] += temp;
+                        inputCount._values[ i ] += 1f;
+                    }
+                }
+
+            }
         }
-        return ranking;
-    }
 
-    public ArrayList< Integer > getClassifierActiveInput( int classifier ) {
-        ArrayList< Integer > activeInput = _classifierActiveInput.get( classifier );
-        if( activeInput == null ) {
-            return new ArrayList< Integer >();
-        }
-        return activeInput;
-    }
+        // normalize the input due to overlapping receptive fields
+        for( int i = 0; i < inputArea; ++i ) {
+            float count = inputCount._values[ i ];
 
-    public static void addClassifierActiveInput( int classifier, int activeInput, HashMap< Integer, ArrayList< Integer > > classifierActiveInput ) {
-        ArrayList< Integer > al = classifierActiveInput.get( classifier );
-        if( al == null ) {
-            al = new ArrayList< Integer >();
-            classifierActiveInput.put( classifier, al );
+            if( count == 0f ) {
+                continue;
+            }
+
+            float inverted = input._values[ i ];
+            float normalized = inverted / count; // mean
+
+            input._values[ i ] = normalized;
         }
 
-        al.add(activeInput);
+        // now split input into the two parts
+        int inputOffset = 0;
+        int input1Area = _config._quiltConfig.getInput1Area();
+        int input2Area = _config._quiltConfig.getInput2Area();
+        input1.copyRange( input, 0, inputOffset, input1Area );
+        inputOffset = input1Area;
+        input2.copyRange( input, 0, inputOffset, input2Area );
     }
+
+
+//    protected void organizerReset() {
+//        // uniform quilt
+//        _organizer.reset();
+//    }
+//
+//    protected void organizerUpdate() {
+//        // uniform quilt
+//        _organizer.update();
+//    }
+
+//    public static TreeMap< Float, ArrayList< Integer > > getRankingLazy( HashMap< Integer, TreeMap< Float, ArrayList< Integer > > > rankingMap, int i ) {
+//        TreeMap< Float, ArrayList< Integer > > ranking = rankingMap.get(i);
+//        if( ranking == null ) {
+//            ranking = Ranking.CreateRanking();
+//            rankingMap.put( i, ranking );
+//        }
+//        return ranking;
+//    }
+//
+//    public ArrayList< Integer > getClassifierActiveInput( int classifier ) {
+//        ArrayList< Integer > activeInput = _classifierActiveInput.get( classifier );
+//        if( activeInput == null ) {
+//            return new ArrayList< Integer >();
+//        }
+//        return activeInput;
+//    }
+//
+//    public static void addClassifierActiveInput( int classifier, int activeInput, HashMap< Integer, ArrayList< Integer > > classifierActiveInput ) {
+//        ArrayList< Integer > al = classifierActiveInput.get( classifier );
+//        if( al == null ) {
+//            al = new ArrayList< Integer >();
+//            classifierActiveInput.put( classifier, al );
+//        }
+//
+//        al.add(activeInput);
+//    }
 
 }
 

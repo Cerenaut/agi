@@ -32,14 +32,19 @@ import java.util.Random;
  */
 public class PyramidRegionLayerConfig extends NetworkConfig {
 
-    public static final String INPUT_C1_WIDTH = "input-c1-width";
-    public static final String INPUT_C1_HEIGHT = "input-c1-height";
-    public static final String INPUT_C2_WIDTH = "input-c2-width";
-    public static final String INPUT_C2_HEIGHT = "input-c2-height";
-    public static final String INPUT_P1_WIDTH = "input-p1-width";
-    public static final String INPUT_P1_HEIGHT = "input-p1-height";
-    public static final String INPUT_P2_WIDTH = "input-p2-width";
-    public static final String INPUT_P2_HEIGHT = "input-p2-height";
+//    public static final String INPUT_C1_WIDTH = "input-c1-width";
+//    public static final String INPUT_C1_HEIGHT = "input-c1-height";
+//    public static final String INPUT_C2_WIDTH = "input-c2-width";
+//    public static final String INPUT_C2_HEIGHT = "input-c2-height";
+//    public static final String INPUT_P1_WIDTH = "input-p1-width";
+//    public static final String INPUT_P1_HEIGHT = "input-p1-height";
+//    public static final String INPUT_P2_WIDTH = "input-p2-width";
+//    public static final String INPUT_P2_HEIGHT = "input-p2-height";
+    public static final String INPUT_C_WIDTH = "input-c-width";
+    public static final String INPUT_C_HEIGHT = "input-c-height";
+    public static final String INPUT_C_COLUMN_WIDTH = "input-c-column-width";
+    public static final String INPUT_C_COLUMN_HEIGHT = "input-c-column-height";
+    public static final String INPUT_P_SIZE = "input-p-size";
 
     public static final String PREDICTOR_LEARNING_RATE = "predictor-learning-rate";
     public static final String PREDICTOR_HIDDEN_CELLS = "predictor-hidden-cells";
@@ -57,7 +62,7 @@ public class PyramidRegionLayerConfig extends NetworkConfig {
     public static final String SUFFIX_CLASSIFIER = "classifier";
     public static final String SUFFIX_PREDICTOR = "predictor";
 
-    public OnlineKSparseAutoencoderConfig _classifierConfig;
+//    public OnlineKSparseAutoencoderConfig _classifierConfig;
 
     public PyramidRegionLayerConfig() {
     }
@@ -66,32 +71,37 @@ public class PyramidRegionLayerConfig extends NetworkConfig {
             ObjectMap om,
             String name,
             Random r,
-            int inputC1Width,
-            int inputC1Height,
-            int inputC2Width,
-            int inputC2Height,
-            int inputP1Width,
-            int inputP1Height,
-            int inputP2Width,
-            int inputP2Height,
-            int widthCells,
-            int heightCells,
-            float classifierLearningRate,
-            float classifierMomentum,
-            float classifierSparsityOutput, // a factor determining the output sparsity
-            int classifierSparsity,// k, the number of active cells each step
-            int classifierAgeMin, // age of disuse where we start to promote cells
-            int classifierAgeMax, // age of disuse where we start to promote cells
-            int classifierAge, // age of disuse where we start to promote cells
-            float classifierAgeTruncationFactor,
-            float classifierAgeScale, // age of disuse where we start to promote cells
-            float classifierRateScale, // age of disuse where we start to promote cells
-            float classifierRateMax, // age of disuse where we start to promote cells
-            float classifierRateLearningRate, // age of disuse where we start to promote cells
-
-            float classifierWeightsStdDev,
-            int classifierBatchCount,
-            int classifierBatchSize,
+            int inputCWidth,
+            int inputCHeight,
+            int inputCColumnWidth,
+            int inputCColumnHeight,
+            int inputPSize,
+//            int inputC1Width,
+//            int inputC1Height,
+//            int inputC2Width,
+//            int inputC2Height,
+//            int inputP1Width,
+//            int inputP1Height,
+//            int inputP2Width,
+//            int inputP2Height,
+//            int widthCells,
+//            int heightCells,
+//            float classifierLearningRate,
+//            float classifierMomentum,
+//            float classifierSparsityOutput, // a factor determining the output sparsity
+//            int classifierSparsity,// k, the number of active cells each step
+//            int classifierAgeMin, // age of disuse where we start to promote cells
+//            int classifierAgeMax, // age of disuse where we start to promote cells
+//            int classifierAge, // age of disuse where we start to promote cells
+//            float classifierAgeTruncationFactor,
+//            float classifierAgeScale, // age of disuse where we start to promote cells
+//            float classifierRateScale, // age of disuse where we start to promote cells
+//            float classifierRateMax, // age of disuse where we start to promote cells
+//            float classifierRateLearningRate, // age of disuse where we start to promote cells
+//
+//            float classifierWeightsStdDev,
+//            int classifierBatchCount,
+//            int classifierBatchSize,
 
             float predictorLearningRate,
             int predictorHiddenCells,
@@ -104,29 +114,33 @@ public class PyramidRegionLayerConfig extends NetworkConfig {
 
         super.setup( om, name, r );
 
-        setInputC1Size( inputC1Width, inputC1Height );
-        setInputC2Size( inputC2Width, inputC2Height );
-        setInputP1Size( inputP1Width, inputP1Height );
-        setInputP2Size( inputP2Width, inputP2Height );
+//        setInputC1Size( inputC1Width, inputC1Height );
+//        setInputC2Size( inputC2Width, inputC2Height );
+//        setInputP1Size( inputP1Width, inputP1Height );
+//        setInputP2Size( inputP2Width, inputP2Height );
+        setInputCSize( inputCWidth, inputCHeight );
+        setInputCColumnSize( inputCColumnWidth, inputCColumnHeight );
+
+        setInputPSize( inputPSize );
 
         OnlineKSparseAutoencoderConfig  classifierConfig = new OnlineKSparseAutoencoderConfig();
 
-        String classifierName = getKey(SUFFIX_CLASSIFIER);
-        int classifierInputs = getInputCArea();
-        boolean classifierUnitOutput = true;
+//        String classifierName = getKey(SUFFIX_CLASSIFIER);
+//        int classifierInputs = getInputCArea();
+//        boolean classifierUnitOutput = true;
+//
+//        classifierConfig.setup(
+//            om, classifierName, _r,
+//            classifierInputs, widthCells, heightCells,
+//            classifierLearningRate, classifierMomentum,
+//            classifierSparsityOutput, classifierSparsity,
+//            classifierAgeMin, classifierAgeMax, classifierAge,
+//            classifierAgeTruncationFactor, classifierAgeScale,
+//            classifierRateScale, classifierRateMax, classifierRateLearningRate,
+//            classifierWeightsStdDev, classifierUnitOutput,
+//            classifierBatchCount, classifierBatchSize );
 
-        classifierConfig.setup(
-            om, classifierName, _r,
-            classifierInputs, widthCells, heightCells,
-            classifierLearningRate, classifierMomentum,
-            classifierSparsityOutput, classifierSparsity,
-            classifierAgeMin, classifierAgeMax, classifierAge,
-            classifierAgeTruncationFactor, classifierAgeScale,
-            classifierRateScale, classifierRateMax, classifierRateLearningRate,
-            classifierWeightsStdDev, classifierUnitOutput,
-            classifierBatchCount, classifierBatchSize );
-
-        _classifierConfig = classifierConfig;
+//        _classifierConfig = classifierConfig;
 
         setPredictorLearningRate(predictorLearningRate);
         setPredictorHiddenCells(predictorHiddenCells);
@@ -240,63 +254,97 @@ public class PyramidRegionLayerConfig extends NetworkConfig {
 //    }
 
     public int getInputCArea() {
-        Point p1 = getInputC1Size();
-        Point p2 = getInputC2Size();
+//        Point p1 = getInputC1Size();
+//        Point p2 = getInputC2Size();
+        Point p = getInputCSize();
 
-        int area = p1.x * p1.y + p2.x * p2.y;
+//        int area = p1.x * p1.y + p2.x * p2.y;
+        int area = p.x * p.y;
         return area;
     }
 
-    public int getInputPArea() {
-        Point p1 = getInputC1Size();
-        Point p2 = getInputC2Size();
+//    public int getInputPArea() {
+//        Point p1 = getInputC1Size();
+//        Point p2 = getInputC2Size();
+//
+//        int area = p1.x * p1.y + p2.x * p2.y;
+//        int area = p.x * p.y;
+//        return area;
+//    }
 
-        int area = p1.x * p1.y + p2.x * p2.y;
-        return area;
-    }
+//    public Point getInputC1Size() {
+//        int inputWidth = _om.getInteger( getKey( INPUT_C1_WIDTH ) );
+//        int inputHeight = _om.getInteger( getKey( INPUT_C1_HEIGHT ) );
+//        return new Point( inputWidth, inputHeight );
+//    }
+//
+//    public Point getInputC2Size() {
+//        int inputWidth = _om.getInteger( getKey( INPUT_C2_WIDTH ) );
+//        int inputHeight = _om.getInteger( getKey( INPUT_C2_HEIGHT ) );
+//        return new Point( inputWidth, inputHeight );
+//    }
+//
+//    public void setInputC1Size( int ffInputWidth, int ffInputHeight ) {
+//        _om.put( getKey( INPUT_C1_WIDTH ), ffInputWidth );
+//        _om.put( getKey( INPUT_C1_HEIGHT ), ffInputHeight );
+//    }
+//
+//    public void setInputC2Size( int ffInputWidth, int ffInputHeight ) {
+//        _om.put( getKey( INPUT_C2_WIDTH ), ffInputWidth );
+//        _om.put( getKey( INPUT_C2_HEIGHT ), ffInputHeight );
+//    }
 
-    public Point getInputC1Size() {
-        int inputWidth = _om.getInteger( getKey( INPUT_C1_WIDTH ) );
-        int inputHeight = _om.getInteger( getKey( INPUT_C1_HEIGHT ) );
+    public Point getInputCSize() {
+        int inputWidth = _om.getInteger( getKey( INPUT_C_WIDTH ) );
+        int inputHeight = _om.getInteger( getKey( INPUT_C_HEIGHT ) );
         return new Point( inputWidth, inputHeight );
     }
 
-    public Point getInputC2Size() {
-        int inputWidth = _om.getInteger( getKey( INPUT_C2_WIDTH ) );
-        int inputHeight = _om.getInteger( getKey( INPUT_C2_HEIGHT ) );
-        return new Point( inputWidth, inputHeight );
+    public void setInputCSize( int ffInputWidth, int ffInputHeight ) {
+        _om.put( getKey( INPUT_C_WIDTH ), ffInputWidth );
+        _om.put( getKey( INPUT_C_HEIGHT ), ffInputHeight );
     }
 
-    public void setInputC1Size( int ffInputWidth, int ffInputHeight ) {
-        _om.put( getKey( INPUT_C1_WIDTH ), ffInputWidth );
-        _om.put( getKey( INPUT_C1_HEIGHT ), ffInputHeight );
+    public void setInputCColumnSize( int inputCColumnWidth, int inputCColumnHeight ) {
+        _om.put( getKey( INPUT_C_COLUMN_WIDTH ), inputCColumnWidth );
+        _om.put( getKey( INPUT_C_COLUMN_HEIGHT ), inputCColumnHeight );
     }
 
-    public void setInputC2Size( int ffInputWidth, int ffInputHeight ) {
-        _om.put( getKey( INPUT_C2_WIDTH ), ffInputWidth );
-        _om.put( getKey( INPUT_C2_HEIGHT ), ffInputHeight );
+    public Point getInputCColumnSize() {
+        int inputColumnWidth = _om.getInteger( getKey( INPUT_C_COLUMN_WIDTH ) );
+        int inputColumnHeight = _om.getInteger( getKey( INPUT_C_COLUMN_HEIGHT ) );
+        return new Point( inputColumnWidth, inputColumnHeight );
     }
 
-    public Point getInputP1Size() {
-        int inputWidth = _om.getInteger( getKey( INPUT_P1_WIDTH ) );
-        int inputHeight = _om.getInteger( getKey( INPUT_P1_HEIGHT ) );
-        return new Point( inputWidth, inputHeight );
+    public int getInputPSize() {
+        int size = _om.getInteger( getKey( INPUT_P_SIZE ) );
+        return size;
     }
 
-    public Point getInputP2Size() {
-        int inputWidth = _om.getInteger( getKey( INPUT_P2_WIDTH ) );
-        int inputHeight = _om.getInteger( getKey( INPUT_P2_HEIGHT ) );
-        return new Point( inputWidth, inputHeight );
+    public void setInputPSize( int size ) {
+        _om.put( getKey( INPUT_P_SIZE ), size );
     }
 
-    public void setInputP1Size( int ffInputWidth, int ffInputHeight ) {
-        _om.put( getKey( INPUT_P1_WIDTH ), ffInputWidth );
-        _om.put( getKey( INPUT_P1_HEIGHT ), ffInputHeight );
-    }
-
-    public void setInputP2Size( int ffInputWidth, int ffInputHeight ) {
-        _om.put( getKey( INPUT_P2_WIDTH ), ffInputWidth );
-        _om.put( getKey( INPUT_P2_HEIGHT ), ffInputHeight );
-    }
+//    public Point getInputP1Size() {
+//        int inputWidth = _om.getInteger( getKey( INPUT_P1_WIDTH ) );
+//        int inputHeight = _om.getInteger( getKey( INPUT_P1_HEIGHT ) );
+//        return new Point( inputWidth, inputHeight );
+//    }
+//
+//    public Point getInputP2Size() {
+//        int inputWidth = _om.getInteger( getKey( INPUT_P2_WIDTH ) );
+//        int inputHeight = _om.getInteger( getKey( INPUT_P2_HEIGHT ) );
+//        return new Point( inputWidth, inputHeight );
+//    }
+//
+//    public void setInputP1Size( int ffInputWidth, int ffInputHeight ) {
+//        _om.put( getKey( INPUT_P1_WIDTH ), ffInputWidth );
+//        _om.put( getKey( INPUT_P1_HEIGHT ), ffInputHeight );
+//    }
+//
+//    public void setInputP2Size( int ffInputWidth, int ffInputHeight ) {
+//        _om.put( getKey( INPUT_P2_WIDTH ), ffInputWidth );
+//        _om.put( getKey( INPUT_P2_HEIGHT ), ffInputHeight );
+//    }
 
 }

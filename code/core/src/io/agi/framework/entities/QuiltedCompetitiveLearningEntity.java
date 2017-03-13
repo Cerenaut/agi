@@ -19,13 +19,11 @@
 
 package io.agi.framework.entities;
 
-import io.agi.core.alg.HierarchicalQuiltedCompetitiveLearning;
-import io.agi.core.alg.HierarchicalQuiltedCompetitiveLearningConfig;
 import io.agi.core.alg.QuiltedCompetitiveLearning;
 import io.agi.core.alg.QuiltedCompetitiveLearningConfig;
 import io.agi.core.ann.unsupervised.GrowingNeuralGas;
 import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
-import io.agi.core.ann.unsupervised.HierarchicalQuiltConfig;
+import io.agi.core.ann.unsupervised.BinaryTreeQuiltConfig;
 import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
 import io.agi.core.data.DataSize;
@@ -45,12 +43,15 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
 
     public static final String ENTITY_TYPE = "quilted-competitive-learning";
 
-    public static final String INPUT = "input";
+    public static final String INPUT_1 = "input-1";
+    public static final String INPUT_2 = "input-2";
+    public static final String INPUT_QUILT = "input-quilt";
+    public static final String OUTPUT_QUILT = "output-quilt";
+    public static final String OUTPUT_1 = "output-1";
+    public static final String OUTPUT_2 = "output-2";
 
-    public static final String QUILT_ACTIVITY = "quilt-activity";
-
-    public static final String ORGANIZER_CELL_MASK = "organizer-cell-mask";
-    public static final String ORGANIZER_CELL_WEIGHTS = "organizer-cell-weights";
+    public static final String QUILT_MASK = "quilt-mask";
+    public static final String QUILT_INPUT_MASK = "quilt-input-mask";
 
     public static final String CLASSIFIER_CELL_ACTIVITY = "classifier-cell-activity";
     public static final String CLASSIFIER_CELL_WEIGHTS = "classifier-cell-weights";
@@ -63,7 +64,7 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
     public static final String CLASSIFIER_EDGES_AGES = "classifier-edges-ages";
     public static final String CLASSIFIER_AGE_SINCE_GROWTH = "classifier-age-since-growth";
 
-    // concatenated data:
+    // concatenated data over all classifiers:
     protected Data _classifierCellActivity;
     protected Data _classifierCellWeights;
     protected Data _classifierCellErrors;
@@ -76,27 +77,33 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
     protected Data _classifierAgeSinceGrowth;
 
     public QuiltedCompetitiveLearningEntity(ObjectMap om, Node n, ModelEntity model) {
-        super(om, n, model);
+        super( om, n, model );
     }
 
     public void getInputAttributes( Collection< String > attributes ) {
-        attributes.add(INPUT);
+        attributes.add( INPUT_1 );
+        attributes.add( INPUT_2 );
+        attributes.add( INPUT_QUILT );
     }
 
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
 
-        attributes.add(QUILT_ACTIVITY);
+        attributes.add( OUTPUT_1 );
+        attributes.add( OUTPUT_2 );
+        attributes.add( OUTPUT_QUILT );
 
-        flags.putFlag(QUILT_ACTIVITY, DataFlags.FLAG_SPARSE_BINARY);
-        flags.putFlag( QUILT_ACTIVITY, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( OUTPUT_1, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( OUTPUT_2, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( OUTPUT_QUILT, DataFlags.FLAG_NODE_CACHE );
 
-        attributes.add( ORGANIZER_CELL_MASK );
+        attributes.add( QUILT_MASK );
+        attributes.add( QUILT_INPUT_MASK );
 
-        flags.putFlag( ORGANIZER_CELL_MASK, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( OUTPUT_QUILT, DataFlags.FLAG_SPARSE_BINARY );
+        flags.putFlag( QUILT_INPUT_MASK, DataFlags.FLAG_SPARSE_BINARY );
 
-        attributes.add( ORGANIZER_CELL_WEIGHTS );
-
-        flags.putFlag( ORGANIZER_CELL_WEIGHTS, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( QUILT_MASK, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( QUILT_INPUT_MASK, DataFlags.FLAG_NODE_CACHE );
 
         attributes.add( CLASSIFIER_CELL_WEIGHTS );
 
@@ -150,53 +157,71 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
 
     protected void doUpdateSelf() {
 
-        // Do nothing unless the input is defined
-        Data input = getData( INPUT );
+        QuiltedCompetitiveLearningEntityConfig config = (QuiltedCompetitiveLearningEntityConfig) _config;
 
-        if( input == null ) {
+        // Do nothing unless the input is defined
+        Data input1 = getData( INPUT_1 );
+        Data input2 = getData( INPUT_2 );
+        Data inputQ = getData( INPUT_QUILT );
+
+        if( ( input1 == null ) || ( input2 == null ) ) {
+            int quiltWidthCells  = config.quiltWidth  * config.classifierWidth;
+            int quiltHeightCells = config.quiltHeight * config.classifierHeight;
+
+            Data quiltCells = new Data( quiltWidthCells, quiltHeightCells );
+
+            setData( OUTPUT_QUILT, quiltCells );
+
+            if( config.reset ) {
+                config.resetDelayed = true;
+            }
+
             return; // can't update yet.
         }
 
         // Get all the parameters:
-        String regionLayerName = getName();
+        String entityName = getName();
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Test parameters
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Feedforward size
-        Point inputSize = Data2d.getSize( input );
+        Point input1Size = Data2d.getSize( input1 );
+        Point input2Size = Data2d.getSize( input2 );
 
-        int inputWidth = inputSize.x;
-        int inputHeight = inputSize.y;
-        int inputArea = inputWidth * inputHeight;
+        int input1Width = input1Size.x;
+        int input2Width = input2Size.x;
+        int input1Height = input1Size.y;
+        int input2Height = input2Size.y;
+        int input1Area = input1Width * input1Height;
+        int input2Area = input2Width * input2Height;
+        int inputArea = input1Area + input2Area;
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Algorithm specific parameters
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Region size
-        QuiltedCompetitiveLearningEntityConfig config = ( QuiltedCompetitiveLearningEntityConfig ) _config;
-
-        // Build the algorithm
-        //RandomInstance.setSeed(randomSeed); // make the tests repeatable
         ObjectMap om = ObjectMap.GetInstance();
 
-        HierarchicalQuiltConfig organizerConfig = new HierarchicalQuiltConfig();
+        BinaryTreeQuiltConfig quiltConfig = new BinaryTreeQuiltConfig();
         GrowingNeuralGasConfig classifierConfig = new GrowingNeuralGasConfig();
 
-        String organizerName = getKey( QuiltedCompetitiveLearningConfig.ORGANIZER );
+        String organizerName = getKey( QuiltedCompetitiveLearningConfig.QUILT );
         String classifierName = getKey( QuiltedCompetitiveLearningConfig.CLASSIFIER );
 
-        organizerConfig.setup(
+        quiltConfig.setup(
             om, organizerName, _r,
-            inputArea,
-            config.quiltWidthColumns, config.quiltHeightColumns,
-            config.intervalsX1, config.intervalsY1,
-            config.intervalsX2, config.intervalsY2 );
+            config.quiltWidth, config.quiltHeight,
+            input1Width, input1Height,
+            input2Width, input2Height,
+            config.field1StrideX, config.field1StrideY,
+            config.field2StrideX, config.field2StrideY,
+            config.field1SizeX, config.field1SizeY,
+            config.field2SizeX, config.field2SizeY );
 
         classifierConfig.setup(
             om, classifierName, _r,
             inputArea,
-            config.columnWidthCells, config.columnHeightCells,
+            config.classifierWidth, config.classifierHeight,
             config.classifierLearningRate,
             config.classifierLearningRateNeighbours,
             config.classifierNoiseMagnitude,
@@ -207,39 +232,50 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
             config.classifierGrowthInterval );
 
         QuiltedCompetitiveLearningConfig qclc = new QuiltedCompetitiveLearningConfig();
-        qclc.setup(
-            om, regionLayerName, _r,
-            organizerConfig,
-            classifierConfig,
-            inputWidth, inputHeight,
-            config.classifiersPerBit );
+        qclc.setup( om, entityName, _r, quiltConfig, classifierConfig );
 
-        QuiltedCompetitiveLearning qcl = new QuiltedCompetitiveLearning( regionLayerName, om );
+        QuiltedCompetitiveLearning qcl = new QuiltedCompetitiveLearning( entityName, om );
         qcl.setup( qclc );
 
         // Load data, overwriting the default setup.
+        qcl._input1 = input1;
+        qcl._input2 = input2;
+
         copyDataFromPersistence( qcl );
 
-        // Update the region-layer, including optional reset and learning on/off switch
-        if( config.reset ) {
+        // Update the classification (forward) output, including optional reset and learning on/off switch
+        if( config.reset || config.resetDelayed ) {
             qcl.reset();
+            config.resetDelayed = false;
         }
 
         qcl._config.setLearn( config.learn );
         qcl.update();
 
+        // update the inverted output
+        Data output1 = new Data( input1._dataSize );
+        Data output2 = new Data( input2._dataSize );
+
+        if( inputQ == null ) {
+            inputQ = new Data( qcl._quiltCells._dataSize ); // produce an output even if not given input
+        }
+
+        qcl.invert( inputQ, output1, output2 );
+
+        setData( OUTPUT_1, output1 );
+        setData( OUTPUT_2, output2 );
+
         // Save data
         copyDataToPersistence( qcl );
+
+        // Save config changes - eg stats about the entity
     }
 
     protected void copyDataFromPersistence( QuiltedCompetitiveLearning hqcl ) {
 
-        hqcl._input = getData( INPUT );
-        hqcl._quilt = getDataLazyResize( QUILT_ACTIVITY, hqcl._quilt._dataSize );
-
         Point columnSizeCells = hqcl._config._classifierConfig.getSizeCells();
         int columnInputs = hqcl._config._classifierConfig.getNbrInputs();
-        int classifiers = hqcl._config.getOrganizerAreaCells();
+        int classifiers = hqcl._config._quiltConfig.getQuiltArea();
         int areaCells = columnSizeCells.x * columnSizeCells.y;
 
         DataSize dataSizeWeights = DataSize.create( columnSizeCells.x, columnSizeCells.y, columnInputs );
@@ -260,37 +296,14 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
         _classifierEdgesAges      = getDataLazyResize( CLASSIFIER_EDGES_AGES       , dataSizeEdgesAll );
         _classifierAgeSinceGrowth = getDataLazyResize( CLASSIFIER_AGE_SINCE_GROWTH , DataSize.create( classifiers ) );
 
-/*        for( int c = 0; c < classifiers; ++c ) {
-            GrowingNeuralGas classifier = hqcl._classifiers.get( c );
-
-            int weightsSize = dataSizeWeights.getVolume();
-            int cellsSize = dataSizeCells.getVolume();
-            int edgesSize = dataSizeEdges.getVolume();
-
-            int weightsOffset = weightsSize * c;
-            int cellsOffset = cellsSize * c;
-            int edgesOffset = edgesSize * c;
-
-            // .copyRange( that, offsetThis, offsetThat, range );
-            classifier._cellWeights   .copyRange(_classifierCellWeights, 0, weightsOffset, weightsSize);
-            classifier._cellErrors    .copyRange(_classifierCellErrors, 0, cellsOffset, cellsSize);
-            classifier._cellActivity  .copyRange(_classifierCellActivity, 0, cellsOffset, cellsSize);
-            classifier._cellMask      .copyRange( _classifierCellMask      , 0, cellsOffset, cellsSize );
-            classifier._cellStress    .copyRange( _classifierCellStress    , 0, cellsOffset, cellsSize );
-            classifier._cellAges      .copyRange( _classifierCellAges      , 0, cellsOffset, cellsSize );
-            classifier._edges         .copyRange( _classifierEdges         , 0, edgesOffset, edgesSize );
-            classifier._edgesAges     .copyRange( _classifierEdgesAges     , 0, edgesOffset, edgesSize );
-            classifier._ageSinceGrowth.copyRange( _classifierAgeSinceGrowth, 0, c, 1 );
-        }*/
-
-        Point organizerSize = hqcl._config.getOrganizerSizeCells();
-        Point classifierSize = hqcl._config.getClassifierSizeCells();
+        Point quiltSize = hqcl._config._quiltConfig.getQuiltSize();
+        Point classifierSize = hqcl._config._classifierConfig.getSizeCells();
 
         int weightsSize = hqcl._input.getSize();
 
-        for( int yCol = 0; yCol < organizerSize.y; ++yCol ) {
-            for( int xCol = 0; xCol < organizerSize.x; ++xCol ) {
-                int classifierOffset = hqcl._config.getOrganizerOffset( xCol, yCol );
+        for( int yCol = 0; yCol < quiltSize.y; ++yCol ) {
+            for( int xCol = 0; xCol < quiltSize.x; ++xCol ) {
+                int classifierOffset = hqcl._config._quiltConfig.getQuiltOffset( xCol, yCol );
                 GrowingNeuralGas classifier = hqcl._classifiers.get( classifierOffset );
 
                 for( int yCell = 0; yCell < classifierSize.y; ++yCell ) {
@@ -298,14 +311,14 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
 
                         int xQuilt = xCol * classifierSize.x + xCell;
                         int yQuilt = yCol * classifierSize.y + yCell;
-                        int wQuilt = classifierSize.x * organizerSize.x;
+                        int wQuilt = classifierSize.x * quiltSize.x;
 
                         int cellOffsetQuilt = yQuilt * wQuilt + xQuilt;
                         int cellOffsetCol = yCell * classifierSize.x + xCell;
                         int weightsOffsetQuilt = cellOffsetQuilt * weightsSize;
                         int weightsOffsetCol = cellOffsetCol * weightsSize;
 
-                        classifier._cellWeights   .copyRange( _classifierCellWeights, weightsOffsetCol, weightsOffsetQuilt, weightsSize);
+                        classifier._cellWeights.copyRange( _classifierCellWeights, weightsOffsetCol, weightsOffsetQuilt, weightsSize );
 
                         classifier._cellErrors._values[ cellOffsetCol ] = _classifierCellErrors._values[ cellOffsetQuilt ];
                         classifier._cellActivity._values[ cellOffsetCol ] = _classifierCellActivity._values[ cellOffsetQuilt ];
@@ -330,20 +343,20 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
 
     protected void copyDataToPersistence( QuiltedCompetitiveLearning hqcl ) {
 
-        setData( QUILT_ACTIVITY, hqcl._quilt );
+        setData( OUTPUT_QUILT, hqcl._quiltCells );
 
-        setData( ORGANIZER_CELL_MASK, hqcl._organizer._cellMask );
-        setData( ORGANIZER_CELL_WEIGHTS, hqcl._organizer._cellWeights );
+        setData( QUILT_MASK, hqcl._quilt._quiltMask );
+        setData( QUILT_INPUT_MASK, hqcl._quilt._quiltInputMask );
 
         // 1. pack the data:
-        Point organizerSize = hqcl._config.getOrganizerSizeCells();
-        Point classifierSize = hqcl._config.getClassifierSizeCells();
+        Point quiltSize = hqcl._config._quiltConfig.getQuiltSize();
+        Point classifierSize = hqcl._config._classifierConfig.getSizeCells();
 
         int weightsSize = hqcl._input.getSize();
 
-        for( int yCol = 0; yCol < organizerSize.y; ++yCol ) {
-            for( int xCol = 0; xCol < organizerSize.x; ++xCol ) {
-                int classifierOffset = hqcl._config.getOrganizerOffset( xCol, yCol );
+        for( int yCol = 0; yCol < quiltSize.y; ++yCol ) {
+            for( int xCol = 0; xCol < quiltSize.x; ++xCol ) {
+                int classifierOffset = hqcl._config._quiltConfig.getQuiltOffset( xCol, yCol );
                 GrowingNeuralGas classifier = hqcl._classifiers.get( classifierOffset );
 
                 for( int yCell = 0; yCell < classifierSize.y; ++yCell ) {
@@ -351,14 +364,14 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
 
                         int xQuilt = xCol * classifierSize.x + xCell;
                         int yQuilt = yCol * classifierSize.y + yCell;
-                        int wQuilt = classifierSize.x * organizerSize.x;
+                        int wQuilt = classifierSize.x * quiltSize.x;
 
                         int cellOffsetQuilt = yQuilt * wQuilt + xQuilt;
                         int cellOffsetCol = yCell * classifierSize.x + xCell;
                         int weightsOffsetQuilt = cellOffsetQuilt * weightsSize;
                         int weightsOffsetCol = cellOffsetCol * weightsSize;
 
-                        _classifierCellWeights.copyRange(classifier._cellWeights, weightsOffsetQuilt, weightsOffsetCol, weightsSize );
+                        _classifierCellWeights.copyRange( classifier._cellWeights, weightsOffsetQuilt, weightsOffsetCol, weightsSize );
 
                         _classifierCellErrors._values[ cellOffsetQuilt ] = classifier._cellErrors._values[ cellOffsetCol ];
                         _classifierCellActivity._values[ cellOffsetQuilt ] = classifier._cellActivity._values[ cellOffsetCol ];
@@ -378,30 +391,6 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
                 _classifierEdgesAges     .copyRange( classifier._edgesAges, edgesOffset, 0, edgesSize );
             }
         }
-
-/*        int classifiers = hqcl._config.getOrganizerAreaCells();
-        for( int c = 0; c < classifiers; ++c ) {
-            GrowingNeuralGas classifier = hqcl._classifiers.get( c );
-
-            int weightsSize = classifier._cellWeights.getSize();
-            int cellsSize = classifier._cellErrors.getSize();
-            int edgesSize = classifier._edges.getSize();
-
-            int weightsOffset = weightsSize * c;
-            int cellsOffset = cellsSize * c;
-            int edgesOffset = edgesSize * c;
-
-            // .copyRange( that, offsetThis, offsetThat, range );
-            _classifierCellWeights   .copyRange( classifier._cellWeights   , weightsOffset, 0, weightsSize );
-            _classifierCellErrors    .copyRange(classifier._cellErrors, cellsOffset, 0, cellsSize);
-            _classifierCellActivity  .copyRange(classifier._cellActivity, cellsOffset, 0, cellsSize);
-            _classifierCellMask      .copyRange( classifier._cellMask      , cellsOffset, 0, cellsSize );
-            _classifierCellStress    .copyRange( classifier._cellStress    , cellsOffset, 0, cellsSize );
-            _classifierCellAges      .copyRange( classifier._cellAges      , cellsOffset, 0, cellsSize );
-            _classifierEdges         .copyRange( classifier._edges         , edgesOffset, 0, edgesSize );
-            _classifierEdgesAges     .copyRange( classifier._edgesAges     , edgesOffset, 0, edgesSize );
-            _classifierAgeSinceGrowth.copyRange( classifier._ageSinceGrowth, c, 0, 1 );
-        }*/
 
         // 2. Store the packed data.
         String prefix = "";//hqcl._config.CLASSIFIER;

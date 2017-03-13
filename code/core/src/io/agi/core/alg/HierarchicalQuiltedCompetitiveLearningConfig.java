@@ -21,8 +21,7 @@ package io.agi.core.alg;
 
 import io.agi.core.ann.NetworkConfig;
 import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
-import io.agi.core.ann.unsupervised.HierarchicalQuiltConfig;
-import io.agi.core.ann.unsupervised.ParameterLessSelfOrganizingMapConfig;
+import io.agi.core.ann.unsupervised.BinaryTreeQuiltConfig;
 import io.agi.core.data.Data2d;
 import io.agi.core.orm.ObjectMap;
 
@@ -32,7 +31,7 @@ import java.util.Random;
 /**
  * Created by dave on 22/10/16.
  */
-public class HierarchicalQuiltedCompetitiveLearningConfig extends NetworkConfig {
+public class HierarchicalQuiltedCompetitiveLearningConfig {}/*extends NetworkConfig {
 
     public static final String FF_INPUT_1_WIDTH = "ff-input-1-width";
     public static final String FF_INPUT_1_HEIGHT = "ff-input-1-height";
@@ -52,7 +51,7 @@ public class HierarchicalQuiltedCompetitiveLearningConfig extends NetworkConfig 
     public static final String CLASSIFIERS_PER_BIT_1 = "classifiers-per-bit-1";
     public static final String CLASSIFIERS_PER_BIT_2 = "classifiers-per-bit-2";
 
-    public HierarchicalQuiltConfig _organizerConfig;
+    public BinaryTreeQuiltConfig _organizerConfig;
     public GrowingNeuralGasConfig _classifierConfig;
 
     public HierarchicalQuiltedCompetitiveLearningConfig() {
@@ -62,7 +61,7 @@ public class HierarchicalQuiltedCompetitiveLearningConfig extends NetworkConfig 
             ObjectMap om,
             String name,
             Random r,
-            HierarchicalQuiltConfig organizerConfig,
+            BinaryTreeQuiltConfig organizerConfig,
             GrowingNeuralGasConfig classifierConfig,
             int ffInput1Width,
             int ffInput1Height,
@@ -203,14 +202,14 @@ public class HierarchicalQuiltedCompetitiveLearningConfig extends NetworkConfig 
     }
 
     public Point getOrganizerSizeCells() {
-        int width = _organizerConfig.getWidthCells();
-        int height = _organizerConfig.getHeightCells();
+        int width = _organizerConfig.getQuiltWidth();//getWidthCells();
+        int height = _organizerConfig.getQuiltHeight();//.getHeightCells();
         return new Point( width, height );
     }
 
     public int getOrganizerAreaCells() {
-        int width = _organizerConfig.getWidthCells();
-        int height = _organizerConfig.getHeightCells();
+        int width = _organizerConfig.getQuiltWidth();//getWidthCells();
+        int height = _organizerConfig.getQuiltHeight();//.getHeightCells();
         return ( width * height );
     }
 
@@ -266,7 +265,7 @@ public class HierarchicalQuiltedCompetitiveLearningConfig extends NetworkConfig 
      * @param xRegion
      * @param yRegion
      * @return
-     */
+     * /
     public Point getOrganizerCoordinateGivenRegionCoordinate( int xRegion, int yRegion ) {
         Point columnSize = getClassifierSizeCells();
         int xClassifier = xRegion / columnSize.x;
@@ -280,7 +279,7 @@ public class HierarchicalQuiltedCompetitiveLearningConfig extends NetworkConfig 
      * @param xRegion
      * @param yRegion
      * @return
-     */
+     * /
     public Point getColumnCoordinateGivenRegionCoordinate( int xRegion, int yRegion ) {
         Point columnSize = getClassifierSizeCells();
 
@@ -339,4 +338,4 @@ public class HierarchicalQuiltedCompetitiveLearningConfig extends NetworkConfig 
         return regionSize;
     }
 
-}
+}*/

@@ -22,6 +22,7 @@ package io.agi.core.ann.unsupervised;
 import io.agi.core.ann.NetworkConfig;
 import io.agi.core.orm.ObjectMap;
 
+import java.awt.*;
 import java.util.Random;
 
 /**
@@ -82,6 +83,18 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
         setStressSplitLearningRate( c.getStressSplitLearningRate() );
         setStressThreshold( c.getStressThreshold() );
         setGrowthInterval( c.getGrowthInterval() );
+    }
+
+    public Point getSizeCells() {
+        int width = getWidthCells();
+        int height = getHeightCells();
+        return new Point( width, height );
+    }
+
+    public int getAreaCells() {
+        int width = getWidthCells();
+        int height = getHeightCells();
+        return width * height;
     }
 
     public void setLearningRate( float r ) {

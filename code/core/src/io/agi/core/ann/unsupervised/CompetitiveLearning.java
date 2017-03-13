@@ -19,6 +19,8 @@
 
 package io.agi.core.ann.unsupervised;
 
+import io.agi.core.data.Data;
+import io.agi.core.data.DataSize;
 import io.agi.core.data.FloatArray;
 import io.agi.core.data.Ranking;
 import io.agi.core.orm.Callback;
@@ -64,6 +66,21 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
         }
 
         return cellList;
+    }
+
+    public static Data invert( int cell, DataSize inputSize, Data cellMask, Data cellWeights ) {
+        Data inputValues = new Data( inputSize );
+
+        float m = cellMask._values[ cell ];
+        if( m > 0 ) {
+            int inputs = inputValues.getSize();
+            for( int i = 0; i < inputs; ++i ) { // for each input
+                float weight = cellWeights._values[ cell * inputs + i ]; // error from ci to cell
+                inputValues._values[ i ] = weight; // error from ci to cell
+            }
+        }
+
+        return inputValues;
     }
 
     public static void sumSqError(

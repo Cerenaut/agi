@@ -42,7 +42,7 @@ var Region = {
   selectedInput1 : [  ],
   selectedInput2 : [  ],
 
-  regionSuffixes : [ "-input-c1", "-input-c2", "-input-p1", "-input-p2", "-output", "-classifier-weights", "-classifier-biases-2", "-classifier-spikes-top-ka",  "-prediction-error-fp", "-prediction-error-fn", "-prediction-old", "-prediction-new", "-output-spikes-new", "-output-spikes-old" ],
+  regionSuffixes : [ "-input-c", "-input-p", "-input-p-old", "-input-p-new", "-prediction-error-fp", "-prediction-error-fn", "-prediction-old", "-prediction-new", "-prediction-new-unit", "-output-spikes-new", "-output-spikes-old", "-output" ],
 
   regionSuffixIdx : 0,
   dataMap : {
@@ -102,7 +102,7 @@ var Region = {
   },
 
   selectActive : function() {
-    Region.selectCells( "-classifier-spikes-top-ka" );
+    Region.selectCells( "-input-c" );
   },
   selectPredictionOld : function() {
     Region.selectCells( "-prediction-old" );
@@ -364,13 +364,13 @@ var Region = {
     var y0 = 0;
 
     DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, output, outputSpikesNew, null );
-    DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#00ffff" );
+    DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#ff00ff" );
 
   },
 
   repaintMiddle : function() {
 
-    var dataSpikesNew = Region.findData( "-classifier-spikes-top-ka" );
+    var dataSpikesNew = Region.findData( "-input-c" );
     if( !dataSpikesNew ) {
       return; // can't paint
     }
@@ -380,7 +380,8 @@ var Region = {
       return; // can't paint
     }
 
-    var dataPredictionNew = Region.findData( "-prediction-new" );
+//    var dataPredictionNew = Region.findData( "-prediction-new" );
+    var dataPredictionNew = Region.findData( "-prediction-new-unit" );
     if( !dataPredictionNew ) {
       return; // can't paint
     }
@@ -396,14 +397,36 @@ var Region = {
 
     // top panel: spikes-new + pred-old
     DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataSpikesNew, dataPredictionOld, null );//, null );
-    DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#00ffff" );
+    DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#ff00ff" );
 
     y0 += ( Region.pixelsPerBit * canvasDataSize.h ); 
     y0 += ( Region.pixelsPerGap );
 
     // low panel: spikes-new and spikes-int
-    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataSpikesNew, dataPredictionNew, null );//, null );
+    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataPredictionNew, dataPredictionNew, null );//, null );
     DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#00ffff" );
+  },
+
+  repaintRight : function() {
+
+    var dataSpikesNew = Region.findData( "-input-c" );
+    if( !dataSpikesNew ) {
+      return; // can't paint
+    }
+
+    var panels = 1;
+    var canvasDataSize = Region.resizeCanvas( "#right-canvas", dataSpikesNew, 1, panels );
+    if( !canvasDataSize ) {
+      return; // can't paint
+    }
+
+    var x0 = 0;
+    var y0 = 0;
+
+    // top panel: spikes-new + pred-old
+    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, dataSpikesNew, dataSpikesNew, dataSpikesNew );//, null );
+    DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#ff00ff" );
+
   },
 
   resizeCanvas : function( canvasSelector, data, repeatX, repeatY ) {
@@ -435,7 +458,7 @@ var Region = {
     return size;
   },
 
-  repaintRight : function() {
+  repaintRight2 : function() {
     var c = $( "#right-canvas" )[ 0 ];
 
     var data1 = Region.findData( "-input-c1" );

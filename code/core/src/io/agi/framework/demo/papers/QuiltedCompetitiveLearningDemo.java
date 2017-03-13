@@ -95,23 +95,26 @@ public class QuiltedCompetitiveLearningDemo {
 
         // Define some entities
         String experimentName           = Framework.GetEntityName( "experiment" );
+        String constantName             = Framework.GetEntityName( "constant" );
         String imageLabelName           = Framework.GetEntityName( "image-class" );
         String quiltName                = Framework.GetEntityName( "quilt" );
         String vectorSeriesName         = Framework.GetEntityName( "feature-series" );
         String valueSeriesName          = Framework.GetEntityName( "label-series" );
 
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
-        Framework.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), experimentName );
+        Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), experimentName ); // ok all input to the regions is ready
+        Framework.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), constantName );
         Framework.CreateEntity( quiltName, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), imageLabelName );
         Framework.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), quiltName ); // 2nd, class region updates after first to get its feedback
         Framework.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), vectorSeriesName ); // 2nd, class region updates after first to get its feedback
 
         // Connect the entities' data
         // a) Image to image region, and decode
-        Framework.SetDataReference( quiltName, QuiltedCompetitiveLearningEntity.INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
+        Framework.SetDataReference( quiltName, QuiltedCompetitiveLearningEntity.INPUT_1, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
+        Framework.SetDataReference( quiltName, QuiltedCompetitiveLearningEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
 
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList< AbstractPair< String, String > >();
-        featureDatas.add( new AbstractPair< String, String >( quiltName, QuiltedCompetitiveLearningEntity.QUILT_ACTIVITY ) );
+        featureDatas.add( new AbstractPair< String, String >( quiltName, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT ) );
         Framework.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
 
         // Experiment config
@@ -126,6 +129,7 @@ public class QuiltedCompetitiveLearningDemo {
 
         // cache all data for speed, when enabled
         Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
+        Framework.SetConfig( constantName, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( imageLabelName, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( quiltName, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( vectorSeriesName, "cache", String.valueOf( cacheAllData ) );
@@ -159,26 +163,50 @@ public class QuiltedCompetitiveLearningDemo {
         float stressThreshold = 0.01f; // when it ceases to split
 
         // 25 * 49 = 1225
-        int columnWidthCells = 5;  //
+        int columnWidthCells = 5;  // 25 cells per col
         int columnHeightCells = 5;
 
         int quiltWidthColumns = 7;
         int quiltHeightColumns = 7; // 49 cols
 
-        int classifiersPerBit = 4;
+        // TODO add a field offset
+        // Field 2: 28x28
+        //     00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 |
+        //  F1 -- -- -- -- -- --                                                                   |
+        //  F2             -- -- -- -- -- --                                                       |
+        //  F3                         -- -- -- -- -- --                                           |
+        //  F4                                     -- -- -- -- -- --                               |
+        //  F5                                                 -- -- -- -- -- --                   |
+        //  F6                                                             -- -- -- -- -- --       |
+        //  F7                                                                         -- -- -- -- -- --
+        int field1SizeX = 6;
+        int field1SizeY = 6;
 
-        Framework.SetConfig( quiltName, "columnWidthCells", String.valueOf( columnWidthCells ) );
-        Framework.SetConfig( quiltName, "columnHeightCells", String.valueOf( columnHeightCells ) );
+        int field1StrideX = 4;
+        int field1StrideY = 4;
 
-        Framework.SetConfig( quiltName, "quiltWidthColumns", String.valueOf( quiltWidthColumns ) );
-        Framework.SetConfig( quiltName, "quiltHeightColumns", String.valueOf( quiltHeightColumns ) );
+        // Field 2: 1x1
+        int field2StrideX = 0;
+        int field2StrideY = 0;
 
-        Framework.SetConfig( quiltName, "intervalsX1", String.valueOf( quiltWidthColumns ) );
-        Framework.SetConfig( quiltName, "intervalsY1", String.valueOf( quiltHeightColumns ) );
-        Framework.SetConfig( quiltName, "intervalsX2", String.valueOf( 1 ) );
-        Framework.SetConfig( quiltName, "intervalsY2", String.valueOf( 1 ) );
+        int field2SizeX = 1;
+        int field2SizeY = 1;
 
-        Framework.SetConfig( quiltName, "classifiersPerBit", String.valueOf( classifiersPerBit ) );
+        Framework.SetConfig( quiltName, "quiltWidth", String.valueOf( quiltWidthColumns ) );
+        Framework.SetConfig( quiltName, "quiltHeight", String.valueOf( quiltHeightColumns ) );
+
+        Framework.SetConfig( quiltName, "classifierWidth", String.valueOf( columnWidthCells ) );
+        Framework.SetConfig( quiltName, "classifierHeight", String.valueOf( columnHeightCells ) );
+
+        Framework.SetConfig( quiltName, "field1StrideX", String.valueOf( field1StrideX ) );
+        Framework.SetConfig( quiltName, "field1StrideY", String.valueOf( field1StrideY ) );
+        Framework.SetConfig( quiltName, "field1SizeX", String.valueOf( field1SizeX ) );
+        Framework.SetConfig( quiltName, "field1SizeY", String.valueOf( field1SizeY ) );
+
+        Framework.SetConfig( quiltName, "field2StrideX", String.valueOf( field2StrideX ) );
+        Framework.SetConfig( quiltName, "field2StrideY", String.valueOf( field2StrideY ) );
+        Framework.SetConfig( quiltName, "field2SizeX", String.valueOf( field2SizeX ) );
+        Framework.SetConfig( quiltName, "field2SizeY", String.valueOf( field2SizeY ) );
 
         Framework.SetConfig( quiltName, "classifierLearningRate", String.valueOf( learningRate ) );
         Framework.SetConfig( quiltName, "classifierLearningRateNeighbours", String.valueOf( learningRateNeighbours ) );

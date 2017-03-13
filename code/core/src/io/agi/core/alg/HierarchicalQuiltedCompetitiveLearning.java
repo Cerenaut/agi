@@ -37,7 +37,7 @@ import java.util.*;
  *
  * Created by dave on 22/10/16.
  */
-public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
+public class HierarchicalQuiltedCompetitiveLearning {} /*extends NamedObject {
 
     // Data structures
     public Data _ffInput1;
@@ -58,7 +58,7 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
     public HierarchicalQuiltedCompetitiveLearningConfig _config;
     public HierarchicalQuiltedCompetitiveLearningTransient _transient;
 
-    public HierarchicalQuilt _organizer;
+    public BinaryTreeQuilt _organizer;
     public HashMap< Integer, GrowingNeuralGas > _classifiers = new HashMap< Integer, GrowingNeuralGas >();
 
     public HierarchicalQuiltedCompetitiveLearning( String name, ObjectMap om ) {
@@ -76,12 +76,12 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
     protected void setupObjects() {
 
         String organizerName = getKey( _config.ORGANIZER );
-        HierarchicalQuiltConfig hqc = new HierarchicalQuiltConfig();
+        BinaryTreeQuiltConfig hqc = new BinaryTreeQuiltConfig();
         hqc.copyFrom( _config._organizerConfig, organizerName );
 
-        HierarchicalQuilt hq = new HierarchicalQuilt( hqc._name, hqc._om );
-        hq.setup( hqc );
-        _organizer = hq;
+//        BinaryTreeQuilt hq = new BinaryTreeQuilt( hqc._name, hqc._om );
+//        hq.setup( hqc );
+//        _organizer = hq;
 
         Point organizerSizeCells = _config.getOrganizerSizeCells();
 
@@ -619,7 +619,7 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
     /**
      * Use Oja's rule to associate the winning cells in each classifier with each other.
      * Then, in future we can use these associations to help to improve an ambiguous input to a particular
-     */
+     * /
     protected void predictionLearn() {
 
         int cells = _config.getRegionAreaCells();
@@ -687,7 +687,7 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
      * @param xClassifier
      * @param yClassifier
      * @return
-     */
+     * /
     public float[] getClassifierReceptiveField( int xClassifier, int yClassifier ) {
 
         int dimensions = 2;
@@ -695,27 +695,27 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
         int elements = dimensions * inputs;
         float[] rf = new float[ elements ];
 
-        int classifierOffset = _config.getOrganizerOffset( xClassifier, yClassifier );
-        int organizerOffset = classifierOffset * elements;//RegionLayerConfig.RECEPTIVE_FIELD_DIMENSIONS;
-
-        Point inputSize1 = Data2d.getSize( _ffInput1 );
-        Point inputSize2 = Data2d.getSize( _ffInput2 );
-
-        float rf1_x = _organizer._cellWeights._values[ organizerOffset + 0 ];
-        float rf1_y = _organizer._cellWeights._values[ organizerOffset + 1 ];
-        float rf2_x = _organizer._cellWeights._values[ organizerOffset + 2 ];
-        float rf2_y = _organizer._cellWeights._values[ organizerOffset + 3 ];
-
-        rf1_x *= inputSize1.x;
-        rf1_y *= inputSize1.y;
-
-        rf2_x *= inputSize2.x;
-        rf2_y *= inputSize2.y;
-
-        rf[ 0 ] = rf1_x; // now in pixel coordinates, whereas it is trained as unit coordinates
-        rf[ 1 ] = rf1_y;
-        rf[ 2 ] = rf2_x; // now in pixel coordinates, whereas it is trained as unit coordinates
-        rf[ 3 ] = rf2_y;
+//        int classifierOffset = _config.getOrganizerOffset( xClassifier, yClassifier );
+//        int organizerOffset = classifierOffset * elements;//RegionLayerConfig.RECEPTIVE_FIELD_DIMENSIONS;
+//
+//        Point inputSize1 = Data2d.getSize( _ffInput1 );
+//        Point inputSize2 = Data2d.getSize( _ffInput2 );
+//
+//        float rf1_x = _organizer._cellWeights._values[ organizerOffset + 0 ];
+//        float rf1_y = _organizer._cellWeights._values[ organizerOffset + 1 ];
+//        float rf2_x = _organizer._cellWeights._values[ organizerOffset + 2 ];
+//        float rf2_y = _organizer._cellWeights._values[ organizerOffset + 3 ];
+//
+//        rf1_x *= inputSize1.x;
+//        rf1_y *= inputSize1.y;
+//
+//        rf2_x *= inputSize2.x;
+//        rf2_y *= inputSize2.y;
+//
+//        rf[ 0 ] = rf1_x; // now in pixel coordinates, whereas it is trained as unit coordinates
+//        rf[ 1 ] = rf1_y;
+//        rf[ 2 ] = rf2_x; // now in pixel coordinates, whereas it is trained as unit coordinates
+//        rf[ 3 ] = rf2_y;
 
         return rf;
     }
@@ -731,10 +731,10 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
 
                 // only update active
                 int organizerOffset = _config.getOrganizerOffset( x, y );
-                float mask = _organizer._cellMask._values[ organizerOffset ];
-                if( mask != 1.f ) {
-                    continue; // because the cell is "dead" or inactive. We already set the region output to zero, so no action required.
-                }
+//                float mask = _organizer._cellMask._values[ organizerOffset ];
+//                if( mask != 1.f ) {
+//                    continue; // because the cell is "dead" or inactive. We already set the region output to zero, so no action required.
+//                }
 
                 rankClassifierReceptiveFields( x, y );
             }
@@ -747,10 +747,10 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
 
                 // only update active
                 int organizerOffset = _config.getOrganizerOffset( x, y );
-                float mask = _organizer._cellMask._values[ organizerOffset ];
-                if( mask != 1.f ) {
-                    continue; // because the cell is "dead" or inactive. We already set the region output to zero, so no action required.
-                }
+//                float mask = _organizer._cellMask._values[ organizerOffset ];
+//                if( mask != 1.f ) {
+//                    continue; // because the cell is "dead" or inactive. We already set the region output to zero, so no action required.
+//                }
 
                 updateClassifier( x, y ); // adds to _transient._regionActiveCells and _regionActivity
             }
@@ -908,7 +908,7 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
 
     /**
      * Trains the receptive fields of the classifiers via a specified number of samples.
-     */
+     * /
     protected void organizerUpdate() {
         // uniform quilt
         _organizer.update();
@@ -946,5 +946,5 @@ public class HierarchicalQuiltedCompetitiveLearning extends NamedObject {
     }
 
 }
-
+*/
 

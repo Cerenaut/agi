@@ -25,7 +25,7 @@ import io.agi.framework.EntityConfig;
  * Created by dave on 23/10/16.
  */
 public class HqClRegionLayerEntityConfig extends EntityConfig {
-
+/*
     int columnWidthCells = 0;
     int columnHeightCells = 0;
 
@@ -51,5 +51,5 @@ public class HqClRegionLayerEntityConfig extends EntityConfig {
     float classifierStressSplitLearningRate = 0;
     float classifierStressThreshold = 0;
     int classifierGrowthInterval = 0;
-
+*/
 }

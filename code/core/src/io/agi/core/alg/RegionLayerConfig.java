@@ -59,7 +59,7 @@ public class RegionLayerConfig extends NetworkConfig {
 
 //    public PlasticNeuralGasConfig _classifierConfig;
     public GrowingNeuralGasConfig _classifierConfig;
-//    public GrowingNeuralGasConfig _organizerConfig;
+//    public GrowingNeuralGasConfig _quiltConfig;
     public ParameterLessSelfOrganizingMapConfig _organizerConfig;
 
     public RegionLayerConfig() {

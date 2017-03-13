@@ -41,7 +41,7 @@ var Region = {
   selectedCells : [  ],
   selectedInput1 : [  ],
 
-  regionSuffixes : [ "-input", "-organizer-cell-weights", "-organizer-cell-mask", "-quilt-activity", "-classifier-cell-error", "-classifier-cell-mask", "-classifier-cell-activity", "-classifier-cell-weights" ],
+  regionSuffixes : [ "-input-1", "-input-2", "-input-quilt", "-output-quilt", "-output-1", "-output-2", "-quilt-mask", "-quilt-input-mask", "-classifier-cell-mask", "-classifier-cell-activity", "-classifier-cell-weights" ],
 
   regionSuffixIdx : 0,
   dataMap : {
@@ -99,6 +99,12 @@ var Region = {
   selectWinner : function() {
     Region.selectCells( "-classifier-cell-activity" );
   },
+  selectFeedback : function() {
+    Region.selectCells( "-input-quilt" );
+  },
+  selectQuilt : function() {
+    Region.selectCells( "-output-quilt" );
+  },
 
   toggleSelectCell : function( offset ) {
     Region.toggleSelection( Region.selectedCells, offset );
@@ -114,7 +120,7 @@ var Region = {
   selectThreshold : function() {
     Region.selectedInput1 = [];
 
-    var data1 = Region.findData( "-input" );
+    var data1 = Region.findData( "-input-1" );
     if( !data1 ) {
       return; // can't paint
     }
@@ -190,7 +196,7 @@ var Region = {
 
   onMouseClickLeft : function( e, mx, my ) {
 
-    var dataNew = Region.findData( "-quilt-activity" );
+    var dataNew = Region.findData( "-output-quilt" );
     if( !dataNew ) {
       return; // can't paint
     }
@@ -217,7 +223,7 @@ var Region = {
   },
 
   onMouseClickRight : function( e, mx, my ) {
-    var data1 = Region.findData( "-input" );
+    var data1 = Region.findData( "-input-1" );
     if( !data1 ) {
       return; // can't paint
     }
@@ -265,7 +271,12 @@ var Region = {
       return; // can't paint
     }
 
-    var activeQuilt = Region.findData( "-quilt-activity" );
+    var inputQuilt = Region.findData( "-input-quilt" );
+    if( !inputQuilt ) {
+      return; // can't paint
+    }
+
+    var activeQuilt = Region.findData( "-output-quilt" );
     if( !activeQuilt ) {
       return; // can't paint
     }
@@ -275,7 +286,7 @@ var Region = {
       return; // can't paint
     }
 
-    var panels = 1;
+    var panels = 2;
     var canvasDataSize = Region.resizeCanvas( "#left-canvas", activeQuilt, 1, panels );
     if( !canvasDataSize ) {
       return; // can't paint
@@ -286,8 +297,14 @@ var Region = {
 
 console.log( "Painting left w/h=" + canvasDataSize.w + "," + canvasDataSize.h );
 
-    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, active, activeQuilt, mask );
-    DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#00ffff" );
+    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, activeQuilt, mask, active );
+    DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#ff00ff" );
+
+    y0 = y0 + ( canvasDataSize.h * DataCanvas.pxPerElement ) + Region.pixelsPerGap;
+
+    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, inputQuilt, mask, null );
+    DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#ff00ff" );
+
   },
 
   resizeCanvas : function( canvasSelector, data, repeatX, repeatY ) {
@@ -325,23 +342,15 @@ console.log( "Painting left w/h=" + canvasDataSize.w + "," + canvasDataSize.h );
       return; // can't paint
     }
 
-    var data1 = Region.findData( "-input" );
+    var data1 = Region.findData( "-input-1" );
     if( !data1 ) {
       return; // can't paint
     }
 
-    var panels = 1;
-    var canvasDataSize = Region.resizeCanvas( "#right-canvas", data1, 1, panels );
-    if( !canvasDataSize ) {
+    var data2 = Region.findData( "-input-2" );
+    if( !data2 ) {
       return; // can't paint
     }
-
-//    var c = $( "#right-canvas" )[ 0 ];
-//    var ctx = c.getContext( "2d" );
-
-    var inputDisplay = $('select[name=invert-display]').val();
-
-    var weightGain = $('#weight').val();
 
     var dataSize1 = Framework.getDataSize( data1 );
     var w1 = dataSize1.w;
@@ -351,18 +360,44 @@ console.log( "Painting left w/h=" + canvasDataSize.w + "," + canvasDataSize.h );
       return;
     }
 
-console.log( "Painting right w/h=" + w1 + "," + h1 );
+    var dataSize2 = Framework.getDataSize( data2 );
+    var w2 = dataSize2.w;
+    var h2 = dataSize2.h;
+
+    if( ( w2 == 0 ) || ( h2 == 0 ) ) {
+      return;
+    }
+
+    var c = $( "#right-canvas" )[ 0 ];
+    c.width  = w1 * Region.pixelsPerBit;
+    c.height = h1 * Region.pixelsPerBit + Region.pixelsMargin 
+             + h2 * Region.pixelsPerBit;
+
+    var ctx = c.getContext( "2d" );
+    ctx.fillStyle = "#505050";
+    ctx.fillRect( 0, 0, c.width, c.height );
+
+    var inputDisplay = $('select[name=invert-display]').val();
+    var weightGain = $('#weight').val();
+
+    console.log( "Painting right w/h(1)=" + w1 + "," + h1 );
+
     var dataSizeW = Framework.getDataSize( dataWeights );
     var weightsSize = dataSizeW.w * dataSizeW.h;
-    var weightsStride = w1 * h1;
+    var weightsStride = w1 * h1 + w2 * h2;
 
-    var dataOrganizerOutputWeights = Region.findData( "-organizer-cell-weights" );
-    if( !dataOrganizerOutputWeights ) {
+//    var dataOrganizerOutputWeights = Region.findData( "-organizer-cell-weights" );
+//    if( !dataOrganizerOutputWeights ) {
+//      return; // can't paint
+//    }
+
+    var dataOrganizerOutputMask = Region.findData( "-quilt-mask" );
+    if( !dataOrganizerOutputMask ) {
       return; // can't paint
     }
 
-    var dataOrganizerOutputMask = Region.findData( "-organizer-cell-mask" );
-    if( !dataOrganizerOutputMask ) {
+    var dataInputMasks = Region.findData( "-quilt-input-mask" );
+    if( !dataInputMasks ) {
       return; // can't paint
     }
 
@@ -374,7 +409,7 @@ console.log( "Painting right w/h=" + w1 + "," + h1 );
       return;
     }
 
-    var activeQuilt = Region.findData( "-quilt-activity" );
+    var activeQuilt = Region.findData( "-output-quilt" );
     if( !activeQuilt ) {
       return; // can't paint
     }
@@ -385,7 +420,7 @@ console.log( "Painting right w/h=" + w1 + "," + h1 );
     var cw = rw / ow;
     var ch = rh / oh;
 
-    var classifierInputStride = w1 * h1;// + w2 * h2;
+    var classifierInputStride = w1 * h1 + w2 * h2;
     var classifierInputOffset = 0;
 
     var x0 = 0;
@@ -393,6 +428,33 @@ console.log( "Painting right w/h=" + w1 + "," + h1 );
 
     var inputOffset = 0;
 
+    Region.paintInputData( ctx, x0, y0, w1, h1, data1 );
+
+    if( inputDisplay == "weights" ) {
+      Region.paintInputWeights( ctx, x0, y0, w1, h1, inputOffset, data1, weightsSize, weightsStride, dataWeights, Region.selectedCells );
+    }
+    else {
+      Region.paintInputErrors( ctx, x0, y0, w1, h1, inputOffset, data1, weightsSize, weightsStride, dataWeights, Region.selectedCells );
+    }
+    Region.paintInputDataSelected( ctx, x0, y0, w1, h1, Region.selectedInput1 );
+
+    Region.paintInputMaskSelected( ctx, x0, y0, w1, h1, cw, ch, ow, oh, inputOffset, data1, weightsSize, weightsStride, dataInputMasks, Region.selectedCells );
+
+    y0 = y0 + h1 * Region.pixelsPerBit + Region.pixelsMargin;
+    inputOffset += w1 * h1;
+
+    Region.paintInputData( ctx, x0, y0, w2, h2, data2 );
+    if( inputDisplay == "weights" ) {
+      Region.paintInputWeights( ctx, x0, y0, w2, h2, inputOffset, data2, weightsSize, weightsStride, dataWeights, Region.selectedCells );
+    }
+    else {
+      Region.paintInputErrors( ctx, x0, y0, w2, h2, inputOffset, data2, weightsSize, weightsStride, dataWeights, Region.selectedCells );
+    }
+//    Region.paintInputDataSelected( ctx, x0, y0, w2, h2, Region.selectedInput2 );
+
+    Region.paintInputMaskSelected( ctx, x0, y0, w2, h2, cw, ch, ow, oh, inputOffset, data2, weightsSize, weightsStride, dataInputMasks, Region.selectedCells );
+
+/*
     Region.paintInputData( canvasDataSize.ctx, x0, y0, w1, h1, data1 );
 
     if( inputDisplay == "weights" ) {
@@ -403,7 +465,7 @@ console.log( "Painting right w/h=" + w1 + "," + h1 );
     else {
       Region.paintInputErrors( canvasDataSize.ctx, x0, y0, w1, h1, inputOffset, data1, weightsSize, weightsStride, dataWeights, Region.selectedCells );
     }
-    Region.paintInputDataSelected( canvasDataSize.ctx, x0, y0, w1, h1, Region.selectedInput1 );
+    Region.paintInputDataSelected( canvasDataSize.ctx, x0, y0, w1, h1, Region.selectedInput1 );*/
   },
 
 /*  paintInputWeights : function( ctx, x0, y0, w, h, inputIndex, dataInput, dataOrganizerOutputMask, dataOrganizerOutputWeights, ow, oh, rw, rh, cw, ch, selectedInput, selectedCells, classifierInputStride, classifierInputOffset ) {
@@ -592,11 +654,63 @@ console.log( "Painting right w/h=" + w1 + "," + h1 );
     }
   },
 
-  paintInputWeights : function( ctx, x0, y0, w, h, inputOffset, dataInput, weightsSize, weightsStride, dataWeights, selectedCells, weightGain ) {
+  paintInputMaskSelected : function( ctx, x0, y0, w, h, cw, ch, ow, oh, inputOffset, dataInput, weightsSize, weightsStride, dataInputMask, selectedCells ) {
 
     if( selectedCells.length < 1 ) {
       return;
     }
+
+    ctx.strokeStyle = "#005555";
+
+    // input coords
+    for( var i = 0; i < selectedCells.length; ++i ) {
+
+          // convert cell to column
+          var e = selectedCells[ i ];
+
+          var cellW = cw * ow;
+          var cellX = e % cellW;
+          var cellY = Math.floor( e / cellW );
+      //console.log( "cell x,y=" + cellX +", "  + cellY );
+          var ox = Math.floor( cellX / cw );
+          var oy = Math.floor( cellY / ch );
+          var oo = oy * ow + ox;
+
+      for( var y = 0; y < h; ++y ) {
+        for( var x = 0; x < w; ++x ) {
+          var inputBit = y * w + x;
+
+          var weightsOffset = weightsStride * oo 
+                            + inputOffset 
+                            + inputBit;
+
+          var weight = dataInputMask.elements.elements[ weightsOffset ];
+
+          
+          if( weight > 0.0 ) {
+
+            var gx = x * Region.pixelsPerBit;
+            var gy = y * Region.pixelsPerBit;
+
+            ctx.strokeRect( x0 + gx, y0 + gy, Region.pixelsPerBit, Region.pixelsPerBit );        
+            ctx.fill();
+
+          }
+        }
+      }
+
+    }
+  },
+
+  paintInputWeights : function( ctx, x0, y0, w, h, inputOffset, dataInput, weightsSize, weightsStride, dataWeights, selectedCells ) {
+
+    if( selectedCells.length < 1 ) {
+      return;
+    }
+
+    var minWeight = 0.0;
+    var maxWeight = 0.0;
+    var allWeights = new Array( w * h );
 
     for( var y = 0; y < h; ++y ) {
       for( var x = 0; x < w; ++x ) {
@@ -613,29 +727,75 @@ console.log( "Painting right w/h=" + w1 + "," + h1 );
 
           var weight = dataWeights.elements.elements[ weightsOffset ];
 
-          sumWeight += ( weight * 1 ); // * 1, which doesn't matter
+          sumWeight += ( weight ); // * 1, which doesn't matter
+        }
+ 
+        allWeights[ y * w + x ] = sumWeight;
+
+        if( sumWeight < 0.0 ) {
+          minWeight = Math.min( minWeight, sumWeight );
+        }
+        else {
+          maxWeight = Math.max( maxWeight, sumWeight );
         }
 
-        sumWeight *= weightGain;
- 
+/*      }
+    }
+    
+//    minWeight = Math.abs( minWeight );
+    var rngWeight = maxWeight - minWeight;
+    var midWeight = rngWeight * 0.5;
+
+console.log( "min: " + minWeight + " max: " + maxWeight + " rng: " + rngWeight );
+    for( var y = 0; y < h; ++y ) {
+      for( var x = 0; x < w; ++x ) {
+        var inputBit = y * w + x;
+
+        var sumWeight = allWeights[ y * w + x ];
+
+//if( sumWeight > 0.5 ) {
+//var xsss = 0;
+//}
+        sumWeight = sumWeight - minWeight;
+        sumWeight /= rngWeight;        
+//          sumWeight = ( sumWeight );// * 2.0; // 0 to 1/2 maxWeight
+
+console.log( "w=" + sumWeight );
+        if( sumWeight >= 0.5 ) {
+//          sumWeight = ( sumWeight - midWeight ) * 2.0; // 0 to 1/2 maxWeight
+//          sumWeight = ( sumWeight ) * 2.0; // 0 to 1/2 maxWeight
+        }
+        else {
+//sumWeight = sumWeight - 0.5;
+          sumWeight = 0.0 -( sumWeight );
+        }
+        
+*/
         sumWeight = Math.min(  1.0, sumWeight );
         sumWeight = Math.max( -1.0, sumWeight );
 
         var cx = x * Region.pixelsPerBit;
         var cy = y * Region.pixelsPerBit;
 
-        if( sumWeight > 0.0 ) {
+        if( sumWeight >= 0.0 ) {
+//          sumWeight = sumWeight / maxWeight; // e.g. 0.01 / 0.02 = 0.5               
+//          sumWeight = Math.min(  1.0, sumWeight );
+//sumWeight = 1;
           ctx.fillStyle = "rgba(255,0,0,"+sumWeight+")";
+//          ctx.fillRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
         }
         else {
-          ctx.fillStyle = "rgba(0,0,255,"+Math.abs( sumWeight )+")";
+//          sumWeight = Math.abs( sumWeight ) / minWeight; // e.g. 0.01 / 0.02 = 0.5               
+//          sumWeight = Math.min(  1.0, sumWeight );
+          sumWeight = Math.abs( sumWeight );
+
+          ctx.fillStyle = "rgba(0,0,255,"+ sumWeight+")";
         }
 
         ctx.fillRect( x0 + cx, y0 + cy, Region.pixelsPerBit, Region.pixelsPerBit );        
         ctx.fill();
       }
     }
-
   },
 
   paintInputErrors : function( ctx, x0, y0, w, h, inputOffset, dataInput, weightsSize, weightsStride, dataWeights, selectedCells ) {
@@ -659,7 +819,7 @@ console.log( "Painting right w/h=" + w1 + "," + h1 );
 
           var weight = dataWeights.elements.elements[ weightsOffset ];
 
-          sumWeight += ( weight * 1 ); // * 1, which doesn't matter
+          sumWeight += ( weight ); // * 1, which doesn't matter
         }
  
         sumWeight = Math.min(  1.0, sumWeight );
@@ -687,7 +847,7 @@ console.log( "Painting right w/h=" + w1 + "," + h1 );
   paintInputData : function( ctx, x0, y0, w, h, dataInput ) {
 
     for( var y = 0; y < h; ++y ) {
-      for( var x = 0; x < w; ++x ) {	
+      for( var x = 0; x < w; ++x ) {  
         var cx = x * Region.pixelsPerBit;
         var cy = y * Region.pixelsPerBit;
         var offset = y * w + x;

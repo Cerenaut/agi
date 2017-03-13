@@ -34,7 +34,7 @@ import java.util.Properties;
  * Created by dave on 23/10/16.
  */
 public class MnistHQCLDemo {
-
+/*
     public static void main( String[] args ) {
 
         // Create a Node
@@ -316,4 +316,5 @@ public class MnistHQCLDemo {
         Framework.SetConfig( regionLayerName, "classifierGrowthInterval", String.valueOf( classifierGrowthInterval ) );
 
     }
+    */
 }

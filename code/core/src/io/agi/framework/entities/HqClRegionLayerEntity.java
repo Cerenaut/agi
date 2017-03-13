@@ -23,11 +23,10 @@ import io.agi.core.alg.HierarchicalQuiltedCompetitiveLearning;
 import io.agi.core.alg.HierarchicalQuiltedCompetitiveLearningConfig;
 import io.agi.core.ann.unsupervised.GrowingNeuralGas;
 import io.agi.core.ann.unsupervised.GrowingNeuralGasConfig;
-import io.agi.core.ann.unsupervised.HierarchicalQuiltConfig;
+import io.agi.core.ann.unsupervised.BinaryTreeQuiltConfig;
 import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
 import io.agi.core.data.DataSize;
-import io.agi.core.orm.Keys;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
@@ -40,7 +39,7 @@ import java.util.Collection;
 /**
  * Created by dave on 23/10/16.
  */
-public class HqClRegionLayerEntity extends Entity {
+public class HqClRegionLayerEntity { /*extends Entity {
 
     public static final String ENTITY_TYPE = "hq-cl-region-layer";
 
@@ -236,7 +235,7 @@ public class HqClRegionLayerEntity extends Entity {
         //RandomInstance.setSeed(randomSeed); // make the tests repeatable
         ObjectMap om = ObjectMap.GetInstance();
 
-        HierarchicalQuiltConfig organizerConfig = new HierarchicalQuiltConfig();
+        BinaryTreeQuiltConfig organizerConfig = new BinaryTreeQuiltConfig();
         GrowingNeuralGasConfig classifierConfig = new GrowingNeuralGasConfig();
 
         String organizerName = getKey( HierarchicalQuiltedCompetitiveLearningConfig.ORGANIZER );
@@ -417,4 +416,5 @@ public class HqClRegionLayerEntity extends Entity {
         setData( CLASSIFIER_AGE_SINCE_GROWTH, _classifierAgeSinceGrowth );
 
     }
+*/
 }

@@ -24,6 +24,7 @@ import io.agi.core.ann.supervised.FeedForwardNetwork;
 import io.agi.core.ann.supervised.FeedForwardNetworkConfig;
 import io.agi.core.ann.supervised.CostFunction;
 import io.agi.core.data.Data;
+import io.agi.core.data.Data2d;
 import io.agi.core.data.Ranking;
 import io.agi.core.orm.ObjectMap;
 
@@ -68,7 +69,7 @@ public class PyramidRegionLayerPredictor {
     /**
      * Reset the learned weights of the predictor.
      */
-    public void reset() {
+    public void reset( int density, int regionWidth, int regionHeight, int columnWidth, int columnHeight ) {
         _ffn.reset();
     }
 
@@ -79,7 +80,7 @@ public class PyramidRegionLayerPredictor {
      * @param density A hint about the number of bits in the output
      * @param outputNew
      */
-    public void train( Data inputOld, int density, Data outputNew ) {
+    public void train( Data inputOld, Data outputNew, int density, int regionWidth, int regionHeight, int columnWidth, int columnHeight ) {
         Data input = _ffn.getInput();
         input.copy( inputOld );
 
@@ -98,33 +99,69 @@ public class PyramidRegionLayerPredictor {
      * @param density A hint about the number of bits in the output
      * @param outputPrediction
      */
-    public void predict( Data inputNew, int density, Data outputPrediction ) {
+    public void predict( Data inputNew, Data outputPrediction, Data outputPredictionSparse, int density, int regionWidth, int regionHeight, int columnWidth, int columnHeight ) {
         Data input = _ffn.getInput();
         input.copy( inputNew );
         _ffn.feedForward();
         Data output = _ffn.getOutput();
-// keep all:
-//        outputPrediction.copy( output );
-//        outputPrediction.clipRange( 0f, 1f ); // as NN may go wildly beyond that
-// keep sparse set:
-        outputPrediction.set( 0f );
+        outputPrediction.copy( output );
+        outputPrediction.clipRange( 0f, 1f ); // as NN may go wildly beyond that
+        outputPredictionSparse.set( 0f );
 
-        // rank predictions
-        TreeMap< Float, ArrayList< Integer > > ranking = new TreeMap< Float, ArrayList< Integer > >();
-        int cells = output.getSize();
-        for( int c = 0; c < cells; ++c ){
-            float p = output._values[ c ];
-            Ranking.add( ranking, p, c );
+        if( ( columnWidth == 0 ) || ( columnHeight == 0 ) ) {
+            // rank predictions
+            TreeMap< Float, ArrayList< Integer > > ranking = new TreeMap< Float, ArrayList< Integer > >();
+            int cells = output.getSize();
+            for( int c = 0; c < cells; ++c ){
+                float p = output._values[ c ];
+                Ranking.add( ranking, p, c );
+            }
+
+            // keep top n most predicted cells
+            boolean findMaxima = true;
+            int maxRank = density;
+            ArrayList< Integer > predictedCells = Ranking.getBestValues( ranking, findMaxima, maxRank );
+
+            for( Integer c : predictedCells ) {
+                outputPredictionSparse._values[ c ] = 1f;
+            }
+        }
+        else {
+            // keep max in each column
+            int quiltWidth  = regionWidth  / columnWidth;
+            int quiltHeight = regionHeight / columnHeight;
+
+            for( int yColumn = 0; yColumn < quiltHeight; ++yColumn ) {
+                for( int xColumn = 0; xColumn < quiltWidth; ++xColumn ) {
+
+                    float pMax = -Float.MAX_VALUE;
+                    int cMax = -1;
+
+                    for( int yCell = 0; yCell < columnHeight; ++yCell ) {
+                        for( int xCell = 0; xCell < columnWidth; ++xCell ) {
+
+                            int xRegion = xColumn * columnWidth  + xCell;
+                            int yRegion = yColumn * columnHeight + yCell;
+                            int cRegion = yRegion * regionWidth + xRegion;
+
+                            float p = output._values[ cRegion ];
+
+                            if( p >= pMax ) {
+                                pMax = p;
+                                cMax = cRegion;
+                            }
+                        }
+                    }
+
+                    if( cMax >= 0 ) {
+                        outputPredictionSparse._values[ cMax ] = 1f;
+                    }
+
+                }
+            }
+
         }
 
-        // keep top n most predicted cells
-        boolean findMaxima = true;
-        int maxRank = density;
-        ArrayList< Integer > predictedCells = Ranking.getBestValues( ranking, findMaxima, maxRank );
-
-        for( Integer c : predictedCells ) {
-            outputPrediction._values[ c ] = 1f;
-        }
     }
 
 }

@@ -26,26 +26,34 @@ import io.agi.framework.EntityConfig;
  */
 public class QuiltedCompetitiveLearningEntityConfig extends EntityConfig {
 
-    int columnWidthCells = 0;
-    int columnHeightCells = 0;
+    public boolean resetDelayed = false;
 
-    int quiltWidthColumns = 0;
-    int quiltHeightColumns = 0;
+    public int quiltWidth = 0;
+    public int quiltHeight = 0;
 
-    int intervalsX1 = 0;
-    int intervalsY1 = 0;
-    int intervalsX2 = 0;
-    int intervalsY2 = 0;
+    public int classifierWidth = 0;
+    public int classifierHeight = 0;
 
-    int classifiersPerBit = 0;
+    // TODO add a field offset
+    public int field1StrideX = 0;
+    public int field1StrideY = 0;
 
-    float classifierLearningRate = 0;
-    float classifierLearningRateNeighbours = 0;
-    float classifierNoiseMagnitude = 0;
-    int classifierEdgeMaxAge = 0;
-    float classifierStressLearningRate = 0;
-    float classifierStressSplitLearningRate = 0;
-    float classifierStressThreshold = 0;
-    int classifierGrowthInterval = 0;
+    public int field2StrideX = 0;
+    public int field2StrideY = 0;
+
+    public int field1SizeX = 0;
+    public int field1SizeY = 0;
+
+    public int field2SizeX = 0;
+    public int field2SizeY = 0;
+
+    public float classifierLearningRate = 0;
+    public float classifierLearningRateNeighbours = 0;
+    public float classifierNoiseMagnitude = 0;
+    public int classifierEdgeMaxAge = 0;
+    public float classifierStressLearningRate = 0;
+    public float classifierStressSplitLearningRate = 0;
+    public float classifierStressThreshold = 0;
+    public int classifierGrowthInterval = 0;
 
 }
