@@ -44,12 +44,12 @@ public class FeedForwardNetworkTest implements UnitTest {
 //        Logic l = Logic.AND;
 
         int epochs = 50000;
-        int batch = 100;
+        int epochSize = 100;
         int hidden = 0;
-        int miniBatchSize = 1;
+        int miniBatchSize = 3; // to test, it is better without
         float meanErrorThreshold = 0.01f;
-        float learningRate = 0.1f;
-        float regularization = 0.0f;
+        float learningRate = 0.1f;//0.1f;
+        float regularization = 0.001f; // to test, it is better without.
         String costFunction = null;
 
         // e.g.
@@ -77,7 +77,7 @@ public class FeedForwardNetworkTest implements UnitTest {
 //            learningRate = 0.1f;
 //        }
 
-        setup( l, epochs, batch, hidden, learningRate, meanErrorThreshold, regularization, costFunction, activationFunctions, miniBatchSize );
+        setup( l, epochs, epochSize, hidden, learningRate, meanErrorThreshold, regularization, costFunction, activationFunctions, miniBatchSize );
 
         epochs();
     }
@@ -86,15 +86,15 @@ public class FeedForwardNetworkTest implements UnitTest {
 
     public Logic _l;
     public int _epochs;
-    public int _batch;
+    public int _epochSize;
     public float _meanErrorThreshold;
     public FeedForwardNetwork _ffn;
 
-    public void setup( Logic l, int epochs, int batch, int hidden, float learningRate, float meanErrorThreshold, float regularization, String costFunction, String activationFunctions, int batchSize ) {
+    public void setup( Logic l, int epochs, int epochSize, int hidden, float learningRate, float meanErrorThreshold, float regularization, String costFunction, String activationFunctions, int batchSize ) {
 
         _l = l;
         _epochs = epochs;
-        _batch = batch;
+        _epochSize = epochSize;
         _meanErrorThreshold = meanErrorThreshold;
 
         int inputs = 2;
@@ -118,7 +118,7 @@ public class FeedForwardNetworkTest implements UnitTest {
 
         float l2R = regularization;//0.0001f;
 
-        learningRate /= (float)batchSize;
+//        learningRate /= (float)batchSize;
 
         ObjectMap om = new ObjectMap();
         Random r = RandomInstance.getInstance();
@@ -185,7 +185,7 @@ public class FeedForwardNetworkTest implements UnitTest {
 
             float sumError = 0.f;
 
-            for( int test = 0; test < _batch; ++test ) {
+            for( int test = 0; test < _epochSize; ++test ) {
                 float error = step();
                 sumError += error;
             }
@@ -193,7 +193,7 @@ public class FeedForwardNetworkTest implements UnitTest {
             float meanError = 0.f;
 
             if( sumError > 0.f ) {
-                meanError = sumError / ( float ) _batch;
+                meanError = sumError / ( float ) _epochSize;
             }
 
             System.out.println( "Epoch: " + epoch + " Mean error: " + meanError );

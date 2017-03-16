@@ -78,9 +78,7 @@ public abstract class BackPropagation {
      * @param outputs
      * @param ideals
      * @param af
-     * @param lossFunction
-     * @param l2R
-     * @param sumSqWeights
+     * @param costFunction
      */
     public static void CostGradientExternal(
             FloatArray outputWeightedSums,
@@ -88,11 +86,11 @@ public abstract class BackPropagation {
             FloatArray outputs,
             FloatArray ideals,
             ActivationFunction af,
-            String costFunction,
-            float l2Regularization,
-            float sumSqWeights) {
+            String costFunction ) {
+//            float l2Regularization,
+//            float sumSqWeights) {
 
-        l2Regularization = 0.5f * l2Regularization * sumSqWeights; // http://cs231n.github.io/neural-networks-2/ and http://neuralnetworksanddeeplearning.com/chap3.html
+//        l2Regularization = 0.5f * l2Regularization * sumSqWeights; // http://cs231n.github.io/neural-networks-2/ and http://neuralnetworksanddeeplearning.com/chap3.html
 
         int J = outputWeightedSums.getSize();
         assert ( outputCostGradients.getSize() == J );
@@ -116,13 +114,13 @@ public abstract class BackPropagation {
                 cost = CostFunction.quadraticOutputErrorGradient( output, ideal, df );
             }
             else if( costFunction.equals( CostFunction.CROSS_ENTROPY ) ) {
-                cost = CostFunction.crossEntropyOutputErrorGradient(output, ideal);
+                cost = CostFunction.crossEntropyOutputErrorGradient( output, ideal );
             }
 //            else if( costFunction.equals( CostFunction.LOG_LIKELIHOOD ) ) {
 //                cost = CostFunction.logLikelihood( ideal );
 //            }
 
-            cost += l2Regularization;
+//            cost += l2Regularization;
 
             outputCostGradients._values[ j ] = cost;
 
@@ -187,7 +185,9 @@ public abstract class BackPropagation {
      * @param w The weights of the layer
      * @param b The biases of the layer
      * @param i The inputs to the layer
+     * @param miniBatchSize
      * @param learningRate
+     * @param regularization
      */
     public static void StochasticGradientDescent(
 //            FloatArray m,
@@ -195,8 +195,12 @@ public abstract class BackPropagation {
             FloatArray w,
             FloatArray b,
             FloatArray i,
+            int miniBatchSize,
             float learningRate,
             float regularization ) {
+
+        float miniBatchNorm = 1.f / (float)miniBatchSize;
+        float l2RegularizationTerm = 1f - ( ( learningRate * regularization ) * miniBatchNorm );
 
         int K = i.getSize(); // layer inputs ie neurons in layer l-1
         int J = d.getSize(); // layer outputs ie neurons in this layer l
@@ -224,9 +228,13 @@ public abstract class BackPropagation {
                 float a = i._values[ k ];
                 float wOld = w._values[ offset ];
 
-                float wDelta = learningRate * errorGradient * a;
-//                wDelta += ( regularization * wOld );
-                float wNew = wOld - wDelta;//learningRate * change * a;
+                float wDelta = learningRate * ( miniBatchNorm * errorGradient ) * a;
+                float wOldRescaled = l2RegularizationTerm * wOld; // weight is unchanged when regularization is zero
+                float wNew = wOldRescaled - wDelta;
+
+                // http://neuralnetworksanddeeplearning.com/chap3.html#overfitting_and_regularization
+                // R = 1− ( ( η * λ ) / n )
+                // w = R * w - η * d
 
 // weight clipping
 //                float wMax = 1.f;
@@ -239,7 +247,7 @@ public abstract class BackPropagation {
             }
 
             float bOld = b._values[ j ];
-            float bNew = bOld - learningRate * errorGradient;
+            float bNew = bOld - learningRate * ( miniBatchNorm * errorGradient );
 
             b._values[ j ] = bNew;
         }
@@ -254,15 +262,14 @@ public abstract class BackPropagation {
      * @param w_l2 The weights in layer 2.
      * @param d_l2 The cost gradient in layer 2.
      * @param f_l1 The transfer function and its derivative.
-     * @param l2R Regularization factor. Make it zero to turn off.
      */
     public static void CostGradientInternal(
             FloatArray z_l1,
             FloatArray d_l1,
             FloatArray w_l2,
             FloatArray d_l2,
-            ActivationFunction f_l1,
-            float l2R) {
+            ActivationFunction f_l1 ) {//,
+//            float l2R) {
 
         int K = d_l1.getSize(); // layer inputs ie neurons in layer l-1
         int J = d_l2.getSize(); // layer outputs ie neurons in this layer l
@@ -276,7 +283,7 @@ public abstract class BackPropagation {
                 int offset = j * K + k; // K = inputs, storage is all inputs adjacent
                 float w = w_l2._values[ offset ];
                 float d = d_l2._values[ j ]; // d_j i.e. partial derivative of loss fn with respect to the activation of j
-                float product = d * w + ( l2R * w );
+                float product = d * w;// + ( l2R * w );
 
                 Useful.IsBad( product );
 

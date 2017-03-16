@@ -201,10 +201,10 @@ public class FeedForwardNetwork extends NamedObject {
     public void feedBackward() {
 
         float l2R = _c.getL2Regularization();
-        float sumSqWeights = 0.f;
-        if( l2R > 0.f ) {
-            sumSqWeights = getWeightsSquared();
-        }
+//        float sumSqWeights = 0.f;
+//        if( l2R > 0.f ) {
+//            sumSqWeights = getWeightsSquared();
+//        }
 
         // check for end of a mini-batch
         int batchSize = _c.getBatchSize();
@@ -220,9 +220,17 @@ public class FeedForwardNetwork extends NamedObject {
         _c.setBatchCount( batchCount );
 
         // update layer by layer
+        // definitive answer on mini batch impl:
+        // http://stackoverflow.com/questions/25343159/neural-network-mini-batch-gradient-descent
+        // Since you wish to use batch learning, you will delay the weight update step. Instead you should store these deltas and add up the deltas from the different instances in your batch after the batch has completed. Then use these newly manipulated deltas to update the weights in your network.
         int layers = _layers.size();
         int L = layers - 1;
 
+        // n is, as usual, the size of our training set
+        // λ > 0
+        // C = C + λ/2n * sum( w^2 ) for all weights but not biases
+
+        // g = g + ( λ/n ) * w
         HashMap< Integer, Data > costGradients = new HashMap< Integer, Data >();
 
         for( int layer = L; layer >= 0; --layer ) {
@@ -234,11 +242,11 @@ public class FeedForwardNetwork extends NamedObject {
 
             if( layer == L ) {
                 String costFunction = _c.getCostFunction();
-                BackPropagation.CostGradientExternal( nl._weightedSums, layerCostGradients, nl._outputs, _ideals, af, costFunction, l2R, sumSqWeights );
+                BackPropagation.CostGradientExternal( nl._weightedSums, layerCostGradients, nl._outputs, _ideals, af, costFunction );//, l2R, sumSqWeights );
             } else { // layer < L
                 NetworkLayer nlForward = _layers.get( layer +1 );
-                Data forwardCostGradients = costGradients.get( layer +1 );
-                BackPropagation.CostGradientInternal( nl._weightedSums, layerCostGradients, nlForward._weights, forwardCostGradients, af, l2R );
+                Data forwardCostGradients = costGradients.get( layer +1 ); // once off gradients
+                BackPropagation.CostGradientInternal( nl._weightedSums, layerCostGradients, nlForward._weights, forwardCostGradients, af );//, l2R );
             }
 
             costGradients.put( layer, layerCostGradients );
@@ -253,7 +261,7 @@ public class FeedForwardNetwork extends NamedObject {
             nl._costGradients.add( layerCostGradients ); // add the latest gradients
 
             if( batchComplete ) {
-                nl.train(); // using the error gradients, d
+                nl.train( batchSize ); // using the error gradients, d
                 nl._costGradients.set( 0f );
             }
         }

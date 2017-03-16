@@ -99,7 +99,7 @@ public class NetworkLayer extends NamedObject {
 
         for( int w = 0; w < W; ++w ) {
             float weight = _weights._values[ w ];
-            sumSq += ( w * w );
+            sumSq += ( weight * weight );
         }
 
         return sumSq;
@@ -175,10 +175,10 @@ public class NetworkLayer extends NamedObject {
     /**
      * Train the layer's weights given the error gradients.
      */
-    public void train() {
+    public void train( int miniBatchSize ) {
         float learningRate = _c.getLearningRate();
         float regularization = _c.getRegularization();
         //BackPropagation.train( _inputs, _weights, _biases, _costGradients, learningRate, l2R );
-        BackPropagation.StochasticGradientDescent( _costGradients, _weights, _biases, _inputs, learningRate, regularization );
+        BackPropagation.StochasticGradientDescent( _costGradients, _weights, _biases, _inputs, miniBatchSize, learningRate, regularization );
     }
 }
