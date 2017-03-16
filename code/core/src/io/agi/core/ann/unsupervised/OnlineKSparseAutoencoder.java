@@ -508,6 +508,8 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
             return; // end update
         }
 
+        float miniBatchNorm = 1f / (float)batchSize;
+
         // now gradient descent in the hidden->output layer
         for( int i = 0; i < inputs; ++i ) {
 
@@ -532,7 +534,7 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
                 }
 
                 float wOld = _cellWeights._values[ offset ];
-                float wDelta = learningRate * errorGradient * a;
+                float wDelta = learningRate * miniBatchNorm * errorGradient * a;
 
                 if( useMomentum ) {
                     // Momentum
@@ -580,7 +582,7 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
             }
 
             float bOld = _cellBiases2._values[ i ];
-            float bDelta = learningRate * errorGradient;
+            float bDelta = learningRate * miniBatchNorm * errorGradient;
 
             if( useMomentum ) {
                 float vOld = _cellBiases2Velocity._values[ i ];
@@ -617,7 +619,7 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
 
                 float a = _inputValues._values[ i ];
                 float wOld = _cellWeights._values[ offset ];
-                float wDelta = learningRate * errorGradient * a;
+                float wDelta = learningRate * miniBatchNorm * errorGradient * a;
 
                 if( useMomentum ) {
                     // Momentum
@@ -663,7 +665,7 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
             }
 
             float bOld = _cellBiases1._values[ c ];
-            float bDelta = learningRate * errorGradient;
+            float bDelta = learningRate * miniBatchNorm * errorGradient;
 
             if( useMomentum ) {
                 float vOld = _cellBiases1Velocity._values[ c ];
