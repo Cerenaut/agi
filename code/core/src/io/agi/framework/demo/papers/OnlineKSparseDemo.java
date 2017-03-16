@@ -177,7 +177,7 @@ public class OnlineKSparseDemo {
 //            learningRate = learningRate * 0.1f;
         }
         int batchSize = 1;
-        learningRate = learningRate / (float)batchSize; // Note must reduce learning rate to prevent overshoot and numerical instability
+        learningRate = learningRate;// / (float)batchSize; // Note must reduce learning rate to prevent overshoot and numerical instability
 
         float momentum = 0f;//0.9f;
         float weightsStdDev = 0.01f; // From paper. used at reset (only for biases in online case

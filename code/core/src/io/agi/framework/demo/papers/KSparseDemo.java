@@ -178,7 +178,7 @@ public class KSparseDemo {
         //        "         learning_rate=.01,\n",
         int batchSize = 128; // value from Ali's code.
         // learning rate confirmed = 0.01f
-        float learningRate = 0.01f / (float)batchSize; // Note must reduce learning rate to prevent overshoot and numerical instability
+        float learningRate = 0.01f;// / (float)batchSize; // Note must reduce learning rate to prevent overshoot and numerical instability
 //        float momentum = 0.1f;//0.5f;//0.9f;
         float momentum = 0.9f; // confirmed
         float weightsStdDev = 0.01f; // confirmed. Sigma From paper. used at reset
