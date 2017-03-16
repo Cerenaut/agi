@@ -23,6 +23,11 @@ var Vector = {
     }
 
     var normalize = $( "#normalize" ).is( ":checked" );
+    var chartType = $( "#type" ).val();
+    var smoothingWindow = $( "#window" ).val();
+    var userMinValue = $( "#min" ).val();
+    var userMaxValue = $( "#max" ).val();
+    var stride = parseInt( $( "#stride" ).val() );
 
     var datas = JSON.parse( json.responseText );
 
@@ -32,7 +37,7 @@ var Vector = {
 
     for( var d = 0; d < datas.length; ++d ) {
       var data = datas[ d ]; // TODO generalize to multiple responses.
-      var elements = data.elements.length;
+      var elements = Math.floor( data.elements.length / stride );
       maxElements = Math.max( elements, maxElements );
 
       Framework.decode( data );
@@ -41,13 +46,8 @@ var Vector = {
     var categories = [];
     categories.length = maxElements;
     for( var i = 0; i < maxElements; ++i ) {
-      categories[ i ] = i;
+      categories[ i ] = i * stride;
     }
-
-    var chartType = $( "#type" ).val();
-    var window = $( "#window" ).val();
-    var userMinValue = $( "#min" ).val();
-    var userMaxValue = $( "#max" ).val();
 
     var minValue = 0.0;
     var maxValue = 0.0;
@@ -60,16 +60,16 @@ var Vector = {
 
       var dataName = data.name;
       var values = [];
-      values.length = elements;
+      values.length = Math.floor( elements / stride );
 
-      if( window > 1 ) {
+      if( smoothingWindow > 1 ) {
         var values2 = [];
 
-        for( var i = 0; i < elements; ++i ) {
+        for( var i = 0; i < elements; i++ ) {
           var count = 0;
           var sum = 0;
-          var j0 = Math.max( 0, i-window-1 );
-          for( var j = i; j >= j0; --j ) {
+          var j0 = Math.max( 0, i-smoothingWindow-1 );
+          for( var j = i; j >= j0; j-- ) {
             var value = dataElements.elements[ j ];
             sum += value;
             count += 1;
@@ -85,7 +85,7 @@ var Vector = {
       }
 
       if( normalize ) {
-        for( var i = 0; i < elements; ++i ) {
+        for( var i = 0; i < elements; i += stride ) {
           var value = dataElements.elements[ i ];
           maxValue = Math.max( value, maxValue );
           minValue = Math.min( value, minValue );
@@ -97,13 +97,15 @@ var Vector = {
       }
 
       var i = 0;
-      for( i = 0; i < elements; ++i ) {
-        values[ i ] = dataElements.elements[ i ];
+      var k =0 ;
+      for( i = 0; i < elements; i += stride ) {
+        values[ k ] = dataElements.elements[ i ];
+        ++k;
       }
 
-      while( i < maxElements ) { // pad series
-        values[ i ] = 0;
-        ++i;
+      while( k < maxElements ) { // pad series
+        values[ k ] = 0;
+        k++;
       } 
      
       series[ d ] = {
