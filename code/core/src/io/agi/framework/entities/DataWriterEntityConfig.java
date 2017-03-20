@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016.
+ * Copyright (c) 2017.
  *
  * This file is part of Project AGI. <http://agi.io>
  *
@@ -20,21 +20,18 @@
 package io.agi.framework.entities;
 
 import io.agi.framework.EntityConfig;
-import io.agi.framework.persistence.models.ModelData;
 
 /**
  * Created by dave on 2/04/16.
  */
-public class VectorSeriesEntityConfig extends EntityConfig {
+public class DataWriterEntityConfig extends EntityConfig {
 
-    public int flushPeriod = -1; // number of samples before it flushes and clears -1 for infinite
-    public int period = 100; // number of samples before it wraps. -1 for infinite
+        public String dataNames = "";
 
-    public String encoding = ModelData.ENCODING_DENSE;
+        public int ageInterval = 1; // how often to write the data to disk
 
-    // for writing to disk:
-    public String writeFilePath = "";
-    public String writeFilePrefix = "";
-    public String writeFileExtension = "json";
+        public String writeFilePath = "";
+        public String writeFilePrefix = "";
+        public String writeFileExtension = "json";
 
 }

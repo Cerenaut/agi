@@ -197,6 +197,17 @@ public class Data2d {
         return matrix;
     }
 
+    public static int accumulatedVectorCount( Data existingVectors ) {
+
+        int oldHistoryLength = 0;
+
+        if( existingVectors != null ) {
+            oldHistoryLength = existingVectors._dataSize.getSize( DataSize.DIMENSION_Y );
+        }
+
+        return oldHistoryLength;
+    }
+
     /**
      * Incrementally builds a matrix of vectors x time by appending new vectors as they become available.
      *
@@ -239,6 +250,7 @@ public class Data2d {
             newOutput.copyRange( vector, offsetThis, offsetThat, elements );
         }
         else {
+            // fixed size matrix
             // rolling window
             DataSize ds = DataSize.create( DataSize.DIMENSION_X, elements, DataSize.DIMENSION_Y, period );
 

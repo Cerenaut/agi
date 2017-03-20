@@ -57,7 +57,7 @@ public class HttpDataHandler implements HttpHandler {
             Node n = Node.NodeInstance();
 
             String query = t.getRequestURI().getQuery();
-            _logger.info("Request: " + HttpDataHandler.CONTEXT + " " + query);
+            _logger.info( "Request: " + HttpDataHandler.CONTEXT + " " + query );
 
             String method = t.getRequestMethod();
 
@@ -96,29 +96,31 @@ public class HttpDataHandler implements HttpHandler {
                 }
 
                 // build the response
-                boolean first = true;
-
-                // TODO change to the faster StringBuilder approach
-                response += "[ ";
-
-                for( ModelData m : results ) {
-                    if( first ) {
-                        first = false;
-                    } else {
-                        response += ",";
-                    }
-
-                    response += "{ ";
-
-                    response += " \"name\": \"" + m.name + "\"" + ",";
-                    response += " \"refKeys\": \"" + m.refKeys + "\"" + ",";
-                    response += " \"sizes\": " + m.sizes + ",";
-                    response += " \"elements\": " + m.elements;
-
-                    response += " }";
-                }
-
-                response += " ]";
+//                boolean first = true;
+//
+//                response += "[ ";
+//                System.err.println( "Handling /data call 1." );
+//
+//                for( ModelData m : results ) {
+//                    if( first ) {
+//                        first = false;
+//                    } else {
+//                        response += ",";
+//                    }
+//
+//                    response += "{ ";
+//
+//                    response += " \"name\": \"" + m.name + "\"" + ",";
+//                    response += " \"refKeys\": \"" + m.refKeys + "\"" + ",";
+//                    response += " \"sizes\": " + m.sizes + ",";
+//                    response += " \"elements\": " + m.elements;
+//
+//                    response += " }";
+//                }
+//                System.err.println( "Handling /data call 2." );
+//
+//                response += " ]";
+                response = ModelData.ModelDatasToJsonString( results ); // high efficiency
 
                 status = 200;
             }

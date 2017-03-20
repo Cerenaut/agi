@@ -21,6 +21,8 @@ package io.agi.framework.persistence.models;
 
 
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.data.FloatArray;
@@ -29,9 +31,8 @@ import io.agi.framework.persistence.DataModelData;
 import io.agi.framework.persistence.DataDeserializer;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.lang.reflect.Type;
+import java.util.*;
 
 /**
  * Conversion to JSON for models.
@@ -189,6 +190,76 @@ public class ModelData {
         }
     }
 
+    /**
+     * Efficient implementation to convert to a string of valid JSON objects directly.
+     *
+     * @param modelDatas
+     * @return
+     */
+    public static String ModelDatasToJsonString( Collection< ModelData > modelDatas ) {
+        StringBuilder sb = new StringBuilder( 100 );
+
+        ModelDatasToJsonStringBuilder( modelDatas, sb );
+
+        String s = sb.toString();
+        return s;
+    }
+
+    /**
+     * Converts a collection of ModelData to serial form inside a StringBuilder, for efficiency.
+     *
+     * @param modelDatas
+     * @param sb
+     */
+    public static void ModelDatasToJsonStringBuilder( Collection< ModelData > modelDatas, StringBuilder sb ) {
+
+        sb.append( "[ " );
+
+        boolean first = true;
+
+        for( ModelData m : modelDatas ) {
+
+            if( first ) {
+                first = false;
+            } else {
+                sb.append( "," );
+            }
+
+            m.toString( sb );
+        }
+
+        sb.append( " ]" );
+    }
+
+    /**
+     * Converts this object to its serial form inside a StringBuilder, for efficiency.
+     * @param sb
+     */
+    public void toString( StringBuilder sb ) {
+        sb.append( "{ " );
+        sb.append( " \"name\": \"" + name + "\"" + "," );
+        sb.append( " \"refKeys\": \"" + refKeys + "\"" + ","  );
+        sb.append( " \"sizes\": " + sizes + ","  );
+        sb.append( " \"elements\": " );
+        sb.append( elements ); // big one
+        sb.append( " }" );
+    }
+
+    /**
+     * Attempts to deserialize a JSON array of ModelData objects.
+     *
+     * @param json
+     * @return
+     * @throws Exception
+     */
+    public static Collection< ModelData > StringToModelDatas( String json ) throws Exception {
+        Gson gson = new Gson();
+        Type listType = new TypeToken< List< ModelData > >() {
+        }.getType();
+
+        List< ModelData > modelDatas = gson.fromJson( json, listType );
+        return modelDatas;
+    }
 
     /**
      * Convert a DataSize object to the serialized form.

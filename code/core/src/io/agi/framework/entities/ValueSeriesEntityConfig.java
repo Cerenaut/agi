@@ -20,14 +20,22 @@
 package io.agi.framework.entities;
 
 import io.agi.framework.EntityConfig;
+import io.agi.framework.persistence.models.ModelData;
 
 /**
  * Created by dave on 2/04/16.
  */
 public class ValueSeriesEntityConfig extends EntityConfig {
 
+    public int flushPeriod = -1; // number of samples before it flushes and clears -1 for infinite
     public int period = 100; // number of samples before it wraps. -1 for infinite
     public String entityName;
     public String configPath;
+
+    // for writing to disk:
+    public String writeFileEncoding = ModelData.ENCODING_DENSE;
+    public String writeFilePath = "";
+    public String writeFilePrefix = "";
+    public String writeFileExtension = "json";
 
 }

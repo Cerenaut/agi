@@ -22,13 +22,16 @@ package io.agi.framework.entities;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.orm.ObjectMap;
+import io.agi.core.util.FileUtil;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
 import io.agi.framework.persistence.Persistence;
+import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
 
+import java.io.File;
 import java.util.Collection;
 
 /**
@@ -77,16 +80,26 @@ public class ValueSeriesEntity extends Entity {
 
         Data output;
 
-        if( config.period < 0 ) {
+        if( config.period < 0 ) { // keep infinite history
             Data input = getData( OUTPUT ); // error in classification (0,1)
             int oldLength = 0;
             if( input == null ) {
                 output = new Data( DataSize.create( 1 ) );
             }
             else {
-                // infinite length
+                // infinite length or accumulate and flush
                 oldLength = input.getSize();
-                output = new Data( DataSize.create( oldLength + 1 ) );
+                int newLength = oldLength +1;
+
+                if( ( config.flushPeriod >= 0 ) && ( oldLength >= config.flushPeriod ) ) { // truncate and flush?
+                    String key = getKey( OUTPUT );
+                    write( key, input, config );
+                    newLength = 1;
+                    oldLength = 0; // will cause nothing to be retained
+                }
+
+                output = new Data( DataSize.create( newLength ) );
+
                 for( int i = 0; i < oldLength; ++i ) {
                     output._values[ i ] = input._values[ i ];
                 }
@@ -95,7 +108,7 @@ public class ValueSeriesEntity extends Entity {
             output._values[ oldLength ] = newValue;
         }
         else {
-            // rolling window
+            // finite history rolling window
             output = getDataLazyResize( OUTPUT, DataSize.create( config.period ) );
 
             // shift all the old values 1 place
@@ -110,10 +123,24 @@ public class ValueSeriesEntity extends Entity {
                 output._values[ i2 ] = x1;
             }
 
-            output._values[ 0 ] = newValue;
+            output._values[ 0 ] = newValue; // most recent = 0
         }
 
         setData( OUTPUT, output );
     }
 
+    protected static void write( String key, Data accumulated, ValueSeriesEntityConfig config ) {
+
+        String filePathName = config.writeFilePath + File.separator + config.writeFilePrefix + "_" + config.age + "." + config.writeFileExtension;
+
+        _logger.info( "Writing Datas: " + key + " to file: " + filePathName );
+
+        StringBuilder sb = new StringBuilder( 100 );
+        ModelData md = new ModelData( key, accumulated, config.writeFileEncoding );
+        md.toString( sb );
+        boolean b = FileUtil.WriteFileMemoryEfficient( filePathName, sb ); // write the file efficiently
+        if( !b ) {
+            _logger.error( "Unable to serialize some Data objects to file." );
+        }
+    }
 }

@@ -23,6 +23,7 @@ import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
 import io.agi.core.data.DataSize;
 import io.agi.core.orm.ObjectMap;
+import io.agi.core.util.FileUtil;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Framework;
@@ -30,6 +31,7 @@ import io.agi.framework.Node;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
 
+import java.io.File;
 import java.util.Collection;
 
 /**
@@ -91,71 +93,36 @@ public class VectorSeriesEntity extends Entity {
         }
 
         Data oldOutput = getData( OUTPUT );
+
+        if( config.period < 0 ) { // keep infinite history
+            int oldLength = Data2d.accumulatedVectorCount( oldOutput );
+
+            if( ( config.flushPeriod >= 0 ) && ( oldLength >= config.flushPeriod ) ) { // truncate and flush?
+                if( oldLength >= config.period ) { // truncate and flush?
+                    String key = getKey( OUTPUT );
+                    write( key, oldOutput, config );
+                    oldOutput = null; // causes it to be forgotten
+                }
+            }
+        }
+
         Data newOutput = Data2d.accumulateVectors( input, config.period, oldOutput );
         setData( OUTPUT, newOutput );
+    }
 
-/*        int elements = input.getSize();
+    protected static void write( String key, Data accumulated, VectorSeriesEntityConfig config ) {
 
-        if( config.period < 0 ) {
-            // keep appending
-            Data oldOutput = getData( OUTPUT ); // error in classification (0,1)
+        String filePathName = config.writeFilePath + File.separator + config.writeFilePrefix + "_" + config.age + "." + config.writeFileExtension;
 
-            int oldHistoryLength = 0;
-            int newHistoryLength = 0;
+        _logger.info( "Writing Datas: " + key + " to file: " + filePathName );
 
-            if( oldOutput == null ) {
-                newHistoryLength = 1;
-            }
-            else {
-                // infinite length
-                oldHistoryLength = oldOutput._dataSize.getSize( DataSize.DIMENSION_Y );
-                newHistoryLength = oldHistoryLength + 1;
-            }
-
-            newOutput = new Data( DataSize.create( DataSize.DIMENSION_X, elements, DataSize.DIMENSION_Y, newHistoryLength ) );
-
-            // copy old vectors
-            int offsetThis = 0;
-            int offsetThat = 0;
-
-            if( oldOutput != null ) {
-                offsetThis = oldHistoryLength * elements;
-                newOutput.copyRange( oldOutput, 0, 0, oldHistoryLength * elements );
-            }
-
-            // append new vector
-            newOutput.copyRange( input, offsetThis, offsetThat, elements );
+        StringBuilder sb = new StringBuilder( 100 );
+        ModelData md = new ModelData( key, accumulated, config.encoding );
+        md.toString( sb );
+        boolean b = FileUtil.WriteFileMemoryEfficient( filePathName, sb ); // write the file efficiently
+        if( !b ) {
+            _logger.error( "Unable to serialize some Data objects to file." );
         }
-        else {
-            // rolling window
-            DataSize ds = DataSize.create( DataSize.DIMENSION_X, elements, DataSize.DIMENSION_Y, config.period );
-            newOutput = getDataLazyResize( OUTPUT, ds );
-
-            // it's slow, but ideally the picture makes sense when viewed. So to make this happen we need to shift all the data.
-            // shift all the old values 1 place
-            for( int i1 = config.period -2; i1 >= 0; --i1 ) {
-
-                int i2 = i1 + 1;
-                if( i2 >= config.period ) {
-                    continue;
-                }
-
-                for( int j = 0; j < elements; ++j ) {
-                    int offset1 = i1 * elements +j;
-                    int offset2 = i2 * elements +j;
-                    float x1 = newOutput._values[ offset1 ];
-                    newOutput._values[ offset2 ] = x1;
-                }
-            }
-
-            for( int j = 0; j < elements; ++j ) {
-                int offset2 = 0 * elements +j;
-                float x1 = input._values[ j ];
-                newOutput._values[ offset2 ] = x1;
-            }
-        }
-
-        setData( OUTPUT, newOutput );*/
     }
 
 }

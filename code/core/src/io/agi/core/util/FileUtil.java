@@ -19,7 +19,7 @@
 
 package io.agi.core.util;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -41,5 +41,47 @@ public class FileUtil {
     public static String readFile( String path ) throws IOException {
         byte[] encoded = Files.readAllBytes( Paths.get( path ) );
         return new String( encoded, Charset.defaultCharset() );
+    }
+
+    /**
+     * This is intended to be a common util for writing very large Strings (which we assume were created with
+     * StringBuilder, as this is to be encouraged) to a file. The objective is to minimize memory use.
+     *
+     * @param filePathName
+     * @param sb
+     * @return
+     */
+    public static boolean WriteFileMemoryEfficient( String filePathName, StringBuilder sb ) {
+
+        // Some performance tips for large files:
+        // http://stackoverflow.com/questions/1677194/dumping-a-java-stringbuilder-to-file
+
+        File f = null;
+        FileWriter writer = null;
+        boolean result = false;
+        boolean append = false;
+
+        try {
+            f = new File( filePathName );
+            writer = new FileWriter( f.getAbsoluteFile(), append );
+            writer.append( sb );
+            writer.close();
+            result = true;
+        }
+        catch( IOException ioe ) {
+            result = false;
+        }
+        finally {
+            if( writer != null ) {
+                try {
+                    writer.close();
+                }
+                catch( IOException ioe ) {
+
+                }
+            }
+        }
+
+        return result;
     }
 }

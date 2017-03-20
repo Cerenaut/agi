@@ -132,7 +132,7 @@ public class Framework {
             String inputEntity,
             String inputSuffix,
             ArrayList< AbstractPair< String, String > > referenceEntitySuffixes ) {
-        String inputKey = NamedObject.GetKey(inputEntity, inputSuffix);
+        String inputKey = NamedObject.GetKey( inputEntity, inputSuffix );
         String refKeys = "";
 
         for( AbstractPair< String, String > ap : referenceEntitySuffixes ) {
@@ -145,7 +145,7 @@ public class Framework {
             refKeys = refKeys + refKey;
         }
 
-        SetDataReference(inputKey, refKeys);
+        SetDataReference( inputKey, refKeys );
     }
 
     /**
@@ -392,18 +392,14 @@ public class Framework {
      * @throws Exception
      */
     public static void ImportData( String jsonData ) throws Exception {
-        Gson gson = new Gson();
-        try {
-            Type listType = new TypeToken< List< ModelData > >() {
-            }.getType();
+        Collection< ModelData > modelDatas = ModelData.StringToModelDatas( jsonData );
 
-            List< ModelData > modelDatas = gson.fromJson( jsonData, listType );
-            for( ModelData modelData : modelDatas ) {
-                Framework.SetData( modelData );
-            }
+        if( modelDatas == null ) {
+            return;
         }
-        catch( Exception e ) {
-            throw( e );
+
+        for( ModelData modelData : modelDatas ) {
+            Framework.SetData( modelData );
         }
     }
 
