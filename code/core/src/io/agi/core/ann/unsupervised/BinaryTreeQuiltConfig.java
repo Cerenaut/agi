@@ -49,6 +49,12 @@ public class BinaryTreeQuiltConfig extends NetworkConfig {//CompetitiveLearningC
     public static final String INPUT_2_WIDTH = "input-2-width";
     public static final String INPUT_2_HEIGHT = "input-2-height";
 
+    public static final String FIELD_1_OFFSET_X = "field-1-offset-x";
+    public static final String FIELD_1_OFFSET_Y = "field-1-offset-y";
+
+    public static final String FIELD_2_OFFSET_X = "field-2-offset-x";
+    public static final String FIELD_2_OFFSET_Y = "field-2-offset-y";
+
     public static final String FIELD_1_STRIDE_X = "field-1-stride-x";
     public static final String FIELD_1_STRIDE_Y = "field-1-stride-y";
 
@@ -69,6 +75,8 @@ public class BinaryTreeQuiltConfig extends NetworkConfig {//CompetitiveLearningC
             int quiltW, int quiltH,
             int input1W, int input1H,
             int input2W, int input2H,
+            int field1OffsetX, int field1OffsetY,
+            int field2OffsetX, int field2OffsetY,
             int field1StrideX, int field1StrideY,
             int field2StrideX, int field2StrideY,
             int field1SizeX, int field1SizeY,
@@ -82,6 +90,11 @@ public class BinaryTreeQuiltConfig extends NetworkConfig {//CompetitiveLearningC
         setInput1Height( input1H );
         setInput2Width( input2W );
         setInput2Height( input2H );
+
+        setField1OffsetX( field1OffsetX );
+        setField1OffsetY( field1OffsetY );
+        setField2OffsetX( field2OffsetX );
+        setField2OffsetY( field2OffsetY );
 
         setField1StrideX( field1StrideX );
         setField1StrideY( field1StrideY );
@@ -107,6 +120,11 @@ public class BinaryTreeQuiltConfig extends NetworkConfig {//CompetitiveLearningC
         setInput2Width( c.getInput2Width() );
         setInput2Height( c.getInput2Height() );
 
+        setField1OffsetX( c.getField1OffsetX() );
+        setField1OffsetY( c.getField1OffsetY() );
+        setField2OffsetX( c.getField2OffsetX() );
+        setField2OffsetY( c.getField2OffsetY() );
+
         setField1StrideX( c.getField1StrideX() );
         setField1StrideY( c.getField1StrideY() );
         setField2StrideX( c.getField2StrideX() );
@@ -126,21 +144,38 @@ public class BinaryTreeQuiltConfig extends NetworkConfig {//CompetitiveLearningC
         Rectangle r = new Rectangle();
         Point fieldSize = getField1Size();
         Point fieldStride = getField1Stride();
+        Point fieldOffset = getField1Offset();
         r.width  = fieldSize.x;
         r.height = fieldSize.y;
-        r.x = qx * fieldStride.x;
-        r.y = qy * fieldStride.y;
+        r.x = qx * fieldStride.x + fieldOffset.x;
+        r.y = qy * fieldStride.y + fieldOffset.y;
         return r;
     }
+
     public Rectangle getInputRect2( int qx, int qy ) {
         Rectangle r = new Rectangle();
         Point fieldSize = getField2Size();
         Point fieldStride = getField2Stride();
+        Point fieldOffset = getField2Offset();
         r.width  = fieldSize.x;
         r.height = fieldSize.y;
-        r.x = qx * fieldStride.x;
-        r.y = qy * fieldStride.y;
+        r.x = qx * fieldStride.x + fieldOffset.x;
+        r.y = qy * fieldStride.y + fieldOffset.y;
         return r;
+    }
+
+    public Point getField1Offset() {
+        Integer w = _om.getInteger( getKey( FIELD_1_OFFSET_X ) );
+        Integer h = _om.getInteger( getKey( FIELD_1_OFFSET_Y ) );
+        Point p = new Point( w, h );
+        return p;
+    }
+
+    public Point getField2Offset() {
+        Integer w = _om.getInteger( getKey( FIELD_2_OFFSET_X ) );
+        Integer h = _om.getInteger( getKey( FIELD_2_OFFSET_Y ) );
+        Point p = new Point( w, h );
+        return p;
     }
 
     public Point getField1Stride() {
@@ -206,6 +241,19 @@ public class BinaryTreeQuiltConfig extends NetworkConfig {//CompetitiveLearningC
     }
     public void setInput2Height( int input2H ) {
         _om.put( getKey( INPUT_2_HEIGHT ), input2H );
+    }
+
+    public void setField1OffsetX( int field1OffsetX ) {
+        _om.put( getKey( FIELD_1_OFFSET_X ), field1OffsetX );
+    }
+    public void setField1OffsetY( int field1OffsetY ) {
+        _om.put( getKey( FIELD_1_OFFSET_Y ), field1OffsetY );
+    }
+    public void setField2OffsetX( int field2OffsetX ) {
+        _om.put( getKey( FIELD_2_OFFSET_X ), field2OffsetX );
+    }
+    public void setField2OffsetY( int field2OffsetY ) {
+        _om.put( getKey( FIELD_2_OFFSET_Y ), field2OffsetY );
     }
 
     public void setField1StrideX( int field1StrideX ) {
@@ -280,6 +328,23 @@ public class BinaryTreeQuiltConfig extends NetworkConfig {//CompetitiveLearningC
     }
     public int getInput2Height() {
         Integer n = _om.getInteger( getKey( INPUT_2_HEIGHT ) );
+        return n.intValue();
+    }
+
+    public int getField1OffsetX() {
+        Integer n = _om.getInteger( getKey( FIELD_1_OFFSET_X ) );
+        return n.intValue();
+    }
+    public int getField1OffsetY() {
+        Integer n = _om.getInteger( getKey( FIELD_1_OFFSET_Y ) );
+        return n.intValue();
+    }
+    public int getField2OffsetX() {
+        Integer n = _om.getInteger( getKey( FIELD_2_OFFSET_X ) );
+        return n.intValue();
+    }
+    public int getField2OffsetY() {
+        Integer n = _om.getInteger( getKey( FIELD_2_OFFSET_Y ) );
         return n.intValue();
     }
 

@@ -54,7 +54,7 @@ public class PyramidRegionLayerConfig extends NetworkConfig {
 //    public static final String PREDICTOR_TRACE_DECAY_RATE = "predictor-trace-decay-rate";
 
 //    public static final String OUTPUT_CODING_SPARSITY_FACTOR = "output-coding-sparsity-factor";
-//    public static final String OUTPUT_SPIKE_AGE_MAX = "output-spike-age-max";
+    public static final String OUTPUT_SPIKE_AGE_MAX = "output-spike-age-max";
     public static final String OUTPUT_DECAY_RATE = "output-decay-rate";
 //    public static final String INTEGRATION_DECAY_RATE = "integration-decay-rate";
 //    public static final String INTEGRATION_SPIKE_WEIGHT = "integration-spike-weight";
@@ -109,6 +109,7 @@ public class PyramidRegionLayerConfig extends NetworkConfig {
             float predictorRegularization,
             int predictorBatchSize,
 
+            int outputSpikeAgeMax,
             float outputDecayRate ) {
 //            float outputCodingSparsityFactor ) {
 
@@ -149,6 +150,7 @@ public class PyramidRegionLayerConfig extends NetworkConfig {
         setPredictorBatchSize(predictorBatchSize);
 
 //        setOutputCodingSparsityFactor( outputCodingSparsityFactor );
+        setOutputSpikeAgeMax( outputSpikeAgeMax );
         setOutputDecayRate( outputDecayRate );
     }
 
@@ -242,6 +244,15 @@ public class PyramidRegionLayerConfig extends NetworkConfig {
 
     public void setOutputDecayRate( float r ) {
         _om.put( getKey( OUTPUT_DECAY_RATE ), r );
+    }
+
+    public int getOutputSpikeAgeMax() {
+        int r = _om.getInteger( getKey( OUTPUT_SPIKE_AGE_MAX ) );
+        return r;
+    }
+
+    public void setOutputSpikeAgeMax( int r ) {
+        _om.put( getKey( OUTPUT_SPIKE_AGE_MAX ), r );
     }
 
 //    public float getPredictorTraceDecayRate() {

@@ -34,16 +34,18 @@ public class QuiltedCompetitiveLearningEntityConfig extends EntityConfig {
     public int classifierWidth = 0;
     public int classifierHeight = 0;
 
-    // TODO add a field offset
+    public int field1OffsetX = 0;
+    public int field1OffsetY = 0;
+    public int field2OffsetX = 0;
+    public int field2OffsetY = 0;
+
     public int field1StrideX = 0;
     public int field1StrideY = 0;
-
     public int field2StrideX = 0;
     public int field2StrideY = 0;
 
     public int field1SizeX = 0;
     public int field1SizeY = 0;
-
     public int field2SizeX = 0;
     public int field2SizeY = 0;
 

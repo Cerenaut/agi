@@ -76,7 +76,7 @@ public class PyramidRegionLayerEntity extends Entity {
     public static final String OUTPUT_SPIKES_OLD = "output-spikes-old";
     public static final String OUTPUT_SPIKES_NEW = "output-spikes-new";
     public static final String OUTPUT = "output";
-//    public static final String OUTPUT_SPIKES_AGE = "output-spikes-age";
+    public static final String OUTPUT_SPIKES_AGE = "output-spikes-age";
 
 //    public static final String CLASSIFIER_WEIGHTS = "classifier-weights";
 //    public static final String CLASSIFIER_BIASES_1 = "classifier-biases-1";
@@ -144,12 +144,12 @@ public class PyramidRegionLayerEntity extends Entity {
 //        attributes.add( CLASSIFIER_SPIKES_OLD );
 //        attributes.add( CLASSIFIER_SPIKES_NEW );
 //        attributes.add( CLASSIFIER_SPIKES_INTEGRATED );
-//        attributes.add( OUTPUT_SPIKES_AGE );
+        attributes.add( OUTPUT_SPIKES_AGE );
 
 //        flags.putFlag( CLASSIFIER_SPIKES_OLD, DataFlags.FLAG_NODE_CACHE );
 //        flags.putFlag( CLASSIFIER_SPIKES_NEW, DataFlags.FLAG_NODE_CACHE );
 ////        flags.putFlag( CLASSIFIER_SPIKES_INTEGRATED, DataFlags.FLAG_NODE_CACHE );
-////        flags.putFlag( OUTPUT_SPIKES_AGE, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( OUTPUT_SPIKES_AGE, DataFlags.FLAG_NODE_CACHE );
 //
 //        flags.putFlag( CLASSIFIER_SPIKES_OLD, DataFlags.FLAG_SPARSE_BINARY );
 //        flags.putFlag( CLASSIFIER_SPIKES_NEW, DataFlags.FLAG_SPARSE_BINARY );
@@ -351,6 +351,7 @@ public class PyramidRegionLayerEntity extends Entity {
             config.predictorLeakiness,
             config.predictorRegularization,
             config.predictorBatchSize,
+            config.outputSpikeAgeMax,
             config.outputDecayRate );
 
         PyramidRegionLayer rl = new PyramidRegionLayer( regionLayerName, om );
@@ -363,7 +364,8 @@ public class PyramidRegionLayerEntity extends Entity {
             config.resetDelayed = false;
         }
 
-        rl._rc.setLearn( config.learn );
+        copyConfigChangesFromPersistence( rl, config );
+
         rl.update();
 
         // Save config changes caused by the algorithm
@@ -373,8 +375,14 @@ public class PyramidRegionLayerEntity extends Entity {
         copyDataToPersistence( rl );
     }
 
+    protected void copyConfigChangesFromPersistence( PyramidRegionLayer rl, PyramidRegionLayerEntityConfig config ) {
+        rl._predictor._ffn._c.setBatchCount( config.predictorBatchCount );
+        rl._rc.setLearn( config.learn );
+    }
+
     protected void copyConfigChangesToPersistence( PyramidRegionLayer rl, PyramidRegionLayerEntityConfig config ) {
 
+        config.predictorBatchCount = rl._predictor._ffn._c.getBatchCount();
 //        config.sumClassifierError = rl._sumClassifierError;
 //        config.sumClassifierResponse = rl._sumClassifierResponse;
         config.sumOutputSpikes = rl._sumOutputSpikes;
@@ -402,8 +410,8 @@ public class PyramidRegionLayerEntity extends Entity {
 
         rl._outputSpikesOld = getDataLazyResize( OUTPUT_SPIKES_OLD, rl._outputSpikesOld._dataSize );
         rl._outputSpikesNew = getDataLazyResize( OUTPUT_SPIKES_NEW, rl._outputSpikesNew._dataSize );
+        rl._outputSpikesAge = getDataLazyResize( OUTPUT_SPIKES_AGE, rl._outputSpikesAge._dataSize );
         rl._output = getDataLazyResize( OUTPUT, rl._output._dataSize );
-//        rl._outputSpikesAge = getDataLazyResize(OUTPUT_SPIKES_AGE, rl._outputSpikesAge._dataSize);
 
         rl._predictionErrorFP = getDataLazyResize( PREDICTION_ERROR_FP, rl._predictionErrorFP._dataSize );
         rl._predictionErrorFN = getDataLazyResize( PREDICTION_ERROR_FN, rl._predictionErrorFN._dataSize );
@@ -467,8 +475,8 @@ public class PyramidRegionLayerEntity extends Entity {
 
         setData( OUTPUT_SPIKES_OLD, rl._outputSpikesOld );
         setData( OUTPUT_SPIKES_NEW, rl._outputSpikesNew );
+        setData( OUTPUT_SPIKES_AGE, rl._outputSpikesAge );
         setData( OUTPUT, rl._output );
-//        setData( OUTPUT_SPIKES_AGE, rl._outputSpikesAge );
 
         setData( PREDICTION_ERROR_FP, rl._predictionErrorFP );
         setData( PREDICTION_ERROR_FN, rl._predictionErrorFN );

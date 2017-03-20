@@ -70,7 +70,7 @@ public class PyramidRegionLayer extends NamedObject {
 //    public Data _spikesIntegrated; // apical dendrite spikes
     public Data _outputSpikesOld; // axon spikes
     public Data _outputSpikesNew; // axon spikes
-//    public Data _outputSpikesAge; // axon spikes
+    public Data _outputSpikesAge; // used to hold some spikes active and defer decay to ensure some pooling
     public Data _output; // integrated output over time
 
     public Data _predictionErrorFP;
@@ -161,7 +161,7 @@ public class PyramidRegionLayer extends NamedObject {
 
         _outputSpikesOld = new Data( dataSizeCells );
         _outputSpikesNew = new Data( dataSizeCells );
-//        _outputSpikesAge = new Data( dataSizeCells );
+        _outputSpikesAge = new Data( dataSizeCells );
         _output = new Data( dataSizeCells );
 
         _predictionErrorFP = new Data( dataSizeCells );
@@ -193,7 +193,7 @@ public class PyramidRegionLayer extends NamedObject {
 
         _outputSpikesOld.set( 0f );
         _outputSpikesNew.set( 0f );
-//        _outputSpikesAge.set( 0f );
+        _outputSpikesAge.set( 0f );
         _output.set( 0f );
 
 //        _inputC1Predicted.set( 0f );
@@ -532,15 +532,44 @@ public class PyramidRegionLayer extends NamedObject {
         // decay existing values depending on how many new bits are introduced
         // this means that when stability is achieved, history can become arbitrarily long..
         // http://www.wolframalpha.com/input/?i=y+%3D+0.9%5Ex+for+x+%3D+0+to+20
-        float outputDecayRate = this._rc.getOutputDecayRate();
+        float outputDecayRate = _rc.getOutputDecayRate();
         float errorBits = (float)_transient._predictionErrorFN.size();
         float decayRate = (float)Math.pow( outputDecayRate, errorBits ); // N.B if errorBits = 0 then decayRate = 1 (unchanged)
         _output.mul( decayRate );
 
+        // restore any recent spikes to full output, based on age
+        // This is to ensure some temporal pooling occurs.
+        float ageMax = 2; //
+        int cells = _outputSpikesAge.getSize();
+        for( int c = 0; c < cells; ++c ) {
+            float oldAge = _outputSpikesAge._values[ c ];
+            if( oldAge <= 0f ) {
+                continue; // cell is decaying or silent already
+            }
+
+            // MaxAge = 2
+            // Spike Age (in) Age (out) Output
+            //  1       0        1         1
+            //  0       1        2         1
+            //  0       2      3=>0        0
+            float newAge = oldAge +1;
+
+            if( oldAge > ageMax ) {
+                newAge = 0;
+            }
+            else { // oldAge <= ageMax
+                _output._values[ c ] = 1f;
+            }
+
+            _outputSpikesAge._values[ c ] = newAge;
+        }
+
+        // deal with new spikes
         _transient._spikesOut = new HashSet< Integer >();
 
         for( Integer i : _transient._predictionErrorFN ) {
             _outputSpikesNew._values[ i ] = 1.f;
+            _outputSpikesAge._values[ i ] = 1.f; // nonzero
             _transient._spikesOut.add( i );
             _output._values[ i ] = 1f;
         }

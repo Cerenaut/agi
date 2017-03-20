@@ -213,6 +213,8 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
             config.quiltWidth, config.quiltHeight,
             input1Width, input1Height,
             input2Width, input2Height,
+            config.field1OffsetX, config.field1OffsetY,
+            config.field2OffsetX, config.field2OffsetY,
             config.field1StrideX, config.field1StrideY,
             config.field2StrideX, config.field2StrideY,
             config.field1SizeX, config.field1SizeY,

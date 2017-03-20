@@ -54,8 +54,10 @@ public class PyramidRegionLayerEntityConfig extends EntityConfig {
     public float predictorLeakiness = 0.0f;
     public float predictorRegularization = 0.0f;
     public int predictorBatchSize = 0;
+    public int predictorBatchCount = 0;
 
     public float outputDecayRate = 0.0f;
+    public int outputSpikeAgeMax = 0;
 
 //    float outputCodingSparsityFactor = 2.0f; // density of output including history
 
