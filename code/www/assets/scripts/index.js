@@ -102,6 +102,12 @@ var Search = {
           if( type == "quilted-competitive-learning" ) {
             linksValue = linksValue + " / <a href='quilt.html?entity="+ objectName + "' title='Open Quilted Competitive Learning UI' target='_blank'><b>Quilt UI</b></a>"
           }
+          if( type == "quilt-predictor" ) {
+            linksValue = linksValue + " / <a href='quilt-predictor.html?entity="+ objectName + "' title='Open Quilt Predictor UI' target='_blank'><b>Quilt Predictor UI</b></a>"
+          }
+          if( type == "predictive-coding" ) {
+            linksValue = linksValue + " / <a href='temporal-pooler.html?entity="+ objectName + "' title='Open Temporal Pooler UI' target='_blank'><b>Temporal Pooler UI</b></a>"
+          }
         }
       }
       else if( Search.type == "data" ) {

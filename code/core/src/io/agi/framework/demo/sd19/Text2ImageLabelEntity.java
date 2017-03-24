@@ -104,8 +104,8 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
         Text2ImageLabelEntityConfig config = (Text2ImageLabelEntityConfig ) _config;
 
         // Load all files in training and testing folders.
-        _logger.info( "Training files folder: " + config.sourceTextFileTraining );
-        _logger.info("Testing files folder: " + config.sourceTextFileTesting);
+        _logger.debug( "Training files folder: " + config.sourceTextFileTraining );
+        _logger.debug("Testing files folder: " + config.sourceTextFileTesting);
 
         try {
             _textTraining = FileUtil.readFile( config.sourceTextFileTraining );
@@ -253,7 +253,7 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
         text = getText();; // phase may have changed
         checkPhase();
 
-        _logger.warn( "=======> Training text: " + _textTraining.length() + " testing text: " + _textTesting.length() + " index: " + config.charIndex + " phase " + config.phase );
+        _logger.info( "Update. Age: " + config.age + " epoch: " + config.epoch + " Training text: " + _textTraining.length() + " testing text: " + _textTesting.length() + " index: " + config.charIndex + " phase " + config.phase );
 
         checkAllEpochsComplete();
 
@@ -266,7 +266,7 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
             resetCharIndex();
 //            updateDigitIndex();
             config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
-            _logger.warn( "=======> Terminating on no more images to serve. (3)" );
+            _logger.info( "=======> Terminating on no more images to serve. (3)" );
         }
 
         // get the digits
