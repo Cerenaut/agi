@@ -228,7 +228,7 @@ public class Framework {
      */
     public static void SetConfig( String entityName, EntityConfig config ) {
 
-        _logger.info( "Set config of: " + entityName + " to the following: " +
+        _logger.debug( "Set config of: " + entityName + " to the following: " +
                 new GsonBuilder().setPrettyPrinting().create().toJson( config ) );
 
         Persistence persistence = Node.NodeInstance().getPersistence();
@@ -242,7 +242,7 @@ public class Framework {
      */
     public static void SetConfig( String entityName, String configPath, String value ) {
 
-        _logger.info( "Set config of: " + entityName + " path: " + configPath + " value: " + value );
+        _logger.debug( "Set config of: " + entityName + " path: " + configPath + " value: " + value );
 
         Persistence persistence = Node.NodeInstance().getPersistence();
         ModelEntity modelEntity = persistence.fetchEntity( entityName );
@@ -362,7 +362,7 @@ public class Framework {
             List< ModelEntity > entities = gson.fromJson( jsonEntities, listType );
 
             for( ModelEntity modelEntity : entities ) {
-                _logger.info( "Persisting Entity of type: " + modelEntity.type + ", that is hosted at Node: " + modelEntity.node );
+                _logger.debug( "Creating Entity of type: " + modelEntity.type + ", that is hosted at Node: " + modelEntity.node );
                 CreateEntity( modelEntity );
             }
         }
@@ -451,7 +451,7 @@ public class Framework {
 
             List< ModelDataReference > references = gson.fromJson( jsonEntity, listType );
             for( ModelDataReference modelDataReference : references ) {
-                _logger.info( "Persisting data input reference for data: " + modelDataReference.dataKey + " with input data keys: " + modelDataReference.refKeys );
+                _logger.debug( "Persisting data input reference for data: " + modelDataReference.dataKey + " with input data keys: " + modelDataReference.refKeys );
                 Framework.SetDataReference( modelDataReference.dataKey, modelDataReference.refKeys );
             }
         }
@@ -472,7 +472,7 @@ public class Framework {
 
             for( ModelEntityConfigPath modelConfig : modelConfigs ) {
 
-                _logger.info( "Persisting entity: " + modelConfig.entityName + " config path: " + modelConfig.configPath + " value: " + modelConfig.configValue );
+                _logger.debug( "Persisting entity: " + modelConfig.entityName + " config path: " + modelConfig.configPath + " value: " + modelConfig.configValue );
 
                 Framework.SetConfig( modelConfig.entityName, modelConfig.configPath, modelConfig.configValue );
             }
@@ -523,7 +523,7 @@ public class Framework {
     protected static void GetEntityDataSubtree( String entityName, Collection< ModelData > modelDatas ) {
         Node node = Node.NodeInstance();
 
-        _logger.warn( "Entity = " + entityName );
+        _logger.debug( "Get subtree for entity: " + entityName );
         MemoryUtil.logMemory( _logger );
 
         AddEntityData( entityName, modelDatas );
@@ -638,7 +638,7 @@ public class Framework {
             success = true;
         }
         catch( IOException e ) {
-            _logger.error( "Unable to save subtree.");
+            _logger.error( "Unable to save subtree for entity: " + entityName );
             _logger.error( e.toString(), e );
         }
 

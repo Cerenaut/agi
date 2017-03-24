@@ -197,19 +197,19 @@ public abstract class Entity extends NamedObject implements EntityListener, Data
     protected void beforeUpdate() {
         String entityName = getName();
         int age = _config.age; // getPropertyInt( SUFFIX_AGE, 1 );
-        _logger.info("START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName);
+        _logger.debug( "START T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity.update(): " + entityName );
     }
 
     protected void afterUpdate() {
         String entityName = getName();
         int age = _config.age; // getPropertyInt(SUFFIX_AGE, 1);
-        _logger.info( "END   T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity updated: " + entityName );
+        _logger.debug( "END   T: " + System.currentTimeMillis() + " Age " + age + " Thread " + Thread.currentThread().hashCode() + " Entity updated: " + entityName );
 
         _n.notifyUpdated(entityName); // this entity, the parent, is now complete
     }
 
     public void onEntityUpdated( String entityName ) {
-        _logger.debug("Entity: " + getName() + " being notified about: " + entityName);
+        _logger.debug( "Entity: " + getName() + " being notified about: " + entityName );
         synchronized( _childrenWaiting ) {
             _childrenWaiting.remove( entityName );
 

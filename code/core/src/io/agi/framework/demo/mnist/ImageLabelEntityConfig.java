@@ -43,35 +43,35 @@ public class ImageLabelEntityConfig extends EntityConfig {
         int resolutionY;
     }
 
-    ReceptiveField receptiveField = new ReceptiveField();
-    Resolution resolution = new Resolution();
-    boolean greyscale;
-    boolean invert;
+    public ReceptiveField receptiveField = new ReceptiveField();
+    public Resolution resolution = new Resolution();
+    public boolean greyscale;
+    public boolean invert;
 
-    String sourceFilesPathTraining;
-    String sourceFilesPathTesting;
-    String sourceFilesLabelDelimiter = "_";
-    int sourceFilesLabelIndex = 2;
+    public String sourceFilesPathTraining;
+    public String sourceFilesPathTesting;
+    public String sourceFilesLabelDelimiter = "_";
+    public int sourceFilesLabelIndex = 2;
 
-    String trainingEntities = "";
-    String testingEntities = "";
+    public String trainingEntities = "";
+    public String testingEntities = "";
 
-    int epoch = 0;
-    int trainingEpochs = 1;
-    int testingEpochs = 1;
+    public int epoch = 0;
+    public int trainingEpochs = 1;
+    public int testingEpochs = 1;
 
-    boolean shuffle = true;
-    boolean shuffleTraining = true;
-    boolean shuffleTesting = false;
-    long shuffleSeed = 0;
+    public boolean shuffle = true;
+    public boolean shuffleTraining = true;
+    public boolean shuffleTesting = false;
+    public long shuffleSeed = 0;
 
-    int imageLabel = 0;
-    int imageIndex = 0;
-    int imageRepeat = 0; // index of image repeat
-    int imageRepeats = 1; // 1 repeat = show once only
+    public int imageLabel = 0;
+    public int imageIndex = 0;
+    public int imageRepeat = 0; // index of image repeat
+    public int imageRepeats = 1; // 1 repeat = show once only
 
-    boolean terminate = false; // trigger to stop generating images
-    String phase = PHASE_TRAINING;
+    public boolean terminate = false; // trigger to stop generating images
+    public String phase = PHASE_TRAINING;
 
     public Rectangle getReceptiveField() {
         Rectangle rectangle = new Rectangle( receptiveField.receptiveFieldX, receptiveField.receptiveFieldY, receptiveField.receptiveFieldW, receptiveField.receptiveFieldH );

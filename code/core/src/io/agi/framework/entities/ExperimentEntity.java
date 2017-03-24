@@ -69,7 +69,7 @@ public class ExperimentEntity extends Entity {
         // Get all the parameters:
         ExperimentEntityConfig config = ( ExperimentEntityConfig ) _config;
 
-        _logger.info( getName() + " experiment age: " + _config.age + " terminationAge: " + ( ( ExperimentEntityConfig ) _config ).terminationAge );
+        _logger.debug( "Experiment: " + getName() + " age: " + _config.age + " terminationAge: " + ( (ExperimentEntityConfig) _config ).terminationAge );
 
         if( config.terminating ) {
             config.terminated = true; // it already updated after starting to terminate.
@@ -77,7 +77,7 @@ public class ExperimentEntity extends Entity {
 
         // reset if age == 0
         if( config.age == 0 ) {
-            _logger.info( getName() + " experiment enabling reset because age is 0." );
+            _logger.info( "Experiment: " + getName() + " enabling reset because age is 0." );
             config.reset = true; // will be turned off automatically
         }
 
@@ -90,7 +90,7 @@ public class ExperimentEntity extends Entity {
 
             if( b != null ) {
                 if( b ) {
-                    _logger.info( getName() + " experiment terminating due to external condition." );
+                    _logger.info( "Experiment: " + getName() + " terminating due to external condition." );
                     config.terminate = true;
                 }
 // don't force un-terminate...
@@ -107,20 +107,20 @@ public class ExperimentEntity extends Entity {
         // see if we should terminate based on age.
         if( config.terminationAge >= 0 ) {
             if( config.age >= config.terminationAge ) {
-                _logger.info( getName() + " experiment terminating due age (" + config.age + ") greater than threshold (" + config.terminationAge + ")." );
+                _logger.info( "Experiment: " + getName() + " terminating due age (" + config.age + ") greater than threshold (" + config.terminationAge + ")." );
                 config.terminate = true;
             }
         }
 
         // flush if we will be terminating.
         if( config.terminate ) {
-            _logger.info( getName() + " experiment enabling flush due to imminent termination." );
+            _logger.info( "Experiment: " + getName() + " enabling flush due to imminent termination." );
             config.flush = true; // ensure data is flushed. Since this is the end of the experiment, we don't need to disable flush again
         }
 
         // if reset, then undo any termination:
         if( config.reset ) {
-            _logger.info( getName() + " experiment undoing termination condition due to reset event." );
+            _logger.info( "Experiment: " + getName() + " undoing termination condition due to reset event." );
             config.terminate = false;
             config.terminating = false;
             config.terminated = false;
@@ -137,7 +137,7 @@ public class ExperimentEntity extends Entity {
         ExperimentEntityConfig config = ( ExperimentEntityConfig ) _config;
 
         if( ( !config.terminated ) && ( !config.pause ) ) {
-            _logger.info( getName() + " experiment requesting another update." );
+            _logger.debug( "Experiment: " + getName() + " requesting another update." );
             _n.requestUpdate( getName() ); // queue another update.
         }
     }

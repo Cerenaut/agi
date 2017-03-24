@@ -96,8 +96,8 @@ public class ImageLabelEntity extends Entity {
 
     public int getShuffledIndex( BufferedImageSourceImageFile bis, long shuffleSeed, int imageIndex ) {
         int nbrImages = bis.getNbrImages();
-        int shuffled = _shuffledIndex.getShuffledIndexLazy(nbrImages, shuffleSeed, imageIndex);
-        _logger.warn("Shuffle: Mapping index: " + imageIndex + " to index: " + shuffled + ".");
+        int shuffled = _shuffledIndex.getShuffledIndexLazy( nbrImages, shuffleSeed, imageIndex );
+        _logger.debug( "Shuffle: Mapping index: " + imageIndex + " to index: " + shuffled + "." );
         return shuffled;
     }
 
@@ -106,8 +106,8 @@ public class ImageLabelEntity extends Entity {
         ImageLabelEntityConfig config = (ImageLabelEntityConfig) _config;
 
         // Load all files in training and testing folders.
-        _logger.info( "Training files folder: " + config.sourceFilesPathTraining );
-        _logger.info( "Testing files folder: " + config.sourceFilesPathTesting );
+        _logger.debug( "Training files folder[s]: " + config.sourceFilesPathTraining );
+        _logger.debug( "Testing files folder[s]: " + config.sourceFilesPathTesting );
 
         _bisTraining = new BufferedImageSourceImageFile( config.sourceFilesPathTraining );
         _bisTesting = new BufferedImageSourceImageFile( config.sourceFilesPathTesting );
@@ -229,7 +229,7 @@ public class ImageLabelEntity extends Entity {
         BufferedImageSourceImageFile bis = getBufferedImageSource(); // for current phase
         int images = bis.getNbrImages();
         if( config.imageIndex >= images ) { // the raw count
-            _logger.info("End of image dataset: Epoch complete." );
+            _logger.info( "End of image dataset: Epoch complete." );
             onImageOutOfBounds();
             onEpochComplete();
         }
@@ -265,7 +265,7 @@ public class ImageLabelEntity extends Entity {
         // Also set learning status of entities
         // May have changed from training to testing.
         // This can happen because above we may roll over into a new batch
-        _logger.warn("=======> Training set: " + trainingImages + " testing set: " + testingImages + " epoch: " + config.epoch + " index: " + config.imageIndex + " repeat: " + config.imageRepeat + " phase " + config.phase );
+        _logger.info( "Update. Age: " + config.age + " Training set: " + trainingImages + " testing set: " + testingImages + " epoch: " + config.epoch + " index: " + config.imageIndex + " repeat: " + config.imageRepeat + " phase " + config.phase );
 
         checkEpochComplete();
         checkPhase(); // sets up learn flags for entities. Phase may have changed due to completed epoch
@@ -279,7 +279,7 @@ public class ImageLabelEntity extends Entity {
         if( !inRange ) { // does occur?
             onImageOutOfBounds();
             config.terminate = true; // Stop experiment. Experiment must be hooked up to listen to this.
-            _logger.warn( "=======> Terminating on no more images to serve. (3)" );
+            _logger.info( "Terminating on no more images to serve. (3)" );
             //shuffledIndex = getShuffledIndex( bis, config.shuffleSeed, config.imageIndex );
             //bis.seek( shuffledIndex ); // seek first image
             imageIndex = getImageIndex();
@@ -303,21 +303,21 @@ public class ImageLabelEntity extends Entity {
     protected void updateImageLabelOutput( BufferedImageSourceImageFile bis, Integer imageLabel ) {
 
         if( imageLabel == null ) {
-            _logger.error( "=======> !! Could not get image classification, so unable to output an image or label. (a)" );
+            _logger.error( "Could not get image classification, so unable to output an image or label. (a)" );
             return;
         }
 
         ImageScreenScraper imageScreenScraper = createImageScreenScraper( bis );
         boolean scraped = imageScreenScraper.scrape(); // get the current image
         if( !scraped ) {
-            _logger.error( "=======> !! Could not scrape image, so unable to output an image or label. (b)" );
+            _logger.error( "Could not scrape image, so unable to output an image or label. (b)" );
             return;
         }
 
         Data image = imageScreenScraper.getData();
 
         if( image == null ) {
-            _logger.error( "=======> !! Could not get image, so unable to output an image or label. (c)" );
+            _logger.error( "Could not get image, so unable to output an image or label. (c)" );
             return;
         }
 
@@ -344,7 +344,7 @@ public class ImageLabelEntity extends Entity {
             return c;
         }
         catch( Exception e ) {
-            _logger.error( "Unable to get image classification" );
+            _logger.error( "Unable to get image classification from filename." );
             _logger.error( e.toString(), e );
             return null;
         }

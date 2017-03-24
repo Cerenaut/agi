@@ -258,6 +258,9 @@ public class ModelData {
         }.getType();
 
         List< ModelData > modelDatas = gson.fromJson( json, listType );
+
+        // implement decoding?
+
         return modelDatas;
     }
 

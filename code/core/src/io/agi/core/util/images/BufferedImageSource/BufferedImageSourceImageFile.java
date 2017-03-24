@@ -57,7 +57,7 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
         _folderNames = folderNames;
         _fileNames = new ArrayList<>();
 
-        _logger.info( "Folder names = " + folderNames );
+        _logger.debug( "Folder names = " + folderNames );
 
         String[] folders = folderNames.split( "," );
         for( String folderName : folders ) {
@@ -71,7 +71,7 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
                 DirectoryStream< Path > directoryStream = null;
                 try {
 
-                    _logger.info( "Reading files in folder: " + folderName );
+                    _logger.debug( "Reading files in folder: " + folderName );
 
                     directoryStream = Files.newDirectoryStream( Paths.get( folderName ) );
                     for( Path path : directoryStream ) {
@@ -79,7 +79,7 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
                     }
                 }
                 catch( IOException ex ) {
-                    System.err.println( "IO Exception reading files in folder: " + folderName );
+                    _logger.error( "IO Exception reading files in folder: " + folderName );
                 }
                 finally {
                     if( directoryStream != null ) {
@@ -87,14 +87,14 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
                             directoryStream.close();
                         }
                         catch( Exception e ) {
-                            System.err.println( "Exception closing directory stream from folder: " + folderName );
-                            e.printStackTrace();
+                            _logger.error( "Exception closing directory stream from folder: " + folderName );
+                            //e.printStackTrace();
                         }
                     }
                 }
             }
             else {
-                System.err.println( "ERROR: " + folderName + " is a file but should be a directory." );
+                _logger.error( "ERROR: " + folderName + " is a file but should be a directory." );
             }
         }
         Collections.sort( _fileNames );
