@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016.
+ * Copyright (c) 2017.
  *
  * This file is part of Project AGI. <http://agi.io>
  *
@@ -17,26 +17,26 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.demo.mnist;
+package io.agi.framework.demo.sd19;
 
 import io.agi.core.orm.AbstractPair;
-import io.agi.core.sdr.IntegerEncoder;
 import io.agi.core.util.PropertiesUtil;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
+import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.factories.CommonEntityFactory;
-import sun.security.ssl.HandshakeInStream;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Properties;
 
 /**
  * Created by dave on 8/07/16.
  */
-public class PyramidRegionLayerLabelsDemo {
+public class PyramidRegionLayerLabelsDemo2 {
 
     public static final int TEST_TYPE_IMAGE_SEQUENCE = 0;
     public static final int TEST_TYPE_TEXT_SEQUENCE  = 1;
@@ -172,6 +172,7 @@ public class PyramidRegionLayerLabelsDemo {
         String valueSeriesTruthName     = Framework.GetEntityName( "value-series-truth" );
         String valueSeriesErrorFnName   = Framework.GetEntityName( "value-series-error-fn" );
         String dataQueuePredictionName  = Framework.GetEntityName( "data-queue-prediction" );
+
         String dataQueueOutput1Name     = Framework.GetEntityName( "data-queue-output-1" );
         String dataQueueOutput2Name     = Framework.GetEntityName( "data-queue-output-2" );
         String dataQueueOutput3Name     = Framework.GetEntityName( "data-queue-output-3" );
@@ -186,12 +187,26 @@ public class PyramidRegionLayerLabelsDemo {
         String classifier5Name           = Framework.GetEntityName( "classifier-5" );
         String classifier6Name           = Framework.GetEntityName( "classifier-6" );
 
-        String regionLayer1Name         = Framework.GetEntityName( "region-layer-1" );
-        String regionLayer2Name         = Framework.GetEntityName( "region-layer-2" );
-        String regionLayer3Name         = Framework.GetEntityName( "region-layer-3" );
-        String regionLayer4Name         = Framework.GetEntityName( "region-layer-4" );
-        String regionLayer5Name         = Framework.GetEntityName( "region-layer-5" );
-        String regionLayer6Name         = Framework.GetEntityName( "region-layer-6" );
+//        String regionLayer1Name         = Framework.GetEntityName( "region-layer-1" );
+//        String regionLayer2Name         = Framework.GetEntityName( "region-layer-2" );
+//        String regionLayer3Name         = Framework.GetEntityName( "region-layer-3" );
+//        String regionLayer4Name         = Framework.GetEntityName( "region-layer-4" );
+//        String regionLayer5Name         = Framework.GetEntityName( "region-layer-5" );
+//        String regionLayer6Name         = Framework.GetEntityName( "region-layer-6" );
+
+        String predictor1Name         = Framework.GetEntityName( "predictor-1" );
+        String predictor2Name         = Framework.GetEntityName( "predictor-2" );
+        String predictor3Name         = Framework.GetEntityName( "predictor-3" );
+        String predictor4Name         = Framework.GetEntityName( "predictor-4" );
+        String predictor5Name         = Framework.GetEntityName( "predictor-5" );
+        String predictor6Name         = Framework.GetEntityName( "predictor-6" );
+
+        String pooler1Name         = Framework.GetEntityName( "pooler-1" );
+        String pooler2Name         = Framework.GetEntityName( "pooler-2" );
+        String pooler3Name         = Framework.GetEntityName( "pooler-3" );
+        String pooler4Name         = Framework.GetEntityName( "pooler-4" );
+        String pooler5Name         = Framework.GetEntityName( "pooler-5" );
+        String pooler6Name         = Framework.GetEntityName( "pooler-6" );
 
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), experimentName ); // ok all input to the regions is ready
@@ -210,56 +225,141 @@ public class PyramidRegionLayerLabelsDemo {
         ArrayList< String > learningEntities = new ArrayList< String >();
 
         String previousName = imageSourceName;
-        Framework.CreateEntity( classifier1Name, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), previousName );
+/*        Framework.CreateEntity( classifier1Name, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), previousName );
         previousName = classifier1Name;
         learningEntities.add( previousName );
 
-        Framework.CreateEntity( regionLayer1Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), previousName );
-        previousName = regionLayer1Name;
+        Framework.CreateEntity( predictor1Name, QuiltPredictorEntity.ENTITY_TYPE, n.getName(), previousName );
+        previousName = predictor1Name;
+        learningEntities.add( previousName );
+
+        Framework.CreateEntity( pooler1Name, PredictiveCodingEntity.ENTITY_TYPE, n.getName(), previousName );
+        previousName = pooler1Name;
         learningEntities.add( previousName );
 
         Framework.CreateEntity( classifier2Name, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), previousName );
         previousName = classifier2Name;
         learningEntities.add( previousName );
 
-        Framework.CreateEntity( regionLayer2Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), previousName );
-        previousName = regionLayer2Name;
+        Framework.CreateEntity( predictor2Name, QuiltPredictorEntity.ENTITY_TYPE, n.getName(), previousName );
+        previousName = predictor2Name;
+        learningEntities.add( previousName );
+
+        Framework.CreateEntity( pooler2Name, PredictiveCodingEntity.ENTITY_TYPE, n.getName(), previousName );
+        previousName = pooler2Name;
         learningEntities.add( previousName );
 
         Framework.CreateEntity( classifier3Name, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), previousName );
         previousName = classifier3Name;
         learningEntities.add( previousName );
 
-        Framework.CreateEntity( regionLayer3Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), previousName );
-        previousName = regionLayer3Name;
+        Framework.CreateEntity( predictor3Name, QuiltPredictorEntity.ENTITY_TYPE, n.getName(), previousName );
+        previousName = predictor3Name;
+        learningEntities.add( previousName );
+
+        Framework.CreateEntity( pooler3Name, PredictiveCodingEntity.ENTITY_TYPE, n.getName(), previousName );
+        previousName = pooler3Name;
         learningEntities.add( previousName );
 
         Framework.CreateEntity( classifier4Name, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), previousName );
         previousName = classifier4Name;
         learningEntities.add( previousName );
 
-        Framework.CreateEntity( regionLayer4Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), previousName );
-        previousName = regionLayer4Name;
+        Framework.CreateEntity( predictor4Name, QuiltPredictorEntity.ENTITY_TYPE, n.getName(), previousName );
+        previousName = predictor4Name;
+        learningEntities.add( previousName );
+
+        Framework.CreateEntity( pooler4Name, PredictiveCodingEntity.ENTITY_TYPE, n.getName(), previousName );
+        previousName = pooler4Name;
         learningEntities.add( previousName );
 
         Framework.CreateEntity( classifier5Name, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), previousName );
         previousName = classifier5Name;
         learningEntities.add( previousName );
 
-        Framework.CreateEntity( regionLayer5Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), previousName );
-        previousName = regionLayer5Name;
+        Framework.CreateEntity( predictor5Name, QuiltPredictorEntity.ENTITY_TYPE, n.getName(), previousName );
+        previousName = predictor5Name;
+        learningEntities.add( previousName );
+
+        Framework.CreateEntity( pooler5Name, PredictiveCodingEntity.ENTITY_TYPE, n.getName(), previousName );
+        previousName = pooler5Name;
         learningEntities.add( previousName );
 
         Framework.CreateEntity( classifier6Name, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), previousName );
         previousName = classifier6Name;
         learningEntities.add( previousName );
 
-        Framework.CreateEntity( regionLayer6Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), previousName );
-        previousName = regionLayer6Name;
+        Framework.CreateEntity( predictor6Name, QuiltPredictorEntity.ENTITY_TYPE, n.getName(), previousName );
+        previousName = predictor6Name;
         learningEntities.add( previousName );
+
+        Framework.CreateEntity( pooler6Name, PredictiveCodingEntity.ENTITY_TYPE, n.getName(), previousName );
+        previousName = pooler6Name;
+        learningEntities.add( previousName );*/
         // Region-layers
 
-//        Framework.CreateEntity( classifierName, FeedForwardNetworkEntity.ENTITY_TYPE, n.getName(), previousName ); // ok all input to the regions is ready
+        String ffInputDataSuffix = PredictiveCodingEntity.OUTPUT;
+        String fbInputDataSuffix = QuiltedCompetitiveLearningEntity.OUTPUT_QUILT;
+
+        ArrayList< AbstractPair< String, String > > feedbackEntitySuffixes1 = new ArrayList< AbstractPair< String, String > >();
+        ArrayList< AbstractPair< String, String > > feedbackEntitySuffixes2_6 = new ArrayList< AbstractPair< String, String > >();
+
+// Feedback for variable order
+        feedbackEntitySuffixes1.add( new AbstractPair< String, String >( classifier2Name, fbInputDataSuffix ) );
+//            feedbackEntitySuffixes1.add( new AbstractPair< String, String >( classifier3Name, fbInputDataSuffix ) );
+//            feedbackEntitySuffixes1.add( new AbstractPair< String, String >( classifier4Name, fbInputDataSuffix ) );
+//            feedbackEntitySuffixes1.add( new AbstractPair< String, String >( classifier5Name, fbInputDataSuffix ) );
+//            feedbackEntitySuffixes1.add( new AbstractPair< String, String >( classifier6Name, fbInputDataSuffix ) );
+
+        feedbackEntitySuffixes2_6.add( new AbstractPair< String, String >( constantName, ConstantMatrixEntity.OUTPUT ) );
+
+        previousName = createRegionLayerAndDataReferences(
+                n, previousName,
+                classifier1Name, predictor1Name, pooler1Name,
+                learningEntities,
+                imageSourceName, ImageLabelEntity.OUTPUT_IMAGE,
+                constantName, ConstantMatrixEntity.OUTPUT,
+                feedbackEntitySuffixes1 );
+
+        previousName = createRegionLayerAndDataReferences(
+                n, previousName,
+                classifier2Name, predictor2Name, pooler2Name,
+                learningEntities,
+                pooler1Name, ffInputDataSuffix,
+                constantName, ConstantMatrixEntity.OUTPUT,
+                feedbackEntitySuffixes2_6 );
+
+        previousName = createRegionLayerAndDataReferences(
+                n, previousName,
+                classifier3Name, predictor3Name, pooler3Name,
+                learningEntities,
+                pooler2Name, ffInputDataSuffix,
+                constantName, ConstantMatrixEntity.OUTPUT,
+                feedbackEntitySuffixes2_6 );
+
+        previousName = createRegionLayerAndDataReferences(
+                n, previousName,
+                classifier4Name, predictor4Name, pooler4Name,
+                learningEntities,
+                pooler3Name, ffInputDataSuffix,
+                constantName, ConstantMatrixEntity.OUTPUT,
+                feedbackEntitySuffixes2_6 );
+
+        previousName = createRegionLayerAndDataReferences(
+                n, previousName,
+                classifier5Name, predictor5Name, pooler5Name,
+                learningEntities,
+                pooler4Name, ffInputDataSuffix,
+                constantName, ConstantMatrixEntity.OUTPUT,
+                feedbackEntitySuffixes2_6 );
+
+        previousName = createRegionLayerAndDataReferences(
+                n, previousName,
+                classifier6Name, predictor6Name, pooler6Name,
+                learningEntities,
+                pooler5Name, ffInputDataSuffix,
+                constantName, ConstantMatrixEntity.OUTPUT,
+                feedbackEntitySuffixes2_6 );
 
         if( doLogging ) {
             Framework.CreateEntity( valueSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), previousName );
@@ -294,25 +394,22 @@ public class PyramidRegionLayerLabelsDemo {
             Framework.SetConfig( dataQueueOutput6Name, "queueLength", String.valueOf( queueLength ) );
 
             Framework.SetDataReference( dataQueuePredictionName, DataQueueEntity.DATA_INPUT, classifier1Name, QuiltedCompetitiveLearningEntity.OUTPUT_1 );
-            Framework.SetDataReference( dataQueueOutput1Name, DataQueueEntity.DATA_INPUT, regionLayer1Name, PyramidRegionLayerEntity.OUTPUT );
-            Framework.SetDataReference( dataQueueOutput2Name, DataQueueEntity.DATA_INPUT, regionLayer2Name, PyramidRegionLayerEntity.OUTPUT );
-            Framework.SetDataReference( dataQueueOutput3Name, DataQueueEntity.DATA_INPUT, regionLayer3Name, PyramidRegionLayerEntity.OUTPUT );
-            Framework.SetDataReference( dataQueueOutput4Name, DataQueueEntity.DATA_INPUT, regionLayer4Name, PyramidRegionLayerEntity.OUTPUT );
-            Framework.SetDataReference( dataQueueOutput5Name, DataQueueEntity.DATA_INPUT, regionLayer5Name, PyramidRegionLayerEntity.OUTPUT );
-            Framework.SetDataReference( dataQueueOutput6Name, DataQueueEntity.DATA_INPUT, regionLayer6Name, PyramidRegionLayerEntity.OUTPUT );
+            Framework.SetDataReference( dataQueueOutput1Name, DataQueueEntity.DATA_INPUT, pooler1Name, fbInputDataSuffix );
+            Framework.SetDataReference( dataQueueOutput2Name, DataQueueEntity.DATA_INPUT, pooler2Name, fbInputDataSuffix );
+            Framework.SetDataReference( dataQueueOutput3Name, DataQueueEntity.DATA_INPUT, pooler3Name, fbInputDataSuffix );
+            Framework.SetDataReference( dataQueueOutput4Name, DataQueueEntity.DATA_INPUT, pooler4Name, fbInputDataSuffix );
+            Framework.SetDataReference( dataQueueOutput5Name, DataQueueEntity.DATA_INPUT, pooler5Name, fbInputDataSuffix );
+            Framework.SetDataReference( dataQueueOutput6Name, DataQueueEntity.DATA_INPUT, pooler6Name, fbInputDataSuffix );
         }
 
         // cache all data for speed, when enabled
         Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( imageSourceName, "cache", String.valueOf( cacheAllData ) );
-//        Framework.SetConfig( regionLayer2Name, "cache", String.valueOf( cacheAllData ) );
-//        Framework.SetConfig( regionLayer3Name, "cache", String.valueOf( cacheAllData ) );
-  //      Framework.SetConfig( classifierName, "cache", String.valueOf( cacheAllData ) );
 
         // RL1
         // it is more stable with the current spikes only as feedback.. ?
         // The current spikes represent a sequence over time, due to the slow decay
-        {
+/*        {
             Framework.SetDataReference( classifier1Name, QuiltedCompetitiveLearningEntity.INPUT_1, imageSourceName, ImageLabelEntity.OUTPUT_IMAGE );
             Framework.SetDataReference( classifier1Name, QuiltedCompetitiveLearningEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
             Framework.SetDataReference( classifier1Name, QuiltedCompetitiveLearningEntity.INPUT_QUILT, regionLayer1Name, PyramidRegionLayerEntity.PREDICTION_NEW );
@@ -388,7 +485,7 @@ public class PyramidRegionLayerLabelsDemo {
             ArrayList< AbstractPair< String, String > > referenceEntitySuffixes = new ArrayList< AbstractPair< String, String > >();
             referenceEntitySuffixes.add( new AbstractPair< String, String >( constantName, ConstantMatrixEntity.OUTPUT ) );
             Framework.SetDataReferences( regionLayer6Name, PyramidRegionLayerEntity.INPUT_P, referenceEntitySuffixes );
-        }
+        }*/
 
         // Experiment config
         if( !terminateByAge ) {
@@ -467,7 +564,7 @@ public class PyramidRegionLayerLabelsDemo {
             Framework.SetConfig( valueSeriesTruthName, "configPath", "imageLabel" );
 
             Framework.SetConfig( valueSeriesErrorFnName, "period", "-1" );
-            Framework.SetConfig( valueSeriesErrorFnName, "entityName", regionLayer1Name );
+            Framework.SetConfig( valueSeriesErrorFnName, "entityName", pooler1Name );
             Framework.SetConfig( valueSeriesErrorFnName, "configPath", "sumPredictionErrorFN" );
         }
 
@@ -516,19 +613,26 @@ public class PyramidRegionLayerLabelsDemo {
         int outputSpikeMaxAge = 2;
 
         // 25 * 49 = 1225
-        PyramidRegionLayerEntityConfig prlec = new PyramidRegionLayerEntityConfig();
-        prlec.cache = true;
-//        prlec.widthCells = quiltWidthCells;
-//        prlec.heightCells = quiltHeightCells;
-//        prlec.columnWidthCells = columnWidthCells;
-//        prlec.columnHeightCells = columnHeightCells;
-        prlec.predictorLearningRate = predictorLearningRate;
-        prlec.predictorHiddenCells = predictorHiddenCells;
-        prlec.predictorLeakiness = predictorLeakiness;
-        prlec.predictorRegularization = predictorRegularization;
-        prlec.predictorBatchSize = predictorBatchSize;
-        prlec.outputSpikeAgeMax = outputSpikeMaxAge;
-        prlec.outputDecayRate = outputDecayRate;
+//        PyramidRegionLayerEntityConfig prlec = new PyramidRegionLayerEntityConfig();
+        QuiltPredictorEntityConfig qpec = new QuiltPredictorEntityConfig();
+        PredictiveCodingEntityConfig pcec = new PredictiveCodingEntityConfig();
+        qpec.cache = true;
+        qpec.predictorLearningRate = predictorLearningRate;
+        qpec.predictorHiddenCells = predictorHiddenCells;
+        qpec.predictorLeakiness = predictorLeakiness;
+        qpec.predictorRegularization = predictorRegularization;
+        qpec.predictorBatchSize = predictorBatchSize;
+        qpec.predictorBatchSize = predictorBatchSize;
+        qpec.widthCells = 0;
+        qpec.heightCells = 0;
+        qpec.columnWidthCells = 0;
+        qpec.columnHeightCells = 0;
+
+        pcec.cache = true;
+        pcec.outputSpikeAgeMax = outputSpikeMaxAge;
+        pcec.outputDecayRate = outputDecayRate;
+        pcec.widthCells = 0; // varies, set later
+        pcec.heightCells = 0; // varies, set later
 
         QuiltedCompetitiveLearningEntityConfig qclec = new QuiltedCompetitiveLearningEntityConfig();
         qclec.cache = true;
@@ -568,12 +672,12 @@ public class PyramidRegionLayerLabelsDemo {
         int quiltHeightColumns = 7; // 49 cols
 
 //        prlec.predictorHiddenCells = 700;
-        prlec.predictorHiddenCells = 250;
+        qpec.predictorHiddenCells = 250;
 
         setRegionLayerConfig(
             quiltWidthColumns, quiltHeightColumns, columnWidthCells, columnHeightCells,
             field1StrideX, field1StrideY, field1SizeX, field1SizeY,
-            qclec, prlec, classifier1Name, regionLayer1Name );
+            qclec, qpec, pcec, classifier1Name, predictor1Name, pooler1Name );
 
         //     00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34
         //     cc cc cc cc cc CC_CC_CC_CC_CC cc-cc-cc-cc-cc CC_CC_CC_CC_CC cc-cc-cc-cc-cc CC_CC_CC_CC_CC cc-cc-cc-cc-cc
@@ -593,12 +697,12 @@ public class PyramidRegionLayerLabelsDemo {
         columnWidthCells = 6;
         columnHeightCells = 6;
 
-        prlec.predictorHiddenCells = 250;
+        qpec.predictorHiddenCells = 250;
 
         setRegionLayerConfig(
                 quiltWidthColumns, quiltHeightColumns, columnWidthCells, columnHeightCells,
                 field1StrideX, field1StrideY, field1SizeX, field1SizeY,
-                qclec, prlec, classifier2Name, regionLayer2Name );
+                qclec, qpec, pcec, classifier2Name, predictor2Name, pooler2Name );
 
         //     00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29
         //     cc cc cc cc cc CC_CC_CC_CC_CC cc-cc-cc-cc-cc CC_CC_CC_CC_CC cc-cc-cc-cc-cc CC_CC_CC_CC_CC
@@ -618,12 +722,12 @@ public class PyramidRegionLayerLabelsDemo {
         columnWidthCells = 6;
         columnHeightCells = 6;
 
-        prlec.predictorHiddenCells = 250;
+        qpec.predictorHiddenCells = 250;
 
         setRegionLayerConfig(
                 quiltWidthColumns, quiltHeightColumns, columnWidthCells, columnHeightCells,
                 field1StrideX, field1StrideY, field1SizeX, field1SizeY,
-                qclec, prlec, classifier3Name, regionLayer3Name );
+                qclec, qpec, pcec, classifier3Name, predictor3Name, pooler3Name );
 
         field1StrideX = columnWidthCells;
         field1StrideY = columnHeightCells; // = 6
@@ -636,12 +740,12 @@ public class PyramidRegionLayerLabelsDemo {
         columnWidthCells = 8;
         columnHeightCells = 8;
 
-        prlec.predictorHiddenCells = 250;
+        qpec.predictorHiddenCells = 250;
 
         setRegionLayerConfig(
                 quiltWidthColumns, quiltHeightColumns, columnWidthCells, columnHeightCells,
                 field1StrideX, field1StrideY, field1SizeX, field1SizeY,
-                qclec, prlec, classifier4Name, regionLayer4Name );
+                qclec, qpec, pcec, classifier4Name, predictor4Name, pooler4Name );
 
         field1StrideX = columnWidthCells;
         field1StrideY = columnHeightCells; // = 8
@@ -654,12 +758,12 @@ public class PyramidRegionLayerLabelsDemo {
         columnWidthCells = 10;
         columnHeightCells = 10;
 
-        prlec.predictorHiddenCells = 250;
+        qpec.predictorHiddenCells = 250;
 
         setRegionLayerConfig(
                 quiltWidthColumns, quiltHeightColumns, columnWidthCells, columnHeightCells,
                 field1StrideX, field1StrideY, field1SizeX, field1SizeY,
-                qclec, prlec, classifier5Name, regionLayer5Name );
+                qclec, qpec, pcec, classifier5Name, predictor5Name, pooler5Name );
 
         field1StrideX = columnWidthCells;
         field1StrideY = columnHeightCells; // = 10
@@ -672,19 +776,52 @@ public class PyramidRegionLayerLabelsDemo {
         columnWidthCells = 14;
         columnHeightCells = 14;
 
-        prlec.predictorHiddenCells = 250;
+        qpec.predictorHiddenCells = 250;
 
         setRegionLayerConfig(
                 quiltWidthColumns, quiltHeightColumns, columnWidthCells, columnHeightCells,
                 field1StrideX, field1StrideY, field1SizeX, field1SizeY,
-                qclec, prlec, classifier6Name, regionLayer6Name );
+                qclec, qpec, pcec, classifier6Name, predictor6Name, pooler6Name );
+    }
 
-//        Framework.SetConfig( classifier3Name, qclec );
-//
-//        Framework.SetConfig( regionLayer1Name, prlec );
-//        Framework.SetConfig( regionLayer2Name, prlec );
-//        Framework.SetConfig( regionLayer3Name, prlec );
-//
+    protected static String createRegionLayerAndDataReferences(
+            Node n,
+            String parentName,
+            String classifierName,
+            String predictorName,
+            String temporalPoolerName,
+            Collection< String > learningEntities,
+            String inputC1Entity,
+            String inputC1Suffix,
+            String inputC2Entity,
+            String inputC2Suffix,
+            ArrayList< AbstractPair< String, String > > feedbackEntitySuffixes ) {
+
+        String previousName = parentName;
+
+        // Create entities
+        Framework.CreateEntity( classifierName, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), previousName );
+        previousName = classifierName;
+        learningEntities.add( previousName );
+
+        Framework.CreateEntity( predictorName, QuiltPredictorEntity.ENTITY_TYPE, n.getName(), previousName );
+        previousName = predictorName;
+        learningEntities.add( previousName );
+
+        Framework.CreateEntity( temporalPoolerName, PredictiveCodingEntity.ENTITY_TYPE, n.getName(), previousName );
+        previousName = temporalPoolerName;
+        learningEntities.add( previousName );
+
+        // Set references
+        Framework.SetDataReference ( classifierName, QuiltedCompetitiveLearningEntity.INPUT_1, inputC1Entity, inputC1Suffix );
+        Framework.SetDataReference ( classifierName, QuiltedCompetitiveLearningEntity.INPUT_2, inputC2Entity, inputC2Suffix );
+        Framework.SetDataReference ( classifierName, QuiltedCompetitiveLearningEntity.INPUT_QUILT, predictorName, QuiltPredictorEntity.PREDICTION_NEW );
+        Framework.SetDataReference (  predictorName, QuiltPredictorEntity.INPUT_C, classifierName, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT );
+        Framework.SetDataReferences(  predictorName, QuiltPredictorEntity.INPUT_P, feedbackEntitySuffixes );
+        Framework.SetDataReference( temporalPoolerName, PredictiveCodingEntity.INPUT_PREDICTED, predictorName, QuiltPredictorEntity.PREDICTION_OLD );
+        Framework.SetDataReference( temporalPoolerName, PredictiveCodingEntity.INPUT_OBSERVED, classifierName, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT );
+
+        return previousName;
     }
 
     protected static void setRegionLayerConfig(
@@ -697,9 +834,11 @@ public class PyramidRegionLayerLabelsDemo {
             int field1SizeX,
             int field1SizeY,
             QuiltedCompetitiveLearningEntityConfig qclec,
-            PyramidRegionLayerEntityConfig prlec,
+            QuiltPredictorEntityConfig qpec,
+            PredictiveCodingEntityConfig pcec,
             String classifierName,
-            String regionLayerName ) {
+            String predictorName,
+            String poolerName ) {
 
         qclec.quiltWidth = quiltWidthColumns;
         qclec.quiltHeight = quiltHeightColumns;
@@ -714,13 +853,17 @@ public class PyramidRegionLayerLabelsDemo {
         int quiltWidthCells = columnWidthCells * quiltWidthColumns;
         int quiltHeightCells = columnHeightCells * quiltHeightColumns;
 
-        prlec.widthCells = quiltWidthCells;
-        prlec.heightCells = quiltHeightCells;
-        prlec.columnWidthCells = columnWidthCells;
-        prlec.columnHeightCells = columnHeightCells;
+        qpec.widthCells = quiltWidthCells;
+        qpec.heightCells = quiltHeightCells;
+        qpec.columnWidthCells = columnWidthCells;
+        qpec.columnHeightCells = columnHeightCells;
+
+        pcec.widthCells = quiltWidthCells;
+        pcec.heightCells = quiltHeightCells;
 
         Framework.SetConfig( classifierName, qclec );
-        Framework.SetConfig( regionLayerName, prlec );
+        Framework.SetConfig( predictorName, qpec );
+        Framework.SetConfig( poolerName, pcec );
 
     }
 }

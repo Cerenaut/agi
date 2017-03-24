@@ -539,7 +539,7 @@ public class PyramidRegionLayer extends NamedObject {
 
         // restore any recent spikes to full output, based on age
         // This is to ensure some temporal pooling occurs.
-        float ageMax = 2; //
+        float ageMax = _rc.getOutputSpikeAgeMax();
         int cells = _outputSpikesAge.getSize();
         for( int c = 0; c < cells; ++c ) {
             float oldAge = _outputSpikesAge._values[ c ];

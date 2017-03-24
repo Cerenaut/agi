@@ -27,7 +27,7 @@ import io.agi.framework.demo.mnist.AnalyticsEntity;
 import io.agi.framework.demo.mnist.ClassificationAnalysisEntity;
 import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.demo.mnist.MnistEntity;
-import io.agi.framework.demo.mnist.Text2ImageLabelEntity;
+import io.agi.framework.demo.sd19.Text2ImageLabelEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.persistence.models.ModelEntity;
 import org.apache.logging.log4j.LogManager;
@@ -174,6 +174,14 @@ public class CommonEntityFactory implements EntityFactory {
 
         if( entityType.equals( PyramidRegionLayerEntity.ENTITY_TYPE ) ) {
             return new PyramidRegionLayerEntity(objectMap, _n, modelEntity);
+        }
+
+        if( entityType.equals( PredictiveCodingEntity.ENTITY_TYPE ) ) {
+            return new PredictiveCodingEntity(objectMap, _n, modelEntity);
+        }
+
+        if( entityType.equals( QuiltPredictorEntity.ENTITY_TYPE ) ) {
+            return new QuiltPredictorEntity(objectMap, _n, modelEntity);
         }
 
         if( entityType.equals( AnalyticsEntity.ENTITY_TYPE ) ) {

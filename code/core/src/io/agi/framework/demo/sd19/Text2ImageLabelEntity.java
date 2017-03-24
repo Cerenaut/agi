@@ -17,12 +17,14 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.demo.mnist;
+package io.agi.framework.demo.sd19;
 
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.util.FileUtil;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceImageFile;
 import io.agi.framework.*;
+import io.agi.framework.demo.mnist.ImageLabelEntity;
+import io.agi.framework.demo.mnist.ImageLabelEntityConfig;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.io.IOException;

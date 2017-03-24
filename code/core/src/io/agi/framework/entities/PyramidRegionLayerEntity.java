@@ -495,14 +495,6 @@ public class PyramidRegionLayerEntity extends Entity {
         setData( ERROR_GRADIENTS_1, layer1._costGradients);
         setData( ERROR_GRADIENTS_2, layer2._costGradients);
 
-        rl._predictor._ffn._ideals = getDataLazyResize( PREDICTOR_IDEALS, rl._predictor._ffn._ideals._dataSize );
-        layer1._weights = getDataLazyResize( PREDICTOR_WEIGHTS_1, layer1._weights._dataSize );
-        layer2._weights = getDataLazyResize( PREDICTOR_WEIGHTS_2, layer2._weights._dataSize );
-        layer1._biases = getDataLazyResize( PREDICTOR_BIASES_1, layer1._biases._dataSize );
-        layer2._biases = getDataLazyResize( PREDICTOR_BIASES_2, layer2._biases._dataSize );
-        layer1._costGradients = getDataLazyResize( ERROR_GRADIENTS_1, layer1._costGradients._dataSize );
-        layer2._costGradients = getDataLazyResize( ERROR_GRADIENTS_2, layer2._costGradients._dataSize );
-
 //        setData( CLASSIFIER_WEIGHTS, rl._classifier._cellWeights );
 //        setData( CLASSIFIER_BIASES_1, rl._classifier._cellBiases1 );
 //        setData( CLASSIFIER_BIASES_2, rl._classifier._cellBiases2 );

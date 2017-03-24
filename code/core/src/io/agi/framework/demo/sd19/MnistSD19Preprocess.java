@@ -17,7 +17,7 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.demo.mnist;
+package io.agi.framework.demo.sd19;
 
 import javax.imageio.ImageIO;
 import java.awt.*;

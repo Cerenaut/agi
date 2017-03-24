@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016.
+ * Copyright (c) 2017.
  *
  * This file is part of Project AGI. <http://agi.io>
  *
@@ -17,28 +17,30 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.demo.mnist;
+package io.agi.framework.entities;
 
 import io.agi.framework.EntityConfig;
 
-import java.awt.*;
-
 /**
- * Created by dave on 10/07/16.
+ *
+ * Created by dave on 7/07/16.
  */
-public class Text2ImageLabelEntityConfig extends ImageLabelEntityConfig {
+public class QuiltPredictorEntityConfig extends EntityConfig {
 
-    // Set these
-    public String sourceTextFileTraining;
-    public String sourceTextFileTesting;
+    // parameters you can adjust
+    public int widthCells = 0;
+    public int heightCells = 0;
+    public int columnWidthCells = 0;
+    public int columnHeightCells = 0;
 
-    // defaults, automatically updated
-    public int charIndex = -1;
-//    public int digitIndex = 2; // 0,1,2 depending on which part of ASCII coding
+    public float predictorLearningRate = 0.0f; // how fast the prediction weights learn
+    public int predictorHiddenCells = 0;
+    public float predictorLeakiness = 0.0f;
+    public float predictorRegularization = 0.0f;
+    public int predictorBatchSize = 0;
+    public int predictorBatchCount = 0;
 
-    // generated - do not set manually
-    public String character = "?";
-    public int characterCode = 0;
-    public int defaultCharacterCode = 10; // newline, but a blank image
+    // stats calculated during operation
+    public boolean resetDelayed = false;
 
 }
