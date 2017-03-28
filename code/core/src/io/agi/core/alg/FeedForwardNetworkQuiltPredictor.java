@@ -29,41 +29,52 @@ import io.agi.core.data.Ranking;
 import io.agi.core.orm.ObjectMap;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.TreeMap;
 
 /**
  * Created by dave on 20/01/17.
  */
-public class PyramidRegionLayerPredictor {
+public class FeedForwardNetworkQuiltPredictor implements QuiltPredictorAlgorithm {
 
     public FeedForwardNetwork _ffn;
+    public FeedForwardNetworkQuiltPredictorConfig _c;
 
-    public PyramidRegionLayerPredictor() {
+    public FeedForwardNetworkQuiltPredictor() {
 
     }
 
     /**
      * Configure the predictor.
-     * @param inputs
-     * @param outputs
-     * @param learningRate
      */
-    public void setup( String name, ObjectMap om, Random r, int inputs, int hidden, int outputs, float learningRate, float leakiness, float regularization, int batchSize ) {
-        _ffn = new FeedForwardNetwork( name, om );
+    public void setup( QuiltPredictorConfig config ) {
 
-        FeedForwardNetworkConfig c = new FeedForwardNetworkConfig();
+        FeedForwardNetworkQuiltPredictorConfig c = (FeedForwardNetworkQuiltPredictorConfig)config;
+        _c = c;
+
+        int inputs = c.getPredictorInputs();
+        int hidden = c.getPredictorHiddenCells();
+        int outputs = c.getPredictorOutputs();
+        float learningRate = c.getPredictorLearningRate();
+        float leakiness = c.getPredictorLeakiness();
+        float regularization = c.getPredictorRegularization();
+        int batchSize = c.getPredictorBatchSize();
+
+        _ffn = new FeedForwardNetwork( c._name, c._om );
+
+        FeedForwardNetworkConfig ffnc = new FeedForwardNetworkConfig();
 
         String lossFunction = CostFunction.QUADRATIC; // must be
         int layers = 2; // fixed
         String layerSizes = hidden + "," + outputs;
         String layerActivationFns = ActivationFunctionFactory.LEAKY_RELU + "," + ActivationFunctionFactory.LEAKY_RELU; // better mutability online
 
-        c.setup( om, name, r, lossFunction, inputs, layers, layerSizes, layerActivationFns, regularization, learningRate, batchSize );
+        ffnc.setup( c._om, c._name, c._r, lossFunction, inputs, layers, layerSizes, layerActivationFns, regularization, learningRate, batchSize );
 
         ActivationFunctionFactory aff = new ActivationFunctionFactory();
         aff.leak = leakiness; // this is how we fix the param
-        _ffn.setup( c, aff );
+        _ffn.setup( ffnc, aff );
     }
 
     /**
@@ -81,6 +92,19 @@ public class PyramidRegionLayerPredictor {
      * @param outputNew
      */
     public void train( Data inputOld, Data outputNew, int density, int regionWidth, int regionHeight, int columnWidth, int columnHeight ) {
+
+//        HashSet< Integer > activeOld = inputOld.indicesMoreThan( 0.5f );
+//        HashSet< Integer > activeNew = outputNew.indicesMoreThan( 0.5f );
+//
+//        System.err.println( "OLD: " );
+//        for( Integer i : activeOld ) {
+//            System.err.print( i + "," );
+//        }
+//        System.err.println( "NEW: " );
+//        for( Integer i : activeNew ) {
+//            System.err.print( i + "," );
+//        }
+//        System.err.println();
         Data input = _ffn.getInput();
         input.copy( inputOld );
 
@@ -106,14 +130,20 @@ public class PyramidRegionLayerPredictor {
         Data output = _ffn.getOutput();
         outputPrediction.copy( output );
         outputPrediction.clipRange( 0f, 1f ); // as NN may go wildly beyond that
+
+        // note pass unclipped prediction
+        SparsenPrediction( output, outputPredictionSparse, density, regionWidth, regionHeight, columnWidth, columnHeight );
+    }
+
+    public static void SparsenPrediction( Data outputPrediction, Data outputPredictionSparse, int density, int regionWidth, int regionHeight, int columnWidth, int columnHeight ) {
         outputPredictionSparse.set( 0f );
 
         if( ( columnWidth == 0 ) || ( columnHeight == 0 ) ) {
             // rank predictions
             TreeMap< Float, ArrayList< Integer > > ranking = new TreeMap< Float, ArrayList< Integer > >();
-            int cells = output.getSize();
+            int cells = outputPrediction.getSize();
             for( int c = 0; c < cells; ++c ){
-                float p = output._values[ c ];
+                float p = outputPrediction._values[ c ];
                 Ranking.add( ranking, p, c );
             }
 
@@ -144,7 +174,7 @@ public class PyramidRegionLayerPredictor {
                             int yRegion = yColumn * columnHeight + yCell;
                             int cRegion = yRegion * regionWidth + xRegion;
 
-                            float p = output._values[ cRegion ];
+                            float p = outputPrediction._values[ cRegion ];
 
                             if( p >= pMax ) {
                                 pMax = p;

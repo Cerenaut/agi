@@ -22,18 +22,16 @@ package io.agi.framework.entities;
 import io.agi.framework.EntityConfig;
 
 /**
- *
- * Created by dave on 7/07/16.
+ * Created by dave on 23/10/16.
  */
-public class QuiltPredictorEntityConfig extends EntityConfig {
+public class QLearningEntityConfig extends EntityConfig {
 
-    // parameters you can adjust
-    public int widthCells = 0;
-    public int heightCells = 0;
-    public int columnWidthCells = 0;
-    public int columnHeightCells = 0;
-
-    // stats calculated during operation
     public boolean resetDelayed = false;
+
+    public float learningRate = 0f;
+    public float discountRate = 0f;
+
+    public int states = 0;
+    public int actions = 0;
 
 }

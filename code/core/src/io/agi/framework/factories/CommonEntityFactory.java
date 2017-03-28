@@ -173,15 +173,19 @@ public class CommonEntityFactory implements EntityFactory {
         }
 
         if( entityType.equals( PyramidRegionLayerEntity.ENTITY_TYPE ) ) {
-            return new PyramidRegionLayerEntity(objectMap, _n, modelEntity);
+            return new PyramidRegionLayerEntity( objectMap, _n, modelEntity );
         }
 
         if( entityType.equals( PredictiveCodingEntity.ENTITY_TYPE ) ) {
-            return new PredictiveCodingEntity(objectMap, _n, modelEntity);
+            return new PredictiveCodingEntity( objectMap, _n, modelEntity );
         }
 
-        if( entityType.equals( QuiltPredictorEntity.ENTITY_TYPE ) ) {
-            return new QuiltPredictorEntity(objectMap, _n, modelEntity);
+        if( entityType.equals( FeedForwardNetworkQuiltPredictorEntity.ENTITY_TYPE ) ) {
+            return new FeedForwardNetworkQuiltPredictorEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( HebbianQuiltPredictorEntity.ENTITY_TYPE ) ) {
+            return new HebbianQuiltPredictorEntity( objectMap, _n, modelEntity );
         }
 
         if( entityType.equals( AnalyticsEntity.ENTITY_TYPE ) ) {
@@ -203,6 +207,11 @@ public class CommonEntityFactory implements EntityFactory {
         if( entityType.equals( DataQueueEntity.ENTITY_TYPE ) ) {
             return new DataQueueEntity( objectMap, _n, modelEntity );
         }
+
+        if( entityType.equals( QLearningEntity.ENTITY_TYPE ) ) {
+            return new QLearningEntity( objectMap, _n, modelEntity );
+        }
+
 
         return null;
     }

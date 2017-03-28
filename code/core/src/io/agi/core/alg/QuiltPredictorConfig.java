@@ -21,6 +21,7 @@ package io.agi.core.alg;
 
 import io.agi.core.ann.NetworkConfig;
 import io.agi.core.ann.unsupervised.OnlineKSparseAutoencoderConfig;
+import io.agi.core.data.DataSize;
 import io.agi.core.orm.ObjectMap;
 
 import java.awt.*;
@@ -37,13 +38,6 @@ public class QuiltPredictorConfig extends NetworkConfig {
     public static final String INPUT_C_COLUMN_HEIGHT = "input-c-column-height";
     public static final String INPUT_P_SIZE = "input-p-size";
 
-    public static final String PREDICTOR_LEARNING_RATE = "predictor-learning-rate";
-    public static final String PREDICTOR_HIDDEN_CELLS = "predictor-hidden-cells";
-    public static final String PREDICTOR_LEAKINESS = "predictor-leakiness";
-    public static final String PREDICTOR_REGULARIZATION = "predictor-regularization";
-    public static final String PREDICTOR_BATCH_SIZE = "predictor-batch-size";
-
-    public static final String SUFFIX_CLASSIFIER = "classifier";
     public static final String SUFFIX_PREDICTOR = "predictor";
 
     public QuiltPredictorConfig() {
@@ -57,92 +51,39 @@ public class QuiltPredictorConfig extends NetworkConfig {
             int inputCHeight,
             int inputCColumnWidth,
             int inputCColumnHeight,
-            int inputPSize,
-
-            float predictorLearningRate,
-            int predictorHiddenCells,
-            float predictorLeakiness,
-            float predictorRegularization,
-            int predictorBatchSize ) {
+            int inputPSize ) {
 
         super.setup( om, name, r );
 
         setInputCSize( inputCWidth, inputCHeight );
         setInputCColumnSize( inputCColumnWidth, inputCColumnHeight );
-
         setInputPSize( inputPSize );
-
-        setPredictorLearningRate(predictorLearningRate);
-        setPredictorHiddenCells(predictorHiddenCells);
-        setPredictorLeakiness(predictorLeakiness);
-        setPredictorRegularization(predictorRegularization);
-        setPredictorBatchSize(predictorBatchSize);
     }
 
     public Random getRandom() {
         return _r;
     }
 
-    public float getPredictorLearningRate() {
-        float r = _om.getFloat( getKey( PREDICTOR_LEARNING_RATE ) );
-        return r;
+    public int getPredictorInputs() {
+        Point inputCSize = getInputCSize();
+        int inputPSize = getInputPSize();
+
+        DataSize dataSizeInputC = DataSize.create( inputCSize.x, inputCSize.y );
+        DataSize dataSizeInputP = DataSize.create( inputPSize );
+
+        // Predictor
+        int cells = dataSizeInputC.getVolume(); //_rc._classifierConfig.getNbrCells();
+        int predictorInputs = dataSizeInputP.getVolume() + cells;
+        return predictorInputs;
     }
 
-    public int getPredictorHiddenCells() {
-        int r = _om.getInteger(getKey(PREDICTOR_HIDDEN_CELLS));
-        return r;
+    public int getPredictorOutputs() {
+        Point inputCSize = getInputCSize();
+        DataSize dataSizeInputC = DataSize.create( inputCSize.x, inputCSize.y );
+        int cells = dataSizeInputC.getVolume();
+        int predictorOutputs = cells;
+        return predictorOutputs;
     }
-
-    public float getPredictorLeakiness() {
-        float r = _om.getFloat(getKey(PREDICTOR_LEAKINESS));
-        return r;
-    }
-
-    public float getPredictorRegularization() {
-        float r = _om.getFloat( getKey( PREDICTOR_REGULARIZATION ) );
-        return r;
-    }
-
-    public int getPredictorBatchSize() {
-        int r = _om.getInteger(getKey(PREDICTOR_BATCH_SIZE));
-        return r;
-    }
-
-    public void setPredictorLearningRate( float r ) {
-        _om.put( getKey( PREDICTOR_LEARNING_RATE ), r );
-    }
-
-    public void setPredictorHiddenCells( int r ) {
-        _om.put( getKey( PREDICTOR_HIDDEN_CELLS ), r );
-    }
-    public void setPredictorLeakiness( float r ) {
-        _om.put( getKey( PREDICTOR_LEAKINESS ), r );
-    }
-    public void setPredictorRegularization( float r ) {
-        _om.put( getKey( PREDICTOR_REGULARIZATION ), r );
-    }
-
-    public void setPredictorBatchSize( int r ) {
-        _om.put( getKey( PREDICTOR_BATCH_SIZE ), r );
-    }
-
-//    public float getOutputDecayRate() {
-//        float r = _om.getFloat( getKey( OUTPUT_DECAY_RATE ) );
-//        return r;
-//    }
-//
-//    public void setOutputDecayRate( float r ) {
-//        _om.put( getKey( OUTPUT_DECAY_RATE ), r );
-//    }
-//
-//    public int getOutputSpikeAgeMax() {
-//        int r = _om.getInteger( getKey( OUTPUT_SPIKE_AGE_MAX ) );
-//        return r;
-//    }
-//
-//    public void setOutputSpikeAgeMax( int r ) {
-//        _om.put( getKey( OUTPUT_SPIKE_AGE_MAX ), r );
-//    }
 
     public int getInputCArea() {
         Point p = getInputCSize();
