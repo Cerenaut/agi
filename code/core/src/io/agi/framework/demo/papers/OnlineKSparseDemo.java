@@ -28,6 +28,7 @@ import io.agi.framework.Node;
 import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.factories.CommonEntityFactory;
+import io.agi.framework.persistence.models.ModelData;
 
 import java.util.ArrayList;
 import java.util.Properties;
@@ -77,17 +78,25 @@ public class OnlineKSparseDemo {
 //        String trainingPath = "./training";
 //        String testingPath = "./testing";
 
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
-//        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
 
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 
+//        int flushInterval = 20;
+        int flushInterval = -1; // never flush
+        String flushWriteFilePath = "/home/dave/workspace/agi.io/data/flush";
+        String flushWriteFilePrefixTruth = "flushedTruth";
+        String flushWriteFilePrefixFeatures = "flushedFeatures";
+
+//        boolean logDuringTraining = true;
+        boolean logDuringTraining = false;
         boolean cacheAllData = true;
         boolean terminateByAge = false;
 //        int terminationAge = 10;//9000;
-        int terminationAge = 50000;//25000;
-        int trainingEpochs = 2;//10;//80; // good for up to 80k
+        int terminationAge = -1;
+        int trainingEpochs = 5;//10;//80; // good for up to 80k
         int testingEpochs = 1;//80; // good for up to 80k
         boolean unitOutput = true;
 
@@ -96,7 +105,7 @@ public class OnlineKSparseDemo {
         String imageLabelName           = Framework.GetEntityName( "image-class" );
         String autoencoderName          = Framework.GetEntityName( "autoencoder" );
         String vectorSeriesName         = Framework.GetEntityName( "feature-series" );
-        String valueSeriesName         = Framework.GetEntityName( "label-series" );
+        String valueSeriesName          = Framework.GetEntityName( "label-series" );
 
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         Framework.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), experimentName );
@@ -151,7 +160,9 @@ public class OnlineKSparseDemo {
         Framework.SetConfig( imageLabelName, "trainingEpochs", String.valueOf( trainingEpochs ) );
         Framework.SetConfig( imageLabelName, "testingEpochs", String.valueOf( testingEpochs ) );
         Framework.SetConfig( imageLabelName, "trainingEntities", String.valueOf( autoencoderName ) );
-        Framework.SetConfig( imageLabelName, "testingEntities", vectorSeriesName + "," + valueSeriesName );
+        if( !logDuringTraining ) {
+            Framework.SetConfig( imageLabelName, "testingEntities", vectorSeriesName + "," + valueSeriesName );
+        }
 
         /* Suppose we are aiming for a sparsity level of k = 15.
         Then, we start off with a large sparsity level (e.g.
@@ -169,7 +180,7 @@ public class OnlineKSparseDemo {
         int ageMax = 1000;
 
         float sparsity = 25f;
-        float sparsityOutput = 3.f;
+        float sparsityOutput = 1.5f;//3.f;
 
         // variables
         float learningRate = 0.01f;
@@ -177,7 +188,7 @@ public class OnlineKSparseDemo {
 //            learningRate = learningRate * 0.1f;
         }
         int batchSize = 1;
-        learningRate = learningRate;// / (float)batchSize; // Note must reduce learning rate to prevent overshoot and numerical instability
+//        learningRate = learningRate;// / (float)batchSize; // Note must reduce learning rate to prevent overshoot and numerical instability
 
         float momentum = 0f;//0.9f;
         float weightsStdDev = 0.01f; // From paper. used at reset (only for biases in online case
@@ -211,14 +222,22 @@ public class OnlineKSparseDemo {
         Framework.SetConfig( autoencoderName, "batchSize", String.valueOf( batchSize ) );
 
         // Log features of the algorithm during all phases
-        Framework.SetConfig( vectorSeriesName, "period", String.valueOf( "-1" ) ); // infinite
-        Framework.SetConfig( vectorSeriesName, "learn", String.valueOf( "true" ) ); // infinite
+        Framework.SetConfig( vectorSeriesName, "encoding", ModelData.ENCODING_SPARSE_REAL );
+        Framework.SetConfig( vectorSeriesName, "flushPeriod", String.valueOf( flushInterval ) ); // accumulate and flush, or accumulate only
+        Framework.SetConfig( vectorSeriesName, "period", String.valueOf( "-1" ) );
+        Framework.SetConfig( vectorSeriesName, "writeFilePath", flushWriteFilePath );
+        Framework.SetConfig( vectorSeriesName, "writeFilePrefix", flushWriteFilePrefixFeatures );
+        Framework.SetConfig( vectorSeriesName, "learn", String.valueOf( "true" ) );
 
         // Log labels of each image produced during all phases
-        Framework.SetConfig( valueSeriesName, "period", "-1" ); // infinite
+        Framework.SetConfig( vectorSeriesName, "writeFileEncoding", ModelData.ENCODING_DENSE );
+        Framework.SetConfig( valueSeriesName, "flushPeriod", String.valueOf( flushInterval ) ); // accumulate and flush, or accumulate only
+        Framework.SetConfig( valueSeriesName, "period", String.valueOf( "-1" ) ); // infinite
         Framework.SetConfig( valueSeriesName, "learn", String.valueOf( "true" ) );
-        Framework.SetConfig( valueSeriesName, "entityName", imageLabelName ); // log forever
-        Framework.SetConfig( valueSeriesName, "configPath", "imageLabel" ); // log forever
+        Framework.SetConfig( valueSeriesName, "writeFilePath", flushWriteFilePath );
+        Framework.SetConfig( valueSeriesName, "writeFilePrefix", flushWriteFilePrefixTruth );
+        Framework.SetConfig( valueSeriesName, "entityName", imageLabelName );
+        Framework.SetConfig( valueSeriesName, "configPath", "imageLabel" );
 
     }
 
