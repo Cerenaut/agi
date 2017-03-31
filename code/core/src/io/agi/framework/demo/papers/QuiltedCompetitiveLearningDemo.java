@@ -91,7 +91,6 @@ public class QuiltedCompetitiveLearningDemo {
         int terminationAge = 50000;//25000;
         int trainingEpochs = 10;//80; // good for up to 80k
         int testingEpochs = 1;//80; // good for up to 80k
-        int imagesPerEpoch = 1000;
 
         // Define some entities
         String experimentName           = Framework.GetEntityName( "experiment" );
@@ -179,6 +178,17 @@ public class QuiltedCompetitiveLearningDemo {
         //  F5                                                 -- -- -- -- -- --                   |
         //  F6                                                             -- -- -- -- -- --       |
         //  F7                                                                         -- -- -- -- -- --
+        //     00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 |
+        //  F1       -- -- -- -- -- --                                                             |
+        //  F2                -- -- -- -- -- --                                                    |
+        //  F3                         -- -- -- -- -- --                                           |
+        //  F4                                  -- -- -- -- -- --                                  |
+        //  F5                                           -- -- -- -- -- --                         |
+        //  F6                                                    -- -- -- -- -- --                |
+        //  F7                                                             -- -- -- -- -- --       |
+        int field1OffsetX = 2;
+        int field1OffsetY = 2;
+
         int field1SizeX = 6;
         int field1SizeY = 6;
 
@@ -198,6 +208,8 @@ public class QuiltedCompetitiveLearningDemo {
         Framework.SetConfig( quiltName, "classifierWidth", String.valueOf( columnWidthCells ) );
         Framework.SetConfig( quiltName, "classifierHeight", String.valueOf( columnHeightCells ) );
 
+        Framework.SetConfig( quiltName, "field1OffsetX", String.valueOf( field1OffsetX ) );
+        Framework.SetConfig( quiltName, "field1OffsetY", String.valueOf( field1OffsetY ) );
         Framework.SetConfig( quiltName, "field1StrideX", String.valueOf( field1StrideX ) );
         Framework.SetConfig( quiltName, "field1StrideY", String.valueOf( field1StrideY ) );
         Framework.SetConfig( quiltName, "field1SizeX", String.valueOf( field1SizeX ) );
