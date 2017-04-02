@@ -143,7 +143,7 @@ public class ExperimentEntity extends Entity {
         if( config.terminating ) {
             _logger.info( "Experiment: " + getName() + " terminated at age: " + _config.age + " t: " + System.currentTimeMillis() );
             config.terminated = true;
-            Framework.SetConfig( getName(), "terminated", String.valueOf( config.terminated ) ); // config has already been persisted, so changing it now has no effect.
+            Framework.SetConfigBoolean( getName(), "terminated", config.terminated ); // config has already been persisted, so changing it now has no effect.
         }
 
         if( ( !config.terminated ) && ( !config.pause ) ) {
