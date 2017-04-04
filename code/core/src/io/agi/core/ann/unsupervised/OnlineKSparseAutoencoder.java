@@ -545,10 +545,12 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
                     float wNew = wOld + vNew;
 
                     if( Useful.IsBad( wNew ) ) {
-                        String error = "Autoencoder weight update produced a bad value: " + wNew;
-                        logger.error( error );
-                        logger.traceExit();
-                        System.exit( -1 );
+                        wNew = wOld; // ignore new weight
+                        vNew = ( vOld * momentum ); // decay momentum
+//                        String error = "Autoencoder weight update produced a bad value: " + wNew;
+//                        logger.error( error );
+//                        logger.traceExit();
+//                        System.exit( -1 );
                     }
 
                     _cellWeights._values[ offset ] = wNew;
@@ -559,10 +561,11 @@ public class OnlineKSparseAutoencoder extends CompetitiveLearning {
                     float wNew = wOld - wDelta;
 
                     if( Useful.IsBad( wNew ) ) {
-                        String error = "Autoencoder weight update produced a bad value: " + wNew;
-                        logger.error( error );
-                        logger.traceExit();
-                        System.exit( -1 );
+                        wNew = wOld;
+//                        String error = "Autoencoder weight update produced a bad value: " + wNew;
+//                        logger.error( error );
+//                        logger.traceExit();
+//                        System.exit( -1 );
                     }
 
                     _cellWeights._values[ offset ] = wNew;
