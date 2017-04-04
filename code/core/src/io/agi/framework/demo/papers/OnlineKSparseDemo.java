@@ -98,7 +98,7 @@ public class OnlineKSparseDemo {
         int terminationAge = -1;
         int trainingEpochs = 5;//10;//80; // good for up to 80k
         int testingEpochs = 1;//80; // good for up to 80k
-        boolean unitOutput = true;
+        boolean unitOutput = false;
 
         // Define some entities
         String experimentName           = Framework.GetEntityName( "experiment" );
@@ -180,7 +180,7 @@ public class OnlineKSparseDemo {
         int ageMax = 1000;
 
         float sparsity = 25f;
-        float sparsityOutput = 1.5f;//3.f;
+        float sparsityOutput = 3f;//1.5f;//3.f;
 
         // variables
         float learningRate = 0.01f;

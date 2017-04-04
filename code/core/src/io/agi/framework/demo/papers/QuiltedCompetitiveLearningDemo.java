@@ -79,11 +79,11 @@ public class QuiltedCompetitiveLearningDemo {
 //        String trainingPath = "./training";
 //        String testingPath = "./testing";
 
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
-        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+//        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
 
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10,/home/dave/workspace/agi.io/data/mnist/cycle3";
 
         boolean cacheAllData = true;
         boolean terminateByAge = false;
@@ -162,11 +162,16 @@ public class QuiltedCompetitiveLearningDemo {
         float stressThreshold = 0.01f; // when it ceases to split
 
         // 25 * 49 = 1225
-        int columnWidthCells = 5;  // 25 cells per col
-        int columnHeightCells = 5;
+        // 36 * 36 = 1296
+//        int columnWidthCells = 5;  // 25 cells per col
+//        int columnHeightCells = 5;
+        int columnWidthCells = 6;  // 36 cells per col
+        int columnHeightCells = 6;
 
-        int quiltWidthColumns = 7;
-        int quiltHeightColumns = 7; // 49 cols
+//        int quiltWidthColumns = 7;
+//        int quiltHeightColumns = 7; // 49 cols
+        int quiltWidthColumns = 6;
+        int quiltHeightColumns = 6; // 36 cols
 
         // TODO add a field offset
         // Field 2: 28x28
@@ -186,14 +191,30 @@ public class QuiltedCompetitiveLearningDemo {
         //  F5                                           -- -- -- -- -- --                         |
         //  F6                                                    -- -- -- -- -- --                |
         //  F7                                                             -- -- -- -- -- --       |
-        int field1OffsetX = 2;
+/*        int field1OffsetX = 2;
         int field1OffsetY = 2;
 
         int field1SizeX = 6;
         int field1SizeY = 6;
 
         int field1StrideX = 4;
-        int field1StrideY = 4;
+        int field1StrideY = 4;*/
+
+        //     00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 |
+        //  F1          -- -- -- -- -- --                                                          |
+        //  F2                   -- -- -- -- -- --                                                 |
+        //  F3                            -- -- -- -- -- --                                        |
+        //  F4                                     -- -- -- -- -- --                               |
+        //  F5                                              -- -- -- -- -- --                      |
+        //  F6                                                       -- -- -- -- -- --             |
+        int field1OffsetX = 3;
+        int field1OffsetY = 3;
+
+        int field1SizeX = 6;
+        int field1SizeY = 6;
+
+        int field1StrideX = 3;
+        int field1StrideY = 3;
 
         // Field 2: 1x1
         int field2StrideX = 0;
