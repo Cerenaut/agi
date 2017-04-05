@@ -34,5 +34,6 @@ public class ExperimentEntityConfig extends EntityConfig {
     public String terminationEntityName;
     public String terminationConfigPath;
     public int terminationAge = -1; // if negative, then never terminates unless via termination condition.
+    public String reportingEntityName;
 
 }

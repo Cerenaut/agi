@@ -96,6 +96,7 @@ public class ClassifyFeaturesDemo {
         experimentConfig.terminationEntityName = analyticsName;
         experimentConfig.terminationConfigPath = "terminate";
         experimentConfig.terminationAge = -1;       // wait for analytics entity to decide
+        experimentConfig.reportingEntityName = classificationAnalysisName;
 
         AnalyticsEntityConfig analyticsEntityConfig = new AnalyticsEntityConfig();
         analyticsEntityConfig.batchMode = true;
