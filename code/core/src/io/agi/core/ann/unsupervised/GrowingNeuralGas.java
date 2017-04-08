@@ -30,7 +30,7 @@ import java.util.HashSet;
 import java.util.TreeMap;
 
 /**
- * Growing Neural Gas algorithm (online unsupervised learning).
+ * Growing Neural Gas algorithm [with Utility] (unsupervised learning).
  * <p/>
  * Input can be provided as a dense Data structure, or as a sparse Array of values. In the latter case it is assumed
  * the values are all '1' and therefore the values of the sparse input are used as indices.
@@ -49,6 +49,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
     public Data _cellActivity;
     public Data _cellMask;
 
+    public Data _cellUtility;
     public Data _cellStress;
     public Data _cellAges;
     public Data _edges;
@@ -78,6 +79,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         _cellMask = new Data( w, h );
         _cellMask.set( 0.f ); // disable all cells
 
+        _cellUtility = new Data( w, h );
         _cellStress = new Data( w, h );
         _cellAges = new Data( w, h );
         _edges = new Data( cells, cells );
@@ -88,6 +90,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
     public void reset() {
         _cellMask.set( 0.f ); // disable all cells
         _cellStress.set( 0.f ); // disable all cells
+        _cellUtility.set( 0.f ); // disable all cells
     }
 
     public void update() {
@@ -135,26 +138,46 @@ public class GrowingNeuralGas extends CompetitiveLearning {
 
         // don't age or do learning/maintenance when input isn't changing. This is achieved by setting learning to false when this occurs
 
-        _cellAges._values[ bestCellA ] += 1.f;
-        _cellAges._values[ bestCellB ] += 1.f;
+//        _cellAges._values[ bestCellA ] += 1.f;
+//        _cellAges._values[ bestCellB ] += 1.f;
 
         // Create the edge A,B if it doesn't already exist:
         updateEdges( bestCellA, bestCellB );
 
         // remove detached cells (without edges)
-        removeDetachedCells();
+        float utilityThreshold = _c.getUtilityThreshold();
+        if( utilityThreshold < 0f ) { // ie normal GNG, utility disabled
+            removeDetachedCells(); // dont do this with utility
+        }
+        else {
+//            removeLowUtilityCell(); // only at intervals? No, when it has reached a minimum age
+        }
 
         // Update learned error of the winning cell A
         // errorA = errorA + distance to input vector
+        reduceStress();
         updateStress( bestCellA );
 
         // train winner A and its neighbours towards the input
         trainCells( bestCellA );
 
+        // update utility
+        reduceUtility();
+        updateUtility( bestCellA, bestCellB );
+        // U_winner = U_winner + error_2nd - error_winner
+        // So if error_winner = 0 and error_2nd = 1
+        // utility = 1-0
+        // if error
+
         // Create new cells where the space is poorly represented (the cells are stressed)
         int ageSinceGrowth = ( int ) _ageSinceGrowth._values[ 0 ];
-
         if( ageSinceGrowth >= _c.getGrowthInterval() ) {
+            if( utilityThreshold < 0f ) { // ie normal GNG, utility disabled
+            }
+            else {
+                removeLowUtilityCell();
+            }
+
             b = addCells();
             if( b ) {
                 ageSinceGrowth = 0;
@@ -165,9 +188,90 @@ public class GrowingNeuralGas extends CompetitiveLearning {
 
         _ageSinceGrowth._values[ 0 ] = ( float ) ageSinceGrowth;
 
-        reduceStress();
+        updateCellsAges();
 
+//        reduceStress();
+//
         //System.out.println( "best: " + _bestCellA + " population: " + _cellMask.sum() + " age since growth: " + _ageSinceGrowth._values[ 0 ] );
+    }
+
+    protected void removeLowUtilityCell() {
+        int w = _c.getWidthCells();
+        int h = _c.getHeightCells();
+        int cells = w * h;
+
+        float threshold = _c.getUtilityThreshold();
+        if( threshold < 0f ) {
+            return; // don't use this feature
+        }
+
+        int activeCells = (int)_cellMask.sum();
+        if( activeCells <= 2 ) {
+            return; // don't recycle just 2 cells
+        }
+
+        if( activeCells < cells ) {
+            return; // don't recycle when we don't need to. No cost in dead cells.
+        }
+
+        // find cells with max stress and min utility
+        int minUtilityCell = 0;
+
+        float minUtility = Float.MAX_VALUE;
+        float maxStress = 0f;
+
+        for( int cell1 = 0; cell1 < cells; ++cell1 ) {
+
+            if( _cellMask._values[ cell1 ] == 0.f ) {
+                continue; // already dead
+            }
+
+            // cells are only eligible for removal when they're old enough to have proven their value (or not)
+            int minAge = _c.getEdgeMaxAge();
+            int age = (int)_cellAges._values[ cell1 ];
+            if( age < minAge ) {
+                continue; // not eligible for removal
+            }
+
+            float stress = _cellStress._values[ cell1 ];
+            float utility = _cellUtility._values[ cell1 ];
+
+            if( stress > maxStress ) {
+                maxStress = stress;
+            }
+
+            if( utility < minUtility ) {
+                minUtility = utility;
+                minUtilityCell = cell1;
+            }
+        }
+
+        // error = sumsqerror over time
+        // remove 1 cell with low utility iff
+        //   high error / low utility
+        // ( error_j / U_i ) > K
+        // where j = node with greatest error (stress)
+        // i = smallest utility
+        // Say maxStress = 100
+        // minUtility = 20
+        // 100/20 = 5  - good
+        // minUtility = 2
+        // 100/2 = 50  - bad
+        float ratio = maxStress / ( minUtility + 0.0001f );
+        if( ratio <= threshold ) {
+            return;
+        }
+
+        // get rid of the low utility cell:
+        _cellMask._values[ minUtilityCell ] = 0.f;
+        _cellAges._values[ minUtilityCell ] = 0.f;
+
+        for( int cell2 = 0; cell2 < cells; ++cell2 ) {
+
+            int offset = getEdgeOffset( minUtilityCell, cell2 );
+
+            _edges._values[ offset ] = 0; // clear all edges with this cell
+        }
     }
 
     public int getBestCell() {
@@ -219,6 +323,15 @@ public class GrowingNeuralGas extends CompetitiveLearning {
             }
 
             _cellMask._values[ freeCell ] = 1.f;
+            _cellAges._values[ freeCell ] = 0.f;
+
+//            Fritzke does not define the initialisation of the utility variable for a new node.
+//            However, in the DemoGNG v1.5 implementation [6] it is defined as the mean of
+//            Uu and Uv
+//            . Note also that there is no mention of a decrease of the utilities of nodes
+//            u and v corresponding to the error decrease in GNG after a new node has been
+//            inserted. It stands to reason that the utilities of u and v should be decreased in the
+//            same manner as the errors.
 
             ++cellCount;
         }
@@ -380,6 +493,28 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         _cellStress._values[ worstCell  ] = stressWorst1New;
         _cellStress._values[ worstCell2 ] = stressWorst2New;
         _cellStress._values[ freeCell ] = stressFreeNew;
+
+        // bisect utility of new cell
+        // U_new = ( U_worst1 + U_worst2 ) / 2
+        float utilityWorst1 = _cellStress._values[ worstCell  ];
+        float utilityWorst2 = _cellStress._values[ worstCell2 ];
+        float utilityFreeNew = ( utilityWorst1 + utilityWorst2 ) * 0.5f;
+
+        _cellUtility._values[ worstCell  ] = utilityFreeNew;
+        _cellUtility._values[ worstCell2 ] = utilityFreeNew;
+        _cellUtility._values[ freeCell   ] = utilityFreeNew;
+
+        _cellAges._values[ worstCell  ] = 0f;
+        _cellAges._values[ worstCell2 ] = 0f;
+        _cellAges._values[ freeCell   ] = 0f;
+
+//        Fritzke does not define the initialisation of the utility variable for a new node.
+//        However, in the DemoGNG v1.5 implementation [6] it is defined as the mean of
+//        Uu and Uv
+//        . Note also that there is no mention of a decrease of the utilities of nodes
+//        u and v corresponding to the error decrease in GNG after a new node has been
+//        inserted. It stands to reason that the utilities of u and v should be decreased in the
+//        same manner as the errors.
     }
 
     /**
@@ -388,16 +523,26 @@ public class GrowingNeuralGas extends CompetitiveLearning {
      * @param bestCell
      */
     public void updateStress( int bestCell ) {
-//        float cellStressAlpha = 1.f - _c.getStressLearningRate();
         float bestSumSqError = _cellErrors._values[ bestCell ]; // use abs errors instead of sq errors?
-//        float bestUnitError = ( float ) Math.sqrt( bestSumSqError );
-//              bestUnitError /= inputs; this makes the values too small
-//        if( Float.isNaN( bestUnitError ) ) {
-//            bestUnitError = 0.f;
-//        }
         float stressOld = _cellStress._values[ bestCell ];
         float stressNew = stressOld + bestSumSqError; // ( float ) Unit.lerp( stressOld, bestSumSqError, cellStressAlpha );
         _cellStress._values[ bestCell ] = stressNew;
+    }
+
+    protected void updateUtility( int bestCellA, int bestCellB ) {
+
+        // increase utility of winner
+        // U_winner = U_winner + error_2nd - error_winner
+        // So if error_winner = 0 and error_2nd = 1
+        // utility = 1-0
+        // if winner = 1 and error = 1.1, then
+        // utility = 1.1 - 1 = 0.1 (low utility, because 2nd best almost as good)
+        float sumSqErrorA = _cellErrors._values[ bestCellA ]; // use abs errors instead of sq errors?
+        float sumSqErrorB = _cellErrors._values[ bestCellA ]; // use abs errors instead of sq errors?
+        float utility = sumSqErrorB - sumSqErrorA; // error B >= A by definition, cos A won.
+        float utilityOld = _cellUtility._values[ bestCellA ];
+        float utilityNew = utilityOld + utility;
+        _cellUtility._values[ bestCellA ] = utilityNew;
     }
 
     public void reduceStress() {
@@ -406,6 +551,17 @@ public class GrowingNeuralGas extends CompetitiveLearning {
             float stressOld = _cellStress._values[ i ];
             float stressNew = stressOld - (stressOld * cellStressLearningRate );
             _cellStress._values[ i ] = stressNew;
+        }
+    }
+
+    protected void reduceUtility() {
+        // decay utility
+        // U = U - Beta * U
+        float cellUtilityLearningRate = _c.getUtilityLearningRate();
+        for( int i = 0; i < _cellUtility._values.length; ++i ) {
+            float utilityOld = _cellUtility._values[ i ];
+            float utilityNew = utilityOld - (utilityOld * cellUtilityLearningRate );
+            _cellUtility._values[ i ] = utilityNew;
         }
     }
 
@@ -522,6 +678,25 @@ public class GrowingNeuralGas extends CompetitiveLearning {
                     _edgesAges._values[ offset ] = 0.f; // no point in storing larger ages
                 }
             }
+        }
+    }
+
+    public void updateCellsAges() {
+
+        int w = _c.getWidthCells();
+        int h = _c.getHeightCells();
+        int cells = w * h;
+
+        // now go and prune
+        for( int cell1 = 0; cell1 < cells; ++cell1 ) {
+
+            if( _cellMask._values[ cell1 ] == 0.f ) {
+                continue; // already dead
+            }
+
+            int oldAge = (int)_cellAges._values[ cell1 ];
+            int newAge = oldAge +1;
+            _cellAges._values[ cell1 ] = newAge;
         }
     }
 

@@ -309,41 +309,43 @@ public class RegionLayerEntity extends Entity {
         // actual bits of the column and the current input bits, so say it is 2 * config.receptiveFieldSize
 //        float classifierStressThreshold = config.classifierStressThreshold; // sum
 
-        RegionLayer r = rf.create(
-                om, regionLayerName, getRandom(),
-                input1Width, input1Height,
-                input2Width, input2Height,
-                feedbackWidthCells, feedbackHeightCells,
-                config.organizerWidthCells, config.organizerHeightCells,
-                config.classifierWidthCells, config.classifierHeightCells, config.classifierDepthCells,
-                config.organizerTrainOnChange, config.emitUnchangedCells,
-                config.receptiveFieldsTrainingSamples, config.defaultPredictionInhibition, config.classifiersPerBit1, config.classifiersPerBit2, //config.receptiveFieldSize,
-//                config.organizerNeighbourhoodRange, //config.organizerLearningRate, config.organizerElasticity, //config.organizerLearningRateNeighbours, config.organizerNoiseMagnitude, config.organizerEdgeMaxAge, config.organizerStressLearningRate, config.organizerStressThreshold, config.organizerGrowthInterval,
-                config.classifierLearningRate, config.classifierLearningRateNeighbours, config.classifierNoiseMagnitude, config.classifierEdgeMaxAge, config.classifierStressLearningRate, config.classifierStressSplitLearningRate, config.classifierStressThreshold, config.classifierGrowthInterval,
-//                config.classifierStressLearningRate, config.classifierRankLearningRate, config.classifierRankScale, config.classifierAgeMax, config.classifierAgeDecay, config.classifierAgeScale,
-                config.predictorLearningRate );
-
-        r._organizerIntervalsInput1X = config.organizerIntervalsInput1X;
-        r._organizerIntervalsInput2X = config.organizerIntervalsInput2X;
-        r._organizerIntervalsInput1Y = config.organizerIntervalsInput1Y;
-        r._organizerIntervalsInput2Y = config.organizerIntervalsInput2Y;
-
-        // Load data, overwriting the default setup.
-        copyDataFromPersistence( r );
-
-        // Update the region-layer, including optional reset and learning on/off switch
-        if( config.reset ) {
-            r.reset();
-        }
-        r._rc.setLearn( config.learn );
-        r.update(); // 120-150ms. The rest of doUpdateSelf() is maybe 50ms.
-
-        // update data logging
-        int fnCount = r._regionPredictionFN.indicesMoreThan( 0.f ).size();
-        updateDataLog( LOG_FN_COUNT, (float)fnCount );
-
-        // Save data
-        copyDataToPersistence( r );
+// CANT BE BOTHERED TO MAINTAIN DEAD CLASS
+//        RegionLayer r = rf.create(
+//                om, regionLayerName, getRandom(),
+//                input1Width, input1Height,
+//                input2Width, input2Height,
+//                feedbackWidthCells, feedbackHeightCells,
+//                config.organizerWidthCells, config.organizerHeightCells,
+//                config.classifierWidthCells, config.classifierHeightCells, config.classifierDepthCells,
+//                config.organizerTrainOnChange, config.emitUnchangedCells,
+//                config.receptiveFieldsTrainingSamples, config.defaultPredictionInhibition, config.classifiersPerBit1, config.classifiersPerBit2, //config.receptiveFieldSize,
+////                config.organizerNeighbourhoodRange, //config.organizerLearningRate, config.organizerElasticity, //config.organizerLearningRateNeighbours, config.organizerNoiseMagnitude, config.organizerEdgeMaxAge, config.organizerStressLearningRate, config.organizerStressThreshold, config.organizerGrowthInterval,
+//                config.classifierLearningRate, config.classifierLearningRateNeighbours, config.classifierNoiseMagnitude, config.classifierEdgeMaxAge, config.classifierStressLearningRate, config.classifierStressSplitLearningRate, config.classifierStressThreshold, config.classifierGrowthInterval,
+////                config.classifierStressLearningRate, config.classifierRankLearningRate, config.classifierRankScale, config.classifierAgeMax, config.classifierAgeDecay, config.classifierAgeScale,
+//                config.predictorLearningRate );
+//
+//        r._organizerIntervalsInput1X = config.organizerIntervalsInput1X;
+//        r._organizerIntervalsInput2X = config.organizerIntervalsInput2X;
+//        r._organizerIntervalsInput1Y = config.organizerIntervalsInput1Y;
+//        r._organizerIntervalsInput2Y = config.organizerIntervalsInput2Y;
+//
+//        // Load data, overwriting the default setup.
+//        copyDataFromPersistence( r );
+//
+//        // Update the region-layer, including optional reset and learning on/off switch
+//        if( config.reset ) {
+//            r.reset();
+//        }
+//        r._rc.setLearn( config.learn );
+//        r.update(); // 120-150ms. The rest of doUpdateSelf() is maybe 50ms.
+//
+//        // update data logging
+//        int fnCount = r._regionPredictionFN.indicesMoreThan( 0.f ).size();
+//        updateDataLog( LOG_FN_COUNT, (float)fnCount );
+//
+//        // Save data
+//        copyDataToPersistence( r );
+// CANT BE BOTHERED TO MAINTAIN DEAD CLASS
     }
 
     protected void updateDataLog( String logSuffix, float value ) {

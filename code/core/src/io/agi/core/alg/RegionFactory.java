@@ -70,6 +70,8 @@ public class RegionFactory {
             int organizerEdgeMaxAge,
             float organizerStressLearningRate,
             float organizerStressThreshold,
+            float organizerUtilityLearningRate,
+            float organizerUtilityThreshold,
             int organizerGrowthInterval,
 
             // Classifier training
@@ -79,6 +81,8 @@ public class RegionFactory {
             int classifierEdgeMaxAge,
             float classifierStressLearningRate,
             float classifierStressThreshold,
+            float classifierUtilityLearningRate,
+            float classifierUtilityThreshold,
             int classifierGrowthInterval,
 
             // Predictor
@@ -106,14 +110,14 @@ public class RegionFactory {
                 om, RegionConfig.SUFFIX_ORGANIZER, random, // temp name
                 organizerInputs, regionWidthColumns, regionHeightColumns,
                 organizerLearningRate, organizerLearningRateNeighbours, organizerNoiseMagnitude,
-                organizerEdgeMaxAge, organizerStressLearningRate, 0.5f, organizerStressThreshold, organizerGrowthInterval );
+                organizerEdgeMaxAge, organizerStressLearningRate, 0.5f, organizerStressThreshold, organizerUtilityLearningRate, organizerUtilityThreshold, organizerGrowthInterval );
 
         GrowingNeuralGasConfig classifierConfig = new GrowingNeuralGasConfig();
         classifierConfig.setup(
                 om, RegionConfig.SUFFIX_CLASSIFIER, random, // temp name
                 classifierInputs, classifierWidthCells, classifierHeightCells,
                 classifierLearningRate, classifierLearningRateNeighbours, classifierNoiseMagnitude,
-                classifierEdgeMaxAge, classifierStressLearningRate, 0.5f, classifierStressThreshold, classifierGrowthInterval );
+                classifierEdgeMaxAge, classifierStressLearningRate, 0.5f, classifierStressThreshold, classifierUtilityLearningRate, classifierUtilityThreshold, classifierGrowthInterval );
 
 //        FeedForwardNetworkConfig predictorConfig = new FeedForwardNetworkConfig();
 //        predictorConfig.setup(

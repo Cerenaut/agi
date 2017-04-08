@@ -48,6 +48,7 @@ public class GrowingNeuralGasEntity extends Entity {
     public static final String OUTPUT_ERROR = "output-error";
     public static final String OUTPUT_ACTIVE = "output-active";
 
+    public static final String OUTPUT_CELL_UTILITY = "output-cell-utility";
     public static final String OUTPUT_CELL_STRESS = "output-cell-stress";
     public static final String OUTPUT_CELL_AGES = "output-cell-ages";
     public static final String OUTPUT_EDGES = "output-edges";
@@ -69,6 +70,7 @@ public class GrowingNeuralGasEntity extends Entity {
         attributes.add( OUTPUT_ACTIVE );
 
         attributes.add( OUTPUT_CELL_STRESS );
+        attributes.add( OUTPUT_CELL_UTILITY );
         attributes.add( OUTPUT_CELL_AGES );
         attributes.add( OUTPUT_EDGES );
         attributes.add( OUTPUT_EDGES_AGES );
@@ -98,7 +100,7 @@ public class GrowingNeuralGasEntity extends Entity {
 
         // Create the config object:
         GrowingNeuralGasConfig c = new GrowingNeuralGasConfig();
-        c.setup( _om, implName, getRandom(), inputs, config.widthCells, config.heightCells, config.learningRate, config.learningRateNeighbours, config.noiseMagnitude, config.edgeMaxAge, config.stressLearningRate, config.stressSplitLearningRate, config.stressThreshold, config.growthInterval );
+        c.setup( _om, implName, getRandom(), inputs, config.widthCells, config.heightCells, config.learningRate, config.learningRateNeighbours, config.noiseMagnitude, config.edgeMaxAge, config.stressLearningRate, config.stressSplitLearningRate, config.stressThreshold, config.utilityLearningRate, config.utilityThreshold, config.growthInterval );
 
         // Create the implementing object itself, and copy data from persistence into it:
         GrowingNeuralGas gng = new GrowingNeuralGas( implName, _om );
@@ -117,6 +119,7 @@ public class GrowingNeuralGasEntity extends Entity {
         Data mask = getDataLazyResize( OUTPUT_MASK, dataSizeCells ); // deep copies the size so they each own a copy
 
         Data cellStress = getDataLazyResize( OUTPUT_CELL_STRESS, dataSizeCells );
+        Data cellUtility = getDataLazyResize( OUTPUT_CELL_UTILITY, dataSizeCells );
         Data cellAges = getDataLazyResize( OUTPUT_CELL_AGES, dataSizeCells );
         Data edges = getDataLazyResize( OUTPUT_EDGES, dataSizeEdges );
         Data edgesAges = getDataLazyResize( OUTPUT_EDGES_AGES, dataSizeEdges );
@@ -129,6 +132,7 @@ public class GrowingNeuralGasEntity extends Entity {
         gng._cellMask = mask;
 
         gng._cellStress = cellStress;
+        gng._cellUtility = cellUtility;
         gng._cellAges = cellAges;
         gng._edges = edges;
         gng._edgesAges = edgesAges;
@@ -146,6 +150,7 @@ public class GrowingNeuralGasEntity extends Entity {
         setData( OUTPUT_MASK, mask );
 
         setData( OUTPUT_CELL_STRESS, cellStress );
+        setData( OUTPUT_CELL_UTILITY, cellUtility );
         setData( OUTPUT_CELL_AGES, cellAges );
         setData( OUTPUT_EDGES, edges );
         setData( OUTPUT_EDGES_AGES, edgesAges );

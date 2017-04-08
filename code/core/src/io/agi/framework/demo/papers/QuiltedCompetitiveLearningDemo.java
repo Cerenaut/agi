@@ -79,11 +79,11 @@ public class QuiltedCompetitiveLearningDemo {
 //        String trainingPath = "./training";
 //        String testingPath = "./testing";
 
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
-//        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
 
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10,/home/dave/workspace/agi.io/data/mnist/cycle3";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10,/home/dave/workspace/agi.io/data/mnist/cycle3";
 
         boolean cacheAllData = true;
         boolean terminateByAge = false;
@@ -153,13 +153,15 @@ public class QuiltedCompetitiveLearningDemo {
         Framework.SetConfig( imageLabelName, "testingEntities", vectorSeriesName + "," + valueSeriesName );
 
         int edgeMaxAge = 500;
-        int growthInterval = 50;
+        int growthInterval = 200;//50;
         float learningRate = 0.01f;
         float learningRateNeighbours = learningRate * 0.2f;
         float noiseMagnitude = 0.0f;
         float stressLearningRate = 0.01f; // not used now?
         float stressSplitLearningRate = 0.5f; // change to stress after a split
         float stressThreshold = 0.01f; // when it ceases to split
+        float utilityLearningRate = stressLearningRate;
+        float utilityThreshold = -1f;//5f;//-1f;
 
         // 25 * 49 = 1225
         // 36 * 36 = 1296
@@ -248,6 +250,8 @@ public class QuiltedCompetitiveLearningDemo {
         Framework.SetConfig( quiltName, "classifierStressLearningRate", String.valueOf( stressLearningRate ) );
         Framework.SetConfig( quiltName, "classifierStressSplitLearningRate", String.valueOf( stressSplitLearningRate ) );
         Framework.SetConfig( quiltName, "classifierStressThreshold", String.valueOf( stressThreshold ) );
+        Framework.SetConfig( quiltName, "classifierUtilityLearningRate", String.valueOf( utilityLearningRate ) );
+        Framework.SetConfig( quiltName, "classifierUtilityThreshold", String.valueOf( utilityThreshold ) );
         Framework.SetConfig( quiltName, "classifierGrowthInterval", String.valueOf( growthInterval ) );
 
         // Log features of the algorithm during all phases
