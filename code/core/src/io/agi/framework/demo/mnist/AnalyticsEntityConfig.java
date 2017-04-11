@@ -46,6 +46,8 @@ public class AnalyticsEntityConfig extends EntityConfig {
 //    public String datasetFeaturesAttribute = "";
 //    public String datasetLabelsAttribute = "";
 
+    public float trainingDropoutProbability = 0f; // randomly eliminates bits from the features during training
+
     public boolean predictDuringTraining = false;
     public boolean batchMode = true;
     public boolean terminate = false;      // trigger to stop the experiment

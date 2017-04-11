@@ -89,6 +89,8 @@ public class ClassifyFeaturesDemo {
         // ---------------------------------------------
         boolean cacheAllData = true;
 
+        float trainingDropoutProbability = 1f / 49f;
+
         int trainingSamples = 60000;
         int testingSamples = 70000;
 
@@ -106,6 +108,7 @@ public class ClassifyFeaturesDemo {
         analyticsEntityConfig.testSetSize = testingSamples;// 70000;
         analyticsEntityConfig.testingEntities = logisticRegressionName;
         analyticsEntityConfig.predictDuringTraining = true;
+        analyticsEntityConfig.trainingDropoutProbability = trainingDropoutProbability;
 
         SupervisedBatchTrainingEntityConfig logisticRegressionEntityConfig = new SupervisedBatchTrainingEntityConfig();
         logisticRegressionEntityConfig.algorithm = SupervisedBatchTrainingEntityConfig.ALGORITHM_LOGISTIC_REGRESSION;
