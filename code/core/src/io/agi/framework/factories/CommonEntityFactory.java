@@ -168,6 +168,10 @@ public class CommonEntityFactory implements EntityFactory {
             return new OnlineKSparseAutoencoderEntity( objectMap, _n, modelEntity );
         }
 
+        if( entityType.equals( CompetitiveKSparseAutoencoderEntity.ENTITY_TYPE ) ) {
+            return new CompetitiveKSparseAutoencoderEntity( objectMap, _n, modelEntity );
+        }
+
         if( entityType.equals( QuiltedCompetitiveLearningEntity.ENTITY_TYPE ) ) {
             return new QuiltedCompetitiveLearningEntity( objectMap, _n, modelEntity );
         }
