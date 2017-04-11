@@ -261,6 +261,7 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
         }
 
         qcl._config.setLearn( config.learn );
+        qcl._emit2ndBest = config.emit2ndBest; // special behaviour option
         qcl.update();
 
         // update the inverted output
