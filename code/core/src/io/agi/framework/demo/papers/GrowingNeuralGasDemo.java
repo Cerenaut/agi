@@ -114,6 +114,7 @@ public class GrowingNeuralGasDemo {
         featureDatas.add( new AbstractPair<>( competitiveLearningName, GrowingNeuralGasEntity.OUTPUT_ACTIVE ) );
         Framework.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
 
+
         // Experiment config
         if( !terminateByAge ) {
             Framework.SetConfig( experimentName, "terminationEntityName", imageLabelName );
