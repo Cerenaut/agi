@@ -30,7 +30,7 @@ import java.util.*;
 
 
 /**
- * TOOD add use of feedback to adjust the inference of winning cells.
+ * TODO add use of feedback to adjust the inference of winning cells.
  *
  * Created by dave on 22/10/16.
  */

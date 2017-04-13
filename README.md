@@ -34,12 +34,11 @@ All scripts utilise environmental variables defined in a 'variables' file. Every
 ## Installation
 Installation of the following tools is required and some background knowledge recommended:
 * [Maven](https://maven.apache.org/) 
-* One or both of [Postgres](http://www.postgresql.org/) and [Couchbase](http://www.couchbase.com/) for the persistence layer
 
 Then:
 * Pull the repository
 * Set variables. Duplicate ```/resources/variables-template.sh```, and overwrite with values suitable for your environment. Copy it to a convenient location and set an environmental variable VARIABLES_FILE to point to it using the full path. We recommend you set that up in .bashrc so that it is always definted correctly.
-* If using postgres, setup and run the db. Run ```/bin/db/setup.sh```
+* The favoured approach is to use 'in memory' persistence, specified in node.properties in the working folder. However, postgres is an option. If using postgres, setup and run the db. Run ```/bin/db/setup.sh```
 
 
 ## Running
