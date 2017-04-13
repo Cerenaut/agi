@@ -278,6 +278,10 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         return _bestCellA;
     }
 
+    public int get2ndBestCell() {
+        return _bestCellB;
+    }
+
     public ArrayList< Integer > getSparseUnitInput() {
         return _sparseUnitInput;
     }

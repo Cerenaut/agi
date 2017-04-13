@@ -28,6 +28,8 @@ public class QuiltedCompetitiveLearningEntityConfig extends EntityConfig {
 
     public boolean resetDelayed = false;
 
+    public boolean emit2ndBest = false;
+
     public int quiltWidth = 0;
     public int quiltHeight = 0;
 
