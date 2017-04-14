@@ -94,7 +94,10 @@ public class ClassificationAnalysisEntity extends Entity {
         // put results in log and config for easy collection
         String results = ca.getResult();
         _logger.info( results );
-        config.resultsSummary = results;
+
+        if (config.resultsSummary == null)
+            config.resultsSummary = "";
+        config.resultsSummary += results + "\n";
 
         // display stats.
         int errors = ca.getErrorCount();
