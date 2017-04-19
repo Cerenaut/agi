@@ -1,6 +1,6 @@
 # Artificial General Intelligence Experimental Framework
 
-AGIEF makes it easy to set up repeatable and logged experiments. It consists of a simple graphical UI, an Interprocess layer for distributed coordination and communication, and base classes for the entities that you need for building an AGI experiment. The system architecture is shown [here]("https://github.com/ProjectAGI/agi/blob/master/doc/AGIEF%20Experimental%20System.pdf"). 
+AGIEF makes it easy to set up repeatable and logged experiments. It consists of a simple graphical UI, an Interprocess layer for distributed coordination and communication, and base classes for the entities that you need for building an AGI experiment. The system architecture is shown [here](https://github.com/ProjectAGI/agi/blob/master/doc/AGIEF%20Experimental%20System.pdf). 
 
 
 This repo consists of:
@@ -50,7 +50,7 @@ Then:
 * You can build and run the compute node using the scripts in ```/bin/node_coordinator```. There is also the option of doing this in a docker container using ```/bin/run-in-docker.sh```, read the help to see how to use it.
 	* ```run.sh``` will run the generic main, whereas ```run-demo.sh``` is used to run one of the specific demos, each one has it's own main(). The latter is done to export the entities and data to be imported for running the experiment.
 * You can use command line parameters to set node properties, and the initial state of system (entities, data)
-* Run GUI by running the web server ```/bin/www/python_server.sh``` and going to http://localhost:8000
+* Run GUI by running the web server ```/bin/www/python_server.sh``` and going to [http://localhost:8000](http://localhost:8000)
 	* alternatively, open any of the web pages in ```/code/wwww```
 
 
