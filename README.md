@@ -1,6 +1,6 @@
 # Artificial General Intelligence Experimental Framework
 
-AGIEF makes it easy to set up repeatable and logged experiments. It consists of a simple graphical UI, an Interprocess layer for distributed coordination and communication, and base classes for the entities that you need for building an AGI experiment. The system architecture is shown [here]("https://github.com/ProjectAGI/agi/blob/master/resources/docs/Project AGI_ AGI Experimental Framework_ A platform for AGI R&D.pdf"). 
+AGIEF makes it easy to set up repeatable and logged experiments. It consists of a simple graphical UI, an Interprocess layer for distributed coordination and communication, and base classes for the entities that you need for building an AGI experiment. The system architecture is shown [here]("https://github.com/ProjectAGI/agi/blob/master/doc/AGIEF%20Experimental%20System.pdf"). 
 
 
 This repo consists of:
