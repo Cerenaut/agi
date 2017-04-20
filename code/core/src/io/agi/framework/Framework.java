@@ -755,6 +755,7 @@ public class Framework {
         File file = new File( path );
         try {
             FileUtils.writeStringToFile( file, subtree );
+            file.setWritable(true, false);
             success = true;
         }
         catch( IOException e ) {
