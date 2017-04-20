@@ -326,7 +326,9 @@ public class ModelData {
         String s3 = "]}";
 
         String length = String.valueOf( fa._values.length );
+        ArrayList< String > chunks = new ArrayList< String >();
         ArrayList< String > values = new ArrayList< String >();
+        int chunkSize = 100;
 
         if( ( encoding != null ) && ( encoding.equals( ModelData.ENCODING_SPARSE_BINARY ) ) ) {
             for( int i = 0; i < fa._values.length; ++i ) {
@@ -337,6 +339,11 @@ public class ModelData {
 
                 String s = String.valueOf( i ); // TODO consider serializing this as integer.
                 values.add( s );
+                if( values.size() >= chunkSize ) {
+                    String chunk = StringUtils.join( values, "," );
+                    chunks.add( chunk );
+                    values.clear();
+                }
             }
         }
         else if( ( encoding != null ) && ( encoding.equals( ModelData.ENCODING_SPARSE_REAL ) ) ) {
@@ -348,6 +355,11 @@ public class ModelData {
 
                 String s = String.valueOf( i ) + "," + String.valueOf( value ); // index,value
                 values.add( s );
+                if( values.size() >= chunkSize ) {
+                    String chunk = StringUtils.join( values, "," );
+                    chunks.add( chunk );
+                    values.clear();
+                }
             }
             //System.err.println( " Sparse real encoding: Original size: " + fa._values.length + " encoded size: " + values.size() );
         }
@@ -357,11 +369,15 @@ public class ModelData {
                 float value = fa._values[ i ];
                 String s = String.valueOf( value );
                 values.add( s );
+                if( values.size() >= chunkSize ) {
+                    String chunk = StringUtils.join( values, "," );
+                    chunks.add( chunk );
+                    values.clear();
+                }
             }
         }
 
-        String elements = StringUtils.join( values, "," );
-
+        String elements = StringUtils.join( chunks, "," );
         String result = s1 + length + s2 + elements + s3;
         return result;
     }
@@ -379,42 +395,152 @@ public class ModelData {
             FloatArray fa = new FloatArray( length ); // default to zeroes
 
             String elementsString = GetJsonArrayProperty( s, "elements" );
-            String[] splitString = elementsString.split( "," );
 
-            if( ( encoding != null ) && ( encoding.equals( ModelData.ENCODING_SPARSE_BINARY ) ) ) {
-                if( elementsString.length() > 0 ) { // can be empty string if all zeros.
-                    for( int i = 0; i < splitString.length; ++i ) {
-                        String valueString = splitString[ i ];
-                        Integer value = Integer.valueOf( valueString );
-                        fa._values[ value ] = 1.f;
+            // Chunk-stream based processing of deserialization: For memory efficiency.
+            // We only hold one contiguous copy of the whole string in memory, and deserialize it into numbers in chunks.
+            // This is complicated but saves a heap of RAM requirement.
+            int elementsStringLength = elementsString.length();
+            int chunkSize = 1024;
+            int chunkOffset = 0;
+            String temp = "";
+            Float tempNumberOld = null;
+            int tempNumberIdx = 0;
+
+            //System.err.println( "NEW array! encidng: "+ encoding+ " sz: " + elementsStringLength  );
+
+            while( chunkOffset < elementsStringLength ) {
+                int beginIdx = chunkOffset;
+                int endIdx = beginIdx + chunkSize;// exclusive
+                endIdx = Math.min( elementsStringLength, endIdx );
+
+                //System.err.println( "1 encidng: "+ encoding+ " tempNumberIdx: " + tempNumberIdx + " chunkOffset: " + chunkOffset + " i1: " + beginIdx + " i2: " + endIdx + " sz: " + elementsStringLength  );
+
+                chunkOffset += chunkSize;
+
+                String chunk = elementsString.substring( beginIdx, endIdx ).trim();
+
+                // if chunk has a ',' before any digits, then we must insert a comma to replace what we removed
+                String combined = null;
+
+                // otherwise, we just combine
+                if( combined == null ) {
+                    combined = temp + chunk;
+                }
+
+                String[] splitString = combined.split( "," ); // last one may be incomplete
+
+                // copy values in the combined chunk to an array of numbers
+                float[] splitValues = new float[ splitString.length -1 ];
+
+                for( int i = 0; i < splitString.length -1; ++i ) {
+                    String splitStringElement = splitString[ i ];
+
+//                    try {
+                    Float value = Float.valueOf( splitStringElement );
+                    splitValues[ i ] = value;
+//                    }
+//                    catch( NumberFormatException e ) {
+//                        System.err.println( "TEMP: " + temp + " CHUNK: " + chunk + " COMB: " + combined );
+//                    }
+                }
+
+                // remember the last number may be incomplete. So save that bit to do later
+                // e.g. 123,456,789
+                //             |     complete number (789)
+                //               |   incomplete number (78)
+                if( splitString.length > 0 ) {
+                    temp = splitString[ splitString.length - 1 ]; // temp is the last bit
+                    if( chunk.length() > 0 ) {
+                        char charN = chunk.charAt( chunk.length() - 1 ); // remember, chunk is trimmed, so we don't need to check anything except the last char
+                        if( charN == ',' ) {
+                            temp = temp + ",";
+                        }
                     }
                 }
-            }
-            else if( ( encoding != null ) && ( encoding.equals( ModelData.ENCODING_SPARSE_REAL ) ) ) {
-                if( elementsString.length() > 0 ) { // can be empty string if all zeros.
-                    int values = splitString.length >> 1;
-                    for( int i = 0; i < values; ++i ) {
-                        int i1 = i * 2;
-                        int i2 = i1 +1;
-                        String indexString = splitString[ i1 ];
-                        String valueString = splitString[ i2 ];
-                        Integer index = Integer.valueOf( indexString );
-                        Float value = Float.valueOf( valueString );
-                        fa._values[ index ] = value;
-                    }
+
+                // now process each of the numbers we do have
+                for( int i = 0; i < splitValues.length; ++i ) {
+                    int numberIdx = tempNumberIdx +i;
+                    float value = splitValues[ i ];
+
+//                    System.err.println( "numberIdx: " + numberIdx + " value: " + value );
+                    decodeValue( encoding, fa, value, tempNumberOld, numberIdx );
+                    tempNumberOld = value; // always the previously seen value, or null
                 }
+
+                tempNumberIdx += splitValues.length; // add the number of values we processed
+
+            } // while( has more chunks )
+
+            // handle the last string.
+            try {
+                int numberIdx = tempNumberIdx +0;
+                float value = Float.valueOf( temp );
+                decodeValue( encoding, fa, value, tempNumberOld, numberIdx );
             }
-            else {
-                for( int i = 0; i < splitString.length; ++i ) {
-                    String valueString = splitString[ i ];
-                    Float value = Float.valueOf( valueString );
-                    fa._values[ i ] = value;
-                }
+            catch( NumberFormatException e ) {
+                e.printStackTrace();
+                // nothing, just a bit of whitespace?
             }
+
+//            String[] splitString = elementsString.split( "," );
+//
+//            if( ( encoding != null ) && ( encoding.equals( ModelData.ENCODING_SPARSE_BINARY ) ) ) {
+//                if( elementsString.length() > 0 ) { // can be empty string if all zeros.
+//                    for( int i = 0; i < splitString.length; ++i ) {
+//                        String valueString = splitString[ i ];
+//                        Integer value = Integer.valueOf( valueString );
+//                        fa._values[ value ] = 1.f;
+//                    }
+//                }
+//            }
+//            else if( ( encoding != null ) && ( encoding.equals( ModelData.ENCODING_SPARSE_REAL ) ) ) {
+//                if( elementsString.length() > 0 ) { // can be empty string if all zeros.
+//                    int values = splitString.length >> 1;
+//                    for( int i = 0; i < values; ++i ) {
+//                        int i1 = i * 2;
+//                        int i2 = i1 +1;
+//                        String indexString = splitString[ i1 ];
+//                        String valueString = splitString[ i2 ];
+//                        Integer index = Integer.valueOf( indexString );
+//                        Float value = Float.valueOf( valueString );
+//                        fa._values[ index ] = value;
+//                    }
+//                }
+//            }
+//            else {
+//                for( int i = 0; i < splitString.length; ++i ) {
+//                    String valueString = splitString[ i ];
+//                    Float value = Float.valueOf( valueString );
+//                    fa._values[ i ] = value;
+//                }
+//            }
             return fa;
         }
         catch( Exception e ) {
+         //   e.printStackTrace();
+         //   System.exit( -1 );
             return null;
+        }
+    }
+
+    private static void decodeValue( String encoding, FloatArray fa, float value, Float valueBefore, int numberIdx ) {
+        if( ( encoding != null ) && ( encoding.equals( ModelData.ENCODING_SPARSE_BINARY ) ) ) {
+            int intValue = (int)value;
+            fa._values[ intValue ] = 1.f;
+        }
+        else if( ( encoding != null ) && ( encoding.equals( ModelData.ENCODING_SPARSE_REAL ) ) ) {
+            if( (numberIdx & 1) == 0 ) {
+                // even: 0, 2 etc: do nothing
+            }
+            else {
+                // odd: 1, 3, 5 etc
+                Integer index = valueBefore.intValue();
+                fa._values[ index ] = value;
+            }
+        }
+        else { // default encoding
+            fa._values[ numberIdx ] = value;
         }
     }
 
