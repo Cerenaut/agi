@@ -346,11 +346,13 @@ public class SupervisedLearningEntity extends Entity {
         // Therefore, we directly get the features data and have a method to get the label data.
         Data features = getData( INPUT_FEATURES ); // only appended when learning enabled
         if( features == null ) {
+            _logger.debug( "No features found!" );
             return;
         }
 
         Data labels = getInputLabels(); // only appended when learning enabled
         if( labels == null ) {
+            _logger.debug( "No labels found!" );
             return;
         }
 
