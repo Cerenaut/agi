@@ -27,6 +27,7 @@ import io.agi.framework.Framework;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -73,6 +74,10 @@ public class HttpExportHandler implements HttpHandler {
                 String filename = "saved__" + entityName + "-" + type + ".json";
                 if ( m.containsKey( PARAMETER_EXPORT_LOCATION ) ) {
                     String folderPath = m.get( PARAMETER_EXPORT_LOCATION ).trim(); // essential
+
+                    // make sure that the created files are writeable by others
+                    File file = new File( folderPath );
+                    file.setWritable( true, false );
 
                     Path filepath = Paths.get( folderPath, filename );
 
