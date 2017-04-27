@@ -64,15 +64,9 @@ public class ClassificationAnalysisEntity extends Entity {
     }
 
     protected void doUpdateSelf() {
-
         Data truth = getData( INPUT_TRUTH );
         Data predicted = getData( INPUT_PREDICTED );
-
-        if( truth == null ) {
-            return;
-        }
-
-        if( predicted == null ) {
+        if( truth == null || predicted == null ) {
             return;
         }
 
@@ -81,11 +75,7 @@ public class ClassificationAnalysisEntity extends Entity {
         // Check for a reset (to start of sequence and re-train)
         ClassificationAnalysisEntityConfig config = ( ClassificationAnalysisEntityConfig ) _config;
 
-        int offset = config.sampleOffset;
-        int length = config.sampleLength;
-
-        String errorMessage = ca.analyze( truth, predicted, offset, length );
-
+        String errorMessage = ca.analyze( truth, predicted, config.sampleOffset, config.sampleLength );
         if( errorMessage != null ) {
             _logger.error( errorMessage );
             return;
@@ -94,9 +84,9 @@ public class ClassificationAnalysisEntity extends Entity {
         // put results in log and config for easy collection
         String results = ca.getResult();
         _logger.info( results );
-
-        if (config.resultsSummary == null)
+        if( config.resultsSummary == null ) {
             config.resultsSummary = "";
+        }
         config.resultsSummary += results + "\n";
 
         // display stats.
@@ -107,8 +97,7 @@ public class ClassificationAnalysisEntity extends Entity {
 
         config.sortedLabels.clear();
         for( Float label : ca._sortedLabels ) {
-            String labelString = String.format( "%.0f", label );
-            config.sortedLabels.add( labelString );
+            config.sortedLabels.add( String.format( "%.0f", label ) );
         }
 
         config.confusionMatrix.clear();

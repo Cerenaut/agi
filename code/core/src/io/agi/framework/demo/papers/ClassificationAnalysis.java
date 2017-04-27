@@ -256,14 +256,14 @@ public class ClassificationAnalysis {
         private final int numFalseNegatives;
         private final int numPositives;
 
-        public ClassificationStats(int numFalsePositives, int numFalseNegatives, int numPositives) {
+        public ClassificationStats( int numFalsePositives, int numFalseNegatives, int numPositives ) {
             this.numFalsePositives = numFalsePositives;
             this.numFalseNegatives = numFalseNegatives;
             this.numPositives = numPositives;
         }
 
-        public ClassificationStats(float label) {
-            this(_labelErrorFP.get(label), _labelErrorFN.get(label), _labelFrequency.get(label));
+        public ClassificationStats( float label ) {
+            this( _labelErrorFP.get( label ), _labelErrorFN.get( label ), _labelFrequency.get( label ) );
         }
 
         public int getNumFalsePositives() {
@@ -296,55 +296,54 @@ public class ClassificationAnalysis {
         }
 
         public float getFScore( float betaSquared ) {
-            float denominator = (1f + betaSquared) * getNumTruePositives() +
+            float denominator = ( 1f + betaSquared ) * getNumTruePositives() +
                                     betaSquared * numFalseNegatives +
                                     numFalsePositives;
-            return denominator == 0 ? 0 : (1f + betaSquared) * getNumTruePositives() / denominator;
+            return denominator == 0 ? 0 : ( 1f + betaSquared ) * getNumTruePositives() / denominator;
         }
     }
     
     public String getResult() {
-        // TODO: make formatting consistent :(
         StringBuilder result = new StringBuilder();
-        result.append("\nErrors: ").append(getErrorCount())
-              .append(" of ").append(getSampleCount())
-              .append(" = ").append((1f - getErrorFraction()) * 100).append("% correct.");
-        result.append("\nConfusion:\n           <--- PREDICTED ---> \n   ");
+        result.append( "\nErrors: " ).append( getErrorCount() )
+              .append( " of " ).append( getSampleCount() )
+              .append( " = " ).append( ( 1f - getErrorFraction() ) * 100 ).append( "% correct." );
+        result.append( "\nConfusion:\n           <--- PREDICTED ---> \n   " );
         for( Float label : _sortedLabels ) {
-            result.append(String.format( " %6.1f", label ));
+            result.append( String.format( " %6.1f", label ) );
         }
-        result.append("\n");
+        result.append( "\n" );
         for( Float trueLabel : _sortedLabels ) {
             HashMap< Float, Integer > trueLabelClassificationCounts = _confusionMatrix.get( trueLabel );
-            result.append(String.format( "%.1f", trueLabel ));
+            result.append( String.format( "%.1f", trueLabel ) );
             for( Float predictedLabel : _sortedLabels ) {
-                result.append(String.format(" %6d", trueLabelClassificationCounts.get( predictedLabel )));
+                result.append( String.format( " %6d", trueLabelClassificationCounts.get( predictedLabel ) ) );
             }
-            result.append("\n");
+            result.append( "\n" );
         }
 
-        result.append(String.format("\nF-Score:\n%-6s %6s %6s %6s %6s %6s %6s %6s %8s\n",
-                                    "Label",
-                                    "Err",
-                                    "TP",
-                                    "FP",
-                                    "TN",
-                                    "FN",
-                                    "T",
-                                    "F",
-                                    "F-Score"));
+        result.append( String.format( "\nF-Score:\n%-6s %6s %6s %6s %6s %6s %6s %6s %8s\n",
+                                      "Label",
+                                      "Err",
+                                      "TP",
+                                      "FP",
+                                      "TN",
+                                      "FN",
+                                      "T",
+                                      "F",
+                                      "F-Score" ) );
         for( Float label : _sortedLabels ) {
-            ClassificationStats labelStats = new ClassificationStats(label);
-            result.append(String.format("%-6.1f %6d %6d %6d %6d %6d %6d %6d %8.4f\n",
-                                        label,
-                                        labelStats.getNumErrors(),
-                                        labelStats.getNumTruePositives(),
-                                        labelStats.getNumFalsePositives(),
-                                        labelStats.getNumTrueNegatives(),
-                                        labelStats.getNumFalseNegatives(),
-                                        labelStats.getNumPositives(),
-                                        labelStats.getNumNegatives(),
-                                        labelStats.getFScore(0)));
+            ClassificationStats labelStats = new ClassificationStats( label );
+            result.append( String.format( "%-6.1f %6d %6d %6d %6d %6d %6d %6d %8.4f\n", 
+                                          label,
+                                          labelStats.getNumErrors(),
+                                          labelStats.getNumTruePositives(),
+                                          labelStats.getNumFalsePositives(),
+                                          labelStats.getNumTrueNegatives(),
+                                          labelStats.getNumFalseNegatives(),
+                                          labelStats.getNumPositives(),
+                                          labelStats.getNumNegatives(),
+                                          labelStats.getFScore( 0 ) ) );
         }
 
         // TODO: use ClassificationStats to average f-scores across labels -- add here and to config/entity
