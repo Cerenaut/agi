@@ -116,7 +116,7 @@ public class ClassificationAnalysisEntity extends Entity {
         // F score and other stats, per label
         config.labelStatistics.clear();
         for( Float label : ca._sortedLabels ) {
-            ClassificationAnalysis.ClassificationStats labelStats = ca.new ClassificationStats(label);
+            ClassificationAnalysis.ClassificationStats labelStats = ca.getClassificationStats(label);
             // TODO: these should be declared with the interfaces, not concrete classes
             // TODO: why use strings?
             HashMap< String, String > labelStatMap = new HashMap<>();
@@ -126,9 +126,10 @@ public class ClassificationAnalysisEntity extends Entity {
             labelStatMap.put( "fp", String.valueOf( labelStats.getNumFalsePositives() ) );
             labelStatMap.put( "tn", String.valueOf( labelStats.getNumTrueNegatives() ) );
             labelStatMap.put( "fn", String.valueOf( labelStats.getNumFalseNegatives() ) );
-            labelStatMap.put( "f-score", String.valueOf( labelStats.getFScore( config.betaSq ) ) );
+            labelStatMap.put( "f-score", String.valueOf( labelStats.calculateFScore( config.betaSq ) ) );
             config.labelStatistics.put( String.valueOf( label ), labelStatMap );
         }
+        config.microFScore = ca.calculateFScore(0, ClassificationAnalysis.FScoreAverageType.MICRO );
+        config.macroFScore = ca.calculateFScore(0, ClassificationAnalysis.FScoreAverageType.MACRO );
     }
-
 }

@@ -251,19 +251,17 @@ public class ClassificationAnalysis {
         return null; // no error
     }
 
-    public class ClassificationStats {
+    public static class ClassificationStats {
+        private final int numSamples;
         private final int numFalsePositives;
         private final int numFalseNegatives;
         private final int numPositives;
 
-        public ClassificationStats( int numFalsePositives, int numFalseNegatives, int numPositives ) {
+        public ClassificationStats( int numSamples, int numFalsePositives, int numFalseNegatives, int numPositives ) {
+            this.numSamples = numSamples;
             this.numFalsePositives = numFalsePositives;
             this.numFalseNegatives = numFalseNegatives;
             this.numPositives = numPositives;
-        }
-
-        public ClassificationStats( float label ) {
-            this( _labelErrorFP.get( label ), _labelErrorFN.get( label ), _labelFrequency.get( label ) );
         }
 
         public int getNumFalsePositives() {
@@ -279,30 +277,62 @@ public class ClassificationAnalysis {
         }
 
         public int getNumNegatives() {
-            return getSampleCount() - numPositives;
+            return numSamples - numPositives;
         }
 
-        // TODO: are the following two correct? (copied from original)
+        // TODO: is this correct (changed from original)?
         public int getNumTruePositives() {
-            return numPositives - numFalseNegatives;
+            return numPositives - numFalsePositives;
         }
 
         public int getNumTrueNegatives() {
-            return getNumNegatives() - numFalsePositives;
+            return getNumNegatives() - numFalseNegatives;
         }
 
         public int getNumErrors() {
             return numFalsePositives + numFalseNegatives;
         }
 
-        public float getFScore( float betaSquared ) {
+        public float calculateFScore( float betaSquared ) {
             float denominator = ( 1f + betaSquared ) * getNumTruePositives() +
                                     betaSquared * numFalseNegatives +
                                     numFalsePositives;
             return denominator == 0 ? 0 : ( 1f + betaSquared ) * getNumTruePositives() / denominator;
         }
     }
-    
+
+    public ClassificationStats getClassificationStats( Float label ) {
+        return new ClassificationStats( getSampleCount(),
+                                        _labelErrorFP.get( label ),
+                                        _labelErrorFN.get( label ),
+                                        _labelFrequency.get( label ) );
+    }
+
+    public enum FScoreAverageType { MICRO, MACRO };
+
+    public float calculateFScore( float betaSquared, FScoreAverageType averageType ) {
+        switch( averageType ) {
+            case MICRO:
+                int numFalsePositives = 0;
+                int numFalseNegatives = 0;
+                for( Float label : _sortedLabels ) {
+                    numFalsePositives += _labelErrorFP.get( label );
+                    numFalseNegatives += _labelErrorFN.get( label );
+                }
+                return new ClassificationStats( getSampleCount(),
+                                                numFalsePositives,
+                                                numFalseNegatives,
+                                                getSampleCount() ).calculateFScore( betaSquared );
+            case MACRO:
+                float sumFScores = 0;
+                for ( Float label : _sortedLabels ) {
+                    sumFScores += getClassificationStats( label ).calculateFScore( betaSquared );
+                }
+                return sumFScores / _sortedLabels.size();
+        }
+        throw new IllegalArgumentException( "Unsupported averageType: " + averageType );
+    }
+
     public String getResult() {
         StringBuilder result = new StringBuilder();
         result.append( "\nErrors: " ).append( getErrorCount() )
@@ -333,7 +363,7 @@ public class ClassificationAnalysis {
                                       "F",
                                       "F-Score" ) );
         for( Float label : _sortedLabels ) {
-            ClassificationStats labelStats = new ClassificationStats( label );
+            ClassificationStats labelStats = getClassificationStats( label );
             result.append( String.format( "%-6.1f %6d %6d %6d %6d %6d %6d %6d %8.4f\n", 
                                           label,
                                           labelStats.getNumErrors(),
@@ -343,10 +373,12 @@ public class ClassificationAnalysis {
                                           labelStats.getNumFalseNegatives(),
                                           labelStats.getNumPositives(),
                                           labelStats.getNumNegatives(),
-                                          labelStats.getFScore( 0 ) ) );
+                                          labelStats.calculateFScore( 0 ) ) );
         }
 
-        // TODO: use ClassificationStats to average f-scores across labels -- add here and to config/entity
+        result.append( String.format( "\nOverall F-Score: %.4f (micro) %.4f (macro)\n",
+                                      calculateFScore( 0, FScoreAverageType.MICRO ),
+                                      calculateFScore( 0, FScoreAverageType.MACRO ) ) );
 
         return result.toString();
     }
