@@ -765,4 +765,17 @@ public class Framework {
 
         return success;
     }
+
+    public static boolean containsEntity( String entityName ) {
+
+        Persistence persistence = Node.NodeInstance().getPersistence();
+        ModelEntity modelEntity = persistence.fetchEntity( entityName );
+
+        if (modelEntity == null) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
 }
