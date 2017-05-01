@@ -27,9 +27,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.IntStream;
 
 /**
  * Growing Neural Gas algorithm [with Utility] (unsupervised learning).
@@ -45,7 +47,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
     private static final Logger _logger = LogManager.getLogger();
 
     public GrowingNeuralGasConfig _c;
-    public ArrayList< Integer > _sparseUnitInput;
+    private Set< Integer > _sparseUnitInput;
     public Data _inputValues;
     public Data _cellWeights;
     public Data _cellErrors;
@@ -62,9 +64,12 @@ public class GrowingNeuralGas extends CompetitiveLearning {
     private int _bestCell = 0;
     private int _2ndBestCell = 0;
 
+    private Set< Integer > _originalSparseUnitInput;
+    private Data _originalInputValues;
+
     public GrowingNeuralGas( String name, ObjectMap om ) {
         super( name, om );
-        _logger.debug( "GNG constructed: " + name );
+        _logger.debug( "GNG constructed: {}", name );
     }
 
     public void setup( GrowingNeuralGasConfig c ) {
@@ -98,6 +103,8 @@ public class GrowingNeuralGas extends CompetitiveLearning {
     }
 
     public void update() {
+        denoiseInput();
+
         // given current cell mask local, ensure that there are at least 2 cells locally.
         if( !addCellPairLazy() ) {
             return; // no cells available to model any input.
@@ -174,6 +181,38 @@ public class GrowingNeuralGas extends CompetitiveLearning {
 
         _ageSinceGrowth._values[ 0 ] = ageSinceGrowth + 1;
         updateCellsAges();
+
+        undoDenoiseInput();
+    }
+
+    /**
+     * Denoise the input by selecting a random set of pixels to set to zero.
+     */
+    private void denoiseInput() {
+        if( _c.getDenoisePercentage() > 0 ) {
+            _originalSparseUnitInput = _sparseUnitInput;
+            _originalInputValues = _inputValues;
+            int numZeroIndices = ( int ) ( _c.getNbrInputs() * _c.getDenoisePercentage() );
+            _logger.debug( "Setting {} inputs to zero", numZeroIndices );
+            IntStream zeroIndices = _c._r.ints( _c.getNbrInputs(), 0, numZeroIndices );
+            if( _sparseUnitInput == null ) {
+                _inputValues = new Data( _inputValues );
+                zeroIndices.forEach( i -> _inputValues._values[ i ] = 0 );
+            } else {
+                _sparseUnitInput = new HashSet<>( _sparseUnitInput );
+                zeroIndices.forEach( i -> _sparseUnitInput.remove( i ) );
+            }
+        } 
+    }
+
+    /**
+     * Undo input denoising by resetting the inputs back to what they were before the last call to denoiseInput().  
+     */
+    private void undoDenoiseInput() {
+        if( _c.getDenoisePercentage() > 0 ) {
+            _sparseUnitInput = _originalSparseUnitInput;
+            _inputValues = _originalInputValues;
+        }
     }
 
     private void removeLowUtilityCell() {
@@ -257,7 +296,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
     }
 
     public void setSparseUnitInput( ArrayList< Integer > inputIndices ) {
-        _sparseUnitInput = inputIndices;
+        _sparseUnitInput = new HashSet<>( inputIndices );
     }
 
     public Data getInput() {
@@ -479,7 +518,6 @@ public class GrowingNeuralGas extends CompetitiveLearning {
     }
 
     private void trainCells() {
-        Set< Integer > sparseUnitInputSet = _sparseUnitInput == null ? null : new HashSet<>( _sparseUnitInput );
         float bestCellLearningRate = _c.getLearningRate();
         float neighboursLearningRate = _c.getLearningRateNeighbours();
         int inputs = _c.getNbrInputs();
@@ -492,9 +530,9 @@ public class GrowingNeuralGas extends CompetitiveLearning {
             float cellLearningRate = cell == _bestCell ? bestCellLearningRate : neighboursLearningRate;
             for( int i = 0; i < inputs; ++i ) {
                 float inputValue = 0.f;
-                if( sparseUnitInputSet == null ) {
+                if( _sparseUnitInput == null ) {
                     inputValue = _inputValues._values[ i ];
-                } else if( sparseUnitInputSet.contains( i ) ) {
+                } else if( _sparseUnitInput.contains( i ) ) {
                     inputValue = 1.f;
                 }
                 int cellOffset = cell * inputs + i;

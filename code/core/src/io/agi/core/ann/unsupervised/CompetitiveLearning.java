@@ -28,6 +28,7 @@ import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.TreeMap;
 
 /**
@@ -130,7 +131,7 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
     public static void sumSqErrorSparseUnit(
             CompetitiveLearningConfig c,
             ArrayList< Integer > cells,
-            ArrayList< Integer > inputValues, // assume
+            Collection< Integer > inputValues, // assume
             FloatArray cellWeights,  // Size = cells * inputs
             FloatArray cellSumSqError ) { // size = cells
 

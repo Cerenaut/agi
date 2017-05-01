@@ -73,6 +73,7 @@ public class RegionFactory {
             float organizerUtilityLearningRate,
             float organizerUtilityThreshold,
             int organizerGrowthInterval,
+            float organizerDenoisePercentage,
 
             // Classifier training
             float classifierLearningRate,
@@ -84,6 +85,7 @@ public class RegionFactory {
             float classifierUtilityLearningRate,
             float classifierUtilityThreshold,
             int classifierGrowthInterval,
+            float classifierDenoisePercentage,
 
             // Predictor
 //            float predictorHiddenLayerScaleFactor,
@@ -106,18 +108,42 @@ public class RegionFactory {
 //        String predictorActivationFunction = ActivationFunctionFactory.LOG_SIGMOID;
 
         GrowingNeuralGasConfig organizerConfig = new GrowingNeuralGasConfig();
-        organizerConfig.setup(
-                om, RegionConfig.SUFFIX_ORGANIZER, random, // temp name
-                organizerInputs, regionWidthColumns, regionHeightColumns,
-                organizerLearningRate, organizerLearningRateNeighbours, organizerNoiseMagnitude,
-                organizerEdgeMaxAge, organizerStressLearningRate, 0.5f, organizerStressThreshold, organizerUtilityLearningRate, organizerUtilityThreshold, organizerGrowthInterval );
+        organizerConfig.setup( om,
+                               RegionConfig.SUFFIX_ORGANIZER,
+                               random,
+                               organizerInputs,
+                               regionWidthColumns,
+                               regionHeightColumns,
+                               organizerLearningRate,
+                               organizerLearningRateNeighbours,
+                               organizerNoiseMagnitude,
+                               organizerEdgeMaxAge,
+                               organizerStressLearningRate,
+                               0.5f,
+                               organizerStressThreshold,
+                               organizerUtilityLearningRate,
+                               organizerUtilityThreshold,
+                               organizerGrowthInterval,
+                               organizerDenoisePercentage );
 
         GrowingNeuralGasConfig classifierConfig = new GrowingNeuralGasConfig();
-        classifierConfig.setup(
-                om, RegionConfig.SUFFIX_CLASSIFIER, random, // temp name
-                classifierInputs, classifierWidthCells, classifierHeightCells,
-                classifierLearningRate, classifierLearningRateNeighbours, classifierNoiseMagnitude,
-                classifierEdgeMaxAge, classifierStressLearningRate, 0.5f, classifierStressThreshold, classifierUtilityLearningRate, classifierUtilityThreshold, classifierGrowthInterval );
+        classifierConfig.setup( om,
+                                RegionConfig.SUFFIX_CLASSIFIER,
+                                random,
+                                classifierInputs,
+                                classifierWidthCells,
+                                classifierHeightCells,
+                                classifierLearningRate,
+                                classifierLearningRateNeighbours,
+                                classifierNoiseMagnitude,
+                                classifierEdgeMaxAge,
+                                classifierStressLearningRate,
+                                0.5f,
+                                classifierStressThreshold,
+                                classifierUtilityLearningRate,
+                                classifierUtilityThreshold,
+                                classifierGrowthInterval,
+                                classifierDenoisePercentage );
 
 //        FeedForwardNetworkConfig predictorConfig = new FeedForwardNetworkConfig();
 //        predictorConfig.setup(

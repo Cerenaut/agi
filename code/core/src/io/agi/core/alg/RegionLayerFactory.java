@@ -89,6 +89,7 @@ public class RegionLayerFactory {
             float classifierUtilityLearningRate,
             float classifierUtilityThreshold,
             int classifierGrowthInterval,
+            float classifierDenoisePercentage,
 //            float classifierStressLearningRate,
 //            float classifierRankLearningRate,
 //            float classifierRankScale,
@@ -123,11 +124,23 @@ public class RegionLayerFactory {
 //                organizerEdgeMaxAge, organizerStressLearningRate, organizerStressThreshold, organizerGrowthInterval );
 
         GrowingNeuralGasConfig classifierConfig = new GrowingNeuralGasConfig();
-        classifierConfig.setup(
-                om, RegionLayerConfig.SUFFIX_CLASSIFIER, random, // temp name
-                classifierInputs, classifierWidthCells, classifierHeightCells,
-                classifierLearningRate, classifierLearningRateNeighbours, classifierNoiseMagnitude,
-                classifierEdgeMaxAge, classifierStressLearningRate, classifierStressSplitLearningRate, classifierStressThreshold, classifierUtilityLearningRate, classifierUtilityThreshold, classifierGrowthInterval );
+        classifierConfig.setup( om,
+                                RegionLayerConfig.SUFFIX_CLASSIFIER,
+                                random,
+                                classifierInputs,
+                                classifierWidthCells,
+                                classifierHeightCells,
+                                classifierLearningRate,
+                                classifierLearningRateNeighbours,
+                                classifierNoiseMagnitude,
+                                classifierEdgeMaxAge,
+                                classifierStressLearningRate,
+                                classifierStressSplitLearningRate,
+                                classifierStressThreshold,
+                                classifierUtilityLearningRate,
+                                classifierUtilityThreshold,
+                                classifierGrowthInterval,
+                                classifierDenoisePercentage );
 
 //        PlasticNeuralGasConfig classifierConfig = new PlasticNeuralGasConfig();
 //        classifierConfig.setup(

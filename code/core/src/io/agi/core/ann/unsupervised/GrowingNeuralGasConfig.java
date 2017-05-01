@@ -43,6 +43,7 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
     public static final String GROWTH_INTERVAL = "growth-interval";
     public static final String EDGE_MAX_AGE = "edge-max-age";
     public static final String NOISE_MAGNITUDE = "noise-magnitude";
+    public static final String DENOISE_PERCENTAGE = "denoise-percentage";
 
     public GrowingNeuralGasConfig() {
     }
@@ -63,7 +64,8 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
             float stressThreshold,
             float utilityLearningRate,
             float utilityThreshold,
-            int growthInterval ) {
+            int growthInterval,
+            float denoisePercentage ) {
         super.setup( om, name, r, inputs, w, h );
 
         setLearningRate( learningRate );
@@ -76,6 +78,7 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
         setUtilityLearningRate( utilityLearningRate );
         setUtilityThreshold( utilityThreshold );
         setGrowthInterval( growthInterval );
+        setDenoisePercentage( denoisePercentage );
     }
 
     public void copyFrom( NetworkConfig nc, String name ) {
@@ -93,6 +96,7 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
         setUtilityLearningRate( c.getUtilityLearningRate() );
         setUtilityThreshold( c.getUtilityThreshold() );
         setGrowthInterval( c.getGrowthInterval() );
+        setDenoisePercentage( c.getDenoisePercentage() );
     }
 
     public Point getSizeCells() {
@@ -147,6 +151,10 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
         _om.put( getKey( GROWTH_INTERVAL ), n );
     }
 
+    public void setDenoisePercentage( float denoisePercentage ) {
+        _om.put( getKey( DENOISE_PERCENTAGE ), denoisePercentage );
+    }
+
     public float getLearningRate() {
         return _om.getFloat( getKey( LEARNING_RATE ) );
     }
@@ -185,5 +193,9 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
 
     public int getGrowthInterval() {
         return _om.getInteger( getKey( GROWTH_INTERVAL ) );
+    }
+
+    public float getDenoisePercentage() {
+        return _om.getFloat( getKey( DENOISE_PERCENTAGE ) );
     }
 }

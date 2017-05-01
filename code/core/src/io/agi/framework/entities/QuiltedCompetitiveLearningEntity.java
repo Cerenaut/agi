@@ -227,20 +227,23 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
             config.field1SizeX, config.field1SizeY,
             config.field2SizeX, config.field2SizeY );
 
-        classifierConfig.setup(
-            om, classifierName, _r,
-            inputArea,
-            config.classifierWidth, config.classifierHeight,
-            config.classifierLearningRate,
-            config.classifierLearningRateNeighbours,
-            config.classifierNoiseMagnitude,
-            config.classifierEdgeMaxAge,
-            config.classifierStressLearningRate,
-            config.classifierStressSplitLearningRate,
-            config.classifierStressThreshold,
-            config.classifierUtilityLearningRate,
-            config.classifierUtilityThreshold,
-            config.classifierGrowthInterval );
+        classifierConfig.setup( om,
+                                classifierName,
+                                _r,
+                                inputArea,
+                                config.classifierWidth,
+                                config.classifierHeight,
+                                config.classifierLearningRate,
+                                config.classifierLearningRateNeighbours,
+                                config.classifierNoiseMagnitude,
+                                config.classifierEdgeMaxAge,
+                                config.classifierStressLearningRate,
+                                config.classifierStressSplitLearningRate,
+                                config.classifierStressThreshold,
+                                config.classifierUtilityLearningRate,
+                                config.classifierUtilityThreshold,
+                                config.classifierGrowthInterval,
+                                config.classifierDenoisePercentage );
 
         QuiltedCompetitiveLearningConfig qclc = new QuiltedCompetitiveLearningConfig();
         qclc.setup( om, entityName, _r, quiltConfig, classifierConfig );
