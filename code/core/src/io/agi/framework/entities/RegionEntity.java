@@ -302,32 +302,34 @@ public class RegionEntity extends Entity {
 //        sum = 0.26
 //        sqrt( sum ) = 0.509 which is less than the sum of errors.
 
-        Region r = rf.create(
-                om, regionName, getRandom(),
-                inputWidth, inputHeight,
-                feedbackWidthCells, feedbackHeightCells,
-                config.organizerWidthCells, config.organizerHeightCells,
-                config.classifierWidthCells, config.classifierHeightCells,
-                config.receptiveFieldsTrainingSamples, config.receptiveFieldSize,
-                config.organizerLearningRate, config.organizerLearningRateNeighbours, config.organizerNoiseMagnitude, config.organizerEdgeMaxAge, config.organizerStressLearningRate, config.organizerStressThreshold, config.organizerGrowthInterval,
-                config.classifierLearningRate, config.classifierLearningRateNeighbours, config.classifierNoiseMagnitude, config.classifierEdgeMaxAge, config.classifierStressLearningRate, classifierStressThreshold, config.classifierGrowthInterval,
-                config.predictorLearningRate );
-//                config.predictorHiddenLayerScaleFactor, config.predictorLearningRate, config.predictorRegularization );
-
-        // Load data, overwriting the default setup.
-        copyDataFromPersistence( r );
-
-        // Process
-        if( config.reset ) {
-            r.reset();
-        }
-
-        r._rc.setLearn( config.learn );
-
-        r.update(); // 120-150ms. The rest of doUpdateSelf() is maybe 50ms.
-
-        // Save data
-        copyDataToPersistence( r );
+// CANT BE BOTHERED TO MAINTAIN DEAD CLASS
+//        Region r = rf.create(
+//                om, regionName, getRandom(),
+//                inputWidth, inputHeight,
+//                feedbackWidthCells, feedbackHeightCells,
+//                config.organizerWidthCells, config.organizerHeightCells,
+//                config.classifierWidthCells, config.classifierHeightCells,
+//                config.receptiveFieldsTrainingSamples, config.receptiveFieldSize,
+//                config.organizerLearningRate, config.organizerLearningRateNeighbours, config.organizerNoiseMagnitude, config.organizerEdgeMaxAge, config.organizerStressLearningRate, config.organizerStressThreshold, config.organizerGrowthInterval,
+//                config.classifierLearningRate, config.classifierLearningRateNeighbours, config.classifierNoiseMagnitude, config.classifierEdgeMaxAge, config.classifierStressLearningRate, classifierStressThreshold, config.classifierGrowthInterval,
+//                config.predictorLearningRate );
+////                config.predictorHiddenLayerScaleFactor, config.predictorLearningRate, config.predictorRegularization );
+//
+//        // Load data, overwriting the default setup.
+//        copyDataFromPersistence( r );
+//
+//        // Process
+//        if( config.reset ) {
+//            r.reset();
+//        }
+//
+//        r._rc.setLearn( config.learn );
+//
+//        r.update(); // 120-150ms. The rest of doUpdateSelf() is maybe 50ms.
+//
+//        // Save data
+//        copyDataToPersistence( r );
+// CANT BE BOTHERED TO MAINTAIN DEAD CLASS
     }
 
     protected void copyDataFromPersistence( Region r ) {

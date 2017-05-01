@@ -58,6 +58,7 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
     public static final String CLASSIFIER_CELL_ERRORS = "classifier-cell-errors";
     public static final String CLASSIFIER_CELL_MASK = "classifier-cell-mask";
 
+    public static final String CLASSIFIER_CELL_UTILITY = "classifier-cell-utility";
     public static final String CLASSIFIER_CELL_STRESS = "classifier-cell-stress";
     public static final String CLASSIFIER_CELL_AGES = "classifier-cell-ages";
     public static final String CLASSIFIER_EDGES = "classifier-edges";
@@ -71,6 +72,7 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
     protected Data _classifierCellMask;
 
     protected Data _classifierCellStress;
+    protected Data _classifierCellUtility;
     protected Data _classifierCellAges;
     protected Data _classifierEdges;
     protected Data _classifierEdgesAges;
@@ -127,6 +129,11 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
 
 //        flags.putFlag( Keys.concatenate( prefix, CLASSIFIER_CELL_STRESS ), DataFlags.FLAG_PERSIST_ON_FLUSH );
         flags.putFlag( CLASSIFIER_CELL_STRESS, DataFlags.FLAG_NODE_CACHE );
+
+        attributes.add( CLASSIFIER_CELL_UTILITY );
+
+//        flags.putFlag( Keys.concatenate( prefix, CLASSIFIER_CELL_STRESS ), DataFlags.FLAG_PERSIST_ON_FLUSH );
+        flags.putFlag( CLASSIFIER_CELL_UTILITY, DataFlags.FLAG_NODE_CACHE );
 
         attributes.add( CLASSIFIER_CELL_AGES );
 
@@ -231,6 +238,8 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
             config.classifierStressLearningRate,
             config.classifierStressSplitLearningRate,
             config.classifierStressThreshold,
+            config.classifierUtilityLearningRate,
+            config.classifierUtilityThreshold,
             config.classifierGrowthInterval );
 
         QuiltedCompetitiveLearningConfig qclc = new QuiltedCompetitiveLearningConfig();
@@ -252,6 +261,7 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
         }
 
         qcl._config.setLearn( config.learn );
+        qcl._emit2ndBest = config.emit2ndBest; // special behaviour option
         qcl.update();
 
         // update the inverted output
@@ -293,6 +303,7 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
         _classifierCellErrors     = getDataLazyResize( CLASSIFIER_CELL_ERRORS      , dataSizeCellsAll ); // deep copies the size so they each own a copy
         _classifierCellMask       = getDataLazyResize( CLASSIFIER_CELL_MASK        , dataSizeCellsAll ); // deep copies the size so they each own a copy
         _classifierCellStress     = getDataLazyResize( CLASSIFIER_CELL_STRESS      , dataSizeCellsAll );
+        _classifierCellUtility    = getDataLazyResize( CLASSIFIER_CELL_UTILITY     , dataSizeCellsAll );
         _classifierCellAges       = getDataLazyResize( CLASSIFIER_CELL_AGES        , dataSizeCellsAll );
         _classifierEdges          = getDataLazyResize( CLASSIFIER_EDGES            , dataSizeEdgesAll );
         _classifierEdgesAges      = getDataLazyResize( CLASSIFIER_EDGES_AGES       , dataSizeEdgesAll );
@@ -326,6 +337,7 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
                         classifier._cellActivity._values[ cellOffsetCol ] = _classifierCellActivity._values[ cellOffsetQuilt ];
                         classifier._cellMask._values[ cellOffsetCol ] = _classifierCellMask._values[ cellOffsetQuilt ];
                         classifier._cellStress._values[ cellOffsetCol ] = _classifierCellStress._values[ cellOffsetQuilt ];
+                        classifier._cellUtility._values[ cellOffsetCol ] = _classifierCellUtility._values[ cellOffsetQuilt ];
                         classifier._cellAges._values[ cellOffsetCol ] = _classifierCellAges._values[ cellOffsetQuilt ];
                     }
                 }
@@ -379,6 +391,7 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
                         _classifierCellActivity._values[ cellOffsetQuilt ] = classifier._cellActivity._values[ cellOffsetCol ];
                         _classifierCellMask._values[ cellOffsetQuilt ] = classifier._cellMask._values[ cellOffsetCol ];
                         _classifierCellStress._values[ cellOffsetQuilt ] = classifier._cellStress._values[ cellOffsetCol ];
+                        _classifierCellUtility._values[ cellOffsetQuilt ] = classifier._cellUtility._values[ cellOffsetCol ];
                         _classifierCellAges._values[ cellOffsetQuilt ] = classifier._cellAges._values[ cellOffsetCol ];
                     }
                 }
@@ -402,6 +415,7 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
         setData( CLASSIFIER_CELL_MASK, _classifierCellMask );
 
         setData( CLASSIFIER_CELL_STRESS, _classifierCellStress );
+        setData( CLASSIFIER_CELL_UTILITY, _classifierCellUtility );
         setData( CLASSIFIER_CELL_AGES, _classifierCellAges );
         setData( CLASSIFIER_EDGES, _classifierEdges );
         setData( CLASSIFIER_EDGES_AGES, _classifierEdgesAges );

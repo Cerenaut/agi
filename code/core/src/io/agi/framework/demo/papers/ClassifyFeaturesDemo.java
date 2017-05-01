@@ -102,6 +102,8 @@ public class ClassifyFeaturesDemo {
         // ---------------------------------------------
         boolean cacheAllData = true;
 
+        float trainingDropoutProbability = 1f / 49f;
+
         int trainingSamples = 60000;
         int testingSamples = 70000;
 
@@ -109,6 +111,8 @@ public class ClassifyFeaturesDemo {
         experimentConfig.terminationEntityName = analyticsName;
         experimentConfig.terminationConfigPath = "terminate";
         experimentConfig.terminationAge = -1;       // wait for analytics entity to decide
+        experimentConfig.reportingEntityName = classificationAnalysisName;
+        experimentConfig.reportingEntityConfigPath = "resultsSummary";
 
         AnalyticsEntityConfig analyticsEntityConfig = new AnalyticsEntityConfig();
         analyticsEntityConfig.batchMode = true;
@@ -118,6 +122,7 @@ public class ClassifyFeaturesDemo {
         analyticsEntityConfig.testSetSize = testingSamples;// 70000;
         analyticsEntityConfig.testingEntities = logisticRegressionName;
         analyticsEntityConfig.predictDuringTraining = true;
+        analyticsEntityConfig.trainingDropoutProbability = trainingDropoutProbability;
 
         SupervisedBatchTrainingEntityConfig logisticRegressionEntityConfig = new SupervisedBatchTrainingEntityConfig();
         logisticRegressionEntityConfig.algorithm = SupervisedBatchTrainingEntityConfig.ALGORITHM_LOGISTIC_REGRESSION;

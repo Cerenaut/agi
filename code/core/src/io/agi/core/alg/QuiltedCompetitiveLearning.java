@@ -30,7 +30,7 @@ import java.util.*;
 
 
 /**
- * TOOD add use of feedback to adjust the inference of winning cells.
+ * TODO add use of feedback to adjust the inference of winning cells.
  *
  * Created by dave on 22/10/16.
  */
@@ -42,6 +42,7 @@ public class QuiltedCompetitiveLearning extends NamedObject {
     public Data _input;
     public Data _quiltCells;
 
+    public boolean _emit2ndBest = false;
     public QuiltedCompetitiveLearningConfig _config;
     public BinaryTreeQuilt _quilt;
     public HashMap< Integer, GrowingNeuralGas > _classifiers = new HashMap< Integer, GrowingNeuralGas >(); // apart from in first layer, there will be no commonality of input distributions
@@ -338,6 +339,20 @@ public class QuiltedCompetitiveLearning extends NamedObject {
         int cellOffset = _config.getCellsOffset( cellX, cellY );
 
         _quiltCells._values[ cellOffset ] = 1.f;
+
+        // optionally emit the 2nd best cell into the quilt as well.
+        if( !_emit2ndBest ) {
+            return;
+        }
+
+        int bestColumnCell2 = classifier.get2ndBestCell();
+        int bestColumnCell2X = classifier._c.getCellX( bestColumnCell2 );
+        int bestColumnCell2Y = classifier._c.getCellY( bestColumnCell2 );
+        int cell2X = cellsOrigin.x + bestColumnCell2X;
+        int cell2Y = cellsOrigin.y + bestColumnCell2Y;
+        int cell2Offset = _config.getCellsOffset( cell2X, cell2Y );
+
+        _quiltCells._values[ cell2Offset ] = 1.f;
     }
 
     public void invert( Data quiltCells, Data input1, Data input2 ) {

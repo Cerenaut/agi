@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016.
+ * Copyright (c) 2017.
  *
  * This file is part of Project AGI. <http://agi.io>
  *
@@ -36,7 +36,7 @@ import java.util.Properties;
 /**
  * Created by dave on 8/07/16.
  */
-public class OnlineKSparseDemo {
+public class CompetitiveKSparseDemo {
 
     /**
      * Usage: Expects some arguments. These are:
@@ -78,7 +78,7 @@ public class OnlineKSparseDemo {
 //        String trainingPath = "./training";
 //        String testingPath = "./testing";
 
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
         String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
 
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
@@ -96,7 +96,7 @@ public class OnlineKSparseDemo {
         boolean terminateByAge = false;
 //        int terminationAge = 10;//9000;
         int terminationAge = -1;
-        int trainingEpochs = 5;//10;//80; // good for up to 80k
+        int trainingEpochs = 1;//10;//80; // good for up to 80k
         int testingEpochs = 1;//80; // good for up to 80k
         boolean unitOutput = false;
 
@@ -109,21 +109,21 @@ public class OnlineKSparseDemo {
 
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         Framework.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), experimentName );
-        Framework.CreateEntity( autoencoderName, OnlineKSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), imageLabelName );
+        Framework.CreateEntity( autoencoderName, CompetitiveKSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), imageLabelName );
         Framework.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), autoencoderName ); // 2nd, class region updates after first to get its feedback
         Framework.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), vectorSeriesName ); // 2nd, class region updates after first to get its feedback
 
         // Connect the entities' data
         // a) Image to image region, and decode
-        Framework.SetDataReference( autoencoderName, OnlineKSparseAutoencoderEntity.INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
+        Framework.SetDataReference( autoencoderName, CompetitiveKSparseAutoencoderEntity.INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
 
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList< AbstractPair< String, String > >();
-        if( unitOutput ) {
-            featureDatas.add( new AbstractPair<>( autoencoderName, OnlineKSparseAutoencoderEntity.SPIKES_TOP_KA ) );
-        }
-        else {
-            featureDatas.add( new AbstractPair<>( autoencoderName, OnlineKSparseAutoencoderEntity.TRANSFER_TOP_KA ) );
-        }
+//        if( unitOutput ) {
+            featureDatas.add( new AbstractPair<>( autoencoderName, CompetitiveKSparseAutoencoderEntity.SPIKES_TOP_KA ) );
+//        }
+//        else {
+//            featureDatas.add( new AbstractPair<>( autoencoderName, CompetitiveKSparseAutoencoderEntity.TRANSFER_TOP_KA ) );
+//        }
 
         Framework.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
 
@@ -176,17 +176,14 @@ public class OnlineKSparseDemo {
         int widthCells = 32; // from the paper, 32x32= ~1000 was optimal on MNIST (but with a supervised output layer)
         int heightCells = 32;
 
-        int ageMin = 0;
-        int ageMax = 1000;
-
         float sparsity = 25f;
-        float sparsityOutput = 3f;//1.5f;//3.f;
+        float sparsityOutput = 1.5f;//3f;//1.5f;//3.f;
 
         // variables
         float learningRate = 0.01f;
-        if( unitOutput ) {
+//        if( unitOutput ) {
 //            learningRate = learningRate * 0.1f;
-        }
+//        }
         int batchSize = 1;
 //        learningRate = learningRate;// / (float)batchSize; // Note must reduce learning rate to prevent overshoot and numerical instability
 
@@ -194,11 +191,9 @@ public class OnlineKSparseDemo {
         float weightsStdDev = 0.01f; // From paper. used at reset (only for biases in online case
 
         // TODO set params
-        float ageScale = 15f;
-        float ageTruncationFactor = 0.5f;
-        float rateScale = 12f;
-        float rateMax = 0.05f; // i.e. 1/20th
-        float rateLearningRate = learningRate * 0.1f; // slower than the learning rate
+        float rateLearningRate = 0.01f;
+        float correlationLearningRate = 0.01f;
+        int bisectionInterval = 10;
 
         Framework.SetConfig( autoencoderName, "unitOutput", String.valueOf( unitOutput ) );
         Framework.SetConfig( autoencoderName, "learningRate", String.valueOf( learningRate ) );
@@ -209,17 +204,11 @@ public class OnlineKSparseDemo {
         Framework.SetConfig( autoencoderName, "sparsityOutput", String.valueOf( sparsityOutput ) );
         Framework.SetConfig( autoencoderName, "sparsity", String.valueOf( sparsity ) );
 
-        Framework.SetConfig( autoencoderName, "ageMin", String.valueOf( ageMin ) );
-        Framework.SetConfig( autoencoderName, "ageMax", String.valueOf( ageMax ) );
-
-        Framework.SetConfig( autoencoderName, "ageTruncationFactor", String.valueOf( ageTruncationFactor ) );
-        Framework.SetConfig( autoencoderName, "ageScale", String.valueOf( ageScale ) );
-
-        Framework.SetConfig( autoencoderName, "rateScale", String.valueOf( rateScale ) );
-        Framework.SetConfig( autoencoderName, "rateMax", String.valueOf( rateMax ) );
         Framework.SetConfig( autoencoderName, "rateLearningRate", String.valueOf( rateLearningRate ) );
+        Framework.SetConfig( autoencoderName, "correlationLearningRate", String.valueOf( correlationLearningRate ) );
 
         Framework.SetConfig( autoencoderName, "batchSize", String.valueOf( batchSize ) );
+        Framework.SetConfig( autoencoderName, "bisectionInterval", String.valueOf( bisectionInterval ) );
 
         // Log features of the algorithm during all phases
         Framework.SetConfig( vectorSeriesName, "encoding", ModelData.ENCODING_SPARSE_REAL );

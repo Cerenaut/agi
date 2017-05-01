@@ -64,15 +64,9 @@ public class ClassificationAnalysisEntity extends Entity {
     }
 
     protected void doUpdateSelf() {
-
         Data truth = getData( INPUT_TRUTH );
         Data predicted = getData( INPUT_PREDICTED );
-
-        if( truth == null ) {
-            return;
-        }
-
-        if( predicted == null ) {
+        if( truth == null || predicted == null ) {
             return;
         }
 
@@ -81,92 +75,61 @@ public class ClassificationAnalysisEntity extends Entity {
         // Check for a reset (to start of sequence and re-train)
         ClassificationAnalysisEntityConfig config = ( ClassificationAnalysisEntityConfig ) _config;
 
-        int offset = config.sampleOffset;
-        int length = config.sampleLength;
-
-        String errorMessage = ca.analyze( truth, predicted, offset, length );
-
+        String errorMessage = ca.analyze( truth, predicted, config.sampleOffset, config.sampleLength );
         if( errorMessage != null ) {
             _logger.error( errorMessage );
             return;
         }
 
-        // put results in log
+        // put results in log and config for easy collection
         String results = ca.getResult();
         _logger.info( results );
+        if( config.resultsSummary == null ) {
+            config.resultsSummary = "";
+        }
+        config.resultsSummary += results + "\n";
 
         // display stats.
-        int errors = ca.getErrorCount();
-        float fraction = ca.getErrorFraction();
-        float pc = fraction;//1f - fraction
-        pc *= 100f;
-        config.errorCount = errors;
-        config.errorFraction = fraction;
-        config.errorPercentage = pc;
+        config.errorCount = ca.getErrorCount();
+        config.errorFraction = ca.getErrorFraction();
+        config.errorPercentage = config.errorFraction * 100;
         config.samples = ca.getSampleCount();
 
         config.sortedLabels.clear();
         for( Float label : ca._sortedLabels ) {
-            String labelString = String.format( "%.0f", label );
-            config.sortedLabels.add( labelString );
+            config.sortedLabels.add( String.format( "%.0f", label ) );
         }
-
-//        System.out.print( "      " );
-//        for( Float fP : _sortedLabels ) {
-//            System.out.print( String.format( "%.1f", fP ) + " , " );
-//        }
-//        System.out.println();
 
         config.confusionMatrix.clear();
         config.confusionMatrix.add( "" ); // first col, labels, is null
-
-        for( Float f : ca._sortedLabels ) {
-            config.confusionMatrix.add( String.valueOf( f ) ); // first row is labels
+        for( Float label : ca._sortedLabels ) {
+            config.confusionMatrix.add( String.valueOf( label ) ); // first row is labels
         }
-
-        for( Float fT : ca._sortedLabels ) {
-
-            config.confusionMatrix.add( String.valueOf( fT ) ); // first col, labels, is null
-
-            HashMap< Float, Integer > hm = ca._confusionMatrix.get( fT );
-
-            for( Float fP : ca._sortedLabels ) {
-
-                int frequency = hm.get( fP );
-
-                config.confusionMatrix.add( String.valueOf( frequency ) ); // first col, labels, is null
+        for( Float trueLabel : ca._sortedLabels ) {
+            config.confusionMatrix.add( String.valueOf( trueLabel ) ); // first col, labels, is null
+            HashMap< Float, Integer > trueLabelMap = ca._confusionMatrix.get( trueLabel );
+            for( Float predictedLabel : ca._sortedLabels ) {
+                config.confusionMatrix.add( String.valueOf( trueLabelMap.get( predictedLabel ) ) );
             }
         }
 
         // F score and other stats, per label
         config.labelStatistics.clear();
-
-        float b2 = config.betaSq;
-
         for( Float label : ca._sortedLabels ) {
-            HashMap< String, String > labelStatistics = new HashMap< String, String >();
-
-            int fp = ca._labelErrorFP.get( label );
-            int fn = ca._labelErrorFN.get( label );
-            int t = ca._labelFrequency.get( label );
-            int f = config.samples - t;
-
-            int tp = t-fn;
-            int tn = f-fp;
-            int e = fp + fn;
-            float denominator = (1f + b2) * tp + b2 * fn + fp;
-            float score = (1f + b2)* tp / denominator;
-
-            labelStatistics.put( "errors", String.valueOf( e ) );
-            labelStatistics.put( "label", String.valueOf( label ) );
-            labelStatistics.put( "tp", String.valueOf( tp ) );
-            labelStatistics.put( "fp", String.valueOf( fp ) );
-            labelStatistics.put( "tn", String.valueOf( tn ) );
-            labelStatistics.put( "fn", String.valueOf( fn ) );
-            labelStatistics.put( "f-score", String.valueOf( score ) );
-
-            config.labelStatistics.put( String.valueOf( label ), labelStatistics ); // first row is labels
+            ClassificationAnalysis.ClassificationStats labelStats = ca.getClassificationStats(label);
+            // TODO: these should be declared with the interfaces, not concrete classes
+            // TODO: why use strings?
+            HashMap< String, String > labelStatMap = new HashMap<>();
+            labelStatMap.put( "label", String.valueOf( label ) );
+            labelStatMap.put( "errors", String.valueOf( labelStats.getNumErrors() ) );
+            labelStatMap.put( "tp", String.valueOf( labelStats.getNumTruePositives() ) );
+            labelStatMap.put( "fp", String.valueOf( labelStats.getNumFalsePositives() ) );
+            labelStatMap.put( "tn", String.valueOf( labelStats.getNumTrueNegatives() ) );
+            labelStatMap.put( "fn", String.valueOf( labelStats.getNumFalseNegatives() ) );
+            labelStatMap.put( "f-score", String.valueOf( labelStats.calculateFScore( config.betaSq ) ) );
+            config.labelStatistics.put( String.valueOf( label ), labelStatMap );
         }
+        config.microFScore = ca.calculateFScore(0, ClassificationAnalysis.FScoreAverageType.MICRO );
+        config.macroFScore = ca.calculateFScore(0, ClassificationAnalysis.FScoreAverageType.MACRO );
     }
-
 }

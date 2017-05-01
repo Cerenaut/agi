@@ -23,13 +23,9 @@ import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
-import io.agi.framework.demo.mnist.AnalyticsEntity;
-import io.agi.framework.demo.mnist.AnalyticsEntityConfig;
 import io.agi.framework.demo.mnist.ClassificationAnalysisEntity;
 import io.agi.framework.entities.ExperimentEntity;
 import io.agi.framework.entities.ExperimentEntityConfig;
-import io.agi.framework.entities.SupervisedBatchTrainingEntity;
-import io.agi.framework.entities.SupervisedBatchTrainingEntityConfig;
 import io.agi.framework.factories.CommonEntityFactory;
 
 import java.util.Properties;

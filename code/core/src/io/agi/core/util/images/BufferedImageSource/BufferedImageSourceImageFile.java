@@ -35,6 +35,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 
 
 /**
@@ -43,6 +44,8 @@ import java.util.Collections;
 public class BufferedImageSourceImageFile extends BufferedImageSource {
 
     protected static final Logger _logger = LogManager.getLogger();
+
+    protected static HashMap< String, ArrayList< String > > foldersFileNames = new HashMap< String, ArrayList< String > >();
 
     protected ArrayList< String > _fileNames = new ArrayList<>();
     protected String _folderNames = null;
@@ -55,49 +58,67 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
      */
     public BufferedImageSourceImageFile( String folderNames ) {
         _folderNames = folderNames;
-        _fileNames = new ArrayList<>();
-
         _logger.debug( "Folder names = " + folderNames );
+        _fileNames = findFilenames( _folderNames );
+    }
 
-        String[] folders = folderNames.split( "," );
-        for( String folderName : folders ) {
+    public static ArrayList< String > findFilenames( String folderNames ) {
 
-            folderName = folderName.trim();
+        synchronized( foldersFileNames ) {
+            ArrayList< String > cachedFileNames = foldersFileNames.get( folderNames ); // dumb lookup of concatenated filenames
 
-            File folder = new File( folderName );
-            boolean isFile = folder.isFile();
+            if( cachedFileNames != null ) {
+                ArrayList< String > fileNames = new ArrayList<>();
+                fileNames.addAll( cachedFileNames );
+                return fileNames;
+            }
 
-            if( !isFile ) {
-                DirectoryStream< Path > directoryStream = null;
-                try {
+            cachedFileNames = new ArrayList<>();
 
-                    _logger.debug( "Reading files in folder: " + folderName );
+            String[] folders = folderNames.split( "," );
 
-                    directoryStream = Files.newDirectoryStream( Paths.get( folderName ) );
-                    for( Path path : directoryStream ) {
-                        _fileNames.add( path.toAbsolutePath().toString() );
-                    }
-                }
-                catch( IOException ex ) {
-                    _logger.error( "IO Exception reading files in folder: " + folderName );
-                }
-                finally {
-                    if( directoryStream != null ) {
-                        try {
-                            directoryStream.close();
+            for( String folderName : folders ) {
+
+                folderName = folderName.trim();
+
+                File folder = new File( folderName );
+                boolean isFile = folder.isFile();
+
+                if( !isFile ) {
+                    DirectoryStream<Path> directoryStream = null;
+                    try {
+                        _logger.debug( "Reading files in folder: " + folderName );
+
+                        directoryStream = Files.newDirectoryStream( Paths.get( folderName ) );
+                        for( Path path : directoryStream ) {
+                            cachedFileNames.add( path.toAbsolutePath().toString() );
                         }
-                        catch( Exception e ) {
-                            _logger.error( "Exception closing directory stream from folder: " + folderName );
-                            //e.printStackTrace();
+                    } catch( IOException ex ) {
+                        _logger.error( "IO Exception reading files in folder: " + folderName );
+                    } finally {
+                        if( directoryStream != null ) {
+                            try {
+                                directoryStream.close();
+                            } catch( Exception e ) {
+                                _logger.error( "Exception closing directory stream from folder: " + folderName );
+                                //e.printStackTrace();
+                            }
                         }
                     }
+                } else {
+                    _logger.error( "ERROR: " + folderName + " is a file but should be a directory." );
                 }
             }
-            else {
-                _logger.error( "ERROR: " + folderName + " is a file but should be a directory." );
-            }
+
+            Collections.sort( cachedFileNames );
+
+            foldersFileNames.put( folderNames, cachedFileNames );
+
+            // make a mutable copy
+            ArrayList< String > fileNames = new ArrayList<>();
+            fileNames.addAll( cachedFileNames );
+            return fileNames;
         }
-        Collections.sort( _fileNames );
     }
 
     /**

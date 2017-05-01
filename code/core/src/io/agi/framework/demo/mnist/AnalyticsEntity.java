@@ -33,6 +33,7 @@ import io.agi.framework.persistence.models.ModelEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.awt.*;
 import java.util.Collection;
 
 /**
@@ -214,9 +215,48 @@ public class AnalyticsEntity extends Entity {
             featuresOut = Data2d.copyRows( features, startIdx, endIdx );
             labelsOut = Data2d.copyRows( labels, startIdx, endIdx );
 
+            if( config.trainingDropoutProbability > 0f ) {
+                if( isTraining() ) {
+                    dropoutFeatures( featuresOut, config.trainingDropoutProbability );
+                }
+            }
+
             setData( OUTPUT_FEATURES, featuresOut );
             setData( OUTPUT_LABELS, labelsOut );
         }
+    }
+
+    /**
+     * Implements dropout during training in an attempt to use the features more evenly rather than focusing on a few
+     * stronger features. Intended to promote regularization of the supervised model.
+     *
+     * @param features
+     * @param probability Probability that dropout will occur - i.e. 0.05 = 5% chance
+     */
+    protected void dropoutFeatures( Data features, float probability ) {
+        Point p = Data2d.getSizeExplicit( features );
+
+        int rows = p.y;
+        int cols = p.x;
+
+        for( int r = 0; r < rows; ++r ) {
+            for( int c = 0; c < cols; ++c ) {
+
+                float value = features._values[ r * cols + c ];
+                if( value <= 0f ) {
+                    continue;
+                }
+
+                // e.g. 5% = 0.05 if z >= 0.05, (95%) then no dropout
+                float z = _r.nextFloat();
+                if( z >= probability ) {
+                    continue; // not dropout
+                }
+
+                features._values[ r * cols + c ] = 0; // replace with zero
+            }
+        }
+
     }
 
     private String idxMessage( int numDataPoints ) {

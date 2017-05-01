@@ -36,6 +36,8 @@ public class GrowingNeuralGasEntityConfig extends EntityConfig {
     float stressLearningRate = 0.01f;
     float stressSplitLearningRate = 0.5f;
     float stressThreshold = 0.01f;
+    public float utilityLearningRate = 0;
+    public float utilityThreshold = -1f;
     int growthInterval = 2;
 
 }

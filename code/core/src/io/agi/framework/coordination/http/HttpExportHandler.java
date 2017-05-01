@@ -27,6 +27,7 @@ import io.agi.framework.Framework;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -70,39 +71,48 @@ public class HttpExportHandler implements HttpHandler {
                 String entityName = m.get( PARAMETER_ENTITY ).trim(); // essential
                 String type = m.get( PARAMETER_TYPE ).trim(); // essential
 
-                String filename = "saved__" + entityName + "-" + type + ".json";
-                if ( m.containsKey( PARAMETER_EXPORT_LOCATION ) ) {
-                    String folderPath = m.get( PARAMETER_EXPORT_LOCATION ).trim(); // essential
 
-                    Path filepath = Paths.get( folderPath, filename );
+                if ( Framework.containsEntity( entityName ) ) {
 
-                    // todo check that path is valid
+                    String filename = "saved__" + entityName + "-" + type + ".json";
+                    if( m.containsKey( PARAMETER_EXPORT_LOCATION ) ) {
+                        String folderPath = m.get( PARAMETER_EXPORT_LOCATION ).trim(); // essential
 
-                    boolean success = Framework.SaveSubtree( entityName, type, filepath.toString() );
+                        // make sure that the created files are writeable by others
+                        File file = new File( folderPath );
+                        file.setWritable( true, false );
 
-                    HashMap< String, String > responseMap = new HashMap<>();
-                    responseMap.put( "entity", entityName );
-                    responseMap.put( "type", type );
-                    responseMap.put( "folder", folderPath );
-                    responseMap.put( "filepath", filepath.toString() );
+                        Path filepath = Paths.get( folderPath, filename );
 
-                    if ( success ) {
-                        responseMap.put( "message", "Success: Saved subtree" );
+                        // todo check that path is valid
+
+                        boolean success = Framework.SaveSubtree( entityName, type, filepath.toString() );
+
+                        HashMap< String, String > responseMap = new HashMap<>();
+                        responseMap.put( "entity", entityName );
+                        responseMap.put( "type", type );
+                        responseMap.put( "folder", folderPath );
+                        responseMap.put( "filepath", filepath.toString() );
+
+                        if( success ) {
+                            responseMap.put( "message", "Success: Saved subtree" );
+                        }
+                        else {
+                            responseMap.put( "message", "Error: Could not save subtree" );
+                        }
+                        response = new Gson().toJson( responseMap );
+                        status = 200;
                     }
                     else {
-                        responseMap.put( "message", "Error: Could not save subtree");
+                        response = Framework.ExportSubtree( entityName, type );
+                        t.getResponseHeaders().add( "Content-type", "text/json/force-download" );
+                        t.getResponseHeaders().add( "Content-Disposition", "attachment; filename=" + filename );
+                        status = 200;
                     }
-                    response = new Gson().toJson( responseMap );
-                }
-                else {
-                    response = Framework.ExportSubtree( entityName, type );
-                    t.getResponseHeaders().add( "Content-type", "text/json/force-download" );
-                    t.getResponseHeaders().add( "Content-Disposition", "attachment; filename=" + filename );
-                    status = 200;
-                }
 
-                _logger.warn( "Created response" );
-                MemoryUtil.logMemory( _logger );
+                    _logger.warn( "Created response" );
+                    MemoryUtil.logMemory( _logger );
+                }
             }
 
             HttpUtil.SendResponse( t, status, response );

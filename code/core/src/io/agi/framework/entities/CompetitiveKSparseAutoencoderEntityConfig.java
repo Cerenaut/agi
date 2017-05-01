@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016.
+ * Copyright (c) 2017.
  *
  * This file is part of Project AGI. <http://agi.io>
  *
@@ -22,20 +22,30 @@ package io.agi.framework.entities;
 import io.agi.framework.EntityConfig;
 
 /**
- * Created by dave on 2/04/16.
+ *
+ * Created by dave on 7/07/16.
  */
-public class ExperimentEntityConfig extends EntityConfig {
+public class CompetitiveKSparseAutoencoderEntityConfig extends EntityConfig {
 
-    //    public int interval; do we actually want this? No, it's slow enough already..!
-    public boolean pause = false;
-    public boolean terminate = false; // you can change this, an instruction to terminate
-    public boolean terminating = false; // notices the terminate flag
-    public boolean terminated = false; // set when the has terminated and update finished.
-    public String terminationEntityName;
-    public String terminationConfigPath;
-    public int terminationAge = -1; // if negative, then never terminates unless via termination condition.
+    float learningRate = 0f;
+    float momentum = 0f;
+    float weightsStdDev = 0f; // used at reset
 
-    public String reportingEntityName;
-    public String reportingEntityConfigPath;
+    int widthCells = 0;
+    int heightCells = 0;
+
+    int sparsity = 0; // current value, computed
+    float sparsityOutput = 0;
+
+        float rateLearningRate = 0f;
+        float correlationLearningRate = 0f;
+
+//    boolean unitOutput = false;
+
+    int batchCount = 0;
+    int batchSize = 0;
+    int bisectionCount = 0;
+    int bisectionInterval = 0;
+
 
 }

@@ -99,6 +99,9 @@ var Search = {
           if( type == "online-k-sparse-autoencoder" ) {
             linksValue = linksValue + " / <a href='online-k-sparse-autoencoder.html?entity="+ objectName + "' title='Open Autoencoder UI' target='_blank'><b>Online K-Sparse UI</b></a>"
           }
+          if( type == "competitive-k-sparse-autoencoder" ) {
+            linksValue = linksValue + " / <a href='competitive-k-sparse-autoencoder.html?entity="+ objectName + "' title='Open Autoencoder UI' target='_blank'><b>Comp. K-Sparse UI</b></a>"
+          }
           if( type == "quilted-competitive-learning" ) {
             linksValue = linksValue + " / <a href='quilt.html?entity="+ objectName + "' title='Open Quilted Competitive Learning UI' target='_blank'><b>Quilt UI</b></a>"
           }

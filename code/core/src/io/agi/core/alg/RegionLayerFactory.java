@@ -86,6 +86,8 @@ public class RegionLayerFactory {
             float classifierStressLearningRate,
             float classifierStressSplitLearningRate,
             float classifierStressThreshold,
+            float classifierUtilityLearningRate,
+            float classifierUtilityThreshold,
             int classifierGrowthInterval,
 //            float classifierStressLearningRate,
 //            float classifierRankLearningRate,
@@ -125,7 +127,7 @@ public class RegionLayerFactory {
                 om, RegionLayerConfig.SUFFIX_CLASSIFIER, random, // temp name
                 classifierInputs, classifierWidthCells, classifierHeightCells,
                 classifierLearningRate, classifierLearningRateNeighbours, classifierNoiseMagnitude,
-                classifierEdgeMaxAge, classifierStressLearningRate, classifierStressSplitLearningRate, classifierStressThreshold, classifierGrowthInterval );
+                classifierEdgeMaxAge, classifierStressLearningRate, classifierStressSplitLearningRate, classifierStressThreshold, classifierUtilityLearningRate, classifierUtilityThreshold, classifierGrowthInterval );
 
 //        PlasticNeuralGasConfig classifierConfig = new PlasticNeuralGasConfig();
 //        classifierConfig.setup(

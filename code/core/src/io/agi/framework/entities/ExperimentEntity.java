@@ -69,11 +69,14 @@ public class ExperimentEntity extends Entity {
         // Get all the parameters:
         ExperimentEntityConfig config = ( ExperimentEntityConfig ) _config;
 
+        if( config.age == 0 ) {
+            _logger.info( "Experiment: " + getName() + " starting at age: " + _config.age + " t: " + System.currentTimeMillis() );
+        }
         _logger.debug( "Experiment: " + getName() + " age: " + _config.age + " terminationAge: " + ( (ExperimentEntityConfig) _config ).terminationAge );
 
-        if( config.terminating ) {
-            config.terminated = true; // it already updated after starting to terminate.
-        }
+//        if( config.terminating ) {
+//            config.terminated = true; // it already updated after starting to terminate.
+//        }
 
         // reset if age == 0
         if( config.age == 0 ) {
@@ -136,9 +139,16 @@ public class ExperimentEntity extends Entity {
 
         ExperimentEntityConfig config = ( ExperimentEntityConfig ) _config;
 
+        // After all children have finished updating and have flushed
+        if( config.terminating ) {
+            _logger.info( "Experiment: " + getName() + " terminated at age: " + _config.age + " t: " + System.currentTimeMillis() );
+            config.terminated = true;
+            Framework.SetConfigBoolean( getName(), "terminated", config.terminated ); // config has already been persisted, so changing it now has no effect.
+        }
+
         if( ( !config.terminated ) && ( !config.pause ) ) {
             _logger.debug( "Experiment: " + getName() + " requesting another update." );
-            _n.requestUpdate( getName() ); // queue another update.
+            _n.requestUpdate(getName()); // queue another update.
         }
     }
 

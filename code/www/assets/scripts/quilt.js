@@ -42,6 +42,7 @@ var Region = {
   selectedInput1 : [  ],
 
   regionSuffixes : [ "-input-1", "-input-2", "-input-quilt", "-output-quilt", "-output-1", "-output-2", "-quilt-mask", "-quilt-input-mask", "-classifier-cell-mask", "-classifier-cell-activity", "-classifier-cell-weights" ],
+  regionSuffixes : [ "-input-1", "-input-2", "-output-quilt", "-output-1", "-output-2", "-quilt-mask", "-quilt-input-mask", "-classifier-cell-mask", "-classifier-cell-activity", "-classifier-cell-weights" ],
 
   regionSuffixIdx : 0,
   dataMap : {
@@ -271,10 +272,10 @@ var Region = {
       return; // can't paint
     }
 
-    var inputQuilt = Region.findData( "-input-quilt" );
-    if( !inputQuilt ) {
-      return; // can't paint
-    }
+//    var inputQuilt = Region.findData( "-input-quilt" );
+//    if( !inputQuilt ) {
+//      return; // can't paint
+//    }
 
     var activeQuilt = Region.findData( "-output-quilt" );
     if( !activeQuilt ) {
@@ -302,8 +303,8 @@ console.log( "Painting left w/h=" + canvasDataSize.w + "," + canvasDataSize.h );
 
     y0 = y0 + ( canvasDataSize.h * DataCanvas.pxPerElement ) + Region.pixelsPerGap;
 
-    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, inputQuilt, mask, null );
-    DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#ff00ff" );
+//    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, inputQuilt, mask, null );
+//    DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#ff00ff" );
 
   },
 

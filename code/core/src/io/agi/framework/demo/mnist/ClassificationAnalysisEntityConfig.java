@@ -44,4 +44,8 @@ public class ClassificationAnalysisEntityConfig extends EntityConfig {
 
     public HashMap< String, HashMap< String, String > > labelStatistics = new HashMap< String, HashMap< String, String > >();
 
+    public String resultsSummary = "";
+
+    public float microFScore = 0;
+    public float macroFScore = 0;
 }

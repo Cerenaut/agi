@@ -222,7 +222,6 @@ public class KSparseDemo {
         Framework.SetConfig( valueSeriesName, "writeFilePrefix", flushWriteFilePrefixTruth );
         Framework.SetConfig( valueSeriesName, "entityName", imageLabelName );
         Framework.SetConfig( valueSeriesName, "configPath", "imageLabel" );
-
     }
 
 }
