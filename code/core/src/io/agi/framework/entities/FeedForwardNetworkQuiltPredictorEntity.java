@@ -54,8 +54,10 @@ public class FeedForwardNetworkQuiltPredictorEntity extends QuiltPredictorEntity
     public static final String PREDICTOR_WEIGHTS_2 = "predictor-weights-2";
     public static final String PREDICTOR_BIASES_1 = "predictor-biases-1";
     public static final String PREDICTOR_BIASES_2 = "predictor-biases-2";
-    public static final String ERROR_GRADIENTS_1 = "error-gradients-1";
-    public static final String ERROR_GRADIENTS_2 = "error-gradients-2";
+    public static final String BATCH_ERROR_GRADIENTS_1 = "batch-error-gradients-1";
+    public static final String BATCH_ERROR_GRADIENTS_2 = "batch-error-gradients-2";
+    public static final String BATCH_INPUTS_1 = "batch-inputs-1";
+    public static final String BATCH_INPUTS_2 = "batch-inputs-2";
 
     public FeedForwardNetworkQuiltPredictorEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
@@ -89,8 +91,10 @@ public class FeedForwardNetworkQuiltPredictorEntity extends QuiltPredictorEntity
         attributes.add( PREDICTOR_WEIGHTS_2 );
         attributes.add( PREDICTOR_BIASES_1 );
         attributes.add( PREDICTOR_BIASES_2 );
-        attributes.add( ERROR_GRADIENTS_1 );
-        attributes.add( ERROR_GRADIENTS_2 );
+        attributes.add( BATCH_ERROR_GRADIENTS_1 );
+        attributes.add( BATCH_ERROR_GRADIENTS_2 );
+        attributes.add( BATCH_INPUTS_1 );
+        attributes.add( BATCH_INPUTS_2 );
     }
 
     @Override
@@ -244,8 +248,10 @@ public class FeedForwardNetworkQuiltPredictorEntity extends QuiltPredictorEntity
         layer2._weights = getDataLazyResize( PREDICTOR_WEIGHTS_2, layer2._weights._dataSize );
         layer1._biases = getDataLazyResize( PREDICTOR_BIASES_1, layer1._biases._dataSize );
         layer2._biases = getDataLazyResize( PREDICTOR_BIASES_2, layer2._biases._dataSize );
-        layer1._costGradients = getDataLazyResize( ERROR_GRADIENTS_1, layer1._costGradients._dataSize );
-        layer2._costGradients = getDataLazyResize( ERROR_GRADIENTS_2, layer2._costGradients._dataSize );
+        layer1._batchErrorGradients = getDataLazyResize( BATCH_ERROR_GRADIENTS_1, layer1._batchErrorGradients._dataSize );
+        layer2._batchErrorGradients = getDataLazyResize( BATCH_ERROR_GRADIENTS_2, layer2._batchErrorGradients._dataSize );
+        layer1._batchInputs = getDataLazyResize( BATCH_INPUTS_1, layer1._batchInputs._dataSize );
+        layer2._batchInputs = getDataLazyResize( BATCH_INPUTS_2, layer2._batchInputs._dataSize );
     }
 
     protected void copyDataToPersistence( QuiltPredictor rl ) {
@@ -269,8 +275,10 @@ public class FeedForwardNetworkQuiltPredictorEntity extends QuiltPredictorEntity
         setData( PREDICTOR_WEIGHTS_2, layer2._weights );
         setData( PREDICTOR_BIASES_1, layer1._biases );
         setData( PREDICTOR_BIASES_2, layer2._biases );
-        setData( ERROR_GRADIENTS_1, layer1._costGradients);
-        setData( ERROR_GRADIENTS_2, layer2._costGradients);
+        setData( BATCH_ERROR_GRADIENTS_1, layer1._batchErrorGradients );
+        setData( BATCH_ERROR_GRADIENTS_2, layer2._batchErrorGradients );
+        setData( BATCH_INPUTS_1, layer1._batchInputs );
+        setData( BATCH_INPUTS_2, layer2._batchInputs );
     }
 
 }
