@@ -73,18 +73,15 @@ public class CompetitiveLearningConfig extends NetworkConfig {
     }
 
     public int getNbrInputs() {
-        Integer i = _om.getInteger( getKey( _keyInputs ) );
-        return i.intValue();
+        return  _om.getInteger( getKey( _keyInputs ) );
     }
 
     public int getWidthCells() {
-        Integer w = _om.getInteger( getKey( _keyWidthCells ) );
-        return w.intValue();
+        return _om.getInteger( getKey( _keyWidthCells ) );
     }
 
     public int getHeightCells() {
-        Integer h = _om.getInteger( getKey( _keyHeightCells ) );
-        return h.intValue();
+        return _om.getInteger( getKey( _keyHeightCells ) );
     }
 
     public Point getSizeCells() {
@@ -92,9 +89,7 @@ public class CompetitiveLearningConfig extends NetworkConfig {
     }
 
     public int getNbrCells() {
-        Integer w = _om.getInteger( getKey( _keyWidthCells ) );
-        Integer h = _om.getInteger( getKey( _keyHeightCells ) );
-        return w * h;
+        return _om.getInteger( getKey( _keyWidthCells ) ) * _om.getInteger( getKey( _keyHeightCells ) );
     }
 
     public int getCell( int cellX, int cellY ) {

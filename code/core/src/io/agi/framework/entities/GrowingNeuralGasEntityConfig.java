@@ -39,5 +39,5 @@ public class GrowingNeuralGasEntityConfig extends EntityConfig {
     public float utilityLearningRate = 0;
     public float utilityThreshold = -1f;
     int growthInterval = 2;
-
+    float denoisePercentage = 0;
 }

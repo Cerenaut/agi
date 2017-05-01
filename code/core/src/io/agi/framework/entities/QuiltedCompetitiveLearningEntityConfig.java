@@ -61,5 +61,5 @@ public class QuiltedCompetitiveLearningEntityConfig extends EntityConfig {
     public float classifierUtilityLearningRate = 0;
     public float classifierUtilityThreshold = -1f;
     public int classifierGrowthInterval = 0;
-
+    public float classifierDenoisePercentage = 0;
 }
