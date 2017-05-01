@@ -148,52 +148,42 @@ public class GrowingNeuralGasConfig extends CompetitiveLearningConfig {
     }
 
     public float getLearningRate() {
-        Float r = _om.getFloat( getKey( LEARNING_RATE ) );
-        return r.floatValue();
+        return _om.getFloat( getKey( LEARNING_RATE ) );
     }
 
     public float getLearningRateNeighbours() {
-        Float r = _om.getFloat( getKey( LEARNING_RATE_NEIGHBOURS ) );
-        return r.floatValue();
+        return _om.getFloat( getKey( LEARNING_RATE_NEIGHBOURS ) );
     }
 
     public float getNoiseMagnitude() {
-        Float r = _om.getFloat( getKey( NOISE_MAGNITUDE ) );
-        return r.floatValue();
+        return _om.getFloat( getKey( NOISE_MAGNITUDE ) );
     }
 
     public int getEdgeMaxAge() {
-        Integer n = _om.getInteger( getKey( EDGE_MAX_AGE ) );
-        return n.intValue();
+        return _om.getInteger( getKey( EDGE_MAX_AGE ) );
     }
 
     public float getStressLearningRate() {
-        Float r = _om.getFloat( getKey( STRESS_LEARNING_RATE ) );
-        return r.floatValue();
+        return _om.getFloat( getKey( STRESS_LEARNING_RATE ) );
     }
 
     public float getStressSplitLearningRate() {
-        Float r = _om.getFloat( getKey( STRESS_SPLIT_LEARNING_RATE ) );
-        return r.floatValue();
+        return _om.getFloat( getKey( STRESS_SPLIT_LEARNING_RATE ) );
     }
 
     public float getStressThreshold() {
-        Float r = _om.getFloat( getKey( STRESS_THRESHOLD ) );
-        return r.floatValue();
+        return _om.getFloat( getKey( STRESS_THRESHOLD ) );
     }
 
     public float getUtilityLearningRate() {
-        Float r = _om.getFloat( getKey( UTILITY_LEARNING_RATE ) );
-        return r.floatValue();
+        return _om.getFloat( getKey( UTILITY_LEARNING_RATE ) );
     }
 
     public float getUtilityThreshold() {
-        Float r = _om.getFloat( getKey( UTILITY_THRESHOLD ) );
-        return r.floatValue();
+        return _om.getFloat( getKey( UTILITY_THRESHOLD ) );
     }
 
     public int getGrowthInterval() {
-        Integer n = _om.getInteger( getKey( GROWTH_INTERVAL ) );
-        return n.intValue();
+        return _om.getInteger( getKey( GROWTH_INTERVAL ) );
     }
 }
