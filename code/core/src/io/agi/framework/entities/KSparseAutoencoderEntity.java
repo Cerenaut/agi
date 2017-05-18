@@ -58,8 +58,10 @@ public class KSparseAutoencoderEntity extends Entity {
     public static final String RECONSTRUCTION_K = "reconstruction-k";
     public static final String AGES = "ages";
 
-    public static final String OUTPUT_GRADIENTS = "output-gradients";
-    public static final String HIDDEN_GRADIENTS = "hidden-gradients";
+    public static final String BATCH_ERROR_GRADIENTS_HIDDEN = "batch-error-gradients-hidden";
+    public static final String BATCH_ERROR_GRADIENTS_OUTPUT = "batch-error-gradients-output";
+    public static final String BATCH_INPUTS_HIDDEN = "batch-inputs-hidden";
+    public static final String BATCH_INPUTS_OUTPUT = "batch-inputs-output";
 
     public KSparseAutoencoderEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
@@ -87,8 +89,10 @@ public class KSparseAutoencoderEntity extends Entity {
         attributes.add( RECONSTRUCTION_K );
         attributes.add( AGES );
 
-        attributes.add( OUTPUT_GRADIENTS );
-        attributes.add( HIDDEN_GRADIENTS );
+        attributes.add( BATCH_ERROR_GRADIENTS_HIDDEN );
+        attributes.add( BATCH_ERROR_GRADIENTS_OUTPUT );
+        attributes.add( BATCH_INPUTS_HIDDEN );
+        attributes.add( BATCH_INPUTS_OUTPUT );
 
         flags.putFlag( WEIGHTS, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( BIASES_1, DataFlags.FLAG_NODE_CACHE );
@@ -105,12 +109,13 @@ public class KSparseAutoencoderEntity extends Entity {
         flags.putFlag( RECONSTRUCTION_K, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( AGES, DataFlags.FLAG_NODE_CACHE );
 
-        flags.putFlag( OUTPUT_GRADIENTS, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( HIDDEN_GRADIENTS, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( BATCH_ERROR_GRADIENTS_HIDDEN, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( BATCH_ERROR_GRADIENTS_OUTPUT, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( BATCH_INPUTS_HIDDEN, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( BATCH_INPUTS_OUTPUT, DataFlags.FLAG_NODE_CACHE );
 
         flags.putFlag( SPIKES_TOP_KA, DataFlags.FLAG_SPARSE_REAL );
         flags.putFlag( SPIKES_TOP_K, DataFlags.FLAG_SPARSE_REAL );
-
     }
 
     @Override
@@ -204,8 +209,10 @@ public class KSparseAutoencoderEntity extends Entity {
         ksa._inputReconstructionK = getDataLazyResize( RECONSTRUCTION_K, ksa._inputReconstructionK._dataSize );
         ksa._cellAges = getDataLazyResize( AGES, ksa._cellAges._dataSize );
 
-        ksa._inputGradients = getDataLazyResize( OUTPUT_GRADIENTS, ksa._inputGradients._dataSize );
-        ksa._cellGradients = getDataLazyResize( HIDDEN_GRADIENTS, ksa._cellGradients._dataSize );
+        ksa._hiddenErrorsBatch = getDataLazyResize( BATCH_ERROR_GRADIENTS_HIDDEN, ksa._hiddenErrorsBatch._dataSize );
+        ksa._outputErrorsBatch = getDataLazyResize( BATCH_ERROR_GRADIENTS_OUTPUT, ksa._outputErrorsBatch._dataSize );
+        ksa._hiddenInputBatch = getDataLazyResize( BATCH_INPUTS_HIDDEN, ksa._hiddenInputBatch._dataSize );
+        ksa._outputInputBatch = getDataLazyResize( BATCH_INPUTS_OUTPUT, ksa._outputInputBatch._dataSize );
     }
 
     protected void copyDataToPersistence( KSparseAutoencoder ksa ) {
@@ -226,8 +233,10 @@ public class KSparseAutoencoderEntity extends Entity {
         setData( RECONSTRUCTION_K, ksa._inputReconstructionK );
         setData( AGES, ksa._cellAges );
 
-        setData( OUTPUT_GRADIENTS, ksa._inputGradients );
-        setData( HIDDEN_GRADIENTS, ksa._cellGradients );
+        setData( BATCH_ERROR_GRADIENTS_HIDDEN, ksa._hiddenErrorsBatch );
+        setData( BATCH_ERROR_GRADIENTS_OUTPUT, ksa._outputErrorsBatch );
+        setData( BATCH_INPUTS_HIDDEN, ksa._hiddenInputBatch );
+        setData( BATCH_INPUTS_OUTPUT, ksa._outputInputBatch );
     }
 
 }

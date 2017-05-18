@@ -32,6 +32,19 @@ import io.agi.framework.factories.CommonEntityFactory;
 import java.util.Properties;
 
 /**
+ * PHASE 2.
+ *
+ * To do it manually:
+ *
+ * 1. Run Phase 1.
+ * 2. Import Phase 1 data file.
+ * 3. Set Analytics entity trainSetSize, testSetSize, testSetOffset to correct values via
+ *    http://localhost:8000/config.html?entity=analytics
+ * 4. Set analytics input data - features via
+ *    http://localhost:8000/data.html?data=analytics-input-features
+ * 5. Set analytics input data - labels via
+ *    http://localhost:8000/data.html?data=analytics-input-labels
+ *
  * Learns to assign labels to a set of recorded features.
  *
  * Assumes features and labels over time have already been recorded.

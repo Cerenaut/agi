@@ -36,15 +36,17 @@ public class NetworkLayerConfig extends NetworkConfig {
     public static final String REGULARIZATION = "regularization";
     public static final String INPUTS = "i";
     public static final String CELLS = "w";
+    public static final String BATCH_SIZE = "b";
 
     public NetworkLayerConfig() {
     }
 
-    public void setup( ObjectMap om, String name, Random r, int inputs, int cells, float learningRate, float regularization, String activationFunction ) {
+    public void setup( ObjectMap om, String name, Random r, int inputs, int cells, int batchSize, float learningRate, float regularization, String activationFunction ) {
         super.setup( om, name, r );
 
         setInputs( inputs );
         setCells( cells );
+        setBatchSize( batchSize );
         setLearningRate( learningRate );
         setRegularization( regularization );
         setActivationFunction( activationFunction );
@@ -57,13 +59,14 @@ public class NetworkLayerConfig extends NetworkConfig {
 
         setInputs( c.getInputs() );
         setCells( c.getCells() );
+        setBatchSize( c.getBatchSize() );
         setLearningRate( c.getLearningRate() );
         setRegularization( c.getRegularization() );
         setActivationFunction( c.getActivationFunction() );
     }
 
     public void setRegularization( float r ) {
-        _om.put(getKey(REGULARIZATION), r);
+        _om.put( getKey( REGULARIZATION ), r );
     }
 
     public Float getRegularization() {
@@ -81,6 +84,15 @@ public class NetworkLayerConfig extends NetworkConfig {
 
     public void setCells( int cells ) {
         _om.put( getKey( CELLS ), cells );
+    }
+
+    public int getBatchSize() {
+        Integer b = _om.getInteger( getKey( BATCH_SIZE ) );
+        return b.intValue();
+    }
+
+    public void setBatchSize( int b ) {
+        _om.put( getKey( BATCH_SIZE ), b );
     }
 
     public int getCells() {

@@ -73,7 +73,7 @@ public class FeedForwardNetwork extends NamedObject {
 
         for( int l = 0; l < layers; ++l ) {
             String activationFunction = _c.getLayerTransferFn(l);
-            int layerSize = _c.getLayerSize(l);
+            int layerSize = _c.getLayerSize( l );
             setupLayer( _c._r, l, layerInputs, layerSize, activationFunction );
             layerInputs = layerSize; // for next time
         }
@@ -106,7 +106,8 @@ public class FeedForwardNetwork extends NamedObject {
 
         float learningRate = _c.getLearningRate();
         float regularization = _c.getL2Regularization();
-        nlc.setup( _om, layerName, r, inputs, cells, learningRate, regularization, activationFunction );
+        int batchSize = _c.getBatchSize();
+        nlc.setup( _om, layerName, r, inputs, cells, batchSize, learningRate, regularization, activationFunction );
 
         NetworkLayer nl = _layers.get( layer );
         nl.setup( nlc, _aff );
@@ -163,24 +164,12 @@ public class FeedForwardNetwork extends NamedObject {
         return _ideals;
     }
 
-    public float getWeightsSquared() {
-        int L = _layers.size();
-
-        float sumSq = 0.f;
-
-        for( int layer = 0; layer < L; ++layer ) {
-            NetworkLayer nl = _layers.get( layer );
-            sumSq += nl.getWeightsSquared();
-        }
-
-        return sumSq;
-    }
-
     /**
      * Run the network in a forward direction, producing an output
      */
     public void feedForward() {
         int layers = _layers.size();
+        int batchCount = _c.getBatchCount();
 
         for( int layer = 0; layer < layers; ++layer ) {
 
@@ -189,6 +178,10 @@ public class FeedForwardNetwork extends NamedObject {
             if( layer > 0 ) {
                 NetworkLayer nlBelow = _layers.get( layer - 1 );
                 nl._inputs.copy( nlBelow._outputs );
+                nl.setBatchInput( nlBelow._outputs, batchCount );
+            }
+            else {
+                nl.setBatchInput( nl._inputs, batchCount );
             }
 
             nl.feedForward();
@@ -200,24 +193,15 @@ public class FeedForwardNetwork extends NamedObject {
      */
     public void feedBackward() {
 
-        float l2R = _c.getL2Regularization();
+//        float l2R = _c.getL2Regularization();
 //        float sumSqWeights = 0.f;
 //        if( l2R > 0.f ) {
 //            sumSqWeights = getWeightsSquared();
 //        }
 
         // check for end of a mini-batch
-        int batchSize = _c.getBatchSize();
         int batchCount = _c.getBatchCount();
-        batchCount += 1;
-
-        boolean batchComplete = false;
-        if( batchCount >= batchSize ) { // e.g. if was zero, then becomes 1, then we clear it and apply the gradients
-            batchCount = 0;
-            batchComplete = true;
-        }
-
-        _c.setBatchCount( batchCount );
+        int batchSize = _c.getBatchSize();
 
         // update layer by layer
         // definitive answer on mini batch impl:
@@ -238,7 +222,7 @@ public class FeedForwardNetwork extends NamedObject {
             NetworkLayer nl = _layers.get( layer );
             ActivationFunction af = nl.getActivationFunction();
 
-            Data layerCostGradients = new Data( nl._costGradients._dataSize ); // same shape
+            Data layerCostGradients = new Data( nl._c.getCells() ); // same shape
 
             if( layer == L ) {
                 String costFunction = _c.getCostFunction();
@@ -252,19 +236,29 @@ public class FeedForwardNetwork extends NamedObject {
             costGradients.put( layer, layerCostGradients );
         }
 
+        boolean batchComplete = false;
+        if( batchCount == (batchSize-1) ) { // e.g. if was zero, then becomes 1, then we clear it and apply the gradients
+            batchComplete = true; // last in batch
+        }
+
         for( int layer = L; layer >= 0; --layer ) {
 
             NetworkLayer nl = _layers.get( layer );
 
             Data layerCostGradients = costGradients.get( layer );
-
-            nl._costGradients.add( layerCostGradients ); // add the latest gradients
+            //nl._costGradients.add( layerCostGradients ); // add the latest gradients
+            nl.setBatchError( layerCostGradients, batchCount );
 
             if( batchComplete ) {
-                nl.train( batchSize ); // using the error gradients, d
-                nl._costGradients.set( 0f );
+                nl.train(); // using the error gradients, d
             }
         }
+
+        batchCount += 1;
+        if( batchCount >= batchSize ) { // e.g. if was zero, then becomes 1, then we clear it and apply the gradients
+            batchCount = 0;
+        }
+        _c.setBatchCount( batchCount );
     }
 
 }

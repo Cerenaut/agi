@@ -25,15 +25,8 @@ import io.agi.framework.EntityConfig;
  *
  * Created by dave on 7/07/16.
  */
-public class QuiltPredictorEntityConfig extends EntityConfig {
+public class HebbianQuiltPredictorEntityConfig extends QuiltPredictorEntityConfig {
 
-    // parameters you can adjust
-    public int widthCells = 0;
-    public int heightCells = 0;
-    public int columnWidthCells = 0;
-    public int columnHeightCells = 0;
-
-    // stats calculated during operation
-    public boolean resetDelayed = false;
+    public float predictorLearningRate = 0.0f; // how fast the prediction weights learn
 
 }

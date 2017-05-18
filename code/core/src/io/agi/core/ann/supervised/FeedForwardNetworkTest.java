@@ -46,7 +46,7 @@ public class FeedForwardNetworkTest implements UnitTest {
         int epochs = 50000;
         int epochSize = 100;
         int hidden = 0;
-        int miniBatchSize = 3; // to test, it is better without
+        int miniBatchSize = 5; // to test, it is better without
         float meanErrorThreshold = 0.01f;
         float learningRate = 0.1f;//0.1f;
         float regularization = 0.001f; // to test, it is better without.
