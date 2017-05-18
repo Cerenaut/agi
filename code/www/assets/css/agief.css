@@ -1,0 +1,13 @@
+body {
+
+}
+
+@linkColor: #ff0000;
+
+.agi-div-background {
+
+  width:100vw;
+  height:100vh;
+  background:white;
+
+}

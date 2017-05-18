@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>agi.io | Graph</title>
+    <link rel="icon" href="assets/images/favicon.png">
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+    <link rel="stylesheet" href="assets/css/agief.css">
+    <link rel="stylesheet" href="assets/css/entity-graph.css">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+
+    <div class="agi-div-background" style="">
+     <div class="" style="position: relative; top:50%; transform: translateY(-50%); ">
+      <div class="" style="text-align:center;">
+       <p>
+       <input type="text" id="host" style="" class="" placeholder="Host" value="localhost"/>
+       <input type="number" id="port" style="width:5em;" class="" placeholder="Port" value="8491"/><br>
+       <input type="text" id="entity" style="" class="" placeholder="Entity name"/>
+       <input type="number" id="interval" style="display:inline;width:5em;" class="" placeholder="Update interval" value="50"/>
+       </p>
+       <p>
+
+       <input type="button" id="show" class="btn btn-sm btn-danger" style="" onclick="EntityGraph.show();" value="Show"/>
+       </p>
+      </div><!-- /.row -->
+      <div id="entities-graph"></div>
+     </div><!-- /.row -->
+    </div><!-- /.container -->
+
+    
+    
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+
+    <!-- D3 visuals - hosted version http://d3js.org/ -->
+<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>-->
+
+    <!-- Our stuff -->
+    <script src="assets/scripts/graph.js"></script>
+    <script src="assets/scripts/entity-graph.js"></script>
+    <script src="assets/scripts/framework.js"></script>
+    <script src="assets/scripts/parameters.js"></script>
+
+  </body>
+</html>

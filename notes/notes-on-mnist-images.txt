@@ -1,0 +1,23 @@
+Expected format example:
+
+mnist10k_0a1e7e_1_616.png
+
+Here, the label is '1'
+
+New feature is that parsing is controlled by:
+
+ ImageLabelEntityConfig {
+
+public String sourceFilesLabelDelimiter = "_";
+public int sourceFilesLabelIndex = 2;
+
+}
+
+Applying this breaks into parts:
+
+0: mnist10k  (dataset prefix)
+1: 0a1e7e (randomizer)
+2: 1         (label)
+3: 616    (sequence)
+
+So the default config should work.

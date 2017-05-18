@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>agi.io | Experiment</title>
+    <link rel="icon" href="assets/images/favicon.png">
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+    <link rel="stylesheet" href="assets/css/agief.css">
+  </head>
+  <body style="">
+
+    <div class="agi-div-background" style="">
+     <div class="" style="position: relative; top:50%; transform: translateY(-50%); ">
+      <div class="" style="text-align:center;">
+
+       <a href="/index.html" target="_blank"><img src="assets/images/logo-inverse-brown.png" style="width:50px;display:inline;margin-bottom:1em;"/></a><h1 style="display:inline;">Experiment Control Panel</h1>
+       <p class="well">
+        <label for="host">Node</label>
+        <input type="text" id="host" style="" class="" placeholder="Host" value="localhost"/>
+        <input type="number" id="port" style="width:5em;" class="" placeholder="Port" value="8491"/>
+       </p>
+       <p style="margin-top:1.5em;margin-bottom:1.5em;">
+        <label for="entity">Entity</label>
+        <input type="text" id="entity" style="" class="" placeholder="Entity name"/>
+        <label for="update">Update</label>
+        <input type="button" id="update" class="btn btn-sm btn-danger" style="" onclick="Experiment.update()" value="Once"/>
+        <input type="button" id="pause" class="btn btn-sm btn-danger" style="" onclick="Loop.togglePause()" value="Resume"/>
+        <label for="interval">every (ms)</label>
+        <input type="number" id="interval" style="display:inline;width:5em;" class="" placeholder="Update interval" value="50"/>
+       <span class="well">
+        <label for="flush">Flush</label>
+        <input id="flush" type="checkbox" name="flush" checked />
+        <label for="reset">Reset</label>
+        <input id="reset" type="checkbox" name="reset" />
+        <label for="learn">Learn</label>
+        <input id="learn" type="checkbox" name="learn" />
+        <input type="button" id="pause" class="btn btn-sm btn-success" style="" onclick="Experiment.setFlushAndReset()" value="Set"/>
+       </span>
+        &nbsp;<small>
+         <i>Type</i> <span id="entity-type">?</span>
+         <i>Age</i> <span id="entity-age">?</span>
+         <i>Seed</i> <span id="entity-seed">?</span>
+         <i>Reset</i> <span id="entity-reset">?</span>
+         <i>Flush</i> <span id="entity-flush">?</span>
+         <i>Learn</i> <span id="entity-learn">?</span>
+        </small>
+       </p>
+       <div class="well">
+       <form id="import-form" method="POST" enctype="multipart/form-data" target="result" >
+       <p>
+       <label for="entity-file">Entity file</label>
+       <input type="file" name="entity-file" id="entity-file" style="display:inline;" class="btn btn-sm" placeholder="Entity file name"/>
+       </p>
+       <p>
+       <label for="data-file">Data file</label>
+       <input type="file" name="data-file" id="data-file" style="display:inline;" class="btn btn-sm" placeholder="Data file name"/>
+       </p>
+       <p>
+       <input type="button" id="import" class="btn btn-sm btn-success" style="" onclick="Experiment.importEntity()" value="Import Files"/>
+       <input type="button" id="exportEntity" class="btn btn-sm btn-primary" style="" onclick="Experiment.exportEntity()" value="Export Entities"/>
+       <input type="button" id="exportData" class="btn btn-sm btn-primary" style="" onclick="Experiment.exportData()" value="Export Data"/>
+       <input type="button" id="exportDataRefs" class="btn btn-sm btn-primary" style="" onclick="Experiment.exportDataRefs()" value="Export Data Refs"/>
+       </p>
+       </form>
+       </div>
+       <div class="" style="text-align:left;width:100%;">
+         <iframe width="100%" height="60px;" name="result" id="result" style="border:0;"></iframe>
+         <p style="color:#aaaaaa;">Update:<br> <span id="update-result" style="color:#aaaaaa">-</span></p>
+         <p style="color:#aaaaaa;">Config:<br> <span id="config-result" style="color:#aaaaaa">-</span></p>
+       </div><!-- /.row -->
+      </div><!-- /.row -->
+     </div><!-- /.row -->
+    </div><!-- /.container -->
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+    <!-- D3 visuals - hosted version http://d3js.org/ -->
+<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>-->
+
+    <!-- Our stuff -->
+    <script src="assets/scripts/framework.js"></script>
+    <script src="assets/scripts/parameters.js"></script>
+    <script src="assets/scripts/loop.js"></script>
+    <script src="assets/scripts/experiment.js"></script>
+
+  </body>
+</html>

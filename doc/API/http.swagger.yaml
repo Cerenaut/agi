@@ -1,0 +1,295 @@
+swagger: '2.0'
+info:
+  title: AGI Experimental Framework Http Interface
+  description: 'These functions allow a remote user interface to interact with the framework'
+  version: 1.0.0
+host: localhost:8491
+schemes:
+  - http
+basePath: /
+produces:
+  - application/json
+paths:
+
+  /config:
+    get:
+      summary: Gets the configuration of a specific Entity
+      description: "Gets the configuration of a specific Entity\n"
+      parameters:
+        - name: entity
+          in: query
+          description: Name of specific entity whose config you want to get
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/configModel'
+        '400':
+          description: Invalid request
+
+    post:
+      summary: Sets the configuration of a specific Entity
+      description: "Sets the configuration of a specific Entity. Either set individual properties with the path and value parameters, or set the entire config in one go with the config parameter.\n"
+      parameters:
+        - name: entity
+          in: query
+          description: Name of specific entity whose config will be changed
+          required: true
+          type: string
+        - name: config
+          in: query
+          description: The complete replacement config structure for the entity.
+          required: false
+          type: string
+        - name: path
+          in: query
+          description: Path to a specific config property
+          required: false
+          type: string
+        - name: value
+          in: query
+          description: Value for a specific config property
+          required: false
+          type: string
+      responses:
+        '200':
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/configModel'
+          description: OK
+        '400':
+          description: Invalid request
+
+  /update:
+    get:
+      summary: TODOO
+      description: "TODO\n"
+      parameters:
+        - name: entity
+          in: query
+          description: Name of specific entity to update
+          required: true
+          type: string
+        - name: event
+          in: query
+          description: Event type that has happened or should happen
+          required: true
+          type: string
+        - name: origin
+          in: query
+          description: Node where this event was generated. Ignore if not generated within framework.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/eventModel'
+        '400':
+          description: Invalid request
+
+  /data:
+    get:
+      summary: Retrieves a list of all Data names, or a complete specific Data if named
+      description: "Retrieves a list of all Data names, or a complete specific Data if named\n"
+      parameters:
+        - name: name
+          in: query
+          description: Name of specific entity
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/dataModel'
+        '400':
+          description: Invalid request
+
+  /entities:
+    get:
+      summary: Retrieves a list of all Entities in the system, or a specific Entity if named.
+      description: "Retrieves a list of Entities in the system as a JSON array\n"
+      parameters:
+        - name: name
+          in: query
+          description: Name of specific entity
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/entityModel'
+        '400':
+          description: Invalid request
+
+  /export:
+    get:
+      summary: Exports a subtree of entities to a JSON file.
+      description: Exports a subtree of entities to a JSON file (or saved as JSON file by the node itself, when parameter export-location is defined).
+      parameters:
+        - name: entity
+          in: query
+          description: Name of specific entity subtree to export
+          required: true
+          type: string
+        - name: type
+          in: query
+          description: Either 'data' or 'entity' or 'data-refs'
+          required: true
+          type: string
+        - name: export-location
+          in: query
+          description: This is optional. If it is defined, then the node saves the data itself. The value of the parameter is used as the absolute path to the folder where the data is to be saved.
+          required: false
+          type: string          
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/entityModel'
+        '400':
+          description: Invalid request
+  /import:
+    post:
+      summary: Import a subtree of entities and/or data to the framework.
+      description: "Import a subtree of entities and/or data to the framework. N.B. file type not supported. https://github.com/OAI/OpenAPI-Specification/issues/260\n"
+      parameters:
+        - name: entity-file
+          in: query
+          description: The file containing entities, if present
+          required: false
+          type: string
+        - name: data-file
+          in: query
+          description: The file containing data, if present
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Invalid request
+  /import-local:
+    get:
+      summary: Import a subtree of entities and/or data to the framework, via a file local to the running process.
+      description: Import a subtree of entities and/or data to the framework, via a file local to the running process.
+      parameters:
+        - name: type
+          in: query
+          description: Set to 'entity' or 'data' - specifies whether to import entities or data
+          required: true
+          type: string
+        - name: file
+          in: query
+          description: The file containing entities/data (specify full path, do not use ~)
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Invalid request
+  /nodes:
+    get:
+      summary: Retrieves a list of all Nodes in the system
+      description: "Retrieves a list of all Nodes in the system as a JSON array\n"
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/nodeModel'
+        '400':
+          description: Invalid request
+  /version:
+    get:
+      summary: Retrieves the running AGIEF version
+      description: "Retrieves the running AGIEF version\n"
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/versionModel'
+        '400':
+          description: Invalid request
+
+definitions:
+
+  versionModel:
+    type: object
+    properties:
+      version:
+        type: string
+
+  configModel:
+    type: object
+    properties:
+      entity:
+        type: string
+      path:
+        type: string
+      value:
+        type: string        
+
+  eventModel:
+    type: object
+    properties:
+      entity:
+        type: string
+      event:
+        type: string
+      origin:
+        type: string        
+
+  nodeModel:
+    type: object
+    properties:
+      name:
+        type: string
+      host:
+        type: string
+      port:
+        type: integer        
+
+  entityModel:
+    type: object
+    properties:
+      name:
+        type: string
+      node:
+        type: string
+      parent:
+        type: string        
+      type:
+        type: string        
+      config:
+        type: string        
+
+  dataModel:
+    type: object
+    properties:
+      name:
+        type: string
+      refKeys:
+        type: string
+      sizes:
+        type: string        
+      elements:
+        type: string        
+
