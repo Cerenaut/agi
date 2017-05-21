@@ -112,8 +112,8 @@ public class QuiltedCompetitiveLearningDemo {
         Framework.SetDataReference( quiltName, QuiltedCompetitiveLearningEntity.INPUT_1, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
         Framework.SetDataReference( quiltName, QuiltedCompetitiveLearningEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
 
-        ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList< AbstractPair< String, String > >();
-        featureDatas.add( new AbstractPair< String, String >( quiltName, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT ) );
+        ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList<>();
+        featureDatas.add( new AbstractPair<>( quiltName, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT ) );
         Framework.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
 
         // Experiment config

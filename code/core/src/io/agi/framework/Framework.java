@@ -457,14 +457,18 @@ public class Framework {
      *
      * @param file
      */
-    public static void LoadEntities( String file ) {
+    public static boolean LoadEntities( String file ) {
+        boolean success = true;
         try {
             String jsonEntities = FileUtil.readFile( file );
             ImportEntities( jsonEntities );
         }
         catch( Exception e ) {
+            success = false;
             _logger.error( e.toString(), e );
         }
+
+        return success;
     }
 
     /**
@@ -495,14 +499,18 @@ public class Framework {
      * Load Data objects from file into the system.
      * @param file
      */
-    public static void LoadData( String file ) {
+    public static boolean LoadData( String file ) {
+        boolean success = true;
         try {
             String jsonData = FileUtil.readFile( file );
             ImportData( jsonData );
         }
         catch( Exception e ) {
+            success = false;
             _logger.error( e.toString(), e );
         }
+
+        return success;
     }
 
     /**

@@ -69,22 +69,25 @@ public class HttpImportFileHandler implements HttpHandler {
 
                 responseMap.put( "filepath", filepath );
 
+                boolean success = false;
                 if ( type.equals( TYPE_ENTITY ) ) {
-                    Framework.LoadEntities( filepath );
+                    success = Framework.LoadEntities( filepath );
                     responseMap.put( "message", "Success" );
                     responseMap.put( "type", type );
-                    status = 200;
                 }
                 else if ( type.equals( TYPE_DATA ) ) {
-                    Framework.LoadData( filepath );
+                    success = Framework.LoadData( filepath );
                     responseMap.put( "message", "Success" );
                     responseMap.put( "type", type );
-                    status = 200;
                 }
                 else {
                     String message = "ERROR: unrecognised type";
                     responseMap.put( "message", message );
                     _logger.error( message );
+                }
+
+                if ( success ) {
+                    status = 200;
                 }
             }
             else {
