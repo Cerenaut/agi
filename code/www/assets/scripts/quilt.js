@@ -134,6 +134,19 @@ var Region = {
       return;
     }
 
+    var data2 = Region.findData( "-input-2" );
+    if( !data2 ) {
+      return; // can't paint
+    }
+
+    var dataSize2 = Framework.getDataSize( data2 );
+    var w2 = dataSize2.w;
+    var h2 = dataSize2.h;
+
+    if( ( w2 == 0 ) || ( h2 == 0 ) ) {
+      return;
+    }
+
     var dataWeights = Region.findData( "-classifier-cell-weights" );
     if( !dataWeights ) {
       return; // can't paint
@@ -143,7 +156,7 @@ var Region = {
 
     var dataSizeW = Framework.getDataSize( dataWeights );
     var weightsSize = dataSizeW.w * dataSizeW.h;
-    var weightsStride = w1 * h1;
+    var weightsStride = w1 * h1 + w2 * h2;
 
     var inputOffset = 0;
 

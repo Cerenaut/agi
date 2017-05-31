@@ -857,6 +857,9 @@ public class FloatArray {
             float absDiff = Math.abs( x1 - x2 );
             maxAbsDiff = Math.max( absDiff, maxAbsDiff );
 
+            //if( maxAbsDiff > 0.01f ) {
+            //    System.err.println( "Diff bad " + maxAbsDiff + " at " + offset + " of " + _values.length );
+            //}
             ++offset;
         }
 

@@ -41,8 +41,8 @@ var Framework = {
   },
 
   getDataSize : function( data ) {
-    var w = 0; 
-    var h = 0; 
+    var w = 1; 
+    var h = 1; 
     var dataSizes = data.sizes;
 
     for( var i = 0; i < dataSizes.labels.length; ++i ) {
