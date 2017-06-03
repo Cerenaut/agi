@@ -70,8 +70,7 @@ public class HttpExportHandler implements HttpHandler {
                     && ( m.containsKey( PARAMETER_ENTITY ) ) ) {
                 String entityName = m.get( PARAMETER_ENTITY ).trim(); // essential
                 String type = m.get( PARAMETER_TYPE ).trim(); // essential
-
-
+                
                 if ( Framework.containsEntity( entityName ) ) {
 
                     // There are often memory exceptions when exporting (via API or saving to disk)

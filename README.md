@@ -10,7 +10,7 @@ This repo consists of:
 - associated scripts ```/bin```
 
 Compute has a RESTful API, so it is possible to implement components in other languages, or write alternative visualisations.
-** The API is documented at ```/doc/API/http.swagger.yaml``` **
+**The API is documented at ```/doc/API/http.swagger.yaml```**
 
 * TODO: Some info about architecture, the fact that there is a db (currently in-memory), core, and GUI
 * The db is a big json dictionary.
@@ -30,7 +30,7 @@ The repository contains a bunch of scripts to help with installation, setup and 
 NOTE: There is a ```run-in-docker.sh``` script that allows you to build and run compute in a docker container, which means you won't need to do any setup on your own computer.
 
 All scripts utilise environmental variables defined in a 'variables' file. Every script begins by sourcing this file. ```/resources/variables-template.sh``` is an example with explanations of each variable. You can modify that file, or create your own instead. 
-*IMPORTANT:* Then set the ENV variable ```VARIABLES_FILE``` to it using the full path.
+**IMPORTANT:** Then set the ENV variable ```VARIABLES_FILE``` to it using the full path.
 
 That is necessary even if you are using the ```run-in-docker.sh``` script.
 
@@ -52,9 +52,12 @@ Then:
 * You can use command line parameters to set node properties, and the initial state of system (entities, data)
 * Run GUI by running the web server ```/bin/www/python_server.sh``` and going to [http://localhost:8000](http://localhost:8000)
 	* alternatively, open any of the web pages in ```/code/wwww```
+* Choose the `main()` method to run to determine how you want to run the framework. 
+	* Pre-defined experiment: There are experiments defined in code. By convention they are named ```[demo-name]Demo```. They are contained in the package ```io.agi.framework.demo```. 
+	* Compute Node: The ```Main``` class in ```io.agi.framework``` launches the framework as a server, or 'Compute Node'. You can then load and export experiments via the HTTP API.
 
 
-## Running an experiment
+## Running an experiment on Compute node.
 There are multiple options, and the repository ```run-framework``` is a python project to do a lot of the heavy lifting for you. See repo README. 
 Also there is an ```experiment-definitions``` repo with assets required for past and current experiments.
 
@@ -78,5 +81,5 @@ In summary, pull the repo, build it with 'mvn package', pull 'experiment-definit
 
 
 ## Resources
-Have a look in the ```/resources`` folder for useful .... resources!
+Have a look in the ```/resources``` folder for useful .... resources!
 There is a code formatting style file, log4j configuration file template, an empty run-folder with necessary assets for the working directory and a template for the variables.sh file.
