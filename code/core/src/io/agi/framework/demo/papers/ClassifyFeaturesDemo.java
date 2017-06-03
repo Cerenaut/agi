@@ -102,10 +102,14 @@ public class ClassifyFeaturesDemo {
         // ---------------------------------------------
         boolean cacheAllData = true;
 
-        float trainingDropoutProbability = 1f / 49f;
+        //float trainingDropoutProbability = 1f / 49f;
+        float trainingDropoutProbability = 0f;
 
         int trainingSamples = 60000;
-        int testingSamples = 70000;
+        int testingSamples = 10000;
+
+        String seriesPrefix = "PREFIX--";
+        //String seriesPrefix = "";
 
         ExperimentEntityConfig experimentConfig = new ExperimentEntityConfig();
         experimentConfig.terminationEntityName = analyticsName;
@@ -127,7 +131,7 @@ public class ClassifyFeaturesDemo {
         SupervisedBatchTrainingEntityConfig logisticRegressionEntityConfig = new SupervisedBatchTrainingEntityConfig();
         logisticRegressionEntityConfig.algorithm = SupervisedBatchTrainingEntityConfig.ALGORITHM_LOGISTIC_REGRESSION;
         logisticRegressionEntityConfig.bias = true;
-        logisticRegressionEntityConfig.C = 100.f;
+        logisticRegressionEntityConfig.C = 1.f;
         logisticRegressionEntityConfig.labelClasses = 10;
 
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
@@ -139,8 +143,8 @@ public class ClassifyFeaturesDemo {
         // 3) Connect entities
         // ---------------------------------------------
         // Connect the 'testing entities' data input to the training data set directly
-        Framework.SetDataReference( analyticsName, AnalyticsEntity.INPUT_FEATURES, "PREFIX--feature-series", "output" );
-        Framework.SetDataReference( analyticsName, AnalyticsEntity.INPUT_LABELS, "PREFIX--label-series", "output" );
+        Framework.SetDataReference( analyticsName, AnalyticsEntity.INPUT_FEATURES, seriesPrefix + "feature-series", "output" );
+        Framework.SetDataReference( analyticsName, AnalyticsEntity.INPUT_LABELS, seriesPrefix + "label-series", "output" );
 
         Framework.SetDataReference( logisticRegressionName, SupervisedBatchTrainingEntity.INPUT_FEATURES, analyticsName, AnalyticsEntity.OUTPUT_FEATURES );
         Framework.SetDataReference( logisticRegressionName, SupervisedBatchTrainingEntity.INPUT_LABELS, analyticsName, AnalyticsEntity.OUTPUT_LABELS );

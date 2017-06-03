@@ -280,13 +280,17 @@ public class ClassificationAnalysis {
             return numSamples - numPositives;
         }
 
-        // TODO: is this correct (changed from original)?
         public int getNumTruePositives() {
-            return numPositives - numFalsePositives;
+            // TP = I predicted a 1, and it was a 1.
+            // If it was a 1 and I predicted 0, it is a FN error.
+            // If it was a 0 and I predicted 1, it is a FP error.
+            // So TP = T - FN
+            //    TN = N - FP
+            return numPositives - numFalseNegatives;//numFalsePositives;
         }
 
         public int getNumTrueNegatives() {
-            return getNumNegatives() - numFalseNegatives;
+            return getNumNegatives() - numFalsePositives;//numFalseNegatives;
         }
 
         public int getNumErrors() {
