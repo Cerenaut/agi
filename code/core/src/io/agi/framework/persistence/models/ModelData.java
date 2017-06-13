@@ -561,9 +561,11 @@ public class ModelData {
             try {
 //                int numberIdx = tempNumberIdx +0;
                 //float value = Float.valueOf( oldPrefix );
-                decodeValue( encoding, fa, oldPrefix, previousElementValue, globalElementIdx );
-                previousElementValue = oldPrefix; // always the previously seen value, or null
-                globalElementIdx++;
+                if( oldPrefix != null ) {
+                    decodeValue(encoding, fa, oldPrefix, previousElementValue, globalElementIdx);
+                    previousElementValue = oldPrefix; // always the previously seen value, or null
+                    globalElementIdx++;
+                }
             }
             catch( NumberFormatException e ) {
                 //System.err.println( "Error decoding last string: " + oldPrefix );
