@@ -9,7 +9,11 @@ The remainder of this file contains technical information for setting up and usi
 
 ## This repository
 
-AGIEF makes it easy to set up repeatable and logged experiments. It consists of a simple graphical UI, an Interprocess layer for distributed coordination and communication, and base classes for the entities that you need for building an AGI experiment. The system architecture is shown [here](https://github.com/ProjectAGI/agi/blob/master/doc/AGIEF%20Experimental%20System.pdf). 
+This repository contains algorithm code and a framework to execute repeatable and fully logged / inspectable experiments. Every piece of data used in the algorithms can be retrospectively analyzed using graphical tools you write *after* you discover there's a bug...
+
+The code includes a simple graphical UI, an interprocess layer for distributed coordination and communication, and base classes for the entities that you need for building an AGI experiment. 
+
+We also include implementations of many algorithms from the AI and ML literature.
 
 ## Code structure
 
