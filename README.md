@@ -1,27 +1,51 @@
 # Artificial General Intelligence Experimental Framework
 
+This repository contains code that might help us develop an artificial general intelligence - one day!
+
+## Introduction
+For an introduction to the content and purpose of this repository, see the [Wiki](https://github.com/ProjectAGI/agi/wiki). Motivation, results, ideas and other natural language stuff is on our [website](https://agi.io) and in particular our [blog](https://blog.agi.io).
+
+The remainder of this file contains technical information for setting up and using the code in this repository.
+
+## This repository
+
 AGIEF makes it easy to set up repeatable and logged experiments. It consists of a simple graphical UI, an Interprocess layer for distributed coordination and communication, and base classes for the entities that you need for building an AGI experiment. The system architecture is shown [here](https://github.com/ProjectAGI/agi/blob/master/doc/AGIEF%20Experimental%20System.pdf). 
 
+## Code structure
 
 This repo consists of:
-- core algorithmic components ```/code/core/src/io/agi/core```
-- compute node previously referred to coordinator_node (written in Java) including interprocess communication, persistence layer a set of entities and a set of defined experiments ```/code/core/src/io/agi/framework```
-- web based graphical UI ```/code/www```
-- associated scripts ```/bin```
 
-Compute has a RESTful API, so it is possible to implement components in other languages, or write alternative visualisations.
+- Java core algorithmic components ```/code/core/src/io/agi/core```
+- Java experimental framework componennts ```/code/core/src/io/agi/framework```
+- Web based graphical UI ```/code/www```
+- Associated scripts ```/bin```
+
+Compute nodes have a RESTful API, so it is possible to implement components in other languages, or write alternative visualisations.
 **The API is documented at ```/doc/API/http.swagger.yaml```**
 
-* TODO: Some info about architecture, the fact that there is a db (currently in-memory), core, and GUI
-* The db is a big json dictionary.
-* All data persisted, therefore stateless and reproducable, repeatable, visualisable
-* GUI gives tools to interact and visualise
+# Important notes
 
-* Entity is the basic structure, you create them, they get added to tree
-* System update is on an entity, and it propagates
-* parallel execution (siblings), and consecutive (children)
-* standard setup is to have Experiment at the top
+* The framework supports a distributed graph of compute nodes
 
+* Each compute node has any number of Entity nodes (Entity class), which can own Data (Data class)
+
+* Entities have zero or one parents and zero or more child entities. An update to an Entith causes its children to be updated also. 
+
+* An Experiment is a root entity without a parent, and with its descendants is therefore a self-contained subtree.
+
+* This framework allows parallel and consecutive dependencies between Entities to be described (siblings are parallel, children are sequential).
+
+* We currently use Java for compute nodes, but this isn't essential
+
+* We use JSON format for remote serialization, which is slow but web friendly for debugging / understanding
+
+* We use JDBC, JSON file, and in-memory implementations of a persistence layer.
+
+* Algorithms are updated iteratively. Between iterations, all data is persisted, therefore components are otherwise stateless and reproducable, repeatable, visualisable
+
+* We provide a HTML user interface to explore and visualize the state of the algorithms.
+
+* The code can be executed on a single local computer in an IDE, or on remote cloud instances.
 
 # Getting Started
 
