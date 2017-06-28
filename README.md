@@ -9,7 +9,7 @@ The remainder of this file contains technical information for setting up and usi
 
 ## This repository
 
-This repository contains algorithm code and a framework to execute repeatable and fully logged / inspectable experiments. Every piece of data used in the algorithms can be retrospectively analyzed using graphical tools you write *after* you discover there's a bug...
+This repository contains algorithm code and a framework to execute repeatable and fully logged / inspectable experiments. Every piece of data used in the algorithms can be retrospectively analyzed using graphical tools that can be written *after* you discover there's a bug...
 
 The code includes a simple graphical UI, an interprocess layer for distributed coordination and communication, and base classes for the entities that you need for building an AGI experiment. 
 
@@ -39,9 +39,9 @@ Compute nodes have a RESTful API, so it is possible to implement components in o
 
 * This framework allows parallel and consecutive dependencies between Entities to be described (siblings are parallel, children are sequential).
 
-* We currently use Java for compute nodes, but this isn't essential
+* We currently use Java for compute nodes, but this isn't essential.
 
-* We use JSON format for remote serialization, which is slow but web friendly for debugging / understanding
+* We use JSON format for remote serialization, which is slow but web friendly for debugging / understanding.
 
 * We use JDBC, JSON file, and in-memory implementations of a persistence layer.
 
@@ -55,7 +55,7 @@ Compute nodes have a RESTful API, so it is possible to implement components in o
 
 The repository contains a bunch of scripts to help with installation, setup and running. 
 
-NOTE: There is a ```run-in-docker.sh``` script that allows you to build and run compute in a docker container, which means you won't need to do any setup on your own computer.
+NOTE: There is a ```run-in-docker.sh``` script that allows you to build and run compute in a docker container, which means you won't need to do any environment configuration on your own computer, save for installation of Docker.
 
 All scripts utilise environmental variables defined in a 'variables' file. Every script begins by sourcing this file. ```/resources/variables-template.sh``` is an example with explanations of each variable. You can modify that file, or create your own instead. 
 **IMPORTANT:** Then set the ENV variable ```VARIABLES_FILE``` to it using the full path.
@@ -73,8 +73,8 @@ Then:
 
 
 ## Running Basic
-* The folder that you are running from must contain the file ```node.properties``` and a log4j configuration file. A working template is given in ```/resources/run-empty```.
-* node.properties allows you to set the db mode between 'jdbc' and 'node'. The former is postgres, the latter is 'in-memory'.
+* The folder that you are running from must contain the file `node.properties` and a log4j configuration file. A working template is given in `/resources/run-empty`.
+* `node.properties` allows you to set the db mode between 'jdbc' and 'node'. The former is postgres, the latter is 'in-memory'.
 * You can build and run the compute node using the scripts in `/bin/node_coordinator`. There is also the option of doing this in a docker container using `/bin/run-in-docker.sh`, read the help to see how to use it.
 	* `run.sh` will run the generic main, whereas `run-demo.sh` is used to run one of the specific demos, each one has it's own main(). The latter is done to export the entities and data to be imported for running the experiment.
 * You can use command line parameters to set node properties, and the initial state of system (entities, data)
