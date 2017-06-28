@@ -125,6 +125,12 @@ This describes how to run an experiment defined in JSON input files. If you don'
 * As above, get the experiment started by sending an `update` to the root `Experiment` node
 
 
+## Run Advanced Experiments
+We have a tool called [run-framework](https://github.com/ProjectAGI/run-framework) which makes it easy to run predefined experiments, locally or remotely on physical or AWS infrastructure, conduct parameter sweeps, export and upload the results and more.
+
+There is also a set of experiment folders already defined and ready to go at [experiment-definitions](https://github.com/ProjectAGI/experiment-definitions).
+
+
 ## Running GUI
 * Run GUI by running the web server `/bin/www/python_server.sh` and going to [http://localhost:8000](http://localhost:8000)
 * Alternatively, open any of the web pages in `/code/wwww`
