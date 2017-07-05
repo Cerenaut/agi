@@ -28,7 +28,11 @@ import io.agi.core.util.FileUtil;
 import io.agi.framework.persistence.models.ModelData;
 
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * Created by dave on 5/02/17.
@@ -142,10 +146,7 @@ public class ClassificationAnalysis {
     }
 
     public float getErrorFraction() {
-        float count = getErrorCount();
-        float samples = getSampleCount();
-        float pc = ( count / samples );
-        return pc;
+        return getErrorCount() / (float) getSampleCount();
     }
 
     public String analyze( Data truth, Data predicted, int offset, int length ) {
@@ -201,10 +202,10 @@ public class ClassificationAnalysis {
         int i1 = offset + length;
 
         if( offset < 0 ) {
-            return new String( "Bad offset: Negative." );
+            return "Bad offset: Negative.";
         }
         if( i1 > truth._values.length ) {
-            return new String( "Bad offset/length combination: Out of range (size=" + truth._values.length + ")." );
+            return "Bad offset/length combination: Out of range (size=" + truth._values.length + ").";
         }
 
         // per class:
@@ -250,83 +251,139 @@ public class ClassificationAnalysis {
         return null; // no error
     }
 
+    public static class ClassificationStats {
+        private final int numSamples;
+        private final int numFalsePositives;
+        private final int numFalseNegatives;
+        private final int numPositives;
+
+        public ClassificationStats( int numSamples, int numFalsePositives, int numFalseNegatives, int numPositives ) {
+            this.numSamples = numSamples;
+            this.numFalsePositives = numFalsePositives;
+            this.numFalseNegatives = numFalseNegatives;
+            this.numPositives = numPositives;
+        }
+
+        public int getNumFalsePositives() {
+            return numFalsePositives;
+        }
+
+        public int getNumFalseNegatives() {
+            return numFalseNegatives;
+        }
+
+        public int getNumPositives() {
+            return numPositives;
+        }
+
+        public int getNumNegatives() {
+            return numSamples - numPositives;
+        }
+
+        public int getNumTruePositives() {
+            // TP = I predicted a 1, and it was a 1.
+            // If it was a 1 and I predicted 0, it is a FN error.
+            // If it was a 0 and I predicted 1, it is a FP error.
+            // So TP = T - FN
+            //    TN = N - FP
+            return numPositives - numFalseNegatives;//numFalsePositives;
+        }
+
+        public int getNumTrueNegatives() {
+            return getNumNegatives() - numFalsePositives;//numFalseNegatives;
+        }
+
+        public int getNumErrors() {
+            return numFalsePositives + numFalseNegatives;
+        }
+
+        public float calculateFScore( float betaSquared ) {
+            float denominator = ( 1f + betaSquared ) * getNumTruePositives() +
+                                    betaSquared * numFalseNegatives +
+                                    numFalsePositives;
+            return denominator == 0 ? 0 : ( 1f + betaSquared ) * getNumTruePositives() / denominator;
+        }
+    }
+
+    public ClassificationStats getClassificationStats( Float label ) {
+        return new ClassificationStats( getSampleCount(),
+                                        _labelErrorFP.get( label ),
+                                        _labelErrorFN.get( label ),
+                                        _labelFrequency.get( label ) );
+    }
+
+    public enum FScoreAverageType { MICRO, MACRO };
+
+    public float calculateFScore( float betaSquared, FScoreAverageType averageType ) {
+        switch( averageType ) {
+            case MICRO:
+                int numFalsePositives = 0;
+                int numFalseNegatives = 0;
+                for( Float label : _sortedLabels ) {
+                    numFalsePositives += _labelErrorFP.get( label );
+                    numFalseNegatives += _labelErrorFN.get( label );
+                }
+                return new ClassificationStats( getSampleCount(),
+                                                numFalsePositives,
+                                                numFalseNegatives,
+                                                getSampleCount() ).calculateFScore( betaSquared );
+            case MACRO:
+                float sumFScores = 0;
+                for ( Float label : _sortedLabels ) {
+                    sumFScores += getClassificationStats( label ).calculateFScore( betaSquared );
+                }
+                return sumFScores / _sortedLabels.size();
+        }
+        throw new IllegalArgumentException( "Unsupported averageType: " + averageType );
+    }
+
     public String getResult() {
-        // display stats.
-//        float sum = _errors.sum();
-//        float count = length;//errors.getSize();
-//        float pc = 1f - ( sum / count );
-        int errors = getErrorCount();
-        int samples = getSampleCount();
-        float pc = 1f - getErrorFraction();
-        pc *= 100f;
-
-        String result = "";
-        result += "\n";
-        result += ( "Errors: " + errors + " of " + samples + " = " + pc + "% correct." );
-        result += "\n";
-        result += ( "Confusion:" );
-        result += "\n";
-
-        result += ( "           <--- PREDICTED ---> \n" );
-        result += ( "      " );
-        for( Float fP : _sortedLabels ) {
-            result += ( String.format( "%.1f", fP ) + " , " );
-        }
-        result += "\n";
-
-        int w = 6; // todo make it number of digits in max( error-type-count ) + , + whatever padding needed
-        int paddingChars = w - 2;
-
-        String padding = "";
-        for( int i = 0; i < paddingChars; ++i ) {
-            padding = padding + " ";
-        }
-
-        for( Float fT : _sortedLabels ) {
-            HashMap< Float, Integer > hm = _confusionMatrix.get( fT );
-
-            result += ( " " + String.format( "%.1f", fT ) + ", "  );
-
-            for( Float fP : _sortedLabels ) {
-
-                int frequency = hm.get( fP );
-
-                result += ( frequency + "," + padding );
-            }
-
-            result += "\n";
-        }
-
-        result += "\n";
-        result += ( "F-Score:" );
-        result += "\n";
-        // per class:
-        // prec = tp / all pos in test.
-        // recall = tp / truth pos.
-
-        result += ( " Label, Err, TP, FP, TN, FN, T, F, F-Score\n"  );
-
-        float b2 = 0;
-
+        StringBuilder result = new StringBuilder();
+        result.append( "\nErrors: " ).append( getErrorCount() )
+              .append( " of " ).append( getSampleCount() )
+              .append( " = " ).append( ( 1f - getErrorFraction() ) * 100 ).append( "% correct." );
+        result.append( "\nConfusion:\n           <--- PREDICTED ---> \n   " );
         for( Float label : _sortedLabels ) {
-
-            int fp = _labelErrorFP.get( label );
-            int fn = _labelErrorFN.get( label );
-            int t = _labelFrequency.get( label );
-            int f = samples - t;
-
-            int tp = t-fn;
-            int tn = f-fp;
-            int e = fp + fn;
-            float denominator = (1f + b2) * tp + b2 * fn + fp;
-            float score = (1f + b2)* tp / denominator;
-            if( denominator <= 0f ) { // catch /0 error
-                score = 0f;
+            result.append( String.format( " %6.1f", label ) );
+        }
+        result.append( "\n" );
+        for( Float trueLabel : _sortedLabels ) {
+            HashMap< Float, Integer > trueLabelClassificationCounts = _confusionMatrix.get( trueLabel );
+            result.append( String.format( "%.1f", trueLabel ) );
+            for( Float predictedLabel : _sortedLabels ) {
+                result.append( String.format( " %6d", trueLabelClassificationCounts.get( predictedLabel ) ) );
             }
-            result += ( String.format( "%.1f", label ) + ", " + e  + ", " + tp + ", " + fp + ", " + tn + ", " + fn + ", " + t + ", " + f + ", " + score );
-            result += "\n";
+            result.append( "\n" );
         }
 
-        return result;
+        result.append( String.format( "\nF-Score:\n%-6s %6s %6s %6s %6s %6s %6s %6s %8s\n",
+                                      "Label",
+                                      "Err",
+                                      "TP",
+                                      "FP",
+                                      "TN",
+                                      "FN",
+                                      "T",
+                                      "F",
+                                      "F-Score" ) );
+        for( Float label : _sortedLabels ) {
+            ClassificationStats labelStats = getClassificationStats( label );
+            result.append( String.format( "%-6.1f %6d %6d %6d %6d %6d %6d %6d %8.4f\n", 
+                                          label,
+                                          labelStats.getNumErrors(),
+                                          labelStats.getNumTruePositives(),
+                                          labelStats.getNumFalsePositives(),
+                                          labelStats.getNumTrueNegatives(),
+                                          labelStats.getNumFalseNegatives(),
+                                          labelStats.getNumPositives(),
+                                          labelStats.getNumNegatives(),
+                                          labelStats.calculateFScore( 0 ) ) );
+        }
+
+        result.append( String.format( "\nOverall F-Score: %.4f (micro) %.4f (macro)\n",
+                                      calculateFScore( 0, FScoreAverageType.MICRO ),
+                                      calculateFScore( 0, FScoreAverageType.MACRO ) ) );
+
+        return result.toString();
     }
 }

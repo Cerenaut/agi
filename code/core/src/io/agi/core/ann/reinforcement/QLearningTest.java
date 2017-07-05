@@ -470,8 +470,9 @@ public class QLearningTest implements UnitTest {
         float utilityLearningRate = stressLearningRate;
         float utilityThreshold = -1f;
         int growthInterval = 12;
+        float denoisePercentage = 0f;
 
-        c.setup( om, gngName, r, inputs, sizeCells, sizeCells, gngLearningRate, learningRateNeighbours, noiseMagnitude, edgeMaxAge, stressLearningRate, stressSplitLearningRate, stressThreshold, utilityLearningRate, utilityThreshold, growthInterval );
+        c.setup( om, gngName, r, inputs, sizeCells, sizeCells, gngLearningRate, learningRateNeighbours, noiseMagnitude, edgeMaxAge, stressLearningRate, stressSplitLearningRate, stressThreshold, utilityLearningRate, utilityThreshold, growthInterval, denoisePercentage );
         GrowingNeuralGas classifier = new GrowingNeuralGas( gngName, om );
         classifier.setup( c );
 

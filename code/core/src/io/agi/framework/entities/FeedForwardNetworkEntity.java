@@ -41,8 +41,10 @@ public class FeedForwardNetworkEntity extends SupervisedLearningEntity {
     public static final String WEIGHTS_2 = "weights-2";
     public static final String BIASES_1 = "biases-1";
     public static final String BIASES_2 = "biases-2";
-    public static final String ERROR_GRADIENTS_1 = "error-gradients-1";
-    public static final String ERROR_GRADIENTS_2 = "error-gradients-2";
+    public static final String BATCH_ERROR_GRADIENTS_1 = "batch-error-gradients-1";
+    public static final String BATCH_ERROR_GRADIENTS_2 = "batch-error-gradients-2";
+    public static final String BATCH_INPUTS_1 = "batch-inputs-1";
+    public static final String BATCH_INPUTS_2 = "batch-inputs-2";
 
     // add network stuff
     public FeedForwardNetwork _ffn;
@@ -66,15 +68,19 @@ public class FeedForwardNetworkEntity extends SupervisedLearningEntity {
         attributes.add( WEIGHTS_2 );
         attributes.add( BIASES_1 );
         attributes.add( BIASES_2 );
-        attributes.add( ERROR_GRADIENTS_1 );
-        attributes.add( ERROR_GRADIENTS_2 );
+        attributes.add( BATCH_ERROR_GRADIENTS_1 );
+        attributes.add( BATCH_ERROR_GRADIENTS_2 );
+        attributes.add( BATCH_INPUTS_1 );
+        attributes.add( BATCH_INPUTS_2 );
 
         flags.putFlag( WEIGHTS_1, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( WEIGHTS_2, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( BIASES_1, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( BIASES_2, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( ERROR_GRADIENTS_1, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( ERROR_GRADIENTS_2, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( BATCH_ERROR_GRADIENTS_1, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( BATCH_ERROR_GRADIENTS_2, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( BATCH_INPUTS_1, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( BATCH_INPUTS_2, DataFlags.FLAG_NODE_CACHE );
     }
 
     protected void reset( int features, int labelClasses ) {
@@ -141,8 +147,10 @@ public class FeedForwardNetworkEntity extends SupervisedLearningEntity {
         layer2._weights = getDataLazyResize( WEIGHTS_2, layer2._weights._dataSize );
         layer1._biases = getDataLazyResize( BIASES_1, layer1._biases._dataSize );
         layer2._biases = getDataLazyResize( BIASES_2, layer2._biases._dataSize );
-        layer1._costGradients = getDataLazyResize( ERROR_GRADIENTS_1, layer1._costGradients._dataSize );
-        layer2._costGradients = getDataLazyResize( ERROR_GRADIENTS_2, layer2._costGradients._dataSize );
+        layer1._batchErrorGradients = getDataLazyResize( BATCH_ERROR_GRADIENTS_1, layer1._batchErrorGradients._dataSize );
+        layer2._batchErrorGradients = getDataLazyResize( BATCH_ERROR_GRADIENTS_2, layer2._batchErrorGradients._dataSize );
+        layer1._batchInputs = getDataLazyResize( BATCH_INPUTS_1, layer1._batchInputs._dataSize );
+        layer2._batchInputs = getDataLazyResize( BATCH_INPUTS_2, layer2._batchInputs._dataSize );
     }
 
     /**
@@ -157,8 +165,10 @@ public class FeedForwardNetworkEntity extends SupervisedLearningEntity {
         setData( WEIGHTS_2, layer2._weights );
         setData( BIASES_1, layer1._biases );
         setData( BIASES_2, layer2._biases );
-        setData( ERROR_GRADIENTS_1, layer1._costGradients);
-        setData( ERROR_GRADIENTS_2, layer2._costGradients);
+        setData( BATCH_ERROR_GRADIENTS_1, layer1._batchErrorGradients );
+        setData( BATCH_ERROR_GRADIENTS_2, layer2._batchErrorGradients );
+        setData( BATCH_INPUTS_1, layer1._batchInputs );
+        setData( BATCH_INPUTS_2, layer2._batchInputs );
     }
 
     /**

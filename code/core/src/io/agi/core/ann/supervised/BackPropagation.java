@@ -181,20 +181,19 @@ public abstract class BackPropagation {
     /**
      * Trains by gradient descent towards a local minima. A single layer is trained.
      *
-     * @param d The derivative of the cost function with respect to the weighted sum z
-     * @param w The weights of the layer
-     * @param b The biases of the layer
-     * @param i The inputs to the layer
+s     * @param errorBatch The derivative of the cost function with respect to the weighted sum z (by mini batch)
+     * @param weights The weights of the layer
+     * @param biases The biases of the layer
+     * @param inputBatch The inputs to the layer (by mini batch)
      * @param miniBatchSize
      * @param learningRate
      * @param regularization
      */
     public static void StochasticGradientDescent(
-//            FloatArray m,
-            FloatArray d,
-            FloatArray w,
-            FloatArray b,
-            FloatArray i,
+            FloatArray errorBatch,
+            FloatArray weights,
+            FloatArray biases,
+            FloatArray inputBatch,
             int miniBatchSize,
             float learningRate,
             float regularization ) {
@@ -202,54 +201,67 @@ public abstract class BackPropagation {
         float miniBatchNorm = 1.f / (float)miniBatchSize;
         float l2RegularizationTerm = 1f - ( ( learningRate * regularization ) * miniBatchNorm );
 
-        int K = i.getSize(); // layer inputs ie neurons in layer l-1
-        int J = d.getSize(); // layer outputs ie neurons in this layer l
+        int B = miniBatchSize;
+        int K = inputBatch.getSize() / B; // layer inputs ie neurons in layer l-1
+        int J = errorBatch.getSize() / B; // layer outputs ie neurons in this layer l
 
-        assert ( d.getSize() == J );
-        assert ( w.getSize() == ( K * J ) );
+        assert ( biases.getSize() == J );
+        assert ( weights.getSize() == ( K * J ) );
 
         // w_jk = w_jk - learningRate * d_j * input_k
         // b_j = b_j - learningRate * d_j
 
+        // foreach( cell )
         for( int j = 0; j < J; ++j ) {
 
-//            float mask = m._values[ j ];
-//
-//            if( mask == 0.f ) {
-//                continue;
-//            }
-
-            float errorGradient = d._values[ j ];
-
+            // foreach( input )
             for( int k = 0; k < K; ++k ) {
 
-                int offset = j * K + k;
+                // foreach( batch sample )
+                for( int b = 0; b < B; ++b ) {
 
-                float a = i._values[ k ];
-                float wOld = w._values[ offset ];
+                    int errorOffset = b * J + j;
+                    float errorGradient = errorBatch._values[ errorOffset ];
 
-                float wDelta = learningRate * ( miniBatchNorm * errorGradient ) * a;
-                float wOldRescaled = l2RegularizationTerm * wOld; // weight is unchanged when regularization is zero
-                float wNew = wOldRescaled - wDelta;
 
-                // http://neuralnetworksanddeeplearning.com/chap3.html#overfitting_and_regularization
-                // R = 1− ( ( η * λ ) / n )
-                // w = R * w - η * d
+                    int inputOffset = b * K + k;
+                    float a = inputBatch._values[ inputOffset ];
 
-// weight clipping
-//                float wMax = 1.f;
-//                if( wNew > wMax ) wNew = wMax;
-//                if( wNew < -wMax ) wNew = -wMax;
+                    int wOffset = j * K + k;
+                    float wOld = weights._values[ wOffset ];
 
-                Useful.IsBad( wNew );
+                    float wDelta = learningRate * ( miniBatchNorm * errorGradient ) * a;
+                    float wOldRescaled = l2RegularizationTerm * wOld; // weight is unchanged when regularization is zero
+                    float wNew = wOldRescaled - wDelta;
 
-                w._values[ offset ] = wNew;
+                    // http://neuralnetworksanddeeplearning.com/chap3.html#overfitting_and_regularization
+                    // R = 1− ( ( η * λ ) / n )
+                    // w = R * w - η * d
+
+                    // weight clipping
+                    //                float wMax = 1.f;
+                    //                if( wNew > wMax ) wNew = wMax;
+                    //                if( wNew < -wMax ) wNew = -wMax;
+
+                    Useful.IsBad( wNew );
+
+                    weights._values[ wOffset ] = wNew;
+                }
             }
 
-            float bOld = b._values[ j ];
-            float bNew = bOld - learningRate * ( miniBatchNorm * errorGradient );
+            // foreach( batch sample )
+            float sumErrorGradient = 0f;
 
-            b._values[ j ] = bNew;
+            for( int b = 0; b < B; ++b ) {
+                int errorOffset = b * J + j;
+                float errorGradient = errorBatch._values[ errorOffset ];
+                sumErrorGradient += errorGradient;
+            }
+
+            float bOld = biases._values[ j ];
+            float bNew = bOld - learningRate * ( miniBatchNorm * sumErrorGradient );
+
+            biases._values[ j ] = bNew;
         }
     }
 

@@ -20,7 +20,6 @@
 package io.agi.core.ann.reinforcement;
 
 import io.agi.core.data.Data;
-
 import java.util.HashSet;
 
 /**
@@ -112,7 +111,6 @@ public class QLearning {
             }
             System.err.println();
         }
-
     }
 
     /**

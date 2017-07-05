@@ -53,7 +53,8 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 //    public static float REGULARIZATION = 0.001f;
 
     public KSparseAutoencoderConfig _c;
-    public ArrayList< Integer > _sparseUnitInput;
+//    public ArrayList< Integer > _sparseUnitInput;
+//    public ArrayList< Integer > _sparseUnitInput;
     public Data _inputValues;
     public Data _inputReconstructionKA;
     public Data _inputReconstructionK;
@@ -69,8 +70,13 @@ public class KSparseAutoencoder extends CompetitiveLearning {
     public Data _cellSpikesTopK;
     public Data _cellAges; // age is zero when active, otherwise incremented
 
-    public Data _cellGradients; // hidden layer
-    public Data _inputGradients; // output layer, of dimension = inputs
+    public Data _outputErrors; // was inputGradients
+    public Data _hiddenErrors; // was cellGradients
+
+    public Data _outputInputBatch;
+    public Data _outputErrorsBatch;
+    public Data _hiddenInputBatch;
+    public Data _hiddenErrorsBatch;
 
     public KSparseAutoencoder( String name, ObjectMap om ) {
         super( name, om );
@@ -79,9 +85,11 @@ public class KSparseAutoencoder extends CompetitiveLearning {
     public void setup( KSparseAutoencoderConfig c ) {
         _c = c;
 
+        int batchSize = c.getBatchSize();
         int inputs = c.getNbrInputs();
         int w = c.getWidthCells();
         int h = c.getHeightCells();
+        int cells = w * h;
 
         _inputValues = new Data( inputs );
         _inputReconstructionKA = new Data( inputs );
@@ -98,19 +106,29 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         _cellSpikesTopK = new Data( w, h );
         _cellAges = new Data( w, h );
 
-        _inputGradients = new Data( inputs );
-        _cellGradients = new Data( w, h );
+        _outputErrors = new Data( inputs );
+        _hiddenErrors = new Data( w, h );
+
+        _outputInputBatch = new Data( cells, batchSize );
+        _outputErrorsBatch = new Data( inputs, batchSize );
+        _hiddenInputBatch = new Data( inputs, batchSize );
+        _hiddenErrorsBatch = new Data( cells, batchSize );
     }
 
     public void reset() {
 
-        _c.setAge(0);
+        _c.setAge( 0 );
 
-        _cellAges.set(0f);
+        _cellAges.set( 0f );
 
-        _c.setBatchCount(0);
-        _inputGradients.set( 0f );
-        _cellGradients.set( 0f );
+        _c.setBatchCount( 0 );
+        _outputErrors.set( 0f );
+        _hiddenErrors.set( 0f );
+
+        _outputInputBatch.set( 0f );
+        _outputErrorsBatch.set( 0f );
+        _hiddenInputBatch.set( 0f );
+        _hiddenErrorsBatch.set( 0f );
 
         _cellWeightsVelocity.set( 0f );
         _cellBiases1Velocity.set( 0f );
@@ -301,11 +319,6 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             return;
         }
 
-        boolean useMomentum = false;
-        if( momentum != 0f ) {
-            useMomentum = true;
-        }
-
         // http://neuralnetworksanddeeplearning.com/chap2.html
         // Compute the error
         // Cost is 0.5 * mean sq error
@@ -324,8 +337,11 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 //        FloatArray weightsNew = null;
 
         // Compute gradients for this current input only
-        FloatArray dOutput = new FloatArray( inputs );
-        FloatArray dHidden = new FloatArray( cells ); // zeroes
+        //FloatArray dOutput = new FloatArray( inputs );
+        //FloatArray dHidden = new FloatArray( cells ); // zeroes
+
+        Data outputInput = _cellSpikesTopK;
+        Data hiddenInput = _inputValues;
 
         // d output layer
         for( int i = 0; i < inputs; ++i ) {
@@ -335,14 +351,15 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             //float weightedSum = output; // z
             float derivative = 1f;//(float)TransferFunction.logisticSigmoidDerivative( weightedSum );
 
-            dOutput._values[ i ] = error * derivative; // eqn 30
+            //dOutput._values[ i ] = error * derivative; // eqn 30
+            _outputErrors._values[ i ] = error * derivative; // eqn 30
         }
 
         // compute gradient in hidden units. Derivative is either 1 or 0 depending whether the cell was filtered.
         for( int c = 0; c < cells; ++c ) { // computing error for each "input"
             float sum = 0.f;
 
-            float transferTopK = _cellSpikesTopK._values[ c ];
+            float transferTopK = outputInput._values[ c ];//_cellSpikesTopK._values[ c ];
 //            float weightedSum = _cellWeightedSum._values[ c ];
             float derivative = 1f;//(float)TransferFunction.logisticSigmoidDerivative( weightedSum );
 
@@ -351,7 +368,8 @@ public class KSparseAutoencoder extends CompetitiveLearning {
                     //int offset = j * K + k; // K = inputs, storage is all inputs adjacent
                     int offset = c * inputs + i;
                     float w = _cellWeights._values[ offset ];
-                    float d = dOutput._values[ i ]; // d_j i.e. partial derivative of loss fn with respect to the activation of j
+                    //float d = dOutput._values[ i ]; // d_j i.e. partial derivative of loss fn with respect to the activation of j
+                    float d = _outputErrors._values[ i ]; // d_j i.e. partial derivative of loss fn with respect to the activation of j
                     float product = d * w;// + ( l2R * w );
 
                     if( Useful.IsBad( product ) ) {
@@ -369,20 +387,43 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             }
             // else: derivative is zero when filtered
 
-            dHidden._values[ c ] = sum;
+            //dHidden._values[ c ] = sum;
+            _hiddenErrors._values[ c ] = sum;
         }
 
-        // accumulate the error gradients
+        // accumulate the error gradients and inputs over the batch
+        int b = batchCount;
+
         for( int i = 0; i < inputs; ++i ) {
-            float dNew = dOutput._values[ i ];
-            float dOld = _inputGradients._values[ i ];
-            _inputGradients._values[ i ] = dOld + dNew;
+            float dNew = _outputErrors._values[ i ];
+            //float dOld = _inputGradients._values[ i ];
+            //_inputGradients._values[ i ] = dOld + dNew;
+            //float dOld = _outputErrors._values[ i ];
+            //_outputErrors._values[ i ] = dOld + dNew;
+            int batchOffset = b * inputs + i;
+            _outputErrorsBatch._values[ batchOffset ] = dNew;
         }
 
         for( int i = 0; i < cells; ++i ) {
-            float dNew = dHidden._values[ i ];
-            float dOld = _cellGradients._values[ i ];
-            _cellGradients._values[ i ] = dOld + dNew;
+            float dNew = _hiddenErrors._values[ i ];
+            //float dOld = _cellGradients._values[ i ];
+            //_cellGradients._values[ i ] = dOld + dNew;
+            //float dOld = _hiddenErrors._values[ i ];
+            //_hiddenErrors._values[ i ] = dOld + dNew;
+            int batchOffset = b * cells + i;
+            _hiddenErrorsBatch._values[ batchOffset ] = dNew;
+        }
+
+        for( int i = 0; i < cells; ++i ) {
+            float r = outputInput._values[ i ];
+            int batchOffset = b * cells + i;
+            _outputInputBatch._values[ batchOffset ] = r;
+        }
+
+        for( int i = 0; i < inputs; ++i ) {
+            float r = hiddenInput._values[ i ];
+            int batchOffset = b * inputs + i;
+            _hiddenInputBatch._values[ batchOffset ] = r;
         }
 
         // decide whether to learn or accumulate more gradients first (mini batch)
@@ -393,178 +434,133 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             return; // end update
         }
 
-        float miniBatchNorm = 1f / (float)batchSize;
-
         // now gradient descent in the hidden->output layer
-        for( int i = 0; i < inputs; ++i ) {
+        int inputSize = cells;
+        int layerSize = inputs;
+        boolean weightsInputMajor = true;
 
-//            float errorGradient = dOutput._values[ i ];
-            float errorGradient = _inputGradients._values[ i ];
+        StochasticGradientDescent(
+                inputSize, layerSize, batchSize, learningRate, momentum, weightsInputMajor,
+                _outputInputBatch, _outputErrorsBatch,
+                _cellWeights, _cellWeightsVelocity, _cellBiases2, _cellBiases2Velocity );
 
-//            if( errorGradient == 0f ) {
-//                continue;
-//            }
+        // now gradient descent in the input->hidden layer. can't skip this because we need to update the biases
+        inputSize = inputs;
+        layerSize = cells;
+        weightsInputMajor = false;
 
-            for( int c = 0; c < cells; ++c ) { // computing error for each "input"
-
-                int offset = c * inputs + i;
-
-                float a = _cellSpikesTopK._values[ c ];
-                float wOld = _cellWeights._values[ offset ];
-                float wDelta = learningRate * miniBatchNorm * errorGradient * a;
-
-                if( useMomentum ) {
-                    // Momentum
-                    // x_k+1 = x_k + v_k
-                    // v_k+1 = m_k * v_k - learningRate * derivative of error WRT k
-                    float vOld = _cellWeightsVelocity._values[ offset ];
-                    float vNew = ( vOld * momentum ) - wDelta;
-                    float wNew = wOld + vNew;
-
-                    if( Useful.IsBad( wNew ) ) {
-                        String error = "Autoencoder weight update produced a bad value: " + wNew;
-                        logger.error( error );
-                        logger.traceExit();
-                        System.exit( -1 );
-                    }
-
-                    _cellWeights._values[ offset ] = wNew;
-                    _cellWeightsVelocity._values[ offset ] = vNew;
-                }
-                else {
-                    // Normal
-                    float wNew = wOld - wDelta;
-
-                    if( Useful.IsBad( wNew ) ) {
-                        String error = "Autoencoder weight update produced a bad value: " + wNew;
-                        logger.error( error );
-                        logger.traceExit();
-                        System.exit( -1 );
-                    }
-
-                    _cellWeights._values[ offset ] = wNew;
-                }
-
-
-//                float vNew = 0f;
-
-                // Weight decay / L2 regularization
-//                float regularization = learningRate * REGULARIZATION * wOld;
-//                float wNew = wOld - wDelta - regularization;
-
-                // Weight clipping
-//                float wMax = 1.f;
-//                if( wNew > wMax ) wNew = wMax;
-//                if( wNew < -wMax ) wNew = -wMax;
-            }
-
-            float bOld = _cellBiases2._values[ i ];
-            float bDelta = learningRate * miniBatchNorm * errorGradient;
-
-            if( useMomentum ) {
-                float vOld = _cellBiases2Velocity._values[ i ];
-                float vNew = ( vOld * momentum ) - bDelta;
-                float bNew = bOld + vNew;
-
-                _cellBiases2._values[ i ] = bNew;
-                _cellBiases2Velocity._values[ i ] = vNew;
-            }
-            else {
-                float bNew = bOld - bDelta;
-
-                _cellBiases2._values[ i ] = bNew;
-            }
-        }
-
-        // now gradient descent in the input->hidden layer
-        // can't skip this because we need to update the biases
-//        float vMin = Float.MAX_VALUE;
-//        float vMax = Float.MIN_VALUE;
-
-        for( int c = 0; c < cells; ++c ) { // computing error for each "input"
-
-//            float errorGradient = dHidden._values[ c ];
-            float errorGradient = _cellGradients._values[ c ];
-
-//            if( errorGradient == 0f ) {
-//                continue;
-//            }
-
-            for( int i = 0; i < inputs; ++i ) {
-
-                int offset = c * inputs + i;
-
-                float a = _inputValues._values[ i ];
-                float wOld = _cellWeights._values[ offset ];
-                float wDelta = learningRate * miniBatchNorm * errorGradient * a;
-
-                if( useMomentum ) {
-                    // Momentum
-                    float wNew = wOld - wDelta;
-
-                    if( Useful.IsBad( wNew ) ) {
-                        String error = "Autoencoder weight update produced a bad value: " + wNew;
-                        logger.error( error );
-                        logger.traceExit();
-                        System.exit( -1 );
-                    }
-
-                    _cellWeights._values[ offset ] = wNew;
-                }
-                else {
-                    // Momentum
-                    float vOld = _cellWeightsVelocity._values[ offset ];
-                    float vNew = ( vOld * momentum ) - wDelta;
-                    float wNew = wOld + vNew;
-
-                    if( Useful.IsBad( wNew ) ) {
-                        String error = "Autoencoder weight update produced a bad value: " + wNew;
-                        logger.error( error );
-                        logger.traceExit();
-                        System.exit( -1 );
-                    }
-
-                    _cellWeights._values[ offset ] = wNew;
-                    _cellWeightsVelocity._values[ offset ] = vNew;
-                }
-//                float vNew = 0f;
-
-//                 vMax = Math.max( vMax, vNew );
-//                vMin = Math.min( vMin, vNew );
-                // Weight decay / L2 regularization
-//                float regularization = learningRate * REGULARIZATION * wOld;
-//                float wNew = wOld - wDelta - regularization;
-
-                // Weight clipping
-//                float wMax = 1.f;
-//                if( wNew > wMax ) wNew = wMax;
-//                if( wNew < -wMax ) wNew = -wMax;
-            }
-
-            float bOld = _cellBiases1._values[ c ];
-            float bDelta = learningRate * miniBatchNorm * errorGradient;
-
-            if( useMomentum ) {
-                float vOld = _cellBiases1Velocity._values[ c ];
-                float vNew = ( vOld * momentum ) - bDelta;
-                float bNew = bOld + vNew;
-
-                _cellBiases1._values[ c ] = bNew;
-                _cellBiases1Velocity._values[ c ] = vNew;
-            }
-            else {
-                float bNew = bOld - bDelta;
-
-                _cellBiases1._values[ c ] = bNew;
-            }
-        }
+        StochasticGradientDescent(
+                inputSize, layerSize, batchSize, learningRate, momentum, weightsInputMajor,
+                _hiddenInputBatch, _hiddenErrorsBatch,
+                _cellWeights, _cellWeightsVelocity, _cellBiases1, _cellBiases1Velocity );
 
 //        System.err.println( "Age: " + this._c.getAge() + " Sparsity: " + k  + " vMax = " + vMax );
 
         // Clear the accumulated gradients
         _c.setBatchCount( 0 );
-        _inputGradients.set( 0f );
-        _cellGradients.set( 0f );
+
+        _outputInputBatch.set( 0f );
+        _outputErrorsBatch.set( 0f );
+        _hiddenInputBatch.set( 0f );
+        _hiddenErrorsBatch.set( 0f );
+    }
+
+    public static void StochasticGradientDescent(
+            int inputSize,
+            int layerSize,
+            int batchSize,
+            float learningRate,
+            float momentum,
+            boolean weightsInputMajor,
+            Data batchInput,
+            Data batchErrors,
+            Data weights,
+            Data weightsVelocity,
+            Data biases,
+            Data biasesVelocity ) {
+        boolean useMomentum = false;
+        if( momentum != 0f ) {
+            useMomentum = true;
+        }
+
+        float miniBatchNorm = 1f / (float)batchSize;
+
+        for( int c = 0; c < layerSize; ++c ) { // computing error for each "input"
+
+            for( int i = 0; i < inputSize; ++i ) {
+
+                // foreach( batch sample )
+                for( int b = 0; b < batchSize; ++b ) {
+
+                    // tied weights
+                    int weightsOffset = c * inputSize + i;
+                    if( weightsInputMajor ) {
+                        weightsOffset = i * layerSize + c;
+                    }
+
+                    int inputOffset = b * inputSize + i;
+                    int errorOffset = b * layerSize + c;
+
+                    //float errorGradient = _cellGradients._values[ c ];
+                    float errorGradient = batchErrors._values[ errorOffset ];
+
+                    //float a = _inputValues._values[ i ];
+                    float a = batchInput._values[ inputOffset ];
+                    float wOld = weights._values[ weightsOffset ];
+                    float wDelta = learningRate * miniBatchNorm * errorGradient * a;
+
+                    if( useMomentum ) {
+                        // Momentum
+                        float wNew = wOld - wDelta;
+
+                        if( Useful.IsBad( wNew ) ) {
+                            String error = "Autoencoder weight update produced a bad value: " + wNew;
+                            logger.error( error );
+                            logger.traceExit();
+                            System.exit( -1 );
+                        }
+
+                        weights._values[ weightsOffset ] = wNew;
+                    } else {
+                        // Momentum
+                        float vOld = weightsVelocity._values[ weightsOffset ];
+                        float vNew = ( vOld * momentum ) - wDelta;
+                        float wNew = wOld + vNew;
+
+                        if( Useful.IsBad( wNew ) ) {
+                            String error = "Autoencoder weight update produced a bad value: " + wNew;
+                            logger.error( error );
+                            logger.traceExit();
+                            System.exit( -1 );
+                        }
+
+                        weights._values[ weightsOffset ] = wNew;
+                        weightsVelocity._values[ weightsOffset ] = vNew;
+                    } // momentum
+                } // batch
+            } // inputs
+
+            for( int b = 0; b < batchSize; ++b ) {
+                int errorOffset = b * layerSize + c;
+                float errorGradient = batchErrors._values[ errorOffset ];
+
+                float bOld = biases._values[ c ];
+                float bDelta = learningRate * miniBatchNorm * errorGradient;
+
+                if( useMomentum ) {
+                    float vOld = biasesVelocity._values[ c ];
+                    float vNew = ( vOld * momentum ) - bDelta;
+                    float bNew = bOld + vNew;
+
+                    biases._values[ c ] = bNew;
+                    biasesVelocity._values[ c ] = vNew;
+                } else {
+                    float bNew = bOld - bDelta;
+
+                    biases._values[ c ] = bNew;
+                }
+            }
+        }
     }
 
     protected void reconstruct( Data hiddenActivity, Data inputReconstruction ) {

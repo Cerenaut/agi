@@ -33,13 +33,6 @@ public class QuiltPredictorEntityConfig extends EntityConfig {
     public int columnWidthCells = 0;
     public int columnHeightCells = 0;
 
-    public float predictorLearningRate = 0.0f; // how fast the prediction weights learn
-    public int predictorHiddenCells = 0;
-    public float predictorLeakiness = 0.0f;
-    public float predictorRegularization = 0.0f;
-    public int predictorBatchSize = 0;
-    public int predictorBatchCount = 0;
-
     // stats calculated during operation
     public boolean resetDelayed = false;
 

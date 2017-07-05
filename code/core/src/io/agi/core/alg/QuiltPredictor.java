@@ -25,7 +25,6 @@ import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 
 import java.awt.*;
-import java.util.HashSet;
 
 /**
  * Using C and P predict C'.
@@ -46,34 +45,34 @@ public class QuiltPredictor extends NamedObject {
 
     // Member objects
     public QuiltPredictorConfig _rc;
-    public PyramidRegionLayerPredictor _predictor;
+    public QuiltPredictorAlgorithm _predictor;
 
     public QuiltPredictor( String name, ObjectMap om ) {
         super( name, om );
     }
 
-    public void setup( QuiltPredictorConfig rc ) {
+    public void setup( QuiltPredictorConfig rc, QuiltPredictorAlgorithm quiltPredictorAlgorithm ) {
         _rc = rc;
 
         Point inputCSize = _rc.getInputCSize();
         int inputPSize = _rc.getInputPSize();
 
-        DataSize dataSizeInputC = DataSize.create( inputCSize.x, inputCSize.y );
+//        DataSize dataSizeInputC = DataSize.create( inputCSize.x, inputCSize.y );
         DataSize dataSizeInputP = DataSize.create( inputPSize );
 
-
+        int predictorInputs = rc.getPredictorInputs();
         // Predictor
-        int cells = dataSizeInputC.getVolume(); //_rc._classifierConfig.getNbrCells();
-        int predictorInputs = dataSizeInputP.getVolume() + cells;
-        int predictorOutputs = cells;
-        float predictorLearningRate = rc.getPredictorLearningRate();
-//        float predictorDecayRate = rc.getPredictorTraceDecayRate();
-        int predictorHiddenCells = _rc.getPredictorHiddenCells();
-        float predictorLeakiness = _rc.getPredictorLeakiness();
-        float predictorRegularization = _rc.getPredictorRegularization();
-        int predictorBatchSize = _rc.getPredictorBatchSize();
-        _predictor = new PyramidRegionLayerPredictor();//SpikeOrderLearning();
-        _predictor.setup( _rc.getKey( PyramidRegionLayerConfig.SUFFIX_PREDICTOR ), _rc._om, _rc._r, predictorInputs, predictorHiddenCells, predictorOutputs, predictorLearningRate, predictorLeakiness, predictorRegularization, predictorBatchSize );//, predictorDecayRate );
+//        int cells = dataSizeInputC.getVolume(); //_rc._classifierConfig.getNbrCells();
+//        int predictorInputs = dataSizeInputP.getVolume() + cells;
+//        int predictorOutputs = cells;
+//        float predictorLearningRate = rc.getPredictorLearningRate();
+////        float predictorDecayRate = rc.getPredictorTraceDecayRate();
+//        int predictorHiddenCells = _rc.getPredictorHiddenCells();
+//        float predictorLeakiness = _rc.getPredictorLeakiness();
+//        float predictorRegularization = _rc.getPredictorRegularization();
+//        int predictorBatchSize = _rc.getPredictorBatchSize();
+//        _predictor = new FeedForwardNetworkQuiltPredictor();//SpikeOrderLearning();
+//        _predictor.setup( _rc.getKey( PyramidRegionLayerConfig.SUFFIX_PREDICTOR ), _rc._om, _rc._r, predictorInputs, predictorHiddenCells, predictorOutputs, predictorLearningRate, predictorLeakiness, predictorRegularization, predictorBatchSize );//, predictorDecayRate );
 
         DataSize dataSizeCells = DataSize.create( inputCSize.x, inputCSize.y );
 
@@ -85,6 +84,10 @@ public class QuiltPredictor extends NamedObject {
         _predictionOld = new Data( dataSizeCells );
         _predictionNew = new Data( dataSizeCells );
         _predictionNewUnit = new Data( dataSizeCells );
+
+        quiltPredictorAlgorithm.setup( rc );
+
+        _predictor = quiltPredictorAlgorithm;
     }
 
     public void reset() {

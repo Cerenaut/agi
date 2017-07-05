@@ -100,7 +100,23 @@ public class GrowingNeuralGasEntity extends Entity {
 
         // Create the config object:
         GrowingNeuralGasConfig c = new GrowingNeuralGasConfig();
-        c.setup( _om, implName, getRandom(), inputs, config.widthCells, config.heightCells, config.learningRate, config.learningRateNeighbours, config.noiseMagnitude, config.edgeMaxAge, config.stressLearningRate, config.stressSplitLearningRate, config.stressThreshold, config.utilityLearningRate, config.utilityThreshold, config.growthInterval );
+        c.setup( _om,
+                 implName,
+                 getRandom(),
+                 inputs,
+                 config.widthCells,
+                 config.heightCells,
+                 config.learningRate,
+                 config.learningRateNeighbours,
+                 config.noiseMagnitude,
+                 config.edgeMaxAge,
+                 config.stressLearningRate,
+                 config.stressSplitLearningRate,
+                 config.stressThreshold,
+                 config.utilityLearningRate,
+                 config.utilityThreshold,
+                 config.growthInterval,
+                 config.denoisePercentage );
 
         // Create the implementing object itself, and copy data from persistence into it:
         GrowingNeuralGas gng = new GrowingNeuralGas( implName, _om );

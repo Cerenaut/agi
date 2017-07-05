@@ -44,14 +44,16 @@ public class NetworkLayer extends NamedObject {
     public static final String BIASES = "biases";
     public static final String WEIGHTED_SUMS = "weighted-sums";
     public static final String OUTPUTS = "outputs";
-    public static final String ERROR_GRADIENTS = "error-gradients"; // derivative of cost with respect to weighted sums z
+    public static final String ERROR_GRADIENT_BATCH = "error-gradient-batch"; // derivative of cost with respect to weighted sums z
+    public static final String INPUT_BATCH = "input-batch"; // derivative of cost with respect to weighted sums z
 
     public Data _inputs; // x
+    public Data _batchInputs; // x
     public Data _weights; // w
     public Data _biases; // b
     public Data _weightedSums; // z = sum of w * i +b
     public Data _outputs; // a = f( z )
-    public Data _costGradients; // d = dC / dz = derivative of cost with respect to weighted sums z
+    public Data _batchErrorGradients; // d = dC / dz = derivative of cost with respect to weighted sums z
 
     public NetworkLayer( String name, ObjectMap om ) {
         super(name, om);
@@ -63,13 +65,15 @@ public class NetworkLayer extends NamedObject {
 
         int inputs = c.getInputs();
         int cells = c.getCells();
+        int batchSize = c.getBatchSize();
 
         _inputs = new Data( inputs );
+        _batchInputs = new Data( inputs, batchSize );
         _weights = new Data( inputs, cells );
         _biases = new Data( cells );
         _weightedSums = new Data( cells );
         _outputs = new Data( cells );
-        _costGradients = new Data( cells );
+        _batchErrorGradients = new Data( cells, batchSize );
     }
 
     public void reset( Random r, float weightsStdDev ) {
@@ -89,21 +93,22 @@ public class NetworkLayer extends NamedObject {
         }
 
         _outputs.set( 0.f );
-        _costGradients.set( 0.f );
+        _batchInputs.set( 0f );
+        _batchErrorGradients.set( 0.f );
     }
 
-    public float getWeightsSquared() {
-        int W = _weights.getSize();
-
-        float sumSq = 0.f;
-
-        for( int w = 0; w < W; ++w ) {
-            float weight = _weights._values[ w ];
-            sumSq += ( weight * weight );
-        }
-
-        return sumSq;
-    }
+//    public float getWeightsSquared() {
+//        int W = _weights.getSize();
+//
+//        float sumSq = 0.f;
+//
+//        for( int w = 0; w < W; ++w ) {
+//            float weight = _weights._values[ w ];
+//            sumSq += ( weight * weight );
+//        }
+//
+//        return sumSq;
+//    }
 
     /**
      * Dynamically Create the activation function assigned to this layer, using the factory.
@@ -116,6 +121,13 @@ public class NetworkLayer extends NamedObject {
         return af;
     }
 
+    public void setBatchInput( Data input, int batchCount ) {
+        int nbrInputs = _inputs.getSize();
+        int offsetThis = batchCount * nbrInputs;
+        int offsetThat = 0;
+        _batchInputs.copyRange( _inputs, offsetThis, offsetThat, nbrInputs );
+    }
+
     /**
      * Compute the forward output of the layer.
      */
@@ -124,6 +136,13 @@ public class NetworkLayer extends NamedObject {
 //        BackPropagation.feedForward(_weights, _inputs, _biases, _weightedSums, af, _outputs);
         WeightedSum( _weights, _inputs, _biases, _weightedSums );
         Activate( _weightedSums, af, _outputs );
+    }
+
+    public void setBatchError( Data errorGradients, int batchCount ) {
+        int nbrCells = _c.getCells();
+        int offsetThis = batchCount * nbrCells;
+        int offsetThat = 0;
+        _batchErrorGradients.copyRange( errorGradients, offsetThis, offsetThat, nbrCells );
     }
 
     /**
@@ -175,10 +194,11 @@ public class NetworkLayer extends NamedObject {
     /**
      * Train the layer's weights given the error gradients.
      */
-    public void train( int miniBatchSize ) {
+    public void train() {
         float learningRate = _c.getLearningRate();
         float regularization = _c.getRegularization();
+        int miniBatchSize = _c.getBatchSize();
         //BackPropagation.train( _inputs, _weights, _biases, _costGradients, learningRate, l2R );
-        BackPropagation.StochasticGradientDescent( _costGradients, _weights, _biases, _inputs, miniBatchSize, learningRate, regularization );
+        BackPropagation.StochasticGradientDescent( _batchErrorGradients, _weights, _biases, _batchInputs, miniBatchSize, learningRate, regularization );
     }
 }

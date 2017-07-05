@@ -27,6 +27,7 @@ import io.agi.framework.Framework;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -57,7 +58,7 @@ public class HttpExportHandler implements HttpHandler {
     @Override
     public void handle( HttpExchange t ) throws IOException {
         int status = 400;
-        String response = "Please specify both an Entity and a Type.";
+        String response = "empty - this should not be empty";
 
         try {
             String query = t.getRequestURI().getQuery();
@@ -69,46 +70,73 @@ public class HttpExportHandler implements HttpHandler {
                     && ( m.containsKey( PARAMETER_ENTITY ) ) ) {
                 String entityName = m.get( PARAMETER_ENTITY ).trim(); // essential
                 String type = m.get( PARAMETER_TYPE ).trim(); // essential
+                
+                if ( Framework.containsEntity( entityName ) ) {
 
-                String filename = "saved__" + entityName + "-" + type + ".json";
-                if ( m.containsKey( PARAMETER_EXPORT_LOCATION ) ) {
-                    String folderPath = m.get( PARAMETER_EXPORT_LOCATION ).trim(); // essential
+                    // There are often memory exceptions when exporting (via API or saving to disk)
+                    // We want to catch those exceptions, return an error status, and still continue
+                    try {
 
-                    Path filepath = Paths.get( folderPath, filename );
+                        String filename = "saved__" + entityName + "-" + type + ".json";
+                        if( m.containsKey( PARAMETER_EXPORT_LOCATION ) ) {
+                            String folderPath = m.get( PARAMETER_EXPORT_LOCATION ).trim(); // essential
 
-                    // todo check that path is valid
+                            Path filepath = Paths.get( folderPath, filename );
 
-                    boolean success = Framework.SaveSubtree( entityName, type, filepath.toString() );
+                            // todo check that path is valid
 
-                    HashMap< String, String > responseMap = new HashMap<>();
-                    responseMap.put( "entity", entityName );
-                    responseMap.put( "type", type );
-                    responseMap.put( "folder", folderPath );
-                    responseMap.put( "filepath", filepath.toString() );
+                            boolean success = Framework.SaveSubtree( entityName, type, filepath.toString() );
 
-                    if ( success ) {
-                        responseMap.put( "message", "Success: Saved subtree" );
+                            HashMap< String, String > responseMap = new HashMap<>();
+                            responseMap.put( "entity", entityName );
+                            responseMap.put( "type", type );
+                            responseMap.put( "folder", folderPath );
+                            responseMap.put( "filepath", filepath.toString() );
+
+                            if( success ) {
+                                status = 200;
+                                responseMap.put( "message", "Success: Saved subtree" );
+                            }
+                            else {
+                                responseMap.put( "message", "Error: Could not save subtree" );
+                            }
+                            response = new Gson().toJson( responseMap );
+
+                        }
+                        else {
+                            response = Framework.ExportSubtree( entityName, type );
+                            t.getResponseHeaders().add( "Content-type", "text/json/force-download" );
+                            t.getResponseHeaders().add( "Content-Disposition", "attachment; filename=" + filename );
+                            status = 200;
+                        }
+
+                        _logger.warn( "Created response" );
+                        MemoryUtil.logMemory( _logger );
                     }
-                    else {
-                        responseMap.put( "message", "Error: Could not save subtree");
+                    catch( Exception e ) {
+
+                        _logger.error( "Exception trying to to export entities or data.");
+                        _logger.error( e.toString(), e );
+
+                        HashMap< String, String > responseMap = new HashMap<>();
+                        responseMap.put( "message", "Error: Exception trying to to export entities or data." );
+                        responseMap.put( "exception", e.toString() );
+                        status = 400;
+
+                        response = new Gson().toJson( responseMap );
                     }
-                    response = new Gson().toJson( responseMap );
                 }
                 else {
-                    response = Framework.ExportSubtree( entityName, type );
-                    t.getResponseHeaders().add( "Content-type", "text/json/force-download" );
-                    t.getResponseHeaders().add( "Content-Disposition", "attachment; filename=" + filename );
-                    status = 200;
+                    HashMap< String, String > responseMap = new HashMap<>();
+                    responseMap.put( "message", "Error: Please specify both an Entity and a Type." );
+                    response = new Gson().toJson( responseMap );
                 }
-
-                _logger.warn( "Created response" );
-                MemoryUtil.logMemory( _logger );
             }
 
             HttpUtil.SendResponse( t, status, response );
         }
         catch( Exception e ) {
-            _logger.error( "Unable to export entities or data.");
+            _logger.error( "Unable to handle export entities or data.");
             _logger.error( e.toString(), e );
         }
 

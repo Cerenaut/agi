@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016.
+ * Copyright (c) 2017.
  *
  * This file is part of Project AGI. <http://agi.io>
  *
@@ -22,24 +22,16 @@ package io.agi.framework.entities;
 import io.agi.framework.EntityConfig;
 
 /**
- * Created by dave on 2/04/16.
+ *
+ * Created by dave on 7/07/16.
  */
-public class GrowingNeuralGasEntityConfig extends EntityConfig {
+public class FeedForwardNetworkQuiltPredictorEntityConfig extends QuiltPredictorEntityConfig {
 
-    public float learningRate = 0.1f;
-    public int widthCells = 8;
-    public int heightCells = 8;
-
-    public float learningRateNeighbours = 0.05f;
-    public float noiseMagnitude = 0.005f;
-    public int edgeMaxAge = 200;
-    public float stressLearningRate = 0.01f;
-    public float stressSplitLearningRate = 0.5f;
-    public float stressThreshold = 0.01f;
-    public float utilityLearningRate = 0;
-    public float utilityThreshold = -1f;
-
-    public int growthInterval = 2;
-    public float denoisePercentage = 0;
+    public float predictorLearningRate = 0.0f; // how fast the prediction weights learn
+    public int predictorHiddenCells = 0;
+    public float predictorLeakiness = 0.0f;
+    public float predictorRegularization = 0.0f;
+    public int predictorBatchSize = 0;
+    public int predictorBatchCount = 0;
 
 }

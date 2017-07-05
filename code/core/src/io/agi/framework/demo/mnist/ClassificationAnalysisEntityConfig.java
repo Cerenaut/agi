@@ -46,4 +46,6 @@ public class ClassificationAnalysisEntityConfig extends EntityConfig {
 
     public String resultsSummary = "";
 
+    public float microFScore = 0;
+    public float macroFScore = 0;
 }

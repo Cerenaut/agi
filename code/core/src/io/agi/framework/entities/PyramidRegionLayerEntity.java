@@ -64,8 +64,10 @@ public class PyramidRegionLayerEntity extends Entity {
     public static final String PREDICTOR_WEIGHTS_2 = "predictor-weights-2";
     public static final String PREDICTOR_BIASES_1 = "predictor-biases-1";
     public static final String PREDICTOR_BIASES_2 = "predictor-biases-2";
-    public static final String ERROR_GRADIENTS_1 = "error-gradients-1";
-    public static final String ERROR_GRADIENTS_2 = "error-gradients-2";
+    public static final String BATCH_ERROR_GRADIENTS_1 = "batch-error-gradients-1";
+    public static final String BATCH_ERROR_GRADIENTS_2 = "batch-error-gradients-2";
+    public static final String BATCH_INPUTS_1 = "batch-inputs-1";
+    public static final String BATCH_INPUTS_2 = "batch-inputs-2";
 
 //    public static final String PREDICTOR_WEIGHTS = "predictor-weights";
 
@@ -198,8 +200,10 @@ public class PyramidRegionLayerEntity extends Entity {
         attributes.add( PREDICTOR_WEIGHTS_2 );
         attributes.add( PREDICTOR_BIASES_1 );
         attributes.add( PREDICTOR_BIASES_2 );
-        attributes.add( ERROR_GRADIENTS_1 );
-        attributes.add( ERROR_GRADIENTS_2 );
+        attributes.add( BATCH_ERROR_GRADIENTS_1 );
+        attributes.add( BATCH_ERROR_GRADIENTS_2 );
+        attributes.add( BATCH_INPUTS_1 );
+        attributes.add( BATCH_INPUTS_2 );
 
         // K sparse autoencoder data
 //        attributes.add( CLASSIFIER_WEIGHTS );
@@ -426,37 +430,10 @@ public class PyramidRegionLayerEntity extends Entity {
         layer2._weights = getDataLazyResize( PREDICTOR_WEIGHTS_2, layer2._weights._dataSize );
         layer1._biases = getDataLazyResize( PREDICTOR_BIASES_1, layer1._biases._dataSize );
         layer2._biases = getDataLazyResize( PREDICTOR_BIASES_2, layer2._biases._dataSize );
-        layer1._costGradients = getDataLazyResize( ERROR_GRADIENTS_1, layer1._costGradients._dataSize );
-        layer2._costGradients = getDataLazyResize( ERROR_GRADIENTS_2, layer2._costGradients._dataSize );
-//        rl._predictor._outputTraces = getDataLazyResize( PREDICTOR_OUTPUT_TRACES, rl._predictor._outputTraces._dataSize );
-//        rl._predictor._inputOutputTraces = getDataLazyResize( PREDICTOR_INPUT_OUTPUT_TRACES, rl._predictor._inputOutputTraces._dataSize );
-
-//        rl._classifier._cellWeights = getDataLazyResize( CLASSIFIER_WEIGHTS, rl._classifier._cellWeights._dataSize );
-//        rl._classifier._cellBiases1 = getDataLazyResize( CLASSIFIER_BIASES_1, rl._classifier._cellBiases1._dataSize );
-//        rl._classifier._cellBiases2 = getDataLazyResize( CLASSIFIER_BIASES_2, rl._classifier._cellBiases2._dataSize );
-//
-//        rl._classifier._cellWeightsVelocity = getDataLazyResize( CLASSIFIER_WEIGHTS_VELOCITY, rl._classifier._cellWeightsVelocity._dataSize );
-//        rl._classifier._cellBiases1Velocity = getDataLazyResize( CLASSIFIER_BIASES_1_VELOCITY, rl._classifier._cellBiases1Velocity._dataSize );
-//        rl._classifier._cellBiases2Velocity = getDataLazyResize( CLASSIFIER_BIASES_2_VELOCITY, rl._classifier._cellBiases2Velocity._dataSize );
-//
-//        rl._classifier._cellErrors = getDataLazyResize( CLASSIFIER_ERRORS, rl._classifier._cellErrors._dataSize );
-//        rl._classifier._cellWeightedSum = getDataLazyResize( CLASSIFIER_WEIGHTED_SUM, rl._classifier._cellWeightedSum._dataSize );
-//        rl._classifier._cellTransfer = getDataLazyResize( CLASSIFIER_TRANSFER, rl._classifier._cellTransfer._dataSize );
-//        rl._classifier._cellTransferPromoted = getDataLazyResize( CLASSIFIER_TRANSFER_PROMOTED, rl._classifier._cellTransferPromoted._dataSize );
-//        rl._classifier._cellTransferTopK = getDataLazyResize( CLASSIFIER_TRANSFER_TOP_K, rl._classifier._cellTransferTopK._dataSize );
-//        rl._classifier._cellTransferTopKA = getDataLazyResize( CLASSIFIER_TRANSFER_TOP_KA, rl._classifier._cellTransferTopKA._dataSize );
-//
-//        rl._classifier._cellSpikesTopK = getDataLazyResize( CLASSIFIER_SPIKES_TOP_K, rl._classifier._cellSpikesTopK._dataSize );
-//        rl._classifier._cellSpikesTopKA = getDataLazyResize( CLASSIFIER_SPIKES_TOP_KA, rl._classifier._cellSpikesTopKA._dataSize );
-//
-//        rl._classifier._inputReconstructionWeightedSum = getDataLazyResize( CLASSIFIER_RECONSTRUCTION_WEIGHTED_SUM, rl._classifier._inputReconstructionWeightedSum._dataSize );
-//        rl._classifier._inputReconstructionTransfer = getDataLazyResize( CLASSIFIER_RECONSTRUCTION_TRANSFER, rl._classifier._inputReconstructionTransfer._dataSize );
-//
-//        rl._classifier._cellAges = getDataLazyResize( CLASSIFIER_AGES, rl._classifier._cellAges._dataSize );
-//        rl._classifier._cellRates = getDataLazyResize( CLASSIFIER_RATES, rl._classifier._cellRates._dataSize );
-//
-//        rl._classifier._inputGradients = getDataLazyResize( CLASSIFIER_OUTPUT_GRADIENTS, rl._classifier._inputGradients._dataSize );
-//        rl._classifier._cellGradients = getDataLazyResize( CLASSIFIER_HIDDEN_GRADIENTS, rl._classifier._cellGradients._dataSize );
+        layer1._batchErrorGradients = getDataLazyResize( BATCH_ERROR_GRADIENTS_1, layer1._batchErrorGradients._dataSize );
+        layer2._batchErrorGradients = getDataLazyResize( BATCH_ERROR_GRADIENTS_2, layer2._batchErrorGradients._dataSize );
+        layer1._batchInputs = getDataLazyResize( BATCH_INPUTS_1, layer1._batchInputs._dataSize );
+        layer2._batchInputs = getDataLazyResize( BATCH_INPUTS_2, layer2._batchInputs._dataSize );
     }
 
     protected void copyDataToPersistence( PyramidRegionLayer rl ) {
@@ -492,8 +469,10 @@ public class PyramidRegionLayerEntity extends Entity {
         setData( PREDICTOR_WEIGHTS_2, layer2._weights );
         setData( PREDICTOR_BIASES_1, layer1._biases );
         setData( PREDICTOR_BIASES_2, layer2._biases );
-        setData( ERROR_GRADIENTS_1, layer1._costGradients);
-        setData( ERROR_GRADIENTS_2, layer2._costGradients);
+        setData( BATCH_ERROR_GRADIENTS_1, layer1._batchErrorGradients );
+        setData( BATCH_ERROR_GRADIENTS_2, layer2._batchErrorGradients );
+        setData( BATCH_INPUTS_1, layer1._batchInputs );
+        setData( BATCH_INPUTS_2, layer2._batchInputs );
 
 //        setData( CLASSIFIER_WEIGHTS, rl._classifier._cellWeights );
 //        setData( CLASSIFIER_BIASES_1, rl._classifier._cellBiases1 );

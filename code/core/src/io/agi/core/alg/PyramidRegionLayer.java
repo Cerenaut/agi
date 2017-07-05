@@ -19,15 +19,12 @@
 
 package io.agi.core.alg;
 
-import io.agi.core.ann.unsupervised.OnlineKSparseAutoencoder;
 import io.agi.core.data.Data;
 import io.agi.core.data.DataSize;
 import io.agi.core.orm.NamedObject;
 import io.agi.core.orm.ObjectMap;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 
 /**
@@ -93,7 +90,7 @@ public class PyramidRegionLayer extends NamedObject {
     public PyramidRegionLayerTransient _transient = null;
 //    public OnlineKSparseAutoencoder _classifier;
 //    public SpikeOrderLearning _predictor;
-    public PyramidRegionLayerPredictor _predictor;
+    public FeedForwardNetworkQuiltPredictor _predictor;
 
     public PyramidRegionLayer( String name, ObjectMap om ) {
         super( name, om );
@@ -124,17 +121,41 @@ public class PyramidRegionLayer extends NamedObject {
 
 
         // Predictor
-        int cells = dataSizeInputC.getVolume(); //_rc._classifierConfig.getNbrCells();
-        int predictorInputs = dataSizeInputP.getVolume() + cells;
-        int predictorOutputs = cells;
+        String predictorName = _rc.getKey( PyramidRegionLayerConfig.SUFFIX_PREDICTOR );
+
         float predictorLearningRate = rc.getPredictorLearningRate();
 //        float predictorDecayRate = rc.getPredictorTraceDecayRate();
         int predictorHiddenCells = _rc.getPredictorHiddenCells();
         float predictorLeakiness = _rc.getPredictorLeakiness();
         float predictorRegularization = _rc.getPredictorRegularization();
         int predictorBatchSize = _rc.getPredictorBatchSize();
-        _predictor = new PyramidRegionLayerPredictor();//SpikeOrderLearning();
-        _predictor.setup( _rc.getKey( PyramidRegionLayerConfig.SUFFIX_PREDICTOR ), _rc._om, _rc._r, predictorInputs, predictorHiddenCells, predictorOutputs, predictorLearningRate, predictorLeakiness, predictorRegularization, predictorBatchSize );//, predictorDecayRate );
+
+        int cells = dataSizeInputC.getVolume(); //_rc._classifierConfig.getNbrCells();
+        int predictorInputs = dataSizeInputP.getVolume() + cells;
+        //int predictorOutputs = cells;
+
+        FeedForwardNetworkQuiltPredictorConfig rlc = new FeedForwardNetworkQuiltPredictorConfig();
+        rlc.setup(
+                _rc._om, predictorName, _rc._r,
+                inputCSize.x,
+                inputCSize.y,
+                0, // col w
+                0, // col h
+                inputPSize,
+                predictorLearningRate,
+                predictorHiddenCells,
+                predictorLeakiness,
+                predictorRegularization,
+                predictorBatchSize );
+
+        //_predictor = new FeedForwardNetworkQuiltPredictor();//SpikeOrderLearning();
+        // _rc.getKey( PyramidRegionLayerConfig.SUFFIX_PREDICTOR ), _rc._om, _rc._r, predictorInputs, predictorHiddenCells, predictorOutputs, predictorLearningRate, predictorLeakiness, predictorRegularization, predictorBatchSize );//, predictorDecayRate );
+        //_predictor.setup( rlc );
+
+        FeedForwardNetworkQuiltPredictor predictorAlgorithm = new FeedForwardNetworkQuiltPredictor();
+        QuiltPredictor rl = new QuiltPredictor( predictorName, _rc._om );
+        rl.setup( rlc, predictorAlgorithm );
+
     // public void setup( String name, ObjectMap om, Random r, int inputs, int hidden, int outputs, float learningRate, float leakiness, float regularization ) {
 
 //        DataSize dataSizeCells = DataSize.create( _rc._classifierConfig.getWidthCells(), _rc._classifierConfig.getHeightCells() );

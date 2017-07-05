@@ -28,6 +28,7 @@ import io.agi.framework.Node;
 import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.factories.CommonEntityFactory;
+import io.agi.framework.persistence.models.ModelData;
 
 import java.util.ArrayList;
 import java.util.Properties;
@@ -79,17 +80,21 @@ public class QuiltedCompetitiveLearningDemo {
 //        String trainingPath = "./training";
 //        String testingPath = "./testing";
 
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
-        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
+//        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train,/home/dave/workspace/agi.io/data/mnist/1k_test";
+
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train";
+        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train,/home/dave/workspace/agi.io/data/mnist/all/all_t10k";
 
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10,/home/dave/workspace/agi.io/data/mnist/cycle3";
 
+        Integer seed = null; // 1;
         boolean cacheAllData = true;
         boolean terminateByAge = false;
 //        int terminationAge = 10;//9000;
         int terminationAge = 50000;//25000;
-        int trainingEpochs = 10;//80; // good for up to 80k
+        int trainingEpochs = 1;//80; // good for up to 80k
         int testingEpochs = 1;//80; // good for up to 80k
 
         // Define some entities
@@ -112,8 +117,8 @@ public class QuiltedCompetitiveLearningDemo {
         Framework.SetDataReference( quiltName, QuiltedCompetitiveLearningEntity.INPUT_1, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
         Framework.SetDataReference( quiltName, QuiltedCompetitiveLearningEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
 
-        ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList< AbstractPair< String, String > >();
-        featureDatas.add( new AbstractPair< String, String >( quiltName, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT ) );
+        ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList<>();
+        featureDatas.add( new AbstractPair<>( quiltName, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT ) );
         Framework.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
 
         // Experiment config
@@ -133,6 +138,12 @@ public class QuiltedCompetitiveLearningDemo {
         Framework.SetConfig( quiltName, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( vectorSeriesName, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( valueSeriesName, "cache", String.valueOf( cacheAllData ) );
+
+        // Fix seed for repeatable runs
+        if( seed != null ) {
+            Framework.SetConfig( imageLabelName, "seed", String.valueOf( seed ) );
+            Framework.SetConfig( quiltName, "seed", String.valueOf( seed ) );
+        }
 
         // MNIST config
         Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldX", "0" );
@@ -154,7 +165,7 @@ public class QuiltedCompetitiveLearningDemo {
 
         boolean emit2ndBest = false;
         int edgeMaxAge = 500;
-        int growthInterval = 200;//50;
+        int growthInterval = 50;//200;//50;
         float learningRate = 0.01f;
         float learningRateNeighbours = learningRate * 0.2f;
         float noiseMagnitude = 0.0f;
@@ -162,22 +173,29 @@ public class QuiltedCompetitiveLearningDemo {
         float stressSplitLearningRate = 0.5f; // change to stress after a split
         float stressThreshold = 0.01f; // when it ceases to split
         float utilityLearningRate = stressLearningRate;
-        float utilityThreshold = -1f;//5f;//-1f;
+        float utilityThreshold = -1f;//5f;//-1f;   -1 disables
 
         // 25 * 49 = 1225
         // 36 * 36 = 1296
-//        int columnWidthCells = 5;  // 25 cells per col
-//        int columnHeightCells = 5;
-        int columnWidthCells = 6;  // 36 cells per col
-        int columnHeightCells = 6;
+        int columnWidthCells = 5;  // 25 cells per col
+        int columnHeightCells = 5;
+//        int columnWidthCells = 7;  // 36 cells per col
+//        int columnHeightCells = 7;
 
 //        int quiltWidthColumns = 7;
 //        int quiltHeightColumns = 7; // 49 cols
         int quiltWidthColumns = 6;
         int quiltHeightColumns = 6; // 36 cols
 
-        // TODO add a field offset
-        // Field 2: 28x28
+        // Field 2: 1x1
+        int field2OffsetX = 0;
+        int field2OffsetY = 0;
+        int field2SizeX = 1;
+        int field2SizeY = 1;
+        int field2StrideX = 0;
+        int field2StrideY = 0;
+
+        // Field 1: 28x28
         //     00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 |
         //  F1 -- -- -- -- -- --                                                                   |
         //  F2             -- -- -- -- -- --                                                       |
@@ -194,14 +212,12 @@ public class QuiltedCompetitiveLearningDemo {
         //  F5                                           -- -- -- -- -- --                         |
         //  F6                                                    -- -- -- -- -- --                |
         //  F7                                                             -- -- -- -- -- --       |
-/*        int field1OffsetX = 2;
-        int field1OffsetY = 2;
-
-        int field1SizeX = 6;
-        int field1SizeY = 6;
-
-        int field1StrideX = 4;
-        int field1StrideY = 4;*/
+//        int field1OffsetX = 2;
+//        int field1OffsetY = 2;
+//        int field1SizeX = 6;
+//        int field1SizeY = 6;
+//        int field1StrideX = 3;
+//        int field1StrideY = 3;
 
         //     00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 |
         //  F1          -- -- -- -- -- --                                                          |
@@ -219,13 +235,6 @@ public class QuiltedCompetitiveLearningDemo {
         int field1StrideX = 3;
         int field1StrideY = 3;
 
-        // Field 2: 1x1
-        int field2StrideX = 0;
-        int field2StrideY = 0;
-
-        int field2SizeX = 1;
-        int field2SizeY = 1;
-
         Framework.SetConfig( quiltName, "quiltWidth", String.valueOf( quiltWidthColumns ) );
         Framework.SetConfig( quiltName, "quiltHeight", String.valueOf( quiltHeightColumns ) );
 
@@ -239,6 +248,8 @@ public class QuiltedCompetitiveLearningDemo {
         Framework.SetConfig( quiltName, "field1SizeX", String.valueOf( field1SizeX ) );
         Framework.SetConfig( quiltName, "field1SizeY", String.valueOf( field1SizeY ) );
 
+        Framework.SetConfig( quiltName, "field2OffsetX", String.valueOf( field2OffsetX ) );
+        Framework.SetConfig( quiltName, "field2OffsetY", String.valueOf( field2OffsetY ) );
         Framework.SetConfig( quiltName, "field2StrideX", String.valueOf( field2StrideX ) );
         Framework.SetConfig( quiltName, "field2StrideY", String.valueOf( field2StrideY ) );
         Framework.SetConfig( quiltName, "field2SizeX", String.valueOf( field2SizeX ) );
@@ -260,6 +271,7 @@ public class QuiltedCompetitiveLearningDemo {
         // Log features of the algorithm during all phases
         Framework.SetConfig( vectorSeriesName, "period", String.valueOf( "-1" ) ); // infinite
         Framework.SetConfig( vectorSeriesName, "learn", String.valueOf( "true" ) ); // infinite
+        Framework.SetConfig( vectorSeriesName, "encoding", ModelData.ENCODING_SPARSE_BINARY );
 
         // Log labels of each image produced during all phases
         Framework.SetConfig( valueSeriesName, "period", "-1" );

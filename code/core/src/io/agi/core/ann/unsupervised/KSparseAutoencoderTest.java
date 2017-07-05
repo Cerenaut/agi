@@ -41,7 +41,7 @@ public class KSparseAutoencoderTest implements UnitTest {
     public void test( String[] args ) {
 
         // Test parameters
-        int epochs = 5000;
+        int epochs = 50000;
         int batch = 500;
         int randomSeed = 1;
         int inputs = 2; // x and y.

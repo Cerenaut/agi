@@ -19,11 +19,7 @@
 
 package io.agi.framework.entities;
 
-import io.agi.core.alg.PyramidRegionLayer;
-import io.agi.core.alg.PyramidRegionLayerConfig;
-import io.agi.core.alg.QuiltPredictor;
-import io.agi.core.alg.QuiltPredictorConfig;
-import io.agi.core.ann.supervised.NetworkLayer;
+import io.agi.core.alg.*;
 import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
 import io.agi.core.orm.ObjectMap;
@@ -38,9 +34,7 @@ import java.util.Collection;
 /**
  * Created by dave on 7/07/16.
  */
-public class QuiltPredictorEntity extends Entity {
-
-    public static final String ENTITY_TYPE = "quilt-predictor";
+public abstract class QuiltPredictorEntity extends Entity {
 
     public static final String INPUT_C = "input-c";
     public static final String INPUT_P = "input-p";
@@ -51,14 +45,6 @@ public class QuiltPredictorEntity extends Entity {
     public static final String PREDICTION_OLD = "prediction-old";
     public static final String PREDICTION_NEW = "prediction-new";
     public static final String PREDICTION_NEW_UNIT = "prediction-new-unit";
-
-    public static final String PREDICTOR_IDEALS = "predictor-ideals";
-    public static final String PREDICTOR_WEIGHTS_1 = "predictor-weights-1";
-    public static final String PREDICTOR_WEIGHTS_2 = "predictor-weights-2";
-    public static final String PREDICTOR_BIASES_1 = "predictor-biases-1";
-    public static final String PREDICTOR_BIASES_2 = "predictor-biases-2";
-    public static final String ERROR_GRADIENTS_1 = "error-gradients-1";
-    public static final String ERROR_GRADIENTS_2 = "error-gradients-2";
 
     public QuiltPredictorEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
@@ -84,14 +70,6 @@ public class QuiltPredictorEntity extends Entity {
         flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( PREDICTION_NEW_UNIT, DataFlags.FLAG_NODE_CACHE );
-
-        attributes.add( PREDICTOR_IDEALS );
-        attributes.add( PREDICTOR_WEIGHTS_1 );
-        attributes.add( PREDICTOR_WEIGHTS_2 );
-        attributes.add( PREDICTOR_BIASES_1 );
-        attributes.add( PREDICTOR_BIASES_2 );
-        attributes.add( ERROR_GRADIENTS_1 );
-        attributes.add( ERROR_GRADIENTS_2 );
     }
 
     @Override
@@ -127,10 +105,10 @@ public class QuiltPredictorEntity extends Entity {
         // Test parameters
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Feedforward size
-        Point inputCSize = Data2d.getSize( inputC );
-        int inputPSize = inputP.getSize();
-        int inputCWidth  = inputCSize.x;
-        int inputCHeight = inputCSize.y;
+//        Point inputCSize = Data2d.getSize( inputC );
+//        int inputPSize = inputP.getSize();
+//        int inputCWidth  = inputCSize.x;
+//        int inputCHeight = inputCSize.y;
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Algorithm specific parameters
@@ -138,22 +116,11 @@ public class QuiltPredictorEntity extends Entity {
         // Build the algorithm
         ObjectMap om = ObjectMap.GetInstance();
 
-        QuiltPredictorConfig rlc = new QuiltPredictorConfig();
-        rlc.setup(
-            om, regionLayerName, _r,
-            inputCWidth,
-            inputCHeight,
-            config.columnWidthCells,
-            config.columnHeightCells,
-            inputPSize,
-            config.predictorLearningRate,
-            config.predictorHiddenCells,
-            config.predictorLeakiness,
-            config.predictorRegularization,
-            config.predictorBatchSize );
+        QuiltPredictorConfig qpc = createQuiltPredictorConfig();
+        QuiltPredictorAlgorithm predictorAlgorithm = createQuiltPredictorAlgorithm();
 
         QuiltPredictor rl = new QuiltPredictor( regionLayerName, om );
-        rl.setup( rlc );
+        rl.setup( qpc, predictorAlgorithm );
 
         copyDataFromPersistence( rl );
 
@@ -173,17 +140,17 @@ public class QuiltPredictorEntity extends Entity {
         copyDataToPersistence( rl );
     }
 
+    protected abstract QuiltPredictorConfig createQuiltPredictorConfig();
+    protected abstract QuiltPredictorAlgorithm createQuiltPredictorAlgorithm();
+
     protected void copyConfigChangesFromPersistence( QuiltPredictor rl, QuiltPredictorEntityConfig config ) {
-        rl._predictor._ffn._c.setBatchCount( config.predictorBatchCount );
         rl._rc.setLearn( config.learn );
     }
 
     protected void copyConfigChangesToPersistence( QuiltPredictor rl, QuiltPredictorEntityConfig config ) {
-        config.predictorBatchCount = rl._predictor._ffn._c.getBatchCount();
     }
 
     protected void copyDataFromPersistence( QuiltPredictor rl ) {
-
         rl._inputC = getData( INPUT_C );
         rl._inputP = getData( INPUT_P );
 
@@ -192,47 +159,16 @@ public class QuiltPredictorEntity extends Entity {
 
         rl._predictionOld = getDataLazyResize( PREDICTION_OLD, rl._predictionOld._dataSize );
         rl._predictionNew = getDataLazyResize( PREDICTION_NEW, rl._predictionNew._dataSize );
-//        rl._predictionNewReal = getDataLazyResize( PREDICTION_NEW_REAL, rl._predictionNewReal._dataSize );
-
-        NetworkLayer layer1 = rl._predictor._ffn._layers.get( 0 );
-        NetworkLayer layer2 = rl._predictor._ffn._layers.get( 1 );
-        rl._predictor._ffn._ideals = getDataLazyResize( PREDICTOR_IDEALS, rl._predictor._ffn._ideals._dataSize );
-        layer1._weights = getDataLazyResize( PREDICTOR_WEIGHTS_1, layer1._weights._dataSize );
-        layer2._weights = getDataLazyResize( PREDICTOR_WEIGHTS_2, layer2._weights._dataSize );
-        layer1._biases = getDataLazyResize( PREDICTOR_BIASES_1, layer1._biases._dataSize );
-        layer2._biases = getDataLazyResize( PREDICTOR_BIASES_2, layer2._biases._dataSize );
-        layer1._costGradients = getDataLazyResize( ERROR_GRADIENTS_1, layer1._costGradients._dataSize );
-        layer2._costGradients = getDataLazyResize( ERROR_GRADIENTS_2, layer2._costGradients._dataSize );
+//        rl._predictionNewUnit = getDataLazyResize( PREDICTION_NEW_UNIT, rl._predictionNewUnit._dataSize );
     }
 
     protected void copyDataToPersistence( QuiltPredictor rl ) {
-
         setData( INPUT_P_OLD, rl._inputPOld );
         setData( INPUT_P_NEW, rl._inputPNew );
 
         setData( PREDICTION_OLD, rl._predictionOld );
         setData( PREDICTION_NEW, rl._predictionNew );
         setData( PREDICTION_NEW_UNIT, rl._predictionNewUnit );
-
-        NetworkLayer layer1 = rl._predictor._ffn._layers.get( 0 );
-        NetworkLayer layer2 = rl._predictor._ffn._layers.get( 1 );
-
-        setData( PREDICTOR_IDEALS, rl._predictor._ffn._ideals );
-        setData( PREDICTOR_WEIGHTS_1, layer1._weights );
-        setData( PREDICTOR_WEIGHTS_2, layer2._weights );
-        setData( PREDICTOR_BIASES_1, layer1._biases );
-        setData( PREDICTOR_BIASES_2, layer2._biases );
-        setData( ERROR_GRADIENTS_1, layer1._costGradients);
-        setData( ERROR_GRADIENTS_2, layer2._costGradients);
-
-        rl._predictor._ffn._ideals = getDataLazyResize( PREDICTOR_IDEALS, rl._predictor._ffn._ideals._dataSize );
-        layer1._weights = getDataLazyResize( PREDICTOR_WEIGHTS_1, layer1._weights._dataSize );
-        layer2._weights = getDataLazyResize( PREDICTOR_WEIGHTS_2, layer2._weights._dataSize );
-        layer1._biases = getDataLazyResize( PREDICTOR_BIASES_1, layer1._biases._dataSize );
-        layer2._biases = getDataLazyResize( PREDICTOR_BIASES_2, layer2._biases._dataSize );
-        layer1._costGradients = getDataLazyResize( ERROR_GRADIENTS_1, layer1._costGradients._dataSize );
-        layer2._costGradients = getDataLazyResize( ERROR_GRADIENTS_2, layer2._costGradients._dataSize );
-
     }
 
 }
