@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016.
+ * Copyright (c) 2017.
  *
  * This file is part of Project AGI. <http://agi.io>
  *
@@ -20,24 +20,17 @@
 package io.agi.framework.entities;
 
 import io.agi.framework.EntityConfig;
+import io.agi.framework.persistence.models.ModelData;
 
 /**
  * Created by dave on 2/04/16.
  */
-public class GrowingNeuralGasEntityConfig extends EntityConfig {
+public class VectorCopyRangeEntityConfig extends EntityConfig {
 
-    public float learningRate = 0.1f;
-    public int widthCells = 8;
-    public int heightCells = 8;
+    public int offsetInput = 0;
+    public int offsetOutput = 0;
+    public int range = 100;
 
-    public float learningRateNeighbours = 0.05f;
-    public float noiseMagnitude = 0.005f;
-    public int edgeMaxAge = 200;
-    public float stressLearningRate = 0.01f;
-    public float stressSplitLearningRate = 0.5f;
-    public float stressThreshold = 0.01f;
-    public float utilityLearningRate = 0;
-    public float utilityThreshold = -1f;
-    public int growthInterval = 2;
+    public String encoding = ModelData.ENCODING_DENSE;
 
 }

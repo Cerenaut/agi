@@ -156,8 +156,8 @@ public class Statistics {
     /**
      * Gaussian function
      *
-     * @param x
-     * @param sigma
+     * @param x Distance
+     * @param sigma Standard deviation of the Gaussian
      * @return
      */
     public static double gaussian( double x, double sigma ) {

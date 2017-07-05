@@ -377,6 +377,13 @@ public class ModelData {
             }
         }
 
+        // clear last values into chunks
+        if( values.size() > 0 ) {
+            String chunk = StringUtils.join( values, "," );
+            chunks.add( chunk );
+            values.clear();
+        }
+
         String elements = StringUtils.join( chunks, "," );
         String result = s1 + length + s2 + elements + s3;
         return result;
@@ -479,7 +486,7 @@ public class ModelData {
                 decodeValue( encoding, fa, value, tempNumberOld, numberIdx );
             }
             catch( NumberFormatException e ) {
-                e.printStackTrace();
+                //e.printStackTrace();
                 // nothing, just a bit of whitespace?
             }
 

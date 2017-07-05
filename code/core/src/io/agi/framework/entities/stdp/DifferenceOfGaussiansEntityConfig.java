@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016.
+ * Copyright (c) 2017.
  *
  * This file is part of Project AGI. <http://agi.io>
  *
@@ -17,27 +17,25 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.entities;
+package io.agi.framework.entities.stdp;
 
 import io.agi.framework.EntityConfig;
 
 /**
- * Created by dave on 2/04/16.
+ * Created by dave on 6/05/17.
  */
-public class GrowingNeuralGasEntityConfig extends EntityConfig {
+public class DifferenceOfGaussiansEntityConfig extends EntityConfig {
 
-    public float learningRate = 0.1f;
-    public int widthCells = 8;
-    public int heightCells = 8;
+    public String kernelDescCached = "";
 
-    public float learningRateNeighbours = 0.05f;
-    public float noiseMagnitude = 0.005f;
-    public int edgeMaxAge = 200;
-    public float stressLearningRate = 0.01f;
-    public float stressSplitLearningRate = 0.5f;
-    public float stressThreshold = 0.01f;
-    public float utilityLearningRate = 0;
-    public float utilityThreshold = -1f;
-    public int growthInterval = 2;
+    public int kernelWidth = 0;
+    public int kernelHeight = 0;
+
+    public float stdDev1 = 0;
+    public float stdDev2 = 0;
+
+    public float scaling = 0;
+    public float min = 0;
+    public float max = 0;
 
 }

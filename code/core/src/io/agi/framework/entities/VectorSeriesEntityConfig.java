@@ -20,6 +20,7 @@
 package io.agi.framework.entities;
 
 import io.agi.framework.EntityConfig;
+import io.agi.framework.Framework;
 import io.agi.framework.persistence.models.ModelData;
 
 /**
@@ -27,8 +28,11 @@ import io.agi.framework.persistence.models.ModelData;
  */
 public class VectorSeriesEntityConfig extends EntityConfig {
 
+    public int periodAccumulate = 1; // option to log every N steps the sum of the interval
     public int flushPeriod = -1; // number of samples before it flushes and clears -1 for infinite
     public int period = 100; // number of samples before it wraps. -1 for infinite
+
+    public int countAccumulate = 0; // how many samples have been accumulated
 
     public String encoding = ModelData.ENCODING_DENSE;
 
@@ -36,5 +40,18 @@ public class VectorSeriesEntityConfig extends EntityConfig {
     public String writeFilePath = "";
     public String writeFilePrefix = "";
     public String writeFileExtension = "json";
+
+    public static void Set( String entityName, int periodAccumulate, int period, String encoding ) {
+        VectorSeriesEntityConfig entityConfig = new VectorSeriesEntityConfig();
+
+        entityConfig.cache = true;
+        entityConfig.periodAccumulate = periodAccumulate;
+//        entityConfig.flushPeriod = -1;
+        entityConfig.period = period;
+        entityConfig.countAccumulate = 0;
+        entityConfig.encoding = encoding;
+
+        Framework.SetConfig( entityName, entityConfig );
+    }
 
 }

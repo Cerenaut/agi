@@ -29,34 +29,34 @@ import java.awt.*;
 public class MnistEntityConfig extends EntityConfig {
 
     public class ReceptiveField {
-        int receptiveFieldX;
-        int receptiveFieldY;
-        int receptiveFieldW;
-        int receptiveFieldH;
+        public int receptiveFieldX;
+        public int receptiveFieldY;
+        public int receptiveFieldW;
+        public int receptiveFieldH;
     }
 
     public class Resolution {
-        int resolutionX;
-        int resolutionY;
+        public int resolutionX;
+        public int resolutionY;
     }
 
-    ReceptiveField receptiveField = new ReceptiveField();
-    Resolution resolution = new Resolution();
-    boolean greyscale;
-    boolean invert;
+    public ReceptiveField receptiveField = new ReceptiveField();
+    public Resolution resolution = new Resolution();
+    public boolean greyscale;
+    public boolean invert;
 
     public String learningEntityName;
     public String learningConfigPath;
 
-    String sourceFilesPathTraining;
-    String sourceFilesPathTesting;
+    public String sourceFilesPathTraining;
+    public String sourceFilesPathTesting;
 
-    int imageIndex = 0;
-    int batch = 0;
-    int trainingBatches = 1;
+    public int imageIndex = 0;
+    public int batch = 0;
+    public int trainingBatches = 1;
 
-    boolean imageStep = true;
-    boolean terminate = false;
+    public boolean imageStep = true;
+    public boolean terminate = false;
 
     public Rectangle getReceptiveField() {
         Rectangle rectangle = new Rectangle( receptiveField.receptiveFieldX, receptiveField.receptiveFieldY, receptiveField.receptiveFieldW, receptiveField.receptiveFieldH );

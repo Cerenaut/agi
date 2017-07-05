@@ -25,6 +25,8 @@
 
 package io.agi.core.data;
 
+import java.awt.*;
+
 /**
  * @author dave
  */
@@ -55,9 +57,13 @@ public class Convolution2d {
 
         // iterate image
         for( int y = 0; y < h; ++y ) {
+
             c.set( DataSize.DIMENSION_Y, y );
+
             for( int x = 0; x < w; ++x ) {
+
                 c.set( DataSize.DIMENSION_X, x );
+
                 int offset = c.offset(); // don't want to eval the 3d coord more than necessary..
 
                 for( int i = 0; i < channels; ++i ) {
@@ -88,6 +94,7 @@ public class Convolution2d {
 
                         mc.set( DataSize.DIMENSION_Y, my );
                         mc.set( DataSize.DIMENSION_X, mx );
+
                         int moffset = mc.offset(); // don't want to eval the 3d coord more than necessary..
 
                         // for each channel
@@ -113,6 +120,67 @@ public class Convolution2d {
                     dest._d._values[ offset + i ] = acc[ i ];
                 }
 
+            }
+        }
+
+    }
+
+    /**
+     * Convolve a greyscale 2d image with a 2d kernel.
+     *
+     * @param kernel
+     * @param input
+     * @param output
+     */
+    public static void convolve( Data kernel, Data input, Data output ) {
+
+        // retrieve resolution of image
+        Point iSize = Data2d.getSize( input );
+        int iw = iSize.x;
+        int ih = iSize.y;
+
+        Point kSize = Data2d.getSize( kernel );
+        int kw = kSize.x;
+        int kh = kSize.y;
+
+        // mask has to have odd width and height
+        assert ( kw % 2 != 0 );
+        assert ( kh % 2 != 0 );
+
+        int kwr = kw / 2;       // mask width radius
+        int khr = kh / 2;       // mask height radius
+
+        // foreach( output pixel )
+        for( int y = 0; y < ih; ++y ) {
+            for( int x = 0; x < iw; ++x ) {
+
+                float convolved = 0;
+
+                // foreach( kernel pixel )
+                for( int ky = 0; ky < kh; ++ky ) {
+                    for( int kx = 0; kx < kw; ++kx ) {
+
+                        int yy = y - khr + ky;
+                        int xx = x - kwr + kx;
+
+                        // duplicate edge pixel policy
+                        xx = Math.max( 0, xx );
+                        xx = Math.min( iw - 1, xx );
+
+                        yy = Math.max( 0, yy );
+                        yy = Math.min( ih - 1, yy );
+
+                        int iOffset = yy * iw + xx;
+                        int kOffset = ky * kw + kx;
+
+                        float kv = kernel._values[ kOffset ];
+                        float iv = input._values[ iOffset ];
+                        convolved += kv * iv;
+                    }
+                }
+
+                int oOffset = y * iw + x;
+                output._values[ oOffset ] = convolved;
             }
         }
 

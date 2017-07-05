@@ -288,6 +288,15 @@ public class ImageLabelEntity extends Entity {
             bis.seek( imageIndex ); // next image
         }
 
+        config.imageChanged = false;
+        if( config.imageRepeat == 0 ) {
+            config.imageChanged = true; // first instance of a new image, however many repeats we have
+            //System.err.println( " New image !!! " + bis.getImageFileName() );
+        }
+        else {
+            //System.err.println( " Old image !!! " + bis.getImageFileName() );
+        }
+
         // Setup screen scraper, grab image
         String imageFileName = bis.getImageFileName();
         Integer imageLabel = getClassification( imageFileName ); //, config.sourceFilesPrefix );

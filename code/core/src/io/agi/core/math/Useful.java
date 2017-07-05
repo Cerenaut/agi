@@ -40,6 +40,20 @@ public class Useful {
         return sets;
     }
 
+    /**
+     * Divide numerator by denominator then if there was a fractional part, add 1.
+     * @param numerator
+     * @param denominator
+     * @return
+     */
+    public static int DivideRoundUp( int numerator, int denominator ) {
+        int result = numerator / denominator;
+        if( ( result * denominator ) < numerator ) {
+            ++result;
+        }
+        return result;
+    }
+
     public static boolean IsBad( float r ) {
         boolean breakpoint = false;
         if( Float.isInfinite( r ) ) {

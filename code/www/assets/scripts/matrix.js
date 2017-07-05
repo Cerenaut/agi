@@ -37,10 +37,14 @@ var Matrix = {
     Framework.decode( data );
 
     var dataSize = Framework.getDataSize( data );
+    if( !dataSize ) {
+      return; // can't paint
+    }
+
     var w = dataSize.w;
     var h = dataSize.h;
 
-    var stride = $( "#stride" ).val();
+    var stride = parseInt( $( "#stride" ).val() );
     if( stride > 0 ) {
       w = stride;
       h = Math.floor( dataElements.length / w );
@@ -62,17 +66,22 @@ var Matrix = {
     var values = [];
     values.length = dataElements.length;
 
-    var maxValue = 0.0;
+    var maxValue = - Number.MAX_VALUE;
+    var minValue =   Number.MAX_VALUE;
+
     if( normalize ) {
       for( var i = 0; i < dataElements.elements.length; ++i ) {
         var value = dataElements.elements[ i ];
         maxValue = Math.max( value, maxValue );
+        minValue = Math.min( value, minValue );
       }
     }
     else {
+      minValue = 0.0;
       maxValue = 1.0;
     }
 
+    console.log( "Min: " + minValue + " Max: " + maxValue );
     var i = 0; 
     for( var x = 0; x < w; ++x ) {
       for( var y = 0; y < h; ++y ) {
@@ -106,7 +115,7 @@ var Matrix = {
             plotBorderWidth: 1
         },
         colorAxis: {
-            min: 0,
+            min: minValue,
             max: maxValue,
             minColor: '#000000',
             maxColor: '#ff0000'//Highcharts.getOptions().colors[0]

@@ -11,3 +11,13 @@ body {
   background:white;
 
 }
+
+
+.inverse {
+  color:#eee;
+  background-color:555;
+}
+
+.control-panel input {
+  margin-bottom:2px;
+}
