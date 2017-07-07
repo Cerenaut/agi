@@ -128,6 +128,13 @@ public class Framework {
         SetDataReference( inputKey, refKey );
     }
 
+    public static String GetDataKey(
+            String entity,
+            String suffix ) {
+        String dataKey = NamedObject.GetKey( entity, suffix );
+        return dataKey;
+    }
+
     public static void SetDataReferences(
             String inputEntity,
             String inputSuffix,
@@ -193,15 +200,21 @@ public class Framework {
      * @param configPath
      */
     public static String GetConfig( String entityName, String configPath ) {
-        Persistence persistence = Node.NodeInstance().getPersistence();
-        ModelEntity me = persistence.fetchEntity( entityName );
-        JsonParser parser = new JsonParser();
-        JsonObject jo = parser.parse( me.config ).getAsJsonObject();
+        try {
+            Persistence persistence = Node.NodeInstance().getPersistence();
+            ModelEntity me = persistence.fetchEntity( entityName );
+            JsonParser parser = new JsonParser();
+            JsonObject jo = parser.parse( me.config ).getAsJsonObject();
 
-        // navigate to the nested property
-        JsonElement je = GetNestedProperty( jo, configPath );
+            // navigate to the nested property
+            JsonElement je = GetNestedProperty( jo, configPath );
 
-        return je.getAsString();
+            return je.getAsString();
+        }
+        catch( Exception e ) {
+            _logger.error( e.toString(), e );
+            return null;
+        }
     }
 
     /**
@@ -429,11 +442,13 @@ public class Framework {
      * @param type
      * @param node
      * @param parent
+     * @return name The name of the entity created, which might be the next parent (makes for neat code)
      */
-    public static void CreateEntity( String name, String type, String node, String parent ) {
+    public static String CreateEntity( String name, String type, String node, String parent ) {
         String config = "";
         ModelEntity model = new ModelEntity( name, type, node, parent, config );
         CreateEntity( model );
+        return name;
     }
 
     /**

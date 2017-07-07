@@ -17,21 +17,19 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.entities;
+package io.agi.framework.entities.stdp;
 
 import io.agi.framework.EntityConfig;
 
 /**
- * Created by dave on 23/10/16.
+ * Created by dave on 5/05/17.
  */
-public class QLearningEntityConfig extends EntityConfig {
+public class ConvolutionalSpikeEncoderEntityConfig extends EntityConfig {
 
-    public boolean resetDelayed = false;
+    public float spikeThreshold = 0f;
+    public boolean clear = false;
 
-    public float learningRate = 0f;
-    public float discountRate = 0f;
-
-    public int states = 0;
-    public int actions = 0;
+    public String clearFlagEntityName = "";
+    public String clearFlagConfigPath = "";
 
 }

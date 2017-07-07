@@ -66,18 +66,45 @@ public class ValueSeriesEntity extends Entity {
         // Get all the parameters:
         ValueSeriesEntityConfig config = ( ValueSeriesEntityConfig ) _config;
 
-        if( !_config.learn ) {
+        if( config.reset ) {
+            config.value = 0;
+            config.valueAccumulate = 0;
+            config.countAccumulate = 0;
+        }
+
+        if( !config.learn ) {
             return; // don't append or update the output data except when "learning" ie accumulating
         }
 
-        String stringValue = Framework.GetConfig( config.entityName, config.configPath );
-        Float newValue = Float.valueOf( stringValue );
+        // obtain latest value
+        float newValue = getInputValue(); // This is the current observation
 
-        // default missing values to 0
-        if( newValue == null ) {
-            newValue = 0.f;
+        // always accumulate new value
+        config.valueAccumulate += newValue; // ie only this value, if not accumulating
+        config.countAccumulate += 1; // i.e. 1, if first value or period = 1
+
+        boolean append = false;
+
+        if( config.countAccumulate >= config.periodAccumulate ) {
+            // old count: 0, period: 1 result: append, including new value
+            // old count: 0, period: 2 result: acc
+            // old count: 1, period: 2 result: append, including new value
+            // old count: 1, period: 3 result: acc
+            // old count: 2, period: 3 result: append, including new value
+            append = true;
         }
 
+        if( append ) { // add new value
+            System.err.println( "Append to log: " + getName() );
+            config.value = config.valueAccumulate * config.factorAccumulate;
+            config.valueAccumulate = 0; // clear accumulated
+            config.countAccumulate = 0;
+        }
+        else { // output the accumulated value only
+            return; // don't append to output
+        }
+
+        // OK to get here means we want to append a new value, stored in config.value
         Data output;
 
         if( config.period < 0 ) { // keep infinite history
@@ -105,7 +132,7 @@ public class ValueSeriesEntity extends Entity {
                 }
             }
 
-            output._values[ oldLength ] = newValue;
+            output._values[ oldLength ] = config.value;
         }
         else {
             // finite history rolling window
@@ -123,10 +150,38 @@ public class ValueSeriesEntity extends Entity {
                 output._values[ i2 ] = x1;
             }
 
-            output._values[ 0 ] = newValue; // most recent = 0
+            output._values[ 0 ] = config.value; // most recent = 0
         }
 
         setData( OUTPUT, output );
+    }
+
+    protected float getInputValue() {
+        ValueSeriesEntityConfig config = ( ValueSeriesEntityConfig ) _config;
+
+        Float newValue = null;
+
+        if( config.dataName.length() > 0 ) {
+            Data d = _n.getData( config.dataName, this ); // gets data, from cache if available
+            if( d != null ) {
+                if( d._values.length > config.dataOffset ) {
+                    newValue = d._values[ config.dataOffset ];
+                }
+            }
+        }
+        else {
+            String stringValue = Framework.GetConfig( config.entityName, config.configPath );
+            if( stringValue != null ) {
+                newValue = Float.valueOf( stringValue );
+            }
+        }
+
+        // default missing values to 0
+        if( newValue == null ) {
+            newValue = 0.f;
+        }
+
+        return newValue;
     }
 
     protected static void write( String key, Data accumulated, ValueSeriesEntityConfig config ) {

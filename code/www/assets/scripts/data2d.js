@@ -86,7 +86,7 @@ var Data2d = {
     Data2d.size2d = { w : w, h : h };
 
     var dataMin = Number.MAX_VALUE;
-    var dataMax = 0.0;
+    var dataMax = - Number.MAX_VALUE;
     for( var i = 0; i < dataElements.length; ++i ) {
       var x = dataElements.elements[ i ];
       if( x > dataMax ) dataMax = x;

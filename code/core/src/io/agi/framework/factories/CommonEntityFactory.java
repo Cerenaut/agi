@@ -28,7 +28,15 @@ import io.agi.framework.demo.mnist.ClassificationAnalysisEntity;
 import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.demo.mnist.MnistEntity;
 import io.agi.framework.demo.sd19.Text2ImageLabelEntity;
+import io.agi.framework.demo.sequence.DistractedSequenceRecallEntity;
 import io.agi.framework.entities.*;
+import io.agi.framework.entities.reinforcement_learning.EpsilonGreedyEntity;
+import io.agi.framework.entities.reinforcement_learning.GatedRecurrentMemoryEntity;
+import io.agi.framework.entities.reinforcement_learning.QLearningEntity;
+import io.agi.framework.entities.reinforcement_learning.TrainingScheduleEntity;
+import io.agi.framework.entities.stdp.ConvolutionalSpikeEncoderEntity;
+import io.agi.framework.entities.stdp.DifferenceOfGaussiansEntity;
+import io.agi.framework.entities.stdp.SpikingConvolutionalNetworkEntity;
 import io.agi.framework.persistence.models.ModelEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -212,10 +220,38 @@ public class CommonEntityFactory implements EntityFactory {
             return new DataQueueEntity( objectMap, _n, modelEntity );
         }
 
+        if( entityType.equals( ConvolutionalSpikeEncoderEntity.ENTITY_TYPE ) ) {
+            return new ConvolutionalSpikeEncoderEntity( objectMap, _n, modelEntity );
+        }
+
         if( entityType.equals( QLearningEntity.ENTITY_TYPE ) ) {
             return new QLearningEntity( objectMap, _n, modelEntity );
         }
 
+        if( entityType.equals( VectorCopyRangeEntity.ENTITY_TYPE ) ) {
+            return new VectorCopyRangeEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( DifferenceOfGaussiansEntity.ENTITY_TYPE ) ) {
+            return new DifferenceOfGaussiansEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( SpikingConvolutionalNetworkEntity.ENTITY_TYPE ) ) {
+            return new SpikingConvolutionalNetworkEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( TrainingScheduleEntity.ENTITY_TYPE ) ) {
+            return new TrainingScheduleEntity( objectMap, _n, modelEntity );
+        }
+        if( entityType.equals( DistractedSequenceRecallEntity.ENTITY_TYPE ) ) {
+            return new DistractedSequenceRecallEntity( objectMap, _n, modelEntity );
+        }
+        if( entityType.equals( EpsilonGreedyEntity.ENTITY_TYPE ) ) {
+            return new EpsilonGreedyEntity( objectMap, _n, modelEntity );
+        }
+        if( entityType.equals( GatedRecurrentMemoryEntity.ENTITY_TYPE ) ) {
+            return new GatedRecurrentMemoryEntity( objectMap, _n, modelEntity );
+        }
 
         return null;
     }
