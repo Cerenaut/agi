@@ -20,9 +20,6 @@
 package io.agi.core.ann.reinforcement;
 
 import io.agi.core.data.Data;
-import io.agi.core.orm.NamedObject;
-import io.agi.core.orm.ObjectMap;
-
 import java.util.HashSet;
 
 /**
@@ -30,23 +27,31 @@ import java.util.HashSet;
  *
  * Created by dave on 28/03/17.
  */
-public class QLearning extends NamedObject {
+public class QLearning {
 
     public QLearningConfig _c;
+    public QLearningProblem _w;
+    public QLearningPolicy _p;
+    public Reward _r;
 
-    public Data _expectedRewards;
+    public Data _quality;
     public Data _actionQuality;
     public Data _stateOld;
     public Data _stateNew;
     public Data _actionOld;
+    public Data _actionNew;
     public Data _rewardNew;
 
-    public QLearning( String name, ObjectMap om ) {
-        super( name, om );
+    public QLearning() {
+
     }
 
-    public void setup( QLearningConfig c ) {
+    public void setup( QLearningConfig c, Reward r, QLearningPolicy p, QLearningProblem w ) {
+
         _c = c;
+        _p = p;
+        _r = r;
+        _w = w;
 
         int S = c.getNbrStates();
         int A = c.getNbrActions();
@@ -55,34 +60,57 @@ public class QLearning extends NamedObject {
         _stateOld = new Data( S );
         _stateNew = new Data( S );
         _actionOld = new Data( A );
+        _actionNew = new Data( A );
 
         _actionQuality = new Data( A );
-        _expectedRewards = new Data( S, A );
+        _quality = new Data( A, S );
     }
 
     public void reset() {
-        _expectedRewards.set( 1f ); // encourage exploration
+        _quality.set( 1f ); // encourage exploration
     }
 
     public void update() {
-        update( _actionOld, _stateNew, _rewardNew, _actionQuality );
+        float rewardNew = _r.getReward();
+        Data stateNew = _w.getState();
+        update( stateNew, rewardNew, _actionNew );
+        _p.selectActions( _stateNew, _actionQuality, _actionNew );
+        _w.setActions( _actionNew );
+        _w.update(); // update the world in response to the action
+        //print();
     }
 
-    /**
-     * Train the reward values and assign expected rewards to all possible actions given current state.
-     */
-    public void update( Data a1, Data s2, Data r2, Data aq ) {
-
-        int A = a1.getSize();
-        Data s1 = _stateOld;
+    public void update( Data stateNew, float rewardNew, Data actionNew ) {
+        _rewardNew.set( rewardNew );
+        _stateOld.copy( _stateNew );
+        _stateNew.copy( stateNew );
+        _actionOld.copy( _actionNew );
+        _actionNew.copy( actionNew );
 
         if( _c.getLearn() ) {
-            train( s1, a1, s2, r2 );
+            // state,action old -> state,reward new
+            train( _stateOld, _actionOld, _stateNew, _rewardNew );
         }
 
-        findExpectedReward( s1, A, aq );
+        // get new action output
+        int A = _actionOld.getSize();
+        findExpectedReward( _stateNew, A, _actionQuality );
+    }
 
-        _stateOld.copy( s2 );
+    public void print() {
+        System.err.println( "STATES ---> " );
+        int states = _stateNew.getSize();
+        int actions = _actionNew.getSize();
+
+        for( int y = 0; y < actions; ++y ) {
+            for( int x = 0; x < states; ++x ) {
+                int offset = getQualityOffset( x, y, states, actions );
+               float q = _quality._values[ offset ];
+                System.err.printf( "%.2f", q );
+                System.err.print( ", " );
+            }
+            System.err.println();
+        }
     }
 
     /**
@@ -100,8 +128,8 @@ public class QLearning extends NamedObject {
             float QS1A = 0f;
 
             for( Integer s1Bit : s1Active ) { // now in state s2
-                int offsetS1A1 = getExpectedRewardOffset( s1Bit, a1Bit, S, A );
-                float QS1A1 = _expectedRewards._values[ offsetS1A1 ];
+                int offsetS1A1 = getQualityOffset( s1Bit, a1Bit, S, A );
+                float QS1A1 = _quality._values[ offsetS1A1 ];
 
                 QS1A += QS1A1;
             }
@@ -119,7 +147,7 @@ public class QLearning extends NamedObject {
         }
     }
 
-    public int getExpectedRewardOffset( int s1, int a1, int S, int A ) {
+    public int getQualityOffset( int s1, int a1, int S, int A ) {
         int offset = s1 * A + a1;
         return offset;
     }
@@ -160,8 +188,8 @@ public class QLearning extends NamedObject {
 
         for( Integer s1Bit : s1Active ) { // was in state s1
             for( Integer a1Bit : a1Active ) { // did action a1
-                int offsetS1A1 = getExpectedRewardOffset( s1Bit, a1Bit, S, A );
-                float oldQS1A1 = _expectedRewards._values[ offsetS1A1 ];
+                int offsetS1A1 = getQualityOffset( s1Bit, a1Bit, S, A );
+                float oldQS1A1 = _quality._values[ offsetS1A1 ];
 
                 // find max Q:
                 float maxQS2A = 0f;
@@ -170,8 +198,13 @@ public class QLearning extends NamedObject {
                     float maxQS2A2 = 0f;
 
                     for( int a2Bit = 0; a2Bit < A; ++a2Bit ) {
-                        int offsetS2A2 = getExpectedRewardOffset( s2Bit, a2Bit, S, A );
-                        float QS2A2 = _expectedRewards._values[ offsetS2A2 ];
+                        int offsetS2A2 = getQualityOffset( s2Bit, a2Bit, S, A );
+
+                        if( offsetS2A2 >= _quality._values.length ) {
+                            int g = 0;
+                            g++;
+                        }
+                        float QS2A2 = _quality._values[ offsetS2A2 ];
 
                         if( QS2A2 > maxQS2A2 ) {
                             maxQS2A2 = QS2A2;
@@ -194,7 +227,7 @@ public class QLearning extends NamedObject {
                 float deltaQ = ( r2Value + discountRate * maxQS2A - oldQS1A1 );
                 float newQS1A1 = oldQS1A1 + learningRate * deltaQ;
 
-                _expectedRewards._values[ offsetS1A1 ] = newQS1A1;
+                _quality._values[ offsetS1A1 ] = newQS1A1;
             }
         }
     }

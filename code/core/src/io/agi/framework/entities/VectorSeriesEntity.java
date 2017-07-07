@@ -46,6 +46,7 @@ public class VectorSeriesEntity extends Entity {
 
     public static final String INPUT = "input";
     public static final String OUTPUT = "output";
+    public static final String OUTPUT_ACCUMULATE = "output-accumulate";
 
     public VectorSeriesEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
@@ -71,6 +72,9 @@ public class VectorSeriesEntity extends Entity {
             flags.removeFlag( OUTPUT, DataFlags.FLAG_SPARSE_BINARY );
             flags.removeFlag( OUTPUT, DataFlags.FLAG_SPARSE_REAL );
         }
+
+        attributes.add( OUTPUT_ACCUMULATE );
+
     }
 
     public Class getConfigClass() {
@@ -88,10 +92,48 @@ public class VectorSeriesEntity extends Entity {
             return; // nothing to log yet
         }
 
-        if( !_config.learn ) {
-             return; // don't append or update the output data except when "learning" ie accumulating
+        Data outputAccumulate = getDataLazyResize( OUTPUT_ACCUMULATE, new DataSize( input._dataSize) ); // same size as input
+
+        if( config.reset ) {
+            outputAccumulate.set( 0f ); //config.valueAccumulate = 0;
+            input.copy( outputAccumulate );  //config.value = 0;
+            config.countAccumulate = 0;
         }
 
+        if( !config.learn ) {
+            setData( OUTPUT_ACCUMULATE, outputAccumulate );
+            return; // don't append or update the output data except when "learning" ie accumulating
+        }
+
+        // always accumulate new value
+        outputAccumulate.add( input ); //config.valueAccumulate += newValue; // ie only this value, if not accumulating
+        config.countAccumulate += 1; // i.e. 1, if first value or period = 1
+
+        boolean append = false;
+
+        if( config.countAccumulate >= config.periodAccumulate ) {
+            // old count: 0, period: 1 result: append, including new value
+            // old count: 0, period: 2 result: acc
+            // old count: 1, period: 2 result: append, including new value
+            // old count: 1, period: 3 result: acc
+            // old count: 2, period: 3 result: append, including new value
+            append = true;
+        }
+
+        if( append ) { // add new value
+            System.err.println( "Append to log: " + getName() );
+            input.copy( outputAccumulate ); //config.value = config.valueAccumulate;
+            outputAccumulate.set( 0f ); //config.valueAccumulate = 0;
+            config.countAccumulate = 0;
+            setData( OUTPUT_ACCUMULATE, outputAccumulate );
+        }
+        else { // output the accumulated value only
+            setData( OUTPUT_ACCUMULATE, outputAccumulate );
+            return; // don't append to output
+        }
+
+
+        // OK to get here means we want to append a new value, stored in OUTPUT_ACCUMULATE
         Data oldOutput = getData( OUTPUT );
 
         if( config.period < 0 ) { // keep infinite history

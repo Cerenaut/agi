@@ -568,9 +568,9 @@ public class ModelData {
                 }
             }
             catch( NumberFormatException e ) {
+                //e.printStackTrace();
                 //System.err.println( "Error decoding last string: " + oldPrefix );
-                e.printStackTrace();
-                // nothing, just a bit of whitespace?
+                // Conclusion: Is nothing, just a bit of whitespace?
             }
 
             return fa;

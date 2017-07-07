@@ -77,9 +77,9 @@ public class ClassifierDemo {
             Framework.CreateEntity( modelName, RandomVectorEntity.ENTITY_TYPE, n.getName(), experimentName );
             Framework.SetConfig( modelName, "elements", "2" );
         }
-//        Framework.CreateEntity( classifierName, GrowingNeuralGasEntity.ENTITY_TYPE, n.getName(), modelName );
+        Framework.CreateEntity( classifierName, GrowingNeuralGasEntity.ENTITY_TYPE, n.getName(), modelName );
 //        Framework.CreateEntity( classifierName, ParameterLessSelfOrganizingMapEntity.ENTITY_TYPE, n.getName(), modelName );
-        Framework.CreateEntity( classifierName, PlasticNeuralGasEntity.ENTITY_TYPE, n.getName(), modelName );
+//        Framework.CreateEntity( classifierName, PlasticNeuralGasEntity.ENTITY_TYPE, n.getName(), modelName );
 
         Framework.SetDataReference( classifierName, ParameterLessSelfOrganizingMapEntity.INPUT, modelName, RandomVectorEntity.OUTPUT );
 

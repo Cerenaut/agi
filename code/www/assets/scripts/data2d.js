@@ -3,11 +3,34 @@
 var Data2d = {
 
   showLabels : false,
+  size2d : null,
 
   update : function() {
     var dataName = $( "#data" ).val();
     Framework.setup( $( "#host" ).val(), $( "#port" ).val() );
     Framework.getData( dataName, Data2d.onGetData );
+  },
+
+  auto : function() {
+    var dataMin = parseFloat( $("#data-min" ).val() ).toFixed( 1 );
+    var dataMax = parseFloat( $("#data-max" ).val() ).toFixed( 1 );
+
+    $("#min" ).val( dataMin );
+    $("#max" ).val( dataMax );
+
+    if( Data2d.size2d ) {
+      var wIdeal = parseInt( screen.width  * 0.8 );
+      var hIdeal = parseInt( screen.height * 0.8 );
+      var wElements = Data2d.size2d.w;
+      var hElements = Data2d.size2d.h;
+      var wPxIdeal = wIdeal / wElements;
+      var hPxIdeal = hIdeal / hElements;
+      var pxIdeal = parseInt( Math.min( wPxIdeal, hPxIdeal ) );
+
+      $( "#size" ).val( pxIdeal );
+    }
+
+    Data2d.update();
   },
 
   onGetData : function( json ) {
@@ -34,19 +57,51 @@ var Data2d = {
     // undo the sparse coding, if present:
     Framework.decode( data );
 
-    var dataSize = DataCanvas.resizeCanvas( "#canvas", data, 1, 1 );
+    var dataSize = Framework.getDataSize( data );
     if( !dataSize ) {
       return; // can't paint
     }
 
+    $( "#data-size" ).val( JSON.stringify( dataSize ) );
+
     var w = dataSize.w;
     var h = dataSize.h;
 
-    var stride = $( "#stride" ).val();
+    var stride = parseInt( $( "#stride" ).val() );
     if( stride > 0 ) {
       w = stride;
       h = Math.floor( dataElements.length / w );
     }
+
+    $( "#data-length" ).val( dataElements.length );
+
+    if( ( w * h ) != dataElements.length ) {
+      $( "#data-length" ).css( "color", "#ff0000" );
+    }
+    else {
+      $( "#data-length" ).css( "color", "#000000" );
+    }
+
+    // note last rendered size:
+    Data2d.size2d = { w : w, h : h };
+
+    var dataMin = 0.0;
+    var dataMax = 0.0;
+    for( var i = 0; i < dataElements.length; ++i ) {
+      var x = dataElements.elements[ i ];
+      if( x > dataMax ) dataMax = x;
+      if( x < dataMin ) dataMin = x;
+    }
+
+    $( "#data-min" ).val( dataMin );
+    $( "#data-max" ).val( dataMax );
+
+    dataSize = DataCanvas.resizeCanvasWithSize( "#canvas", w, h, 1, 1 );
+    if( !dataSize ) {
+      return; // can't paint
+    }
+
+    console.log( "w: " + w + " h: " + h + " length: " + dataElements.length );
 
     var ctx = dataSize.ctx;
 

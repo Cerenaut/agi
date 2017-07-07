@@ -273,6 +273,11 @@ g++;
       return null;
     }
 
+    return DataCanvas.resizeCanvasWithSize( canvasSelector, w, h, repeatX, repeatY );
+  },
+
+  resizeCanvasWithSize : function( canvasSelector, w, h, repeatX, repeatY ) {
+
     if( !repeatX ) repeatX = 1;
     if( !repeatY ) repeatY = 1;
 

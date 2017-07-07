@@ -32,15 +32,15 @@ public class ImageLabelEntityConfig extends EntityConfig {
     public static final String PHASE_TESTING = "testing";
 
     public class ReceptiveField {
-        int receptiveFieldX;
-        int receptiveFieldY;
-        int receptiveFieldW;
-        int receptiveFieldH;
+        public int receptiveFieldX;
+        public int receptiveFieldY;
+        public int receptiveFieldW;
+        public int receptiveFieldH;
     }
 
     public class Resolution {
-        int resolutionX;
-        int resolutionY;
+        public int resolutionX;
+        public int resolutionY;
     }
 
     public ReceptiveField receptiveField = new ReceptiveField();
@@ -69,6 +69,7 @@ public class ImageLabelEntityConfig extends EntityConfig {
     public int imageIndex = 0;
     public int imageRepeat = 0; // index of image repeat
     public int imageRepeats = 1; // 1 repeat = show once only
+    public boolean imageChanged = false; // flag goes 1 on image change event
 
     public boolean terminate = false; // trigger to stop generating images
     public String phase = PHASE_TRAINING;

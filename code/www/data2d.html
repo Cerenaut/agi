@@ -33,26 +33,38 @@
   <body style="">
 
     <div class="agi-div-background" style="">
-     <div id="controls" style="padding:2px;text-align:center;">
-      <label for="host">Node</label>
+     <div id="controls" class="control-panel" style="padding:2px;text-align:center;background-color:#544;color:aaa;">
+      <div style="display:inline;">
+       <a href="/index.html" target="_blank" title="Index page"><img src="assets/images/logo-inverse-brown.png" style="width:30px;padding:0.5em;"/></a>
+      </div>
+      <label for="data" class="inverse">Data</label>
+      <input type="text" id="data" style="display:inline;" class="" placeholder="Data name" value=""/>
+      <label for="host" class="inverse">Node</label>
       <input type="text" id="host" style="" class="" placeholder="Host" value="localhost"/>
       <input type="number" id="port" style="width:5em;" class="" placeholder="Port" value="8491"/>
-      <label for="data">Data</label>
-      <input type="text" id="data" style="display:inline;" class="" placeholder="Data name" value=""/>
-      <label for="data">Interval</label>
+      <label for="data" class="inverse">Interval</label>
       <input type="number" id="interval" style="display:inline;width:5em;" class="" placeholder="Update interval" value="500"/>
-      <input type="button" id="pause" class="btn btn-sm btn-danger" style="" onclick="Loop.togglePause();" value="Resume"/>
+      <input type="button" id="pause" class="btn btn-sm btn-primary" style="" onclick="Loop.togglePause();" value="Resume"/>
       <input type="button" id="update" class="btn btn-sm btn-danger" style="" onclick="Loop.update();" value="Refresh"/>
-         <label for="size">Px/Bit</label>
+      <input type="button" id="auto" class="btn btn-sm btn-success" style="" onclick="Data2d.auto();" value="Auto"/>
+         <label for="size" class="inverse">Px/Bit</label>
          <input type="number" id="size" style="width:3em;" class="" placeholder="" title="Pixels per Bit" value="4"/>
-      <label for="stride">Stride</label>
-      <input type="number" id="stride" style="width:5em;" class="" placeholder="Stride" value="0"/>
-      <label for="min">Min</label>
-      <input type="number" id="min" style="display:inline;width:3em;" class="" placeholder="Min" value="0"/>
-      <label for="max">Max</label>
-      <input type="number" id="max" style="display:inline;width:3em;" class="" placeholder="Max" value="1"/>
+      <label for="stride" class="inverse">Stride</label>
+      <input type="number" id="stride" style="width:5em;" class="" placeholder="Stride" value="100"/>
+      <label for="min" class="inverse">Min</label>
+      <input type="number" id="min" style="display:inline;width:3em;" class="" placeholder="Min" value="0" step="0.1"/>
+      <label for="max" class="inverse">Max</label>
+      <input type="number" id="max" style="display:inline;width:3em;" class="" placeholder="Max" value="1" step="0.1"/><br>
+      <label for="data-size" class="inverse">Size</label>
+      <input type="text" id="data-size" style="display:inline;" class="" placeholder="Data size" value=""/>
+      <label for="data-length" class="inverse">Len.</label>
+      <input type="text" id="data-length" style="display:inline;" class="" placeholder="Data length" value=""/>
+      <label for="data-min" class="inverse">Min-v</label>
+      <input type="text" id="data-min" style="display:inline;" class="" placeholder="Data min" value=""/>
+      <label for="data-max" class="inverse">Max-v</label>
+      <input type="text" id="data-max" style="display:inline;" class="" placeholder="Data max" value=""/>
      </div>
-     <div id="container" style="width:100%;">
+     <div id="container" style="width:100%;background-color:#200;height:100%;">
        <canvas id="canvas" class="" >
        </canvas>
      </div>
