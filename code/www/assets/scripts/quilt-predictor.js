@@ -301,7 +301,7 @@ var Region = {
     var y0 = 0;
 
     // top panel: spikes-new + pred-old
-    DataCanvas.fillElementsRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, prediction, prediction, prediction );
+    DataCanvas.fillElementsUnitRgb( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, prediction, prediction, prediction );
     DataCanvas.strokeElements( canvasDataSize.ctx, x0, y0, canvasDataSize.w, canvasDataSize.h, Region.selectedCells, "#ffffff" );
   },
 

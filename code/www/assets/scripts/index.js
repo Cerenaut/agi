@@ -118,6 +118,7 @@ var Search = {
       }
       else if( Search.type == "data" ) {
         linksValue = "<a href='matrix.html?data="+ objectName + "' title='Open as Matrix' target='_blank'>Matrix</a> / "
+                   + "<a href='data2d.html?data="+ objectName + "' title='Open as Data2d' target='_blank'>Data2d</a> / "
                    + "<a href='vector.html?data="+ objectName + "' title='Open as Vector' target='_blank'>Vector</a> / "
                    + "<a href='stats.html?data="+ objectName + "' title='Open as Statistics' target='_blank'>Statistics</a> / "
                    + "<a href='data.html?data="+ objectName + "' title='Open as Json' target='_blank'>Json</a>";

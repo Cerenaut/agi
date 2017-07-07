@@ -51,6 +51,11 @@ var Framework = {
       if( label == "y" ) h = dataSizes.sizes[ i ];
     }
 
+    if( ( w * h ) < data.elements.length ) {
+      w = data.elements.length;
+      h = 1;
+    }
+
     var size = { w: w, h: h };
     return size;
   },
