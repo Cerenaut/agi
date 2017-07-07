@@ -25,6 +25,7 @@ import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
+import io.agi.framework.demo.CreateEntityMain;
 import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.factories.CommonEntityFactory;
@@ -37,44 +38,14 @@ import java.util.Properties;
  *
  * Created by dave on 8/07/16.
  */
-public class GrowingNeuralGasDemo {
+public class GrowingNeuralGasDemo extends CreateEntityMain {
 
-    /**
-     * Usage: Expects some arguments. These are:
-     * 0: node.properties file
-     * 1 to n: 'create' flag and/or 'prefix' flag
-     * @param args
-     */
     public static void main( String[] args ) {
-
-        // Create a Node
-        Main m = new Main();
-        Properties p = PropertiesUtil.load( args[ 0 ] );
-        m.setup( p, null, new CommonEntityFactory() );
-
-        // Optionally set a global prefix for entities
-        for( int i = 1; i < args.length; ++i ) {
-            String arg = args[ i ];
-            if( arg.equalsIgnoreCase( "prefix" ) ) {
-                String prefix = args[ i+1 ];
-                Framework.SetEntityNamePrefix( prefix );
-//                Framework.SetEntityNamePrefixDateTime();
-            }
-        }
-
-        // Optionally create custom entities and references
-        for( int i = 1; i < args.length; ++i ) {
-            String arg = args[ i ];
-            if( arg.equalsIgnoreCase( "create" ) ) {
-                createEntities( m._n );
-            }
-        }
-
-        // Start the system
-        m.run();
+        GrowingNeuralGasDemo demo = new GrowingNeuralGasDemo();
+        demo.mainImpl( args );
     }
 
-    public static void createEntities( Node n ) {
+    public void createEntities( Node n ) {
 
 //        String trainingPath = "./training";
 //        String testingPath = "./testing";
@@ -89,7 +60,7 @@ public class GrowingNeuralGasDemo {
         boolean terminateByAge = false;
 //        int terminationAge = 10;//9000;
         int terminationAge = 50000;//25000;
-        int trainingEpochs = 10;//80; // good for up to 80k
+        int trainingEpochs = 2;//80; // good for up to 80k
         int testingEpochs = 1;//80; // good for up to 80k
         int imagesPerEpoch = 1000;
 

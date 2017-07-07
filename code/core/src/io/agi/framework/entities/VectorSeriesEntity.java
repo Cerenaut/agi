@@ -121,7 +121,7 @@ public class VectorSeriesEntity extends Entity {
         }
 
         if( append ) { // add new value
-            System.err.println( "Append to log: " + getName() );
+            //System.err.println( "Append to log: " + getName() );
             input.copy( outputAccumulate ); //config.value = config.valueAccumulate;
             outputAccumulate.set( 0f ); //config.valueAccumulate = 0;
             config.countAccumulate = 0;
