@@ -17,7 +17,7 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.core.ann.unsupervised;
+package io.agi.core.ann.unsupervised.stdp.paper;
 
 import io.agi.core.data.ConvolutionData3d;
 import io.agi.core.data.Int3d;

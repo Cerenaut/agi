@@ -17,7 +17,7 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.core.ann.unsupervised;
+package io.agi.core.ann.unsupervised.stdp.paper;
 
 import io.agi.core.data.*;
 import io.agi.core.math.Useful;
@@ -128,6 +128,7 @@ public class SpikingConvolutionalNetworkLayer {
     public void update( boolean train, boolean maxPooling ) {
         // Check whether its right to reset these spikes, because they inhibit other spikes so maybe I need to keep them.
         // They do need to be reset each step - we remember the inhibition, but these spikes are only for one time step.
+        System.err.println( "Layer: " + this._layer + " Train: " + train + " maxPooling: " + maxPooling );
         _convSpikes.set( 0f );
         _poolSpikes.set( 0f );
 
@@ -439,6 +440,7 @@ public class SpikingConvolutionalNetworkLayer {
                 if( inhibitionValue > 0f ) {
                     continue; // no spike possible, due to inhibition
                 }
+for layer 2, it never trains cos there are no output spikes.
 
                 if( czMax >= config._integrationThreshold ) { // over threshold
 
@@ -608,7 +610,7 @@ public class SpikingConvolutionalNetworkLayer {
                         } // px
                     } // py
 
-                    poolMax._values[ poolOffset ] = max;
+                    poolMax._values[ poolOffset ] = max; // max integrated value for concept z in the pooled input area.
 
                 } // out z
             } // out x

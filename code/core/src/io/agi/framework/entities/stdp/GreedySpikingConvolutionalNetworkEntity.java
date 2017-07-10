@@ -19,9 +19,7 @@
 
 package io.agi.framework.entities.stdp;
 
-import io.agi.core.ann.unsupervised.stdp.paper.SpikingConvolutionalNetwork;
-import io.agi.core.ann.unsupervised.stdp.paper.SpikingConvolutionalNetworkConfig;
-import io.agi.core.ann.unsupervised.stdp.paper.SpikingConvolutionalNetworkLayer;
+import io.agi.core.ann.unsupervised.stdp.paper.*;
 import io.agi.core.data.Data;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
@@ -35,7 +33,7 @@ import java.util.Collection;
 /**
  * Created by dave on 6/05/17.
  */
-public class SpikingConvolutionalNetworkEntity extends Entity {
+public class GreedySpikingConvolutionalNetworkEntity extends Entity {
 
     public static final String ENTITY_TYPE = "spiking-convolutional-network";
 
@@ -54,7 +52,7 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
     public static final String DATA_LAYER_POOL_SPIKES_ = "layer-pool-spikes-";
     public static final String DATA_LAYER_POOL_INHIBITION_ = "layer-pool-inhibition-";
 
-    public SpikingConvolutionalNetworkEntity( ObjectMap om, Node n, ModelEntity model ) {
+    public GreedySpikingConvolutionalNetworkEntity(ObjectMap om, Node n, ModelEntity model) {
         super( om, n, model );
     }
 
@@ -72,7 +70,7 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
         attributes.add( DATA_INVERSE );
         flags.putFlag( DATA_INVERSE, DataFlags.FLAG_NODE_CACHE );
 
-        SpikingConvolutionalNetworkConfig networkConfig = createNetworkConfig();
+        GreedySpikingConvolutionalNetworkConfig networkConfig = createNetworkConfig();
 
         int layers = networkConfig.getNbrLayers();
 
@@ -112,9 +110,9 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
         return SpikingConvolutionalNetworkEntityConfig.class;
     }
 
-    protected SpikingConvolutionalNetworkConfig createNetworkConfig() {
-        SpikingConvolutionalNetworkEntityConfig config = ( SpikingConvolutionalNetworkEntityConfig ) _config;
-        SpikingConvolutionalNetworkConfig networkConfig = new SpikingConvolutionalNetworkConfig();
+    protected GreedySpikingConvolutionalNetworkConfig createNetworkConfig() {
+        GreedySpikingConvolutionalNetworkEntityConfig config = ( GreedySpikingConvolutionalNetworkEntityConfig ) _config;
+        GreedySpikingConvolutionalNetworkConfig networkConfig = new GreedySpikingConvolutionalNetworkConfig();
         String name = getName();
         ObjectMap om = ObjectMap.GetInstance();
 
@@ -153,9 +151,9 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
         // Algorithm specific parameters
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Region size
-        SpikingConvolutionalNetworkEntityConfig config = ( SpikingConvolutionalNetworkEntityConfig ) _config;
-        SpikingConvolutionalNetworkConfig networkConfig = createNetworkConfig(); // copies config from EntityConfig
-        SpikingConvolutionalNetwork scn = new SpikingConvolutionalNetwork();
+        GreedySpikingConvolutionalNetworkEntityConfig config = ( GreedySpikingConvolutionalNetworkEntityConfig ) _config;
+        GreedySpikingConvolutionalNetworkConfig networkConfig = createNetworkConfig(); // copies config from EntityConfig
+        GreedySpikingConvolutionalNetwork scn = new GreedySpikingConvolutionalNetwork();
         scn.setup( networkConfig );
         scn.setInput( input );
         scn.resize();
@@ -201,12 +199,12 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
         copyDataToPersistence( scn );
     }
 
-    protected void copyDataFromPersistence( SpikingConvolutionalNetwork scn ) {
+    protected void copyDataFromPersistence( GreedySpikingConvolutionalNetwork scn ) {
 
         int layers = scn._config.getNbrLayers();
 
         for( int layer = 0; layer < layers; ++layer ) {
-            SpikingConvolutionalNetworkLayer scnl =  scn._layers.get( layer );
+            GreedySpikingConvolutionalNetworkLayer scnl =  scn._layers.get( layer );
 
             scnl._inputSpikes = getDataLazyResize( DATA_LAYER_INPUT_SPIKES_ + layer, scnl._inputSpikes._dataSize );
             scnl._inputTrace = getDataLazyResize( DATA_LAYER_INPUT_TRACES_ + layer, scnl._inputTrace._dataSize );
@@ -220,12 +218,12 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
         }
     }
 
-    protected void copyDataToPersistence( SpikingConvolutionalNetwork scn ) {
+    protected void copyDataToPersistence( GreedySpikingConvolutionalNetwork scn ) {
 
         int layers = scn._config.getNbrLayers();
 
         for( int layer = 0; layer < layers; ++layer ) {
-            SpikingConvolutionalNetworkLayer scnl =  scn._layers.get( layer );
+            GreedySpikingConvolutionalNetworkLayer scnl =  scn._layers.get( layer );
 
             setData( DATA_LAYER_INPUT_SPIKES_ + layer, scnl._inputSpikes );
             setData( DATA_LAYER_INPUT_TRACES_ + layer, scnl._inputTrace );

@@ -17,7 +17,7 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.core.ann.unsupervised;
+package io.agi.core.ann.unsupervised.stdp.paper;
 
 import io.agi.core.ann.NetworkConfig;
 import io.agi.core.orm.ObjectMap;
@@ -28,7 +28,7 @@ import java.util.Random;
 /**
  * Created by dave on 1/05/17.
  */
-public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
+public class GreedySpikingConvolutionalNetworkConfig extends NetworkConfig {
 
     // http://cs231n.github.io/convolutional-networks/
     // 3d input (e.g. x,y,{rgb})
@@ -65,7 +65,7 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
     public static final String KEY_LAYER_POOLING_WIDTH = "layer-pooling-width";
     public static final String KEY_LAYER_POOLING_HEIGHT = "layer-pooling-height";
 
-    public SpikingConvolutionalNetworkConfig() {
+    public GreedySpikingConvolutionalNetworkConfig() {
 
     }
 
@@ -118,7 +118,7 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
     public void copyFrom( NetworkConfig nc, String name ) {
         super.copyFrom( nc, name );
 
-        SpikingConvolutionalNetworkConfig c = ( SpikingConvolutionalNetworkConfig ) nc;
+        GreedySpikingConvolutionalNetworkConfig c = (GreedySpikingConvolutionalNetworkConfig) nc;
 
         setAge( c.getAge() );
         setWeightsStdDev( c.getWeightsStdDev() );

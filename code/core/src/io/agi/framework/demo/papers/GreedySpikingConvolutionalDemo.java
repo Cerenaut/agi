@@ -20,28 +20,24 @@
 package io.agi.framework.demo.papers;
 
 import io.agi.core.orm.AbstractPair;
-import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.Framework;
-import io.agi.framework.Main;
 import io.agi.framework.Node;
 import io.agi.framework.demo.CreateEntityMain;
 import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.demo.mnist.ImageLabelEntityConfig;
 import io.agi.framework.entities.*;
 import io.agi.framework.entities.stdp.*;
-import io.agi.framework.factories.CommonEntityFactory;
 import io.agi.framework.persistence.models.ModelData;
 
 import java.util.ArrayList;
-import java.util.Properties;
 
 /**
  * Created by dave on 8/07/16.
  */
-public class SpikingConvolutionalDemo extends CreateEntityMain {
+public class GreedySpikingConvolutionalDemo extends CreateEntityMain {
 
     public static void main( String[] args ) {
-        SpikingConvolutionalDemo demo = new SpikingConvolutionalDemo();
+        GreedySpikingConvolutionalDemo demo = new GreedySpikingConvolutionalDemo();
         demo.mainImpl(args );
     }
 
@@ -102,7 +98,7 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         parentName = Framework.CreateEntity( dogPosName, DifferenceOfGaussiansEntity.ENTITY_TYPE, n.getName(), parentName );
         parentName = Framework.CreateEntity( dogNegName, DifferenceOfGaussiansEntity.ENTITY_TYPE, n.getName(), parentName );
         parentName = Framework.CreateEntity( spikeEncoderName, ConvolutionalSpikeEncoderEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( spikingConvolutionalName, SpikingConvolutionalNetworkEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = Framework.CreateEntity( spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.ENTITY_TYPE, n.getName(), parentName );
 
         parentName = Framework.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
         parentName = Framework.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
@@ -126,11 +122,11 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         Framework.SetDataReference( spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_INPUT_NEG, dogNegName, DifferenceOfGaussiansEntity.DATA_OUTPUT );
 
         // a) Image to image region, and decode
-        Framework.SetDataReference( spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_INPUT, spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_OUTPUT );
+        Framework.SetDataReference( spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_INPUT, spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_OUTPUT );
 
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList<>();
 //        featureDatas.add( new AbstractPair<>( spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_OUTPUT ) );
-        featureDatas.add( new AbstractPair<>( spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_OUTPUT ) );
+        featureDatas.add( new AbstractPair<>( spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_OUTPUT ) );
         Framework.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
 
         // Experiment config
@@ -281,14 +277,14 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         parentName = Framework.CreateEntity( netSpk2SeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
 
         String layer = "0";
-        Framework.SetDataReference( netInh1SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_INHIBITION_ + layer );
-        Framework.SetDataReference( netInt1SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_INTEGRATED_ + layer );
-        Framework.SetDataReference( netSpk1SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_SPIKES_ + layer );
+        Framework.SetDataReference( netInh1SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_INHIBITION_ + layer );
+        Framework.SetDataReference( netInt1SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_INTEGRATED_ + layer );
+        Framework.SetDataReference( netSpk1SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_SPIKES_ + layer );
 
         layer = "1";
-        Framework.SetDataReference( netInh2SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_INHIBITION_ + layer );
-        Framework.SetDataReference( netInt2SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_INTEGRATED_ + layer );
-        Framework.SetDataReference( netSpk2SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_SPIKES_ + layer );
+        Framework.SetDataReference( netInh2SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_INHIBITION_ + layer );
+        Framework.SetDataReference( netInt2SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_INTEGRATED_ + layer );
+        Framework.SetDataReference( netSpk2SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_SPIKES_ + layer );
 
         period = 300;
         accumulatePeriod = 1;
@@ -369,7 +365,7 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
             int trainingAge0,
             int trainingAge1 ) {
 
-        SpikingConvolutionalNetworkEntityConfig entityConfig = new SpikingConvolutionalNetworkEntityConfig();
+        GreedySpikingConvolutionalNetworkEntityConfig entityConfig = new GreedySpikingConvolutionalNetworkEntityConfig();
         entityConfig.clearFlagEntityName = clearFlagEntityName;
         entityConfig.clearFlagConfigPath = clearFlagConfigPath;
         entityConfig.cache = true;
