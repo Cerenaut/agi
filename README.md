@@ -9,15 +9,15 @@ The remainder of this file contains technical information for setting up and usi
 
 ## This repository
 
-This repository contains algorithm code and a framework to execute repeatable and fully logged / inspectable experiments. Every piece of data used in the algorithms can be retrospectively analyzed using graphical tools that can be written *after* you discover there's a bug...
+This repository contains algorithm code and a framework to execute repeatable and fully logged / inspectable experiments. Every piece of data used in the algorithms can be retrospectively analysed using graphical tools that can be written *after* you discover there's a bug...
 
-The code includes a simple graphical UI, an interprocess layer for distributed coordination and communication, and base classes for the entities that you need for building an AGI experiment. 
+The code includes a simple graphical UI, an interprocess layer for distributed coordination and communication, and base classes for the entities that you need for building an AGI experiment.
 
 We also include implementations of many algorithms from the AI and ML literature.
 
 ## Code structure
 
-This repo consists of:
+This repository consists of:
 
 - Java core algorithmic components ```/code/core/src/io/agi/core```
 - Java experimental framework components ```/code/core/src/io/agi/framework```
@@ -33,7 +33,7 @@ Compute nodes have a RESTful API, so it is possible to implement components in o
 
 * Each compute node has any number of Entity nodes (Entity class), which can own Data (Data class).
 
-* Entities have zero or one parents and zero or more child entities. An update to an Entith causes its children to be updated also. 
+* Entities have zero or one parents and zero or more child entities. An update to an Entity causes its children to be updated also.
 
 * An Experiment is a root entity without a parent, and with its descendants is therefore a self-contained subtree.
 
@@ -45,7 +45,7 @@ Compute nodes have a RESTful API, so it is possible to implement components in o
 
 * We use JDBC, JSON file, and in-memory implementations of a persistence layer.
 
-* Algorithms are updated iteratively. Between iterations, all data is persisted, therefore components are otherwise stateless and reproducable, repeatable, visualisable
+* Algorithms are updated iteratively. Between iterations, all data is persisted, therefore components are otherwise stateless and reproducible, repeatable, visualisable
 
 * We provide a HTML user interface to explore and visualize the state of the algorithms.
 
@@ -53,11 +53,11 @@ Compute nodes have a RESTful API, so it is possible to implement components in o
 
 # Getting Started
 
-The repository contains scripts to help with installation, setup and running. 
+The repository contains scripts to help with installation, setup and running.
 
 NOTE: There is a `run-in-docker.sh` script that allows you to build and run compute in a docker container, which means you won't need to do any environment configuration on your own computer, save for installation of Docker.
 
-All scripts utilise environmental variables defined in a 'variables' file. Every script begins by sourcing this file. `/resources/variables-template.sh` is an example with explanations of each variable. You can modify that file, or create your own instead. 
+All scripts utilise environmental variables defined in a 'variables' file. Every script begins by sourcing this file. `/resources/variables-template.sh` is an example with explanations of each variable. You can modify that file, or create your own instead.
 **IMPORTANT:** Then set the ENV variable `VARIABLES_FILE` to it using the full path.
 
 That is necessary even if you are using the `run-in-docker.sh` script.
@@ -91,11 +91,11 @@ If using PostgreSQL, to administer the database manually (not essential, but use
 We provide project files to help you build and browse code using IntelliJ IDEA.
 If you wish to take advantage of this convenience, you should also install IntelliJ.
 
-
 Then:
 * Pull the repository
-* Set variables. Duplicate `/resources/variables-template.sh`, and overwrite with values suitable for your environment. Copy it to a convenient location and set an environmental variable VARIABLES_FILE to point to it using the full path. We recommend you set that up in .bashrc so that it is always definted correctly.
-* The favoured (and our current) approach is to use 'in memory' persistence, specified in `node.properties` in the working folder. However, postgres is an option. If using postgres, setup and run the db. Run `/bin/db/setup.sh`
+* Build the project using `mvn package -f code/core/pom.xml`
+* Set variables. Duplicate `/resources/variables-template.sh`, and overwrite with values suitable for your environment. Copy it to a convenient location and set an environmental variable VARIABLES_FILE to point to it using the full path. We recommend you set that up in `.bashrc` so that it is always defined correctly.
+* The favoured (and our current) approach is to use 'in memory' persistence, specified in `node.properties` in the working folder. However, postgres is an option. If using postgres, setup and run the db by executing `/bin/db/setup.sh`
 
 ## Running Basic
 * The folder that you are running from must contain the file `node.properties` and a log4j configuration file. A working template is given in `/resources/run-empty`.
