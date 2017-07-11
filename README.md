@@ -20,7 +20,7 @@ We also include implementations of many algorithms from the AI and ML literature
 This repo consists of:
 
 - Java core algorithmic components ```/code/core/src/io/agi/core```
-- Java experimental framework componennts ```/code/core/src/io/agi/framework```
+- Java experimental framework components ```/code/core/src/io/agi/framework```
 - Web based graphical UI ```/code/www```
 - Associated scripts ```/bin```
 
