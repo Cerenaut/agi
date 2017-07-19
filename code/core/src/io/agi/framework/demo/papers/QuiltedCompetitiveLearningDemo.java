@@ -25,6 +25,7 @@ import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
+import io.agi.framework.demo.CreateEntityMain;
 import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.factories.CommonEntityFactory;
@@ -38,44 +39,14 @@ import java.util.Properties;
  *
  * Created by dave on 8/07/16.
  */
-public class QuiltedCompetitiveLearningDemo {
+public class QuiltedCompetitiveLearningDemo extends CreateEntityMain {
 
-    /**
-     * Usage: Expects some arguments. These are:
-     * 0: node.properties file
-     * 1 to n: 'create' flag and/or 'prefix' flag
-     * @param args
-     */
     public static void main( String[] args ) {
-
-        // Create a Node
-        Main m = new Main();
-        Properties p = PropertiesUtil.load( args[ 0 ] );
-        m.setup( p, null, new CommonEntityFactory() );
-
-        // Optionally set a global prefix for entities
-        for( int i = 1; i < args.length; ++i ) {
-            String arg = args[ i ];
-            if( arg.equalsIgnoreCase( "prefix" ) ) {
-                String prefix = args[ i+1 ];
-                Framework.SetEntityNamePrefix( prefix );
-//                Framework.SetEntityNamePrefixDateTime();
-            }
-        }
-
-        // Optionally create custom entities and references
-        for( int i = 1; i < args.length; ++i ) {
-            String arg = args[ i ];
-            if( arg.equalsIgnoreCase( "create" ) ) {
-                createEntities( m._n );
-            }
-        }
-
-        // Start the system
-        m.run();
+        QuiltedCompetitiveLearningDemo demo = new QuiltedCompetitiveLearningDemo();
+        demo.mainImpl( args );
     }
 
-    public static void createEntities( Node n ) {
+    public void createEntities( Node n ) {
 
 //        String trainingPath = "./training";
 //        String testingPath = "./testing";
@@ -83,8 +54,11 @@ public class QuiltedCompetitiveLearningDemo {
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
 //        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train,/home/dave/workspace/agi.io/data/mnist/1k_test";
 
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train";
-        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train,/home/dave/workspace/agi.io/data/mnist/all/all_t10k";
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train";
+//        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train,/home/dave/workspace/agi.io/data/mnist/all/all_t10k";
 
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10,/home/dave/workspace/agi.io/data/mnist/cycle3";
@@ -94,7 +68,7 @@ public class QuiltedCompetitiveLearningDemo {
         boolean terminateByAge = false;
 //        int terminationAge = 10;//9000;
         int terminationAge = 50000;//25000;
-        int trainingEpochs = 1;//80; // good for up to 80k
+        int trainingEpochs = 2;//80; // good for up to 80k
         int testingEpochs = 1;//80; // good for up to 80k
 
         // Define some entities

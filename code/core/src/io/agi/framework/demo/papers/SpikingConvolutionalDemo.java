@@ -24,6 +24,7 @@ import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
 import io.agi.framework.Node;
+import io.agi.framework.demo.CreateEntityMain;
 import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.demo.mnist.ImageLabelEntityConfig;
 import io.agi.framework.entities.*;
@@ -37,68 +38,14 @@ import java.util.Properties;
 /**
  * Created by dave on 8/07/16.
  */
-public class SpikingConvolutionalDemo {
+public class SpikingConvolutionalDemo extends CreateEntityMain {
 
-    /**
-     * Usage: Expects some arguments. These are:
-     * 0: node.properties file
-     * 1 to n: 'create' flag and/or 'prefix' flag
-     * @param args
-     */
     public static void main( String[] args ) {
-
-        // Create a Node
-        Main m = new Main();
-        Properties p = PropertiesUtil.load( args[ 0 ] );
-        m.setup( p, null, new CommonEntityFactory() );
-
-        // Optionally set a global prefix for entities
-        for( int i = 1; i < args.length; ++i ) {
-            String arg = args[ i ];
-            if( arg.equalsIgnoreCase( "prefix" ) ) {
-                String prefix = args[ i+1 ];
-                Framework.SetEntityNamePrefix( prefix );
-//                Framework.SetEntityNamePrefixDateTime();
-            }
-        }
-
-        // Optionally create custom entities and references
-        for( int i = 1; i < args.length; ++i ) {
-            String arg = args[ i ];
-            if( arg.equalsIgnoreCase( "create" ) ) {
-                createEntities( m._n );
-            }
-        }
-
-        boolean update = false;
-        for( int i = 1; i < args.length; ++i ) {
-            String arg = args[ i ];
-            if( arg.equalsIgnoreCase( "update" ) ) {
-                update = true;
-            }
-        }
-
-        if( update ) {
-            int delay = 500;
-            Thread t = new Thread() {
-                public void run() {
-                    try {
-                        Thread.sleep( delay );
-                    }
-                    catch( InterruptedException e ) {}
-                    System.err.println( "Requesting Update... " );
-                    m._n.doUpdate( "experiment" );
-                    System.err.println( "Requested Update. " );
-                }
-            };
-            t.start();
-        }
-
-        // Start the system
-        m.run();
+        SpikingConvolutionalDemo demo = new SpikingConvolutionalDemo();
+        demo.mainImpl(args );
     }
 
-    public static void createEntities( Node n ) {
+    public void createEntities( Node n ) {
 
 //        String trainingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small";
 //        String testingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small, /Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/testing-small";

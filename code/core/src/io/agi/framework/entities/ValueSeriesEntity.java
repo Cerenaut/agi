@@ -95,7 +95,7 @@ public class ValueSeriesEntity extends Entity {
         }
 
         if( append ) { // add new value
-            System.err.println( "Append to log: " + getName() );
+            //System.err.println( "Append to log: " + getName() );
             config.value = config.valueAccumulate * config.factorAccumulate;
             config.valueAccumulate = 0; // clear accumulated
             config.countAccumulate = 0;
@@ -161,7 +161,7 @@ public class ValueSeriesEntity extends Entity {
 
         Float newValue = null;
 
-        if( config.dataName.length() > 0 ) {
+        if( ( config.dataName != null ) && ( config.dataName.length() > 0 ) ) {
             Data d = _n.getData( config.dataName, this ); // gets data, from cache if available
             if( d != null ) {
                 if( d._values.length > config.dataOffset ) {
