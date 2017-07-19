@@ -31,6 +31,7 @@ import io.agi.framework.Node;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -62,7 +63,7 @@ public class ConvolutionalSpikeEncoderEntity extends Entity {
     @Override
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
         attributes.add( DATA_INTEGRATED );
-        attributes.add( DATA_OUTPUT );
+        attributes.add(DATA_OUTPUT);
     }
 
     @Override
@@ -72,6 +73,7 @@ public class ConvolutionalSpikeEncoderEntity extends Entity {
 
     public void doUpdateSelf() {
 
+        // TODO split into convolutional and spike encoder...
         ConvolutionalSpikeEncoderEntityConfig config = ( ConvolutionalSpikeEncoderEntityConfig ) _config;
 
         Data inputPos = getData( DATA_INPUT_POS );
@@ -80,17 +82,28 @@ public class ConvolutionalSpikeEncoderEntity extends Entity {
         Point sizePos = Data2d.getSize( inputPos );
         Point sizeNeg = Data2d.getSize( inputNeg );
 
-        if( !sizePos.equals( sizeNeg ) ) {
+        // must have at least 1 input
+        if( ( inputPos == null ) && ( inputNeg == null ) ) {
             return; // can't run
+        }
+
+        // must be same dimension
+        int depth = 1;
+
+        if( ( inputPos != null ) && ( inputNeg != null ) ) {
+            if( !sizePos.equals( sizeNeg ) ) {
+                return; // can't run
+            }
+
+            depth = 2;
         }
 
         // 1. +/- DoGs of input. Abs.
         // 2. SpikeRate encoding
         // 3. Interleave output as 3d.
-
-        int depth = 2;
         DataSize convolutionalSize = ConvolutionData3d.getDataSize( sizePos.x, sizePos.y, depth );
 
+        Data encoded = new Data( convolutionalSize );
         Data integrated = getDataLazyResize( DATA_INTEGRATED, convolutionalSize );
         Data output = new Data( convolutionalSize );
 
@@ -114,40 +127,52 @@ public class ConvolutionalSpikeEncoderEntity extends Entity {
             //System.err.println(" Not clearing " );
         }
 
+        // encode the 2d inputs into a 3d structure
+        ArrayList< Data > inputDatas = new ArrayList< Data >();
+
+        if( inputPos != null ) {
+            inputDatas.add( inputPos );
+        }
+        if( inputNeg != null ) {
+            inputDatas.add( inputNeg );
+        }
+
         for( int y = 0; y < sizePos.y; ++y ) {
             for( int x = 0; x < sizePos.x; ++x ) {
                 int offset2d = Data2d.getOffset( sizePos.x, x, y );
 
-                float valuePos = Math.max( 0f, inputPos._values[ offset2d ] );
-                float valueNeg = Math.max( 0f, inputNeg._values[ offset2d ] );
+                for( int z = 0; z < depth; ++z ) {
 
-                int z = 0;
-                int offset3d = ConvolutionData3d.getOffset( x, y, z, convolutionalSize );
+                    Data inputData = inputDatas.get( z );
+                    float value = inputData._values[ offset2d ];
 
-                float valuePosOld = integrated._values[ offset3d + 0 ];
-                float valueNegOld = integrated._values[ offset3d + 1 ];
+                    int offset3d = ConvolutionData3d.getOffset( x, y, z, convolutionalSize );
 
-                float valuePosNew = valuePosOld + valuePos;
-                float valueNegNew = valueNegOld + valueNeg;
-
-                float spikePos = 0;
-                float spikeNeg = 0;
-
-                if( valuePosNew >= config.spikeThreshold ) {
-                    spikePos = 1f;
-                    valuePosNew = 0f;
+                    encoded._values[ offset3d ] = value;
                 }
+            }
+        }
 
-                if( valueNegNew >= config.spikeThreshold ) {
-                    spikeNeg = 1f;
-                    valueNegNew = 0f;
+        for( int y = 0; y < sizePos.y; ++y ) {
+            for( int x = 0; x < sizePos.x; ++x ) {
+                for( int z = 0; z < depth; ++z ) {
+
+                    int offset3d = ConvolutionData3d.getOffset( x, y, z, convolutionalSize );
+
+                    float value = Math.max( 0f, encoded._values[ offset3d ] ); // positive only
+
+                    float valueOld = integrated._values[ offset3d ];
+                    float valueNew = valueOld + value;
+                    float spike = 0;
+
+                    if( valueNew >= config.spikeThreshold ) {
+                        spike = 1f;
+                        valueNew = 0f;
+                    }
+
+                    integrated._values[ offset3d ] = valueNew;
+                    output._values[ offset3d ] = spike;
                 }
-
-                integrated._values[ offset3d + 0 ] = valuePosNew;
-                integrated._values[ offset3d + 1 ] = valueNegNew;
-
-                output._values[ offset3d + 0 ] = spikePos;
-                output._values[ offset3d + 1 ] = spikeNeg;
             }
         }
 

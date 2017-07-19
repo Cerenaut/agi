@@ -20,7 +20,12 @@
 package io.agi.core.ann.unsupervised.stdp.paper;
 
 import io.agi.core.data.*;
+import io.agi.core.math.Unit;
 import io.agi.core.math.Useful;
+import io.agi.core.opt.DiscreteTimePIDController;
+
+import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * Created by dave on 1/05/17.
@@ -30,18 +35,28 @@ public class SpikingConvolutionalNetworkLayer {
 
     public SpikingConvolutionalNetworkLayerConfig _config;
 
+    public DiscreteTimePIDController _convSpikeThresholdController;
+
     public int _layer = 0;
 
     public Data _inputInverse;
     public Data _inputSpikes;
     public Data _inputTrace;
+
     public Data _kernelWeights;
+    public Data _kernelFrequency;
+
     public Data _convInverse;
     public Data _convSums;
     public Data _convInhibition;
     public Data _convIntegrated;
     public Data _convSpikes;
+//    public Data _convSpikeFrequency;
+//    public Data _convSpikeThreshold;
+
     public Data _poolSpikes;
+    public Data _poolSpikesIntegrated;
+    public Data _poolIntegrated;
     public Data _poolInhibition;
     public Data _poolInput;
 
@@ -53,10 +68,27 @@ public class SpikingConvolutionalNetworkLayer {
         _config = config;
         _layer = layer;
 
+//        _convSpikeFrequency = new Data( DataSize.create( 1 ) );
+//        _convSpikeThreshold = new Data( DataSize.create( 1 ) );
+
+        _convSpikeThresholdController = new DiscreteTimePIDController();
+        _convSpikeThresholdController.setup(
+                _config._spikeFrequencyControllerP,
+                _config._spikeFrequencyControllerI,
+                _config._spikeFrequencyControllerD,
+                _config._spikeFrequencyControllerN,
+                _config._spikeFrequencyControllerT,
+                _config._spikeFrequencyControllerMin,
+                _config._spikeFrequencyControllerMax );
+        _convSpikeThresholdController.reset( 0f, _config._spikeFrequencyTarget );
 
         int kernelSize = _config._fieldWidth * _config._fieldHeight * _config._fieldDepth * _config._depth;
         DataSize kernelDataSize = DataSize.create( kernelSize );
         _kernelWeights = new Data( kernelDataSize );
+
+        int kernelFrequencySize = _config._depth;
+        DataSize kernelFrequencyDataSize = DataSize.create( kernelFrequencySize );
+        _kernelFrequency = new Data( kernelFrequencyDataSize );
 
         DataSize convDataSize = DataSize.create( _config._width, _config._height, _config._depth );
         DataSize convInhibitionDataSize = DataSize.create( _config._width, _config._height );
@@ -76,6 +108,8 @@ public class SpikingConvolutionalNetworkLayer {
         DataSize poolInhibitionDataSize = DataSize.create( pw, ph );
 
         _poolSpikes = new Data( poolDataSize );
+        _poolSpikesIntegrated = new Data( poolDataSize );
+        _poolIntegrated = new Data( poolDataSize );
 //        _poolInhibition = new Data( poolDataSize );
         _poolInhibition = new Data( poolInhibitionDataSize );
         _poolInput = new Data( poolDataSize );
@@ -110,40 +144,61 @@ public class SpikingConvolutionalNetworkLayer {
             _kernelWeights._values[ i ] = (float)w;
         }
 
+        _kernelFrequency.set( 0f );
+
+//        _convSpikeFrequency.set( 0f );
+//        _convSpikeFrequency.set( 0.5f );
+
+        // reconfigure the controller, and reset its internal state.
+        _convSpikeThresholdController.setup(
+                _config._spikeFrequencyControllerP,
+                _config._spikeFrequencyControllerI,
+                _config._spikeFrequencyControllerD,
+                _config._spikeFrequencyControllerN,
+                _config._spikeFrequencyControllerT,
+                _config._spikeFrequencyControllerMin,
+                _config._spikeFrequencyControllerMax );
+
+        _convSpikeThresholdController.reset( 0.5f, _config._spikeFrequencyTarget );
+
         clear();
     }
 
     public void clear() {
         // allow integrated activity to decay away
         _inputTrace.set( 0f );
+
+        _convInhibition.set( 0f );
         _convIntegrated.set( 0f );
 
         // TODO I should add a decay to the inhibition rather than reset them each time.
         // Currently they are reset on new image - need to remove this dependency.
         // allow inhibition to end
-        _convInhibition.set( 0f );
         _poolInhibition.set( 0f );
+        _poolIntegrated.set( 0f );
+        _poolSpikesIntegrated.set( 0f );
     }
 
-    public void update( boolean train, boolean maxPooling ) {
+    public void update( boolean train ) {
         // Check whether its right to reset these spikes, because they inhibit other spikes so maybe I need to keep them.
         // They do need to be reset each step - we remember the inhibition, but these spikes are only for one time step.
-        System.err.println( "Layer: " + this._layer + " Train: " + train + " maxPooling: " + maxPooling );
+        //System.err.println( "Layer: " + this._layer + " Train: " + train );//+ " maxPooling: " + maxPooling );
+
+        // spikes cleared every time
         _convSpikes.set( 0f );
         _poolSpikes.set( 0f );
 
         updateInputSpikeTrace( _inputSpikes, _inputTrace );
         convolve( _config, _kernelWeights, _inputSpikes, _convSums );
         //float inhSum = _convInhibition.sum();
-        integrate( _config, _kernelWeights, _inputTrace, _convSums, _convInhibition, _convIntegrated, _convSpikes, train );
+        //integrate( _config, _kernelWeights, _kernelFrequency, _inputTrace, _convSums, _convInhibition, _convIntegrated, _convSpikes, _convSpikeFrequency, _convSpikeThreshold, train );
+        integrate( _config, _convSpikeThresholdController, _kernelWeights, _kernelFrequency, _inputTrace, _convSums, _convInhibition, _convIntegrated, _convSpikes, train );
         //float inhSum2 = _convInhibition.sum();
-        if( maxPooling ) {
-            poolMax( _config, _convIntegrated, _poolSpikes );
-        }
-        else {
-            poolSpike( _config, _convSpikes, _poolSpikes, _poolInhibition );
-        }
 
+        poolMax( _config, _convIntegrated, _poolIntegrated );
+        poolSpike( _config, _convSpikes, _poolSpikes, _poolInhibition );
+
+        _poolSpikesIntegrated.add( _poolSpikes );
 //        invert( _config, _kernelWeights, _poolInput, _convInverse, _inputInverse );
     }
 
@@ -307,7 +362,10 @@ public class SpikingConvolutionalNetworkLayer {
         }
     }
 
-    public static void train( SpikingConvolutionalNetworkLayerConfig config, Data kernelWeights, Data inputSpikeTrace, int cx, int cy, int cz ) {
+    public static void train(
+            SpikingConvolutionalNetworkLayerConfig config,
+            Data kernelWeights,
+            Data inputSpikeTrace, int cx, int cy, int cz ) {
         // train convolutional cells only
         // i = postsynaptic (output)
         // j = presynaptic (input)
@@ -376,9 +434,9 @@ public class SpikingConvolutionalNetworkLayer {
 
                     float inputValue = inputSpikeTrace._values[ inputOffset ];
                     float learningRate = - config._learningRateNeg;
-                    if( inputValue > 0f ) {
+//                    if( inputValue > 0f ) {
                         learningRate = config._learningRatePos;
-                    }
+//                    }
 
                     // Dave's training enhancements:
                     // Nonstationary learning rule: Add random amt to active pre-synaptic when post-syn firing rate too low (disused)
@@ -386,7 +444,17 @@ public class SpikingConvolutionalNetworkLayer {
                     // Nonsaturation rule: Do something to avoid weight being fixed at 1 ever.
 
                     float oldWeightValue = kernelWeights._values[ kernelsOffset ];
-                    float newWeightValue = oldWeightValue + learningRate * oldWeightValue * ( 1f - oldWeightValue );
+                    //float newWeightValue = oldWeightValue + learningRate * oldWeightValue * ( 1f - oldWeightValue );
+
+                    // weight = 0.5, then diff = 0,   *2 = 0, 1- = 1
+                    // weight = 0.0, then diff = 0.5, *2 = 1, 1- = 0
+// but stops learning at ends..
+//                    float weightRate = 1.0f - ( Math.abs( 0.5f - oldWeightValue ) * 2.f );
+//                    float deltaValue =
+//                    float newWeightValue = oldWeightValue + learningRate * deltaValue;
+                    float newWeightValue = Unit.lerp( inputValue, oldWeightValue, learningRate );
+
+                    newWeightValue = Math.max( 0f, Math.min( 1f, newWeightValue ) );
 
                     kernelWeights._values[ kernelsOffset ] = newWeightValue;
                 } // input z
@@ -397,17 +465,34 @@ public class SpikingConvolutionalNetworkLayer {
 
     public static void integrate(
             SpikingConvolutionalNetworkLayerConfig config,
+            DiscreteTimePIDController convSpikeThresholdController,
             Data kernelWeights,
+            Data kernelFrequency,
             Data inputTrace,
             Data convSums,
             Data convInhibition,
             Data convIntegrated,
             Data convSpikes,
+//            Data convSpikeFrequency,
+//            Data convSpikeThreshold,
             boolean train ) {
         // Neurons in all convolutional layers are non-leaky integrate-and-fire neurons
         // V_i(t) = V_i(t-1) + sum(j): W_ji * S_j(t-1)
         // S_j = spike of neuron j
         // W_ji = weight j --> i
+        HashMap< Integer, Integer > kernelSpikeCount = new HashMap< Integer, Integer >();
+
+        for( int k = 0; k < config._depth; ++k ) {
+            kernelSpikeCount.put( k, 0 );
+        }
+
+        //float integrationThreshold = config._integrationThreshold;
+        //float integrationThreshold = convSpikeThreshold._values[ 0 ];
+        float integrationThreshold = convSpikeThresholdController.getOutputMax() - convSpikeThresholdController.getOutput();
+        //float integrationThreshold = convSpikeThresholdController.getOutput();
+
+        int spikes = 0;
+
         for( int cy = 0; cy < config._height; cy++ ) {
             for( int cx = 0; cx < config._width; cx++ ) {
 
@@ -426,6 +511,8 @@ public class SpikingConvolutionalNetworkLayer {
                     int convolvedOffset = ConvolutionData3d.getOffset( cx, cy, cz, config._width, config._height, config._depth );
 
                     float c = convSums._values[ convolvedOffset ];
+                    float gain = getKernelGain( kernelFrequency, cz, config._kernelSpikeFrequencyTarget );
+                    c *= gain;
                     float v1 = convIntegrated._values[ convolvedOffset ];
                     float v2 = v1 + c;
 
@@ -437,14 +524,24 @@ public class SpikingConvolutionalNetworkLayer {
                     }
                 }
 
-                if( inhibitionValue > 0f ) {
-                    continue; // no spike possible, due to inhibition
-                }
-for layer 2, it never trains cos there are no output spikes.
+//                if( inhibitionValue > 0f ) {
+//                    continue; // no spike possible, due to inhibition
+//                }
+//
+                if( czMax >= integrationThreshold ) { // over threshold
 
-                if( czMax >= config._integrationThreshold ) { // over threshold
+                    spikes += 1;
+
+                    if( inhibitionValue > 0f ) {
+                        continue; // no spike possible, due to inhibition
+                    }
 
                     int convolvedOffset = ConvolutionData3d.getOffset( cx, cy, czMaxAt, config._width, config._height, config._depth );
+
+                    //spikingKernels.add( czMaxAt );
+                    int oldSpikeCount = kernelSpikeCount.get( czMaxAt );
+                    int newSpikeCount = oldSpikeCount +1;
+                    kernelSpikeCount.put( czMaxAt, newSpikeCount );
 
                     convSpikes._values[ convolvedOffset ] = 1f;
                     convInhibition._values[ inhibitionOffset ] = 1f; // inhibit here
@@ -469,6 +566,44 @@ for layer 2, it never trains cos there are no output spikes.
             } // x
         } // y
 
+        // update layer spike frequency - the observed variable
+        // normalize for layer area (but not depth)
+        int area = config._width * config._height;
+        float spikeDensity = (float)spikes / (float)area;
+        //updateSpikeFrequency( spikeDensity );
+        float fOld = 1f - convSpikeThresholdController.getInput();//convSpikeFrequency._values[ 0 ];
+        //float fOld = convSpikeThresholdController.getInput();//convSpikeFrequency._values[ 0 ];
+        float fNew = Unit.lerp( spikeDensity, fOld, config._spikeFrequencyLearningRate );
+        fNew = Math.min( 1f, Math.max( 0f, fNew ) ); // clamped at 0 <= f <= 1
+        //convSpikeFrequency._values[ 0 ] = fNew;
+
+        // update layer spike threshold - the control output
+        convSpikeThresholdController.update( 1f - fNew, config._spikeFrequencyTarget ); // input, target
+        //convSpikeThresholdController.update( fNew, config._spikeFrequencyTarget ); // input, target
+
+//        // TODO replace with optimizer
+//        float frequencyIdeal = 0.1f;
+//        float thresholdValue = 0;
+//        if( fNew > frequencyIdeal ) {
+//            thresholdValue = 1f;
+//        }
+//        thresholdValue = Math.max( 0f, thresholdValue ); // clip at 0
+//
+////        hm how to set the threshold
+//        float layerSpikeThresholdLearningRate = 0.00001f; // slower
+//        float oldSpikeThreshold = convSpikeThreshold._values[ 0 ];
+//        float newSpikeThreshold = //Unit.lerp( , oldSpikeThreshold, layerSpikeThresholdLearningRate );
+//        convSpikeThreshold._values[ 0 ] = newSpikeThreshold;
+
+        // update kernel frequencies depending whether each kernel z fired or not.
+        for( int cz = 0; cz < config._depth; ++cz ) {
+            // update the frequency for each kernel z
+            //boolean spiked = spikingKernels.contains( cz );
+            int kernelSpikes = kernelSpikeCount.get( cz );
+            float kernelSpikeDensity = (float)kernelSpikes / (float)area;
+            updateKernelFrequency( kernelFrequency, cz, kernelSpikeDensity, config._kernelSpikeFrequencyLearningRate );
+        }
+
 //        Also, there is a lateral inhibition mechanism in
 //        all convolutional layers. When a neuron fires, in an
 //        specific location, it inhibits other neurons in that
@@ -480,6 +615,53 @@ for layer 2, it never trains cos there are no output spikes.
 //        at most one spike at each location which indicates
 //        the existence of a particular visual feature in that
 //        location.
+    }
+
+    /**
+     *
+     * Nominally returns 1.0. However when frequency is too low or too high, the gain is adjusted.
+     * The gain can be essentially unbounded as the frequency approaches its limits (0 or 1).
+     * We can have an expectation of what a nominal frequency would be.
+     *
+     * @param kernelFrequency
+     * @param cz
+     * @return
+     */
+    public static float getKernelGain( Data kernelFrequency, int cz, float expectedFrequency ) {
+        float f = kernelFrequency._values[ cz ];
+
+        // say nominal is 0.05 (1 in 20, which is high)
+        // when we get to zero the gain should be very high
+        float MIN_FREQUENCY = 0.00001f;
+        float fMin = Math.max( MIN_FREQUENCY, f );
+        float fraction = fMin / expectedFrequency;
+        float gain = 1f / fraction;
+        return gain;
+    }
+
+    /**
+     * There are essentially 2 ways to ensure all kernel models are fully utilized. One, to adapt the weights of disused
+     * cells. Two, to artificially make disused cells fire and adapt their weights normally when they fire. Conceivably
+     * we could have a situation where some inputs leave a lot of unintegrated potential, but all cells are firing at
+     * times... is this possible? Or would firing cells learn to integrate this?
+     *
+     * Kernel frequency should adapt linearly, so we add a small amount whenever it fires (or doesn't). It can measure
+     * the approximate recent history within a range of values defined by the learningRate.
+     *
+     * @param kernelFrequency
+     * @param cz
+     * @param value
+     * @param learningRate
+     */
+    public static void updateKernelFrequency( Data kernelFrequency, int cz, float value, float learningRate ) {
+//        float delta = 0f;
+//        if( spiked ) {
+//            delta = 1f;
+//        }
+        float fOld = kernelFrequency._values[ cz ];
+        float fNew = Unit.lerp( value, fOld, learningRate );
+        fNew = Math.min( 1f, Math.max( 0f, fNew ) ); // clamped at 0 <= f <= 1
+        kernelFrequency._values[ cz ] = fNew;
     }
 
     /**
@@ -568,7 +750,7 @@ for layer 2, it never trains cos there are no output spikes.
     protected static void poolMax(
             SpikingConvolutionalNetworkLayerConfig config,
             Data convIntegrated,
-            Data poolMax ) {
+            Data poolIntegrated ) {
         Int3d i3d = ConvolutionData3d.getSize( convIntegrated );
         int iw = i3d.getWidth();
         int ih = i3d.getHeight();
@@ -610,7 +792,7 @@ for layer 2, it never trains cos there are no output spikes.
                         } // px
                     } // py
 
-                    poolMax._values[ poolOffset ] = max; // max integrated value for concept z in the pooled input area.
+                    poolIntegrated._values[ poolOffset ] += max; // max integrated value for concept z in the pooled input area.
 
                 } // out z
             } // out x
@@ -677,6 +859,10 @@ for layer 2, it never trains cos there are no output spikes.
                                 int kernelsOffset = cz * kernelSize + kernelOffset;
 
                                 float inputValue = inputSpikes._values[ inputOffset ];
+                                if( kernelsOffset >= kernelWeights._values.length ) {
+                                    int g = 0;
+                                    g++;
+                                }
                                 float weightValue = kernelWeights._values[ kernelsOffset ];
 
 //                                 maxInput = Math.max( inputValue, maxInput );

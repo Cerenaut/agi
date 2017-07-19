@@ -45,8 +45,8 @@ public class SpikingConvolutionalNetworkLayerConfig {
     //tribution with the mean of 0.8 and STD of 0.05
 
     public Random _r;
-    public int _trainingAgeStart = 0;
-    public int _trainingAgeEnd   = 0;
+//    public int _trainingAgeStart = 0;
+//    public int _trainingAgeEnd   = 0;
 
     public float _weightStdDev;
     public float _weightsMean;
@@ -55,6 +55,20 @@ public class SpikingConvolutionalNetworkLayerConfig {
     public float _learningRateNeg;
 
     public float _integrationThreshold;
+
+    public float _kernelSpikeFrequencyLearningRate;
+    public float _kernelSpikeFrequencyTarget;
+
+//    public float _spikeFrequency;
+    public float _spikeFrequencyLearningRate;
+    public float _spikeFrequencyTarget;
+    public float _spikeFrequencyControllerP;
+    public float _spikeFrequencyControllerI;
+    public float _spikeFrequencyControllerD;
+    public float _spikeFrequencyControllerN;
+    public float _spikeFrequencyControllerT;
+    public float _spikeFrequencyControllerMin;
+    public float _spikeFrequencyControllerMax;
 
     public int _inputPadding;
     public int _inputStride;
@@ -76,13 +90,25 @@ public class SpikingConvolutionalNetworkLayerConfig {
 
     public void setup(
             Random r,
-            int trainingAgeStart,
-            int trainingAgeEnd,
+//            int trainingAgeStart,
+//            int trainingAgeEnd,
             float weightStdDev,
             float weightsMean,
             float learningRatePos,
             float learningRateNeg,
             float integrationThreshold,
+            float kernelSpikeFrequencyLearningRate,
+            float kernelSpikeFrequencyTarget,
+//            float spikeFrequency,
+            float spikeFrequencyLearningRate,
+            float spikeFrequencyTarget,
+            float spikeFrequencyControllerP,
+            float spikeFrequencyControllerI,
+            float spikeFrequencyControllerD,
+            float spikeFrequencyControllerN,
+            float spikeFrequencyControllerT,
+            float spikeFrequencyControllerMin,
+            float spikeFrequencyControllerMax,
             int inputPadding,
             int inputStride,
             int width,
@@ -94,13 +120,27 @@ public class SpikingConvolutionalNetworkLayerConfig {
             int poolingWidth,
             int poolingHeight ) {
         _r = r;
-        _trainingAgeStart = trainingAgeStart;
-        _trainingAgeEnd = trainingAgeEnd;
+//        _trainingAgeStart = trainingAgeStart;
+//        _trainingAgeEnd = trainingAgeEnd;
         _weightStdDev = weightStdDev;
         _weightsMean = weightsMean;
         _learningRatePos = learningRatePos;
         _learningRateNeg = learningRateNeg;
         _integrationThreshold = integrationThreshold;
+        _kernelSpikeFrequencyLearningRate = kernelSpikeFrequencyLearningRate;
+        _kernelSpikeFrequencyTarget = kernelSpikeFrequencyTarget;
+
+        //_spikeFrequency = spikeFrequency;
+        _spikeFrequencyLearningRate = spikeFrequencyLearningRate;
+        _spikeFrequencyTarget = spikeFrequencyTarget;
+        _spikeFrequencyControllerP = spikeFrequencyControllerP;
+        _spikeFrequencyControllerI = spikeFrequencyControllerI;
+        _spikeFrequencyControllerD = spikeFrequencyControllerD;
+        _spikeFrequencyControllerN = spikeFrequencyControllerN;
+        _spikeFrequencyControllerT = spikeFrequencyControllerT;
+        _spikeFrequencyControllerMin = spikeFrequencyControllerMin;
+        _spikeFrequencyControllerMax = spikeFrequencyControllerMax;
+
         _inputPadding = inputPadding;
         _inputStride = inputStride;
         _width = width;
@@ -113,15 +153,15 @@ public class SpikingConvolutionalNetworkLayerConfig {
         _poolingHeight = poolingHeight;
     }
 
-    public boolean isTrainingAge( int age ) {
-        if( age < _trainingAgeStart ) {
-            return false;
-        }
-        if( age >= _trainingAgeEnd ) {
-            return false;
-        }
-        return true;
-    }
+//    public boolean isTrainingAge( int age ) {
+//        if( age < _trainingAgeStart ) {
+//            return false;
+//        }
+//        if( age >= _trainingAgeEnd ) {
+//            return false;
+//        }
+//        return true;
+//    }
 
     public int getPooledWidth() {
         int pooledWidth = Useful.DivideRoundUp( _width, _poolingWidth );

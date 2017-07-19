@@ -48,11 +48,12 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
     public static final String KEY_WEIGHTS_MEAN = "weights-mean";
     public static final String KEY_LEARNING_RATE_POS = "learning-rate-pos";
     public static final String KEY_LEARNING_RATE_NEG = "learning-rate-neg";
+//    public static final String KEY_LEARNING_RATE_SPIKE_FREQUENCY = "learning-rate-spike-frequency";
 
     public static final String KEY_AGE = "age";
 
     public static final String KEY_LAYERS = "layers";
-    public static final String KEY_LAYER_TRAINING_AGE = "layer-training-age";
+//    public static final String KEY_LAYER_TRAINING_AGE = "layer-training-age";
     public static final String KEY_LAYER_INTEGRATION_THRESHOLD = "layer-integration-threshold";
     public static final String KEY_LAYER_INPUT_PADDING = "layer-input-padding";
     public static final String KEY_LAYER_INPUT_STRIDE = "layer-input-stride";
@@ -65,6 +66,20 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
     public static final String KEY_LAYER_POOLING_WIDTH = "layer-pooling-width";
     public static final String KEY_LAYER_POOLING_HEIGHT = "layer-pooling-height";
 
+    public static final String KEY_LAYER_KERNEL_SPIKE_FREQUENCY_TARGET = "layer-kernel-spike-frequency-target";
+    public static final String KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE = "layer-kernel-spike-frequency-learning-rate";
+
+    public static final String KEY_LAYER_SPIKE_FREQUENCY_TARGET = "layer-spike-frequency-target";
+    public static final String KEY_LAYER_SPIKE_FREQUENCY_LEARNING_RATE = "layer-spike-frequency-learning-rate";
+
+    public static final String KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_P = "layer-spike-frequency-controller-p";
+    public static final String KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_I = "layer-spike-frequency-controller-i";
+    public static final String KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_D = "layer-spike-frequency-controller-d";
+    public static final String KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_N = "layer-spike-frequency-controller-n";
+    public static final String KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_T = "layer-spike-frequency-controller-t";
+    public static final String KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_MIN = "layer-spike-frequency-controller-min";
+    public static final String KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_MAX = "layer-spike-frequency-controller-max";
+
     public SpikingConvolutionalNetworkConfig() {
 
     }
@@ -76,9 +91,24 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
             float weightsMean,
             float learningRatePos,
             float learningRateNeg,
+//            float learningRateSpikeFrequency,
 //            float integrationThreshold,
             int nbrLayers,
-            String layerTrainingAges,
+//            String layerSpikeFrequencies,
+//            String layerTrainingAges,
+
+            String layerKernelSpikeFrequencyLearningRate,
+            String layerKernelSpikeFrequencyTarget,
+            String layerSpikeFrequencyLearningRate,
+            String layerSpikeFrequencyTarget,
+            String layerSpikeFrequencyControllerP,
+            String layerSpikeFrequencyControllerI,
+            String layerSpikeFrequencyControllerD,
+            String layerSpikeFrequencyControllerN,
+            String layerSpikeFrequencyControllerT,
+            String layerSpikeFrequencyControllerMin,
+            String layerSpikeFrequencyControllerMax,
+            
             String layerIntegrationThresholds,
             String layerInputPadding,
             String layerInputStride,
@@ -91,17 +121,34 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
             String layerPoolingWidth,
             String layerPoolingHeight
             ) {
-        super.setup( om, name, r );
+        super.setup(om, name, r);
 
-        setAge( age );
-        setWeightsStdDev( weightsStdDev );
-        setWeightsMean( weightsMean );
-        setLearningRatePos( learningRatePos );
+        setAge(age);
+        setWeightsStdDev(weightsStdDev);
+        setWeightsMean(weightsMean);
+        setLearningRatePos(learningRatePos);
         setLearningRateNeg( learningRateNeg );
         //setIntegrationThreshold( integrationThreshold );
+        //setLearningRateSpikeFrequency( learningRateSpikeFrequency );
 
         setNbrLayers( nbrLayers );
-        setLayerValues( KEY_LAYER_TRAINING_AGE, layerTrainingAges );
+
+//        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY, layerSpikeFrequencies );
+//        setLayerValues( KEY_LAYER_TRAINING_AGE, layerTrainingAges );
+        setLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_TARGET, layerKernelSpikeFrequencyTarget );
+        setLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE, layerKernelSpikeFrequencyLearningRate );
+
+        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_TARGET, layerSpikeFrequencyTarget );
+        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_LEARNING_RATE, layerSpikeFrequencyLearningRate );
+
+        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_P, layerSpikeFrequencyControllerP );
+        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_I, layerSpikeFrequencyControllerI );
+        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_D, layerSpikeFrequencyControllerD );
+        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_N, layerSpikeFrequencyControllerN );
+        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_T, layerSpikeFrequencyControllerT );
+        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_MIN, layerSpikeFrequencyControllerMin );
+        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_MAX, layerSpikeFrequencyControllerMax );
+
         setLayerValues( KEY_LAYER_INTEGRATION_THRESHOLD, layerIntegrationThresholds );
         setLayerValues( KEY_LAYER_INPUT_PADDING, layerInputPadding );
         setLayerValues( KEY_LAYER_INPUT_STRIDE, layerInputStride );
@@ -125,10 +172,26 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
         setWeightsMean( c.getWeightsMean() );
         setLearningRatePos( c.getLearningRatePos() );
         setLearningRateNeg( c.getLearningRateNeg() );
+//        setLearningRateSpikeFrequency( c.getLearningRateSpikeFrequency() );
 //        setIntegrationThreshold( c.getIntegrationThreshold() );
 
         setNbrLayers( c.getNbrLayers() );
-        setLayerValues( KEY_LAYER_TRAINING_AGE, c.getLayerValues( KEY_LAYER_TRAINING_AGE ) );
+
+        setLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_TARGET, c.getLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_TARGET ) );
+        setLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE, c.getLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE ) );
+
+        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_TARGET, c.getLayerValues( KEY_LAYER_SPIKE_FREQUENCY_TARGET ) );
+        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_LEARNING_RATE, c.getLayerValues( KEY_LAYER_SPIKE_FREQUENCY_LEARNING_RATE ) );
+
+        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_P, c.getLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_P ) );
+        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_I, c.getLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_I ) );
+        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_D, c.getLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_D ) );
+        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_N, c.getLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_N ) );
+        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_T, c.getLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_T ) );
+        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_MIN, c.getLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_MIN ) );
+        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_MAX, c.getLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_MAX ) );
+
+//        setLayerValues( KEY_LAYER_TRAINING_AGE, c.getLayerValues( KEY_LAYER_TRAINING_AGE ) );
         setLayerValues( KEY_LAYER_INPUT_PADDING, c.getLayerValues( KEY_LAYER_INPUT_PADDING ) );
         setLayerValues( KEY_LAYER_INTEGRATION_THRESHOLD, c.getLayerValues( KEY_LAYER_INTEGRATION_THRESHOLD ) );
         setLayerValues( KEY_LAYER_INPUT_STRIDE, c.getLayerValues( KEY_LAYER_INPUT_STRIDE ) );
@@ -142,15 +205,31 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
         setLayerValues( KEY_LAYER_POOLING_HEIGHT, c.getLayerValues( KEY_LAYER_POOLING_HEIGHT ) );
     }
 
+//    public float getLearningRateSpikeFrequency() {
+//        Float r = _om.getFloat(getKey(KEY_LEARNING_RATE_SPIKE_FREQUENCY));
+//        return r.floatValue();
+//    }
+//
+//    public void setLearningRateSpikeFrequency( float r ) {
+//        _om.put( getKey( KEY_LEARNING_RATE_SPIKE_FREQUENCY ), r );
+//    }
+//
+//    public float getLayerSpikeFrequency( int layer ) {
+//        float r = Float.valueOf( getLayerValue( KEY_LAYER_SPIKE_FREQUENCY, layer ) );
+//        return r;
+//    }
+//
+//    public void setLayerSpikeFrequency( int layer, float r ) {
+//        setLayerValue( KEY_LAYER_SPIKE_FREQUENCY, layer, String.valueOf( r ), "0" );
+//    }
+
     public float getIntegrationThreshold( int layer ) {
-//        Float r = _om.getFloat( getKey( KEY_INTEGRATION_THRESHOLD ) );
         float r = Float.valueOf( getLayerValue( KEY_LAYER_INTEGRATION_THRESHOLD, layer ) );
         return r;
     }
 
     public void setIntegrationThreshold( int layer, float r ) {
         setLayerValue( KEY_LAYER_INTEGRATION_THRESHOLD, layer, String.valueOf( r ), "0" );
-//        _om.put( getKey( KEY_INTEGRATION_THRESHOLD ), r );
     }
 
     public float getWeightsMean() {
@@ -200,10 +279,10 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
         return n.intValue();
     }
 
-    public int getLayerTrainingAge( int layer ) {
-        int n = Integer.valueOf( getLayerValue( KEY_LAYER_TRAINING_AGE, layer ) );
-        return n;
-    }
+//    public int getLayerTrainingAge( int layer ) {
+//        int n = Integer.valueOf( getLayerValue( KEY_LAYER_TRAINING_AGE, layer ) );
+//        return n;
+//    }
 
     public int getLayerInputPadding( int layer ) {
         int n = Integer.valueOf( getLayerValue( KEY_LAYER_INPUT_PADDING, layer ) );
@@ -305,6 +384,15 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
 
     public String getLayerValues( String key ) {
         return (String)_om.get( key );
+    }
+
+    public Float getLayerValueFloat( String key, int layer ) {
+        String value = getLayerValue( key, layer );
+        if( value == null ) {
+            return null;
+        }
+        Float f = Float.valueOf( value );
+        return f;
     }
 
     public String getLayerValue( String key, int layer ) {

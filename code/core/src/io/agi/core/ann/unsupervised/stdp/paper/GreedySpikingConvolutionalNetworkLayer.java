@@ -461,6 +461,8 @@ public class GreedySpikingConvolutionalNetworkLayer {
 //                                convInhibition._values[ inhibitionOffset ] = 1f;
 //                            }
 
+                    // TODO FIX It never trains the last layer.
+
                     // on output spike, we can train:
                     if( train ) {
                         train( config, kernelWeights, inputTrace, cx, cy, czMaxAt );
