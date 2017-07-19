@@ -163,6 +163,7 @@ public class QuiltedCompetitiveLearningDemo {
         Framework.SetConfig( imageLabelName, "trainingEntities", String.valueOf( quiltName ) );
         Framework.SetConfig( imageLabelName, "testingEntities", vectorSeriesName + "," + valueSeriesName );
 
+        boolean useSharedWeights = true;
         boolean emit2ndBest = false;
         int edgeMaxAge = 500;
         int growthInterval = 50;//200;//50;
@@ -255,6 +256,7 @@ public class QuiltedCompetitiveLearningDemo {
         Framework.SetConfig( quiltName, "field2SizeX", String.valueOf( field2SizeX ) );
         Framework.SetConfig( quiltName, "field2SizeY", String.valueOf( field2SizeY ) );
 
+        Framework.SetConfig( quiltName, "useSharedWeights", String.valueOf( useSharedWeights ) );
         Framework.SetConfig( quiltName, "emit2ndBest", String.valueOf( emit2ndBest ) );
 
         Framework.SetConfig( quiltName, "classifierLearningRate", String.valueOf( learningRate ) );

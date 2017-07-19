@@ -41,6 +41,8 @@ import java.util.Collection;
  */
 public class QuiltedCompetitiveLearningEntity extends Entity {
 
+    public static final boolean USE_SHARED_WEIGHTS = true;
+
     public static final String ENTITY_TYPE = "quilted-competitive-learning";
 
     public static final String INPUT_1 = "input-1";
@@ -249,6 +251,7 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
         qclc.setup( om, entityName, _r, quiltConfig, classifierConfig );
 
         QuiltedCompetitiveLearning qcl = new QuiltedCompetitiveLearning( entityName, om );
+        qcl._useSharedWeights = config.useSharedWeights; // must be set before setup
         qcl.setup( qclc );
 
         // Load data, overwriting the default setup.
@@ -293,6 +296,15 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
         int classifiers = hqcl._config._quiltConfig.getQuiltArea();
         int areaCells = columnSizeCells.x * columnSizeCells.y;
 
+        Point quiltSize = hqcl._config._quiltConfig.getQuiltSize();
+        Point classifierSize = hqcl._config._classifierConfig.getSizeCells();
+
+        if( hqcl._useSharedWeights ) {
+            classifiers = 1;
+            quiltSize.x = 1;
+            quiltSize.y = 1;
+        }
+
         DataSize dataSizeWeights = DataSize.create( columnSizeCells.x, columnSizeCells.y, columnInputs );
         DataSize dataSizeCells = DataSize.create( columnSizeCells.x, columnSizeCells.y );
         DataSize dataSizeEdges   = DataSize.create( areaCells, areaCells );
@@ -312,9 +324,6 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
         _classifierEdgesAges      = getDataLazyResize( CLASSIFIER_EDGES_AGES       , dataSizeEdgesAll );
         _classifierAgeSinceGrowth = getDataLazyResize( CLASSIFIER_AGE_SINCE_GROWTH , DataSize.create( classifiers ) );
 
-        Point quiltSize = hqcl._config._quiltConfig.getQuiltSize();
-        Point classifierSize = hqcl._config._classifierConfig.getSizeCells();
-
         int weightsSize = hqcl._input.getSize();
 
         for( int yCol = 0; yCol < quiltSize.y; ++yCol ) {
@@ -323,7 +332,7 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
                 GrowingNeuralGas classifier = hqcl._classifiers.get( classifierOffset );
 
                 for( int yCell = 0; yCell < classifierSize.y; ++yCell ) {
-                    for (int xCell = 0; xCell < classifierSize.x; ++xCell ) {
+                    for( int xCell = 0; xCell < classifierSize.x; ++xCell ) {
 
                         int xQuilt = xCol * classifierSize.x + xCell;
                         int yQuilt = yCol * classifierSize.y + yCell;
@@ -351,8 +360,8 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
                 int edgesOffset = edgesSize * classifierOffset;
 
                 // NOTE: These are not quilted
-                classifier._edges         .copyRange( _classifierEdges, 0, edgesOffset, edgesSize);
-                classifier._edgesAges     .copyRange( _classifierEdgesAges, 0, edgesOffset, edgesSize);
+                classifier._edges         .copyRange( _classifierEdges, 0, edgesOffset, edgesSize );
+                classifier._edgesAges     .copyRange( _classifierEdgesAges, 0, edgesOffset, edgesSize );
             }
         }
 
@@ -370,6 +379,11 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
         Point classifierSize = hqcl._config._classifierConfig.getSizeCells();
 
         int weightsSize = hqcl._input.getSize();
+
+        if( hqcl._useSharedWeights ) {
+            quiltSize.x = 1;
+            quiltSize.y = 1;
+        }
 
         for( int yCol = 0; yCol < quiltSize.y; ++yCol ) {
             for( int xCol = 0; xCol < quiltSize.x; ++xCol ) {

@@ -42,16 +42,11 @@ public class QuiltedCompetitiveLearning extends NamedObject {
     public Data _input;
     public Data _quiltCells;
 
+    public boolean _useSharedWeights = true;
     public boolean _emit2ndBest = false;
     public QuiltedCompetitiveLearningConfig _config;
     public BinaryTreeQuilt _quilt;
     public HashMap< Integer, GrowingNeuralGas > _classifiers = new HashMap< Integer, GrowingNeuralGas >(); // apart from in first layer, there will be no commonality of input distributions
-//    public GrowingNeuralGas _classifier;
-
-    // computed transient state
-//    protected HashSet< Integer > _inputActive;
-//    protected HashMap< Integer, ArrayList< Integer > > _classifierActiveInput = new HashMap< Integer, ArrayList< Integer > >();
-//    protected HashMap< Integer, TreeMap< Float, ArrayList< Integer > > > _activeInputClassifierRanking = new HashMap< Integer, TreeMap< Float, ArrayList< Integer > > >();
 
     public QuiltedCompetitiveLearning( String name, ObjectMap om ) {
         super( name, om );
@@ -78,19 +73,33 @@ public class QuiltedCompetitiveLearning extends NamedObject {
 
         Point p = _config._quiltConfig.getQuiltSize();
 
-        for( int y = 0; y < p.y; ++y ) {
-            for( int x = 0; x < p.x; ++x ) {
+        String classifierName = getKey( _config.CLASSIFIER );
 
-                String name = getKey( _config.CLASSIFIER );
+        if( _useSharedWeights ) {
+            // 1 classifier
+            GrowingNeuralGasConfig gngc = new GrowingNeuralGasConfig();
+            gngc.copyFrom( _config._classifierConfig, classifierName );
 
-                GrowingNeuralGasConfig gngc = new GrowingNeuralGasConfig();
-                gngc.copyFrom( _config._classifierConfig, name );
+            GrowingNeuralGas classifier = new GrowingNeuralGas( gngc._name, gngc._om );
+            classifier.setup(gngc);
 
-                GrowingNeuralGas classifier = new GrowingNeuralGas( gngc._name, gngc._om );
-                classifier.setup( gngc );
+            int quiltOffset = 0;
+            _classifiers.put( quiltOffset, classifier );
+        }
+        else {
+            // 1 classifier per col
+            for( int y = 0; y < p.y; ++y ) {
+                for( int x = 0; x < p.x; ++x ) {
 
-                int quiltOffset = _config._quiltConfig.getQuiltOffset( x, y );
-                _classifiers.put( quiltOffset, classifier );
+                    GrowingNeuralGasConfig gngc = new GrowingNeuralGasConfig();
+                    gngc.copyFrom( _config._classifierConfig, classifierName );
+
+                    GrowingNeuralGas classifier = new GrowingNeuralGas( gngc._name, gngc._om );
+                    classifier.setup( gngc );
+
+                    int quiltOffset = _config._quiltConfig.getQuiltOffset(x, y);
+                    _classifiers.put(quiltOffset, classifier);
+                }
             }
         }
     }
@@ -119,11 +128,17 @@ public class QuiltedCompetitiveLearning extends NamedObject {
 
         Point p = _config._quiltConfig.getQuiltSize();
 
-        for( int y = 0; y < p.y; ++y ) {
-            for( int x = 0; x < p.x; ++x ) {
-                int quiltOffset = _config._quiltConfig.getQuiltOffset( x, y );
-                GrowingNeuralGas classifier = _classifiers.get( quiltOffset );
-                classifier.reset();
+        if( _useSharedWeights ) {
+            GrowingNeuralGas classifier = _classifiers.get( 0 );
+            classifier.reset();
+        }
+        else {
+            for( int y = 0; y < p.y; ++y ) {
+                for( int x = 0; x < p.x; ++x ) {
+                    int quiltOffset = _config._quiltConfig.getQuiltOffset( x, y );
+                    GrowingNeuralGas classifier = _classifiers.get( quiltOffset );
+                    classifier.reset();
+                }
             }
         }
     }
@@ -137,51 +152,11 @@ public class QuiltedCompetitiveLearning extends NamedObject {
         _input.copyRange( _input1, inputOffset, 0, input1Area );
         inputOffset = input1Area;
         _input.copyRange( _input2, inputOffset, 0, input2Area );
-//        _inputActive = _input.indicesMoreThan( 0.f ); // find all the active bits.
-
         _quilt.update(); // train receptive fields (if not fixed)
 
         classifierUpdate();
     }
 
-/*    /**
-     * Returns the receptive field centroid, in pixels, of the specified classifier.
-     *
-     * @param xClassifier
-     * @param yClassifier
-     * @return
-     */
-/*    public float[] getClassifierReceptiveField( int xClassifier, int yClassifier ) {
-
-        int dimensions = 2;
-        int inputs = 2;
-        int elements = dimensions * inputs;
-        float[] rf = new float[ elements ];
-
-        int classifierOffset = _config.getOrganizerOffset( xClassifier, yClassifier );
-        int organizerOffset = classifierOffset * elements;//QuiltLayerConfig.RECEPTIVE_FIELD_DIMENSIONS;
-
-        Point inputSize1 = Data2d.getSize( _input );
-        Point inputSize2 = new Point( 1, 1 );
-
-        float rf1_x = _organizer._cellWeights._values[ organizerOffset + 0 ];
-        float rf1_y = _organizer._cellWeights._values[ organizerOffset + 1 ];
-        float rf2_x = _organizer._cellWeights._values[ organizerOffset + 2 ];
-        float rf2_y = _organizer._cellWeights._values[ organizerOffset + 3 ];
-
-        rf1_x *= inputSize1.x;
-        rf1_y *= inputSize1.y;
-
-        rf2_x *= inputSize2.x;
-        rf2_y *= inputSize2.y;
-
-        rf[ 0 ] = rf1_x; // now in pixel coordinates, whereas it is trained as unit coordinates
-        rf[ 1 ] = rf1_y;
-        rf[ 2 ] = rf2_x; // now in pixel coordinates, whereas it is trained as unit coordinates
-        rf[ 3 ] = rf2_y;
-
-        return rf;
-    }*/
 
     protected void classifierUpdate() {
         // update all the classifiers and thus the set of active cells in the region
@@ -198,22 +173,6 @@ public class QuiltedCompetitiveLearning extends NamedObject {
                 if( mask != 1.f ) {
                     continue; // because the cell is "dead" or inactive. We already set the region output to zero, so no action required.
                 }
-
-////                rankClassifierReceptiveFields( x, y );
-//            }
-//        }
-//
-////        updateClassifierInput();
-//
-//        for( int y = 0; y < p.y; ++y ) {
-//            for( int x = 0; x < p.x; ++x ) {
-
-                // only update active
-//                int classifierOffset = _config.getOrganizerOffset( x, y );
-//                float mask = _organizer._cellMask._values[ classifierOffset ];
-//                if( mask != 1.f ) {
-//                    continue; // because the cell is "dead" or inactive. We already set the region output to zero, so no action required.
-//                }
 
                 Data inputMask = getClassifierMask( x, y );
                 Data input = getClassifierInput( _input, inputMask );
@@ -238,89 +197,19 @@ public class QuiltedCompetitiveLearning extends NamedObject {
 
         return maskedInput;
     }
-/*    protected void rankClassifierReceptiveFields( int xClassifier, int yClassifier ) {
-
-        // find the closest N cols to each active input bit
-        float[] rf = getClassifierReceptiveField( xClassifier, yClassifier ); // in pixels units
-        float xField1 = rf[ 0 ];
-        float yField1 = rf[ 1 ];
-//        float xField2 = rf[ 2 ];
-//        float yField2 = rf[ 3 ];
-
-        int inputOffset = 0;
-
-        rankClassifierReceptiveField( xClassifier, yClassifier, _input, _inputActive, _activeInputClassifierRanking, xField1, yField1, inputOffset );
-    }*/
-
-/*    protected void rankClassifierReceptiveField(
-            int xClassifier,
-            int yClassifier,
-            Data ffInput,
-            HashSet< Integer > ffInputActive,
-            HashMap< Integer, TreeMap< Float, ArrayList< Integer > > > ranking,
-            float xField,
-            float yField,
-            int inputOffset ) {
-        int classifierOffset = _config.getOrganizerOffset(xClassifier, yClassifier);
-
-        for( Integer i : ffInputActive ) {
-            Point p = Data2d.getXY( ffInput._dataSize, i );
-
-            float d = Geometry.distanceEuclidean2d( ( float ) p.getX(), ( float ) p.getY(), xField, yField );
-            int inputBit = i + inputOffset;
-
-            TreeMap< Float, ArrayList< Integer > > activeInputRanking = getRankingLazy(ranking, inputBit);
-
-            // Rank by classifier:
-            Ranking.add( activeInputRanking, d, classifierOffset ); // add classifier with quality d (distance) to i.
-        }
-
-    }*/
-
-/*    protected void updateClassifierInput() {
-        updateClassifierInput( _activeInputClassifierRanking, _classifierActiveInput );
-//        updateClassifierInput( _transient._activeInputClassifierRankingOld, _transient._classifierActiveInputOld );
-    }
-
-    protected void updateClassifierInput(
-            HashMap< Integer, TreeMap< Float, ArrayList< Integer > > > activeInputClassifierRanking,
-            HashMap< Integer, ArrayList< Integer > > classifierActiveInput ) {
-
-        int classifiersPerBit = _config.getClassifiersPerBit();
-        boolean max = false; // ie min [distance]
-
-        //int inputOffset1 = 0; conceptually
-        //int inputOffset2 = _input.getSize();
-
-        Set< Integer > activeInputBits = activeInputClassifierRanking.keySet();
-        for( Integer inputBit : activeInputBits ) {
-
-            // pick the right spread of input through the region depending on which input it is from
-            int maxRank = classifiersPerBit;
-//            if( inputBit >= inputOffset2 ) {
-//                maxRank = classifiersPerBit2;
-//            }
-
-            TreeMap< Float, ArrayList< Integer > > activeInputRanking = getRankingLazy( activeInputClassifierRanking, inputBit );
-
-            ArrayList< Integer > activeInputClassifiers = Ranking.getBestValues( activeInputRanking, max, maxRank ); // ok now we got the current set of inputs for the column
-
-            for( Integer classifierOffset : activeInputClassifiers ) {
-                addClassifierActiveInput( classifierOffset, inputBit, classifierActiveInput );
-            }
-        }
-    }*/
 
     protected void updateClassifier( Data input, int xClassifier, int yClassifier ) {
 
         Point cellsOrigin = _config.getCellsOriginOfQuilt( xClassifier, yClassifier );
         int quiltOffset = _config._quiltConfig.getQuiltOffset( xClassifier, yClassifier );
 
-//        ArrayList< Integer > activeInput = getClassifierActiveInput(classifierOffset);//_classifierActiveInput.get( classifierOffset );
-//
-//        Collections.sort( activeInput );
-
-        GrowingNeuralGas classifier = _classifiers.get( quiltOffset );
+        GrowingNeuralGas classifier = null;
+        if( _useSharedWeights ) {
+            classifier = _classifiers.get( 0 );
+        }
+        else {
+            classifier = _classifiers.get( quiltOffset );
+        }
 //        GrowingNeuralGas classifier = _classifier;
 
         boolean learn = _config.getLearn();
@@ -376,7 +265,14 @@ public class QuiltedCompetitiveLearning extends NamedObject {
 
                 // apply inversion for this classifier
                 int quiltOffset = _config._quiltConfig.getQuiltOffset( qx, qy );
-                GrowingNeuralGas classifier = _classifiers.get( quiltOffset );
+                //GrowingNeuralGas classifier = _classifiers.get( quiltOffset );
+                GrowingNeuralGas classifier = null;
+                if( _useSharedWeights ) {
+                    classifier = _classifiers.get( 0 );
+                }
+                else {
+                    classifier = _classifiers.get( quiltOffset );
+                }
 
                 // find the max prediction for this classifier. That will be the cell that's inverted.
                 float cellMaxValue = 0f;
@@ -439,44 +335,6 @@ public class QuiltedCompetitiveLearning extends NamedObject {
         inputOffset = input1Area;
         input2.copyRange( input, 0, inputOffset, input2Area );
     }
-
-
-//    protected void organizerReset() {
-//        // uniform quilt
-//        _organizer.reset();
-//    }
-//
-//    protected void organizerUpdate() {
-//        // uniform quilt
-//        _organizer.update();
-//    }
-
-//    public static TreeMap< Float, ArrayList< Integer > > getRankingLazy( HashMap< Integer, TreeMap< Float, ArrayList< Integer > > > rankingMap, int i ) {
-//        TreeMap< Float, ArrayList< Integer > > ranking = rankingMap.get(i);
-//        if( ranking == null ) {
-//            ranking = Ranking.CreateRanking();
-//            rankingMap.put( i, ranking );
-//        }
-//        return ranking;
-//    }
-//
-//    public ArrayList< Integer > getClassifierActiveInput( int classifier ) {
-//        ArrayList< Integer > activeInput = _classifierActiveInput.get( classifier );
-//        if( activeInput == null ) {
-//            return new ArrayList< Integer >();
-//        }
-//        return activeInput;
-//    }
-//
-//    public static void addClassifierActiveInput( int classifier, int activeInput, HashMap< Integer, ArrayList< Integer > > classifierActiveInput ) {
-//        ArrayList< Integer > al = classifierActiveInput.get( classifier );
-//        if( al == null ) {
-//            al = new ArrayList< Integer >();
-//            classifierActiveInput.put( classifier, al );
-//        }
-//
-//        al.add(activeInput);
-//    }
 
 }
 
