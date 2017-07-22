@@ -172,6 +172,9 @@ public class DiscreteTimePIDController {
         //write(u0);   // sent to output
     }
 
+    public void setInput( float input ) {
+        _input = input;
+    }
     public float getInput() {
         return _input;
     }
@@ -182,6 +185,10 @@ public class DiscreteTimePIDController {
 
     public float getOutput() {
         return _u0;
+    }
+
+    public void setOutput( float output ) {
+        _u0 = output;
     }
 
     public float getOutputMax() {

@@ -75,7 +75,8 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         boolean terminateByAge = false;
         int terminationAge = -1;//50000;//25000;
         //int trainingEpochs = 5; // = 5 * 10 images * 30 repeats = 1500
-        int trainingEpochs = 100;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
+//        int trainingEpochs = 100;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
+        int trainingEpochs = 50;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
         int testingEpochs = 1; // = 1 * 10 images * 30 repeats = 300
         int imageRepeats = 30; // paper - 30
 //        int imagesPerEpoch = 10;
@@ -276,7 +277,7 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
 //        VectorSeriesEntityConfig.Set( encoderOutSeriesName, accumulatePeriod, period, ModelData.ENCODING_SPARSE_REAL );
 
         // Debug the algorithm
-        period = 30 * 20;
+        period = 30 * 6;
         accumulatePeriod = 1;
 
         String encSeriesName = Framework.GetEntityName( "enc-series" );
@@ -429,14 +430,18 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         // K/N = 0.05 / 30 = 0.001666667 spikes per update.
         // This is the target frequency
 
+        //maybe I wanna make them fire more easily, but suffer from inhibition to sparsen?
+
         float densityScaling = 1.f / (float)imageRepeats; // e.g. if
+        densityScaling *= 12f;
         float layerKernelSpikeFrequencyLearningRate = 0.0001f;
+//        float layerKernelSpikeFrequencyLearningRate = 0.01f; // try this verify the adaptive mechanism then improve controller
         float layerKernelSpikeFrequencyTarget = 0.025f * densityScaling; // how often each kernel should fire, as a measure of average density (spikes per unit area).
         float layerSpikeFrequencyLearningRate = 0.01f;//0.0001f;
-        float layerSpikeFrequencyTarget = 1f - ( 0.05f * densityScaling ); // ignoring area, how o
+        float layerSpikeFrequencyTarget = 1f - ( 0.05f * densityScaling ); // ignoring area, how o  (inverted input)
         //float layerSpikeFrequencyTarget = ( 0.05f * densityScaling ); // ignoring area, how o
-        float layerSpikeFrequencyControllerP = 10.0f;
-        float layerSpikeFrequencyControllerI = 1.1f;
+        float layerSpikeFrequencyControllerP = 10.0f;//10.0f;
+        float layerSpikeFrequencyControllerI = 0.1f;
         float layerSpikeFrequencyControllerD = 0f;
         float layerSpikeFrequencyControllerN = (float)imageRepeats;
         float layerSpikeFrequencyControllerT = densityScaling;
@@ -459,7 +464,8 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
 //        int[] layerHeights = { 9,1 };
 //        int[] layerDepths = { 30,100 };
         int[] layerDepths = { 28,10 }; // reduce for speed
-        int[] layerPoolingSize = { 2,8 };
+//        int[] layerPoolingSize = { 2,8 }; // for classification in Z
+        int[] layerPoolingSize = { 2,2 }; // for reconstruction
         int[] layerFieldSize = { 5,5 };
 //        int[] layerInputStrides = { 3,1 };
         int[] layerInputPaddings = { 0,0 };
@@ -468,7 +474,7 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
 
         // say we want each model to fire 1/n models.
         // if we have 30, then 1/30 = 0.03 is about right.
-        float[] layerSpikeFrequencies = { 0.03f, 0.02f };
+        //float[] layerSpikeFrequencies = { 0.03f, 0.02f };
 
         // Generate config properties from these values:
         for( int layer = 0; layer < entityConfig.nbrLayers; ++layer ) {

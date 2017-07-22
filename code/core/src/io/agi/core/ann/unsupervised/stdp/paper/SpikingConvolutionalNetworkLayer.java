@@ -488,8 +488,8 @@ public class SpikingConvolutionalNetworkLayer {
 
         //float integrationThreshold = config._integrationThreshold;
         //float integrationThreshold = convSpikeThreshold._values[ 0 ];
-        float integrationThreshold = convSpikeThresholdController.getOutputMax() - convSpikeThresholdController.getOutput();
-        //float integrationThreshold = convSpikeThresholdController.getOutput();
+        //float integrationThreshold = convSpikeThresholdController.getOutputMax() - convSpikeThresholdController.getOutput();
+        float integrationThreshold = convSpikeThresholdController.getOutput();
 
         int spikes = 0;
 
@@ -528,6 +528,13 @@ public class SpikingConvolutionalNetworkLayer {
 //                    continue; // no spike possible, due to inhibition
 //                }
 //
+                if( czMax <= 0f ) {
+                    continue; // no input
+                }
+//                if( czMaxAt == 27 ) {
+//                    int g = 0;
+//                    g++;
+//                }
                 if( czMax >= integrationThreshold ) { // over threshold
 
                     spikes += 1;
@@ -571,14 +578,23 @@ public class SpikingConvolutionalNetworkLayer {
         int area = config._width * config._height;
         float spikeDensity = (float)spikes / (float)area;
         //updateSpikeFrequency( spikeDensity );
-        float fOld = 1f - convSpikeThresholdController.getInput();//convSpikeFrequency._values[ 0 ];
-        //float fOld = convSpikeThresholdController.getInput();//convSpikeFrequency._values[ 0 ];
+        float fOld = 1f - convSpikeThresholdController.getInput(); // inverted controller input
+        //float fOld = convSpikeThresholdController.getInput();
         float fNew = Unit.lerp( spikeDensity, fOld, config._spikeFrequencyLearningRate );
         fNew = Math.min( 1f, Math.max( 0f, fNew ) ); // clamped at 0 <= f <= 1
         //convSpikeFrequency._values[ 0 ] = fNew;
 
         // update layer spike threshold - the control output
         convSpikeThresholdController.update( 1f - fNew, config._spikeFrequencyTarget ); // input, target
+//        float oldThreshold = convSpikeThresholdController.getOutput();
+//        float delta = 0.1f;
+//        if( fNew < config._spikeFrequencyTarget ) {
+//            delta = 0f - delta;
+//        }
+//        float newThreshold = oldThreshold + delta;
+//        newThreshold = Math.max( 0f, newThreshold );
+//        convSpikeThresholdController.setOutput( newThreshold );
+//        convSpikeThresholdController.setInput( fNew );
         //convSpikeThresholdController.update( fNew, config._spikeFrequencyTarget ); // input, target
 
 //        // TODO replace with optimizer
