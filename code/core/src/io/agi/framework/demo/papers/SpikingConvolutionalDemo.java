@@ -433,21 +433,22 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         //maybe I wanna make them fire more easily, but suffer from inhibition to sparsen?
 
         float densityScaling = 1.f / (float)imageRepeats; // e.g. if
-        densityScaling *= 12f;
+//        densityScaling *= 12f;
         float layerKernelSpikeFrequencyLearningRate = 0.0001f;
+        float layerKernelSpikeFrequencyTarget = 0.1f * densityScaling; // how often each kernel should fire, as a measure of average density (spikes per unit area).
 //        float layerKernelSpikeFrequencyLearningRate = 0.01f; // try this verify the adaptive mechanism then improve controller
-        float layerKernelSpikeFrequencyTarget = 0.025f * densityScaling; // how often each kernel should fire, as a measure of average density (spikes per unit area).
-        float layerSpikeFrequencyLearningRate = 0.01f;//0.0001f;
-        float layerSpikeFrequencyTarget = 1f - ( 0.05f * densityScaling ); // ignoring area, how o  (inverted input)
-        //float layerSpikeFrequencyTarget = ( 0.05f * densityScaling ); // ignoring area, how o
-        float layerSpikeFrequencyControllerP = 10.0f;//10.0f;
-        float layerSpikeFrequencyControllerI = 0.1f;
+        //float layerSpikeFrequencyLearningRate = 0.01f;//0.0001f;
+        //float layerSpikeFrequencyTarget = 1f - ( 0.05f * densityScaling ); // ignoring area, how o  (inverted input)
+        float layerSpikeFrequencyTarget = ( 0.1f * densityScaling ); // ignoring area, how o
+        float layerSpikeFrequencyPeriod = 90;///2 * 3 * (float)imageRepeats;
+        float layerSpikeFrequencyControllerP = 1.01f;//10.0f;
+        float layerSpikeFrequencyControllerI = 100.0f;
         float layerSpikeFrequencyControllerD = 0f;
-        float layerSpikeFrequencyControllerN = (float)imageRepeats;
-        float layerSpikeFrequencyControllerT = densityScaling;
-        float layerSpikeFrequencyControllerMin = 0f;
+        float layerSpikeFrequencyControllerN = 1f;//(float)imageRepeats;
+        float layerSpikeFrequencyControllerT = 1f;//densityScaling;
+        float layerSpikeFrequencyControllerMin = -1000f;
 //        float layerSpikeFrequencyControllerMin = -200f;
-        float layerSpikeFrequencyControllerMax = 200f;//20f; // TODO find some principled way to set this high enough
+        float layerSpikeFrequencyControllerMax = 1000f;//20f; // TODO find some principled way to set this high enough
 
 //        entityConfig.learningRateSpikeFrequency = 0.0001f; // ie. 0.0001 = 0.003 when you remove the influence of showing images repeatedly.
 //        entityConfig.learningRateSpikeFrequency = 0.0001f; // ie. 0.0001 = 0.003 when you remove the influence of showing images repeatedly.
@@ -511,7 +512,7 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
 
             entityConfig.layerKernelSpikeFrequencyLearningRate += prefix + layerKernelSpikeFrequencyLearningRate;
             entityConfig.layerKernelSpikeFrequencyTarget += prefix + layerKernelSpikeFrequencyTarget;
-            entityConfig.layerSpikeFrequencyLearningRate += prefix + layerSpikeFrequencyLearningRate;
+            entityConfig.layerSpikeFrequencyPeriod += prefix + layerSpikeFrequencyPeriod;
             entityConfig.layerSpikeFrequencyTarget += prefix + layerSpikeFrequencyTarget;
             entityConfig.layerSpikeFrequencyControllerP += prefix + layerSpikeFrequencyControllerP;
             entityConfig.layerSpikeFrequencyControllerI += prefix + layerSpikeFrequencyControllerI;

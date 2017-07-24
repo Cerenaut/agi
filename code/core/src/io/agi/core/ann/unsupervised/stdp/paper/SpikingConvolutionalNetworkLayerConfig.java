@@ -48,6 +48,10 @@ public class SpikingConvolutionalNetworkLayerConfig {
 //    public int _trainingAgeStart = 0;
 //    public int _trainingAgeEnd   = 0;
 
+//    public float _convSpikeSum = 0f;
+//    public float _convSpikeCount = 0f;
+    public float _convSpikePeriod = 0f;
+
     public float _weightStdDev;
     public float _weightsMean;
 
@@ -60,7 +64,7 @@ public class SpikingConvolutionalNetworkLayerConfig {
     public float _kernelSpikeFrequencyTarget;
 
 //    public float _spikeFrequency;
-    public float _spikeFrequencyLearningRate;
+//    public float _spikeFrequencyLearningRate;
     public float _spikeFrequencyTarget;
     public float _spikeFrequencyControllerP;
     public float _spikeFrequencyControllerI;
@@ -100,7 +104,10 @@ public class SpikingConvolutionalNetworkLayerConfig {
             float kernelSpikeFrequencyLearningRate,
             float kernelSpikeFrequencyTarget,
 //            float spikeFrequency,
-            float spikeFrequencyLearningRate,
+//            float spikeFrequencySum,
+//            float spikeFrequencyCount,
+            float spikeFrequencyPeriod,
+//            float spikeFrequencyLearningRate,
             float spikeFrequencyTarget,
             float spikeFrequencyControllerP,
             float spikeFrequencyControllerI,
@@ -131,7 +138,8 @@ public class SpikingConvolutionalNetworkLayerConfig {
         _kernelSpikeFrequencyTarget = kernelSpikeFrequencyTarget;
 
         //_spikeFrequency = spikeFrequency;
-        _spikeFrequencyLearningRate = spikeFrequencyLearningRate;
+//        _spikeFrequencyLearningRate = spikeFrequencyLearningRate;
+        _convSpikePeriod = spikeFrequencyPeriod;
         _spikeFrequencyTarget = spikeFrequencyTarget;
         _spikeFrequencyControllerP = spikeFrequencyControllerP;
         _spikeFrequencyControllerI = spikeFrequencyControllerI;

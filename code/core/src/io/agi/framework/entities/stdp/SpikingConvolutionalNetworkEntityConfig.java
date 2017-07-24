@@ -62,7 +62,8 @@ public class SpikingConvolutionalNetworkEntityConfig extends EntityConfig {
 //    public String layerSpikeFrequencies = "";
     public String layerKernelSpikeFrequencyLearningRate = "";
     public String layerKernelSpikeFrequencyTarget = "";
-    public String layerSpikeFrequencyLearningRate = "";
+
+    public String layerSpikeFrequencyPeriod = "";
     public String layerSpikeFrequencyTarget = "";
     public String layerSpikeFrequencyControllerP = "";
     public String layerSpikeFrequencyControllerI = "";

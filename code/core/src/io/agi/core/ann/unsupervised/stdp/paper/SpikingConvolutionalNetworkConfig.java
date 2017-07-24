@@ -70,7 +70,8 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
     public static final String KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE = "layer-kernel-spike-frequency-learning-rate";
 
     public static final String KEY_LAYER_SPIKE_FREQUENCY_TARGET = "layer-spike-frequency-target";
-    public static final String KEY_LAYER_SPIKE_FREQUENCY_LEARNING_RATE = "layer-spike-frequency-learning-rate";
+//    public static final String KEY_LAYER_SPIKE_FREQUENCY_LEARNING_RATE = "layer-spike-frequency-learning-rate";
+    public static final String KEY_LAYER_SPIKE_FREQUENCY_PERIOD = "layer-spike-frequency-period";
 
     public static final String KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_P = "layer-spike-frequency-controller-p";
     public static final String KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_I = "layer-spike-frequency-controller-i";
@@ -99,7 +100,8 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
 
             String layerKernelSpikeFrequencyLearningRate,
             String layerKernelSpikeFrequencyTarget,
-            String layerSpikeFrequencyLearningRate,
+
+            String layerSpikeFrequencyPeriod,
             String layerSpikeFrequencyTarget,
             String layerSpikeFrequencyControllerP,
             String layerSpikeFrequencyControllerI,
@@ -139,7 +141,7 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
         setLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE, layerKernelSpikeFrequencyLearningRate );
 
         setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_TARGET, layerSpikeFrequencyTarget );
-        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_LEARNING_RATE, layerSpikeFrequencyLearningRate );
+        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_PERIOD, layerSpikeFrequencyPeriod );
 
         setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_P, layerSpikeFrequencyControllerP );
         setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_I, layerSpikeFrequencyControllerI );
@@ -181,7 +183,7 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
         setLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE, c.getLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE ) );
 
         setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_TARGET, c.getLayerValues( KEY_LAYER_SPIKE_FREQUENCY_TARGET ) );
-        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_LEARNING_RATE, c.getLayerValues( KEY_LAYER_SPIKE_FREQUENCY_LEARNING_RATE ) );
+        setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_PERIOD, c.getLayerValues( KEY_LAYER_SPIKE_FREQUENCY_PERIOD ) );
 
         setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_P, c.getLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_P ) );
         setLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_I, c.getLayerValues( KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_I ) );
