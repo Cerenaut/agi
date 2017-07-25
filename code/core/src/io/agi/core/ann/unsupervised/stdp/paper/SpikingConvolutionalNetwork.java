@@ -47,7 +47,7 @@ public class SpikingConvolutionalNetwork {
 
             float integrationThreshold = _config.getIntegrationThreshold( layer );
 //            float spikeFrequency = _config.getLayerSpikeFrequency(layer);
-//            float learningRateSpikeFrequency = _config.getLearningRateSpikeFrequency();
+            float spikeFrequencyLearningRate = _config.getLearningRateSpikeFrequency();
             float kernelSpikeFrequencyLearningRate = _config.getLayerValueFloat( config.KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE, layer );
             float kernelSpikeFrequencyTarget = _config.getLayerValueFloat( config.KEY_LAYER_KERNEL_SPIKE_FREQUENCY_TARGET, layer );
             float spikeFrequencyPeriod = _config.getLayerValueFloat( config.KEY_LAYER_SPIKE_FREQUENCY_PERIOD, layer );
@@ -88,6 +88,7 @@ public class SpikingConvolutionalNetwork {
                 kernelSpikeFrequencyTarget,
 
                 spikeFrequencyPeriod,
+                spikeFrequencyLearningRate,
                 spikeFrequencyTarget,
                 spikeFrequencyControllerP,
                 spikeFrequencyControllerI,

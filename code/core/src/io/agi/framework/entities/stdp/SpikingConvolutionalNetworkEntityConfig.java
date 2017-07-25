@@ -33,9 +33,11 @@ public class SpikingConvolutionalNetworkEntityConfig extends EntityConfig {
 
     /// Debug threshold controller
     public int controllerLayer = 0;
+    public float controllerRawInput = 0f;
     public float controllerInput = 0f;
     public float controllerOutput = 0f;
     public float controllerError = 0f;
+    public float controllerIntegrationThreshold = 0.f;
     /// Debug threshold controller
 
     public int trainingAge = 0;
@@ -43,7 +45,7 @@ public class SpikingConvolutionalNetworkEntityConfig extends EntityConfig {
     public float weightsMean = 0;
     public float learningRatePos = 0;
     public float learningRateNeg = 0;
-//    public float learningRateSpikeFrequency = 0;
+    public float learningRateSpikeFrequency = 0;
 //    public float integrationThreshold = 0;
     public int nbrLayers = 0;
 //    public String layerTrainingAge = "";
@@ -72,6 +74,4 @@ public class SpikingConvolutionalNetworkEntityConfig extends EntityConfig {
     public String layerSpikeFrequencyControllerT = "";
     public String layerSpikeFrequencyControllerMin = "";
     public String layerSpikeFrequencyControllerMax = "";
-    
-
 }

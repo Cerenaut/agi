@@ -58,8 +58,12 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
 
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
-        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
+
+        String trainingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small";
+        String testingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/testing-small";
+
 
         // TODO after this, make a version that uses predictive encoding via feedback, which both uses feedback to help recognize and draws resources towards errors
 
@@ -72,8 +76,8 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         boolean logDuringTraining = true;
 //        boolean logDuringTraining = false;
         boolean cacheAllData = true;
-        boolean terminateByAge = false;
-        int terminationAge = -1;//50000;//25000;
+        boolean terminateByAge = true;
+        int terminationAge = 1000;//50000;//25000;
         //int trainingEpochs = 5; // = 5 * 10 images * 30 repeats = 1500
 //        int trainingEpochs = 100;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
         int trainingEpochs = 50;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
@@ -295,6 +299,10 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         parentName = Framework.CreateEntity( controllerInputSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
         ValueSeriesEntityConfig.Set( controllerInputSeriesName, accumulatePeriod, 1.f, -1, controllerPeriod, spikingConvolutionalName, "controllerInput", null, 0 );
 
+        String controllerRawInputSeriesName = Framework.GetEntityName( "controller-series-rawinput" );
+        parentName = Framework.CreateEntity( controllerRawInputSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
+        ValueSeriesEntityConfig.Set( controllerRawInputSeriesName, accumulatePeriod, 1.f, -1, controllerPeriod, spikingConvolutionalName, "controllerRawInput", null, 0 );
+
         String controllerOutputSeriesName = Framework.GetEntityName( "controller-series-output" );
         parentName = Framework.CreateEntity( controllerOutputSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
         ValueSeriesEntityConfig.Set( controllerOutputSeriesName, accumulatePeriod, 1.f, -1, controllerPeriod, spikingConvolutionalName, "controllerOutput", null, 0 );
@@ -302,6 +310,10 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         String controllerErrorSeriesName = Framework.GetEntityName( "controller-series-error" );
         parentName = Framework.CreateEntity( controllerErrorSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
         ValueSeriesEntityConfig.Set( controllerErrorSeriesName, accumulatePeriod, 1.f, -1, controllerPeriod, spikingConvolutionalName, "controllerError", null, 0 );
+
+        String controllerIntegrationThresholdSeriesName = Framework.GetEntityName( "controller-series-integration-threshold" );
+        parentName = Framework.CreateEntity( controllerIntegrationThresholdSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
+        ValueSeriesEntityConfig.Set( controllerIntegrationThresholdSeriesName, accumulatePeriod, 1.f, -1, controllerPeriod, spikingConvolutionalName, "controllerIntegrationThreshold", null, 0 );
 
         String netInh1SeriesName = Framework.GetEntityName( "net-inh-1-series" );
         String netInt1SeriesName = Framework.GetEntityName( "net-int-1-series" );
@@ -423,6 +435,8 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         entityConfig.learningRatePos = 0.01f;
         entityConfig.learningRateNeg = 0.01f;
 
+        entityConfig.learningRateSpikeFrequency = 0.001f; // ie. 0.0001 = 0.003 when you remove the influence of showing images repeatedly.
+
         // Note on configuring spike frequencies
         // Let's say we want a spike density of K=5% per image.
         // That means if we have 100 cells, then we will have 5 spikes.
@@ -437,12 +451,12 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         float layerKernelSpikeFrequencyLearningRate = 0.0001f;
         float layerKernelSpikeFrequencyTarget = 0.1f * densityScaling; // how often each kernel should fire, as a measure of average density (spikes per unit area).
 //        float layerKernelSpikeFrequencyLearningRate = 0.01f; // try this verify the adaptive mechanism then improve controller
-        //float layerSpikeFrequencyLearningRate = 0.01f;//0.0001f;
+//        float layerSpikeFrequencyLearningRate = 0.001f;
         //float layerSpikeFrequencyTarget = 1f - ( 0.05f * densityScaling ); // ignoring area, how o  (inverted input)
-        float layerSpikeFrequencyTarget = ( 0.1f * densityScaling ); // ignoring area, how o
+        float layerSpikeFrequencyTarget = 0.2f; // ( 0.1f * densityScaling ); // ignoring area, how o
         float layerSpikeFrequencyPeriod = 90;///2 * 3 * (float)imageRepeats;
-        float layerSpikeFrequencyControllerP = 1.01f;//10.0f;
-        float layerSpikeFrequencyControllerI = 100.0f;
+        float layerSpikeFrequencyControllerP = 10.0f;
+        float layerSpikeFrequencyControllerI = 0.0f;
         float layerSpikeFrequencyControllerD = 0f;
         float layerSpikeFrequencyControllerN = 1f;//(float)imageRepeats;
         float layerSpikeFrequencyControllerT = 1f;//densityScaling;
@@ -450,8 +464,6 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
 //        float layerSpikeFrequencyControllerMin = -200f;
         float layerSpikeFrequencyControllerMax = 1000f;//20f; // TODO find some principled way to set this high enough
 
-//        entityConfig.learningRateSpikeFrequency = 0.0001f; // ie. 0.0001 = 0.003 when you remove the influence of showing images repeatedly.
-//        entityConfig.learningRateSpikeFrequency = 0.0001f; // ie. 0.0001 = 0.003 when you remove the influence of showing images repeatedly.
 //        entityConfig.integrationThreshold = integrationThreshold;
         entityConfig.nbrLayers = 2;//3;
 
@@ -521,6 +533,7 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
             entityConfig.layerSpikeFrequencyControllerT += prefix + layerSpikeFrequencyControllerT;
             entityConfig.layerSpikeFrequencyControllerMin += prefix + layerSpikeFrequencyControllerMin;
             entityConfig.layerSpikeFrequencyControllerMax += prefix + layerSpikeFrequencyControllerMax;
+
 
             // TODO auto calculate layer widths and heights
             iw = lw / pw;

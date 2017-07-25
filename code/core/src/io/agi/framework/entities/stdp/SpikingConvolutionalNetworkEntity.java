@@ -153,7 +153,7 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
                 config.weightsMean,
                 config.learningRatePos,
                 config.learningRateNeg,
-//                config.learningRateSpikeFrequency,
+                config.learningRateSpikeFrequency,
                 config.nbrLayers,
 //                config.layerSpikeFrequencies,
 //                config.layerTrainingAge,
@@ -236,8 +236,10 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
 
         /// Debug threshold controller
         config.controllerInput = scn._layers.get( config.controllerLayer )._convSpikeThresholdController._input;
+        config.controllerRawInput = scn._layers.get( config.controllerLayer )._convSpikeThresholdController._tempRawInput;
         config.controllerOutput = scn._layers.get( config.controllerLayer )._convSpikeThresholdController._u0;
         config.controllerError = scn._layers.get( config.controllerLayer )._convSpikeThresholdController._e0;
+        config.controllerIntegrationThreshold = scn._layers.get( config.controllerLayer )._convSpikeThresholdController._tempIntegrationThreshold;
         /// Debug threshold controller
 
 //        Data output = scn.getOutput(); // the potential max-pooling

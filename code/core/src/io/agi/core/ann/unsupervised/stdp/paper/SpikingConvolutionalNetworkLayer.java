@@ -25,7 +25,6 @@ import io.agi.core.math.Useful;
 import io.agi.core.opt.DiscreteTimePIDController;
 
 import java.util.HashMap;
-import java.util.HashSet;
 
 /**
  * Created by dave on 1/05/17.
@@ -82,7 +81,7 @@ public class SpikingConvolutionalNetworkLayer {
                 _config._spikeFrequencyControllerN,
                 _config._spikeFrequencyControllerT,
                 _config._spikeFrequencyControllerMin,
-                _config._spikeFrequencyControllerMax );
+                _config._spikeFrequencyControllerMax);
         _convSpikeThresholdController.reset( 0f, _config._spikeFrequencyTarget );
 
         _convSpikeStats = new Data( DataSize.create( 2 ) );
@@ -496,10 +495,11 @@ public class SpikingConvolutionalNetworkLayer {
             kernelSpikeCount.put( k, 0 );
         }
 
-        //float integrationThreshold = config._integrationThreshold;
+
         //float integrationThreshold = convSpikeThreshold._values[ 0 ];
         //float integrationThreshold = convSpikeThresholdController.getOutputMax() - convSpikeThresholdController.getOutput();
-        float integrationThreshold = convSpikeThresholdController.getOutput();
+
+        float integrationThreshold = convSpikeThresholdController._tempIntegrationThreshold;
 
         int spikes = 0;
 
@@ -588,42 +588,50 @@ public class SpikingConvolutionalNetworkLayer {
         int area = config._width * config._height;
         float spikeDensity = (float)spikes / (float)area; // normalize for area of the layer
 
-        //updateSpikeFrequency( spikeDensity );
-//        float fOld = 1f - convSpikeThresholdController.getInput(); // inverted controller input
-//        //float fOld = convSpikeThresholdController.getInput();
-//        float fNew = Unit.lerp( spikeDensity, fOld, config._spikeFrequencyLearningRate );
-//        fNew = Math.min( 1f, Math.max( 0f, fNew ) ); // clamped at 0 <= f <= 1
+        convSpikeThresholdController._tempRawInput = spikeDensity;
 
-        //convSpikeFrequency._values[ 0 ] = fNew;
+        boolean exponentialAverage = true;
+        if ( exponentialAverage ) {
+            //updateSpikeFrequency( spikeDensity );
+            float spikeDensityPrevious = convSpikeThresholdController.getInput();
+            float spikeDensitySmoothed = Unit.lerp( spikeDensity, spikeDensityPrevious, config._spikeFrequencyLearningRate );
 
-        float convSpikeCount = convSpikeStats._values[ STAT_COUNT ];
-        float convSpikeSum = convSpikeStats._values[ STAT_SUM ];
-        ++convSpikeCount;
-        convSpikeSum += spikeDensity;
-        if( convSpikeCount >= config._convSpikePeriod ) {
+            // update layer spike threshold - the control output
+            convSpikeThresholdController.update( spikeDensitySmoothed, config._spikeFrequencyTarget ); // input, target
 
-            float averageDensity = convSpikeSum / config._convSpikePeriod;
-            convSpikeThresholdController.update( averageDensity, config._spikeFrequencyTarget ); // input, target
+            float controllerOutput =  convSpikeThresholdController.getOutput();
 
-            convSpikeSum = 0;
-            convSpikeCount = 0;
+            integrationThreshold = integrationThreshold - controllerOutput;
+            integrationThreshold = Math.max(0f, integrationThreshold);      // must be > 0
         }
 
-        convSpikeStats._values[ STAT_COUNT ] = convSpikeCount;
-        convSpikeStats._values[ STAT_SUM ] = convSpikeSum;
+        convSpikeThresholdController._tempIntegrationThreshold = integrationThreshold;
 
-        // update layer spike threshold - the control output
-//        convSpikeThresholdController.update( 1f - fNew, config._spikeFrequencyTarget ); // input, target
-//        float oldThreshold = convSpikeThresholdController.getOutput();
-//        float delta = 0.1f;
-//        if( fNew < config._spikeFrequencyTarget ) {
-//            delta = 0f - delta;
-//        }
-//        float newThreshold = oldThreshold + delta;
-//        newThreshold = Math.max( 0f, newThreshold );
-//        convSpikeThresholdController.setOutput( newThreshold );
-//        convSpikeThresholdController.setInput( fNew );
-        //convSpikeThresholdController.update( fNew, config._spikeFrequencyTarget ); // input, target
+
+
+        // This is the code for a non sliding window
+        // I'm commenting it out in favour of a smoothed, sliding window, approximated with exponential average
+        boolean nonSlidingWindowMethod = false;
+        if ( nonSlidingWindowMethod  ) {
+            float convSpikeCount = convSpikeStats._values[ STAT_COUNT ];
+            float convSpikeSum = convSpikeStats._values[ STAT_SUM ];
+            ++convSpikeCount;
+            convSpikeSum += spikeDensity;
+            if( convSpikeCount >= config._convSpikePeriod ) {
+
+                float averageDensity = convSpikeSum / config._convSpikePeriod;
+                convSpikeThresholdController.update( averageDensity, config._spikeFrequencyTarget ); // input, target
+
+                convSpikeSum = 0;
+                convSpikeCount = 0;
+            }
+
+            convSpikeStats._values[ STAT_COUNT ] = convSpikeCount;
+            convSpikeStats._values[ STAT_SUM ] = convSpikeSum;
+        }
+
+
+
 
 //        // TODO replace with optimizer
 //        float frequencyIdeal = 0.1f;

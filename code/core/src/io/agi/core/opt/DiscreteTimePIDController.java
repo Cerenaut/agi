@@ -19,8 +19,6 @@
 
 package io.agi.core.opt;
 
-import io.agi.core.data.Data;
-import io.agi.core.data.DataSize;
 import io.agi.core.data.FloatArray;
 
 /**
@@ -51,6 +49,9 @@ public class DiscreteTimePIDController {
     public float _uMax; // Limits to be applied to output control
     public float _input; // A vector of observations that should be optimized
     public float _target; // The ideal value for each observation, ie. target or set value
+
+    public float _tempRawInput = 0.f;
+    public float _tempIntegrationThreshold = 0.f;
 
     /**
      * Resets the internal state of the controller
@@ -250,7 +251,7 @@ public class DiscreteTimePIDController {
      * @return
      */
     public static FloatArray Controller2Data( DiscreteTimePIDController c ) {
-        FloatArray d = new FloatArray( 15 );
+        FloatArray d = new FloatArray( 17 );
         d._values[ 0 ] = c._ku1;
         d._values[ 1 ] = c._ku2;
         d._values[ 2 ] = c._ke0;
@@ -266,6 +267,8 @@ public class DiscreteTimePIDController {
         d._values[ 12 ] = c._uMax;
         d._values[ 13 ] = c._input;
         d._values[ 14 ] = c._target;
+        d._values[ 15 ] = c._tempRawInput;
+        d._values[ 16 ] = c._tempIntegrationThreshold;
         return d;
     }
 
@@ -275,7 +278,7 @@ public class DiscreteTimePIDController {
      * @return
      */
     public static DiscreteTimePIDController Data2Controller( FloatArray d ) {
-        assert( d.getSize() == 15 );
+        assert( d.getSize() == 17 );
 
         DiscreteTimePIDController c = new DiscreteTimePIDController();
 
@@ -294,6 +297,8 @@ public class DiscreteTimePIDController {
         c._uMax = d._values[ 12 ];
         c._input = d._values[ 13 ];
         c._target = d._values[ 14 ];
+        c._tempRawInput = d._values[ 15 ];
+        c._tempIntegrationThreshold = d._values[16];
 
         return c;
     }

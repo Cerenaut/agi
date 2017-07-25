@@ -50,7 +50,7 @@ public class SpikingConvolutionalNetworkLayerConfig {
 
 //    public float _convSpikeSum = 0f;
 //    public float _convSpikeCount = 0f;
-    public float _convSpikePeriod = 0f;
+    public float _convSpikePeriod = 0f;     // period over which the convolutional spikes are averaged. used for calculating an average to be used for controller.
 
     public float _weightStdDev;
     public float _weightsMean;
@@ -63,8 +63,8 @@ public class SpikingConvolutionalNetworkLayerConfig {
     public float _kernelSpikeFrequencyLearningRate;
     public float _kernelSpikeFrequencyTarget;
 
-//    public float _spikeFrequency;
-//    public float _spikeFrequencyLearningRate;
+    public float _spikeFrequency;
+    public float _spikeFrequencyLearningRate;
     public float _spikeFrequencyTarget;
     public float _spikeFrequencyControllerP;
     public float _spikeFrequencyControllerI;
@@ -107,7 +107,7 @@ public class SpikingConvolutionalNetworkLayerConfig {
 //            float spikeFrequencySum,
 //            float spikeFrequencyCount,
             float spikeFrequencyPeriod,
-//            float spikeFrequencyLearningRate,
+            float spikeFrequencyLearningRate,
             float spikeFrequencyTarget,
             float spikeFrequencyControllerP,
             float spikeFrequencyControllerI,
@@ -138,7 +138,7 @@ public class SpikingConvolutionalNetworkLayerConfig {
         _kernelSpikeFrequencyTarget = kernelSpikeFrequencyTarget;
 
         //_spikeFrequency = spikeFrequency;
-//        _spikeFrequencyLearningRate = spikeFrequencyLearningRate;
+        _spikeFrequencyLearningRate = spikeFrequencyLearningRate;
         _convSpikePeriod = spikeFrequencyPeriod;
         _spikeFrequencyTarget = spikeFrequencyTarget;
         _spikeFrequencyControllerP = spikeFrequencyControllerP;
