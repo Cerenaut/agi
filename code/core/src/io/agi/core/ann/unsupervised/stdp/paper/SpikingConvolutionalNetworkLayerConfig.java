@@ -45,48 +45,35 @@ public class SpikingConvolutionalNetworkLayerConfig {
     //tribution with the mean of 0.8 and STD of 0.05
 
     public Random _r;
-//    public int _trainingAgeStart = 0;
-//    public int _trainingAgeEnd   = 0;
 
-//    public float _convSpikeSum = 0f;
-//    public float _convSpikeCount = 0f;
-    public float _convSpikePeriod = 0f;     // period over which the convolutional spikes are averaged. used for calculating an average to be used for controller.
-
-    public float _weightStdDev;
-    public float _weightsMean;
-
-    public float _learningRatePos;
-    public float _learningRateNeg;
-
-    public float _integrationThreshold;
-
+    // Kernel parameters
+    public float _kernelWeightStdDev;
+    public float _kernelWeightsMean;
+    public float _kernelWeightsLearningRate;
     public float _kernelSpikeFrequencyLearningRate;
     public float _kernelSpikeFrequencyTarget;
 
-    public float _spikeFrequency;
-    public float _spikeFrequencyLearningRate;
-    public float _spikeFrequencyTarget;
-    public float _spikeFrequencyControllerP;
-    public float _spikeFrequencyControllerI;
-    public float _spikeFrequencyControllerD;
-    public float _spikeFrequencyControllerN;
-    public float _spikeFrequencyControllerT;
-    public float _spikeFrequencyControllerMin;
-    public float _spikeFrequencyControllerMax;
+    // Convolutional Homeostasis parameters
+    public float _convSpikeControllerDensityTarget = 0f;
+    public int _convSpikeControllerIntegrationPeriod = 0;
+    public int _convSpikeControllerUpdatePeriod = 0;     // period over which the convolutional spikes are averaged. used for calculating an average to be used for controller.
 
+    // Input Dimensions
     public int _inputPadding;
     public int _inputStride;
 
+    // Layer Dimensions
     public int _width;
     public int _height;
     public int _depth;
 
+    public int _poolingWidth;
+    public int _poolingHeight;
+
+    // Receptive Field Dimensions
     public int _fieldWidth;
     public int _fieldHeight;
     public int _fieldDepth;
-
-    public int _poolingWidth;
-    public int _poolingHeight;
 
     public SpikingConvolutionalNetworkLayerConfig() {
 
@@ -94,28 +81,17 @@ public class SpikingConvolutionalNetworkLayerConfig {
 
     public void setup(
             Random r,
-//            int trainingAgeStart,
-//            int trainingAgeEnd,
-            float weightStdDev,
-            float weightsMean,
-            float learningRatePos,
-            float learningRateNeg,
-            float integrationThreshold,
+
+            float kernelWeightStdDev,
+            float kernelWeightsMean,
+            float kernelWeightsLearningRate,
             float kernelSpikeFrequencyLearningRate,
             float kernelSpikeFrequencyTarget,
-//            float spikeFrequency,
-//            float spikeFrequencySum,
-//            float spikeFrequencyCount,
-            float spikeFrequencyPeriod,
-            float spikeFrequencyLearningRate,
-            float spikeFrequencyTarget,
-            float spikeFrequencyControllerP,
-            float spikeFrequencyControllerI,
-            float spikeFrequencyControllerD,
-            float spikeFrequencyControllerN,
-            float spikeFrequencyControllerT,
-            float spikeFrequencyControllerMin,
-            float spikeFrequencyControllerMax,
+
+            float convSpikeControllerDensityTarget,
+            int convSpikeControllerIntegrationPeriod,
+            int convSpikeControllerUpdatePeriod,
+
             int inputPadding,
             int inputStride,
             int width,
@@ -126,50 +102,32 @@ public class SpikingConvolutionalNetworkLayerConfig {
             int fieldDepth,
             int poolingWidth,
             int poolingHeight ) {
+
         _r = r;
-//        _trainingAgeStart = trainingAgeStart;
-//        _trainingAgeEnd = trainingAgeEnd;
-        _weightStdDev = weightStdDev;
-        _weightsMean = weightsMean;
-        _learningRatePos = learningRatePos;
-        _learningRateNeg = learningRateNeg;
-        _integrationThreshold = integrationThreshold;
+
+        _kernelWeightStdDev = kernelWeightStdDev;
+        _kernelWeightsMean = kernelWeightsMean;
+        _kernelWeightsLearningRate = kernelWeightsLearningRate;
         _kernelSpikeFrequencyLearningRate = kernelSpikeFrequencyLearningRate;
         _kernelSpikeFrequencyTarget = kernelSpikeFrequencyTarget;
 
-        //_spikeFrequency = spikeFrequency;
-        _spikeFrequencyLearningRate = spikeFrequencyLearningRate;
-        _convSpikePeriod = spikeFrequencyPeriod;
-        _spikeFrequencyTarget = spikeFrequencyTarget;
-        _spikeFrequencyControllerP = spikeFrequencyControllerP;
-        _spikeFrequencyControllerI = spikeFrequencyControllerI;
-        _spikeFrequencyControllerD = spikeFrequencyControllerD;
-        _spikeFrequencyControllerN = spikeFrequencyControllerN;
-        _spikeFrequencyControllerT = spikeFrequencyControllerT;
-        _spikeFrequencyControllerMin = spikeFrequencyControllerMin;
-        _spikeFrequencyControllerMax = spikeFrequencyControllerMax;
+        _convSpikeControllerDensityTarget = convSpikeControllerDensityTarget;
+        _convSpikeControllerIntegrationPeriod = convSpikeControllerIntegrationPeriod;
+        _convSpikeControllerUpdatePeriod = convSpikeControllerUpdatePeriod;
 
         _inputPadding = inputPadding;
         _inputStride = inputStride;
+
         _width = width;
         _height = height;
         _depth = depth;
+        _poolingWidth = poolingWidth;
+        _poolingHeight = poolingHeight;
+
         _fieldWidth = fieldWidth;
         _fieldHeight = fieldHeight;
         _fieldDepth = fieldDepth;
-        _poolingWidth = poolingWidth;
-        _poolingHeight = poolingHeight;
     }
-
-//    public boolean isTrainingAge( int age ) {
-//        if( age < _trainingAgeStart ) {
-//            return false;
-//        }
-//        if( age >= _trainingAgeEnd ) {
-//            return false;
-//        }
-//        return true;
-//    }
 
     public int getPooledWidth() {
         int pooledWidth = Useful.DivideRoundUp( _width, _poolingWidth );

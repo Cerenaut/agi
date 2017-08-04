@@ -20,8 +20,8 @@
 package io.agi.framework.demo.light;
 
 import io.agi.core.util.PropertiesUtil;
-import io.agi.framework.Framework;
 import io.agi.framework.Main;
+import io.agi.framework.Node;
 
 import java.util.Properties;
 
@@ -34,25 +34,26 @@ public class LightDemo {
 
     public static void main( String[] args ) {
 
-        // Provide classes for entities
-        LightEntityFactory ef = new LightEntityFactory();
-
         // Create a Node
         Main m = new Main();
         Properties p = PropertiesUtil.load( args[ 0 ] );
-        m.setup( p, null, ef );
+        m.setup( p,     null, new LightEntityFactory() );
 
         // Create custom entities and references
         if( args.length > 1 ) {
-            Framework.LoadEntities( args[ 1 ] );
-        }
-
-        if( args.length > 2 ) {
-            Framework.LoadDataReferences( args[ 2 ] );
+            if( args[ 1 ].equalsIgnoreCase( "create" ) ) {
+                // Programmatic hook to create entities and references..
+                createEntities( m._n );
+            }
         }
 
         // Start the system
         m.run();
+
+    }
+
+    private static void createEntities( Node n ) {
+
     }
 
 }

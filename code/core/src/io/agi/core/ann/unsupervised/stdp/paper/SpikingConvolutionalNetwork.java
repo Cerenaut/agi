@@ -45,20 +45,12 @@ public class SpikingConvolutionalNetwork {
 
         for( int layer = 0; layer < layers; ++layer ) {
 
-            float integrationThreshold = _config.getIntegrationThreshold( layer );
-//            float spikeFrequency = _config.getLayerSpikeFrequency(layer);
-            float spikeFrequencyLearningRate = _config.getLearningRateSpikeFrequency();
             float kernelSpikeFrequencyLearningRate = _config.getLayerValueFloat( config.KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE, layer );
             float kernelSpikeFrequencyTarget = _config.getLayerValueFloat( config.KEY_LAYER_KERNEL_SPIKE_FREQUENCY_TARGET, layer );
-            float spikeFrequencyPeriod = _config.getLayerValueFloat( config.KEY_LAYER_SPIKE_FREQUENCY_PERIOD, layer );
-            float spikeFrequencyTarget = _config.getLayerValueFloat( config.KEY_LAYER_SPIKE_FREQUENCY_TARGET, layer );
-            float spikeFrequencyControllerP = _config.getLayerValueFloat( config.KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_P, layer );
-            float spikeFrequencyControllerI = _config.getLayerValueFloat( config.KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_I, layer );
-            float spikeFrequencyControllerD = _config.getLayerValueFloat( config.KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_D, layer );
-            float spikeFrequencyControllerN = _config.getLayerValueFloat( config.KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_N, layer );
-            float spikeFrequencyControllerT = _config.getLayerValueFloat( config.KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_T, layer );
-            float spikeFrequencyControllerMin = _config.getLayerValueFloat( config.KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_MIN, layer );
-            float spikeFrequencyControllerMax = _config.getLayerValueFloat( config.KEY_LAYER_SPIKE_FREQUENCY_CONTROLLER_MAX, layer );
+
+            float convSpikeControllerDensityTarget = _config.getLayerValueFloat( config.KEY_LAYER_CONV_SPIKE_DENSITY_TARGET, layer );
+            int convSpikeControllerIntegrationPeriod = _config.getLayerValueInteger( config.KEY_LAYER_CONV_SPIKE_INTEGRATION_PERIOD, layer );
+            int convSpikeControllerUpdatePeriod = _config.getLayerValueInteger( config.KEY_LAYER_CONV_SPIKE_UPDATE_PERIOD, layer );
 
             int inputPadding = _config.getLayerInputPadding( layer );
             int inputStride = _config.getLayerInputStride( layer );
@@ -70,39 +62,24 @@ public class SpikingConvolutionalNetwork {
             int fieldDepth = _config.getLayerFieldDepth( layer );
             int poolingWidth = _config.getLayerPoolingWidth( layer );
             int poolingHeight = _config.getLayerPoolingHeight( layer );
-//            int layerTrainingAgeStart = _config.getLayerTrainingAge( layer );
-//            int layerTrainingAgeEnd = Integer.MAX_VALUE;
-//            if( layer < (layers -1) ) {
-//                layerTrainingAgeEnd = _config.getLayerTrainingAge( layer +1 ); // ends when next layer start, or when learn switched off
-//            }
 
             SpikingConvolutionalNetworkLayerConfig scnlc = new SpikingConvolutionalNetworkLayerConfig();
             scnlc.setup(
                 _config._r,
-//                layerTrainingAgeStart, layerTrainingAgeEnd,
-                _config.getWeightsStdDev(), _config.getWeightsMean(),
-                _config.getLearningRatePos(), _config.getLearningRateNeg(),
-                integrationThreshold,
-
+                _config.getKernelWeightsStdDev(),
+                _config.getKernelWeightsMean(),
+                _config.getKernelWeightsLearningRate(),
                 kernelSpikeFrequencyLearningRate,
                 kernelSpikeFrequencyTarget,
 
-                spikeFrequencyPeriod,
-                spikeFrequencyLearningRate,
-                spikeFrequencyTarget,
-                spikeFrequencyControllerP,
-                spikeFrequencyControllerI,
-                spikeFrequencyControllerD,
-                spikeFrequencyControllerN,
-                spikeFrequencyControllerT,
-                spikeFrequencyControllerMin,
-                spikeFrequencyControllerMax,
+                convSpikeControllerDensityTarget,
+                convSpikeControllerIntegrationPeriod,
+                convSpikeControllerUpdatePeriod,
 
                 inputPadding, inputStride,
                 layerWidth, layerHeight, layerDepth,
                 fieldWidth, fieldHeight, fieldDepth,
                 poolingWidth, poolingHeight );
-
 
             SpikingConvolutionalNetworkLayer scnl = new SpikingConvolutionalNetworkLayer();
             scnl.setup( scnlc, layer );
@@ -151,8 +128,6 @@ public class SpikingConvolutionalNetwork {
             SpikingConvolutionalNetworkLayer scnl =  _layers.get( layer );
             scnl.reset();
         }
-
-        _config.setAge( 0 );
     }
 
     public void clear() {
@@ -167,7 +142,6 @@ public class SpikingConvolutionalNetwork {
     public void update() {
         boolean learn = _config.getLearn();
         int layers = _config.getNbrLayers();
-        int age = _config.getAge();
 
         for( int layer = 0; layer < layers; ++layer ) {
             Data input = null;
@@ -179,22 +153,11 @@ public class SpikingConvolutionalNetwork {
                 input = scnl.getOutput();
             }
 
-//            boolean maxPooling = false;
-//            if( layer == (layers-1) ) {
-//                maxPooling = true;
-//            }
-
             SpikingConvolutionalNetworkLayer scnl =  _layers.get( layer );
-
-            // Implement greedy layerwise training schedule.
-//            boolean isTraining = scnl._config.isTrainingAge( age );
-//            boolean train = isTraining & learn;
 
             scnl.setInput( input );
             scnl.update( learn );//train );//, maxPooling );
         }
-
-        _config.setAge( age +1 );
     }
 
     public Data invert( Data output ) {

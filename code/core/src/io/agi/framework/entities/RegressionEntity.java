@@ -31,7 +31,7 @@ import java.util.Collection;
  * These Entities have two main phases, 'learn' on and off
  * <p>
  * In Learn=on (Training) phase - it simply collects the data that it needs (via a VectorSeriesEntity that is an Input)
- * In Learn=off (Testing) phase - train SVM if not already trained, and give predictions (i.e. only train once then predict)
+ * In Learn=off (Testing) phase - train model if not already trained, and give predictions (i.e. only train once then predict)
  * <p>
  * <p>
  * <p>

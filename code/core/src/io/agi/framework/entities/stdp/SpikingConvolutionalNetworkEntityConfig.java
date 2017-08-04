@@ -32,24 +32,28 @@ public class SpikingConvolutionalNetworkEntityConfig extends EntityConfig {
     public String clearFlagConfigPath = "";
 
     /// Debug threshold controller
-    public int controllerLayer = 0;
-    public float controllerRawInput = 0f;
-    public float controllerInput = 0f;
-    public float controllerOutput = 0f;
-    public float controllerError = 0f;
-    public float controllerIntegrationThreshold = 0.f;
+    public int controllerLayer = 0; // default: Set as needed
+    public float controllerInput = 0f; // will be calculated
+    public float controllerInputAccumulated = 0f; // will be calculated
+    public float controllerOutput = 0f; // will be calculated
+    public float controllerError = 0f; // will be calculated
+    public float controllerErrorIntegrated = 0f; // will be calculated
+    public float controllerThreshold = 0.f; // will be calculated
     /// Debug threshold controller
 
-    public int trainingAge = 0;
-    public float weightsStdDev = 0;
-    public float weightsMean = 0;
-    public float learningRatePos = 0;
-    public float learningRateNeg = 0;
-    public float learningRateSpikeFrequency = 0;
-//    public float integrationThreshold = 0;
+    public float kernelWeightsStdDev = 0;
+    public float kernelWeightsMean = 0;
+    public float kernelWeightsLearningRate = 0;
+
     public int nbrLayers = 0;
-//    public String layerTrainingAge = "";
-    public String layerIntegrationThreshold = "";
+
+    public String layerKernelSpikeFrequencyLearningRate = "";
+    public String layerKernelSpikeFrequencyTarget = "";
+
+    public String layerConvSpikeDensityTarget = "";
+    public String layerConvSpikeIntegrationPeriod = "";
+    public String layerConvSpikeUpdatePeriod = "";
+
     public String layerInputPadding = "";
     public String layerInputStride = "";
     public String layerWidth = "";
@@ -61,17 +65,4 @@ public class SpikingConvolutionalNetworkEntityConfig extends EntityConfig {
     public String layerPoolingWidth = "";
     public String layerPoolingHeight = "";
 
-//    public String layerSpikeFrequencies = "";
-    public String layerKernelSpikeFrequencyLearningRate = "";
-    public String layerKernelSpikeFrequencyTarget = "";
-
-    public String layerSpikeFrequencyPeriod = "";
-    public String layerSpikeFrequencyTarget = "";
-    public String layerSpikeFrequencyControllerP = "";
-    public String layerSpikeFrequencyControllerI = "";
-    public String layerSpikeFrequencyControllerD = "";
-    public String layerSpikeFrequencyControllerN = "";
-    public String layerSpikeFrequencyControllerT = "";
-    public String layerSpikeFrequencyControllerMin = "";
-    public String layerSpikeFrequencyControllerMax = "";
 }

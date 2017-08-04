@@ -31,12 +31,19 @@ import java.util.HashMap;
  */
 public class SpikingConvolutionalNetworkLayer {
 
-    public static final int STAT_SUM = 0;
-    public static final int STAT_COUNT = 1;
+    public static final int LAYER_STATISTICS_SPIKE_DENSITY = 0;
+    public static final int LAYER_STATISTICS_WINDOW_SUM = 1;
+    public static final int LAYER_STATISTICS_WINDOW_COUNT = 2;
+    public static final int LAYER_STATISTICS_CONTROLLER_THRESHOLD = 3;
+    public static final int LAYER_STATISTICS_CONTROLLER_MEASURED = 4;
+    public static final int LAYER_STATISTICS_CONTROLLER_ERROR = 5;
+    public static final int LAYER_STATISTICS_CONTROLLER_ERROR_INTEGRATED = 6;
+    public static final int LAYER_STATISTICS_CONTROLLER_DELTA = 7;
+    public static final int LAYER_STATISTICS_SIZE = 8;
 
     public SpikingConvolutionalNetworkLayerConfig _config;
 
-    public DiscreteTimePIDController _convSpikeThresholdController;
+    //public DiscreteTimePIDController _convSpikeThresholdController;
 
     public int _layer = 0;
 
@@ -53,8 +60,7 @@ public class SpikingConvolutionalNetworkLayer {
     public Data _convIntegrated;
     public Data _convSpikes;
     public Data _convSpikeStats;
-//    public Data _convSpikeFrequency;
-//    public Data _convSpikeThreshold;
+    public Data _convSpikeControllerWindow;
 
     public Data _poolSpikes;
     public Data _poolSpikesIntegrated;
@@ -70,21 +76,8 @@ public class SpikingConvolutionalNetworkLayer {
         _config = config;
         _layer = layer;
 
-//        _convSpikeFrequency = new Data( DataSize.create( 1 ) );
-//        _convSpikeThreshold = new Data( DataSize.create( 1 ) );
-
-        _convSpikeThresholdController = new DiscreteTimePIDController();
-        _convSpikeThresholdController.setup(
-                _config._spikeFrequencyControllerP,
-                _config._spikeFrequencyControllerI,
-                _config._spikeFrequencyControllerD,
-                _config._spikeFrequencyControllerN,
-                _config._spikeFrequencyControllerT,
-                _config._spikeFrequencyControllerMin,
-                _config._spikeFrequencyControllerMax);
-        _convSpikeThresholdController.reset( 0f, _config._spikeFrequencyTarget );
-
-        _convSpikeStats = new Data( DataSize.create( 2 ) );
+        _convSpikeStats = new Data( DataSize.create( LAYER_STATISTICS_SIZE ) );
+        _convSpikeControllerWindow = new Data( DataSize.create( config._convSpikeControllerIntegrationPeriod ) );
 
         int kernelSize = _config._fieldWidth * _config._fieldHeight * _config._fieldDepth * _config._depth;
         DataSize kernelDataSize = DataSize.create( kernelSize );
@@ -140,34 +133,17 @@ public class SpikingConvolutionalNetworkLayer {
         // reset the weights in the kernels
         // "Synaptic weights of convolutional neurons initiate with random values drown from a normal distribution with the mean of 0.8 and STD of 0.05"
         // set inhibition to zero
-//        _config._convSpikeCount = 0;
-//        _config._convSpikeSum = 0;
         _convSpikeStats.set( 0f );
 
         int weights = _kernelWeights.getSize();
         for( int i = 0; i < weights; ++i ) {
             double w = _config._r.nextGaussian(); // mean: 0, SD: 1
-            w *= _config._weightStdDev; // scale stddev
-            w += _config._weightsMean; // offset mean
+            w *= _config._kernelWeightStdDev; // scale stddev
+            w += _config._kernelWeightsMean; // offset mean
             _kernelWeights._values[ i ] = (float)w;
         }
 
         _kernelFrequency.set( 0f );
-
-//        _convSpikeFrequency.set( 0f );
-//        _convSpikeFrequency.set( 0.5f );
-
-        // reconfigure the controller, and reset its internal state.
-        _convSpikeThresholdController.setup(
-                _config._spikeFrequencyControllerP,
-                _config._spikeFrequencyControllerI,
-                _config._spikeFrequencyControllerD,
-                _config._spikeFrequencyControllerN,
-                _config._spikeFrequencyControllerT,
-                _config._spikeFrequencyControllerMin,
-                _config._spikeFrequencyControllerMax );
-
-        _convSpikeThresholdController.reset( 0.5f, _config._spikeFrequencyTarget );
 
         clear();
     }
@@ -200,7 +176,7 @@ public class SpikingConvolutionalNetworkLayer {
         convolve( _config, _kernelWeights, _inputSpikes, _convSums );
         //float inhSum = _convInhibition.sum();
         //integrate( _config, _kernelWeights, _kernelFrequency, _inputTrace, _convSums, _convInhibition, _convIntegrated, _convSpikes, _convSpikeFrequency, _convSpikeThreshold, train );
-        integrate( _config, _convSpikeStats, _convSpikeThresholdController, _kernelWeights, _kernelFrequency, _inputTrace, _convSums, _convInhibition, _convIntegrated, _convSpikes, train );
+        integrate( _config, _convSpikeStats, _convSpikeControllerWindow, _kernelWeights, _kernelFrequency, _inputTrace, _convSums, _convInhibition, _convIntegrated, _convSpikes, train );
         //float inhSum2 = _convInhibition.sum();
 
         poolMax( _config, _convIntegrated, _poolIntegrated );
@@ -441,10 +417,7 @@ public class SpikingConvolutionalNetworkLayer {
                     int kernelsOffset = cz * kernelSize + kernelOffset;
 
                     float inputValue = inputSpikeTrace._values[ inputOffset ];
-                    float learningRate = - config._learningRateNeg;
-//                    if( inputValue > 0f ) {
-                        learningRate = config._learningRatePos;
-//                    }
+                    float learningRate = config._kernelWeightsLearningRate;
 
                     // Dave's training enhancements:
                     // Nonstationary learning rule: Add random amt to active pre-synaptic when post-syn firing rate too low (disused)
@@ -474,7 +447,8 @@ public class SpikingConvolutionalNetworkLayer {
     public static void integrate(
             SpikingConvolutionalNetworkLayerConfig config,
             Data convSpikeStats,
-            DiscreteTimePIDController convSpikeThresholdController,
+            Data convSpikeErrorHistory,
+            //DiscreteTimePIDController convSpikeThresholdController,
             Data kernelWeights,
             Data kernelFrequency,
             Data inputTrace,
@@ -482,8 +456,6 @@ public class SpikingConvolutionalNetworkLayer {
             Data convInhibition,
             Data convIntegrated,
             Data convSpikes,
-//            Data convSpikeFrequency,
-//            Data convSpikeThreshold,
             boolean train ) {
         // Neurons in all convolutional layers are non-leaky integrate-and-fire neurons
         // V_i(t) = V_i(t-1) + sum(j): W_ji * S_j(t-1)
@@ -495,11 +467,7 @@ public class SpikingConvolutionalNetworkLayer {
             kernelSpikeCount.put( k, 0 );
         }
 
-
-        //float integrationThreshold = convSpikeThreshold._values[ 0 ];
-        //float integrationThreshold = convSpikeThresholdController.getOutputMax() - convSpikeThresholdController.getOutput();
-
-        float integrationThreshold = convSpikeThresholdController._tempIntegrationThreshold;
+        float convSpikeThreshold = convSpikeStats._values[ LAYER_STATISTICS_CONTROLLER_THRESHOLD ];
 
         int spikes = 0;
 
@@ -541,19 +509,22 @@ public class SpikingConvolutionalNetworkLayer {
                 if( czMax <= 0f ) {
                     continue; // no input
                 }
-//                if( czMaxAt == 27 ) {
-//                    int g = 0;
-//                    g++;
-//                }
-                if( czMax >= integrationThreshold ) { // over threshold
 
-                    spikes += 1;
+                if( czMax >= convSpikeThreshold ) { // over threshold
+
+                    spikes += 1; // TODO include this spike in the value
+
+                    int convolvedOffset = ConvolutionData3d.getOffset( cx, cy, czMaxAt, config._width, config._height, config._depth );
+                    convIntegrated._values[ convolvedOffset ] = 0f; // clear integrated activity; actually this makes no difference due to the inhibition at this location if another cell has fired
+                    // BUT, we should restore this clearing when we move to realtime modelling.
 
                     if( inhibitionValue > 0f ) {
                         continue; // no spike possible, due to inhibition
+                        // Also no training.
                     }
 
-                    int convolvedOffset = ConvolutionData3d.getOffset( cx, cy, czMaxAt, config._width, config._height, config._depth );
+                    // Here: Only include spikes that weren't inhibited.
+//                    spikes += 1; // TODO include spikes with or without inhibition?
 
                     //spikingKernels.add( czMaxAt );
                     int oldSpikeCount = kernelSpikeCount.get( czMaxAt );
@@ -586,66 +557,51 @@ public class SpikingConvolutionalNetworkLayer {
         // update layer spike frequency - the observed variable
         // normalize for layer area (but not depth)
         int area = config._width * config._height;
-        float spikeDensity = (float)spikes / (float)area; // normalize for area of the layer
+        float convSpikeDensity = (float)spikes / (float)area; // normalize for area of the layer
+        float convSpikeCount = convSpikeStats._values[ LAYER_STATISTICS_WINDOW_COUNT ];
+        float convSpikeSum = convSpikeStats._values[ LAYER_STATISTICS_WINDOW_SUM ];
 
-        convSpikeThresholdController._tempRawInput = spikeDensity;
+        convSpikeCount += 1;
+        convSpikeSum += convSpikeDensity;
 
-        boolean exponentialAverage = true;
-        if ( exponentialAverage ) {
-            //updateSpikeFrequency( spikeDensity );
-            float spikeDensityPrevious = convSpikeThresholdController.getInput();
-            float spikeDensitySmoothed = Unit.lerp( spikeDensity, spikeDensityPrevious, config._spikeFrequencyLearningRate );
+        if( convSpikeCount >= config._convSpikeControllerUpdatePeriod ) {
 
-            // update layer spike threshold - the control output
-            convSpikeThresholdController.update( spikeDensitySmoothed, config._spikeFrequencyTarget ); // input, target
+            float averageDensity = convSpikeSum / (float)config._convSpikeControllerUpdatePeriod;
+            float target = config._convSpikeControllerDensityTarget;// / config._convSpikePeriod;
+            float error = averageDensity - target;
 
-            float controllerOutput =  convSpikeThresholdController.getOutput();
+            int historySize = convSpikeErrorHistory.getSize();
+            convSpikeErrorHistory.rotate( 1 ); // i.e. 0 -> 1, last -> 0
+            convSpikeErrorHistory._values[ 0 ] = error;
+            float integratedError = convSpikeErrorHistory.sum();
+            integratedError /= (float)historySize;
 
-            integrationThreshold = integrationThreshold - controllerOutput;
-            integrationThreshold = Math.max(0f, integrationThreshold);      // must be > 0
+            float gainP = 1f; //
+            float gainI = 2f;
+
+            // error = observed - target
+            // TOO MANY SPIKES :             e =     0.5 - 0.2 =  0.3      ACTION: Increase.
+            // TOO FEW  SPIKES :             e =     0.0 - 0.2 = -0.2      ACTION: Decrease.
+
+            float deltaP = gainP * error;
+            float deltaI = gainI * integratedError;
+            float deltaPI = deltaP + deltaI;
+
+            float convSpikeThresholdNew = convSpikeThreshold + deltaPI;
+            convSpikeThresholdNew = Math.max( 0f, convSpikeThresholdNew );
+
+            convSpikeSum = 0;
+            convSpikeCount = 0;
+            convSpikeStats._values[ LAYER_STATISTICS_CONTROLLER_THRESHOLD ] = convSpikeThresholdNew;
+            convSpikeStats._values[ LAYER_STATISTICS_CONTROLLER_MEASURED ] = averageDensity;
+            convSpikeStats._values[ LAYER_STATISTICS_CONTROLLER_DELTA ] = deltaPI;
+            convSpikeStats._values[ LAYER_STATISTICS_CONTROLLER_ERROR ] = error;
+            convSpikeStats._values[ LAYER_STATISTICS_CONTROLLER_ERROR_INTEGRATED ] = integratedError;
         }
 
-        convSpikeThresholdController._tempIntegrationThreshold = integrationThreshold;
-
-
-
-        // This is the code for a non sliding window
-        // I'm commenting it out in favour of a smoothed, sliding window, approximated with exponential average
-        boolean nonSlidingWindowMethod = false;
-        if ( nonSlidingWindowMethod  ) {
-            float convSpikeCount = convSpikeStats._values[ STAT_COUNT ];
-            float convSpikeSum = convSpikeStats._values[ STAT_SUM ];
-            ++convSpikeCount;
-            convSpikeSum += spikeDensity;
-            if( convSpikeCount >= config._convSpikePeriod ) {
-
-                float averageDensity = convSpikeSum / config._convSpikePeriod;
-                convSpikeThresholdController.update( averageDensity, config._spikeFrequencyTarget ); // input, target
-
-                convSpikeSum = 0;
-                convSpikeCount = 0;
-            }
-
-            convSpikeStats._values[ STAT_COUNT ] = convSpikeCount;
-            convSpikeStats._values[ STAT_SUM ] = convSpikeSum;
-        }
-
-
-
-
-//        // TODO replace with optimizer
-//        float frequencyIdeal = 0.1f;
-//        float thresholdValue = 0;
-//        if( fNew > frequencyIdeal ) {
-//            thresholdValue = 1f;
-//        }
-//        thresholdValue = Math.max( 0f, thresholdValue ); // clip at 0
-//
-////        hm how to set the threshold
-//        float layerSpikeThresholdLearningRate = 0.00001f; // slower
-//        float oldSpikeThreshold = convSpikeThreshold._values[ 0 ];
-//        float newSpikeThreshold = //Unit.lerp( , oldSpikeThreshold, layerSpikeThresholdLearningRate );
-//        convSpikeThreshold._values[ 0 ] = newSpikeThreshold;
+        convSpikeStats._values[ LAYER_STATISTICS_SPIKE_DENSITY ] = convSpikeDensity;
+        convSpikeStats._values[ LAYER_STATISTICS_WINDOW_COUNT ] = convSpikeCount;
+        convSpikeStats._values[ LAYER_STATISTICS_WINDOW_SUM ] = convSpikeSum;
 
         // update kernel frequencies depending whether each kernel z fired or not.
         for( int cz = 0; cz < config._depth; ++cz ) {
@@ -929,12 +885,6 @@ public class SpikingConvolutionalNetworkLayer {
                         } // field x
                     } // field y
 
-//                    if( sum > 0f ) {
-//
-//                        int g = 0;
-//                        g++;
-//                    }
-
                     int convOffset = ConvolutionData3d.getOffset( cx, cy, cz, config._width, config._height, config._depth );
                     convSums._values[ convOffset ] = sum;
 
@@ -942,10 +892,5 @@ public class SpikingConvolutionalNetworkLayer {
 
             } // convolution x
         } // convolution y
-
-//        float cSum = convSums.sum();
-//        int g = 0;
-//        g++;
-//        return output;
     }
 }
