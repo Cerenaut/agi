@@ -51,7 +51,6 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
     public static final String DATA_LAYER_KERNEL_WEIGHTS_ = "layer-kernel-weights-";
     public static final String DATA_LAYER_KERNEL_FREQUENCIES_ = "layer-kernel-frequencies-";
 
-    public static final String DATA_LAYER_CONV_CONTROLLER_ = "layer-conv-controller-";
     public static final String DATA_LAYER_CONV_STATS_ = "layer-conv-stats-";
     public static final String DATA_LAYER_CONV_SPIKE_CONTROLLER_WINDOW_ = "layer-conv-spike-controller-window-";
     public static final String DATA_LAYER_CONV_SUMS_ = "layer-conv-sums-";
@@ -100,10 +99,6 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
 
             attributes.add( DATA_LAYER_KERNEL_FREQUENCIES_ + layer );
             flags.putFlag( DATA_LAYER_KERNEL_FREQUENCIES_, DataFlags.FLAG_NODE_CACHE );
-
-
-            attributes.add( DATA_LAYER_CONV_CONTROLLER_ + layer );
-            flags.putFlag( DATA_LAYER_CONV_CONTROLLER_, DataFlags.FLAG_NODE_CACHE );
 
             attributes.add( DATA_LAYER_CONV_STATS_ + layer );
             flags.putFlag( DATA_LAYER_CONV_STATS_, DataFlags.FLAG_NODE_CACHE );

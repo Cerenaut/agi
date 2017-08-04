@@ -45,8 +45,19 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         demo.mainImpl(args );
     }
 
+// - 2/  replace clear with decay of integrated values, so it discovers the time steps
+// - 3/  add prediction to help classification
+// - 4/  add predictive coding (larger spike train output on prediction FN error)
+
+// TODO after this, make a version that uses predictive encoding via feedback, which both uses feedback to help recognize and draws resources towards errors
+// TODO restore negative features
+//- Prediction: Do we have a timing rule that input from the apical dendrite must arrive before a post-spike not after, AND that it must not
+//- Do we implement the spike-train encoding? [Yes, because bio evidenc for it]. Binding problem - joint handling of dynamically allocated variables.
+//- Feedback: What to do with feedback? Start with all zero weights? Do we train when prediction fails? [ New evidence: we have papers showing PC and feedback reduces time to output spike or suppresses/truncates output spike ]
+
     public void createEntities( Node n ) {
 
+        // Dataset
 //        String trainingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small";
 //        String testingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small, /Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/testing-small";
 
@@ -57,40 +68,32 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
 //        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
 
         String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10,/home/dave/workspace/agi.io/data/mnist/cycle3";
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
 
 //        String trainingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small";
 //        String testingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/testing-small";
 
-
-        // TODO after this, make a version that uses predictive encoding via feedback, which both uses feedback to help recognize and draws resources towards errors
-
+        // Parameters
 //        int flushInterval = 20;
-        int flushInterval = -1; // never flush
-        String flushWriteFilePath = "/home/dave/workspace/agi.io/data/flush";
-        String flushWriteFilePrefixTruth = "flushedTruth";
-        String flushWriteFilePrefixFeatures = "flushedFeatures";
+//        int flushInterval = -1; // never flush
+//        String flushWriteFilePath = "/home/dave/workspace/agi.io/data/flush";
+//        String flushWriteFilePrefixTruth = "flushedTruth";
+//        String flushWriteFilePrefixFeatures = "flushedFeatures";
 
         boolean logDuringTraining = true;
+        boolean debug = false;
 //        boolean logDuringTraining = false;
         boolean cacheAllData = true;
         boolean terminateByAge = false;
         int terminationAge = 1000;//50000;//25000;
-        //int trainingEpochs = 5; // = 5 * 10 images * 30 repeats = 1500
-//        int trainingEpochs = 100;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
-        int trainingEpochs = 150;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
+        int trainingEpochs = 2;//30;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
         int testingEpochs = 1; // = 1 * 10 images * 30 repeats = 300
         int imageRepeats = 30; // paper - 30
 //        int imagesPerEpoch = 10;
-//        int trainingAge0 = 0;
-//        int trainingAge1 = trainingEpochs * imagesPerEpoch / 2;
 
-        // 100 features x 60 history (1x10 for testing + 5x10 for training)
-        // total 1802 steps
-
-        // Define some entities
+        // Entity names
         String experimentName           = Framework.GetEntityName( "experiment" );
         String imageLabelName           = Framework.GetEntityName( "image-class" );
         String vectorSeriesName         = Framework.GetEntityName( "feature-series" );
@@ -102,6 +105,7 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         String spikeEncoderName         = Framework.GetEntityName( "spike-encoder" );
         String spikingConvolutionalName = Framework.GetEntityName( "stdp-cnn" );
 
+        // Create entities
         String parentName = null;
         parentName = Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         parentName = Framework.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), parentName );
@@ -114,17 +118,6 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         parentName = Framework.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
         parentName = Framework.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
 
-        // Debug logs
-//        String vectorSeriesParentName = vectorSeriesName;
-//        CreateVectorSeriesLog( "vector-series-1", vectorSeriesParentName, spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_SPIKES_ + "0", ModelData.ENCODING_SPARSE_BINARY );
-//        CreateVectorSeriesLog( "vector-series-2", vectorSeriesParentName, spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_SPIKES_ + "1", ModelData.ENCODING_SPARSE_BINARY );
-////        CreateVectorSeriesLog( "vector-series-3", vectorSeriesParentName, spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_SPIKES_ + "2  ", ModelData.ENCODING_SPARSE_BINARY );
-//        CreateVectorSeriesLog( "vector-series-1i", vectorSeriesParentName, spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_INHIBITION_ + "0", ModelData.ENCODING_SPARSE_BINARY );
-//        CreateVectorSeriesLog( "vector-series-2i", vectorSeriesParentName, spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_INHIBITION_ + "1", ModelData.ENCODING_SPARSE_BINARY );
-//
-//        CreateVectorSeriesLog( "vector-series-1p", vectorSeriesParentName, spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_LAYER_POOL_SPIKES_ + "0", ModelData.ENCODING_SPARSE_BINARY );
-//        CreateVectorSeriesLog( "vector-series-2p", vectorSeriesParentName, spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_LAYER_POOL_SPIKES_ + "1", ModelData.ENCODING_SPARSE_BINARY );
-
         // Connect the entities' data
         Framework.SetDataReference( dogPosName, DifferenceOfGaussiansEntity.DATA_INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
         Framework.SetDataReference( dogNegName, DifferenceOfGaussiansEntity.DATA_INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
@@ -136,7 +129,6 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         Framework.SetDataReference( spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_INPUT, spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_OUTPUT );
 
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList<>();
-//        featureDatas.add( new AbstractPair<>( spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_OUTPUT ) );
         featureDatas.add( new AbstractPair<>( spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_OUTPUT ) );
         Framework.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
 
@@ -149,60 +141,6 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         else {
             Framework.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
         }
-
-// QUESTIONS:
-// MNIST - how many training epochs of the 60,000 image training set?
-// MNIST - training is layer by layer, but what is the schedule for this - how many image before each layer is trained?
-// MNIST - paper says "The first and second convolutional layers respectively consist of 30 and 100 neuronal maps with
-//         5 × 5 convolution-window and firing thresholds of 15 and 10". But as far as I can tell there are only 2 layers
-//         for MNIST and the section on global pooling says the threshold for the convolutional layer integration in the
-//         final layer should be infinite?
-// Inhibition: "Also, there is a local inter-map competition for STDP. When a neuron is allowed to do the STDP, it prevents
-// the neurons in other maps within a small neighborhood around its location from doing STDP. This competition is crucial
-// to encourage neurons of different maps to learn different features." I'm confused what the neighbourhood is here. It is
-// never defined. Is it a neighbourhood in Z (the different models of the input at one X,Y location)? Or, is it a spatial
-// neighbourhood in X,Y? How big is it?
-
-
-
-// - Add greedy layerwise training schedule.
-//        "The learning is done layer\n" +
-//                "by layer, i.e., the learning in a convolutional layer\n" +
-//                "starts when the learning in the previous convolu-\n" +
-//                "tional layer is finalized."
-//   ?Assume one epoch for now?
-// DONE, TESTED
-
-// - Add integrated potential output from final layer
-//        "To compute the output of the global pooling\n" +
-//                "layer, first, the threshold of neurons in the last con-\n" +
-//                "volutional layer were set to be infinite, and then,\n" +
-//                "their final potentials (after propagating the whole\n" +
-//                "spike train generated by the input image) were\n" +
-//                "measured. These final potentials can be seen as\n" +
-//                "the number of early spikes in common between the\n" +
-//                "current input and the stored prototypes in the last\n" +
-//                "convolutional layer. Finally, the global pooling neu-\n" +
-//                "rons compute the maximum potential at their cor-\n" +
-//                "responding neuronal maps, as their output value."
-// DONE, TESTED
-
-//- DEBUG Invert the current classification (or any classification) (invert a final layer output, real, non unit)
-// DONE, untested
-
-// NEXT STEPS
-// - Verify / fix invert function
-// - Verify classifier function possible
-// - 1/  First add online learning, but still with specific clear() events
-// - 2/  replace clear with decay of integrated values, so it discovers the time steps
-// - 3/  add prediction to help classification
-// - 4/  add predictive coding (larger spike train output on prediction FN error)
-
-//- figure out why it's not training; add the online learning rule (nuts, that doesn't work with convolutional)
-//                             adapt the rule to convolutional using a measure of frequency in the shared weights.
-//- Prediction: Do we have a timing rule that input from the apical dendrite must arrive before a post-spike not after, AND that it must not
-//- Do we implement the spike-train encoding? [Yes, because bio evidenc for it]. Binding problem - joint handling of dynamically allocated variables.
-//- Feedback: What to do with feedback? Start with all zero weights? Do we train when prediction fails? [ New evidence: we have papers showing PC and feedback reduces time to output spike or suppresses/truncates output spike ]
 
         float stdDev1 = 1f;
         float stdDev2 = 2f;
@@ -223,14 +161,18 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         Framework.SetConfig( vectorSeriesName, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( valueSeriesName, "cache", String.valueOf( cacheAllData ) );
 
+
         // MNIST config
-        String trainingEntities = "";
+        String trainingEntities = spikingConvolutionalName;
         String testingEntities = "";
-        if( !logDuringTraining ) {
-            testingEntities = vectorSeriesName + "," + valueSeriesName;
+        if( logDuringTraining ) {
+            trainingEntities += "," + vectorSeriesName + "," + valueSeriesName;
         }
+        testingEntities = vectorSeriesName + "," + valueSeriesName;
         SetImageLabelEntityConfig( imageLabelName, trainingPath, testingPath, trainingEpochs, testingEpochs, imageRepeats, trainingEntities, testingEntities );
 
+
+        // Algorithm config
         int inputWidth = 28;
         int inputHeight = 28;
 //        int inputDepth = 2;
@@ -241,10 +183,10 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
                 inputWidth, inputHeight, inputDepth,
                 imageRepeats );
 
+
+        // LOGGING config
         // NOTE about logging: We accumulate the labels and features for all images, but then we only append a new sample of (features,label) every N steps
         // This timing corresponds with the change from one image to another. In essence we allow the network to respond to the image for a few steps, while recording its output
-
-        // Log features of the algorithm during all phases
         int accumulatePeriod = imageRepeats;
         int period = -1;
         VectorSeriesEntityConfig.Set( vectorSeriesName, accumulatePeriod, period, ModelData.ENCODING_SPARSE_REAL );
@@ -256,22 +198,14 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         int inputDataOffset = 0;
         float accumulateFactor = 1f / imageRepeats;
         ValueSeriesEntityConfig.Set( valueSeriesName, accumulatePeriod, accumulateFactor, -1, period, valueSeriesInputEntityName, valueSeriesInputConfigPath, valueSeriesInputDataName, inputDataOffset );
+        // LOGGING
 
-        // Debug logs
-//        String encoderIntSeriesName = Framework.GetEntityName( "enc-int-series" );
-//        String encoderOutSeriesName = Framework.GetEntityName( "enc-out-series" );
-//
-//        parentName = Framework.CreateEntity( encoderIntSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
-//        parentName = Framework.CreateEntity( encoderOutSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
-//
-//        Framework.SetDataReference( encoderIntSeriesName, VectorSeriesEntity.INPUT, spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_INTEGRATED );
-//        Framework.SetDataReference( encoderOutSeriesName, VectorSeriesEntity.INPUT, spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_OUTPUT );
-//
-//        accumulatePeriod = 1;
-//        VectorSeriesEntityConfig.Set( encoderIntSeriesName, accumulatePeriod, period, ModelData.ENCODING_SPARSE_REAL );
-//        VectorSeriesEntityConfig.Set( encoderOutSeriesName, accumulatePeriod, period, ModelData.ENCODING_SPARSE_REAL );
 
         // Debug the algorithm
+        if( debug == false ) {
+            return; // we're done
+        }
+
         period = 30 * 6;
         accumulatePeriod = 1;
 
@@ -350,9 +284,6 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         return parentName;
     }
 
-
-
-
     protected static void SetDoGEntityConfig( String entityName, float stdDev1, float stdDev2, int kernelSize, float scaling ) {
         DifferenceOfGaussiansEntityConfig entityConfig = new DifferenceOfGaussiansEntityConfig();
         entityConfig.cache = true;
@@ -415,8 +346,6 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
             int inputHeight,
             int inputDepth,
             int imageRepeats ) {
-//            int trainingAge0,
-//            int trainingAge1 ) {
 
         SpikingConvolutionalNetworkEntityConfig entityConfig = new SpikingConvolutionalNetworkEntityConfig();
 
