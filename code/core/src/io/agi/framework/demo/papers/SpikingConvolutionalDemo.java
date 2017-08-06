@@ -68,7 +68,7 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
 //        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
 
         String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10,/home/dave/workspace/agi.io/data/mnist/cycle3";
+        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
 
@@ -88,8 +88,8 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         boolean cacheAllData = true;
         boolean terminateByAge = false;
         int terminationAge = 1000;//50000;//25000;
-        int trainingEpochs = 2;//30;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
-        int testingEpochs = 1; // = 1 * 10 images * 30 repeats = 300
+        int trainingEpochs = 1;//30;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
+        int testingEpochs = 10; // = 1 * 10 images * 30 repeats = 300
         int imageRepeats = 30; // paper - 30
 //        int imagesPerEpoch = 10;
 
@@ -200,13 +200,12 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         ValueSeriesEntityConfig.Set( valueSeriesName, accumulatePeriod, accumulateFactor, -1, period, valueSeriesInputEntityName, valueSeriesInputConfigPath, valueSeriesInputDataName, inputDataOffset );
         // LOGGING
 
-
         // Debug the algorithm
         if( debug == false ) {
             return; // we're done
         }
 
-        period = 30 * 6;
+        period = imageRepeats * 15;
         accumulatePeriod = 1;
 
         int controllerPeriod = -1;
@@ -376,7 +375,7 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         int ih = inputHeight;
         int id = inputDepth;
 
-        int[] layerDepths = { 28,10 }; // reduce for speed
+        int[] layerDepths = { 28,28 }; // reduce for speed
 //        int[] layerPoolingSize = { 2,8 }; // for classification in Z
         int[] layerPoolingSize = { 2,2 }; // for reconstruction, reduce pooling in 2nd layer
         int[] layerFieldSize = { 5,5 };
