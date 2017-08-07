@@ -433,8 +433,25 @@ public class SpikingConvolutionalNetworkLayer {
 //                    float weightRate = 1.0f - ( Math.abs( 0.5f - oldWeightValue ) * 2.f );
 //                    float deltaValue =
 //                    float newWeightValue = oldWeightValue + learningRate * deltaValue;
-                    float newWeightValue = Unit.lerp( inputValue, oldWeightValue, learningRate );
 
+// OLD
+//                    float newWeightValue = Unit.lerp( inputValue, oldWeightValue, learningRate );
+// NEW
+                    float d = ( inputValue - oldWeightValue ); // max: if i=0 and w=1 then -1
+                    float addWeightValue = d * Math.abs( d );  // -1 * 1 = -1
+                    // if oldW = 1 and input =1 then delta = 0
+                    addWeightValue *= learningRate;
+                    float newWeightValue = oldWeightValue + addWeightValue;
+                    // w1   i   d=(i-w1)*r         d^2  learningRate r = 0.1
+                    // 0.0  0   0.0       +0.00    0
+                    // 0.0  1   1.0       +0.10    0.01
+                    // 0.7  1   0.3       +0.03    0.0009
+                    // 0.5  0   0.5       -0.05    0.0025
+                    // 0.5  1   0.5       +0.05    0.0025
+                    // 1.0  0   1.0       -0.10    0.01
+                    // 1.0  1   0.0       +0.00    0
+
+// Sanitize:
                     newWeightValue = Math.max( 0f, Math.min( 1f, newWeightValue ) );
 
                     kernelWeights._values[ kernelsOffset ] = newWeightValue;
@@ -554,6 +571,12 @@ public class SpikingConvolutionalNetworkLayer {
             } // x
         } // y
 
+        // The remaining code implements the convolutional layer homeostasis. So if we're not learning, it doesn't get
+        // used. We simply stop updating the stats and the threshold controller.
+        if( !train ) {
+            return;
+        }
+
         // update layer spike frequency - the observed variable
         // normalize for layer area (but not depth)
         int area = config._width * config._height;
@@ -604,6 +627,8 @@ public class SpikingConvolutionalNetworkLayer {
         convSpikeStats._values[ LAYER_STATISTICS_WINDOW_SUM ] = convSpikeSum;
 
         // update kernel frequencies depending whether each kernel z fired or not.
+        // (Only includes uninhibited spikes)
+        // TODO Should I make this only about the distribution of spikes (relative rate) but not the overall rate of spikes?
         for( int cz = 0; cz < config._depth; ++cz ) {
             // update the frequency for each kernel z
             //boolean spiked = spikingKernels.contains( cz );
