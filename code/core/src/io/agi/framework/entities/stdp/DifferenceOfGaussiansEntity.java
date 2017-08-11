@@ -86,8 +86,9 @@ public class DifferenceOfGaussiansEntity extends Entity {
 
         Convolution2d.convolve( kernel, input, output );
 
-        output.mul( config.scaling );
-        output.clipRange( config.min, config.max );
+        output.mul( config.outputFactor );
+        output.clipRange( config.clipMin, config.clipMax );
+        output.scaleRange( config.scaleMin, config.scaleMax );
 
         setData( DATA_OUTPUT, output );
     }
@@ -113,3 +114,76 @@ public class DifferenceOfGaussiansEntity extends Entity {
         return s;
     }
 }
+
+/*
+
+Steps in Matlab code:
+1. Image resize
+2. DoG filter
+3. image padding
+4. On/Off thresholding
+5. Local norm of the DoG output (*radius* 8)
+6. Spike ordering (all pixels spike, it's a matter of when?)
+
+b = mod( a , m ) returns the remainder after division of a by m , where a is the dividend and m is the divisor. This function is often called the modulo operation, which can be expressed as b = a - m.*floor(a./m) . The mod function follows the convention that mod(a,0) returns a .
+
+    %========Converting DoG activites into latencies of input spike=========
+    [latencies, I]=sort(1./img(:));%conversion and sorting based on times
+    I(isinf(latencies))=[]; %removing spikes with infinite latency
+    row=mod((mod(I-1,size(img,1)*size(img,2))+1)-1,size(img,1))+1;%computing the y-coordinate of each spike
+    col=ceil((mod(I-1,size(img,1)*size(img,2))+1)/size(img,1))-1;%computing the x-coordinate of each spike
+    pag=ceil(I/(size(img,1)*size(img,2)))-1;%computing the z-coordinate of each spike (the ON or OFF layer)
+
+    % Note that spikes are propagated in descrite time steps with equal number of spikes, thus each spike has a time step
+    TimeStep=ceil( (1:length(I))
+                   / ( length(I) / ( PresentationTime-COMMON.NumOfLayers ) ) ) -1;
+
+    SpikeList{1}=gpuArray.zeros(size(img,1),size(img,2),size(img,3),PresentationTime);% SpikeList{lay} contains the spikes of layer lay in all positions and time steps
+    SpikeList{1}((row+col*size(img,1)+pag*size(img,1)*size(img,2))+(TimeStep'*size(img,1)*size(img,2)*size(img,3)))=1;% filling the spikeList of input layer
+
+
+https://askubuntu.com/questions/645600/how-to-install-octave-4-0-0-in-ubuntu-14-04
+
+sudo apt-get install liboctave-dev
+
+pkg install -forge image
+pkg load image
+
+
+img = imread( '../cycle10/postproc_aaaaa_5_00.png' );
+DoGfilter=DoG(7,1,2);
+img2=imfilter(img,DoGfilter);
+imshow( img2 );
+
+
+dave@dave-W35xSTQ-370ST ~/Desktop/agi/stdp deep cnn/SDNN_STDP/Codes $ grep -r 'DoG' ./*
+./classification_SDNN.m:            img=imfilter(img,DoGfilter);
+./DoG.m:function filter = DoG(sz,sigma1,sigma2)
+./globals.m:global DoGfilter
+./params.m:%DoG settings
+./params.m:DoGfilter=DoG(7,1,2);
+./SDNN_GUI.m:    %=============== applying DoG over input image ============================
+./SDNN_GUI.m:    img=imfilter(img,DoGfilter);
+./SDNN_GUI.m:    imgON(imgON<15)=0;% thresholding the DoG output
+./SDNN_GUI.m:    img(:,:,1)=0;% you can add OFF DoG activites here
+./SDNN_GUI.m:    %==========local normalization of the DoG output========================
+./SDNN_GUI.m:    %========Converting DoG activites into latencies of input spike=========
+
+dave@dave-W35xSTQ-370ST ~/Desktop/agi/stdp deep cnn/SDNN_STDP/Codes $ grep -r 'NormalizatioWindowSize' ./*
+    COMMON.Layer{1}.outputSize=size(img);
+./classification_SDNN.m:            img=feval(dogLocalNormalizationKernel,img,img,[COMMON.Layer{1}.outputSize,3],NormalizatioWindowSize);
+./globals.m:global NormalizatioWindowSize
+./params.m:NormalizatioWindowSize=8;
+./SDNN_GUI.m:    img=feval(dogLocalNormalizationKernel,img,img,[COMMON.Layer{1}.outputSize,3],NormalizatioWindowSize);
+
+octave:4> DoGfilter
+        DoGfilter =
+
+        0.063963  -0.011208  -0.078225  -0.103131  -0.078225  -0.011208   0.063963
+        -0.011208  -0.127535  -0.161281  -0.131441  -0.161281  -0.127535  -0.011208
+        -0.078225  -0.161281   0.116569   0.433004   0.116569  -0.161281  -0.078225
+        -0.103131  -0.131441   0.433004   1.000000   0.433004  -0.131441  -0.103131
+        -0.078225  -0.161281   0.116569   0.433004   0.116569  -0.161281  -0.078225
+        -0.011208  -0.127535  -0.161281  -0.131441  -0.161281  -0.127535  -0.011208
+        0.063963  -0.011208  -0.078225  -0.103131  -0.078225  -0.011208   0.063963
+*/

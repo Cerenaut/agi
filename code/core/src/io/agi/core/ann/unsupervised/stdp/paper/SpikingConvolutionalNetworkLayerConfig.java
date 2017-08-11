@@ -50,11 +50,19 @@ public class SpikingConvolutionalNetworkLayerConfig {
     public float _kernelWeightStdDev;
     public float _kernelWeightsMean;
     public float _kernelWeightsLearningRate;
-    public float _kernelSpikeFrequencyLearningRate;
-    public float _kernelSpikeFrequencyTarget;
+//    public float _kernelSpikeFrequencyLearningRate;
+//    public int _kernelFrequencyUpdatePeriod;
+//    public float _kernelSpikeFrequencyTarget;
+
+    // Kernel Homeostasis parameters
+    public float _kernelSpikeControllerDefault = 1f;
+    public float _kernelSpikeControllerTarget = 0f;
+    public int _kernelSpikeControllerIntegrationPeriod = 0;
+    public int _kernelSpikeControllerUpdatePeriod = 0;     // period over which the convolutional spikes are averaged. used for calculating an average to be used for controller.
 
     // Convolutional Homeostasis parameters
-    public float _convSpikeControllerDensityTarget = 0f;
+    public float _convSpikeControllerDefault = 1f;
+    public float _convSpikeControllerTarget = 0f;
     public int _convSpikeControllerIntegrationPeriod = 0;
     public int _convSpikeControllerUpdatePeriod = 0;     // period over which the convolutional spikes are averaged. used for calculating an average to be used for controller.
 
@@ -85,10 +93,17 @@ public class SpikingConvolutionalNetworkLayerConfig {
             float kernelWeightStdDev,
             float kernelWeightsMean,
             float kernelWeightsLearningRate,
-            float kernelSpikeFrequencyLearningRate,
-            float kernelSpikeFrequencyTarget,
+//            float kernelSpikeFrequencyLearningRate,
+//            int kernelFrequencyUpdatePeriod,
+//            float kernelSpikeFrequencyTarget,
 
-            float convSpikeControllerDensityTarget,
+            float kernelSpikeControllerDefault,
+            float kernelSpikeControllerTarget,
+            int kernelSpikeControllerIntegrationPeriod,
+            int kernelSpikeControllerUpdatePeriod,
+
+            float convSpikeControllerDefault,
+            float convSpikeControllerTarget,
             int convSpikeControllerIntegrationPeriod,
             int convSpikeControllerUpdatePeriod,
 
@@ -108,10 +123,17 @@ public class SpikingConvolutionalNetworkLayerConfig {
         _kernelWeightStdDev = kernelWeightStdDev;
         _kernelWeightsMean = kernelWeightsMean;
         _kernelWeightsLearningRate = kernelWeightsLearningRate;
-        _kernelSpikeFrequencyLearningRate = kernelSpikeFrequencyLearningRate;
-        _kernelSpikeFrequencyTarget = kernelSpikeFrequencyTarget;
+//        _kernelSpikeFrequencyLearningRate = kernelSpikeFrequencyLearningRate;
+//        _kernelFrequencyUpdatePeriod = kernelFrequencyUpdatePeriod;
+//        _kernelSpikeFrequencyTarget = kernelSpikeFrequencyTarget;
 
-        _convSpikeControllerDensityTarget = convSpikeControllerDensityTarget;
+        _kernelSpikeControllerDefault = kernelSpikeControllerDefault;
+        _kernelSpikeControllerTarget = kernelSpikeControllerTarget;
+        _kernelSpikeControllerIntegrationPeriod = kernelSpikeControllerIntegrationPeriod;
+        _kernelSpikeControllerUpdatePeriod = kernelSpikeControllerUpdatePeriod;
+
+        _convSpikeControllerDefault = convSpikeControllerDefault;
+        _convSpikeControllerTarget = convSpikeControllerTarget;
         _convSpikeControllerIntegrationPeriod = convSpikeControllerIntegrationPeriod;
         _convSpikeControllerUpdatePeriod = convSpikeControllerUpdatePeriod;
 

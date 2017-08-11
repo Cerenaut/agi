@@ -45,10 +45,17 @@ public class SpikingConvolutionalNetwork {
 
         for( int layer = 0; layer < layers; ++layer ) {
 
-            float kernelSpikeFrequencyLearningRate = _config.getLayerValueFloat( config.KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE, layer );
-            float kernelSpikeFrequencyTarget = _config.getLayerValueFloat( config.KEY_LAYER_KERNEL_SPIKE_FREQUENCY_TARGET, layer );
+//            float kernelSpikeFrequencyLearningRate = _config.getLayerValueFloat( config.KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE, layer );
+//            int kernelSpikeFrequencyUpdatePeriod = _config.getLayerValueInteger( config.KEY_LAYER_KERNEL_SPIKE_FREQUENCY_UPDATE_PERIOD, layer );
+//            float kernelSpikeFrequencyTarget = _config.getLayerValueFloat( config.KEY_LAYER_KERNEL_SPIKE_FREQUENCY_TARGET, layer );
 
-            float convSpikeControllerDensityTarget = _config.getLayerValueFloat( config.KEY_LAYER_CONV_SPIKE_DENSITY_TARGET, layer );
+            float kernelSpikeControllerDefault = _config.getLayerValueFloat( config.KEY_LAYER_KERNEL_SPIKE_DENSITY_DEFAULT, layer );
+            float kernelSpikeControllerTarget = _config.getLayerValueFloat( config.KEY_LAYER_KERNEL_SPIKE_DENSITY_TARGET, layer );
+            int kernelSpikeControllerIntegrationPeriod = _config.getLayerValueInteger( config.KEY_LAYER_KERNEL_SPIKE_INTEGRATION_PERIOD, layer );
+            int kernelSpikeControllerUpdatePeriod = _config.getLayerValueInteger( config.KEY_LAYER_KERNEL_SPIKE_UPDATE_PERIOD, layer );
+
+            float convSpikeControllerDefault = _config.getLayerValueFloat( config.KEY_LAYER_CONV_SPIKE_DENSITY_DEFAULT, layer );
+            float convSpikeControllerTarget = _config.getLayerValueFloat( config.KEY_LAYER_CONV_SPIKE_DENSITY_TARGET, layer );
             int convSpikeControllerIntegrationPeriod = _config.getLayerValueInteger( config.KEY_LAYER_CONV_SPIKE_INTEGRATION_PERIOD, layer );
             int convSpikeControllerUpdatePeriod = _config.getLayerValueInteger( config.KEY_LAYER_CONV_SPIKE_UPDATE_PERIOD, layer );
 
@@ -69,10 +76,17 @@ public class SpikingConvolutionalNetwork {
                 _config.getKernelWeightsStdDev(),
                 _config.getKernelWeightsMean(),
                 _config.getKernelWeightsLearningRate(),
-                kernelSpikeFrequencyLearningRate,
-                kernelSpikeFrequencyTarget,
+//                kernelSpikeFrequencyLearningRate,
+//                kernelSpikeFrequencyUpdatePeriod,
+//                kernelSpikeFrequencyTarget,
 
-                convSpikeControllerDensityTarget,
+                kernelSpikeControllerDefault,
+                kernelSpikeControllerTarget,
+                kernelSpikeControllerIntegrationPeriod,
+                kernelSpikeControllerUpdatePeriod,
+
+                convSpikeControllerDefault,
+                convSpikeControllerTarget,
                 convSpikeControllerIntegrationPeriod,
                 convSpikeControllerUpdatePeriod,
 

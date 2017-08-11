@@ -31,7 +31,7 @@ public class SpikingConvolutionalNetworkEntityConfig extends EntityConfig {
     public String clearFlagEntityName = "";
     public String clearFlagConfigPath = "";
 
-    /// Debug threshold controller
+    /// Debug homeostasis controllers
     public int controllerLayer = 0; // default: Set as needed
     public float controllerInput = 0f; // will be calculated
     public float controllerInputAccumulated = 0f; // will be calculated
@@ -39,7 +39,7 @@ public class SpikingConvolutionalNetworkEntityConfig extends EntityConfig {
     public float controllerError = 0f; // will be calculated
     public float controllerErrorIntegrated = 0f; // will be calculated
     public float controllerThreshold = 0.f; // will be calculated
-    /// Debug threshold controller
+    /// Debug homeostasis controllers
 
     public float kernelWeightsStdDev = 0;
     public float kernelWeightsMean = 0;
@@ -47,10 +47,17 @@ public class SpikingConvolutionalNetworkEntityConfig extends EntityConfig {
 
     public int nbrLayers = 0;
 
-    public String layerKernelSpikeFrequencyLearningRate = "";
-    public String layerKernelSpikeFrequencyTarget = "";
+//    public String layerKernelSpikeFrequencyLearningRate = "";
+//    public String layerKernelSpikeFrequencyUpdatePeriod = "";
+//    public String layerKernelSpikeFrequencyTarget = "";
 
-    public String layerConvSpikeDensityTarget = "";
+    public String layerKernelSpikeDefault = "";
+    public String layerKernelSpikeTarget = "";
+    public String layerKernelSpikeIntegrationPeriod = "";
+    public String layerKernelSpikeUpdatePeriod = "";
+
+    public String layerConvSpikeDefault = "";
+    public String layerConvSpikeTarget = "";
     public String layerConvSpikeIntegrationPeriod = "";
     public String layerConvSpikeUpdatePeriod = "";
 

@@ -299,6 +299,33 @@ public class Ranking {
         }
     }
 
+    public static HashMap< Integer, Integer > getRanks( TreeMap< Float, ArrayList< Integer > > ranking, boolean max ) {
+
+        HashMap< Integer, Integer > hm = new HashMap< Integer, Integer >();
+
+        Iterator i = null;
+        if( max ) { // rank max first
+            i = ranking.descendingKeySet().iterator(); // maxima first
+        } else { // rank min first
+            i = ranking.keySet().iterator(); // ascending values
+        }
+
+        int rank = 0;
+
+        while( i.hasNext() ) {
+
+            Float key = ( Float ) i.next();
+            ArrayList< Integer > al = ranking.get( key );
+
+            for( Integer n : al ) {
+                hm.put( n, rank );
+                ++rank;
+            }
+        }
+
+        return hm;
+    }
+
     public static Integer getRank( TreeMap< Float, ArrayList< Integer > > ranking, boolean max, int value ) {
 
         Iterator i = null;
@@ -311,8 +338,8 @@ public class Ranking {
         int rank = 0;
 
         while( i.hasNext() ) {
-            Float key = ( Float ) i.next();
 
+            Float key = ( Float ) i.next();
             ArrayList< Integer > al = ranking.get( key );
 
             for( Integer n : al ) {

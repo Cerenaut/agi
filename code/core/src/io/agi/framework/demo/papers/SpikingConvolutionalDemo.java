@@ -45,12 +45,48 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         demo.mainImpl(args );
     }
 
+// Big picture:
 // - 2/  replace clear with decay of integrated values, so it discovers the time steps
 // - 3/  add prediction to help classification
 // - 4/  add predictive coding (larger spike train output on prediction FN error)
 
+// FIRST RUN of our STDP variant
+// 85% / 78%
+// DONE DISABLE LEARNING WHEN NOT LEARN INC GAIN AND THRESHOLD!
+// 83% / 75% -- more training may help!
+// TODO Code a slowdown in learning as it approaches saturation
+// 89% / 83%
+// TODO Kernel gain may be too strong - with layerDepth=28, and repeats=30, then 0.0011. What I observe is:
+// T:  0.0011         0.0011
+// L0: 0.0004 <= f <= 0.0005  --- artificially flat?
+// L1: 0.0008 <= f <= 0.0012  --- about right?
+// Solution: Implemented a relative frequency so it's not tied (so closely) to the rate of spiking and inhibition policy.
+// Also all long term changes are now based on summation over time windows so easier to control for very slow learning.
+// 88% / 79.9%
+// TODO Increase layer 2 pooling size and Z to 100 as per paper
+// 29.2% / 29.6%
+// TODO check not too many outputs - actually there's just 1? Due to inhibition.
+// (checked, it is 1 of 100 per row. not uniform but that's reasonable, some digits more varied in appearance)
+// TODO use Saeed's method of providing output to classification
+// 11.71% / 11.9%
+
+// TODO check the encoder produces viable bits for classification. Is the distribution peaky enough?
+// OK so we're missing the local normalization and the ordering encoding is wrong.
+// Re-check with 0-9 cycle that we're getting a steady rate of spikes for all inputs - not a step up and down in rate.
+// Then re-run with the new encoding.
+// Check PASSED OK. see feature-series-output. Re test 10k/1k:
+//
+
+// Ideas list
+// TODO implement the lateral inhibition between cols. in layer 1 by receptive field size.
+// TODO check that we're not spiking too fast - that would
+// TODO Restore input from other DoG encoder (neg features)
+// TODO Learning rate may be too fast in general a+ = 0.004 and a− = 0.003 in paper, I'm using 0.01 (30x faster)
+// TODO double the training epochs see if any effect
+// TODO Allow weights to increase more easily than decrease, so each cell can potentially represent more than 1 thing
+
+// When working on image classification:
 // TODO after this, make a version that uses predictive encoding via feedback, which both uses feedback to help recognize and draws resources towards errors
-// TODO restore negative features
 //- Prediction: Do we have a timing rule that input from the apical dendrite must arrive before a post-spike not after, AND that it must not
 //- Do we implement the spike-train encoding? [Yes, because bio evidenc for it]. Binding problem - joint handling of dynamically allocated variables.
 //- Feedback: What to do with feedback? Start with all zero weights? Do we train when prediction fails? [ New evidence: we have papers showing PC and feedback reduces time to output spike or suppresses/truncates output spike ]
@@ -64,11 +100,11 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
 //        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
 
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
-//        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
+        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train,/home/dave/workspace/agi.io/data/mnist/1k_test";
 
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
 
@@ -82,14 +118,16 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
 //        String flushWriteFilePrefixTruth = "flushedTruth";
 //        String flushWriteFilePrefixFeatures = "flushedFeatures";
 
-        boolean logDuringTraining = true;
+        boolean logDuringTraining = false;
         boolean debug = false;
 //        boolean logDuringTraining = false;
         boolean cacheAllData = true;
         boolean terminateByAge = false;
         int terminationAge = 1000;//50000;//25000;
-        int trainingEpochs = 1;//30;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
-        int testingEpochs = 10; // = 1 * 10 images * 30 repeats = 300
+//        int trainingEpochs = 250;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
+//        int trainingEpochs = 50;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
+        int trainingEpochs = 1;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
+        int testingEpochs = 1; // = 1 * 10 images * 30 repeats = 300
         int imageRepeats = 30; // paper - 30
 //        int imagesPerEpoch = 10;
 
@@ -102,6 +140,8 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         // Algorithm
         String dogPosName               = Framework.GetEntityName( "dog-pos" );
         String dogNegName               = Framework.GetEntityName( "dog-neg" );
+        String normPosName              = Framework.GetEntityName( "norm-pos" );
+        String normNegName              = Framework.GetEntityName( "norm-neg" );
         String spikeEncoderName         = Framework.GetEntityName( "spike-encoder" );
         String spikingConvolutionalName = Framework.GetEntityName( "stdp-cnn" );
 
@@ -112,6 +152,8 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
 
         parentName = Framework.CreateEntity( dogPosName, DifferenceOfGaussiansEntity.ENTITY_TYPE, n.getName(), parentName );
         parentName = Framework.CreateEntity( dogNegName, DifferenceOfGaussiansEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = Framework.CreateEntity( normPosName, LocalNormalizationEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = Framework.CreateEntity( normNegName, LocalNormalizationEntity.ENTITY_TYPE, n.getName(), parentName );
         parentName = Framework.CreateEntity( spikeEncoderName, ConvolutionalSpikeEncoderEntity.ENTITY_TYPE, n.getName(), parentName );
         parentName = Framework.CreateEntity( spikingConvolutionalName, SpikingConvolutionalNetworkEntity.ENTITY_TYPE, n.getName(), parentName );
 
@@ -121,8 +163,10 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         // Connect the entities' data
         Framework.SetDataReference( dogPosName, DifferenceOfGaussiansEntity.DATA_INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
         Framework.SetDataReference( dogNegName, DifferenceOfGaussiansEntity.DATA_INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
+        Framework.SetDataReference( normPosName, LocalNormalizationEntity.DATA_INPUT, dogPosName, DifferenceOfGaussiansEntity.DATA_OUTPUT );
+        Framework.SetDataReference( normNegName, LocalNormalizationEntity.DATA_INPUT, dogNegName, DifferenceOfGaussiansEntity.DATA_OUTPUT );
 
-        Framework.SetDataReference( spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_INPUT_POS, dogPosName, DifferenceOfGaussiansEntity.DATA_OUTPUT );
+        Framework.SetDataReference( spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_INPUT_POS, normPosName, LocalNormalizationEntity.DATA_OUTPUT );
 //        Framework.SetDataReference( spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_INPUT_NEG, dogNegName, DifferenceOfGaussiansEntity.DATA_OUTPUT );
 
         // a) Image to image region, and decode
@@ -130,6 +174,7 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
 
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList<>();
         featureDatas.add( new AbstractPair<>( spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_OUTPUT ) );
+//        featureDatas.add( new AbstractPair<>( spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_LAYER_POOL_INTEGRATED_ + "1" ) );
         Framework.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
 
         // Experiment config
@@ -145,13 +190,21 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         float stdDev1 = 1f;
         float stdDev2 = 2f;
         int kernelSize = 7;
-        SetDoGEntityConfig( dogPosName, stdDev1, stdDev2, kernelSize, 1.0f );
-        SetDoGEntityConfig( dogNegName, stdDev2, stdDev1, kernelSize, 1.0f );
+//        SetDoGEntityConfig( dogPosName, stdDev1, stdDev2, kernelSize );//, 1.0f );
+//        SetDoGEntityConfig( dogNegName, stdDev2, stdDev1, kernelSize );//, 1.0f );
+        DifferenceOfGaussiansEntityConfig.Set( dogPosName, stdDev1, stdDev2, kernelSize, 1.0f, 0f, 1000f, 0.0f, 1.0f );
+        DifferenceOfGaussiansEntityConfig.Set( dogNegName, stdDev2, stdDev1, kernelSize, 1.0f, 0f, 1000f, 0.0f, 1.0f );
 
-        float spikeThreshold = 5.0f;
+        int radius = 10;
+        LocalNormalizationEntityConfig.Set( normPosName, radius );
+        LocalNormalizationEntityConfig.Set( normNegName, radius );
+
+//        float spikeThreshold = 5.0f;
+//        float spikeDensity = 0.05f; // 5% per step; 1/30 = 0.03. But some will be zero.
+        float spikeDensity = 1f / (float)imageRepeats;
         String clearFlagEntityName = imageLabelName;
         String clearFlagConfigPath = "imageChanged";
-        SetSpikeEncoderEntityConfig( spikeEncoderName, spikeThreshold, clearFlagEntityName, clearFlagConfigPath );
+        SetSpikeEncoderEntityConfig( spikeEncoderName, spikeDensity, clearFlagEntityName, clearFlagConfigPath );
 
         // cache all data for speed, when enabled
         Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
@@ -189,7 +242,8 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         // This timing corresponds with the change from one image to another. In essence we allow the network to respond to the image for a few steps, while recording its output
         int accumulatePeriod = imageRepeats;
         int period = -1;
-        VectorSeriesEntityConfig.Set( vectorSeriesName, accumulatePeriod, period, ModelData.ENCODING_SPARSE_REAL );
+//        VectorSeriesEntityConfig.Set( vectorSeriesName, accumulatePeriod, period, ModelData.ENCODING_SPARSE_REAL );
+        VectorSeriesEntityConfig.Set( vectorSeriesName, accumulatePeriod, period, ModelData.ENCODING_DENSE );
 
         // Log image label for each set of features
         String valueSeriesInputEntityName = imageLabelName;
@@ -205,6 +259,14 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
             return; // we're done
         }
 
+        // Debug the kernel gain controllers
+        accumulatePeriod = 100 * imageRepeats;//1;//dataRepeatPeriod * imageRepeats * 2;
+        String kernelGainsSeriesName = Framework.GetEntityName( "kernel-gains-series" );
+        parentName = Framework.CreateEntity( kernelGainsSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
+        Framework.SetDataReference( kernelGainsSeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_LAYER_KERNEL_GAINS_ + "0" );
+        VectorSeriesEntityConfig.Set( kernelGainsSeriesName, accumulatePeriod, period, ModelData.ENCODING_DENSE );
+
+        // Debug the spike threshold controller
         period = imageRepeats * 15;
         accumulatePeriod = 1;
 
@@ -283,20 +345,6 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         return parentName;
     }
 
-    protected static void SetDoGEntityConfig( String entityName, float stdDev1, float stdDev2, int kernelSize, float scaling ) {
-        DifferenceOfGaussiansEntityConfig entityConfig = new DifferenceOfGaussiansEntityConfig();
-        entityConfig.cache = true;
-        entityConfig.kernelWidth = kernelSize;
-        entityConfig.kernelHeight = entityConfig.kernelWidth;
-        entityConfig.stdDev1 = stdDev1;
-        entityConfig.stdDev2 = stdDev2;
-        entityConfig.scaling = scaling;
-        entityConfig.min = -2.0f;
-        entityConfig.max = 2.0f;
-
-        Framework.SetConfig( entityName, entityConfig );
-    }
-
     protected static void SetImageLabelEntityConfig( String entityName, String trainingPath, String testingPath, int trainingEpochs, int testingEpochs, int repeats, String trainingEntities, String testingEntities ) {
 
         ImageLabelEntityConfig entityConfig = new ImageLabelEntityConfig();
@@ -326,11 +374,12 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         Framework.SetConfig( entityName, entityConfig );
     }
 
-    protected static void SetSpikeEncoderEntityConfig( String entityName, float spikeThreshold, String clearFlagEntityName, String clearFlagConfigPath ) {
+    protected static void SetSpikeEncoderEntityConfig( String entityName, float spikeDensity, String clearFlagEntityName, String clearFlagConfigPath ) {
 
         ConvolutionalSpikeEncoderEntityConfig entityConfig = new ConvolutionalSpikeEncoderEntityConfig();
         entityConfig.cache = true;
-        entityConfig.spikeThreshold = spikeThreshold;
+//        entityConfig.spikeThreshold = spikeThreshold;
+        entityConfig.spikeDensity = spikeDensity;
         entityConfig.clearFlagEntityName = clearFlagEntityName;
         entityConfig.clearFlagConfigPath = clearFlagConfigPath;
 
@@ -354,10 +403,29 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
         entityConfig.clearFlagEntityName = clearFlagEntityName;
         entityConfig.clearFlagConfigPath = clearFlagConfigPath;
 
+        // STDP Learning rule
         // "Synaptic weights of convolutional neurons initiate with random values drown from a normal distribution with the mean of 0.8 and STD of 0.05"
         entityConfig.kernelWeightsStdDev = 0.05f;
         entityConfig.kernelWeightsMean = 0.8f;
         entityConfig.kernelWeightsLearningRate = 0.01f;
+
+        // Kernel homeostasis PI controller
+        int dataRepeatPeriod = 10; // over how many data samples do you want to measure the average spike density, whichs gives the P for the PI controller?
+//        int layerKernelSpikeFrequencyUpdatePeriod = imageRepeats * dataRepeatPeriod; // how often to update kernel gain
+//        float kernelSpikeFrequencyTargetScale = 0.3f; // ie each kernel should try to be used 1/3 of uniform frequency at least
+
+        // check what happens to gain when its above idea frequency. I hope givn the clamp it will simply not change it
+        float layerKernelGainDefault = 1.0f; // Default gain value
+        float layerKernelGainTargetFactor = 0.2f; // fraction e.g. 0.2= 20% of uniform frequency
+        int layerKernelGainUpdatePeriod = dataRepeatPeriod * imageRepeats * 1; // updates controller and proportional value, with latest integral value.
+        int layerKernelGainIntegrationPeriod = 5; // how many updatePeriods are integrated to compute the integral term for the PI controller
+
+        // Spike density PI controller
+        float layerConvSpikeDensityDefault = 0f; // Default threshold value
+        float layerConvSpikeDensityTarget = 0.1f; // What density of spikes do you want per sample? Note, this is BEFORE inhibition, which will sparsen the result.
+        int layerConvSpikeUpdatePeriod = dataRepeatPeriod * imageRepeats * 1; // updates controller and proportional value, with latest integral value.
+        int layerConvSpikeIntegrationPeriod = 10; // how many updatePeriods are integrated to compute the integral term for the PI controller
+
 //        entityConfig.learningRatePos = 0.0001f;//4f; // from paper
 //        entityConfig.learningRateNeg = 0.0003f; // from paper
 
@@ -371,15 +439,16 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
 
         entityConfig.nbrLayers = 2;//3;
 
+//        int[] layerDepths = { 28,28 }; // reduce for speed
+        int[] layerDepths = { 30,100 }; // from paper
+        int[] layerPoolingSize = { 2,8 }; // for classification in Z
+//        int[] layerPoolingSize = { 2,2 }; // for reconstruction, reduce pooling in 2nd layer
+        int[] layerFieldSize = { 5,5 };
+        int[] layerInputPaddings = { 0,0 };
+
         int iw = inputWidth;
         int ih = inputHeight;
         int id = inputDepth;
-
-        int[] layerDepths = { 28,28 }; // reduce for speed
-//        int[] layerPoolingSize = { 2,8 }; // for classification in Z
-        int[] layerPoolingSize = { 2,2 }; // for reconstruction, reduce pooling in 2nd layer
-        int[] layerFieldSize = { 5,5 };
-        int[] layerInputPaddings = { 0,0 };
 
         // Generate config properties from these values:
         for( int layer = 0; layer < entityConfig.nbrLayers; ++layer ) {
@@ -404,21 +473,27 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
             // often the kernels are used across Z and T (time). This also depends on how many models we have.
             // Also it only really matters the relative gain for each kernel, because the threshold adapts on a per-layer
             // basis to control the spike density.
-            float timeScaling = 1.f / (float)imageRepeats; // i.e. 1 if 1 repeat per image, or 0.5 if 2 repeats/image
-            float zScaling = 1.f / (float)ld; // uniform
-            float layerKernelSpikeFrequencyLearningRate = 0.0001f; // Learn very slowly
-            float layerKernelSpikeFrequencyTarget = zScaling * timeScaling; // how often each kernel should fire, as a measure of average density (spikes per unit area).
+            //float timeScaling = 1.f / (float)imageRepeats; // i.e. 1 if 1 repeat per image, or 0.5 if 2 repeats/image
+            float uniform = 1.f / (float)ld; // uniform
+            //float area = lw * lh;
+            //float areaNorm = 1f / area;
+//            float layerKernelGainTarget = uniform * areaNorm * layerKernelGainTargetFactor;
+            float layerKernelGainTarget = ( uniform * layerKernelGainTargetFactor ) / imageRepeats;
+//            float layerKernelSpikeFrequencyLearningRate = 0.0001f; // Learn very slowly
+//            float layerKernelSpikeFrequencyTarget = zScaling * kernelSpikeFrequencyTargetScale; // how often each kernel should fire, as a measure of average density (spikes per unit area).
+//
+//            entityConfig.layerKernelSpikeFrequencyLearningRate += prefix + layerKernelSpikeFrequencyLearningRate;
+//            entityConfig.layerKernelSpikeFrequencyUpdatePeriod += prefix + layerKernelSpikeFrequencyUpdatePeriod;
+//            entityConfig.layerKernelSpikeFrequencyTarget += prefix + layerKernelSpikeFrequencyTarget;
 
-            entityConfig.layerKernelSpikeFrequencyLearningRate += prefix + layerKernelSpikeFrequencyLearningRate;
-            entityConfig.layerKernelSpikeFrequencyTarget += prefix + layerKernelSpikeFrequencyTarget;
+            entityConfig.layerKernelSpikeDefault += prefix + layerKernelGainDefault;
+            entityConfig.layerKernelSpikeTarget += prefix + layerKernelGainTarget;
+            entityConfig.layerKernelSpikeIntegrationPeriod += prefix + layerKernelGainIntegrationPeriod;
+            entityConfig.layerKernelSpikeUpdatePeriod += prefix + layerKernelGainUpdatePeriod;
 
             // Spike Learning and training parameters, time constants and spike density
-            float layerConvSpikeDensityTarget = 0.1f; // What density of spikes do you want per sample? Note, this is BEFORE inhibition, which will sparsen the result.
-            int dataRepeatPeriod = 3; // over how many data samples do you want to measure the average spike density, whichs gives the P for the PI controller?
-            int layerConvSpikeIntegrationPeriod = 10; // how many periods are integrated to compute the integral term for the PI controller
-            int layerConvSpikeUpdatePeriod = dataRepeatPeriod * imageRepeats;
-
-            entityConfig.layerConvSpikeDensityTarget += prefix + layerConvSpikeDensityTarget;
+            entityConfig.layerConvSpikeDefault += prefix + layerConvSpikeDensityDefault;
+            entityConfig.layerConvSpikeTarget += prefix + layerConvSpikeDensityTarget;
             entityConfig.layerConvSpikeIntegrationPeriod += prefix + layerConvSpikeIntegrationPeriod;
             entityConfig.layerConvSpikeUpdatePeriod += prefix + layerConvSpikeUpdatePeriod;
 
@@ -473,48 +548,33 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
     // Window: 5x5, stride 1, padding = 0
     // iw - kw +1 = 28-5+1 = 24
     //     00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 |
-    //  F1 -- -- -- -- --                                                                      |
-    //  F2    -- -- -- -- --                                                             |
-    //  F3       -- -- -- -- --                                                    |
-    //  F4          -- -- -- -- --                                           |
-    //  F5             -- -- -- -- --                                  |
-    //  F6                -- -- -- -- --                         |
+    //  F1 -- -- -- -- --                                                                      
+    //  F2    -- -- -- -- --                                                             
+    //  F3       -- -- -- -- --                                                    
+    //  F4          -- -- -- -- --                                           
+    //  F5             -- -- -- -- --                                  
+    //  F6                -- -- -- -- --                         
     //  F7                   -- -- -- -- --
     //  F8                      -- -- -- -- --
-    //  F9                         -- -- -- -- xx
-    //  F10                           -- -- -- -- xx
-    //  F11                              -- -- -- -- xx
-    //  F12                                 -- -- -- -- xx
-    //  F13                                    -- -- -- -- xx
-    //  F14                                       -- -- -- -- xx
-    //  F15                                          -- -- -- -- xx
-    //  F16                                             -- -- -- -- xx
-    //  F17                                                -- -- -- -- xx
-    //  F18                                                   -- -- -- -- xx
-    //  F19                                                      -- -- -- -- xx
-    //  F20                                                         -- -- -- -- xx
-    //  F21                                                            -- -- -- -- xx
-    //  F22                                                               -- -- -- -- xx
-    //  F23                                                                  -- -- -- -- xx
-    //  F24                                                                     -- -- -- -- xx
+    //  F9                         -- -- -- -- --
+    //  F10                           -- -- -- -- --
+    //  F11                              -- -- -- -- --
+    //  F12                                 -- -- -- -- --
+    //  F13                                    -- -- -- -- --
+    //  F14                                       -- -- -- -- --
+    //  F15                                          -- -- -- -- --
+    //  F16                                             -- -- -- -- --
+    //  F17                                                -- -- -- -- --
+    //  F18                                                   -- -- -- -- --
+    //  F19                                                      -- -- -- -- --
+    //  F20                                                         -- -- -- -- --
+    //  F21                                                            -- -- -- -- --
+    //  F22                                                               -- -- -- -- --
+    //  F23                                                                  -- -- -- -- --
+    //  F24                                                                     -- -- -- -- --
     //     00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 |
 
-    // 24 cells wide in conv 0
-    // Max pooling size=2 stride=2
-    //     00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 |
-    // F1  -- --
-    // F2        -- --
-    // F3              -- --
-    // F4                    -- --
-    // F5                          -- --
-    // F6                                -- --
-    // F7                                      -- --
-    // F8                                            -- --
-    // F9                                                  -- --
-    // F10                                                       -- --
-    // F11                                                             -- --
-    // F12                                                                   -- --
-    //     00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 |
+    // Layer 1 24x24 cells with 2x2 pooling brings it to 12x12 input to layer 2.
 
     // Conv layer 2: 12 inputs. Needs 8 cells.
     // iw - kw +1 = 12-5+1 = 8

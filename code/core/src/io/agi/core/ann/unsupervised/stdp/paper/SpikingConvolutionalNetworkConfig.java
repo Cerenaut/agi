@@ -49,9 +49,16 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
     public static final String KEY_KERNEL_WEIGHTS_LEARNING_RATE = "kernel-weights-learning-rate";
 
     public static final String KEY_LAYERS = "layers";
-    public static final String KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE = "layer-kernel-spike-frequency-learning-rate";
-    public static final String KEY_LAYER_KERNEL_SPIKE_FREQUENCY_TARGET = "layer-kernel-spike-frequency-target";
+//    public static final String KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE = "layer-kernel-spike-frequency-learning-rate";
+//    public static final String KEY_LAYER_KERNEL_SPIKE_FREQUENCY_UPDATE_PERIOD = "layer-kernel-spike-frequency-update-period";
+//    public static final String KEY_LAYER_KERNEL_SPIKE_FREQUENCY_TARGET = "layer-kernel-spike-frequency-target";
 
+    public static final String KEY_LAYER_KERNEL_SPIKE_DENSITY_DEFAULT = "layer-kernel-spike-density-default";
+    public static final String KEY_LAYER_KERNEL_SPIKE_DENSITY_TARGET = "layer-kernel-spike-density-target";
+    public static final String KEY_LAYER_KERNEL_SPIKE_INTEGRATION_PERIOD = "layer-kernel-spike-integration-period";
+    public static final String KEY_LAYER_KERNEL_SPIKE_UPDATE_PERIOD = "layer-kernel-spike-update-period";
+
+    public static final String KEY_LAYER_CONV_SPIKE_DENSITY_DEFAULT = "layer-conv-spike-density-default";
     public static final String KEY_LAYER_CONV_SPIKE_DENSITY_TARGET = "layer-conv-spike-density-target";
     public static final String KEY_LAYER_CONV_SPIKE_INTEGRATION_PERIOD = "layer-conv-spike-integration-period";
     public static final String KEY_LAYER_CONV_SPIKE_UPDATE_PERIOD = "layer-conv-spike-update-period";
@@ -79,9 +86,15 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
             float kernelWeightsMean,
             float kernelWeightsLearningRate,
             int nbrLayers,
-            String layerKernelSpikeFrequencyLearningRate,
-            String layerKernelSpikeFrequencyTarget,
+//            String layerKernelSpikeFrequencyLearningRate,
+//            String layerKernelSpikeFrequencyUpdatePeriod,
+//            String layerKernelSpikeFrequencyTarget,
+            String layerKernelSpikeDensityDefault,
+            String layerKernelSpikeDensityTarget,
+            String layerKernelSpikeIntegrationPeriod,
+            String layerKernelSpikeUpdatePeriod,
 
+            String layerConvSpikeDensityDefault,
             String layerConvSpikeDensityTarget,
             String layerConvSpikeIntegrationPeriod,
             String layerConvSpikeUpdatePeriod,
@@ -96,7 +109,7 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
             String layerfieldDepth,
             String layerPoolingWidth,
             String layerPoolingHeight
-            ) {
+    ) {
         super.setup( om, name, r );
 
         setKernelWeightsStdDev( kernelWeightsStdDev );
@@ -105,9 +118,16 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
 
         setNbrLayers( nbrLayers );
 
-        setLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_TARGET, layerKernelSpikeFrequencyTarget );
-        setLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE, layerKernelSpikeFrequencyLearningRate );
+//        setLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_TARGET, layerKernelSpikeFrequencyTarget );
+//        setLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE, layerKernelSpikeFrequencyLearningRate );
+//        setLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_UPDATE_PERIOD, layerKernelSpikeFrequencyUpdatePeriod );
 
+        setLayerValues( KEY_LAYER_KERNEL_SPIKE_DENSITY_DEFAULT, layerKernelSpikeDensityDefault );
+        setLayerValues( KEY_LAYER_KERNEL_SPIKE_DENSITY_TARGET, layerKernelSpikeDensityTarget );
+        setLayerValues( KEY_LAYER_KERNEL_SPIKE_INTEGRATION_PERIOD, layerKernelSpikeIntegrationPeriod );
+        setLayerValues( KEY_LAYER_KERNEL_SPIKE_UPDATE_PERIOD, layerKernelSpikeUpdatePeriod );
+
+        setLayerValues( KEY_LAYER_CONV_SPIKE_DENSITY_DEFAULT, layerConvSpikeDensityDefault );
         setLayerValues( KEY_LAYER_CONV_SPIKE_DENSITY_TARGET, layerConvSpikeDensityTarget );
         setLayerValues( KEY_LAYER_CONV_SPIKE_INTEGRATION_PERIOD, layerConvSpikeIntegrationPeriod );
         setLayerValues( KEY_LAYER_CONV_SPIKE_UPDATE_PERIOD, layerConvSpikeUpdatePeriod );
@@ -135,9 +155,16 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
 
         setNbrLayers( c.getNbrLayers() );
 
-        setLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_TARGET, c.getLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_TARGET ) );
-        setLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE, c.getLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE ) );
+//        setLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_TARGET, c.getLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_TARGET ) );
+//        setLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE, c.getLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE ) );
+//        setLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_UPDATE_PERIOD, c.getLayerValues( KEY_LAYER_KERNEL_SPIKE_FREQUENCY_UPDATE_PERIOD ) );
 
+        setLayerValues( KEY_LAYER_KERNEL_SPIKE_DENSITY_DEFAULT, c.getLayerValues( KEY_LAYER_KERNEL_SPIKE_DENSITY_DEFAULT ) );
+        setLayerValues( KEY_LAYER_KERNEL_SPIKE_DENSITY_TARGET, c.getLayerValues( KEY_LAYER_KERNEL_SPIKE_DENSITY_TARGET ) );
+        setLayerValues( KEY_LAYER_KERNEL_SPIKE_INTEGRATION_PERIOD, c.getLayerValues( KEY_LAYER_KERNEL_SPIKE_INTEGRATION_PERIOD ) );
+        setLayerValues( KEY_LAYER_KERNEL_SPIKE_UPDATE_PERIOD, c.getLayerValues( KEY_LAYER_KERNEL_SPIKE_UPDATE_PERIOD ) );
+
+        setLayerValues( KEY_LAYER_CONV_SPIKE_DENSITY_DEFAULT, c.getLayerValues( KEY_LAYER_CONV_SPIKE_DENSITY_DEFAULT ) );
         setLayerValues( KEY_LAYER_CONV_SPIKE_DENSITY_TARGET, c.getLayerValues( KEY_LAYER_CONV_SPIKE_DENSITY_TARGET ) );
         setLayerValues( KEY_LAYER_CONV_SPIKE_INTEGRATION_PERIOD, c.getLayerValues( KEY_LAYER_CONV_SPIKE_INTEGRATION_PERIOD ) );
         setLayerValues( KEY_LAYER_CONV_SPIKE_UPDATE_PERIOD, c.getLayerValues( KEY_LAYER_CONV_SPIKE_UPDATE_PERIOD ) );

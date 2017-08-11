@@ -501,6 +501,10 @@ public class FloatArray {
         return h;
     }
 
+    /**
+     * Calcualtes the min, max range as a pair of values.
+     * @return
+     */
     public Point.Float getMinMax() {
 
         float min = Float.MAX_VALUE;

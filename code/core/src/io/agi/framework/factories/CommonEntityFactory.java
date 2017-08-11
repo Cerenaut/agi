@@ -36,6 +36,7 @@ import io.agi.framework.entities.reinforcement_learning.QLearningEntity;
 import io.agi.framework.entities.reinforcement_learning.TrainingScheduleEntity;
 import io.agi.framework.entities.stdp.ConvolutionalSpikeEncoderEntity;
 import io.agi.framework.entities.stdp.DifferenceOfGaussiansEntity;
+import io.agi.framework.entities.stdp.LocalNormalizationEntity;
 import io.agi.framework.entities.stdp.SpikingConvolutionalNetworkEntity;
 import io.agi.framework.persistence.models.ModelEntity;
 import org.apache.logging.log4j.LogManager;
@@ -232,6 +233,9 @@ public class CommonEntityFactory implements EntityFactory {
             return new VectorCopyRangeEntity( objectMap, _n, modelEntity );
         }
 
+        if( entityType.equals( LocalNormalizationEntity.ENTITY_TYPE ) ) {
+            return new LocalNormalizationEntity( objectMap, _n, modelEntity );
+        }
         if( entityType.equals( DifferenceOfGaussiansEntity.ENTITY_TYPE ) ) {
             return new DifferenceOfGaussiansEntity( objectMap, _n, modelEntity );
         }

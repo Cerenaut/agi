@@ -19,10 +19,7 @@
 
 package io.agi.framework.entities.stdp;
 
-import io.agi.core.data.ConvolutionData3d;
-import io.agi.core.data.Data;
-import io.agi.core.data.Data2d;
-import io.agi.core.data.DataSize;
+import io.agi.core.data.*;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
@@ -33,6 +30,8 @@ import io.agi.framework.persistence.models.ModelEntity;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.TreeMap;
 
 /**
  * Transforms 2x 2D input matrices into a 3D output (w, h, depth) encoded as spike trains. Intensity of input determines
@@ -47,7 +46,7 @@ public class ConvolutionalSpikeEncoderEntity extends Entity {
     // data
     public static final String DATA_INPUT_POS = "input-pos";
     public static final String DATA_INPUT_NEG = "input-neg";
-    public static final String DATA_INTEGRATED = "integrated";
+    public static final String DATA_INHIBITED = "inhibited";
     public static final String DATA_OUTPUT = "output";
 
     public ConvolutionalSpikeEncoderEntity( ObjectMap om, Node n, ModelEntity model ) {
@@ -62,8 +61,8 @@ public class ConvolutionalSpikeEncoderEntity extends Entity {
 
     @Override
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
-        attributes.add( DATA_INTEGRATED );
-        attributes.add(DATA_OUTPUT);
+        attributes.add( DATA_INHIBITED );
+        attributes.add( DATA_OUTPUT );
     }
 
     @Override
@@ -104,8 +103,10 @@ public class ConvolutionalSpikeEncoderEntity extends Entity {
         DataSize convolutionalSize = ConvolutionData3d.getDataSize( sizePos.x, sizePos.y, depth );
 
         Data encoded = new Data( convolutionalSize );
-        Data integrated = getDataLazyResize( DATA_INTEGRATED, convolutionalSize );
-        Data output = new Data( convolutionalSize );
+        Data inhibited = getDataLazyResize( DATA_INHIBITED, convolutionalSize );
+        Data output = getDataLazyResize( DATA_OUTPUT, convolutionalSize );//new Data( convolutionalSize );
+
+        output.set( 0f );
 
         boolean clear = false;
 
@@ -120,8 +121,10 @@ public class ConvolutionalSpikeEncoderEntity extends Entity {
 
         if( clear ) {
             //System.err.println(" Clearing " + getName() );
-            integrated.set( 0f );
+            inhibited.set( 0f );
+            output.set( 0f );
             config.clear = false;
+            config.stepsSinceClear = 0;
         }
         else {
             //System.err.println(" Not clearing " );
@@ -153,7 +156,71 @@ public class ConvolutionalSpikeEncoderEntity extends Entity {
             }
         }
 
+        // 1/ rank all pixels
+        // 2/ a fixed % will fire each step
+        // 3/ accumulate enough per px to make them fire on desired step i.e. rank --> steps-until-fire
+        TreeMap< Float, ArrayList< Integer > > ranking = new TreeMap<>();
+
         for( int y = 0; y < sizePos.y; ++y ) {
+            for( int x = 0; x < sizePos.x; ++x ) {
+                for( int z = 0; z < depth; ++z ) {
+
+                    int offset3d = ConvolutionData3d.getOffset( x, y, z, convolutionalSize );
+//                    float value = Math.max( 0f, encoded._values[ offset3d ] ); // positive only
+                    float value = encoded._values[ offset3d ]; // positive only
+
+                    if( value <= 0f ) {
+                        continue;
+                    }
+
+                    Ranking.add( ranking, value, offset3d );
+                }
+            }
+        }
+
+        boolean findMaxima = true;
+        HashMap< Integer, Integer > offset3dRanks = Ranking.getRanks( ranking, findMaxima );
+
+        // convert the ranks into a density fraction
+        //int volume = encoded.getSize();
+        int maxRank = Ranking.getSize( ranking );
+        int ranksPerStep = (int)( config.spikeDensity * (float)maxRank );
+
+        for( int y = 0; y < sizePos.y; ++y ) {
+            for( int x = 0; x < sizePos.x; ++x ) {
+                for( int z = 0; z < depth; ++z ) {
+
+                    int offset3d = ConvolutionData3d.getOffset( x, y, z, convolutionalSize );
+
+                    // assume each spikes only once:
+                    float spiked = inhibited._values[ offset3d ];
+
+                    if( spiked > 0f ) {
+                        continue; // can't spike again
+                    }
+                    // else: hasn't spiked
+
+                    Integer rank = offset3dRanks.get( offset3d );
+
+                    if( rank == null ) {
+                        continue; // can't spike, no input
+                    }
+
+                    float steps = (float)rank / (float)ranksPerStep; // e.g. rank=9, ranksPerStep=10, 9/10=0     rank=10, 10/10=1 - fires on 2nd iter.
+                    int spikeThreshold = (int)steps;
+
+                    float spike = 0f;
+                    if( config.stepsSinceClear >= spikeThreshold ) {
+                        spike = 1f;
+                    }
+
+                    inhibited._values[ offset3d ] = spike;
+                    output._values[ offset3d ] = spike;
+                }
+            }
+        }
+// Old method
+/*        for( int y = 0; y < sizePos.y; ++y ) {
             for( int x = 0; x < sizePos.x; ++x ) {
                 for( int z = 0; z < depth; ++z ) {
 
@@ -174,9 +241,11 @@ public class ConvolutionalSpikeEncoderEntity extends Entity {
                     output._values[ offset3d ] = spike;
                 }
             }
-        }
+        }*/
 
-        setData( DATA_INTEGRATED, integrated );
+        config.stepsSinceClear += 1;
+
+        setData( DATA_INHIBITED, inhibited );
         setData( DATA_OUTPUT, output );
     }
 }

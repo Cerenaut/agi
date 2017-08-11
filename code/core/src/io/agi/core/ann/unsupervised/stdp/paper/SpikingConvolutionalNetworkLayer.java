@@ -31,14 +31,16 @@ import java.util.HashMap;
  */
 public class SpikingConvolutionalNetworkLayer {
 
-    public static final int LAYER_STATISTICS_SPIKE_DENSITY = 0;
-    public static final int LAYER_STATISTICS_WINDOW_SUM = 1;
-    public static final int LAYER_STATISTICS_WINDOW_COUNT = 2;
-    public static final int LAYER_STATISTICS_CONTROLLER_THRESHOLD = 3;
-    public static final int LAYER_STATISTICS_CONTROLLER_MEASURED = 4;
-    public static final int LAYER_STATISTICS_CONTROLLER_ERROR = 5;
-    public static final int LAYER_STATISTICS_CONTROLLER_ERROR_INTEGRATED = 6;
-    public static final int LAYER_STATISTICS_CONTROLLER_DELTA = 7;
+    // TODO rename these
+    public static final int LAYER_STATISTICS_SPIKE_DENSITY = 0; // instantaneous
+    public static final int LAYER_STATISTICS_WINDOW_SUM = 1;    // window stats
+    public static final int LAYER_STATISTICS_WINDOW_COUNT = 2;  // window stats
+    public static final int LAYER_STATISTICS_CONTROLLER_THRESHOLD = 3;         // controller variables
+    public static final int LAYER_STATISTICS_CONTROLLER_MEASURED = 4;          // controller variables
+    public static final int LAYER_STATISTICS_CONTROLLER_ERROR = 5;             // controller variables
+    public static final int LAYER_STATISTICS_CONTROLLER_ERROR_INTEGRATED = 6;  // controller variables
+    public static final int LAYER_STATISTICS_CONTROLLER_DELTA = 7;             // controller variables
+//    public static final int LAYER_STATISTICS_KERNEL_GAIN_TIMER = 8; // kernel relative frequency
     public static final int LAYER_STATISTICS_SIZE = 8;
 
     public SpikingConvolutionalNetworkLayerConfig _config;
@@ -53,14 +55,19 @@ public class SpikingConvolutionalNetworkLayer {
 
     public Data _kernelWeights;
     public Data _kernelFrequency;
+    public Data _kernelGains;
+    public Data _kernelControllerErrorIntegral;
 
+    public Data _controllerStatistics;
+
+    public Data _convControllerErrorIntegral;
     public Data _convInverse;
     public Data _convSums;
     public Data _convInhibition;
     public Data _convIntegrated;
     public Data _convSpikes;
-    public Data _convSpikeStats;
-    public Data _convSpikeControllerWindow;
+//    public Data _convSpikeStats;
+//    public Data _convSpikeControllerWindow;
 
     public Data _poolSpikes;
     public Data _poolSpikesIntegrated;
@@ -76,8 +83,18 @@ public class SpikingConvolutionalNetworkLayer {
         _config = config;
         _layer = layer;
 
-        _convSpikeStats = new Data( DataSize.create( LAYER_STATISTICS_SIZE ) );
-        _convSpikeControllerWindow = new Data( DataSize.create( config._convSpikeControllerIntegrationPeriod ) );
+//        _convSpikeStats = new Data( DataSize.create( LAYER_STATISTICS_SIZE ) );
+//        _convSpikeControllerWindow = new Data( DataSize.create( config._convSpikeControllerIntegrationPeriod ) );
+
+        int nbrControllers = _config._depth +1;
+        DataSize controllerStatisticsDataSize = DataSize.create( LAYER_STATISTICS_SIZE * nbrControllers );
+        _controllerStatistics = new Data( controllerStatisticsDataSize );
+
+        DataSize convErrorIntegralDataSize = DataSize.create( _config._convSpikeControllerIntegrationPeriod * 1 );
+        _convControllerErrorIntegral = new Data( convErrorIntegralDataSize );
+
+        DataSize kernelErrorIntegralDataSize = DataSize.create( _config._kernelSpikeControllerIntegrationPeriod * _config._depth );
+        _kernelControllerErrorIntegral = new Data( kernelErrorIntegralDataSize );
 
         int kernelSize = _config._fieldWidth * _config._fieldHeight * _config._fieldDepth * _config._depth;
         DataSize kernelDataSize = DataSize.create( kernelSize );
@@ -86,6 +103,7 @@ public class SpikingConvolutionalNetworkLayer {
         int kernelFrequencySize = _config._depth;
         DataSize kernelFrequencyDataSize = DataSize.create( kernelFrequencySize );
         _kernelFrequency = new Data( kernelFrequencyDataSize );
+        _kernelGains = new Data( kernelFrequencyDataSize );
 
         DataSize convDataSize = DataSize.create( _config._width, _config._height, _config._depth );
         DataSize convInhibitionDataSize = DataSize.create( _config._width, _config._height );
@@ -133,7 +151,7 @@ public class SpikingConvolutionalNetworkLayer {
         // reset the weights in the kernels
         // "Synaptic weights of convolutional neurons initiate with random values drown from a normal distribution with the mean of 0.8 and STD of 0.05"
         // set inhibition to zero
-        _convSpikeStats.set( 0f );
+//        _convSpikeStats.set( 0f );
 
         int weights = _kernelWeights.getSize();
         for( int i = 0; i < weights; ++i ) {
@@ -143,7 +161,27 @@ public class SpikingConvolutionalNetworkLayer {
             _kernelWeights._values[ i ] = (float)w;
         }
 
-        _kernelFrequency.set( 0f );
+        // reset gains
+        _kernelFrequency.set( 0f ); // only used for diagnostics
+        _kernelGains.set( 1f );
+
+        // reset controllers:
+        _controllerStatistics.set( 0f );
+
+        int nbrControllers = _config._depth +1;
+        for( int c = 0; c < nbrControllers; ++c ) {
+            float controllerOutputDefault = _config._kernelSpikeControllerDefault;
+            if( c == 0 ) {
+                controllerOutputDefault = _config._convSpikeControllerDefault;
+            }
+
+            int offset = c * LAYER_STATISTICS_SIZE + LAYER_STATISTICS_CONTROLLER_THRESHOLD;
+            _controllerStatistics._values[ offset ] = controllerOutputDefault;
+        }
+
+        // clear integrated error
+        _convControllerErrorIntegral.set( 0f );
+        _kernelControllerErrorIntegral.set( 0f );
 
         clear();
     }
@@ -176,8 +214,8 @@ public class SpikingConvolutionalNetworkLayer {
         convolve( _config, _kernelWeights, _inputSpikes, _convSums );
         //float inhSum = _convInhibition.sum();
         //integrate( _config, _kernelWeights, _kernelFrequency, _inputTrace, _convSums, _convInhibition, _convIntegrated, _convSpikes, _convSpikeFrequency, _convSpikeThreshold, train );
-        integrate( _config, _convSpikeStats, _convSpikeControllerWindow, _kernelWeights, _kernelFrequency, _inputTrace, _convSums, _convInhibition, _convIntegrated, _convSpikes, train );
-        //float inhSum2 = _convInhibition.sum();
+//        integrate( _config, _convSpikeStats, _convSpikeControllerWindow, _kernelWeights, _kernelFrequency, _kernelGains, _inputTrace, _convSums, _convInhibition, _convIntegrated, _convSpikes, train );
+        integrate( _config, _controllerStatistics, _convControllerErrorIntegral, _kernelControllerErrorIntegral,  _kernelWeights, _kernelFrequency, _kernelGains, _inputTrace, _convSums, _convInhibition, _convIntegrated, _convSpikes, train );
 
         poolMax( _config, _convIntegrated, _poolIntegrated );
         poolSpike( _config, _convSpikes, _poolSpikes, _poolInhibition );
@@ -463,11 +501,14 @@ public class SpikingConvolutionalNetworkLayer {
 
     public static void integrate(
             SpikingConvolutionalNetworkLayerConfig config,
-            Data convSpikeStats,
-            Data convSpikeErrorHistory,
+            Data controllerStatistics,
+            Data convControllerErrorIntegral,
+            Data kernelControllerErrorIntegral,
+//            Data convSpikeErrorHistory,
             //DiscreteTimePIDController convSpikeThresholdController,
             Data kernelWeights,
             Data kernelFrequency,
+            Data kernelGains,
             Data inputTrace,
             Data convSums,
             Data convInhibition,
@@ -484,7 +525,9 @@ public class SpikingConvolutionalNetworkLayer {
             kernelSpikeCount.put( k, 0 );
         }
 
-        float convSpikeThreshold = convSpikeStats._values[ LAYER_STATISTICS_CONTROLLER_THRESHOLD ];
+        int controller = 0;
+        int controllerOutputOffset = controller * LAYER_STATISTICS_SIZE + LAYER_STATISTICS_CONTROLLER_THRESHOLD;
+        float convSpikeThreshold = controllerStatistics._values[ controllerOutputOffset ]; //convSpikeStats._values[ LAYER_STATI STICS_CONTROLLER_THRESHOLD ];
 
         int spikes = 0;
 
@@ -506,7 +549,7 @@ public class SpikingConvolutionalNetworkLayer {
                     int convolvedOffset = ConvolutionData3d.getOffset( cx, cy, cz, config._width, config._height, config._depth );
 
                     float c = convSums._values[ convolvedOffset ];
-                    float gain = getKernelGain( kernelFrequency, cz, config._kernelSpikeFrequencyTarget );
+                    float gain = kernelGains._values[ cz ];//getKernelGain( kernelFrequency, cz, config._kernelSpikeFrequencyTarget );
                     c *= gain;
                     float v1 = convIntegrated._values[ convolvedOffset ];
                     float v2 = v1 + c;
@@ -581,7 +624,23 @@ public class SpikingConvolutionalNetworkLayer {
         // normalize for layer area (but not depth)
         int area = config._width * config._height;
         float convSpikeDensity = (float)spikes / (float)area; // normalize for area of the layer
-        float convSpikeCount = convSpikeStats._values[ LAYER_STATISTICS_WINDOW_COUNT ];
+
+        int controllerIndex = 0;
+        float controllerGainP = 1f; // TODO make param
+        float controllerGainI = 2;
+        Float min = 0f; // must be positive
+        Float max = null;
+        updateController(
+                convControllerErrorIntegral, controllerStatistics, controllerIndex,
+                config._convSpikeControllerUpdatePeriod,
+                config._convSpikeControllerIntegrationPeriod,
+                config._convSpikeControllerTarget,
+                convSpikeDensity,
+                controllerGainP,
+                controllerGainI,
+                min, max, true ); // min, max
+
+/*        float convSpikeCount = convSpikeStats._values[ LAYER_STATISTICS_WINDOW_COUNT ];
         float convSpikeSum = convSpikeStats._values[ LAYER_STATISTICS_WINDOW_SUM ];
 
         convSpikeCount += 1;
@@ -624,18 +683,97 @@ public class SpikingConvolutionalNetworkLayer {
 
         convSpikeStats._values[ LAYER_STATISTICS_SPIKE_DENSITY ] = convSpikeDensity;
         convSpikeStats._values[ LAYER_STATISTICS_WINDOW_COUNT ] = convSpikeCount;
-        convSpikeStats._values[ LAYER_STATISTICS_WINDOW_SUM ] = convSpikeSum;
+        convSpikeStats._values[ LAYER_STATISTICS_WINDOW_SUM ] = convSpikeSum;*/
+
+
+        controllerGainP = 100f;
+        controllerGainI = 0;
+        min = 1f; // ensures that gain can't be < 1 i.e. isn't penalized for being used too often
+        max = null;
+        for( int cz = 0; cz < config._depth; ++cz ) {
+            int kernelSpikes = kernelSpikeCount.get( cz );
+            float kernelSpikeDensity = (float)kernelSpikes / (float)area; // make it invariant to area changes
+
+            controllerIndex = 1 + cz;
+
+            int errorIntegralPeriod = config._kernelSpikeControllerIntegrationPeriod;
+            Data errorIntegral = new Data( errorIntegralPeriod );
+            int offsetThis = 0;
+            int offsetThat = cz * errorIntegralPeriod;
+            errorIntegral.copyRange( kernelControllerErrorIntegral, offsetThis, offsetThat, errorIntegralPeriod );
+
+            float gain = updateController(
+                    errorIntegral, controllerStatistics, controllerIndex,
+                    config._kernelSpikeControllerUpdatePeriod,
+                    config._kernelSpikeControllerIntegrationPeriod,
+                    config._kernelSpikeControllerTarget,
+                    kernelSpikeDensity,
+                    controllerGainP,
+                    controllerGainI,
+                    min, max, false ); // min, max
+
+            kernelGains._values[ cz ] = gain; // new gain
+
+            offsetThis = cz * errorIntegralPeriod;
+            offsetThat = 0;
+            kernelControllerErrorIntegral.copyRange( errorIntegral, offsetThis, offsetThat, errorIntegralPeriod );
+        }
 
         // update kernel frequencies depending whether each kernel z fired or not.
         // (Only includes uninhibited spikes)
-        // TODO Should I make this only about the distribution of spikes (relative rate) but not the overall rate of spikes?
         for( int cz = 0; cz < config._depth; ++cz ) {
             // update the frequency for each kernel z
             //boolean spiked = spikingKernels.contains( cz );
             int kernelSpikes = kernelSpikeCount.get( cz );
             float kernelSpikeDensity = (float)kernelSpikes / (float)area;
-            updateKernelFrequency( kernelFrequency, cz, kernelSpikeDensity, config._kernelSpikeFrequencyLearningRate );
+            float fOld = kernelFrequency._values[ cz ];
+            float fNew = Unit.lerp( kernelSpikeDensity, fOld, 0.001f );
+            fNew = Math.min( 1f, Math.max( 0f, fNew ) ); // clamped at 0 <= f <= 1
+            kernelFrequency._values[ cz ] = fNew;
         }
+
+        // This is only about the distribution of spikes (relative rate) but not the overall rate of spikes?
+/*        float sumKernelSpikeDensities = 0f;
+
+        for( int cz = 0; cz < config._depth; ++cz ) {
+            // update the frequency for each kernel z
+            //boolean spiked = spikingKernels.contains( cz );
+            int kernelSpikes = kernelSpikeCount.get( cz );
+            float kernelSpikeDensity = (float)kernelSpikes / (float)area;
+            //updateKernelFrequency( kernelFrequency, cz, kernelSpikeDensity, config._kernelSpikeFrequencyLearningRate );
+            float fOld = kernelFrequency._values[ cz ];
+            float fNew = fOld + kernelSpikeDensity;
+            kernelFrequency._values[ cz ] = fNew;
+            sumKernelSpikeDensities += fNew;
+        }
+
+        // Now check if we need to update the gains (periodically):
+        float kernelFrequencyTimer = convSpikeStats._values[ LAYER_STATISTICS_KERNEL_GAIN_TIMER ];
+        ++kernelFrequencyTimer;
+        if( kernelFrequencyTimer >= config._kernelFrequencyUpdatePeriod ) {
+
+            // Update the kernel frequency stats:
+            for( int cz = 0; cz < config._depth; ++cz ) {
+
+                float gain = 1f;
+                if( sumKernelSpikeDensities > 0f ) {
+                    float f = kernelFrequency._values[ cz ];
+
+                    // add 1 spike to make it nonzero
+                    float kernelSpikeDensity = 1f / (float)area;
+                    f += kernelSpikeDensity;
+
+                    float relativeFrequency = f / sumKernelSpikeDensities;
+                    gain = getKernelGain( relativeFrequency, config._kernelSpikeFrequencyTarget );
+                }
+
+                kernelGains._values[ cz ] = gain; // new gain
+                kernelFrequency._values[ cz ] = 0f; // clear accumulated spike density
+            }
+
+            kernelFrequencyTimer = 0; // reset timer
+        }
+        convSpikeStats._values[ LAYER_STATISTICS_KERNEL_GAIN_TIMER ] = kernelFrequencyTimer;*/
 
 //        Also, there is a lateral inhibition mechanism in
 //        all convolutional layers. When a neuron fires, in an
@@ -648,6 +786,87 @@ public class SpikingConvolutionalNetworkLayer {
 //        at most one spike at each location which indicates
 //        the existence of a particular visual feature in that
 //        location.
+    }
+
+    public static float updateController(
+        Data errorIntegral,
+        Data controllerStatistics,
+        int controllerIndex,
+        int period,
+        int errorIntegralPeriod,
+        float target,
+        float sample,
+        float gainP,
+        float gainI,
+        Float min,
+        Float max,
+        boolean inverse
+    ) {
+        int statisticsOffset = controllerIndex * LAYER_STATISTICS_SIZE;
+        int nbrSamples = (int)controllerStatistics._values[ statisticsOffset + LAYER_STATISTICS_WINDOW_COUNT ];
+        float sumSamples =    controllerStatistics._values[ statisticsOffset + LAYER_STATISTICS_WINDOW_SUM ];
+        float outputOld =     controllerStatistics._values[ statisticsOffset + LAYER_STATISTICS_CONTROLLER_THRESHOLD ];
+
+        nbrSamples += 1;
+        sumSamples += sample;
+
+        if( nbrSamples >= period ) {
+
+            if( controllerIndex > 0 ) {
+                int g = 0;
+                g++;
+            }
+
+            float sampleMean = sumSamples / (float)period;
+            float error = sampleMean - target;
+
+            if( inverse == false ) {
+                error = target - sampleMean;
+            }
+
+            //int historySize = controllerErrorIntegral.getSize();
+//            Data errorIntegral = new Data( errorIntegralPeriod );
+//            int offsetThis = 0;
+//            int offsetThat = controllerIndex * errorIntegralPeriod;
+//            errorIntegral.copyRange( controllerErrorIntegral, offsetThis, offsetThat, errorIntegralPeriod );
+            errorIntegral.rotate( 1 ); // i.e. 0 -> 1, last -> 0
+            errorIntegral._values[ 0 ] = error; // append new sample
+//            offsetThis = controllerIndex * errorIntegralPeriod;
+//            offsetThat = 0;
+//            controllerErrorIntegral.copyRange( errorIntegral, offsetThis, offsetThat, errorIntegralPeriod );
+
+            float errorIntegrated = errorIntegral.sum();
+            errorIntegrated /= (float)errorIntegralPeriod;
+
+            float deltaP = gainP * error;
+            float deltaI = gainI * errorIntegrated;
+            float deltaPI = deltaP + deltaI;
+
+            float outputNew = outputOld + deltaPI;
+            if( min != null ) {
+                outputNew = Math.max( min, outputNew );
+            }
+            if( max != null ) {
+                outputNew = Math.min( max, outputNew );
+            }
+
+            // reset average:
+            sumSamples = 0;
+            nbrSamples = 0;
+
+            controllerStatistics._values[ statisticsOffset + LAYER_STATISTICS_CONTROLLER_THRESHOLD ] = outputNew;
+            controllerStatistics._values[ statisticsOffset + LAYER_STATISTICS_CONTROLLER_MEASURED ] = sampleMean;
+            controllerStatistics._values[ statisticsOffset + LAYER_STATISTICS_CONTROLLER_DELTA ] = deltaPI;
+            controllerStatistics._values[ statisticsOffset + LAYER_STATISTICS_CONTROLLER_ERROR ] = error;
+            controllerStatistics._values[ statisticsOffset + LAYER_STATISTICS_CONTROLLER_ERROR_INTEGRATED ] = errorIntegrated;
+        }
+
+        controllerStatistics._values[ statisticsOffset + LAYER_STATISTICS_SPIKE_DENSITY ] = sample; // store latest sample
+        controllerStatistics._values[ statisticsOffset + LAYER_STATISTICS_WINDOW_COUNT ] = nbrSamples;
+        controllerStatistics._values[ statisticsOffset + LAYER_STATISTICS_WINDOW_SUM ] = sumSamples;
+
+        float output = controllerStatistics._values[ statisticsOffset + LAYER_STATISTICS_CONTROLLER_THRESHOLD ];
+        return output;
     }
 
     /**
@@ -667,6 +886,16 @@ public class SpikingConvolutionalNetworkLayer {
         // when we get to zero the gain should be very high
         float MIN_FREQUENCY = 0.00001f;
         float fMin = Math.max( MIN_FREQUENCY, f );
+        float fraction = fMin / expectedFrequency;
+        float gain = 1f / fraction;
+        return gain;
+    }
+
+    public static float getKernelGain( float relativeFrequency, float expectedFrequency ) {
+        // say nominal is 0.05 (1 in 20, which is high)
+        // when we get to zero the gain should be very high
+        float MIN_FREQUENCY = 0.00001f; // this could also be expressed as max gain?
+        float fMin = Math.max( MIN_FREQUENCY, relativeFrequency );
         float fraction = fMin / expectedFrequency;
         float gain = 1f / fraction;
         return gain;

@@ -125,7 +125,6 @@ public class GreedySpikingConvolutionalDemo extends CreateEntityMain {
         Framework.SetDataReference( spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_INPUT, spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_OUTPUT );
 
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList<>();
-//        featureDatas.add( new AbstractPair<>( spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_OUTPUT ) );
         featureDatas.add( new AbstractPair<>( spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_OUTPUT ) );
         Framework.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
 
@@ -189,13 +188,17 @@ public class GreedySpikingConvolutionalDemo extends CreateEntityMain {
         float stdDev1 = 1f;
         float stdDev2 = 2f;
         int kernelSize = 7;
-        SetDoGEntityConfig( dogPosName, stdDev1, stdDev2, kernelSize, 1.0f );
-        SetDoGEntityConfig( dogNegName, stdDev2, stdDev1, kernelSize, 1.0f );
+//        SetDoGEntityConfig( dogPosName, stdDev1, stdDev2, kernelSize );//, 1.0f );
+//        SetDoGEntityConfig( dogNegName, stdDev2, stdDev1, kernelSize );//, 1.0f );
+        DifferenceOfGaussiansEntityConfig.Set( dogPosName, stdDev1, stdDev2, kernelSize, 1.0f, 0f, 1000f, 0.0f, 1.0f );
+        DifferenceOfGaussiansEntityConfig.Set( dogNegName, stdDev2, stdDev1, kernelSize, 1.0f, 0f, 1000f, 0.0f, 1.0f );
 
-        float spikeThreshold = 5.0f;
+
+//        float spikeThreshold = 5.0f;
+        float spikeDensity = 1f / (float)imageRepeats;
         String clearFlagEntityName = imageLabelName;
         String clearFlagConfigPath = "imageChanged";
-        SetSpikeEncoderEntityConfig( spikeEncoderName, spikeThreshold, clearFlagEntityName, clearFlagConfigPath );
+        SetSpikeEncoderEntityConfig( spikeEncoderName, spikeDensity, clearFlagEntityName, clearFlagConfigPath );
 
         // cache all data for speed, when enabled
         Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
@@ -252,7 +255,7 @@ public class GreedySpikingConvolutionalDemo extends CreateEntityMain {
         parentName = Framework.CreateEntity( encoderIntSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
         parentName = Framework.CreateEntity( encoderOutSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
 
-        Framework.SetDataReference( encoderIntSeriesName, VectorSeriesEntity.INPUT, spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_INTEGRATED );
+        Framework.SetDataReference( encoderIntSeriesName, VectorSeriesEntity.INPUT, spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_INHIBITED );
         Framework.SetDataReference( encoderOutSeriesName, VectorSeriesEntity.INPUT, spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_OUTPUT );
 
         accumulatePeriod = 1;
@@ -297,20 +300,6 @@ public class GreedySpikingConvolutionalDemo extends CreateEntityMain {
         VectorSeriesEntityConfig.Set( netSpk2SeriesName, accumulatePeriod, period, ModelData.ENCODING_SPARSE_REAL );
     }
 
-    protected static void SetDoGEntityConfig( String entityName, float stdDev1, float stdDev2, int kernelSize, float scaling ) {
-        DifferenceOfGaussiansEntityConfig entityConfig = new DifferenceOfGaussiansEntityConfig();
-        entityConfig.cache = true;
-        entityConfig.kernelWidth = kernelSize;
-        entityConfig.kernelHeight = entityConfig.kernelWidth;
-        entityConfig.stdDev1 = stdDev1;
-        entityConfig.stdDev2 = stdDev2;
-        entityConfig.scaling = scaling;
-        entityConfig.min = -2.0f;
-        entityConfig.max = 2.0f;
-
-        Framework.SetConfig( entityName, entityConfig );
-    }
-
     protected static void SetImageLabelEntityConfig( String entityName, String trainingPath, String testingPath, int trainingEpochs, int testingEpochs, int repeats, String trainingEntities, String testingEntities ) {
 
         ImageLabelEntityConfig entityConfig = new ImageLabelEntityConfig();
@@ -339,11 +328,12 @@ public class GreedySpikingConvolutionalDemo extends CreateEntityMain {
         Framework.SetConfig( entityName, entityConfig );
     }
 
-    protected static void SetSpikeEncoderEntityConfig( String entityName, float spikeThreshold, String clearFlagEntityName, String clearFlagConfigPath ) {
+    protected static void SetSpikeEncoderEntityConfig( String entityName, float spikeDensity, String clearFlagEntityName, String clearFlagConfigPath ) {
 
         ConvolutionalSpikeEncoderEntityConfig entityConfig = new ConvolutionalSpikeEncoderEntityConfig();
         entityConfig.cache = true;
-        entityConfig.spikeThreshold = spikeThreshold;
+//        entityConfig.spikeThreshold = spikeThreshold;
+        entityConfig.spikeDensity = spikeDensity;
         entityConfig.clearFlagEntityName = clearFlagEntityName;
         entityConfig.clearFlagConfigPath = clearFlagConfigPath;
 
