@@ -17,17 +17,29 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.core.ann.convolutional;
+package io.agi.core.ann.convolutional.competitive;
+
+import io.agi.core.ann.convolutional.*;
 
 /**
  * Created by dave on 11/08/17.
  */
-public interface ConvolutionalNetworkFactory {
+public class CompetitiveLearningConvolutionalNetworkFactory implements ConvolutionalNetworkFactory {
 
-    ConvolutionalNetwork create();
-    ConvolutionalNetworkConfig createConfig();
+    public ConvolutionalNetwork create() {
+        return new ConvolutionalNetwork();
+    }
 
-    ConvolutionalNetworkLayer createLayer();
-    ConvolutionalNetworkLayerConfig createLayerConfig();
+    public ConvolutionalNetworkConfig createConfig() {
+        return new CompetitiveLearningConvolutionalNetworkConfig();
+    }
+
+    public ConvolutionalNetworkLayer createLayer() {
+        return new CompetitiveLearningConvolutionalNetworkLayer();
+    }
+
+    public ConvolutionalNetworkLayerConfig createLayerConfig() {
+        return new CompetitiveLearningConvolutionalNetworkLayerConfig();
+    }
 
 }

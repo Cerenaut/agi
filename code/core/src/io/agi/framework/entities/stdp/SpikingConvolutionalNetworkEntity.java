@@ -208,7 +208,7 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
         SpikingConvolutionalNetworkEntityConfig config = ( SpikingConvolutionalNetworkEntityConfig ) _config;
         SpikingConvolutionalNetworkConfig networkConfig = createNetworkConfig(); // copies config from EntityConfig
         SpikingConvolutionalNetwork scn = new SpikingConvolutionalNetwork();
-        scn.setup( networkConfig );
+//        scn.setup( networkConfig );
         scn.setInput( input );
         scn.resize();
 
@@ -243,7 +243,7 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
         scn.update();
 
         /// Debug threshold controller
-        Data stats = scn._layers.get( config.controllerLayer )._controllerStatistics;
+        Data stats = ( (SpikingConvolutionalNetworkLayer)scn._layers.get( config.controllerLayer ) )._controllerStatistics;
         config.controllerInput            = stats._values[ SpikingConvolutionalNetworkLayer.LAYER_STATISTICS_CONTROLLER_MEASURED ];
         config.controllerInputAccumulated = stats._values[ SpikingConvolutionalNetworkLayer.LAYER_STATISTICS_WINDOW_SUM ];
         config.controllerOutput           = stats._values[ SpikingConvolutionalNetworkLayer.LAYER_STATISTICS_CONTROLLER_DELTA ];
@@ -253,7 +253,7 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
         /// Debug threshold controller
 
 //        Data output = scn.getOutput(); // the potential max-pooling
-        SpikingConvolutionalNetworkLayer scnl = scn._layers.get( scn._layers.size() -1 );
+        SpikingConvolutionalNetworkLayer scnl = (SpikingConvolutionalNetworkLayer)scn._layers.get( scn._layers.size() -1 );
         Data output = scnl._poolSpikesIntegrated;
         Data inverted = scn.invert( output );
 
@@ -269,7 +269,7 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
         int layers = scn._config.getNbrLayers();
 
         for( int layer = 0; layer < layers; ++layer ) {
-            SpikingConvolutionalNetworkLayer scnl =  scn._layers.get( layer );
+            SpikingConvolutionalNetworkLayer scnl = (SpikingConvolutionalNetworkLayer)scn._layers.get( layer );
 
             scnl._inputSpikes = getDataLazyResize( DATA_LAYER_INPUT_SPIKES_ + layer, scnl._inputSpikes._dataSize );
             scnl._inputTrace = getDataLazyResize( DATA_LAYER_INPUT_TRACES_ + layer, scnl._inputTrace._dataSize );
@@ -302,7 +302,7 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
         int layers = scn._config.getNbrLayers();
 
         for( int layer = 0; layer < layers; ++layer ) {
-            SpikingConvolutionalNetworkLayer scnl =  scn._layers.get( layer );
+            SpikingConvolutionalNetworkLayer scnl = (SpikingConvolutionalNetworkLayer)scn._layers.get( layer );
 
             setData( DATA_LAYER_INPUT_SPIKES_ + layer, scnl._inputSpikes );
             setData( DATA_LAYER_INPUT_TRACES_ + layer, scnl._inputTrace );

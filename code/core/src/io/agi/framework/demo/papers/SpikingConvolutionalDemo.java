@@ -75,7 +75,8 @@ public class SpikingConvolutionalDemo extends CreateEntityMain {
 // Re-check with 0-9 cycle that we're getting a steady rate of spikes for all inputs - not a step up and down in rate.
 // Then re-run with the new encoding.
 // Check PASSED OK. see feature-series-output. Re test 10k/1k:
-//
+// With saeed's output: 11%.
+// With max-binary output: 26.7%
 
 // Ideas list
 // TODO implement the lateral inhibition between cols. in layer 1 by receptive field size.

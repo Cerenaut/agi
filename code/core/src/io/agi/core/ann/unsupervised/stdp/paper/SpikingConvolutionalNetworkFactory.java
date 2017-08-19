@@ -17,17 +17,29 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.core.ann.convolutional;
+package io.agi.core.ann.unsupervised.stdp.paper;
+
+import io.agi.core.ann.convolutional.*;
 
 /**
- * Created by dave on 11/08/17.
+ * Created by dave on 12/08/17.
  */
-public interface ConvolutionalNetworkFactory {
+public class SpikingConvolutionalNetworkFactory implements ConvolutionalNetworkFactory {
 
-    ConvolutionalNetwork create();
-    ConvolutionalNetworkConfig createConfig();
+    public ConvolutionalNetwork create() {
+        return new ConvolutionalNetwork();
+    }
 
-    ConvolutionalNetworkLayer createLayer();
-    ConvolutionalNetworkLayerConfig createLayerConfig();
+    public ConvolutionalNetworkConfig createConfig() {
+        return new SpikingConvolutionalNetworkConfig();
+    }
+
+    public ConvolutionalNetworkLayer createLayer() {
+        return new SpikingConvolutionalNetworkLayer();
+    }
+
+    public ConvolutionalNetworkLayerConfig createLayerConfig() {
+        return new SpikingConvolutionalNetworkLayerConfig();
+    }
 
 }

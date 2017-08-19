@@ -30,6 +30,7 @@ import io.agi.framework.demo.mnist.MnistEntity;
 import io.agi.framework.demo.sd19.Text2ImageLabelEntity;
 import io.agi.framework.demo.sequence.DistractedSequenceRecallEntity;
 import io.agi.framework.entities.*;
+import io.agi.framework.entities.convolutional_competitive_learning.CompetitiveLearningConvolutionalNetworkEntity;
 import io.agi.framework.entities.reinforcement_learning.EpsilonGreedyEntity;
 import io.agi.framework.entities.reinforcement_learning.GatedRecurrentMemoryEntity;
 import io.agi.framework.entities.reinforcement_learning.QLearningEntity;
@@ -242,6 +243,9 @@ public class CommonEntityFactory implements EntityFactory {
 
         if( entityType.equals( SpikingConvolutionalNetworkEntity.ENTITY_TYPE ) ) {
             return new SpikingConvolutionalNetworkEntity( objectMap, _n, modelEntity );
+        }
+        if( entityType.equals( CompetitiveLearningConvolutionalNetworkEntity.ENTITY_TYPE ) ) {
+            return new CompetitiveLearningConvolutionalNetworkEntity( objectMap, _n, modelEntity );
         }
 
         if( entityType.equals( TrainingScheduleEntity.ENTITY_TYPE ) ) {

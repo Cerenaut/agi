@@ -19,6 +19,7 @@
 
 package io.agi.core.ann.unsupervised.stdp.paper;
 
+import io.agi.core.ann.convolutional.ConvolutionalNetworkLayer;
 import io.agi.core.data.*;
 import io.agi.core.math.Unit;
 import io.agi.core.math.Useful;
@@ -29,7 +30,7 @@ import java.util.HashMap;
 /**
  * Created by dave on 1/05/17.
  */
-public class SpikingConvolutionalNetworkLayer {
+public class SpikingConvolutionalNetworkLayer extends ConvolutionalNetworkLayer {
 
     // TODO rename these
     public static final int LAYER_STATISTICS_SPIKE_DENSITY = 0; // instantaneous

@@ -19,6 +19,8 @@
 
 package io.agi.core.ann.unsupervised.stdp.paper;
 
+import io.agi.core.ann.convolutional.ConvolutionalNetworkConfig;
+import io.agi.core.ann.convolutional.ConvolutionalNetworkLayerConfig;
 import io.agi.core.data.ConvolutionData3d;
 import io.agi.core.data.Int3d;
 import io.agi.core.math.Useful;
@@ -28,23 +30,13 @@ import java.util.Random;
 /**
  * Created by dave on 1/05/17.
  */
-public class SpikingConvolutionalNetworkLayerConfig {
-
-    // http://cs231n.github.io/convolutional-networks/
-    // 3d input (e.g. x,y,{rgb})
-    // 3d output (w,h,d)
-    // depth, stride and zero-padding
-    // depth = z, a param
-    // stride = stride of the filter
-    // zero-padding (like an offset)
-    // filters always extend through the full depth of the input volume. For example, if the input is [32x32x3] then
-    // doing 1x1 convolutions would effectively be doing 3-dimensional dot products (since the input depth is 3 channels).
+public class SpikingConvolutionalNetworkLayerConfig extends ConvolutionalNetworkLayerConfig {
 
     //Synaptic weights of convolutional neurons initi-
     //ate with random values drown from a normal dis-
     //tribution with the mean of 0.8 and STD of 0.05
 
-    public Random _r;
+//    public Random _r;
 
     // Kernel parameters
     public float _kernelWeightStdDev;
@@ -66,63 +58,30 @@ public class SpikingConvolutionalNetworkLayerConfig {
     public int _convSpikeControllerIntegrationPeriod = 0;
     public int _convSpikeControllerUpdatePeriod = 0;     // period over which the convolutional spikes are averaged. used for calculating an average to be used for controller.
 
-    // Input Dimensions
-    public int _inputPadding;
-    public int _inputStride;
-
-    // Layer Dimensions
-    public int _width;
-    public int _height;
-    public int _depth;
-
-    public int _poolingWidth;
-    public int _poolingHeight;
-
-    // Receptive Field Dimensions
-    public int _fieldWidth;
-    public int _fieldHeight;
-    public int _fieldDepth;
-
     public SpikingConvolutionalNetworkLayerConfig() {
 
     }
 
-    public void setup(
-            Random r,
+    public void setup( ConvolutionalNetworkConfig config, int layer ) {
+        super.setup( config, layer );
+        SpikingConvolutionalNetworkConfig scnc = (SpikingConvolutionalNetworkConfig)config;
+//            float kernelSpikeFrequencyLearningRate = scnc.getLayerValueFloat( config.KEY_LAYER_KERNEL_SPIKE_FREQUENCY_LEARNING_RATE, layer );
+//            int kernelSpikeFrequencyUpdatePeriod = scnc.getLayerValueInteger( config.KEY_LAYER_KERNEL_SPIKE_FREQUENCY_UPDATE_PERIOD, layer );
+//            float kernelSpikeFrequencyTarget = scnc.getLayerValueFloat( config.KEY_LAYER_KERNEL_SPIKE_FREQUENCY_TARGET, layer );
 
-            float kernelWeightStdDev,
-            float kernelWeightsMean,
-            float kernelWeightsLearningRate,
-//            float kernelSpikeFrequencyLearningRate,
-//            int kernelFrequencyUpdatePeriod,
-//            float kernelSpikeFrequencyTarget,
+        float kernelSpikeControllerDefault =  scnc.getLayerValueFloat( scnc.KEY_LAYER_KERNEL_SPIKE_DENSITY_DEFAULT, layer );
+        float kernelSpikeControllerTarget =  scnc.getLayerValueFloat( scnc.KEY_LAYER_KERNEL_SPIKE_DENSITY_TARGET, layer );
+        int kernelSpikeControllerIntegrationPeriod = scnc.getLayerValueInteger( scnc.KEY_LAYER_KERNEL_SPIKE_INTEGRATION_PERIOD, layer );
+        int kernelSpikeControllerUpdatePeriod =  scnc.getLayerValueInteger( scnc.KEY_LAYER_KERNEL_SPIKE_UPDATE_PERIOD, layer );
 
-            float kernelSpikeControllerDefault,
-            float kernelSpikeControllerTarget,
-            int kernelSpikeControllerIntegrationPeriod,
-            int kernelSpikeControllerUpdatePeriod,
+        float convSpikeControllerDefault =  config.getLayerValueFloat( scnc.KEY_LAYER_CONV_SPIKE_DENSITY_DEFAULT, layer );
+        float convSpikeControllerTarget =  config.getLayerValueFloat( scnc.KEY_LAYER_CONV_SPIKE_DENSITY_TARGET, layer );
+        int convSpikeControllerIntegrationPeriod =  config.getLayerValueInteger( scnc.KEY_LAYER_CONV_SPIKE_INTEGRATION_PERIOD, layer );
+        int convSpikeControllerUpdatePeriod =  config.getLayerValueInteger( scnc.KEY_LAYER_CONV_SPIKE_UPDATE_PERIOD, layer );
 
-            float convSpikeControllerDefault,
-            float convSpikeControllerTarget,
-            int convSpikeControllerIntegrationPeriod,
-            int convSpikeControllerUpdatePeriod,
-
-            int inputPadding,
-            int inputStride,
-            int width,
-            int height,
-            int depth,
-            int fieldWidth,
-            int fieldHeight,
-            int fieldDepth,
-            int poolingWidth,
-            int poolingHeight ) {
-
-        _r = r;
-
-        _kernelWeightStdDev = kernelWeightStdDev;
-        _kernelWeightsMean = kernelWeightsMean;
-        _kernelWeightsLearningRate = kernelWeightsLearningRate;
+        _kernelWeightStdDev = scnc.getKernelWeightsStdDev();
+        _kernelWeightsMean = scnc.getKernelWeightsMean();
+        _kernelWeightsLearningRate = scnc.getKernelWeightsLearningRate();
 //        _kernelSpikeFrequencyLearningRate = kernelSpikeFrequencyLearningRate;
 //        _kernelFrequencyUpdatePeriod = kernelFrequencyUpdatePeriod;
 //        _kernelSpikeFrequencyTarget = kernelSpikeFrequencyTarget;
@@ -136,47 +95,6 @@ public class SpikingConvolutionalNetworkLayerConfig {
         _convSpikeControllerTarget = convSpikeControllerTarget;
         _convSpikeControllerIntegrationPeriod = convSpikeControllerIntegrationPeriod;
         _convSpikeControllerUpdatePeriod = convSpikeControllerUpdatePeriod;
-
-        _inputPadding = inputPadding;
-        _inputStride = inputStride;
-
-        _width = width;
-        _height = height;
-        _depth = depth;
-        _poolingWidth = poolingWidth;
-        _poolingHeight = poolingHeight;
-
-        _fieldWidth = fieldWidth;
-        _fieldHeight = fieldHeight;
-        _fieldDepth = fieldDepth;
-    }
-
-    public int getPooledWidth() {
-        int pooledWidth = Useful.DivideRoundUp( _width, _poolingWidth );
-        return pooledWidth;
-    }
-
-    public int getPooledHeight() {
-        int pooledHeight = Useful.DivideRoundUp( _height, _poolingHeight );
-        return pooledHeight;
-    }
-
-    public int getPooledDepth() {
-        return _depth;
-    }
-
-    public Int3d getConvSize() {
-        Int3d i3d = new Int3d( _width, _height, _depth );
-        return i3d;
-    }
-
-    public Int3d getPoolSize() {
-        int ow = Useful.DivideRoundUp( _width, _poolingWidth );
-        int oh = Useful.DivideRoundUp( _height, _poolingHeight );
-        int od = _depth;
-        Int3d i3d = new Int3d( ow, oh, od );
-
-        return i3d;
     }
 
 }

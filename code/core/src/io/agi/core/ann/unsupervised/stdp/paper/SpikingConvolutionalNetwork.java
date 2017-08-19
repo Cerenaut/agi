@@ -19,6 +19,7 @@
 
 package io.agi.core.ann.unsupervised.stdp.paper;
 
+import io.agi.core.ann.convolutional.ConvolutionalNetwork;
 import io.agi.core.data.Data;
 
 import java.util.ArrayList;
@@ -26,19 +27,13 @@ import java.util.ArrayList;
 /**
  * Created by dave on 5/05/17.
  */
-public class SpikingConvolutionalNetwork {
-
-    public SpikingConvolutionalNetworkConfig _config;
-
-    public ArrayList< SpikingConvolutionalNetworkLayer > _layers = new ArrayList< SpikingConvolutionalNetworkLayer >();
-
-    protected Data _input;
+public class SpikingConvolutionalNetwork extends ConvolutionalNetwork {
 
     public SpikingConvolutionalNetwork() {
 
     }
 
-    public void setup( SpikingConvolutionalNetworkConfig config ) {
+/*    public void setup( SpikingConvolutionalNetworkConfig config ) {
         _config = config;
 
         int layers = _config.getNbrLayers();
@@ -99,93 +94,6 @@ public class SpikingConvolutionalNetwork {
             scnl.setup( scnlc, layer );
             _layers.add( scnl );
         }
-    }
-
-    public void setInput( Data input ) {
-        _input = input;
-    }
-
-    public Data getInput() {
-        return _input;
-    }
-
-    public Data getOutput() {
-        int layers = _config.getNbrLayers();
-        int outputLayer = layers -1;
-        SpikingConvolutionalNetworkLayer scnl =  _layers.get( outputLayer );
-        Data output = scnl.getOutput();
-        return output;
-    }
-
-    public void resize() {
-        int layers = _config.getNbrLayers();
-
-        for( int layer = 0; layer < layers; ++layer ) {
-            Data input = null;
-            if( layer == 0 ) {
-                input = getInput();
-            }
-            else {
-                SpikingConvolutionalNetworkLayer scnl =  _layers.get( layer -1 );
-                input = scnl.getOutput();
-            }
-
-            SpikingConvolutionalNetworkLayer scnl =  _layers.get( layer );
-            scnl.resize( input );
-        }
-    }
-
-    public void reset() {
-        int layers = _config.getNbrLayers();
-
-        for( int layer = 0; layer < layers; ++layer ) {
-            SpikingConvolutionalNetworkLayer scnl =  _layers.get( layer );
-            scnl.reset();
-        }
-    }
-
-    public void clear() {
-        int layers = _config.getNbrLayers();
-
-        for( int layer = 0; layer < layers; ++layer ) {
-            SpikingConvolutionalNetworkLayer scnl =  _layers.get( layer );
-            scnl.clear();
-        }
-    }
-
-    public void update() {
-        boolean learn = _config.getLearn();
-        int layers = _config.getNbrLayers();
-
-        for( int layer = 0; layer < layers; ++layer ) {
-            Data input = null;
-            if( layer == 0 ) {
-                input = getInput();
-            }
-            else {
-                SpikingConvolutionalNetworkLayer scnl =  _layers.get( layer -1 );
-                input = scnl.getOutput();
-            }
-
-            SpikingConvolutionalNetworkLayer scnl =  _layers.get( layer );
-
-            scnl.setInput( input );
-            scnl.update( learn );//train );//, maxPooling );
-        }
-    }
-
-    public Data invert( Data output ) {
-        int layers = _config.getNbrLayers();
-
-        Data poolInput = output;
-        for( int layer = layers -1; layer >= 0; --layer ) {
-            SpikingConvolutionalNetworkLayer scnl = _layers.get( layer );
-
-            Data inverted = scnl.invert( poolInput );
-            poolInput = inverted;
-        }
-
-        return poolInput;
-    }
+    }*/
 
 }
