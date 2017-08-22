@@ -21,8 +21,7 @@ package io.agi.core.ann.convolutional.autoencoder;
 
 import io.agi.core.ann.convolutional.ConvolutionalNetworkLayer;
 import io.agi.core.ann.convolutional.ConvolutionalNetworkLayerConfig;
-import io.agi.core.ann.unsupervised.KSparseAutoencoder;
-import io.agi.core.ann.unsupervised.WinnerTakeAllAutoencoder;
+import io.agi.core.ann.unsupervised.LifetimeSparseAutoencoder;
 import io.agi.core.data.*;
 
 import java.util.ArrayList;
@@ -34,7 +33,7 @@ import java.util.TreeMap;
  */
 public class AutoencoderConvolutionalNetworkLayer extends ConvolutionalNetworkLayer {
 
-    public WinnerTakeAllAutoencoder _classifier;
+    public LifetimeSparseAutoencoder _classifier;
 
     public Data _convError;
     public Data _convBest;
@@ -51,7 +50,7 @@ public class AutoencoderConvolutionalNetworkLayer extends ConvolutionalNetworkLa
 
         AutoencoderConvolutionalNetworkLayerConfig clcnl = (AutoencoderConvolutionalNetworkLayerConfig)config;
 
-        _classifier = new WinnerTakeAllAutoencoder( clcnl._classifierConfig._name, clcnl._classifierConfig._om );
+        _classifier = new LifetimeSparseAutoencoder( clcnl._classifierConfig._name, clcnl._classifierConfig._om );
         _classifier.setup( clcnl._classifierConfig );
 
         DataSize convDataSize = DataSize.create( _config._width, _config._height, _config._depth );
@@ -207,9 +206,8 @@ public class AutoencoderConvolutionalNetworkLayer extends ConvolutionalNetworkLa
                 }
 
                 HashSet< Integer > bestCells = new HashSet< Integer >();
-                float outputSparsityFactor = _classifier._c.getSparsity();
-                float currentSparsity = _classifier._c.getSparsity();
-                int maxRank = (int)( outputSparsityFactor * currentSparsity );
+                int sparsity = _classifier._c.getSparsity();
+                int maxRank = sparsity;
                 boolean findMaxima = true; // biggest activity
 
                 Ranking.getBestValuesRandomTieBreak( ranking, findMaxima, maxRank, bestCells, _config._r );

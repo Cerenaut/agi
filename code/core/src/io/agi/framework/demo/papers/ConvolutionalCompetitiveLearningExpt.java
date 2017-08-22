@@ -26,9 +26,7 @@ import io.agi.framework.demo.CreateEntityMain;
 import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.demo.mnist.ImageLabelEntityConfig;
 import io.agi.framework.entities.*;
-import io.agi.framework.entities.convolutional_competitive_learning.CompetitiveLearningConvolutionalNetworkEntity;
-import io.agi.framework.entities.convolutional_competitive_learning.CompetitiveLearningConvolutionalNetworkEntityConfig;
-import io.agi.framework.entities.stdp.*;
+import io.agi.framework.entities.convolutional.*;
 import io.agi.framework.persistence.models.ModelData;
 
 import java.util.ArrayList;
@@ -102,6 +100,8 @@ public class ConvolutionalCompetitiveLearningExpt extends CreateEntityMain {
 //        int trainingEpochs = 50;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
         int trainingEpochs = 5;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
         int testingEpochs = 1; // = 1 * 10 images * 30 repeats = 300
+        boolean useAutoencoder = false;
+        boolean useCompetitive = true;
 
         // Entity names
         String experimentName           = Framework.GetEntityName( "experiment" );
@@ -110,7 +110,7 @@ public class ConvolutionalCompetitiveLearningExpt extends CreateEntityMain {
         String valueSeriesName          = Framework.GetEntityName( "label-series" );
 
         // Algorithm
-        String convolutionalName = Framework.GetEntityName( "cl-cnn" );
+        String convolutionalName = Framework.GetEntityName( "cnn" );
 
         // Create entities
         String parentName = null;
@@ -123,10 +123,20 @@ public class ConvolutionalCompetitiveLearningExpt extends CreateEntityMain {
         parentName = Framework.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
 
         // Connect the entities' data
-        Framework.SetDataReference( convolutionalName, CompetitiveLearningConvolutionalNetworkEntity.DATA_INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
+        if( useCompetitive ) {
+            Framework.SetDataReference( convolutionalName, CompetitiveLearningConvolutionalNetworkEntity.DATA_INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
+        }
+        if( useAutoencoder ) {
+            Framework.SetDataReference( convolutionalName, AutoencoderConvolutionalNetworkEntity.DATA_INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
+        }
 
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList<>();
-        featureDatas.add( new AbstractPair<>( convolutionalName, CompetitiveLearningConvolutionalNetworkEntity.DATA_OUTPUT ) );
+        if( useCompetitive ) {
+            featureDatas.add( new AbstractPair<>( convolutionalName, CompetitiveLearningConvolutionalNetworkEntity.DATA_OUTPUT ) );
+        }
+        if( useAutoencoder ) {
+            featureDatas.add( new AbstractPair<>( convolutionalName, AutoencoderConvolutionalNetworkEntity.DATA_OUTPUT ) );
+        }
         Framework.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
 
         // Experiment config
@@ -163,7 +173,8 @@ public class ConvolutionalCompetitiveLearningExpt extends CreateEntityMain {
 
         SetConvolutionalEntityConfig(
                 convolutionalName,
-                inputWidth, inputHeight, inputDepth );
+                inputWidth, inputHeight, inputDepth,
+                useCompetitive, useAutoencoder );
 
         // LOGGING config
         // NOTE about logging: We accumulate the labels and features for all images, but then we only append a new sample of (features,label) every N steps
@@ -221,25 +232,33 @@ public class ConvolutionalCompetitiveLearningExpt extends CreateEntityMain {
             String entityName,
             int inputWidth,
             int inputHeight,
-            int inputDepth ) {
+            int inputDepth,
+            boolean useCompetitive,
+            boolean useAutoencoder ) {
 
-        CompetitiveLearningConvolutionalNetworkEntityConfig entityConfig = new CompetitiveLearningConvolutionalNetworkEntityConfig();
+        ConvolutionalNetworkEntityConfig entityConfig = null;
+        if( useCompetitive ) {
+            CompetitiveLearningConvolutionalNetworkEntityConfig ec = new CompetitiveLearningConvolutionalNetworkEntityConfig();
+            ec.learningRate = 0.015f;
+            ec.learningRateNeighbours = ec.learningRate * 0.2f;;
+            ec.noiseMagnitude = 0f;
+            ec.stressLearningRate = 0.005f;
+            ec.stressSplitLearningRate = 0.5f;
+            ec.stressThreshold = 0.01f;
+            ec.utilityLearningRate = 0;
+            ec.utilityThreshold = -1f;
+        }
+        if( useAutoencoder ) {
+            AutoencoderConvolutionalNetworkEntityConfig ec = new AutoencoderConvolutionalNetworkEntityConfig();
+            ec.learningRate = 0.01f;
+            ec.momentum = 0.5f;
+            ec.weightsStdDev = 0.01f;
+
+            ec.layerSparsity = "1,3";
+            ec.layerSparsityLifetime = "1,1";
+        }
 
         entityConfig.cache = true;
-
-        entityConfig.learningRate = 0.015f;
-        entityConfig.learningRateNeighbours = entityConfig.learningRate * 0.2f;;
-        entityConfig.noiseMagnitude = 0f;
-        entityConfig.stressLearningRate = 0.005f;
-        entityConfig.stressSplitLearningRate = 0.5f;
-        entityConfig.stressThreshold = 0.01f;
-        entityConfig.utilityLearningRate = 0;
-        entityConfig.utilityThreshold = -1f;
-
-// These are autoscaled to layer area inside the network config setup
-//        entityConfig.edgeMaxAge = 750 * areaScale;//750;
-//        entityConfig.growthInterval = 100 * areaScale;
-
         entityConfig.nbrLayers = 2;
 
 //        int[] layerDepths = { 30,100 }; // from paper

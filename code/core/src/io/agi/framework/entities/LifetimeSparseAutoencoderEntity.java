@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016.
+ * Copyright (c) 2017.
  *
  * This file is part of Project AGI. <http://agi.io>
  *
@@ -19,8 +19,8 @@
 
 package io.agi.framework.entities;
 
-import io.agi.core.ann.unsupervised.KSparseAutoencoder;
-import io.agi.core.ann.unsupervised.KSparseAutoencoderConfig;
+import io.agi.core.ann.unsupervised.LifetimeSparseAutoencoder;
+import io.agi.core.ann.unsupervised.LifetimeSparseAutoencoderConfig;
 import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
 import io.agi.core.orm.ObjectMap;
@@ -35,9 +35,9 @@ import java.util.Collection;
 /**
  * Created by dave on 7/07/16.
  */
-public class WinnerTakeAllAutoencoderEntity extends Entity {
+public class LifetimeSparseAutoencoderEntity extends Entity {
 
-    public static final String ENTITY_TYPE = "k-sparse-autoencoder";
+    public static final String ENTITY_TYPE = "lifetime-sparse-autoencoder";
 
     public static final String INPUT = "input";
 
@@ -51,19 +51,18 @@ public class WinnerTakeAllAutoencoderEntity extends Entity {
 
     public static final String ERRORS = "errors";
     public static final String WEIGHTED_SUM = "weighted-sum";
-    public static final String SPIKES_TOP_KA = "spikes-top-ka";
-    public static final String SPIKES_TOP_K = "spikes-top-k";
+    public static final String SPIKES = "spikes";
+    public static final String RECONSTRUCTION = "reconstruction";
 
-    public static final String RECONSTRUCTION_KA = "reconstruction-ka";
-    public static final String RECONSTRUCTION_K = "reconstruction-k";
-    public static final String AGES = "ages";
+    public static final String BATCH_OUTPUT_OUTPUT = "batch-output-output";
+    public static final String BATCH_OUTPUT_INPUT = "batch-output-input";
+    public static final String BATCH_OUTPUT_INPUT_LIFETIME = "batch-output-input-lifetime";
+    public static final String BATCH_OUTPUT_ERRORS = "batch-output-errors";
+    public static final String BATCH_HIDDEN_OUTPUT = "batch-hidden-output";
+    public static final String BATCH_HIDDEN_WEIGHTED_SUM = "batch-hidden-weighted-sum";
+    public static final String BATCH_HIDDEN_ERRORS = "batch-hidden-errors";
 
-    public static final String BATCH_ERROR_GRADIENTS_HIDDEN = "batch-error-gradients-hidden";
-    public static final String BATCH_ERROR_GRADIENTS_OUTPUT = "batch-error-gradients-output";
-    public static final String BATCH_INPUTS_HIDDEN = "batch-inputs-hidden";
-    public static final String BATCH_INPUTS_OUTPUT = "batch-inputs-output";
-
-    public WinnerTakeAllAutoencoderEntity( ObjectMap om, Node n, ModelEntity model ) {
+    public LifetimeSparseAutoencoderEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
     }
 
@@ -82,17 +81,17 @@ public class WinnerTakeAllAutoencoderEntity extends Entity {
         attributes.add( BIASES_2_VELOCITY );
 
         attributes.add( ERRORS );
-        attributes.add( SPIKES_TOP_KA );
-        attributes.add( SPIKES_TOP_K );
+        attributes.add( SPIKES );
         attributes.add( WEIGHTED_SUM );
-        attributes.add( RECONSTRUCTION_KA );
-        attributes.add( RECONSTRUCTION_K );
-        attributes.add( AGES );
+        attributes.add( RECONSTRUCTION );
 
-        attributes.add( BATCH_ERROR_GRADIENTS_HIDDEN );
-        attributes.add( BATCH_ERROR_GRADIENTS_OUTPUT );
-        attributes.add( BATCH_INPUTS_HIDDEN );
-        attributes.add( BATCH_INPUTS_OUTPUT );
+        attributes.add( BATCH_OUTPUT_OUTPUT );
+        attributes.add( BATCH_OUTPUT_INPUT );
+        attributes.add( BATCH_OUTPUT_INPUT_LIFETIME );
+        attributes.add( BATCH_OUTPUT_ERRORS );
+        attributes.add( BATCH_HIDDEN_OUTPUT );
+        attributes.add( BATCH_HIDDEN_WEIGHTED_SUM );
+        attributes.add( BATCH_HIDDEN_ERRORS );
 
         flags.putFlag( WEIGHTS, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( BIASES_1, DataFlags.FLAG_NODE_CACHE );
@@ -103,24 +102,22 @@ public class WinnerTakeAllAutoencoderEntity extends Entity {
         flags.putFlag( BIASES_2_VELOCITY, DataFlags.FLAG_NODE_CACHE );
 
         flags.putFlag( ERRORS, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( SPIKES_TOP_KA, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( SPIKES_TOP_K, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( RECONSTRUCTION_KA, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( RECONSTRUCTION_K, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( AGES, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( SPIKES, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( WEIGHTED_SUM, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( RECONSTRUCTION, DataFlags.FLAG_NODE_CACHE );
 
-        flags.putFlag( BATCH_ERROR_GRADIENTS_HIDDEN, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_ERROR_GRADIENTS_OUTPUT, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_INPUTS_HIDDEN, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_INPUTS_OUTPUT, DataFlags.FLAG_NODE_CACHE );
-
-        flags.putFlag( SPIKES_TOP_KA, DataFlags.FLAG_SPARSE_REAL );
-        flags.putFlag( SPIKES_TOP_K, DataFlags.FLAG_SPARSE_REAL );
+        flags.putFlag( BATCH_OUTPUT_OUTPUT, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( BATCH_OUTPUT_INPUT, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( BATCH_OUTPUT_INPUT_LIFETIME, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( BATCH_OUTPUT_ERRORS, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( BATCH_HIDDEN_OUTPUT, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( BATCH_HIDDEN_WEIGHTED_SUM, DataFlags.FLAG_NODE_CACHE );
+        flags.putFlag( BATCH_HIDDEN_ERRORS, DataFlags.FLAG_NODE_CACHE );
     }
 
     @Override
     public Class getConfigClass() {
-        return KSparseAutoencoderEntityConfig.class;
+        return LifetimeSparseAutoencoderEntityConfig.class;
     }
 
     protected void doUpdateSelf() {
@@ -149,23 +146,24 @@ public class WinnerTakeAllAutoencoderEntity extends Entity {
         // Algorithm specific parameters
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Region size
-        KSparseAutoencoderEntityConfig config = ( KSparseAutoencoderEntityConfig ) _config;
+        LifetimeSparseAutoencoderEntityConfig config = ( LifetimeSparseAutoencoderEntityConfig ) _config;
 
         // Build the algorithm
         ObjectMap om = ObjectMap.GetInstance();
 
-        KSparseAutoencoderConfig autoencoderConfig = new KSparseAutoencoderConfig();
+        LifetimeSparseAutoencoderConfig autoencoderConfig = new LifetimeSparseAutoencoderConfig();
 
         autoencoderConfig.setup(
                 om, name, _r,
                 inputArea, config.widthCells, config.heightCells,
-                config.learningRate, config.momentum,
-                config.sparsityOutput, config.sparsity, config.sparsityMin, config.sparsityMax,
-                config.ageMin, config.ageMax, config.age,
+                config.learningRate,
+                config.momentum,
+                config.sparsity,
+                config.sparsityLifetime,
                 config.weightsStdDev,
                 config.batchCount, config.batchSize );
 
-        KSparseAutoencoder ksa = new KSparseAutoencoder( name, om );
+        LifetimeSparseAutoencoder ksa = new LifetimeSparseAutoencoder( name, om );
 
         ksa.setup( autoencoderConfig );
 
@@ -181,7 +179,6 @@ public class WinnerTakeAllAutoencoderEntity extends Entity {
         ksa.update();
 
         // Save computed properties
-        config.sparsity = autoencoderConfig.getSparsity();
         config.batchCount = autoencoderConfig.getBatchCount();
 //        config.age = autoencoderConfig.getAge(); no, let this be advanced by the entity
 
@@ -189,7 +186,7 @@ public class WinnerTakeAllAutoencoderEntity extends Entity {
         copyDataToPersistence( ksa );
     }
 
-    protected void copyDataFromPersistence( KSparseAutoencoder ksa ) {
+    protected void copyDataFromPersistence( LifetimeSparseAutoencoder ksa ) {
 
         ksa._inputValues = getData( INPUT );
 
@@ -203,19 +200,19 @@ public class WinnerTakeAllAutoencoderEntity extends Entity {
 
         ksa._cellErrors = getDataLazyResize( ERRORS, ksa._cellErrors._dataSize );
         ksa._cellWeightedSum = getDataLazyResize( WEIGHTED_SUM, ksa._cellWeightedSum._dataSize );
-        ksa._cellSpikesTopKA = getDataLazyResize( SPIKES_TOP_KA, ksa._cellSpikesTopKA._dataSize );
-        ksa._cellSpikesTopK = getDataLazyResize( SPIKES_TOP_K, ksa._cellSpikesTopK._dataSize );
-        ksa._inputReconstructionKA = getDataLazyResize( RECONSTRUCTION_KA, ksa._inputReconstructionKA._dataSize );
-        ksa._inputReconstructionK = getDataLazyResize( RECONSTRUCTION_K, ksa._inputReconstructionK._dataSize );
-        ksa._cellAges = getDataLazyResize( AGES, ksa._cellAges._dataSize );
+        ksa._cellSpikes = getDataLazyResize( SPIKES, ksa._cellSpikes._dataSize );
+        ksa._inputReconstruction = getDataLazyResize( RECONSTRUCTION, ksa._inputReconstruction._dataSize );
 
-        ksa._hiddenErrorsBatch = getDataLazyResize( BATCH_ERROR_GRADIENTS_HIDDEN, ksa._hiddenErrorsBatch._dataSize );
-        ksa._outputErrorsBatch = getDataLazyResize( BATCH_ERROR_GRADIENTS_OUTPUT, ksa._outputErrorsBatch._dataSize );
-        ksa._hiddenInputBatch = getDataLazyResize( BATCH_INPUTS_HIDDEN, ksa._hiddenInputBatch._dataSize );
-        ksa._outputInputBatch = getDataLazyResize( BATCH_INPUTS_OUTPUT, ksa._outputInputBatch._dataSize );
+        ksa._batchOutputOutput = getDataLazyResize( BATCH_OUTPUT_OUTPUT, ksa._batchOutputOutput._dataSize );
+        ksa._batchOutputInput = getDataLazyResize( BATCH_OUTPUT_INPUT, ksa._batchOutputInput._dataSize );
+        ksa._batchOutputInputLifetime = getDataLazyResize( BATCH_OUTPUT_INPUT_LIFETIME, ksa._batchOutputInputLifetime._dataSize );
+        ksa._batchOutputErrors = getDataLazyResize( BATCH_OUTPUT_ERRORS, ksa._batchOutputErrors._dataSize );
+        ksa._batchHiddenInput = getDataLazyResize( BATCH_HIDDEN_OUTPUT, ksa._batchHiddenInput._dataSize );
+        ksa._batchHiddenWeightedSum = getDataLazyResize( BATCH_HIDDEN_WEIGHTED_SUM, ksa._batchHiddenWeightedSum._dataSize );
+        ksa._batchHiddenErrors = getDataLazyResize( BATCH_HIDDEN_ERRORS, ksa._batchHiddenErrors._dataSize );
     }
 
-    protected void copyDataToPersistence( KSparseAutoencoder ksa ) {
+    protected void copyDataToPersistence( LifetimeSparseAutoencoder ksa ) {
 
         setData( WEIGHTS, ksa._cellWeights );
         setData( BIASES_1, ksa._cellBiases1 );
@@ -227,16 +224,16 @@ public class WinnerTakeAllAutoencoderEntity extends Entity {
 
         setData( ERRORS, ksa._cellErrors );
         setData( WEIGHTED_SUM, ksa._cellWeightedSum );
-        setData( SPIKES_TOP_KA, ksa._cellSpikesTopKA );
-        setData( SPIKES_TOP_K, ksa._cellSpikesTopK );
-        setData( RECONSTRUCTION_KA, ksa._inputReconstructionKA );
-        setData( RECONSTRUCTION_K, ksa._inputReconstructionK );
-        setData( AGES, ksa._cellAges );
+        setData( SPIKES, ksa._cellSpikes );
+        setData( RECONSTRUCTION, ksa._inputReconstruction );
 
-        setData( BATCH_ERROR_GRADIENTS_HIDDEN, ksa._hiddenErrorsBatch );
-        setData( BATCH_ERROR_GRADIENTS_OUTPUT, ksa._outputErrorsBatch );
-        setData( BATCH_INPUTS_HIDDEN, ksa._hiddenInputBatch );
-        setData( BATCH_INPUTS_OUTPUT, ksa._outputInputBatch );
+        setData( BATCH_OUTPUT_OUTPUT, ksa._batchOutputOutput );
+        setData( BATCH_OUTPUT_INPUT, ksa._batchOutputInput );
+        setData( BATCH_OUTPUT_INPUT_LIFETIME, ksa._batchOutputInputLifetime );
+        setData( BATCH_OUTPUT_ERRORS, ksa._batchOutputErrors );
+        setData( BATCH_HIDDEN_OUTPUT, ksa._batchHiddenInput );
+        setData( BATCH_HIDDEN_WEIGHTED_SUM, ksa._batchHiddenWeightedSum );
+        setData( BATCH_HIDDEN_ERRORS, ksa._batchHiddenErrors );
     }
 
 }

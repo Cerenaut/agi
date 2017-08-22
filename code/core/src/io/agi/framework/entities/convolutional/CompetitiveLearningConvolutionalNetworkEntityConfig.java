@@ -24,11 +24,7 @@ import io.agi.framework.EntityConfig;
 /**
  * Created by dave on 12/08/17.
  */
-public class CompetitiveLearningConvolutionalNetworkEntityConfig extends EntityConfig {
-
-    public String invertSelection = "";
-
-    public int nbrLayers = 0;
+public class CompetitiveLearningConvolutionalNetworkEntityConfig extends ConvolutionalNetworkEntityConfig {
 
     public float learningRate = 0.1f;
     public float learningRateNeighbours = 0.05f;
@@ -41,14 +37,4 @@ public class CompetitiveLearningConvolutionalNetworkEntityConfig extends EntityC
     public float utilityThreshold = -1f;
     public int growthInterval = 2;
 
-    public String layerInputPadding = "";
-    public String layerInputStride = "";
-    public String layerWidth = "";
-    public String layerHeight = "";
-    public String layerDepth = "";
-    public String layerfieldWidth = "";
-    public String layerfieldHeight = "";
-    public String layerfieldDepth = "";
-    public String layerPoolingWidth = "";
-    public String layerPoolingHeight = "";
 }

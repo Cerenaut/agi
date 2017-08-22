@@ -30,6 +30,7 @@ import io.agi.framework.demo.mnist.MnistEntity;
 import io.agi.framework.demo.sd19.Text2ImageLabelEntity;
 import io.agi.framework.demo.sequence.DistractedSequenceRecallEntity;
 import io.agi.framework.entities.*;
+import io.agi.framework.entities.convolutional.AutoencoderConvolutionalNetworkEntity;
 import io.agi.framework.entities.convolutional.CompetitiveLearningConvolutionalNetworkEntity;
 import io.agi.framework.entities.reinforcement_learning.EpsilonGreedyEntity;
 import io.agi.framework.entities.reinforcement_learning.GatedRecurrentMemoryEntity;
@@ -173,6 +174,9 @@ public class CommonEntityFactory implements EntityFactory {
         if( entityType.equals( KSparseAutoencoderEntity.ENTITY_TYPE ) ) {
             return new KSparseAutoencoderEntity( objectMap, _n, modelEntity );
         }
+        if( entityType.equals( LifetimeSparseAutoencoderEntity.ENTITY_TYPE ) ) {
+            return new LifetimeSparseAutoencoderEntity( objectMap, _n, modelEntity );
+        }
 
         if( entityType.equals( OnlineKSparseAutoencoderEntity.ENTITY_TYPE ) ) {
             return new OnlineKSparseAutoencoderEntity( objectMap, _n, modelEntity );
@@ -226,10 +230,6 @@ public class CommonEntityFactory implements EntityFactory {
             return new ConvolutionalSpikeEncoderEntity( objectMap, _n, modelEntity );
         }
 
-        if( entityType.equals( QLearningEntity.ENTITY_TYPE ) ) {
-            return new QLearningEntity( objectMap, _n, modelEntity );
-        }
-
         if( entityType.equals( VectorCopyRangeEntity.ENTITY_TYPE ) ) {
             return new VectorCopyRangeEntity( objectMap, _n, modelEntity );
         }
@@ -246,6 +246,13 @@ public class CommonEntityFactory implements EntityFactory {
         }
         if( entityType.equals( CompetitiveLearningConvolutionalNetworkEntity.ENTITY_TYPE ) ) {
             return new CompetitiveLearningConvolutionalNetworkEntity( objectMap, _n, modelEntity );
+        }
+        if( entityType.equals( AutoencoderConvolutionalNetworkEntity.ENTITY_TYPE ) ) {
+            return new AutoencoderConvolutionalNetworkEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( QLearningEntity.ENTITY_TYPE ) ) {
+            return new QLearningEntity( objectMap, _n, modelEntity );
         }
 
         if( entityType.equals( TrainingScheduleEntity.ENTITY_TYPE ) ) {

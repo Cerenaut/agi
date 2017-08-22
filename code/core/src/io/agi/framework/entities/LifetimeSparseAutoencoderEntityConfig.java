@@ -17,22 +17,25 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.entities.convolutional;
+package io.agi.framework.entities;
 
 import io.agi.framework.EntityConfig;
 
 /**
- * Created by dave on 12/08/17.
+ *
+ * Created by dave on 7/07/16.
  */
-public class AutoencoderConvolutionalNetworkEntityConfig extends ConvolutionalNetworkEntityConfig {
+public class LifetimeSparseAutoencoderEntityConfig extends EntityConfig {
 
-    public int batchSize = 0;
+    float learningRate = 0f;
+    float momentum = 0f;
+    int widthCells = 0;
+    int heightCells = 0;
+    int sparsity = 0; // current value, computed
+    int sparsityLifetime = 0; // current value, computed
+    float weightsStdDev = 0f; // used at reset
 
-    public float learningRate = 0;
-    public float momentum = 0;
-    public float weightsStdDev = 0;
-
-    public String layerSparsity = "";
-    public String layerSparsityLifetime = "";
+    int batchCount = 0;
+    int batchSize = 0;
 
 }

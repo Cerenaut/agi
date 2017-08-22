@@ -21,14 +21,14 @@ package io.agi.core.ann.convolutional.autoencoder;
 
 import io.agi.core.ann.convolutional.ConvolutionalNetworkConfig;
 import io.agi.core.ann.convolutional.ConvolutionalNetworkLayerConfig;
-import io.agi.core.ann.unsupervised.WinnerTakeAllAutoencoderConfig;
+import io.agi.core.ann.unsupervised.LifetimeSparseAutoencoderConfig;
 
 /**
  * Created by dave on 19/08/17.
  */
 public class AutoencoderConvolutionalNetworkLayerConfig extends ConvolutionalNetworkLayerConfig {
 
-    public WinnerTakeAllAutoencoderConfig _classifierConfig;
+    public LifetimeSparseAutoencoderConfig _classifierConfig;
 
     public AutoencoderConvolutionalNetworkLayerConfig() {
 
@@ -40,7 +40,7 @@ public class AutoencoderConvolutionalNetworkLayerConfig extends ConvolutionalNet
 
         String classifierName = acnc._classifierConfig._name + "-" + layer;
 
-        _classifierConfig = new WinnerTakeAllAutoencoderConfig();
+        _classifierConfig = new LifetimeSparseAutoencoderConfig();
         _classifierConfig.copyFrom( acnc._classifierConfig, classifierName );
 
         // set layer-specific geometry:
@@ -68,5 +68,10 @@ public class AutoencoderConvolutionalNetworkLayerConfig extends ConvolutionalNet
         // set sparsity per layer:
         int sparsity = acnc.getLayerValueInteger( AutoencoderConvolutionalNetworkConfig.KEY_LAYER_SPARSITY, 0 );
         _classifierConfig.setSparsity( sparsity );
+
+        // set lifetime sparsity to account for the fact that batch includes many updates in different positions, and batch is correspondingly larger
+        int sparsityLifetime = acnc.getLayerValueInteger( AutoencoderConvolutionalNetworkConfig.KEY_LAYER_SPARSITY_LIFETIME, 0 );
+        int layerSparsityLifetime = sparsityLifetime * (int)areaCells;
+        _classifierConfig.setSparsityLifetime( layerSparsityLifetime );
     }
 }

@@ -40,11 +40,11 @@ import java.util.TreeMap;
  *
  * Created by dave on 1/07/16.
  */
-public class WinnerTakeAllAutoencoder extends CompetitiveLearning {
+public class LifetimeSparseAutoencoder extends CompetitiveLearning {
 
     protected static final Logger logger = LogManager.getLogger();
 
-    public WinnerTakeAllAutoencoderConfig _c;
+    public LifetimeSparseAutoencoderConfig _c;
     public Data _inputValues;
     public Data _inputReconstruction;
     public Data _cellWeights;
@@ -68,7 +68,7 @@ public class WinnerTakeAllAutoencoder extends CompetitiveLearning {
     public Data _batchHiddenWeightedSum;
     public Data _batchHiddenErrors;
 
-    public WinnerTakeAllAutoencoder( String name, ObjectMap om ) {
+    public LifetimeSparseAutoencoder( String name, ObjectMap om ) {
         super( name, om );
     }
 
@@ -80,7 +80,7 @@ public class WinnerTakeAllAutoencoder extends CompetitiveLearning {
         return _inputValues;
     }
 
-    public void setup( WinnerTakeAllAutoencoderConfig c ) {
+    public void setup( LifetimeSparseAutoencoderConfig c ) {
         _c = c;
 
         int batchSize = c.getBatchSize();
@@ -291,7 +291,7 @@ public class WinnerTakeAllAutoencoder extends CompetitiveLearning {
     Data outputLayerOutputBatch = _batchOutputOutput;
 
     public static void batchTrain(
-            WinnerTakeAllAutoencoderConfig config,
+            LifetimeSparseAutoencoderConfig config,
             Data cellWeights,
             Data cellWeightsVelocity,
             Data cellBiases1,
@@ -333,7 +333,7 @@ public class WinnerTakeAllAutoencoder extends CompetitiveLearning {
     }
 
     public static void batchAccumulate(
-            WinnerTakeAllAutoencoderConfig config,
+            LifetimeSparseAutoencoderConfig config,
             Data hiddenLayerInput,
             Data hiddenLayerWeightedSum,
             Data outputLayerInput,
@@ -390,7 +390,7 @@ public class WinnerTakeAllAutoencoder extends CompetitiveLearning {
     }
 
     public static void batchBackpropagateError(
-            WinnerTakeAllAutoencoderConfig config,
+            LifetimeSparseAutoencoderConfig config,
             Data cellWeights,
             Data hiddenLayerInputBatch,
             Data hiddenLayerErrorBatch, // calculated
@@ -458,7 +458,7 @@ public class WinnerTakeAllAutoencoder extends CompetitiveLearning {
     }
 
     public static void batchSelectHiddenCells(
-            WinnerTakeAllAutoencoderConfig config,
+            LifetimeSparseAutoencoderConfig config,
             Data cellWeights,
             Data cellBiases2,
             Data hiddenLayerActivityBatch,
@@ -470,7 +470,7 @@ public class WinnerTakeAllAutoencoder extends CompetitiveLearning {
         int inputs = config.getNbrInputs();
         int cells = config.getNbrCells();
         int batchSize = config.getBatchSize();
-        int sparsityLifetime = config.getSparsity(); // same?
+        int sparsityLifetime = config.getSparsityLifetime(); // different, because related to batch size
 
         outputLayerInputBatch.set( 0f );
 
@@ -637,7 +637,7 @@ public class WinnerTakeAllAutoencoder extends CompetitiveLearning {
     }
 
     public static void reconstruct(
-            WinnerTakeAllAutoencoderConfig config,
+            LifetimeSparseAutoencoderConfig config,
             Data cellWeights,
             Data cellBiases2,
             Data hiddenActivity,

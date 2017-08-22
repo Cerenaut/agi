@@ -21,7 +21,7 @@ package io.agi.core.ann.convolutional.autoencoder;
 
 import io.agi.core.ann.NetworkConfig;
 import io.agi.core.ann.convolutional.ConvolutionalNetworkConfig;
-import io.agi.core.ann.unsupervised.WinnerTakeAllAutoencoderConfig;
+import io.agi.core.ann.unsupervised.LifetimeSparseAutoencoderConfig;
 import io.agi.core.orm.ObjectMap;
 
 import java.util.Random;
@@ -32,8 +32,9 @@ import java.util.Random;
 public class AutoencoderConvolutionalNetworkConfig extends ConvolutionalNetworkConfig {
 
     public static final String KEY_LAYER_SPARSITY = "layer-sparsity";
+    public static final String KEY_LAYER_SPARSITY_LIFETIME = "layer-sparsity-lifetime";
 
-    WinnerTakeAllAutoencoderConfig _classifierConfig;
+    LifetimeSparseAutoencoderConfig _classifierConfig;
 
     public AutoencoderConvolutionalNetworkConfig() {
 
@@ -50,6 +51,7 @@ public class AutoencoderConvolutionalNetworkConfig extends ConvolutionalNetworkC
             int batchSize,
 
             String layerSparsity,
+            String layerSparsityLifetime,
 
             int nbrLayers,
 
@@ -67,6 +69,7 @@ public class AutoencoderConvolutionalNetworkConfig extends ConvolutionalNetworkC
         super.setup( om, name, r, nbrLayers, layerInputPadding, layerInputStride, layerWidth, layerHeight, layerDepth, layerfieldWidth, layerfieldHeight, layerfieldDepth, layerPoolingWidth, layerPoolingHeight );
 
         setLayerValues( KEY_LAYER_SPARSITY, layerSparsity );
+        setLayerValues( KEY_LAYER_SPARSITY_LIFETIME, layerSparsityLifetime );
 
         String classifierName = name + "-classifier";
 
@@ -76,9 +79,10 @@ public class AutoencoderConvolutionalNetworkConfig extends ConvolutionalNetworkC
         int classifierHeight = 0;
 
         int sparsity = 0; // per layer
+        int sparsityLifetime = 0; // per layer
         int batchCount = 0; // reset to 0
 
-        _classifierConfig = new WinnerTakeAllAutoencoderConfig();
+        _classifierConfig = new LifetimeSparseAutoencoderConfig();
         _classifierConfig.setup(
                 om, classifierName, r,
                 classifierInputs,
@@ -87,6 +91,7 @@ public class AutoencoderConvolutionalNetworkConfig extends ConvolutionalNetworkC
                 learningRate,
                 momentum,
                 sparsity,
+                sparsityLifetime,
                 weightsStdDev,
                 batchCount,
                 batchSize );
@@ -98,6 +103,7 @@ public class AutoencoderConvolutionalNetworkConfig extends ConvolutionalNetworkC
         AutoencoderConvolutionalNetworkConfig c = ( AutoencoderConvolutionalNetworkConfig ) nc;
 
         setLayerValues( KEY_LAYER_SPARSITY, c.getLayerValues( KEY_LAYER_SPARSITY ) );
+        setLayerValues( KEY_LAYER_SPARSITY_LIFETIME, c.getLayerValues( KEY_LAYER_SPARSITY_LIFETIME ) );
 
         _classifierConfig.copyFrom( c._classifierConfig, _classifierConfig._name );
     }

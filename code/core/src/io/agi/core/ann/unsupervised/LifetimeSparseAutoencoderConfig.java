@@ -27,16 +27,17 @@ import java.util.Random;
 /**
  * Created by dave on 1/07/16.
  */
-public class WinnerTakeAllAutoencoderConfig extends CompetitiveLearningConfig {
+public class LifetimeSparseAutoencoderConfig extends CompetitiveLearningConfig {
 
     public static final String LEARNING_RATE = "learning-rate";
     public static final String MOMENTUM = "momentum";
     public static final String WEIGHTS_STD_DEV = "weights-std-dev";
     public static final String SPARSITY = "sparsity";
+    public static final String SPARSITY_LIFETIME = "sparsity-lifetime";
     public static final String BATCH_COUNT = "batch-age";
     public static final String BATCH_SIZE = "batch-size";
 
-    public WinnerTakeAllAutoencoderConfig() {
+    public LifetimeSparseAutoencoderConfig() {
     }
 
     /**
@@ -63,14 +64,16 @@ public class WinnerTakeAllAutoencoderConfig extends CompetitiveLearningConfig {
             float learningRate,
             float momentum,
             int sparsity,
+            int sparsityLifetime,
             float weightsStdDev,
             int batchCount,
             int batchSize ){
 
         super.setup( om, name, r, inputs, w, h );
 
-        setLearningRate(learningRate);
-        setSparsity(sparsity);
+        setLearningRate( learningRate );
+        setSparsity( sparsity );
+        setSparsityLifetime( sparsityLifetime );
         setMomentum(momentum);
         setWeightsStdDev(weightsStdDev);
         setBatchCount(batchCount);
@@ -78,12 +81,13 @@ public class WinnerTakeAllAutoencoderConfig extends CompetitiveLearningConfig {
     }
 
     public void copyFrom( NetworkConfig nc, String name ) {
-        super.copyFrom(nc, name);
+        super.copyFrom( nc, name );
 
-        WinnerTakeAllAutoencoderConfig c = ( WinnerTakeAllAutoencoderConfig ) nc;
+        LifetimeSparseAutoencoderConfig c = ( LifetimeSparseAutoencoderConfig ) nc;
 
         setLearningRate( c.getLearningRate() );
         setSparsity(c.getSparsity());
+        setSparsityLifetime(c.getSparsityLifetime());
         setMomentum(c.getMomentum());
         setWeightsStdDev(c.getWeightsStdDev());
         setBatchCount( c.getBatchCount() );
@@ -96,6 +100,10 @@ public class WinnerTakeAllAutoencoderConfig extends CompetitiveLearningConfig {
 
     public void setSparsity( int n ) {
         _om.put( getKey( SPARSITY ), n );
+    }
+
+    public void setSparsityLifetime( int n ) {
+        _om.put( getKey( SPARSITY_LIFETIME ), n );
     }
 
     public void setMomentum( float r ) {
@@ -130,7 +138,12 @@ public class WinnerTakeAllAutoencoderConfig extends CompetitiveLearningConfig {
     }
 
     public int getSparsity() {
-        Integer n = _om.getInteger(getKey(SPARSITY));
+        Integer n = _om.getInteger( getKey( SPARSITY ) );
+        return n.intValue();
+    }
+
+    public int getSparsityLifetime() {
+        Integer n = _om.getInteger( getKey( SPARSITY_LIFETIME ) );
         return n.intValue();
     }
 

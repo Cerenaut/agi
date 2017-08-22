@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016.
+ * Copyright (c) 2017.
  *
  * This file is part of Project AGI. <http://agi.io>
  *
@@ -17,29 +17,28 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.entities;
+package io.agi.framework.entities.convolutional;
 
 import io.agi.framework.EntityConfig;
 
 /**
- *
- * Created by dave on 7/07/16.
+ * Created by dave on 22/08/17.
  */
-public class WinnerTakeAllAutoencoderEntityConfig extends EntityConfig {
+public class ConvolutionalNetworkEntityConfig extends EntityConfig {
 
-    float learningRate = 0f;
-    float momentum = 0f;
-    int widthCells = 0;
-    int heightCells = 0;
-    int sparsity = 0; // current value, computed
-    float sparsityOutput = 0;
-    int sparsityMin = 0;
-    int sparsityMax = 0;
-    int ageMin = 0;
-    int ageMax = 0;
-    float weightsStdDev = 0f; // used at reset
+    public String invertSelection = "";
 
-    int batchCount = 0;
-    int batchSize = 0;
+    public int nbrLayers = 0;
+
+    public String layerInputPadding = "";
+    public String layerInputStride = "";
+    public String layerWidth = "";
+    public String layerHeight = "";
+    public String layerDepth = "";
+    public String layerfieldWidth = "";
+    public String layerfieldHeight = "";
+    public String layerfieldDepth = "";
+    public String layerPoolingWidth = "";
+    public String layerPoolingHeight = "";
 
 }
