@@ -314,7 +314,7 @@ public class WinnerTakeAllAutoencoder extends CompetitiveLearning {
         int layerSize = inputs;
         boolean weightsInputMajor = true;
 
-        StochasticGradientDescent(
+        KSparseAutoencoder.StochasticGradientDescent(
                 inputSize, layerSize, batchSize, learningRate, momentum, weightsInputMajor,
                 outputLayerInputBatch, outputLayerErrorBatch,
                 cellWeights, cellWeightsVelocity, cellBiases2, cellBiases2Velocity );
@@ -324,7 +324,7 @@ public class WinnerTakeAllAutoencoder extends CompetitiveLearning {
         layerSize = cells;
         weightsInputMajor = false;
 
-        StochasticGradientDescent(
+        KSparseAutoencoder.StochasticGradientDescent(
                 inputSize, layerSize, batchSize, learningRate, momentum, weightsInputMajor,
                 hiddenLayerInputBatch, hiddenLayerErrorBatch,
                 cellWeights, cellWeightsVelocity, cellBiases1, cellBiases1Velocity );
@@ -470,7 +470,7 @@ public class WinnerTakeAllAutoencoder extends CompetitiveLearning {
         int inputs = config.getNbrInputs();
         int cells = config.getNbrCells();
         int batchSize = config.getBatchSize();
-        int sparsity = config.getSparsity();
+        int sparsityLifetime = config.getSparsity(); // same?
 
         outputLayerInputBatch.set( 0f );
 
@@ -499,7 +499,7 @@ public class WinnerTakeAllAutoencoder extends CompetitiveLearning {
 
             // rank the batch responses for this hidden unit
             HashSet< Integer > bestBatchIndices = new HashSet< Integer >();
-            int maxRank = sparsity;
+            int maxRank = sparsityLifetime;
             boolean findMaxima = true; // biggest activity
             Ranking.getBestValuesRandomTieBreak( ranking, findMaxima, maxRank, bestBatchIndices, config._r );
 
@@ -531,104 +531,104 @@ public class WinnerTakeAllAutoencoder extends CompetitiveLearning {
 
     }
 
-    public static void StochasticGradientDescent(
-            int inputSize,
-            int layerSize,
-            int batchSize,
-            float learningRate,
-            float momentum,
-            boolean weightsInputMajor,
-            Data batchInput,
-            Data batchErrors,
-            Data weights,
-            Data weightsVelocity,
-            Data biases,
-            Data biasesVelocity ) {
-
-        boolean useMomentum = false;
-        if( momentum != 0f ) {
-            useMomentum = true;
-        }
-
-        float miniBatchNorm = 1f / (float)batchSize;
-
-        for( int c = 0; c < layerSize; ++c ) { // computing error for each "input"
-
-            for( int i = 0; i < inputSize; ++i ) {
-
-                // foreach( batch sample )
-                for( int b = 0; b < batchSize; ++b ) {
-
-                    // tied weights
-                    int weightsOffset = c * inputSize + i;
-                    if( weightsInputMajor ) {
-                        weightsOffset = i * layerSize + c;
-                    }
-
-                    int inputOffset = b * inputSize + i;
-                    int errorOffset = b * layerSize + c;
-
-                    //float errorGradient = _cellGradients._values[ c ];
-                    float errorGradient = batchErrors._values[ errorOffset ];
-
-                    //float a = _inputValues._values[ i ];
-                    float a = batchInput._values[ inputOffset ];
-                    float wOld = weights._values[ weightsOffset ];
-                    float wDelta = learningRate * miniBatchNorm * errorGradient * a;
-
-                    if( useMomentum ) {
-                        // Momentum
-                        float wNew = wOld - wDelta;
-
-                        if( Useful.IsBad( wNew ) ) {
-                            String error = "Autoencoder weight update produced a bad value: " + wNew;
-                            logger.error( error );
-                            logger.traceExit();
-                            System.exit( -1 );
-                        }
-
-                        weights._values[ weightsOffset ] = wNew;
-                    } else {
-                        // Momentum
-                        float vOld = weightsVelocity._values[ weightsOffset ];
-                        float vNew = ( vOld * momentum ) - wDelta;
-                        float wNew = wOld + vNew;
-
-                        if( Useful.IsBad( wNew ) ) {
-                            String error = "Autoencoder weight update produced a bad value: " + wNew;
-                            logger.error( error );
-                            logger.traceExit();
-                            System.exit( -1 );
-                        }
-
-                        weights._values[ weightsOffset ] = wNew;
-                        weightsVelocity._values[ weightsOffset ] = vNew;
-                    } // momentum
-                } // batch
-            } // inputs
-
-            for( int b = 0; b < batchSize; ++b ) {
-                int errorOffset = b * layerSize + c;
-                float errorGradient = batchErrors._values[ errorOffset ];
-
-                float bOld = biases._values[ c ];
-                float bDelta = learningRate * miniBatchNorm * errorGradient;
-
-                if( useMomentum ) {
-                    float vOld = biasesVelocity._values[ c ];
-                    float vNew = ( vOld * momentum ) - bDelta;
-                    float bNew = bOld + vNew;
-
-                    biases._values[ c ] = bNew;
-                    biasesVelocity._values[ c ] = vNew;
-                } else {
-                    float bNew = bOld - bDelta;
-
-                    biases._values[ c ] = bNew;
-                }
-            }
-        }
-    }
+//    public static void StochasticGradientDescent(
+//            int inputSize,
+//            int layerSize,
+//            int batchSize,
+//            float learningRate,
+//            float momentum,
+//            boolean weightsInputMajor,
+//            Data batchInput,
+//            Data batchErrors,
+//            Data weights,
+//            Data weightsVelocity,
+//            Data biases,
+//            Data biasesVelocity ) {
+//
+//        boolean useMomentum = false;
+//        if( momentum != 0f ) {
+//            useMomentum = true;
+//        }
+//
+//        float miniBatchNorm = 1f / (float)batchSize;
+//
+//        for( int c = 0; c < layerSize; ++c ) { // computing error for each "input"
+//
+//            for( int i = 0; i < inputSize; ++i ) {
+//
+//                // foreach( batch sample )
+//                for( int b = 0; b < batchSize; ++b ) {
+//
+//                    // tied weights
+//                    int weightsOffset = c * inputSize + i;
+//                    if( weightsInputMajor ) {
+//                        weightsOffset = i * layerSize + c;
+//                    }
+//
+//                    int inputOffset = b * inputSize + i;
+//                    int errorOffset = b * layerSize + c;
+//
+//                    //float errorGradient = _cellGradients._values[ c ];
+//                    float errorGradient = batchErrors._values[ errorOffset ];
+//
+//                    //float a = _inputValues._values[ i ];
+//                    float a = batchInput._values[ inputOffset ];
+//                    float wOld = weights._values[ weightsOffset ];
+//                    float wDelta = learningRate * miniBatchNorm * errorGradient * a;
+//
+//                    if( useMomentum ) {
+//                        // Momentum
+//                        float wNew = wOld - wDelta;
+//
+//                        if( Useful.IsBad( wNew ) ) {
+//                            String error = "Autoencoder weight update produced a bad value: " + wNew;
+//                            logger.error( error );
+//                            logger.traceExit();
+//                            System.exit( -1 );
+//                        }
+//
+//                        weights._values[ weightsOffset ] = wNew;
+//                    } else {
+//                        // Momentum
+//                        float vOld = weightsVelocity._values[ weightsOffset ];
+//                        float vNew = ( vOld * momentum ) - wDelta;
+//                        float wNew = wOld + vNew;
+//
+//                        if( Useful.IsBad( wNew ) ) {
+//                            String error = "Autoencoder weight update produced a bad value: " + wNew;
+//                            logger.error( error );
+//                            logger.traceExit();
+//                            System.exit( -1 );
+//                        }
+//
+//                        weights._values[ weightsOffset ] = wNew;
+//                        weightsVelocity._values[ weightsOffset ] = vNew;
+//                    } // momentum
+//                } // batch
+//            } // inputs
+//
+//            for( int b = 0; b < batchSize; ++b ) {
+//                int errorOffset = b * layerSize + c;
+//                float errorGradient = batchErrors._values[ errorOffset ];
+//
+//                float bOld = biases._values[ c ];
+//                float bDelta = learningRate * miniBatchNorm * errorGradient;
+//
+//                if( useMomentum ) {
+//                    float vOld = biasesVelocity._values[ c ];
+//                    float vNew = ( vOld * momentum ) - bDelta;
+//                    float bNew = bOld + vNew;
+//
+//                    biases._values[ c ] = bNew;
+//                    biasesVelocity._values[ c ] = vNew;
+//                } else {
+//                    float bNew = bOld - bDelta;
+//
+//                    biases._values[ c ] = bNew;
+//                }
+//            }
+//        }
+//    }
 
     public void reconstruct(
             Data hiddenActivity,

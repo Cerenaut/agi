@@ -19,6 +19,7 @@
 
 package io.agi.core.ann.unsupervised;
 
+import io.agi.core.ann.supervised.BackPropagation;
 import io.agi.core.data.*;
 import io.agi.core.math.Useful;
 import io.agi.core.orm.ObjectMap;
@@ -211,6 +212,14 @@ public class KSparseAutoencoder extends CompetitiveLearning {
         _c.setSparsity( k );
 
         return k;
+    }
+
+    public void setInput( Data input ) {
+        _inputValues.copy( input );
+    }
+
+    public Data getInput() {
+        return _inputValues;
     }
 
     public void update() {
@@ -490,24 +499,40 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             for( int i = 0; i < inputSize; ++i ) {
 
                 // foreach( batch sample )
+                float sumErrorGradient = 0f;
+
                 for( int b = 0; b < batchSize; ++b ) {
 
                     // tied weights
+//                    int weightsOffset = c * inputSize + i;
+//                    if( weightsInputMajor ) {
+//                        weightsOffset = i * layerSize + c;
+//                    }
+//
+                    int inputOffset = b * inputSize + i;
+                    int errorOffset = b * layerSize + c;
+
+                    float a = batchInput._values[ inputOffset ];
+
+                    //float errorGradient = _cellGradients._values[ c ];
+                    float errorGradient = batchErrors._values[ errorOffset ] * a;
+
+                    sumErrorGradient += errorGradient;
+                }
+
+                float errorGradient = miniBatchNorm * sumErrorGradient;
+                BackPropagation.ClipErrorGradient( errorGradient, BackPropagation.AbsMaxErrorGradient );
+
+//                for( int b = 0; b < batchSize; ++b ) {
+
                     int weightsOffset = c * inputSize + i;
                     if( weightsInputMajor ) {
                         weightsOffset = i * layerSize + c;
                     }
 
-                    int inputOffset = b * inputSize + i;
-                    int errorOffset = b * layerSize + c;
-
-                    //float errorGradient = _cellGradients._values[ c ];
-                    float errorGradient = batchErrors._values[ errorOffset ];
-
                     //float a = _inputValues._values[ i ];
-                    float a = batchInput._values[ inputOffset ];
                     float wOld = weights._values[ weightsOffset ];
-                    float wDelta = learningRate * miniBatchNorm * errorGradient * a;
+                    float wDelta = learningRate * errorGradient;// * a;
 
                     if( useMomentum ) {
                         // Momentum
@@ -537,33 +562,39 @@ public class KSparseAutoencoder extends CompetitiveLearning {
                         weights._values[ weightsOffset ] = wNew;
                         weightsVelocity._values[ weightsOffset ] = vNew;
                     } // momentum
-                } // batch
+//                } // batch
             } // inputs
+
+            float sumErrorGradient = 0f;
 
             for( int b = 0; b < batchSize; ++b ) {
                 int errorOffset = b * layerSize + c;
                 float errorGradient = batchErrors._values[ errorOffset ];
+                sumErrorGradient += errorGradient;
+            }
 
-                float bOld = biases._values[ c ];
-                float bDelta = learningRate * miniBatchNorm * errorGradient;
+            float errorGradient = miniBatchNorm * sumErrorGradient;
+            BackPropagation.ClipErrorGradient( errorGradient, BackPropagation.AbsMaxErrorGradient );
 
-                if( useMomentum ) {
-                    float vOld = biasesVelocity._values[ c ];
-                    float vNew = ( vOld * momentum ) - bDelta;
-                    float bNew = bOld + vNew;
+            float bOld = biases._values[ c ];
+            float bDelta = learningRate * errorGradient;
 
-                    biases._values[ c ] = bNew;
-                    biasesVelocity._values[ c ] = vNew;
-                } else {
-                    float bNew = bOld - bDelta;
+            if( useMomentum ) {
+                float vOld = biasesVelocity._values[ c ];
+                float vNew = ( vOld * momentum ) - bDelta;
+                float bNew = bOld + vNew;
 
-                    biases._values[ c ] = bNew;
-                }
+                biases._values[ c ] = bNew;
+                biasesVelocity._values[ c ] = vNew;
+            } else {
+                float bNew = bOld - bDelta;
+
+                biases._values[ c ] = bNew;
             }
         }
     }
 
-    protected void reconstruct( Data hiddenActivity, Data inputReconstruction ) {
+    public void reconstruct( Data hiddenActivity, Data inputReconstruction ) {
         int inputs = _c.getNbrInputs();
         int cells = _c.getNbrCells();
 

@@ -207,7 +207,7 @@ public class AutoencoderConvolutionalNetworkLayer extends ConvolutionalNetworkLa
                 }
 
                 HashSet< Integer > bestCells = new HashSet< Integer >();
-                float outputSparsityFactor = _classifier._c.getSparsityOutput();
+                float outputSparsityFactor = _classifier._c.getSparsity();
                 float currentSparsity = _classifier._c.getSparsity();
                 int maxRank = (int)( outputSparsityFactor * currentSparsity );
                 boolean findMaxima = true; // biggest activity
