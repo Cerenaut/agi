@@ -17,7 +17,7 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.entities.convolutional_competitive_learning;
+package io.agi.framework.entities.convolutional;
 
 import io.agi.core.ann.convolutional.ConvolutionalNetwork;
 import io.agi.core.ann.convolutional.competitive.CompetitiveLearningConvolutionalNetworkConfig;
@@ -28,7 +28,6 @@ import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
-import io.agi.framework.entities.stdp.SpikingConvolutionalNetworkEntityConfig;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;

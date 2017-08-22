@@ -17,7 +17,7 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.entities.convolutional_competitive_learning;
+package io.agi.framework.entities.convolutional;
 
 import io.agi.framework.EntityConfig;
 

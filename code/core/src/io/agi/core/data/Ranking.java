@@ -156,6 +156,10 @@ public class Ranking {
         return values;
     }
 
+    public static boolean isEmpty( TreeMap< Float, ArrayList< Integer > > ranking ) {
+        return( getSize( ranking ) == 0 );
+    }
+
     public static int getSize( TreeMap< Float, ArrayList< Integer > > ranking ) {
         Iterator i = ranking.keySet().iterator();
 
@@ -169,6 +173,23 @@ public class Ranking {
         }
 
         return size;
+    }
+
+    public static Float getKey( TreeMap< Float, ArrayList< Integer > > ranking, int label ) {
+        Iterator i = ranking.keySet().iterator();
+
+        while( i.hasNext() ) {
+            Float key = ( Float ) i.next();
+            ArrayList< Integer > al = ranking.get( key );
+
+            for( Integer n : al ) {
+                if( n.equals( label ) ) {
+                    return key;
+                }
+            }
+        }
+
+        return null;
     }
 
     public static boolean containsKey( TreeMap< Float, ArrayList< Integer > > ranking, float key ) {
