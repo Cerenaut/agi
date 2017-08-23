@@ -44,6 +44,9 @@ import java.util.ArrayList;
  * 99.9% / 94.2% -- as 93.% but layer depths 30/70. pooling 2,1
  * 99.91% / 93.9% -- as before but depths 40/70
  * 99.99% / 94.1% --  depths 40/120   C1: 24x24 P1: 12x12 C2: 8x8 P2: 8x8
+ *
+ *
+ * 85.03% / 80.79% -- Expt 2, big receptive fields, 1 layer
  * Created by dave on 12/08/17.
  */
 
@@ -58,10 +61,10 @@ import java.util.ArrayList;
 //the global pooling is a bad idea. Any min-error not necessarily the right choice.
 //could do min(sum) rather than min( each )
 
-public class ConvolutionalCompetitiveLearningExpt extends CreateEntityMain {
+public class ConvolutionalUnsupervisedExpt extends CreateEntityMain {
 
     public static void main( String[] args ) {
-        ConvolutionalCompetitiveLearningExpt expt = new ConvolutionalCompetitiveLearningExpt();
+        ConvolutionalUnsupervisedExpt expt = new ConvolutionalUnsupervisedExpt();
         expt.mainImpl(args );
     }
 
@@ -98,10 +101,10 @@ public class ConvolutionalCompetitiveLearningExpt extends CreateEntityMain {
         int terminationAge = 1000;//50000;//25000;
 //        int trainingEpochs = 250;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
 //        int trainingEpochs = 50;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
-        int trainingEpochs = 5;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
+        int trainingEpochs = 1;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
         int testingEpochs = 1; // = 1 * 10 images * 30 repeats = 300
-        boolean useAutoencoder = false;
-        boolean useCompetitive = true;
+        boolean useAutoencoder = true;
+        boolean useCompetitive = false;
 
         // Entity names
         String experimentName           = Framework.GetEntityName( "experiment" );
@@ -117,7 +120,12 @@ public class ConvolutionalCompetitiveLearningExpt extends CreateEntityMain {
         parentName = Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         parentName = Framework.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), parentName );
 
-        parentName = Framework.CreateEntity( convolutionalName, CompetitiveLearningConvolutionalNetworkEntity.ENTITY_TYPE, n.getName(), parentName );
+        if( useCompetitive ) {
+            parentName = Framework.CreateEntity( convolutionalName, CompetitiveLearningConvolutionalNetworkEntity.ENTITY_TYPE, n.getName(), parentName );
+        }
+        if( useAutoencoder ) {
+            parentName = Framework.CreateEntity( convolutionalName, AutoencoderConvolutionalNetworkEntity.ENTITY_TYPE, n.getName(), parentName );
+        }
 
         parentName = Framework.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
         parentName = Framework.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
@@ -247,19 +255,41 @@ public class ConvolutionalCompetitiveLearningExpt extends CreateEntityMain {
             ec.stressThreshold = 0.01f;
             ec.utilityLearningRate = 0;
             ec.utilityThreshold = -1f;
+            entityConfig = ec;
         }
         if( useAutoencoder ) {
             AutoencoderConvolutionalNetworkEntityConfig ec = new AutoencoderConvolutionalNetworkEntityConfig();
             ec.learningRate = 0.01f;
             ec.momentum = 0.5f;
             ec.weightsStdDev = 0.01f;
-
-            ec.layerSparsity = "1,3";
-            ec.layerSparsityLifetime = "1,1";
+            ec.layerSparsity = "1";
+            ec.layerSparsityLifetime = "1";
+            ec.batchSize = 20;
+            entityConfig = ec;
         }
 
-        entityConfig.cache = true;
-        entityConfig.nbrLayers = 2;
+////////////////////////////////////////////
+// EXPT 1 OK
+//        int nbrLayers = 2;
+//        int[] layerDepths = { 8,64 };
+//        int[] layerPoolingSize = { 2,2 };
+//        int[] layerFieldSize = { 3,3 };
+//        int[] layerInputPaddings = { 0,0 };
+//        int[] layerInputStrides = { 1,1 };
+
+////////////////////////////////////////////
+// EXPT 2
+        int nbrLayers = 1;
+        int[] layerDepths = { 64 };
+        int[] layerPoolingSize = { 2 };
+        int[] layerFieldSize = { 6,6 };
+        int[] layerInputPaddings = { 0 };
+        int[] layerInputStrides = { 3 };
+
+////////////////////////////////////////////
+// AD-HOC
+/*
+        int nbrLayers = 2;
 
 //        int[] layerDepths = { 30,100 }; // from paper
 //        int[] layerDepths = { 30,70 }; //
@@ -272,56 +302,32 @@ public class ConvolutionalCompetitiveLearningExpt extends CreateEntityMain {
 //        int[] layerPoolingSize = { 2,2 }; // for reconstruction, reduce pooling in 2nd layer
         int[] layerFieldSize = { 5,5 };
         int[] layerInputPaddings = { 0,0 };
+        int[] layerInputStrides = { 1,1 };
 
-//        entityConfig.nbrLayers = 3;
+//        int nbrLayers = 3;
 //
 //        int[] layerDepths = { 30,100,200 }; // from paper
 //        int[] layerPoolingSize = { 2,2,1 }; // for classification in Z
 //        int[] layerFieldSize = { 5,5,4 };
 //        int[] layerInputPaddings = { 0,0,0 };
+//        int[] layerInputStrides = { 1,1,1 };
 
-        int iw = inputWidth;
-        int ih = inputHeight;
-        int id = inputDepth;
+// */
+////////////////////////////////////////////
 
-        // Generate config properties from these values:
-        for( int layer = 0; layer < entityConfig.nbrLayers; ++layer ) {
+        ConvolutionalNetworkEntityConfig.Set(
+            entityConfig,
+            inputWidth, inputHeight, inputDepth, nbrLayers,
+            layerInputPaddings, layerInputStrides, layerDepths, layerPoolingSize, layerFieldSize );
 
-            // Geometry of layer
-            String prefix = "";
-            if( layer > 0 ) prefix = ",";
-
-            int layerInputPadding = layerInputPaddings[ layer ];
-            int layerInputStride = 1;//layerInputStrides[ layer ];
-            int ld = layerDepths[ layer ];
-            int pw = layerPoolingSize[ layer ];
-            int ph = pw;
-            int fw = layerFieldSize[ layer ];
-            int fh = fw;
-            int fd = id;
-            int lw = iw - fw +1;//layerWidths[ layer ];;
-            int lh = ih - fh +1;//layerHeights[ layer ];;
-
-            // Geometric parameters:
-            entityConfig.layerInputPadding += prefix + layerInputPadding;
-            entityConfig.layerInputStride  += prefix + layerInputStride;
-            entityConfig.layerWidth  += prefix + lw;
-            entityConfig.layerHeight += prefix + lh;
-            entityConfig.layerDepth  += prefix + ld;
-            entityConfig.layerfieldWidth += prefix + fw;
-            entityConfig.layerfieldHeight += prefix + fh;
-            entityConfig.layerfieldDepth += prefix + fd;
-            entityConfig.layerPoolingWidth += prefix + pw;
-            entityConfig.layerPoolingHeight += prefix + ph;
-
-            // Auto calculate layer widths and heights
-            iw = lw / pw;
-            ih = lh / ph;
-            id = ld;
-        }
+        entityConfig.cache = true;
 
         Framework.SetConfig( entityName, entityConfig );
     }
+
+}
+
+
 
     // Input 1: 28 x 28 (x2)
     // Window: 5x5, stride 2, padding = 0
@@ -487,8 +493,6 @@ public class ConvolutionalCompetitiveLearningExpt extends CreateEntityMain {
     //  F10                           -- -- --
     //  F11                              -- -- --
     //     00 01 02 03 04 05 06 07 08 09 10 11 12 |
-
-}
 
 
 

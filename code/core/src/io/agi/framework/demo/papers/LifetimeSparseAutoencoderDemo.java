@@ -31,6 +31,8 @@ import io.agi.framework.persistence.models.ModelData;
 import java.util.ArrayList;
 
 /**
+ * TESTED 81.37% / 77.20% on 10k train, 1k test, batchsize = 50, lifetime = 2, sparsity=25.
+ *
  * Created by dave on 8/07/16.
  */
 public class LifetimeSparseAutoencoderDemo extends CreateEntityMain {
@@ -45,11 +47,11 @@ public class LifetimeSparseAutoencoderDemo extends CreateEntityMain {
 //        String trainingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small";
 //        String testingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small, /Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/testing-small";
 
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
-        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
-
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
 //        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
+        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train,/home/dave/workspace/agi.io/data/mnist/1k_test";
 
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
@@ -65,9 +67,8 @@ public class LifetimeSparseAutoencoderDemo extends CreateEntityMain {
         boolean cacheAllData = true;
         boolean terminateByAge = false;
         int terminationAge = -1;//50000;//25000;
-        int trainingEpochs = 2;
+        int trainingEpochs = 1;
         int testingEpochs = 1;
-        int imagesPerEpoch = 1000;
 
         // Define some entities
         String experimentName           = Framework.GetEntityName( "experiment" );
@@ -138,12 +139,7 @@ public class LifetimeSparseAutoencoderDemo extends CreateEntityMain {
         k = 15 for the second half of the epochs. */
         int widthCells = 32; // from the paper, 32x32= ~1000 was optimal on MNIST (but with a supervised output layer)
         int heightCells = 32;
-
-        int ageMin = 0;
-        int ageMax = ( trainingEpochs * imagesPerEpoch ) / 2; // reaches min sparsity at this age.
-
-        int sparsity = 25; // confirmed err = 1.35%
-        int sparsityLifetime = 5;
+        int sparsity = 25; // k sparse confirmed err = 1.35%
         // https://raw.githubusercontent.com/stephenbalaban/convnet/master/K-Sparse%20Autoencoder.ipynb
         // "AE.train(X,X,X_test,None,\n",
         //        "         dataset_size=60000,\n",
@@ -151,9 +147,11 @@ public class LifetimeSparseAutoencoderDemo extends CreateEntityMain {
         //        "         initial_weights=.01*nn.randn(AE.cfg.num_parameters),\n",
         //        "         momentum=.9,\n",
         //        "         learning_rate=.01,\n",
-        int batchSize = 128; // value from Ali's code.
-        float learningRate = 0.01f;// / (float)batchSize; // Note must reduce learning rate to prevent overshoot and numerical instability
-        float momentum = 0.5f; // confirmed
+//        int batchSize = 128; // value from Ali's code.
+        int batchSize = 50; // want small for faster training, but large enough to do lifetime sparsity
+        int sparsityLifetime = 2;
+        float learningRate = 0.01f;
+        float momentum = 0.5f; // 0.9 in paper
         float weightsStdDev = 0.01f; // confirmed. Sigma From paper. used at reset
 
         Framework.SetConfig( autoencoderName, "learningRate", String.valueOf( learningRate ) );

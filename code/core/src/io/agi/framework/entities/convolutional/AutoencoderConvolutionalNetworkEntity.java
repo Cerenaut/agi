@@ -37,7 +37,7 @@ import java.util.Collection;
  */
 public class AutoencoderConvolutionalNetworkEntity extends Entity {
 
-    public static final String ENTITY_TYPE = "competitive-learning-convolutional-network";
+    public static final String ENTITY_TYPE = "autoencoder-convolutional-network";
 
     // Network data
     public static final String DATA_INPUT = "input";
