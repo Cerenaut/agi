@@ -46,7 +46,8 @@ import java.util.ArrayList;
  * 99.99% / 94.1% --  depths 40/120   C1: 24x24 P1: 12x12 C2: 8x8 P2: 8x8
  *
  *
- * 85.03% / 80.79% -- Expt 2, big receptive fields, 1 layer
+ * 91.71% / 84.3% -- Expt 1, Auto-CNN
+ * 85.03% / 80.79% -- Expt 2, GNG-CNN big receptive fields, 1 layer
  * Created by dave on 12/08/17.
  */
 
@@ -101,7 +102,7 @@ public class ConvolutionalUnsupervisedExpt extends CreateEntityMain {
         int terminationAge = 1000;//50000;//25000;
 //        int trainingEpochs = 250;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
 //        int trainingEpochs = 50;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
-        int trainingEpochs = 1;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
+        int trainingEpochs = 1; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
         int testingEpochs = 1; // = 1 * 10 images * 30 repeats = 300
         boolean useAutoencoder = true;
         boolean useCompetitive = false;
@@ -269,22 +270,31 @@ public class ConvolutionalUnsupervisedExpt extends CreateEntityMain {
         }
 
 ////////////////////////////////////////////
+// DEBUG config
+//        int nbrLayers = 1;
+//        int[] layerDepths = { 32 };
+//        int[] layerPoolingSize = { 1 };
+//        int[] layerFieldSize = { 6 };
+//        int[] layerInputPaddings = { 0 };
+//        int[] layerInputStrides = { 3 };
+
+////////////////////////////////////////////
 // EXPT 1 OK
-//        int nbrLayers = 2;
-//        int[] layerDepths = { 8,64 };
-//        int[] layerPoolingSize = { 2,2 };
-//        int[] layerFieldSize = { 3,3 };
-//        int[] layerInputPaddings = { 0,0 };
-//        int[] layerInputStrides = { 1,1 };
+        int nbrLayers = 2;
+        int[] layerDepths = { 8,64 };
+        int[] layerPoolingSize = { 2,2 };
+        int[] layerFieldSize = { 3,3 };
+        int[] layerInputPaddings = { 0,0 };
+        int[] layerInputStrides = { 1,1 };
 
 ////////////////////////////////////////////
 // EXPT 2
-        int nbrLayers = 1;
-        int[] layerDepths = { 64 };
-        int[] layerPoolingSize = { 2 };
-        int[] layerFieldSize = { 6,6 };
-        int[] layerInputPaddings = { 0 };
-        int[] layerInputStrides = { 3 };
+//        int nbrLayers = 1;
+//        int[] layerDepths = { 64 };
+//        int[] layerPoolingSize = { 2 };
+//        int[] layerFieldSize = { 6,6 };
+//        int[] layerInputPaddings = { 0 };
+//        int[] layerInputStrides = { 3 };
 
 ////////////////////////////////////////////
 // AD-HOC

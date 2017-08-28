@@ -71,6 +71,55 @@ public abstract class ConvolutionalNetworkLayer {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Utility functions
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    public static Data GetReceptiveFieldInput(
+            ConvolutionalNetworkLayerConfig config,
+            Data layerInput,
+            int iw,
+            int ih,
+            int id,
+            int cx,
+            int cy
+    ) {
+
+        int kernelSize = config._fieldWidth * config._fieldHeight * config._fieldDepth;
+
+        Data receptiveFieldInput = new Data( DataSize.create( kernelSize ) );
+
+        // build the input receptive field and copy to classifier for this x,y, position in layer
+        // for each element in the field
+        for( int fy = 0; fy < config._fieldHeight; fy++ ) {
+            for( int fx = 0; fx < config._fieldWidth; fx++ ) {
+
+                // e.g. padding = 2 stride = 1
+                // image:         0  1  2
+                //                1  1  1
+                // padded:  0  0  1  1  1
+                //          0  1  2  3  4
+                //         -2 -1  0
+                // i = 0 := -2
+                int ix = cx * config._inputStride - config._inputPadding + fx;
+                int iy = cy * config._inputStride - config._inputPadding + fy;
+
+                if( ( ix < 0 ) || ( iy < 0 ) || ( ix >= iw ) || ( iy >= ih ) ) {
+                    continue; // add nothing, because outside image bounds
+                }
+
+                for( int iz = 0; iz < id; iz++ ) {
+
+                    int fz = iz;
+                    int inputOffset = ConvolutionData3d.getOffset( ix, iy, iz, iw, ih, id );
+                    int kernelOffset = ConvolutionData3d.getOffset( fx, fy, fz, config._fieldWidth, config._fieldHeight, config._fieldDepth );
+
+                    float inputValue = layerInput._values[ inputOffset ];
+                    receptiveFieldInput._values[ kernelOffset ] = inputValue;
+                } // input z
+
+            } // field x
+        } // field y
+
+        return receptiveFieldInput;
+    }
+
     public static Data invertPooling( ConvolutionalNetworkLayerConfig config, Data poolInput ) {
 
         Int3d convSize = config.getConvSize();
@@ -200,8 +249,9 @@ public abstract class ConvolutionalNetworkLayer {
     protected static void poolMax(
             ConvolutionalNetworkLayerConfig config,
             Data conv,
+            Data convMask,
             Data poolValue,
-            Data poolBest  ) {
+            Data poolBest ) {
 
         Int3d i3d = ConvolutionData3d.getSize( conv );
         int iw = i3d.getWidth();
@@ -215,20 +265,25 @@ public abstract class ConvolutionalNetworkLayer {
         int oh = Useful.DivideRoundUp( ih, ph );
         int od = id;
 
+        poolBest.set( 0f );
+
         for( int oy = 0; oy < oh; oy++ ) {
             for( int ox = 0; ox < ow; ox++ ) {
 
-                float zMax = 0f;
+                float zMax = -Float.MIN_VALUE;
                 int zMaxAt = 0;
 
                 for( int oz = 0; oz < od; ++oz ) {
 
-                    // neighbourhood inhibition
-                    // Note this allows other z to still fire. Unclear if this is what was intended.
+                    float maskValue = convMask._values[ oz ];
+                    if( maskValue < 1f ) {
+                        continue;
+                    }
+
                     int poolOffset = ConvolutionData3d.getOffset( ox, oy, oz, ow, oh, od );
 
                     // find max or some other operator within a spatial area
-                    float max = 0f;
+                    float max = -Float.MIN_VALUE;
 
                     for( int py = 0; py < ph; py++ ) {
                         for( int px = 0; px < pw; px++ ) {
@@ -248,70 +303,18 @@ public abstract class ConvolutionalNetworkLayer {
                         } // px
                     } // py
 
-                    if( max <= zMax ) {
+                    poolValue._values[ poolOffset ] = max; // max integrated value for concept z in the pooled input area.
+
+                    if( max >= zMax ) {
                         zMax = max;
                         zMaxAt = oz;
                     }
-
-                    poolValue._values[ poolOffset ] = max; // max integrated value for concept z in the pooled input area.
 
                 } // out z
 
                 int poolOffset = ConvolutionData3d.getOffset( ox, oy, zMaxAt, ow, oh, od );
 
                 poolBest._values[ poolOffset ] = 1f;
-            } // out x
-        } // out y
-    }
-
-    protected static void poolSum(
-            ConvolutionalNetworkLayerConfig config,
-            Data conv,
-            Data pool ) {
-        Int3d i3d = ConvolutionData3d.getSize( conv );
-        int iw = i3d.getWidth();
-        int ih = i3d.getHeight();
-        int id = i3d.getDepth();
-
-        int pw = config._poolingWidth;
-        int ph = config._poolingHeight;
-
-        int ow = Useful.DivideRoundUp( iw, pw );
-        int oh = Useful.DivideRoundUp( ih, ph );
-        int od = id;
-
-        for( int oy = 0; oy < oh; oy++ ) {
-            for( int ox = 0; ox < ow; ox++ ) {
-                for( int oz = 0; oz < od; ++oz ) {
-
-                    // neighbourhood inhibition
-                    // Note this allows other z to still fire. Unclear if this is what was intended.
-                    int poolOffset = ConvolutionData3d.getOffset( ox, oy, oz, ow, oh, od );
-
-                    // find max or some other operator within a spatial area
-                    float sum = 0f;
-
-                    for( int py = 0; py < ph; py++ ) {
-                        for( int px = 0; px < pw; px++ ) {
-
-                            int ix = ox * pw + px;
-                            int iy = oy * ph + py;
-
-                            if( ( ix >= iw ) || ( iy >= ih ) ) {
-                                continue;
-                            }
-
-                            int convolvedOffset = ConvolutionData3d.getOffset( ix, iy, oz, iw, ih, id );
-
-                            float convolvedValue = conv._values[ convolvedOffset ];
-                            sum += convolvedValue;
-
-                        } // px
-                    } // py
-
-                    pool._values[ poolOffset ] = sum; // max integrated value for concept z in the pooled input area.
-
-                } // out z
             } // out x
         } // out y
     }

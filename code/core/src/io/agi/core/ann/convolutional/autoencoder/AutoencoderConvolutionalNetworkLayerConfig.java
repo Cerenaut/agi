@@ -70,8 +70,8 @@ public class AutoencoderConvolutionalNetworkLayerConfig extends ConvolutionalNet
         _classifierConfig.setSparsity( sparsity );
 
         // set lifetime sparsity to account for the fact that batch includes many updates in different positions, and batch is correspondingly larger
-        int sparsityLifetime = acnc.getLayerValueInteger( AutoencoderConvolutionalNetworkConfig.KEY_LAYER_SPARSITY_LIFETIME, 0 );
-        int layerSparsityLifetime = sparsityLifetime * (int)areaCells;
-        _classifierConfig.setSparsityLifetime( layerSparsityLifetime );
+//        int sparsityLifetime = acnc.getLayerValueInteger( AutoencoderConvolutionalNetworkConfig.KEY_LAYER_SPARSITY_LIFETIME, 0 );
+//        int layerSparsityLifetime = sparsityLifetime * (int)areaCells;
+//        _classifierConfig.setSparsityLifetime( layerSparsityLifetime );
     }
 }

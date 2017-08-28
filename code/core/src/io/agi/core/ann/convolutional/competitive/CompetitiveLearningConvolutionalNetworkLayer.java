@@ -95,13 +95,13 @@ public class CompetitiveLearningConvolutionalNetworkLayer extends ConvolutionalN
 
         assert( id == _config._fieldDepth );
 
-        int kernelSize = _config._fieldWidth * _config._fieldHeight * _config._fieldDepth;
+//        int kernelSize = _config._fieldWidth * _config._fieldHeight * _config._fieldDepth;
 
         // for each model position (shifts by stride pixels each time)
         for( int cy = 0; cy < _config._height; cy++ ) {
             for( int cx = 0; cx < _config._width; cx++ ) {
 
-                Data classifierInput = new Data( DataSize.create( kernelSize ) );
+/*                Data classifierInput = new Data( DataSize.create( kernelSize ) );
 
                 // build the input receptive field and copy to classifier for this x,y, position in layer
                 // for each element in the field
@@ -133,7 +133,9 @@ public class CompetitiveLearningConvolutionalNetworkLayer extends ConvolutionalN
                         } // input z
 
                     } // field x
-                } // field y
+                } // field y */
+
+                Data classifierInput = GetReceptiveFieldInput( _config, input, iw, ih, id, cx, cy );
 
                 // classify...
                 _classifier.setInput( classifierInput );

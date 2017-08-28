@@ -81,7 +81,7 @@ public class AutoencoderConvolutionalNetworkLayer extends ConvolutionalNetworkLa
         // pool with min error? make that one active
         Data cellMask = new Data( _classifier._cellSpikes._dataSize );
         cellMask.set( 1f );
-        poolMin( _config, _convError, cellMask, _poolError, _poolBest );
+        poolMax( _config, _convBest, cellMask, _poolError, _poolBest );
     }
 
     public void convolve( boolean train ) {
@@ -96,15 +96,13 @@ public class AutoencoderConvolutionalNetworkLayer extends ConvolutionalNetworkLa
 
         assert( id == _config._fieldDepth );
 
-        int kernelSize = _config._fieldWidth * _config._fieldHeight * _config._fieldDepth;
-
-
+//        int kernelSize = _config._fieldWidth * _config._fieldHeight * _config._fieldDepth;
 
         // for each model position (shifts by stride pixels each time)
         for( int cy = 0; cy < _config._height; cy++ ) {
             for( int cx = 0; cx < _config._width; cx++ ) {
 
-                Data classifierInput = new Data( DataSize.create( kernelSize ) );
+/*                Data classifierInput = new Data( DataSize.create( kernelSize ) );
 
                 // build the input receptive field and copy to classifier for this x,y, position in layer
                 // for each element in the field
@@ -136,22 +134,25 @@ public class AutoencoderConvolutionalNetworkLayer extends ConvolutionalNetworkLa
                         } // input z
 
                     } // field x
-                } // field y
+                } // field y*/
+
+                Data classifierInput = GetReceptiveFieldInput( _config, input, iw, ih, id, cx, cy );
 
                 // classify...
                 _classifier.setInput( classifierInput );
                 _classifier.update( train );
 
                 // foreach( model in the kernel ): copy classifier output
-                HashSet< Integer > spikesKA = _classifier._cellSpikes.indicesMoreThan( 0f );
+                HashSet< Integer > spikes = _classifier._cellSpikes.indicesMoreThan( 0f );
 
                 for( int cz = 0; cz < _config._depth; ++cz ) {
 
                     int convOffset = ConvolutionData3d.getOffset( cx, cy, cz, _config._width, _config._height, _config._depth );
 
                     float bestValue = 0f;
-                    if( spikesKA.contains( cz ) ) {
-                        bestValue = 1f;
+                    if( spikes.contains( cz ) ) {
+                        float hiddenLayerValue = _classifier._cellWeightedSum._values[ cz ];
+                        bestValue = hiddenLayerValue;
                     }
 
                     _convError._values[ convOffset ] = _classifier._cellErrors._values[ cz ];

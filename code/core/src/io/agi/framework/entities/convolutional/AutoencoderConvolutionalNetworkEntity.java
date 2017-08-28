@@ -50,20 +50,20 @@ public class AutoencoderConvolutionalNetworkEntity extends Entity {
     public static final String DATA_LAYER_POOL_ERROR_ = "layer-pool-error-";
     public static final String DATA_LAYER_POOL_BEST_ = "layer-pool-best-";
 
-    public static final String DATA_LAYER_WEIGHTS_ = "layer-weights";
-    public static final String DATA_LAYER_BIASES1_ = "layer-biases1";
-    public static final String DATA_LAYER_BIASES2_ = "layer-biases2";
-    public static final String DATA_LAYER_WEIGHTS_VELOCITY_ = "layer-weights-velocity";
-    public static final String DATA_LAYER_BIASES1_VELOCITY_ = "layer-biases1-velocity";
-    public static final String DATA_LAYER_BIASES2_VELOCITY_ = "layer-biases2-velocity";
+    public static final String DATA_LAYER_WEIGHTS_ = "layer-weights-";
+    public static final String DATA_LAYER_BIASES1_ = "layer-biases1-";
+    public static final String DATA_LAYER_BIASES2_ = "layer-biases2-";
+    public static final String DATA_LAYER_WEIGHTS_VELOCITY_ = "layer-weights-velocity-";
+    public static final String DATA_LAYER_BIASES1_VELOCITY_ = "layer-biases1-velocity-";
+    public static final String DATA_LAYER_BIASES2_VELOCITY_ = "layer-biases2-velocity-";
 
-    public static final String DATA_LAYER_BATCH_OUTPUT_OUTPUT_ = "layer-batch-output-output";
-    public static final String DATA_LAYER_BATCH_OUTPUT_INPUT_ = "layer-batch-output-input";
-    public static final String DATA_LAYER_BATCH_OUTPUT_INPUT_LIFETIME_ = "layer-batch-output-input-lifetime";
-    public static final String DATA_LAYER_BATCH_OUTPUT_ERRORS_ = "layer-batch-output-errors";
-    public static final String DATA_LAYER_BATCH_HIDDEN_INPUT_ = "layer-batch-hidden-input";
-    public static final String DATA_LAYER_BATCH_HIDDEN_WEIGHTED_SUM_ = "layer-batch-hidden-weighted-sum";
-    public static final String DATA_LAYER_BATCH_HIDDEN_ERRORS_ = "layer-batch-hidden-errors";
+    public static final String DATA_LAYER_BATCH_OUTPUT_OUTPUT_ = "layer-batch-output-output-";
+    public static final String DATA_LAYER_BATCH_OUTPUT_INPUT_ = "layer-batch-output-input-";
+    public static final String DATA_LAYER_BATCH_OUTPUT_INPUT_LIFETIME_ = "layer-batch-output-input-lifetime-";
+    public static final String DATA_LAYER_BATCH_OUTPUT_ERRORS_ = "layer-batch-output-errors-";
+    public static final String DATA_LAYER_BATCH_HIDDEN_INPUT_ = "layer-batch-hidden-input-";
+    public static final String DATA_LAYER_BATCH_HIDDEN_WEIGHTED_SUM_ = "layer-batch-hidden-weighted-sum-";
+    public static final String DATA_LAYER_BATCH_HIDDEN_ERRORS_ = "layer-batch-hidden-errors-";
 
     public AutoencoderConvolutionalNetworkEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );

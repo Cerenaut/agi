@@ -74,8 +74,12 @@ public class ConvolutionalNetworkEntityConfig extends EntityConfig {
             int fw = layerFieldSize[ layer ];
             int fh = fw;
             int fd = id;
-            int lw = iw - fw +1;//layerWidths[ layer ];;
-            int lh = ih - fh +1;//layerHeights[ layer ];;
+
+//            int lw = iw - fw +1;//layerWidths[ layer ];;
+//            int lh = ih - fh +1;//layerHeights[ layer ];;
+
+            int lw = getLayerSize( iw, layerInputPadding, layerInputStride, fw );
+            int lh = getLayerSize( ih, layerInputPadding, layerInputStride, fh );
 
             // Geometric parameters:
             entityConfig.layerInputPadding += prefix + layerInputPadding;
@@ -94,6 +98,37 @@ public class ConvolutionalNetworkEntityConfig extends EntityConfig {
             ih = lh / ph;
             id = ld;
         }
+    }
 
+    public static int getLayerSize( int inputSize, int inputPadding, int inputStride, int fieldSize ) {
+        //int totalInputsize = inputSize + ( inputPadding * 2 ); // pad both sides
+
+        int layerSize = 0; // at least 1
+        boolean enlarge = true;
+
+        while( enlarge ) {
+
+            ++layerSize; // so at least 1
+
+            int fieldStart = (layerSize-1) * inputStride - inputPadding;
+            int fieldEnd = fieldStart + fieldSize; // last included pixel +1
+
+            if( fieldEnd >= inputSize ) {
+                enlarge = false;
+            }
+        }
+
+        return layerSize;
     }
 }
+
+//     00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 |
+//  F1 -- -- -- -- -- --                                                                     |
+//  F2          -- -- -- -- -- --                                                            |
+//  F3                   -- -- -- -- -- --                                                   |
+//  F4                            -- -- -- -- -- --                                          |
+//  F5                                     -- -- -- -- -- --                                 |
+//  F6                                              -- -- -- -- -- --                        |
+//  F7                                                       -- -- -- -- -- --
+//  F8                                                                -- -- -- -- -- --
+//  F9                                                                         -- -- -- -- xx xx
