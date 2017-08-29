@@ -46,6 +46,10 @@
       <input type="number" id="interval" style="display:inline;width:5em;" class="" placeholder="Update interval" value="500"/>
       <input type="button" id="pause" class="btn btn-sm btn-success" style="" onclick="Loop.togglePause();" value="Resume"/>
       <input type="button" id="update" class="btn btn-sm btn-success" style="" onclick="Loop.update();" value="Refresh"/>
+      <label for="offset">Offset</label>
+      <input type="number" id="offset" style="display:inline;width:5em;" class="" placeholder="Offset" value="0"/>
+      <label for="length">Length</label>
+      <input type="number" id="length" style="display:inline;width:5em;" class="" placeholder="Length" value="0"/>
       <label for="decode">Decode?</label>
       <input id="decode" type="checkbox" name="decode" checked />
       <input type="button" id="persist" class="btn btn-sm btn-danger" style="" onclick="Data.persist();" value="Persist"/>

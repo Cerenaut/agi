@@ -40,7 +40,34 @@ var Framework = {
     Framework.doAjaxJson( suffix, callback, verb );
   },
 
+  getDataSize3d : function( data ) {
+
+    // get explicit size in 2d, or return a 1d value.
+    var w = 1; 
+    var h = 1; 
+    var d = 1; 
+    var dataSizes = data.sizes;
+
+    for( var i = 0; i < dataSizes.labels.length; ++i ) {
+      var label = dataSizes.labels[ i ];
+      if( label == "x" ) w = dataSizes.sizes[ i ];
+      if( label == "y" ) h = dataSizes.sizes[ i ];
+      if( label == "z" ) d = dataSizes.sizes[ i ];
+    }
+
+    if( ( w * h * d ) < data.elements.length ) {
+      w = data.elements.length;
+      h = 1;
+      d = 1;
+    }
+
+    var size = { w: w, h: h, d: d };
+    return size;
+  },
+
   getDataSize : function( data ) {
+
+    // get explicit size in 2d, or return a 1d value.
     var w = 1; 
     var h = 1; 
     var dataSizes = data.sizes;

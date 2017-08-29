@@ -36,6 +36,7 @@
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
 
     <div class="agi-div-background" style="">
+
      <div id="controls" style="padding:2px;text-align:center;">
       <label for="host">Node</label>
       <input type="text" id="host" style="" class="" placeholder="Host" value="localhost"/>
@@ -52,9 +53,11 @@
       <label for="result">Result</label>
       <input type="text" id="result" style="display:inline;" class="" placeholder="n/a" value=""/>
      </div>
-     <div id="container" style="width: 1280px; height: 800px; margin: 0 auto">
+
+     <div id="table" style="width: 1280px; height: 800px; margin: 0 auto">
       <table style="width:100%;">
        <tr><th style="text-align:right;padding:5px;">Statistic</th><th style="text-align:left;padding:5px;">Value</th></tr>
+       <tr><td style="text-align:right;padding:5px;">Dimensions</td><td style="text-align:left;padding:5px;" id="data-size"></td></tr>
        <tr><td style="text-align:right;padding:5px;">Volume</td><td style="text-align:left;padding:5px;" id="volume"></td></tr>
        <tr><td style="text-align:right;padding:5px;">Sum</td><td style="text-align:left;padding:5px;" id="sum"></td></tr>
        <tr><td style="text-align:right;padding:5px;">Min</td><td style="text-align:left;padding:5px;" id="min"></td></tr>

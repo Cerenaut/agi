@@ -45,6 +45,8 @@ var Data = {
     var maxElements = 1;
 
     var decode = $( "#type" ).val();
+    var elementsOffset = $( "#offset" ).val();
+    var elementsLength = $( "#length" ).val();
 
     for( var d = 0; d < datas.length; ++d ) {
       var data = datas[ d ]; // TODO generalize to multiple responses.
@@ -52,6 +54,10 @@ var Data = {
         Framework.decode( data );
       }
 
+      if( ( elementsOffset != 0 ) || ( elementsLength != 0 ) ) {
+        var maxOffset = Math.min( elementsOffset + elementsLength, data.elements.elements.length -1 );
+        data.elements.elements = data.elements.elements.slice( elementsOffset, maxOffset );
+      }
       textAreaValue = textAreaValue + JSON.stringify( data, null, 2 ) + "\n\n";
     }
 
@@ -67,8 +73,17 @@ var Data = {
       var newValue = oldValue + value;
       $("#data").val( newValue ); 
     }
+    else if( key == "offset" ) {
+      $("#offset").val( value ); 
+      $("#offset").trigger('mouseup');
+    }
+    else if( key == "length" ) {
+      $("#length").val( value ); 
+      $("#length").trigger('mouseup');
+    }
     else if( key == "interval" ) {
       $("#interval").val( value ); 
+      $("#interval").trigger('mouseup');
     }
     else if( key == "start" ) {
       Data.resume();
