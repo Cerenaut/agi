@@ -20,18 +20,21 @@
 package io.agi.framework.entities.stdp;
 
 import io.agi.framework.EntityConfig;
+import io.agi.framework.Framework;
 
 /**
- * Created by dave on 5/05/17.
+ * Created by dave on 9/08/17.
  */
-public class ConvolutionalSpikeEncoderEntityConfig extends EntityConfig {
+public class LocalNormalizationEntityConfig extends EntityConfig {
 
-    public float spikeDensity = 0f; // per step fraction of the output volume that will spike on each step.
-//    public float spikeThreshold = 0f;
-    public boolean clear = false;
-    public int stepsSinceClear = 0;
+    public int radius;
 
-    public String clearFlagEntityName = "";
-    public String clearFlagConfigPath = "";
+    public static void Set( String entityName, int radius ) {
+        LocalNormalizationEntityConfig entityConfig = new LocalNormalizationEntityConfig();
+        entityConfig.cache = true;
+        entityConfig.radius = radius;
+
+        Framework.SetConfig( entityName, entityConfig );
+    }
 
 }

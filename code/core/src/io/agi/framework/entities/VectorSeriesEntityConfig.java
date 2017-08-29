@@ -54,4 +54,18 @@ public class VectorSeriesEntityConfig extends EntityConfig {
         Framework.SetConfig( entityName, entityConfig );
     }
 
+    public static void Set( String entityName, int periodAccumulate, int period, String encoding, String inputEntityName, String inputEntityDataSuffix ) {
+        VectorSeriesEntityConfig entityConfig = new VectorSeriesEntityConfig();
+
+        entityConfig.cache = true;
+        entityConfig.periodAccumulate = periodAccumulate;
+//        entityConfig.flushPeriod = -1;
+        entityConfig.period = period;
+        entityConfig.countAccumulate = 0;
+        entityConfig.encoding = encoding;
+
+        Framework.SetConfig( entityName, entityConfig );
+        Framework.SetDataReference( entityName, VectorSeriesEntity.INPUT, inputEntityName, inputEntityDataSuffix );
+    }
+
 }

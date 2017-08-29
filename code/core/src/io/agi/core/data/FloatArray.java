@@ -68,6 +68,25 @@ public class FloatArray {
         return ( _values != null );
     }
 
+    /**
+     * Cycles the whole vector n steps. n may be positive or negative.
+     * @param n
+     */
+    public void rotate( int n ) {
+        FloatArray temp = new FloatArray( this ); // deep copy
+
+        for( int i = 0; i < _values.length; ++i ) {
+            int i2 = i + n;
+            while( i2 < 0 ) {
+                i2 += _values.length;
+            }
+            while( i2 >= _values.length ) {
+                i2 -= _values.length;
+            }
+            _values[ i2 ] = temp._values[ i ];
+        }
+    }
+
     public boolean check() {
 
         if( _values == null ) {
@@ -482,6 +501,10 @@ public class FloatArray {
         return h;
     }
 
+    /**
+     * Calcualtes the min, max range as a pair of values.
+     * @return
+     */
     public Point.Float getMinMax() {
 
         float min = Float.MAX_VALUE;

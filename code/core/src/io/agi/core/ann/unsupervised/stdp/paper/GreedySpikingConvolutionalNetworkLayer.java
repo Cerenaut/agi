@@ -17,7 +17,7 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.core.ann.unsupervised;
+package io.agi.core.ann.unsupervised.stdp.paper;
 
 import io.agi.core.data.*;
 import io.agi.core.math.Useful;
@@ -25,10 +25,10 @@ import io.agi.core.math.Useful;
 /**
  * Created by dave on 1/05/17.
  */
-public class SpikingConvolutionalNetworkLayer {
+public class GreedySpikingConvolutionalNetworkLayer {
 
 
-    public SpikingConvolutionalNetworkLayerConfig _config;
+    public GreedySpikingConvolutionalNetworkLayerConfig _config;
 
     public int _layer = 0;
 
@@ -45,11 +45,11 @@ public class SpikingConvolutionalNetworkLayer {
     public Data _poolInhibition;
     public Data _poolInput;
 
-    public SpikingConvolutionalNetworkLayer() {
+    public GreedySpikingConvolutionalNetworkLayer() {
 
     }
 
-    public void setup( SpikingConvolutionalNetworkLayerConfig config, int layer ) {
+    public void setup( GreedySpikingConvolutionalNetworkLayerConfig config, int layer ) {
         _config = config;
         _layer = layer;
 
@@ -128,6 +128,7 @@ public class SpikingConvolutionalNetworkLayer {
     public void update( boolean train, boolean maxPooling ) {
         // Check whether its right to reset these spikes, because they inhibit other spikes so maybe I need to keep them.
         // They do need to be reset each step - we remember the inhibition, but these spikes are only for one time step.
+        System.err.println( "Layer: " + this._layer + " Train: " + train + " maxPooling: " + maxPooling );
         _convSpikes.set( 0f );
         _poolSpikes.set( 0f );
 
@@ -153,7 +154,7 @@ public class SpikingConvolutionalNetworkLayer {
     }
 
     public static void invert(
-            SpikingConvolutionalNetworkLayerConfig config,
+            GreedySpikingConvolutionalNetworkLayerConfig config,
             Data kernelWeights,
             Data poolValues,
             Data convInverse,
@@ -306,7 +307,7 @@ public class SpikingConvolutionalNetworkLayer {
         }
     }
 
-    public static void train( SpikingConvolutionalNetworkLayerConfig config, Data kernelWeights, Data inputSpikeTrace, int cx, int cy, int cz ) {
+    public static void train( GreedySpikingConvolutionalNetworkLayerConfig config, Data kernelWeights, Data inputSpikeTrace, int cx, int cy, int cz ) {
         // train convolutional cells only
         // i = postsynaptic (output)
         // j = presynaptic (input)
@@ -395,7 +396,7 @@ public class SpikingConvolutionalNetworkLayer {
     }
 
     public static void integrate(
-            SpikingConvolutionalNetworkLayerConfig config,
+            GreedySpikingConvolutionalNetworkLayerConfig config,
             Data kernelWeights,
             Data inputTrace,
             Data convSums,
@@ -440,6 +441,8 @@ public class SpikingConvolutionalNetworkLayer {
                     continue; // no spike possible, due to inhibition
                 }
 
+                // TODO FIX for layer 2, it never trains cos there are no output spikes.
+
                 if( czMax >= config._integrationThreshold ) { // over threshold
 
                     int convolvedOffset = ConvolutionData3d.getOffset( cx, cy, czMaxAt, config._width, config._height, config._depth );
@@ -457,6 +460,8 @@ public class SpikingConvolutionalNetworkLayer {
 //                                inhibitionOffset = ConvolutionData3d.getOffset( cx, cy, cz, config._width, config._height, config._depth );
 //                                convInhibition._values[ inhibitionOffset ] = 1f;
 //                            }
+
+                    // TODO FIX It never trains the last layer.
 
                     // on output spike, we can train:
                     if( train ) {
@@ -497,7 +502,7 @@ public class SpikingConvolutionalNetworkLayer {
      * @return
      */
     protected static void poolSpike(
-            SpikingConvolutionalNetworkLayerConfig config,
+            GreedySpikingConvolutionalNetworkLayerConfig config,
             Data convSpikes,
             Data poolSpikes,
             Data poolInhibition ) {
@@ -564,7 +569,7 @@ public class SpikingConvolutionalNetworkLayer {
     }
 
     protected static void poolMax(
-            SpikingConvolutionalNetworkLayerConfig config,
+            GreedySpikingConvolutionalNetworkLayerConfig config,
             Data convIntegrated,
             Data poolMax ) {
         Int3d i3d = ConvolutionData3d.getSize( convIntegrated );
@@ -608,7 +613,7 @@ public class SpikingConvolutionalNetworkLayer {
                         } // px
                     } // py
 
-                    poolMax._values[ poolOffset ] = max;
+                    poolMax._values[ poolOffset ] = max; // max integrated value for concept z in the pooled input area.
 
                 } // out z
             } // out x
@@ -616,7 +621,7 @@ public class SpikingConvolutionalNetworkLayer {
 
     }
 
-    protected static void convolve( SpikingConvolutionalNetworkLayerConfig config, Data kernelWeights, Data inputSpikes, Data convSums ) {
+    protected static void convolve( GreedySpikingConvolutionalNetworkLayerConfig config, Data kernelWeights, Data inputSpikes, Data convSums ) {
 
         Int3d i3d = ConvolutionData3d.getSize( inputSpikes );
         int iw = i3d.getWidth();

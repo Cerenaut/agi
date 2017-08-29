@@ -96,27 +96,27 @@ public class ClassificationAnalysisEntity extends Entity {
         config.samples = ca.getSampleCount();
 
         config.sortedLabels.clear();
-        for( Float label : ca._sortedLabels ) {
-            config.sortedLabels.add( String.format( "%.0f", label ) );
+        for( Integer label : ca._sortedLabels ) {
+            config.sortedLabels.add( String.format( "%d", label ) );
         }
 
         config.confusionMatrix.clear();
         config.confusionMatrix.add( "" ); // first col, labels, is null
-        for( Float label : ca._sortedLabels ) {
+        for( Integer label : ca._sortedLabels ) {
             config.confusionMatrix.add( String.valueOf( label ) ); // first row is labels
         }
-        for( Float trueLabel : ca._sortedLabels ) {
+        for( Integer trueLabel : ca._sortedLabels ) {
             config.confusionMatrix.add( String.valueOf( trueLabel ) ); // first col, labels, is null
-            HashMap< Float, Integer > trueLabelMap = ca._confusionMatrix.get( trueLabel );
-            for( Float predictedLabel : ca._sortedLabels ) {
+            HashMap< Integer, Integer > trueLabelMap = ca._confusionMatrix.get( trueLabel );
+            for( Integer predictedLabel : ca._sortedLabels ) {
                 config.confusionMatrix.add( String.valueOf( trueLabelMap.get( predictedLabel ) ) );
             }
         }
 
         // F score and other stats, per label
         config.labelStatistics.clear();
-        for( Float label : ca._sortedLabels ) {
-            ClassificationAnalysis.ClassificationStats labelStats = ca.getClassificationStats(label);
+        for( Integer label : ca._sortedLabels ) {
+            ClassificationAnalysis.ClassificationStats labelStats = ca.getClassificationStats( label );
             // TODO: these should be declared with the interfaces, not concrete classes
             // TODO: why use strings?
             HashMap< String, String > labelStatMap = new HashMap<>();

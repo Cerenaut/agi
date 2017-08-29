@@ -17,72 +17,68 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.core.ann.unsupervised;
+package io.agi.core.ann.convolutional;
 
-import io.agi.core.data.ConvolutionData3d;
+import io.agi.core.data.DataSize;
 import io.agi.core.data.Int3d;
 import io.agi.core.math.Useful;
 
 import java.util.Random;
 
 /**
- * Created by dave on 1/05/17.
+ * Created by dave on 11/08/17.
  */
-public class SpikingConvolutionalNetworkLayerConfig {
-
-    // http://cs231n.github.io/convolutional-networks/
-    // 3d input (e.g. x,y,{rgb})
-    // 3d output (w,h,d)
-    // depth, stride and zero-padding
-    // depth = z, a param
-    // stride = stride of the filter
-    // zero-padding (like an offset)
-    // filters always extend through the full depth of the input volume. For example, if the input is [32x32x3] then
-    // doing 1x1 convolutions would effectively be doing 3-dimensional dot products (since the input depth is 3 channels).
-
-    //Synaptic weights of convolutional neurons initi-
-    //ate with random values drown from a normal dis-
-    //tribution with the mean of 0.8 and STD of 0.05
+public class ConvolutionalNetworkLayerConfig {
 
     public Random _r;
-    public int _trainingAgeStart = 0;
-    public int _trainingAgeEnd   = 0;
 
-    public float _weightStdDev;
-    public float _weightsMean;
+    public int _layer;
 
-    public float _learningRatePos;
-    public float _learningRateNeg;
-
-    public float _integrationThreshold;
-
+    // Input Dimensions
     public int _inputPadding;
     public int _inputStride;
 
+    // Layer Dimensions
     public int _width;
     public int _height;
     public int _depth;
 
+    public int _poolingWidth;
+    public int _poolingHeight;
+
+    // Receptive Field Dimensions
     public int _fieldWidth;
     public int _fieldHeight;
     public int _fieldDepth;
 
-    public int _poolingWidth;
-    public int _poolingHeight;
+    public ConvolutionalNetworkLayerConfig() {
 
-    public SpikingConvolutionalNetworkLayerConfig() {
+    }
 
+    public void setup( ConvolutionalNetworkConfig config, int layer ) {
+
+        int inputPadding = config.getLayerInputPadding( layer );
+        int inputStride = config.getLayerInputStride( layer );
+        int layerWidth = config.getLayerWidth( layer );
+        int layerHeight = config.getLayerHeight( layer );
+        int layerDepth = config.getLayerDepth( layer );
+        int fieldWidth = config.getLayerFieldWidth( layer );
+        int fieldHeight = config.getLayerFieldHeight( layer );
+        int fieldDepth = config.getLayerFieldDepth( layer );
+        int poolingWidth = config.getLayerPoolingWidth( layer );
+        int poolingHeight = config.getLayerPoolingHeight( layer );
+
+        setup(
+            config._r, layer,
+            inputPadding, inputStride,
+            layerWidth, layerHeight, layerDepth,
+            fieldWidth, fieldHeight, fieldDepth,
+            poolingWidth, poolingHeight );
     }
 
     public void setup(
             Random r,
-            int trainingAgeStart,
-            int trainingAgeEnd,
-            float weightStdDev,
-            float weightsMean,
-            float learningRatePos,
-            float learningRateNeg,
-            float integrationThreshold,
+            int layer,
             int inputPadding,
             int inputStride,
             int width,
@@ -93,34 +89,35 @@ public class SpikingConvolutionalNetworkLayerConfig {
             int fieldDepth,
             int poolingWidth,
             int poolingHeight ) {
+
         _r = r;
-        _trainingAgeStart = trainingAgeStart;
-        _trainingAgeEnd = trainingAgeEnd;
-        _weightStdDev = weightStdDev;
-        _weightsMean = weightsMean;
-        _learningRatePos = learningRatePos;
-        _learningRateNeg = learningRateNeg;
-        _integrationThreshold = integrationThreshold;
+        _layer = layer;
+
         _inputPadding = inputPadding;
         _inputStride = inputStride;
+
         _width = width;
         _height = height;
         _depth = depth;
+        _poolingWidth = poolingWidth;
+        _poolingHeight = poolingHeight;
+
         _fieldWidth = fieldWidth;
         _fieldHeight = fieldHeight;
         _fieldDepth = fieldDepth;
-        _poolingWidth = poolingWidth;
-        _poolingHeight = poolingHeight;
     }
 
-    public boolean isTrainingAge( int age ) {
-        if( age < _trainingAgeStart ) {
-            return false;
-        }
-        if( age >= _trainingAgeEnd ) {
-            return false;
-        }
-        return true;
+    public DataSize getConvDataSize() {
+        DataSize convDataSize = DataSize.create( _width, _height, _depth );
+        return convDataSize;
+    }
+
+    public DataSize getPoolDataSize() {
+        int pw = getPooledWidth();
+        int ph = getPooledHeight();
+        int pd = getPooledDepth();
+        DataSize poolDataSize = DataSize.create( pw, ph, pd );
+        return poolDataSize;
     }
 
     public int getPooledWidth() {
@@ -150,5 +147,4 @@ public class SpikingConvolutionalNetworkLayerConfig {
 
         return i3d;
     }
-
 }

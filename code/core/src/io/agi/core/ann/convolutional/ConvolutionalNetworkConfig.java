@@ -17,7 +17,7 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.core.ann.unsupervised;
+package io.agi.core.ann.convolutional;
 
 import io.agi.core.ann.NetworkConfig;
 import io.agi.core.orm.ObjectMap;
@@ -26,12 +26,13 @@ import java.util.ArrayList;
 import java.util.Random;
 
 /**
- * Created by dave on 1/05/17.
+ * Created by dave on 11/08/17.
  */
-public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
+public class ConvolutionalNetworkConfig extends NetworkConfig {
 
+    // Method of describing the geometry of a convolutional network:
     // http://cs231n.github.io/convolutional-networks/
-    // 3d input (e.g. x,y,{rgb})
+    // 3d input (e.g. x,y,z={rgb})
     // 3d output (w,h,d)
     // depth, stride and zero-padding
     // depth = z, a param
@@ -40,46 +41,29 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
     // filters always extend through the full depth of the input volume. For example, if the input is [32x32x3] then
     // doing 1x1 convolutions would effectively be doing 3-dimensional dot products (since the input depth is 3 channels).
 
-    //Synaptic weights of convolutional neurons initi-
-    //ate with random values drown from a normal dis-
-    //tribution with the mean of 0.8 and STD of 0.05
-
-    public static final String KEY_WEIGHTS_STD_DEV = "weights-std-dev";
-    public static final String KEY_WEIGHTS_MEAN = "weights-mean";
-    public static final String KEY_LEARNING_RATE_POS = "learning-rate-pos";
-    public static final String KEY_LEARNING_RATE_NEG = "learning-rate-neg";
-
-    public static final String KEY_AGE = "age";
-
     public static final String KEY_LAYERS = "layers";
-    public static final String KEY_LAYER_TRAINING_AGE = "layer-training-age";
-    public static final String KEY_LAYER_INTEGRATION_THRESHOLD = "layer-integration-threshold";
+
     public static final String KEY_LAYER_INPUT_PADDING = "layer-input-padding";
     public static final String KEY_LAYER_INPUT_STRIDE = "layer-input-stride";
     public static final String KEY_LAYER_WIDTH = "layer-width";
     public static final String KEY_LAYER_HEIGHT = "layer-height";
     public static final String KEY_LAYER_DEPTH = "layer-depth";
-    public static final String KEY_LAYER_FIELD_WIDTH = "layer-field-width";
-    public static final String KEY_LAYER_FIELD_HEIGHT = "layer-field-height";
-    public static final String KEY_LAYER_FIELD_DEPTH = "layer-field-depth";
+
     public static final String KEY_LAYER_POOLING_WIDTH = "layer-pooling-width";
     public static final String KEY_LAYER_POOLING_HEIGHT = "layer-pooling-height";
 
-    public SpikingConvolutionalNetworkConfig() {
+    public static final String KEY_LAYER_FIELD_WIDTH = "layer-field-width";
+    public static final String KEY_LAYER_FIELD_HEIGHT = "layer-field-height";
+    public static final String KEY_LAYER_FIELD_DEPTH = "layer-field-depth";
+
+    public ConvolutionalNetworkConfig() {
 
     }
 
     public void setup(
             ObjectMap om, String name, Random r,
-            int age,
-            float weightsStdDev,
-            float weightsMean,
-            float learningRatePos,
-            float learningRateNeg,
-//            float integrationThreshold,
             int nbrLayers,
-            String layerTrainingAges,
-            String layerIntegrationThresholds,
+
             String layerInputPadding,
             String layerInputStride,
             String layerWidth,
@@ -90,19 +74,11 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
             String layerfieldDepth,
             String layerPoolingWidth,
             String layerPoolingHeight
-            ) {
+    ) {
         super.setup( om, name, r );
 
-        setAge( age );
-        setWeightsStdDev( weightsStdDev );
-        setWeightsMean( weightsMean );
-        setLearningRatePos( learningRatePos );
-        setLearningRateNeg( learningRateNeg );
-        //setIntegrationThreshold( integrationThreshold );
-
         setNbrLayers( nbrLayers );
-        setLayerValues( KEY_LAYER_TRAINING_AGE, layerTrainingAges );
-        setLayerValues( KEY_LAYER_INTEGRATION_THRESHOLD, layerIntegrationThresholds );
+
         setLayerValues( KEY_LAYER_INPUT_PADDING, layerInputPadding );
         setLayerValues( KEY_LAYER_INPUT_STRIDE, layerInputStride );
         setLayerValues( KEY_LAYER_WIDTH, layerWidth );
@@ -118,19 +94,11 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
     public void copyFrom( NetworkConfig nc, String name ) {
         super.copyFrom( nc, name );
 
-        SpikingConvolutionalNetworkConfig c = ( SpikingConvolutionalNetworkConfig ) nc;
-
-        setAge( c.getAge() );
-        setWeightsStdDev( c.getWeightsStdDev() );
-        setWeightsMean( c.getWeightsMean() );
-        setLearningRatePos( c.getLearningRatePos() );
-        setLearningRateNeg( c.getLearningRateNeg() );
-//        setIntegrationThreshold( c.getIntegrationThreshold() );
+        ConvolutionalNetworkConfig c = ( ConvolutionalNetworkConfig ) nc;
 
         setNbrLayers( c.getNbrLayers() );
-        setLayerValues( KEY_LAYER_TRAINING_AGE, c.getLayerValues( KEY_LAYER_TRAINING_AGE ) );
+
         setLayerValues( KEY_LAYER_INPUT_PADDING, c.getLayerValues( KEY_LAYER_INPUT_PADDING ) );
-        setLayerValues( KEY_LAYER_INTEGRATION_THRESHOLD, c.getLayerValues( KEY_LAYER_INTEGRATION_THRESHOLD ) );
         setLayerValues( KEY_LAYER_INPUT_STRIDE, c.getLayerValues( KEY_LAYER_INPUT_STRIDE ) );
         setLayerValues( KEY_LAYER_WIDTH, c.getLayerValues( KEY_LAYER_WIDTH ) );
         setLayerValues( KEY_LAYER_HEIGHT, c.getLayerValues( KEY_LAYER_HEIGHT ) );
@@ -142,67 +110,9 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
         setLayerValues( KEY_LAYER_POOLING_HEIGHT, c.getLayerValues( KEY_LAYER_POOLING_HEIGHT ) );
     }
 
-    public float getIntegrationThreshold( int layer ) {
-//        Float r = _om.getFloat( getKey( KEY_INTEGRATION_THRESHOLD ) );
-        float r = Float.valueOf( getLayerValue( KEY_LAYER_INTEGRATION_THRESHOLD, layer ) );
-        return r;
-    }
-
-    public void setIntegrationThreshold( int layer, float r ) {
-        setLayerValue( KEY_LAYER_INTEGRATION_THRESHOLD, layer, String.valueOf( r ), "0" );
-//        _om.put( getKey( KEY_INTEGRATION_THRESHOLD ), r );
-    }
-
-    public float getWeightsMean() {
-        Float r = _om.getFloat( getKey( KEY_WEIGHTS_MEAN ) );
-        return r.floatValue();
-    }
-
-    public void setWeightsMean( float r ) {
-        _om.put( getKey( KEY_WEIGHTS_MEAN ), r );
-    }
-
-    public float getWeightsStdDev() {
-        Float r = _om.getFloat( getKey( KEY_WEIGHTS_STD_DEV ) );
-        return r.floatValue();
-    }
-
-    public void setWeightsStdDev( float r ) {
-        _om.put( getKey( KEY_WEIGHTS_STD_DEV ), r );
-    }
-
-    public float getLearningRatePos() {
-        Float r = _om.getFloat( getKey( KEY_LEARNING_RATE_POS ) );
-        return r.floatValue();
-    }
-
-    public void setLearningRatePos( float r ) {
-        _om.put( getKey( KEY_LEARNING_RATE_POS ), r );
-    }
-
-    public float getLearningRateNeg() {
-        Float r = _om.getFloat( getKey( KEY_LEARNING_RATE_NEG ) );
-        return r.floatValue();
-    }
-
-    public void setLearningRateNeg( float r ) {
-        _om.put( getKey( KEY_LEARNING_RATE_NEG ), r );
-    }
-
-    public int getAge() {
-        Integer n = _om.getInteger( getKey( KEY_AGE ) );
-        return n.intValue();
-    }
-
-
     public int getNbrLayers() {
         Integer n = _om.getInteger( getKey( KEY_LAYERS ) );
         return n.intValue();
-    }
-
-    public int getLayerTrainingAge( int layer ) {
-        int n = Integer.valueOf( getLayerValue( KEY_LAYER_TRAINING_AGE, layer ) );
-        return n;
     }
 
     public int getLayerInputPadding( int layer ) {
@@ -259,10 +169,6 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
         _om.put( getKey( KEY_LAYERS ), layers );
     }
 
-    public void setAge( int layers ) {
-        _om.put( getKey( KEY_AGE ), layers );
-    }
-
     public void setLayerInputPadding( int layer, int n ) {
         setLayerValue( KEY_LAYER_INPUT_PADDING, layer, String.valueOf( n ), "0" );
     }
@@ -303,8 +209,27 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
         setLayerValue( KEY_LAYER_POOLING_HEIGHT, layer, String.valueOf( n ), "0" );
     }
 
+
     public String getLayerValues( String key ) {
-        return (String)_om.get( key );
+        return ( String ) _om.get( key );
+    }
+
+    public Float getLayerValueFloat( String key, int layer ) {
+        String value = getLayerValue( key, layer );
+        if( value == null ) {
+            return null;
+        }
+        Float f = Float.valueOf( value );
+        return f;
+    }
+
+    public Integer getLayerValueInteger( String key, int layer ) {
+        String value = getLayerValue( key, layer );
+        if( value == null ) {
+            return null;
+        }
+        Integer n = Integer.valueOf( value );
+        return n;
     }
 
     public String getLayerValue( String key, int layer ) {
@@ -348,5 +273,4 @@ public class SpikingConvolutionalNetworkConfig extends NetworkConfig {
 
         _om.put( getKey( key ), newValuesString );
     }
-
 }

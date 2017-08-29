@@ -17,21 +17,28 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.entities.stdp;
+package io.agi.core.ann.convolutional.autoencoder;
 
-import io.agi.framework.EntityConfig;
+import io.agi.core.ann.convolutional.*;
 
 /**
- * Created by dave on 5/05/17.
+ * Created by dave on 19/08/17.
  */
-public class ConvolutionalSpikeEncoderEntityConfig extends EntityConfig {
+public class AutoencoderConvolutionalNetworkFactory implements ConvolutionalNetworkFactory {
 
-    public float spikeDensity = 0f; // per step fraction of the output volume that will spike on each step.
-//    public float spikeThreshold = 0f;
-    public boolean clear = false;
-    public int stepsSinceClear = 0;
+    public ConvolutionalNetwork create() {
+        return new ConvolutionalNetwork();
+    }
 
-    public String clearFlagEntityName = "";
-    public String clearFlagConfigPath = "";
+    public ConvolutionalNetworkConfig createConfig() {
+        return new AutoencoderConvolutionalNetworkConfig();
+    }
 
+    public ConvolutionalNetworkLayer createLayer() {
+        return new AutoencoderConvolutionalNetworkLayer();
+    }
+
+    public ConvolutionalNetworkLayerConfig createLayerConfig() {
+        return new AutoencoderConvolutionalNetworkLayerConfig();
+    }
 }

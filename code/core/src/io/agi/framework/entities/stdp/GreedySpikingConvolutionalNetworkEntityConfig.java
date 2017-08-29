@@ -24,43 +24,22 @@ import io.agi.framework.EntityConfig;
 /**
  * Created by dave on 6/05/17.
  */
-public class SpikingConvolutionalNetworkEntityConfig extends EntityConfig {
+public class GreedySpikingConvolutionalNetworkEntityConfig extends EntityConfig {
 
     public boolean clear = false;
 
     public String clearFlagEntityName = "";
     public String clearFlagConfigPath = "";
 
-    /// Debug homeostasis controllers
-    public int controllerLayer = 0; // default: Set as needed
-    public float controllerInput = 0f; // will be calculated
-    public float controllerInputAccumulated = 0f; // will be calculated
-    public float controllerOutput = 0f; // will be calculated
-    public float controllerError = 0f; // will be calculated
-    public float controllerErrorIntegrated = 0f; // will be calculated
-    public float controllerThreshold = 0.f; // will be calculated
-    /// Debug homeostasis controllers
-
-    public float kernelWeightsStdDev = 0;
-    public float kernelWeightsMean = 0;
-    public float kernelWeightsLearningRate = 0;
-
+    public int trainingAge = 0;
+    public float weightsStdDev = 0;
+    public float weightsMean = 0;
+    public float learningRatePos = 0;
+    public float learningRateNeg = 0;
+//    public float integrationThreshold = 0;
     public int nbrLayers = 0;
-
-//    public String layerKernelSpikeFrequencyLearningRate = "";
-//    public String layerKernelSpikeFrequencyUpdatePeriod = "";
-//    public String layerKernelSpikeFrequencyTarget = "";
-
-    public String layerKernelSpikeDefault = "";
-    public String layerKernelSpikeTarget = "";
-    public String layerKernelSpikeIntegrationPeriod = "";
-    public String layerKernelSpikeUpdatePeriod = "";
-
-    public String layerConvSpikeDefault = "";
-    public String layerConvSpikeTarget = "";
-    public String layerConvSpikeIntegrationPeriod = "";
-    public String layerConvSpikeUpdatePeriod = "";
-
+    public String layerTrainingAge = "";
+    public String layerIntegrationThreshold = "";
     public String layerInputPadding = "";
     public String layerInputStride = "";
     public String layerWidth = "";

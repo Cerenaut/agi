@@ -48,6 +48,7 @@ import io.agi.core.math.Useful;
  */
 public abstract class BackPropagation {
 
+    public static float AbsMaxErrorGradient = 100000f;
 //    /**
 //     * The result of applying the loss or cost function.
 //     *
@@ -218,19 +219,26 @@ s     * @param errorBatch The derivative of the cost function with respect to th
             for( int k = 0; k < K; ++k ) {
 
                 // foreach( batch sample )
+                float sumErrorGradient = 0f;
+
                 for( int b = 0; b < B; ++b ) {
-
-                    int errorOffset = b * J + j;
-                    float errorGradient = errorBatch._values[ errorOffset ];
-
 
                     int inputOffset = b * K + k;
                     float a = inputBatch._values[ inputOffset ];
 
+                    int errorOffset = b * J + j;
+                    float errorGradient = errorBatch._values[ errorOffset ] * a;
+
+                    sumErrorGradient = errorGradient;
+                }
+
+                float errorGradient = sumErrorGradient * miniBatchNorm;
+                errorGradient = BackPropagation.ClipErrorGradient( errorGradient, BackPropagation.AbsMaxErrorGradient );
+
                     int wOffset = j * K + k;
                     float wOld = weights._values[ wOffset ];
 
-                    float wDelta = learningRate * ( miniBatchNorm * errorGradient ) * a;
+                    float wDelta = learningRate * errorGradient;// * a;
                     float wOldRescaled = l2RegularizationTerm * wOld; // weight is unchanged when regularization is zero
                     float wNew = wOldRescaled - wDelta;
 
@@ -246,7 +254,7 @@ s     * @param errorBatch The derivative of the cost function with respect to th
                     Useful.IsBad( wNew );
 
                     weights._values[ wOffset ] = wNew;
-                }
+//                }
             }
 
             // foreach( batch sample )
@@ -258,8 +266,11 @@ s     * @param errorBatch The derivative of the cost function with respect to th
                 sumErrorGradient += errorGradient;
             }
 
+            float errorGradient = sumErrorGradient * miniBatchNorm;
+            errorGradient = BackPropagation.ClipErrorGradient( errorGradient, BackPropagation.AbsMaxErrorGradient );
+
             float bOld = biases._values[ j ];
-            float bNew = bOld - learningRate * ( miniBatchNorm * sumErrorGradient );
+            float bNew = bOld - learningRate * errorGradient;
 
             biases._values[ j ] = bNew;
         }
@@ -307,6 +318,16 @@ s     * @param errorBatch The derivative of the cost function with respect to th
             float d = ( float ) f_l1.fDerivative( z );
             d_l1._values[ k ] = sum * d;
         }
+    }
+
+    public static float ClipErrorGradient( float errorGradient, float absMaxErrorGradient ) {
+        if( errorGradient > absMaxErrorGradient ) {
+            errorGradient = absMaxErrorGradient;
+        }
+        else if( errorGradient < (-absMaxErrorGradient) ) {
+            errorGradient = -absMaxErrorGradient;
+        }
+        return errorGradient;
     }
 
     // TODO deprecate due to naming only

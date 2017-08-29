@@ -17,21 +17,25 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.entities.stdp;
+package io.agi.framework.entities;
 
 import io.agi.framework.EntityConfig;
 
 /**
- * Created by dave on 5/05/17.
+ *
+ * Created by dave on 7/07/16.
  */
-public class ConvolutionalSpikeEncoderEntityConfig extends EntityConfig {
+public class LifetimeSparseAutoencoderEntityConfig extends EntityConfig {
 
-    public float spikeDensity = 0f; // per step fraction of the output volume that will spike on each step.
-//    public float spikeThreshold = 0f;
-    public boolean clear = false;
-    public int stepsSinceClear = 0;
+    float learningRate = 0f;
+    float momentum = 0f;
+    int widthCells = 0;
+    int heightCells = 0;
+    int sparsity = 0; // current value, computed
+    int sparsityLifetime = 0; // current value, computed
+    float weightsStdDev = 0f; // used at reset
 
-    public String clearFlagEntityName = "";
-    public String clearFlagConfigPath = "";
+    int batchCount = 0;
+    int batchSize = 0;
 
 }
