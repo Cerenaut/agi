@@ -128,14 +128,27 @@ public class ClassificationAnalysis {
     }
 
     public FloatArray _errors;
-    public ArrayList< Float > _sortedLabels;
-    public HashMap< Float, HashMap< Float, Integer > > _confusionMatrix;
-    public HashMap< Float, Integer > _labelFrequency;
+    public ArrayList< Integer > _sortedLabels;
+    public HashMap< Integer, HashMap< Integer, Integer > > _confusionMatrix;
+    public HashMap< Integer, Integer > _labelFrequency;
 //    public HashMap< Float, Integer > _labelPredictions;
-    public HashMap< Float, Integer > _labelErrorFP;
-    public HashMap< Float, Integer > _labelErrorFN;
+    public HashMap< Integer, Integer > _labelErrorFP;
+    public HashMap< Integer, Integer > _labelErrorFN;
     public int _sampleOffset = 0;
     public int _sampleLength = 0;
+
+    /**
+     * Centralize way to convert labels from float to integer.
+     * For now let's assume we round them.
+     * @param r
+     * @return
+     */
+    public static int LabelFloat2int( Float r ) {
+        float r2 = r;
+        //int n = (int)r2;
+        int n = Math.round( r2 );
+        return n;
+    }
 
     public int getErrorCount() {
         return (int)_errors.sum();
@@ -168,31 +181,36 @@ public class ClassificationAnalysis {
         // F-score (precision+recall), confusion matrix
         // find unique labels in truth
         HashSet< Float > labels = Statistics.unique( truth );
-        _sortedLabels = new ArrayList< Float >();
-        _sortedLabels.addAll( labels ); // all unique labels in order
+        _sortedLabels = new ArrayList< Integer >();
+        //_sortedLabels.addAll( labels ); // all unique labels in order
+        for( Float r : labels ) {
+            _sortedLabels.add( LabelFloat2int( r ) );
+        }
         Collections.sort( _sortedLabels );
 
         // build an empty confusion matrix and other structures
-        _confusionMatrix = new HashMap< Float, HashMap< Float, Integer > >();
-        _labelFrequency = new HashMap< Float, Integer >();
+        _confusionMatrix = new HashMap< Integer, HashMap< Integer, Integer > >();
+        _labelFrequency = new HashMap< Integer, Integer >();
 //        _labelPredictions = new HashMap< Float, Integer >();
-        _labelErrorFP = new HashMap< Float, Integer >();
-        _labelErrorFN = new HashMap< Float, Integer >();
+        _labelErrorFP = new HashMap< Integer, Integer >();
+        _labelErrorFN = new HashMap< Integer, Integer >();
 
         for( Float f : labels ) {
 
-            _labelFrequency.put( f, 0 );
+            int l = LabelFloat2int( f );
+            _labelFrequency.put( l, 0 );
 //            _labelPredictions.put( f, 0 );
-            _labelErrorFP.put( f, 0 );
-            _labelErrorFN.put( f, 0 );
+            _labelErrorFP.put( l, 0 );
+            _labelErrorFN.put( l, 0 );
 
-            HashMap< Float, Integer > hm = new HashMap< Float, Integer >();
+            HashMap< Integer, Integer > hm = new HashMap< Integer, Integer >();
 
             for( Float f2 : labels ) {
-                hm.put( f2, 0 );
+                int l2 = LabelFloat2int( f2 );
+                hm.put( l2, 0 );
             }
 
-            _confusionMatrix.put( f, hm );
+            _confusionMatrix.put( l, hm );
         }
 
         // calculate errors
@@ -213,10 +231,13 @@ public class ClassificationAnalysis {
         // recall = tp / truth pos.
 
         for( int i = i0; i < i1; ++i ) {
-            float t = truth._values[ i ];
-            float p = predicted._values[ i ];
+            float rt = truth._values[ i ];
+            float rp = predicted._values[ i ];
 
-            HashMap< Float, Integer > hm = _confusionMatrix.get( t );
+            int t = LabelFloat2int( rt );
+            int p = LabelFloat2int( rp );
+
+            HashMap< Integer, Integer > hm = _confusionMatrix.get( t );
             Integer np = hm.get( p );
 
             float error = 0f;
@@ -305,7 +326,7 @@ public class ClassificationAnalysis {
         }
     }
 
-    public ClassificationStats getClassificationStats( Float label ) {
+    public ClassificationStats getClassificationStats( Integer label ) {
         return new ClassificationStats( getSampleCount(),
                                         _labelErrorFP.get( label ),
                                         _labelErrorFN.get( label ),
@@ -319,7 +340,7 @@ public class ClassificationAnalysis {
             case MICRO:
                 int numFalsePositives = 0;
                 int numFalseNegatives = 0;
-                for( Float label : _sortedLabels ) {
+                for( Integer label : _sortedLabels ) {
                     numFalsePositives += _labelErrorFP.get( label );
                     numFalseNegatives += _labelErrorFN.get( label );
                 }
@@ -329,7 +350,7 @@ public class ClassificationAnalysis {
                                                 getSampleCount() ).calculateFScore( betaSquared );
             case MACRO:
                 float sumFScores = 0;
-                for ( Float label : _sortedLabels ) {
+                for ( Integer label : _sortedLabels ) {
                     sumFScores += getClassificationStats( label ).calculateFScore( betaSquared );
                 }
                 return sumFScores / _sortedLabels.size();
@@ -343,14 +364,14 @@ public class ClassificationAnalysis {
               .append( " of " ).append( getSampleCount() )
               .append( " = " ).append( ( 1f - getErrorFraction() ) * 100 ).append( "% correct." );
         result.append( "\nConfusion:\n           <--- PREDICTED ---> \n   " );
-        for( Float label : _sortedLabels ) {
-            result.append( String.format( " %6.1f", label ) );
+        for( Integer label : _sortedLabels ) {
+            result.append( String.format( " %6d", label ) );
         }
         result.append( "\n" );
-        for( Float trueLabel : _sortedLabels ) {
-            HashMap< Float, Integer > trueLabelClassificationCounts = _confusionMatrix.get( trueLabel );
-            result.append( String.format( "%.1f", trueLabel ) );
-            for( Float predictedLabel : _sortedLabels ) {
+        for( Integer trueLabel : _sortedLabels ) {
+            HashMap< Integer, Integer > trueLabelClassificationCounts = _confusionMatrix.get( trueLabel );
+            result.append( String.format( "%6d", trueLabel ) );
+            for( Integer predictedLabel : _sortedLabels ) {
                 result.append( String.format( " %6d", trueLabelClassificationCounts.get( predictedLabel ) ) );
             }
             result.append( "\n" );
@@ -366,9 +387,9 @@ public class ClassificationAnalysis {
                                       "T",
                                       "F",
                                       "F-Score" ) );
-        for( Float label : _sortedLabels ) {
+        for( Integer label : _sortedLabels ) {
             ClassificationStats labelStats = getClassificationStats( label );
-            result.append( String.format( "%-6.1f %6d %6d %6d %6d %6d %6d %6d %8.4f\n", 
+            result.append( String.format( "%-6d %6d %6d %6d %6d %6d %6d %6d %8.4f\n",
                                           label,
                                           labelStats.getNumErrors(),
                                           labelStats.getNumTruePositives(),

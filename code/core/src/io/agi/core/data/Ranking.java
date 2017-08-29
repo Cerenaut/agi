@@ -156,6 +156,10 @@ public class Ranking {
         return values;
     }
 
+    public static boolean isEmpty( TreeMap< Float, ArrayList< Integer > > ranking ) {
+        return( getSize( ranking ) == 0 );
+    }
+
     public static int getSize( TreeMap< Float, ArrayList< Integer > > ranking ) {
         Iterator i = ranking.keySet().iterator();
 
@@ -169,6 +173,23 @@ public class Ranking {
         }
 
         return size;
+    }
+
+    public static Float getKey( TreeMap< Float, ArrayList< Integer > > ranking, int label ) {
+        Iterator i = ranking.keySet().iterator();
+
+        while( i.hasNext() ) {
+            Float key = ( Float ) i.next();
+            ArrayList< Integer > al = ranking.get( key );
+
+            for( Integer n : al ) {
+                if( n.equals( label ) ) {
+                    return key;
+                }
+            }
+        }
+
+        return null;
     }
 
     public static boolean containsKey( TreeMap< Float, ArrayList< Integer > > ranking, float key ) {
@@ -299,6 +320,33 @@ public class Ranking {
         }
     }
 
+    public static HashMap< Integer, Integer > getRanks( TreeMap< Float, ArrayList< Integer > > ranking, boolean max ) {
+
+        HashMap< Integer, Integer > hm = new HashMap< Integer, Integer >();
+
+        Iterator i = null;
+        if( max ) { // rank max first
+            i = ranking.descendingKeySet().iterator(); // maxima first
+        } else { // rank min first
+            i = ranking.keySet().iterator(); // ascending values
+        }
+
+        int rank = 0;
+
+        while( i.hasNext() ) {
+
+            Float key = ( Float ) i.next();
+            ArrayList< Integer > al = ranking.get( key );
+
+            for( Integer n : al ) {
+                hm.put( n, rank );
+                ++rank;
+            }
+        }
+
+        return hm;
+    }
+
     public static Integer getRank( TreeMap< Float, ArrayList< Integer > > ranking, boolean max, int value ) {
 
         Iterator i = null;
@@ -311,8 +359,8 @@ public class Ranking {
         int rank = 0;
 
         while( i.hasNext() ) {
-            Float key = ( Float ) i.next();
 
+            Float key = ( Float ) i.next();
             ArrayList< Integer > al = ranking.get( key );
 
             for( Integer n : al ) {

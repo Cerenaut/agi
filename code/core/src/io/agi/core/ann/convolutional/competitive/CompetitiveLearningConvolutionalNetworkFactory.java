@@ -17,21 +17,29 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.entities.stdp;
+package io.agi.core.ann.convolutional.competitive;
 
-import io.agi.framework.EntityConfig;
+import io.agi.core.ann.convolutional.*;
 
 /**
- * Created by dave on 5/05/17.
+ * Created by dave on 11/08/17.
  */
-public class ConvolutionalSpikeEncoderEntityConfig extends EntityConfig {
+public class CompetitiveLearningConvolutionalNetworkFactory implements ConvolutionalNetworkFactory {
 
-    public float spikeDensity = 0f; // per step fraction of the output volume that will spike on each step.
-//    public float spikeThreshold = 0f;
-    public boolean clear = false;
-    public int stepsSinceClear = 0;
+    public ConvolutionalNetwork create() {
+        return new ConvolutionalNetwork();
+    }
 
-    public String clearFlagEntityName = "";
-    public String clearFlagConfigPath = "";
+    public ConvolutionalNetworkConfig createConfig() {
+        return new CompetitiveLearningConvolutionalNetworkConfig();
+    }
+
+    public ConvolutionalNetworkLayer createLayer() {
+        return new CompetitiveLearningConvolutionalNetworkLayer();
+    }
+
+    public ConvolutionalNetworkLayerConfig createLayerConfig() {
+        return new CompetitiveLearningConvolutionalNetworkLayerConfig();
+    }
 
 }

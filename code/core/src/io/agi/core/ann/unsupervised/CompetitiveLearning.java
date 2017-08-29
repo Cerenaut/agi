@@ -84,6 +84,18 @@ public abstract class CompetitiveLearning extends NamedObject implements Callbac
         return inputValues;
     }
 
+    public static Data invert( int cell, DataSize inputSize, Data cellWeights ) {
+        Data inputValues = new Data( inputSize );
+
+        int inputs = inputValues.getSize();
+        for( int i = 0; i < inputs; ++i ) { // for each input
+            float weight = cellWeights._values[ cell * inputs + i ]; // error from ci to cell
+            inputValues._values[ i ] = weight; // error from ci to cell
+        }
+
+        return inputValues;
+    }
+
     public static void sumSqError(
             CompetitiveLearningConfig c,
             FloatArray inputValues,

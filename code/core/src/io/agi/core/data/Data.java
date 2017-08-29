@@ -42,6 +42,13 @@ public class Data extends FloatArray {
 
     public DataSize _dataSize = null;
 
+    public static Data Vector( FloatArray fa ) {
+        int size = fa.getSize();
+        Data d = new Data( size );
+        d.copy( fa );
+        return d;
+    }
+
     /**
      * Creates a 1-dimensional vector.
      *

@@ -41,7 +41,7 @@ public class NewtonOptimizer extends Optimizer {
         // f'(x) = 3x^2 = 3*5*5=75
         // f''(x) = 6x = 30
         double d1fx = d1fx( x, dx ); // return 1st derivative of function of x
-        double d2fx = d2fx( x, dx ); // return 1st derivative of function of x
+        double d2fx = d2fx( x, dx ); // return 2nd derivative of function of x
         double ratio = ( d1fx / d2fx );
         double x2 = x - ratio;
 //        double x2 = x1 - ( fx / dfx );

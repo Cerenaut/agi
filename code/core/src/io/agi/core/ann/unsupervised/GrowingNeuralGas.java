@@ -296,6 +296,10 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         _sparseUnitInput = new HashSet<>( inputIndices );
     }
 
+    public void setInput( Data input ) {
+        _inputValues.copy( input );
+    }
+
     public Data getInput() {
         return _inputValues;
     }
@@ -533,6 +537,8 @@ public class GrowingNeuralGas extends CompetitiveLearning {
     }
 
     private void reduceStress() {
+        // exponentially decay stress
+        // S = S - Eta * S
         float cellStressLearningRate = _c.getStressLearningRate();
         for( int i = 0; i < _cellStress._values.length; ++i ) {
             _cellStress._values[ i ] -= _cellStress._values[ i ] * cellStressLearningRate;

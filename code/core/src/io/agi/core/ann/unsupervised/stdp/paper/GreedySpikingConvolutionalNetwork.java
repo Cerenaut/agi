@@ -17,29 +17,28 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.core.ann.unsupervised;
+package io.agi.core.ann.unsupervised.stdp.paper;
 
 import io.agi.core.data.Data;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 /**
  * Created by dave on 5/05/17.
  */
-public class SpikingConvolutionalNetwork {
+public class GreedySpikingConvolutionalNetwork {
 
-    public SpikingConvolutionalNetworkConfig _config;
+    public GreedySpikingConvolutionalNetworkConfig _config;
 
-    public ArrayList< SpikingConvolutionalNetworkLayer > _layers = new ArrayList< SpikingConvolutionalNetworkLayer >();
+    public ArrayList< GreedySpikingConvolutionalNetworkLayer > _layers = new ArrayList< GreedySpikingConvolutionalNetworkLayer >();
 
     protected Data _input;
 
-    public SpikingConvolutionalNetwork() {
+    public GreedySpikingConvolutionalNetwork() {
 
     }
 
-    public void setup( SpikingConvolutionalNetworkConfig config ) {
+    public void setup( GreedySpikingConvolutionalNetworkConfig config ) {
         _config = config;
 
         int layers = _config.getNbrLayers();
@@ -63,7 +62,7 @@ public class SpikingConvolutionalNetwork {
                 layerTrainingAgeEnd = _config.getLayerTrainingAge( layer +1 ); // ends when next layer start, or when learn switched off
             }
 
-            SpikingConvolutionalNetworkLayerConfig scnlc = new SpikingConvolutionalNetworkLayerConfig();
+            GreedySpikingConvolutionalNetworkLayerConfig scnlc = new GreedySpikingConvolutionalNetworkLayerConfig();
             scnlc.setup(
                 _config._r,
                 layerTrainingAgeStart, layerTrainingAgeEnd,
@@ -75,7 +74,7 @@ public class SpikingConvolutionalNetwork {
                 fieldWidth, fieldHeight, fieldDepth,
                 poolingWidth, poolingHeight );
 
-            SpikingConvolutionalNetworkLayer scnl = new SpikingConvolutionalNetworkLayer();
+            GreedySpikingConvolutionalNetworkLayer scnl = new GreedySpikingConvolutionalNetworkLayer();
             scnl.setup( scnlc, layer );
             _layers.add( scnl );
         }
@@ -92,7 +91,7 @@ public class SpikingConvolutionalNetwork {
     public Data getOutput() {
         int layers = _config.getNbrLayers();
         int outputLayer = layers -1;
-        SpikingConvolutionalNetworkLayer scnl =  _layers.get( outputLayer );
+        GreedySpikingConvolutionalNetworkLayer scnl =  _layers.get( outputLayer );
         Data output = scnl.getOutput();
         return output;
     }
@@ -106,11 +105,11 @@ public class SpikingConvolutionalNetwork {
                 input = getInput();
             }
             else {
-                SpikingConvolutionalNetworkLayer scnl =  _layers.get( layer -1 );
+                GreedySpikingConvolutionalNetworkLayer scnl =  _layers.get( layer -1 );
                 input = scnl.getOutput();
             }
 
-            SpikingConvolutionalNetworkLayer scnl =  _layers.get( layer );
+            GreedySpikingConvolutionalNetworkLayer scnl =  _layers.get( layer );
             scnl.resize( input );
         }
     }
@@ -119,7 +118,7 @@ public class SpikingConvolutionalNetwork {
         int layers = _config.getNbrLayers();
 
         for( int layer = 0; layer < layers; ++layer ) {
-            SpikingConvolutionalNetworkLayer scnl =  _layers.get( layer );
+            GreedySpikingConvolutionalNetworkLayer scnl =  _layers.get( layer );
             scnl.reset();
         }
 
@@ -130,7 +129,7 @@ public class SpikingConvolutionalNetwork {
         int layers = _config.getNbrLayers();
 
         for( int layer = 0; layer < layers; ++layer ) {
-            SpikingConvolutionalNetworkLayer scnl =  _layers.get( layer );
+            GreedySpikingConvolutionalNetworkLayer scnl =  _layers.get( layer );
             scnl.clear();
         }
     }
@@ -146,7 +145,7 @@ public class SpikingConvolutionalNetwork {
                 input = getInput();
             }
             else {
-                SpikingConvolutionalNetworkLayer scnl =  _layers.get( layer -1 );
+                GreedySpikingConvolutionalNetworkLayer scnl =  _layers.get( layer -1 );
                 input = scnl.getOutput();
             }
 
@@ -155,7 +154,7 @@ public class SpikingConvolutionalNetwork {
                 maxPooling = true;
             }
 
-            SpikingConvolutionalNetworkLayer scnl =  _layers.get( layer );
+            GreedySpikingConvolutionalNetworkLayer scnl =  _layers.get( layer );
 
             // Implement greedy layerwise training schedule.
             boolean isTraining = scnl._config.isTrainingAge( age );
@@ -173,7 +172,7 @@ public class SpikingConvolutionalNetwork {
 
         Data poolInput = output;
         for( int layer = layers -1; layer >= 0; --layer ) {
-            SpikingConvolutionalNetworkLayer scnl = _layers.get( layer );
+            GreedySpikingConvolutionalNetworkLayer scnl = _layers.get( layer );
 
             Data inverted = scnl.invert( poolInput );
             poolInput = inverted;
