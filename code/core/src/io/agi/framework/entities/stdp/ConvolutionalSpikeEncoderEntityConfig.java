@@ -26,8 +26,10 @@ import io.agi.framework.EntityConfig;
  */
 public class ConvolutionalSpikeEncoderEntityConfig extends EntityConfig {
 
-    public float spikeThreshold = 0f;
+    public float spikeDensity = 0f; // per step fraction of the output volume that will spike on each step.
+//    public float spikeThreshold = 0f;
     public boolean clear = false;
+    public int stepsSinceClear = 0;
 
     public String clearFlagEntityName = "";
     public String clearFlagConfigPath = "";

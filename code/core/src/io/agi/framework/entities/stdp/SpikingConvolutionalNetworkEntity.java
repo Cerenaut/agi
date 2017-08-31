@@ -19,8 +19,11 @@
 
 package io.agi.framework.entities.stdp;
 
-import io.agi.core.ann.unsupervised.*;
+import io.agi.core.ann.unsupervised.stdp.paper.SpikingConvolutionalNetwork;
+import io.agi.core.ann.unsupervised.stdp.paper.SpikingConvolutionalNetworkConfig;
+import io.agi.core.ann.unsupervised.stdp.paper.SpikingConvolutionalNetworkLayer;
 import io.agi.core.data.Data;
+import io.agi.core.opt.DiscreteTimePIDController;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
@@ -44,12 +47,24 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
 
     public static final String DATA_LAYER_INPUT_SPIKES_ = "layer-input-spikes-";
     public static final String DATA_LAYER_INPUT_TRACES_ = "layer-input-traces-";
+
     public static final String DATA_LAYER_KERNEL_WEIGHTS_ = "layer-kernel-weights-";
+    public static final String DATA_LAYER_KERNEL_FREQUENCIES_ = "layer-kernel-frequencies-";
+    public static final String DATA_LAYER_KERNEL_GAINS_ = "layer-kernel-gains-";
+
+    public static final String DATA_LAYER_CONTROLLER_STATS_ = "layer-controller-stats-";
+    public static final String DATA_LAYER_CONTROLLER_ERROR_INTEGRAL_KERNEL_ = "layer-controller-error-integral-kernel-";
+    public static final String DATA_LAYER_CONTROLLER_ERROR_INTEGRAL_CONV_ = "layer-controller-error-integral-conv-";
+
+//    public static final String DATA_LAYER_CONV_SPIKE_CONTROLLER_WINDOW_ = "layer-conv-spike-controller-window-";
     public static final String DATA_LAYER_CONV_SUMS_ = "layer-conv-sums-";
     public static final String DATA_LAYER_CONV_INHIBITION_ = "layer-conv-inhibition-";
     public static final String DATA_LAYER_CONV_INTEGRATED_ = "layer-conv-integrated-";
     public static final String DATA_LAYER_CONV_SPIKES_ = "layer-conv-spikes-";
+
     public static final String DATA_LAYER_POOL_SPIKES_ = "layer-pool-spikes-";
+    public static final String DATA_LAYER_POOL_SPIKES_INTEGRATED_ = "layer-pool-spikes-integrated-";
+    public static final String DATA_LAYER_POOL_INTEGRATED_ = "layer-pool-integrated-";
     public static final String DATA_LAYER_POOL_INHIBITION_ = "layer-pool-inhibition-";
 
     public SpikingConvolutionalNetworkEntity( ObjectMap om, Node n, ModelEntity model ) {
@@ -82,8 +97,28 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
             attributes.add( DATA_LAYER_INPUT_TRACES_ + layer );
             flags.putFlag( DATA_LAYER_INPUT_TRACES_, DataFlags.FLAG_NODE_CACHE );
 
+
             attributes.add( DATA_LAYER_KERNEL_WEIGHTS_ + layer );
             flags.putFlag( DATA_LAYER_KERNEL_WEIGHTS_, DataFlags.FLAG_NODE_CACHE );
+
+            attributes.add( DATA_LAYER_KERNEL_FREQUENCIES_ + layer );
+            flags.putFlag( DATA_LAYER_KERNEL_FREQUENCIES_, DataFlags.FLAG_NODE_CACHE );
+
+            attributes.add( DATA_LAYER_KERNEL_GAINS_ + layer );
+            flags.putFlag( DATA_LAYER_KERNEL_GAINS_, DataFlags.FLAG_NODE_CACHE );
+
+//            attributes.add( DATA_LAYER_CONV_STATS_ + layer );
+//            flags.putFlag( DATA_LAYER_CONV_STATS_, DataFlags.FLAG_NODE_CACHE );
+//
+//            attributes.add( DATA_LAYER_CONV_SPIKE_CONTROLLER_WINDOW_ + layer );
+//            flags.putFlag( DATA_LAYER_CONV_SPIKE_CONTROLLER_WINDOW_, DataFlags.FLAG_NODE_CACHE );
+
+            attributes.add( DATA_LAYER_CONTROLLER_STATS_ + layer );
+            flags.putFlag( DATA_LAYER_CONTROLLER_STATS_, DataFlags.FLAG_NODE_CACHE );
+            attributes.add( DATA_LAYER_CONTROLLER_ERROR_INTEGRAL_KERNEL_ + layer );
+            flags.putFlag( DATA_LAYER_CONTROLLER_ERROR_INTEGRAL_KERNEL_, DataFlags.FLAG_NODE_CACHE );
+            attributes.add( DATA_LAYER_CONTROLLER_ERROR_INTEGRAL_CONV_ + layer );
+            flags.putFlag( DATA_LAYER_CONTROLLER_ERROR_INTEGRAL_CONV_, DataFlags.FLAG_NODE_CACHE );
 
             attributes.add( DATA_LAYER_CONV_SUMS_ + layer );
             flags.putFlag( DATA_LAYER_CONV_SUMS_, DataFlags.FLAG_NODE_CACHE );
@@ -97,11 +132,19 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
             attributes.add( DATA_LAYER_CONV_SPIKES_ + layer );
             flags.putFlag( DATA_LAYER_CONV_SPIKES_, DataFlags.FLAG_NODE_CACHE );
 
+
             attributes.add( DATA_LAYER_POOL_SPIKES_ + layer );
             flags.putFlag( DATA_LAYER_POOL_SPIKES_, DataFlags.FLAG_NODE_CACHE );
 
+            attributes.add( DATA_LAYER_POOL_SPIKES_INTEGRATED_ + layer );
+            flags.putFlag( DATA_LAYER_POOL_SPIKES_INTEGRATED_, DataFlags.FLAG_NODE_CACHE );
+
             attributes.add( DATA_LAYER_POOL_INHIBITION_ + layer );
             flags.putFlag( DATA_LAYER_POOL_INHIBITION_, DataFlags.FLAG_NODE_CACHE );
+
+            attributes.add( DATA_LAYER_POOL_INTEGRATED_ + layer );
+            flags.putFlag( DATA_LAYER_POOL_INTEGRATED_, DataFlags.FLAG_NODE_CACHE );
+
         }
     }
 
@@ -118,14 +161,25 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
 
         networkConfig.setup(
                 om, name, _r,
-                config.trainingAge,
-                config.weightsStdDev,
-                config.weightsMean,
-                config.learningRatePos,
-                config.learningRateNeg,
+                config.kernelWeightsStdDev,
+                config.kernelWeightsMean,
+                config.kernelWeightsLearningRate,
                 config.nbrLayers,
-                config.layerTrainingAge,
-                config.layerIntegrationThreshold,
+
+//                config.layerKernelSpikeFrequencyLearningRate,
+//                config.layerKernelSpikeFrequencyUpdatePeriod,
+//                config.layerKernelSpikeFrequencyTarget,
+
+                config.layerKernelSpikeDefault,
+                config.layerKernelSpikeTarget,
+                config.layerKernelSpikeIntegrationPeriod,
+                config.layerKernelSpikeUpdatePeriod,
+
+                config.layerConvSpikeDefault,
+                config.layerConvSpikeTarget,
+                config.layerConvSpikeIntegrationPeriod,
+                config.layerConvSpikeUpdatePeriod,
+
                 config.layerInputPadding,
                 config.layerInputStride,
                 config.layerWidth,
@@ -154,7 +208,7 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
         SpikingConvolutionalNetworkEntityConfig config = ( SpikingConvolutionalNetworkEntityConfig ) _config;
         SpikingConvolutionalNetworkConfig networkConfig = createNetworkConfig(); // copies config from EntityConfig
         SpikingConvolutionalNetwork scn = new SpikingConvolutionalNetwork();
-        scn.setup( networkConfig );
+//        scn.setup( networkConfig );
         scn.setInput( input );
         scn.resize();
 
@@ -188,14 +242,25 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
         scn._config.setLearn( config.learn );
         scn.update();
 
-        Data output = scn.getOutput(); // the potential max-pooling
+        /// Debug threshold controller
+        Data stats = ( (SpikingConvolutionalNetworkLayer)scn._layers.get( config.controllerLayer ) )._controllerStatistics;
+        config.controllerInput            = stats._values[ SpikingConvolutionalNetworkLayer.LAYER_STATISTICS_CONTROLLER_MEASURED ];
+        config.controllerInputAccumulated = stats._values[ SpikingConvolutionalNetworkLayer.LAYER_STATISTICS_WINDOW_SUM ];
+        config.controllerOutput           = stats._values[ SpikingConvolutionalNetworkLayer.LAYER_STATISTICS_CONTROLLER_DELTA ];
+        config.controllerError            = stats._values[ SpikingConvolutionalNetworkLayer.LAYER_STATISTICS_CONTROLLER_ERROR ];
+        config.controllerErrorIntegrated  = stats._values[ SpikingConvolutionalNetworkLayer.LAYER_STATISTICS_CONTROLLER_ERROR_INTEGRATED ];
+        config.controllerThreshold        = stats._values[ SpikingConvolutionalNetworkLayer.LAYER_STATISTICS_CONTROLLER_THRESHOLD ];
+        /// Debug threshold controller
+
+//        Data output = scn.getOutput(); // the potential max-pooling
+        SpikingConvolutionalNetworkLayer scnl = (SpikingConvolutionalNetworkLayer)scn._layers.get( scn._layers.size() -1 );
+        Data output = scnl._poolSpikesIntegrated;
         Data inverted = scn.invert( output );
 
         setData( DATA_OUTPUT, output );
         setData( DATA_INVERSE, inverted );
 
         // Save computed config properties
-        config.trainingAge = scn._config.getAge();
         copyDataToPersistence( scn );
     }
 
@@ -204,16 +269,30 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
         int layers = scn._config.getNbrLayers();
 
         for( int layer = 0; layer < layers; ++layer ) {
-            SpikingConvolutionalNetworkLayer scnl =  scn._layers.get( layer );
+            SpikingConvolutionalNetworkLayer scnl = (SpikingConvolutionalNetworkLayer)scn._layers.get( layer );
 
             scnl._inputSpikes = getDataLazyResize( DATA_LAYER_INPUT_SPIKES_ + layer, scnl._inputSpikes._dataSize );
             scnl._inputTrace = getDataLazyResize( DATA_LAYER_INPUT_TRACES_ + layer, scnl._inputTrace._dataSize );
+
             scnl._kernelWeights = getDataLazyResize( DATA_LAYER_KERNEL_WEIGHTS_ + layer, scnl._kernelWeights._dataSize );
+            scnl._kernelFrequency = getDataLazyResize( DATA_LAYER_KERNEL_FREQUENCIES_ + layer, scnl._kernelFrequency._dataSize );
+            scnl._kernelGains = getDataLazyResize( DATA_LAYER_KERNEL_GAINS_ + layer, scnl._kernelGains._dataSize );
+
+//            scnl._convSpikeStats = getDataLazyResize( DATA_LAYER_CONV_STATS_ + layer, scnl._convSpikeStats._dataSize );
+//            scnl._convSpikeControllerWindow = getDataLazyResize( DATA_LAYER_CONV_SPIKE_CONTROLLER_WINDOW_ + layer, scnl._convSpikeControllerWindow._dataSize );
+
+            scnl._controllerStatistics = getDataLazyResize( DATA_LAYER_CONTROLLER_STATS_ + layer, scnl._controllerStatistics._dataSize );
+            scnl._kernelControllerErrorIntegral = getDataLazyResize( DATA_LAYER_CONTROLLER_ERROR_INTEGRAL_KERNEL_ + layer, scnl._kernelControllerErrorIntegral._dataSize );
+            scnl._convControllerErrorIntegral = getDataLazyResize( DATA_LAYER_CONTROLLER_ERROR_INTEGRAL_CONV_ + layer, scnl._convControllerErrorIntegral._dataSize );
+
             scnl._convSums = getDataLazyResize( DATA_LAYER_CONV_SUMS_ + layer, scnl._convSums._dataSize );
             scnl._convInhibition = getDataLazyResize( DATA_LAYER_CONV_INHIBITION_ + layer, scnl._convInhibition._dataSize );
             scnl._convIntegrated = getDataLazyResize( DATA_LAYER_CONV_INTEGRATED_ + layer, scnl._convIntegrated._dataSize );
             scnl._convSpikes = getDataLazyResize( DATA_LAYER_CONV_SPIKES_ + layer, scnl._convSpikes._dataSize );
+
             scnl._poolSpikes = getDataLazyResize( DATA_LAYER_POOL_SPIKES_ + layer, scnl._poolSpikes._dataSize );
+            scnl._poolSpikesIntegrated = getDataLazyResize( DATA_LAYER_POOL_SPIKES_INTEGRATED_ + layer, scnl._poolSpikesIntegrated._dataSize );
+            scnl._poolIntegrated = getDataLazyResize( DATA_LAYER_POOL_INTEGRATED_ + layer, scnl._poolIntegrated._dataSize );
             scnl._poolInhibition = getDataLazyResize( DATA_LAYER_POOL_INHIBITION_ + layer, scnl._poolInhibition._dataSize );
         }
     }
@@ -223,16 +302,30 @@ public class SpikingConvolutionalNetworkEntity extends Entity {
         int layers = scn._config.getNbrLayers();
 
         for( int layer = 0; layer < layers; ++layer ) {
-            SpikingConvolutionalNetworkLayer scnl =  scn._layers.get( layer );
+            SpikingConvolutionalNetworkLayer scnl = (SpikingConvolutionalNetworkLayer)scn._layers.get( layer );
 
             setData( DATA_LAYER_INPUT_SPIKES_ + layer, scnl._inputSpikes );
             setData( DATA_LAYER_INPUT_TRACES_ + layer, scnl._inputTrace );
+
             setData( DATA_LAYER_KERNEL_WEIGHTS_ + layer, scnl._kernelWeights );
+            setData( DATA_LAYER_KERNEL_FREQUENCIES_ + layer, scnl._kernelFrequency );
+            setData( DATA_LAYER_KERNEL_GAINS_ + layer, scnl._kernelGains );
+
+//            setData( DATA_LAYER_CONV_STATS_ + layer, scnl._convSpikeStats );
+//            setData( DATA_LAYER_CONV_SPIKE_CONTROLLER_WINDOW_ + layer, scnl._convSpikeControllerWindow );
+
+            setData( DATA_LAYER_CONTROLLER_STATS_ + layer, scnl._controllerStatistics );
+            setData( DATA_LAYER_CONTROLLER_ERROR_INTEGRAL_KERNEL_ + layer, scnl._kernelControllerErrorIntegral );
+            setData( DATA_LAYER_CONTROLLER_ERROR_INTEGRAL_CONV_ + layer, scnl._convControllerErrorIntegral );
+
             setData( DATA_LAYER_CONV_SUMS_ + layer, scnl._convSums );
             setData( DATA_LAYER_CONV_INHIBITION_ + layer, scnl._convInhibition );
             setData( DATA_LAYER_CONV_INTEGRATED_ + layer, scnl._convIntegrated );
             setData( DATA_LAYER_CONV_SPIKES_ + layer, scnl._convSpikes );
+
             setData( DATA_LAYER_POOL_SPIKES_ + layer, scnl._poolSpikes );
+            setData( DATA_LAYER_POOL_SPIKES_INTEGRATED_ + layer, scnl._poolSpikesIntegrated );
+            setData( DATA_LAYER_POOL_INTEGRATED_ + layer, scnl._poolIntegrated );
             setData( DATA_LAYER_POOL_INHIBITION_ + layer, scnl._poolInhibition );
         }
 

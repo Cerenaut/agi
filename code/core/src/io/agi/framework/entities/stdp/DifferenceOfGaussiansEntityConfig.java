@@ -20,6 +20,7 @@
 package io.agi.framework.entities.stdp;
 
 import io.agi.framework.EntityConfig;
+import io.agi.framework.Framework;
 
 /**
  * Created by dave on 6/05/17.
@@ -34,8 +35,27 @@ public class DifferenceOfGaussiansEntityConfig extends EntityConfig {
     public float stdDev1 = 0;
     public float stdDev2 = 0;
 
-    public float scaling = 0;
-    public float min = 0;
-    public float max = 0;
+    public float outputFactor = 0;
+    public float clipMin = 0;
+    public float clipMax = 0;
+    public float scaleMin = 0;
+    public float scaleMax = 0;
+
+    public static void Set( String entityName, float stdDev1, float stdDev2, int kernelSize, float outputFactor, float clipMin, float clipMax, float scaleMin, float scaleMax ) {//}, float scaling ) {
+        DifferenceOfGaussiansEntityConfig entityConfig = new DifferenceOfGaussiansEntityConfig();
+        entityConfig.cache = true;
+        entityConfig.kernelWidth = kernelSize;
+        entityConfig.kernelHeight = entityConfig.kernelWidth;
+        entityConfig.stdDev1 = stdDev1;
+        entityConfig.stdDev2 = stdDev2;
+        entityConfig.outputFactor = outputFactor;
+        entityConfig.clipMin = clipMin;
+        entityConfig.clipMax = clipMax;
+        entityConfig.scaleMin = scaleMin;
+        entityConfig.scaleMax = scaleMax;
+
+        Framework.SetConfig( entityName, entityConfig );
+    }
+
 
 }

@@ -49,7 +49,7 @@ public class FeedForwardNetworkTest implements UnitTest {
         int miniBatchSize = 5; // to test, it is better without
         float meanErrorThreshold = 0.01f;
         float learningRate = 0.1f;//0.1f;
-        float regularization = 0.001f; // to test, it is better without.
+        float regularization = 0.00f; // to test, it is better without.
         String costFunction = null;
 
         // e.g.

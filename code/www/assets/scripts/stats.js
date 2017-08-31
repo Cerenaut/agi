@@ -52,6 +52,11 @@ var Data = {
         Framework.decode( data );
       }
 
+      var dataSize = Framework.getDataSize( data );
+      if( dataSize ) {
+        $( "#data-size" ).html( JSON.stringify( dataSize ) );
+      }
+
       var dataElements = data.elements;
       var dataSizes = data.sizes;
       var elements = dataElements.elements.length;

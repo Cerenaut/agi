@@ -12,11 +12,11 @@ var Data2d = {
   },
 
   auto : function() {
-    var dataMin = parseFloat( $("#data-min" ).val() ).toFixed( 1 );
-    var dataMax = parseFloat( $("#data-max" ).val() ).toFixed( 1 );
+    var dataMin = parseFloat( $( "#data-min" ).val() ).toFixed( 1 );
+    var dataMax = parseFloat( $( "#data-max" ).val() ).toFixed( 1 );
 
-    $("#min" ).val( dataMin );
-    $("#max" ).val( dataMax );
+    $( "#user-min" ).val( dataMin );
+    $( "#user-max" ).val( dataMax );
 
     if( Data2d.size2d ) {
       var wIdeal = parseInt( screen.width  * 0.8 );
@@ -27,6 +27,8 @@ var Data2d = {
       var hPxIdeal = hIdeal / hElements;
       var pxIdeal = parseInt( Math.min( wPxIdeal, hPxIdeal ) );
 
+      pxIdeal = Math.max( 2, pxIdeal );
+ 
       $( "#size" ).val( pxIdeal );
     }
 
@@ -57,6 +59,7 @@ var Data2d = {
     // undo the sparse coding, if present:
     Framework.decode( data );
 
+    // Ask it the size in 2d
     var dataSize = Framework.getDataSize( data );
     if( !dataSize ) {
       return; // can't paint
@@ -64,17 +67,21 @@ var Data2d = {
 
     $( "#data-size" ).val( JSON.stringify( dataSize ) );
 
+    // Allow stride to specify the size
     var w = dataSize.w;
     var h = dataSize.h;
 
-    var stride = parseInt( $( "#stride" ).val() );
-    if( stride > 0 ) {
-      w = stride;
-      h = Math.floor( dataElements.length / w );
+    var userW = parseInt( $( "#user-w" ).val() );
+    var userH = parseInt( $( "#user-h" ).val() );
+    if( userW > 0 ) {
+      w = userW;
+      h = userH;
     }
 
+    // Display length of elements:    
     $( "#data-length" ).val( dataElements.length );
 
+    // Show if the data isn't sized to fit.
     if( ( w * h ) != dataElements.length ) {
       $( "#data-length" ).css( "color", "#ff0000" );
     }
@@ -85,6 +92,7 @@ var Data2d = {
     // note last rendered size:
     Data2d.size2d = { w : w, h : h };
 
+    // Get range
     var dataMin = Number.MAX_VALUE;
     var dataMax = - Number.MAX_VALUE;
     for( var i = 0; i < dataElements.length; ++i ) {
@@ -96,30 +104,33 @@ var Data2d = {
     $( "#data-min" ).val( dataMin );
     $( "#data-max" ).val( dataMax );
 
+    console.log( "Matrix size: w: " + w + " h: " + h + " length: " + dataElements.length );
+
     dataSize = DataCanvas.resizeCanvasWithSize( "#canvas", w, h, 1, 1 );
     if( !dataSize ) {
       return; // can't paint
     }
-
-    console.log( "w: " + w + " h: " + h + " length: " + dataElements.length );
 
     var ctx = dataSize.ctx;
 
     var values = [];
     values.length = dataElements.length;
 
-    var userMinValue = $( "#min" ).val();
-    var userMaxValue = $( "#max" ).val();
+    var userMinValue = parseFloat( $( "#user-min" ).val() );
+    var userMaxValue = parseFloat( $( "#user-max" ).val() );
+
+    var dataStride = parseInt( $( "#data-stride" ).val() );
+    var dataOffset = parseInt( $( "#data-offset" ).val() );
 
     var x0 = DataCanvas.pxMargin;
     var y0 = DataCanvas.pxMargin;
 //    if( normalize ) {
-      DataCanvas.fillElementsRgbRange( ctx, x0, y0, w, h, data, null, null, userMinValue, userMaxValue );
+      DataCanvas.fillElementsRgbRange( ctx, x0, y0, w, h, data, null, null, userMinValue, userMaxValue, dataStride, dataOffset );
 //    }
 //    else {
 //      DataCanvas.fillElementsRgbUnit( ctx, x0, y0, w, h, dataR, dataG, dataB );
 //    }
-
+/*
     var i = 0; 
     for( var x = 0; x < w; ++x ) {
       for( var y = 0; y < h; ++y ) {
@@ -131,7 +142,7 @@ var Data2d = {
         values[ i ] = [ x, y, value ];
         ++i;
       }
-    }
+    }*/
 
   },
 

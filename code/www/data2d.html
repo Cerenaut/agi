@@ -49,13 +49,15 @@
       <input type="button" id="auto" class="btn btn-sm btn-success" style="" onclick="Data2d.auto();" value="Auto"/>
          <label for="size" class="inverse">Px/Bit</label>
          <input type="number" id="size" style="width:3em;" class="" placeholder="" title="Pixels per Bit" value="4"/>
-      <label for="stride" class="inverse">Stride</label>
-      <input type="number" id="stride" style="width:5em;" class="" placeholder="Stride" value="100"/>
-      <label for="min" class="inverse">Min</label>
-      <input type="number" id="min" style="display:inline;width:3em;" class="" placeholder="Min" value="0" step="0.1"/>
-      <label for="max" class="inverse">Max</label>
-      <input type="number" id="max" style="display:inline;width:3em;" class="" placeholder="Max" value="1" step="0.1"/><br>
-      <label for="data-size" class="inverse">Size</label>
+      <label for="user-w" class="inverse">Set W</label>
+      <input type="number" id="user-w" style="width:5em;" class="" placeholder="User-W" value="0"/>
+      <label for="user-h" class="inverse">Set H</label>
+      <input type="number" id="user-h" style="width:5em;" class="" placeholder="User-H" value="0"/>
+      <label for="user-min" class="inverse">Min</label>
+      <input type="number" id="user-min" style="display:inline;width:3em;" class="" placeholder="Min" value="0" step="0.1"/>
+      <label for="user-max" class="inverse">Max</label>
+      <input type="number" id="user-max" style="display:inline;width:3em;" class="" placeholder="Max" value="1" step="0.1"/><br>
+      <label for="data-size" class="inverse">Json Size</label>
       <input type="text" id="data-size" style="display:inline;" class="" placeholder="Data size" value=""/>
       <label for="data-length" class="inverse">Len.</label>
       <input type="text" id="data-length" style="display:inline;" class="" placeholder="Data length" value=""/>
@@ -63,6 +65,10 @@
       <input type="text" id="data-min" style="display:inline;" class="" placeholder="Data min" value=""/>
       <label for="data-max" class="inverse">Max-v</label>
       <input type="text" id="data-max" style="display:inline;" class="" placeholder="Data max" value=""/>
+      <label for="data-stride" class="inverse">Data Stride</label>
+      <input type="number" id="data-stride" style="width:3em;" class="" placeholder="Data Stride" value="1"/>
+      <label for="data-offset" class="inverse">Data Offset</label>
+      <input type="number" id="data-offset" style="width:3em;" class="" placeholder="Data Ofset" value="0"/>
      </div>
      <div id="container" style="width:100%;background-color:#200;height:100%;">
        <canvas id="canvas" class="" >

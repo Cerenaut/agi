@@ -91,27 +91,52 @@ var DataCanvas = {
     }
   },
 
-  fillElementsRgbRange : function( ctx, x0, y0, w, h, dataR, dataG, dataB, minValue, maxValue ) {
+  getElementUnitValue : function( data, offset, valueAdd, valueScale, defaultValue ) {
+    var value = defaultValue;
+    //var rawValue = 0;
+    if( ( data ) && ( offset < data.elements.elements.length ) ) { 
+      value = data.elements.elements[ offset ];
+      //rawValue = value;
+    }
+
+    value += valueAdd;
+    value = value * valueScale;
+    value = Math.max( 0.0, value );
+    value = Math.min( 1.0, value );
+
+    //console.log( "Raw: " + rawValue + " val: " + value );
+    return value;
+  },
+
+  fillElementsRgbRange : function( ctx, x0, y0, w, h, dataR, dataG, dataB, minValue, maxValue, stride, offset ) {
+
+    if( !stride ) {
+      stride = 1;
+    }
+    if( !offset ) {
+      offset = 0;
+    }
 
     var range = maxValue - minValue;
-    var rangeScale = 1.0 / range; // ie if range = 3, then values scaled by 1/3=0.3 
+    var valueAdd = - minValue; // eg if min=1, max=3, then +-1.   if min = -2, then --2 = +2
+    var valueScale = 1.0 / range; // ie if range = 3, then values scaled by 1/3=0.3 
+    var defaultValue = 0.0;
 
     for( var y = 0; y < h; ++y ) {
       for( var x = 0; x < w; ++x ) {
         var cx = x * DataCanvas.pxPerElement;
         var cy = y * DataCanvas.pxPerElement;
-        var offset = y * w + x;
-        var valueR = 0.0;
+        //var offset = y * w * valueStride ) + x * valueSr;
+
+        var valueR = DataCanvas.getElementUnitValue( dataR, offset, valueAdd, valueScale, defaultValue );
+        var valueG = DataCanvas.getElementUnitValue( dataG, offset, valueAdd, valueScale, defaultValue );
+        var valueB = DataCanvas.getElementUnitValue( dataB, offset, valueAdd, valueScale, defaultValue );
+/*        var valueR = 0.0;
         var valueG = 0.0;
         var valueB = 0.0;
         if( dataR ) valueR = dataR.elements.elements[ offset ];
         if( dataG ) valueG = dataG.elements.elements[ offset ];
         if( dataB ) valueB = dataB.elements.elements[ offset ];
-
-if( valueG > 0.5 ) {
-var g = 0;
-g++;
-}
 
         valueR -= minValue;
         valueG -= minValue;
@@ -127,7 +152,7 @@ g++;
 
         valueR *= rangeScale;     
         valueG *= rangeScale;     
-        valueB *= rangeScale;     
+        valueB *= rangeScale;     */
 
         ctx.fillStyle = DataCanvas.getStyleUnitRgb( valueR, valueG, valueB );
         ctx.fillRect( x0 + cx, y0 + cy, DataCanvas.pxPerElement, DataCanvas.pxPerElement );        
@@ -135,6 +160,8 @@ g++;
 
         ctx.strokeStyle = "#808080";
         ctx.strokeRect( x0 + cx, y0 + cy, DataCanvas.pxPerElement, DataCanvas.pxPerElement );        
+ 
+        offset += stride;
       }
     }
   },
