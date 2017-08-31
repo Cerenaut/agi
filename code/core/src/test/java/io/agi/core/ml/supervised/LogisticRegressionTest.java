@@ -17,7 +17,7 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package test.resources;
+package test.java.io.agi.core.ml.supervised;
 
 import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
