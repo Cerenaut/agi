@@ -24,7 +24,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.agi.core</groupId>
     <artifactId>agief</artifactId>
-    <version>1.0.133(73b224c)</version>
+    <version>1.0.137(b54a318)</version>
     <name>agief</name>
 
     <build>
@@ -52,7 +52,7 @@
                     <goal>exec</goal>
                   </goals>
                   <configuration>
-                    <executable>${basedir}/src/main/resources/update-version.sh</executable>
+                    <executable>${basedir}/src/main/scripts/update-version.sh</executable>
                   </configuration>
                 </execution>
               </executions>
@@ -77,6 +77,15 @@
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-surefire-plugin</artifactId>
               <version>2.20</version>
+              <executions>
+                <execution>
+                    <id>default-test</id>
+                    <phase>test</phase>
+                    <goals>
+                        <goal>test</goal>
+                    </goals>
+                </execution>
+              </executions>
             </plugin>
         </plugins>
     </build>
