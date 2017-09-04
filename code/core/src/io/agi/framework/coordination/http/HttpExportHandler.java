@@ -81,6 +81,10 @@ public class HttpExportHandler implements HttpHandler {
                         if( m.containsKey( PARAMETER_EXPORT_LOCATION ) ) {
                             String folderPath = m.get( PARAMETER_EXPORT_LOCATION ).trim(); // essential
 
+                            // make sure that the created files are writeable by others
+                            File file = new File( folderPath );
+                            file.setWritable( true, false );
+
                             Path filepath = Paths.get( folderPath, filename );
 
                             // todo check that path is valid
