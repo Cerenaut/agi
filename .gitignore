@@ -17,3 +17,8 @@ target/
 
 # intellij files
 workspace.xml
+
+# vscode
+.classpath
+.project
+.settings
