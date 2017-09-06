@@ -86,9 +86,9 @@ public class HttpExportHandler implements HttpHandler {
                             Path filepath = Paths.get( folderPath, filename );
 
                             // check if folder path exists
-                            if( ! folder.exists()) {
-                                throw new FileNotFoundException("Could not find export folder: " + folderPath);
-                            }
+                            // if( ! folder.exists()) {
+                            //     throw new FileNotFoundException("Could not find export folder: " + folderPath);
+                            // }
 
                             // make sure that the export folder is writable by others
                             folder.setWritable( true, false );
