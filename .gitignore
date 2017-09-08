@@ -14,6 +14,9 @@ out/
 
 # maven output folder
 target/
+.classpath
+.project
+.settings/
 
 # intellij files
 workspace.xml
