@@ -49,8 +49,11 @@ public class KSparseDemo extends CreateEntityMain {
 //        String trainingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small";
 //        String testingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small, /Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/testing-small";
 
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
-        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+//        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train";
+        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train,/home/dave/workspace/agi.io/data/mnist/all/all_t10k";
 
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
 //        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
@@ -69,7 +72,7 @@ public class KSparseDemo extends CreateEntityMain {
         boolean cacheAllData = true;
         boolean terminateByAge = false;
         int terminationAge = -1;//50000;//25000;
-        int trainingEpochs = 2;
+        int trainingEpochs = 1;
         int testingEpochs = 1;
         int imagesPerEpoch = 1000;
 
