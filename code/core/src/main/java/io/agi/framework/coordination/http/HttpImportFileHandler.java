@@ -25,7 +25,11 @@ import com.sun.net.httpserver.HttpHandler;
 import io.agi.framework.Framework;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import net.lingala.zip4j.core.ZipFile;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +49,8 @@ public class HttpImportFileHandler implements HttpHandler {
 
     public static final String TYPE_DATA = "data";
     public static final String TYPE_ENTITY = "entity";
+
+    public static final String ZIP_FILE = "data.zip";
 
     public HttpImportFileHandler() {
     }
@@ -66,6 +72,25 @@ public class HttpImportFileHandler implements HttpHandler {
 
                 String filepath = queryParams.get( PARAMETER_FILE ).trim();
                 String type = queryParams.get( PARAMETER_TYPE ).trim();
+
+                // Checks if the experiment data file exists
+                File rawFile = new File(filepath);
+                if ( !rawFile.exists() ) {
+                    // Get prefix folder path without filename
+                    String outputFolder = rawFile.getParent();
+
+                    try {
+                        Path zipFilePath = Paths.get(outputFolder, ZIP_FILE);
+
+                        // Unzip the data file, retaining its original filename
+                        ZipFile zipFile = new ZipFile(zipFilePath.toString());
+                        zipFile.extractAll(outputFolder);
+                    } catch( Exception e ) {
+                        String message = "Failed to unzip data file.";
+                        _logger.error( message );
+                        _logger.error( e.toString(), e );
+                    }
+                }
 
                 responseMap.put( "filepath", filepath );
 
