@@ -32,6 +32,7 @@ import java.util.ArrayList;
 
 /**
  * TESTED 81.37% / 77.20% on 10k train, 1k test, batchsize = 50, lifetime = 2, sparsity=25.
+ * TESTED 89.31% / 88.66% on 60k train, 10k test, batchsize = 32, lifetime = 2, sparsity=25, momentum=0.5
  *
  * Created by dave on 8/07/16.
  */
@@ -50,8 +51,11 @@ public class LifetimeSparseAutoencoderDemo extends CreateEntityMain {
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
 //        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
 
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
-        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train,/home/dave/workspace/agi.io/data/mnist/1k_test";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
+//        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train,/home/dave/workspace/agi.io/data/mnist/1k_test";
+
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train";
+        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train,/home/dave/workspace/agi.io/data/mnist/all/all_t10k";
 
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
@@ -119,6 +123,7 @@ public class LifetimeSparseAutoencoderDemo extends CreateEntityMain {
         Framework.SetConfig( imageLabelName, "invert", "true" );
         Framework.SetConfig( imageLabelName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
         Framework.SetConfig( imageLabelName, "sourceFilesPrefix", "postproc" );
+        Framework.SetConfig( imageLabelName, "sourceFilesLabelIndex", "2" );
         Framework.SetConfig( imageLabelName, "sourceFilesPathTraining", trainingPath );
         Framework.SetConfig( imageLabelName, "sourceFilesPathTesting", testingPath );
         Framework.SetConfig( imageLabelName, "trainingEpochs", String.valueOf( trainingEpochs ) );
@@ -148,7 +153,7 @@ public class LifetimeSparseAutoencoderDemo extends CreateEntityMain {
         //        "         momentum=.9,\n",
         //        "         learning_rate=.01,\n",
 //        int batchSize = 128; // value from Ali's code.
-        int batchSize = 50; // want small for faster training, but large enough to do lifetime sparsity
+        int batchSize = 32; // want small for faster training, but large enough to do lifetime sparsity
         int sparsityLifetime = 2;
         float learningRate = 0.01f;
         float momentum = 0.5f; // 0.9 in paper
