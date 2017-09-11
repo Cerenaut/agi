@@ -351,6 +351,8 @@ public class KSparseAutoencoder extends CompetitiveLearning {
 
         Data outputInput = _cellSpikesTopK;
         Data hiddenInput = _inputValues;
+//        float minValE = 0f;
+//        float maxValE = 0f;
 
         // d output layer
         for( int i = 0; i < inputs; ++i ) {
@@ -359,10 +361,14 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             float error = output - target; // == d^L
             //float weightedSum = output; // z
             float derivative = 1f;//(float)TransferFunction.logisticSigmoidDerivative( weightedSum );
+//            maxValE = Math.max( maxValE, error );
+//            minValE = Math.min( minValE, error );
 
             //dOutput._values[ i ] = error * derivative; // eqn 30
             _outputErrors._values[ i ] = error * derivative; // eqn 30
         }
+
+//        System.err.println( "Batch gradient E range : " + minValE + " / " + maxValE );
 
         // compute gradient in hidden units. Derivative is either 1 or 0 depending whether the cell was filtered.
         for( int c = 0; c < cells; ++c ) { // computing error for each "input"
@@ -521,7 +527,7 @@ public class KSparseAutoencoder extends CompetitiveLearning {
                 }
 
                 float errorGradient = miniBatchNorm * sumErrorGradient;
-                BackPropagation.ClipErrorGradient( errorGradient, BackPropagation.AbsMaxErrorGradient );
+                errorGradient = BackPropagation.ClipErrorGradient( errorGradient, BackPropagation.AbsMaxErrorGradient );
 
 //                for( int b = 0; b < batchSize; ++b ) {
 
@@ -574,7 +580,7 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             }
 
             float errorGradient = miniBatchNorm * sumErrorGradient;
-            BackPropagation.ClipErrorGradient( errorGradient, BackPropagation.AbsMaxErrorGradient );
+            errorGradient = BackPropagation.ClipErrorGradient( errorGradient, BackPropagation.AbsMaxErrorGradient );
 
             float bOld = biases._values[ c ];
             float bDelta = learningRate * errorGradient;

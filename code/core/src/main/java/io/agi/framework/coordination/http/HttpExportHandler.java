@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -81,9 +82,13 @@ public class HttpExportHandler implements HttpHandler {
                         if( m.containsKey( PARAMETER_EXPORT_LOCATION ) ) {
                             String folderPath = m.get( PARAMETER_EXPORT_LOCATION ).trim(); // essential
 
+                            File folder = new File( folderPath );
                             Path filepath = Paths.get( folderPath, filename );
 
                             // todo check that path is valid
+
+                            // make sure that the export folder is writable by others
+                            folder.setWritable( true, false );
 
                             boolean success = Framework.SaveSubtree( entityName, type, filepath.toString() );
 

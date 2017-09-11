@@ -227,7 +227,7 @@ public class AutoencoderConvolutionalNetworkLayer extends ConvolutionalNetworkLa
                 }
 
                 Data classifierInput = new Data( dataSizeClassifierInput );
-                _classifier.reconstruct( classifierOutput, classifierInput );
+                _classifier.decode( classifierOutput, classifierInput );
 
                 for( int fy = 0; fy < config._fieldHeight; fy++ ) {
                     for( int fx = 0; fx < config._fieldWidth; fx++ ) {

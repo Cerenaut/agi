@@ -19,6 +19,7 @@
 
 package io.agi.core.ann.unsupervised;
 
+import io.agi.core.ann.supervised.BackPropagation;
 import io.agi.core.data.Data;
 import io.agi.core.data.Ranking;
 import io.agi.core.math.Useful;
@@ -201,7 +202,7 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
 
         // Output layer (forward pass)
         // dont really need to do this if not learning.
-        reconstruct( _c, _cellWeights, _cellBiases2, _cellSpikes, _inputReconstruction ); // for output
+        decode( _c, _cellWeights, _cellBiases2, _cellSpikes, _inputReconstruction ); // for output
 
         // don't go any further unless learning is enabled
         if( !learn ) {
@@ -213,7 +214,7 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
 
         Data hiddenLayerInput = _inputValues;
         Data hiddenLayerWeightedSum = _cellWeightedSum;
-        Data hiddenLayerOutput = _cellSpikes;
+        Data outputLayerInput = _cellSpikes;
 
         Data hiddenLayerWeightedSumBatch = _batchHiddenWeightedSum;
         Data hiddenLayerInputBatch = _batchHiddenInput;
@@ -227,7 +228,7 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
                 _c,
                 hiddenLayerInput,
                 hiddenLayerWeightedSum,
-                hiddenLayerOutput,
+                outputLayerInput,
 //                outputLayerOutput,
                 hiddenLayerInputBatch,
                 hiddenLayerWeightedSumBatch,
@@ -288,7 +289,7 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
         outputLayerOutputBatch.set( 0f );
     }
 
-    Data outputLayerOutputBatch = _batchOutputOutput;
+//    Data outputLayerOutputBatch = _batchOutputOutput;
 
     public static void batchTrain(
             LifetimeSparseAutoencoderConfig config,
@@ -352,24 +353,6 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
         // accumulate the error gradients and inputs over the batch
         int b = batchIndex;
 
-//        for( int i = 0; i < inputs; ++i ) {
-//            float r = outputLayerOutput._values[ i ];
-//            int batchOffset = b * inputs + i;
-//            outputLayerOutputBatch._values[ batchOffset ] = r;
-//        }
-
-//        for( int i = 0; i < inputs; ++i ) {
-//            float dNew = outputLayerError._values[ i ];
-//            int batchOffset = b * inputs + i;
-//            outputLayerErrorBatch._values[ batchOffset ] = dNew;
-//        }
-//
-//        for( int i = 0; i < cells; ++i ) {
-//            float dNew = hiddenLayerError._values[ i ];
-//            int batchOffset = b * cells + i;
-//            hiddenLayerErrorBatch._values[ batchOffset ] = dNew;
-//        }
-
         for( int i = 0; i < cells; ++i ) {
             float r = outputLayerInput._values[ i ];
             int batchOffset = b * cells + i;
@@ -402,6 +385,13 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
         int cells = config.getNbrCells();
         int batchSize = config.getBatchSize();
 
+//        float minValE = 0f;
+//        float maxValE = 0f;
+//        float minValD = 0f;
+//        float maxValD = 0f;
+//        float minValW = 0f;
+//        float maxValW = 0f;
+
         for( int b = 0; b < batchSize; ++b ) {
 
             // OUTPUT LAYER
@@ -414,6 +404,8 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
                 //float weightedSum = output; // z
                 float derivative = 1f;//(float)TransferFunction.logisticSigmoidDerivative( weightedSum );
                 outputLayerErrorBatch._values[ batchOffset ] = error * derivative; // eqn 30
+//                maxValE = Math.max( maxValE, error );
+//                minValE = Math.min( minValE, error );
             }
 
             // HIDDEN LAYER
@@ -434,6 +426,11 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
                         int batchOffsetInput = b * inputs + i;
                         float d = outputLayerErrorBatch._values[ batchOffsetInput ]; // d_j i.e. partial derivative of loss fn with respect to the activation of j
                         float product = d * w;// + ( l2R * w );
+//                        maxValD = Math.max( maxValD, d );
+//                        minValD = Math.min( minValD, d );
+//                        maxValW = Math.max( maxValW, w );
+//                        minValW = Math.min( minValW, w );
+                        product = BackPropagation.ClipErrorGradient( product, 10.f );
 
                         // TODO add gradient clipping
                         if( Useful.IsBad( product ) ) {
@@ -455,14 +452,15 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
                 hiddenLayerErrorBatch._values[ batchOffsetCell ] = sum;
             } // cells
         } // batch index
+//        System.err.println( "Batch gradient E range : " + minValE + " / " + maxValE + " W range: " + minValW + " / " + maxValW + " D range: " + minValD + " / " + maxValD );
     }
 
     public static void batchSelectHiddenCells(
             LifetimeSparseAutoencoderConfig config,
             Data cellWeights,
             Data cellBiases2,
-            Data hiddenLayerActivityBatch,
-            Data hiddenLayerSpikesBatch,
+            Data hiddenLayerActivityBatch, // pre-binarization of winners ie weighted sums
+            Data hiddenLayerSpikesBatch, // original winning cells
             Data outputLayerInputBatch, // calculated
             Data outputLayerOutputBatch ) { // calculated
 
@@ -480,7 +478,9 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
                 int batchOffset = b * cells + i;
                 float r = hiddenLayerSpikesBatch._values[ batchOffset ];
                 if( r > 0f ) {
-                    outputLayerInputBatch._values[ batchOffset ] = 1f;
+                    float transfer = hiddenLayerActivityBatch._values[ batchOffset ];
+//                    outputLayerInputBatch._values[ batchOffset ] = 1f;
+                    outputLayerInputBatch._values[ batchOffset ] = transfer;
                 }
             }
         }
@@ -505,13 +505,17 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
 
             // Set hidden activation to zero for all other batch indices, and 1 for the best
             for( int b = 0; b < batchSize; ++b ) {
-                float activity = 0f;
+                int batchOffset = b * cells + i;
+                float oldActivity = outputLayerInputBatch._values[ batchOffset ];
+                float newActivity = oldActivity;
                 if( bestBatchIndices.contains( b ) ) {
-                    activity = 1f;
+                    float transfer = hiddenLayerActivityBatch._values[ batchOffset ];
+//                    newActivity = 1f;
+                    newActivity = transfer;
                 }
 
-                int batchOffset = b * cells + i;
-                outputLayerInputBatch._values[ batchOffset ] = activity;
+                // should get the old value here.. ie the winner PLUS the lifetime sparsity bits
+                outputLayerInputBatch._values[ batchOffset ] = newActivity;
             }
         }
 
@@ -523,7 +527,7 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
             int offsetThis = 0;
             int offsetThat = b * cells;
             outputLayerInput.copyRange( outputLayerInputBatch, offsetThis, offsetThat, cells );
-            reconstruct( config, cellWeights, cellBiases2, outputLayerInput, outputLayerOutput ); // for output
+            decode( config, cellWeights, cellBiases2, outputLayerInput, outputLayerOutput ); // for output
             offsetThis = b * inputs;
             offsetThat = 0;
             outputLayerOutputBatch.copyRange( outputLayerOutput, offsetThis, offsetThat, inputs );
@@ -630,13 +634,13 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
 //        }
 //    }
 
-    public void reconstruct(
+    public void decode(
             Data hiddenActivity,
             Data inputReconstruction ) {
-        reconstruct( _c, _cellWeights, _cellBiases2, hiddenActivity, inputReconstruction );
+        decode( _c, _cellWeights, _cellBiases2, hiddenActivity, inputReconstruction );
     }
 
-    public static void reconstruct(
+    public static void decode(
             LifetimeSparseAutoencoderConfig config,
             Data cellWeights,
             Data cellBiases2,
