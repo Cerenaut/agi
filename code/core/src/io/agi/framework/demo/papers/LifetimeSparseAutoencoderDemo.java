@@ -148,7 +148,7 @@ public class LifetimeSparseAutoencoderDemo extends CreateEntityMain {
         //        "         momentum=.9,\n",
         //        "         learning_rate=.01,\n",
 //        int batchSize = 128; // value from Ali's code.
-        int batchSize = 50; // want small for faster training, but large enough to do lifetime sparsity
+        int batchSize = 32; // want small for faster training, but large enough to do lifetime sparsity
         int sparsityLifetime = 2;
         float learningRate = 0.01f;
         float momentum = 0.5f; // 0.9 in paper

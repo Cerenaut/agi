@@ -113,7 +113,7 @@ public class EpsilonGreedyEntity extends Entity {
             EpsilonGreedyQLearningPolicy egp = new EpsilonGreedyQLearningPolicy();
             egp.setup( _r, config.epsilon );
             egp._learn = config.learn;
-            egp.selectActions( inputS, actionQuality, actionSelection );
+            egp.selectActions( inputS, actionQuality, actionSelection ); // select one action
 
             // create a copy without the "select none" representation
             Data actionSelectionExcludingNone = new Data( setSize );

@@ -65,6 +65,7 @@ public class ImageLabelEntityConfig extends EntityConfig {
     public boolean shuffleTesting = false;
     public long shuffleSeed = 0;
 
+    public int imageLabelUniqueValues = 0; // max label value, or 0 if unbounded
     public int imageLabel = 0;
     public int imageIndex = 0;
     public int imageRepeat = 0; // index of image repeat
