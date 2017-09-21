@@ -25,3 +25,6 @@ workspace.xml
 .classpath
 .project
 .settings
+
+# models
+*.model
