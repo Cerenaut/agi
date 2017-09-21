@@ -137,6 +137,8 @@ public class Svm extends NamedObject implements Callback, SupervisedBatchTrainin
 
     public void train( Data featuresMatrix, Data classTruthVector ) {
 
+        int n = SupervisedUtil.calcNFromFeatureMatrix( featuresMatrix );
+
         svm_parameter parameters = setupParameters();
 
         svm_problem problem = setupProblem( featuresMatrix, classTruthVector );
@@ -162,7 +164,7 @@ public class Svm extends NamedObject implements Callback, SupervisedBatchTrainin
                 double xi = SupervisedUtil.getFeatureValue( featuresMatrixTrain, n, j, i );
 
                 x[ j ][ i ] = new svm_node();
-                x[ j ][ i ].index = i;
+                x[ j ][ i ].index = i + 1;
                 x[ j ][ i ].value = xi;
             }
 
@@ -195,7 +197,7 @@ public class Svm extends NamedObject implements Callback, SupervisedBatchTrainin
                 }
 
                 prob.x[ j ][ i ] = new svm_node();
-                prob.x[ j ][ i ].index = i;
+                prob.x[ j ][ i ].index = i + 1;
                 prob.x[ j ][ i ].value = xi;
                 prob.y[ j ] = classTruth;
             }
@@ -211,7 +213,7 @@ public class Svm extends NamedObject implements Callback, SupervisedBatchTrainin
 
         // default values
         param.svm_type = svm_parameter.C_SVC;
-        param.kernel_type = svm_parameter.LINEAR;
+        param.kernel_type = svm_parameter.RBF;
         param.degree = 3;
         param.gamma = 0;
         param.coef0 = 0;

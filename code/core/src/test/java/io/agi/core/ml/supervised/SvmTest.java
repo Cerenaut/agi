@@ -145,7 +145,6 @@ public class SvmTest implements UnitTest {
         _predictionsVector.approxEquals( _classTruthVector, _eps );
         _predictionsVectorTest.approxEquals( _classTruthVectorTest, _eps );
 
-
         if ( log ) {
             String error = Data2d.toString( _predictionsVector );
             System.out.println( "Error" );
