@@ -23,18 +23,22 @@ import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
 import io.agi.core.math.FastRandom;
 import io.agi.core.orm.ObjectMap;
-import io.agi.core.orm.UnitTest;
-import org.junit.After;
-import org.junit.Before;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import static org.junit.Assert.*;
+
 import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * Created by abdel on 14/09/17.
  */
-public class SvmTest implements UnitTest {
+@RunWith(value = Parameterized.class)
+public class SvmTest {
 
     private Svm _learner = null;
 
@@ -46,24 +50,51 @@ public class SvmTest implements UnitTest {
     private Data _predictionsVectorTest = null;
     private Data _classTruthVectorTest = null;
 
-    private float _eps = 0.0000001f;
-    private ObjectMap _om;
-    private FastRandom _r;
+    // Parameters
+    private String trainPath;
+    private String testPath;
+    private int featuresIdxMin;
+    private int featuresIdxMax;
+    private int classTruthIdx;
 
-    public static void main( String[] args ) {
-        SvmTest svmTest = new SvmTest();
-        svmTest.test( args );
+    /**
+     * Sets up the parameters for the test
+     *
+     * @param trainPath The path to the training dataset in src/test/resources/
+     * @param testPath The path to the testing dataset in src/test/resources/
+     * @param featuresIdxMin The column ID where features start
+     * @param featuresIdxMax The column ID where features end
+     * @param classTruthIdx The column ID of the target (y) / class truth
+     */
+    public SvmTest(String trainPath, String testPath, int featuresIdxMin, int featuresIdxMax, int classTruthIdx) {
+        this.trainPath = trainPath;
+        this.testPath = testPath;
+        this.featuresIdxMin = featuresIdxMin;
+        this.featuresIdxMax = featuresIdxMax;
+        this.classTruthIdx = classTruthIdx;
     }
 
-    @Override
-    public void test( String[] args ) {
+    /**
+     * Define the parameters to be used in the test
+     *
+     * @return Collection The defined parameters
+     */
+    @Parameters
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][]{
+                {"spectf.train.csv", "spectf.test.csv", 1, 44, 0}
+        });
+    }
 
+    @Test
+    public void evaluate() {
         try {
             setUp();
         }
         catch( Exception e ) {
             e.printStackTrace();
         }
+
         try {
             predict();
         }
@@ -72,29 +103,33 @@ public class SvmTest implements UnitTest {
         }
     }
 
-    @Before
+    /**
+     * Sets up the model and trains it on the dataset
+     *
+     * @throws Exception Failed to setup or train the model
+     */
     public void setUp() throws Exception {
 
         // get data from file
-        String filePath = "src/test/resources/SPECTF.train.csv";
-        _featuresMatrixTrain = Data2d.createFromCSV( filePath, 1, 44 );
-        _classTruthVector = Data2d.createFromCSV( filePath, 0, 0 );
+        String filePath = "src/test/resources/" + trainPath;
+        _featuresMatrixTrain = Data2d.createFromCSV( filePath, featuresIdxMin, featuresIdxMax);
+        _classTruthVector = Data2d.createFromCSV( filePath, classTruthIdx, classTruthIdx );
 
-        filePath = "src/test/resources/SPECTF.test.csv";
-        _featuresMatrixTest = Data2d.createFromCSV( filePath, 1, 44 );
-        _classTruthVectorTest = Data2d.createFromCSV( filePath, 0, 0 );
+        filePath = "src/test/resources/" + testPath;
+        _featuresMatrixTest = Data2d.createFromCSV( filePath, featuresIdxMin, featuresIdxMax );
+        _classTruthVectorTest = Data2d.createFromCSV( filePath, classTruthIdx, classTruthIdx );
 
         _predictionsVector = new Data( _classTruthVector._dataSize );
         _predictionsVectorTest = new Data( _classTruthVectorTest._dataSize );
 
         // instantiate learner
-        _om = ObjectMap.GetInstance();
-        _learner = new Svm( "svm", _om );
+        ObjectMap om = ObjectMap.GetInstance();
+        _learner = new Svm( "svm", om );
 
         // setup learner
-        _r = new FastRandom(  );
-        SupervisedBatchTrainingConfig config = new SupervisedBatchTrainingConfig( );
-        config.setup( _om, "test-svm-config", _r, "", true, 100f);
+        FastRandom r = new FastRandom();
+        SupervisedBatchTrainingConfig config = new SupervisedBatchTrainingConfig();
+        config.setup( om, "test-svm-config", r, "", true, 100f );
         _learner.setup( config );
 
         // train model
@@ -104,19 +139,15 @@ public class SvmTest implements UnitTest {
         assertTrue( modelString != null );
     }
 
-    @After
-    public void tearDown() throws Exception {
-
-    }
-
     /**
      * Tests loading the model and predicting
-     * @throws Exception
+     *
+     * @throws Exception Failed to make predictions
      */
-    @Test
-    public void predict() throws Exception {
+    private void predict() throws Exception {
 
         boolean log = false;
+        float _eps = 0.0000001f;
 
         // Evaluate on training data
         _learner.predict( _featuresMatrixTrain, _predictionsVector );
@@ -150,7 +181,6 @@ public class SvmTest implements UnitTest {
             System.out.println( "Error" );
             System.out.println( error );
         }
-
 
         // count how many errors - an error is where the diff between prediction and label is greater than eps
         double trainMeanError = _predictionsVector.mean();
