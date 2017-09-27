@@ -57,6 +57,15 @@ public class LogisticRegressionTest {
     private int featuresIdxMax;
     private int classTruthIdx;
 
+    /**
+     * Sets up the parameters for the test
+     *
+     * @param trainPath The path to the training dataset in src/test/resources/
+     * @param testPath The path to the testing dataset in src/test/resources/
+     * @param featuresIdxMin The column ID where features start
+     * @param featuresIdxMax The column ID where features end
+     * @param classTruthIdx The column ID of the target (y) / class truth
+     */
     public LogisticRegressionTest(String trainPath, String testPath, int featuresIdxMin, int featuresIdxMax, int classTruthIdx) {
         this.trainPath = trainPath;
         this.testPath = testPath;
@@ -65,6 +74,11 @@ public class LogisticRegressionTest {
         this.classTruthIdx = classTruthIdx;
     }
 
+    /**
+     * Define the parameters to be used in the test
+     *
+     * @return Collection The defined parameters
+     */
     @Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
@@ -90,6 +104,11 @@ public class LogisticRegressionTest {
         }
     }
 
+    /**
+     * Sets up the model and trains it on the dataset
+     *
+     * @throws Exception Failed to setup or train the model
+     */
     public void setUp() throws Exception {
 
         // get data from file
@@ -122,9 +141,10 @@ public class LogisticRegressionTest {
 
     /**
      * Tests loading the model and predicting
-     * @throws Exception
+     *
+     * @throws Exception Failed to make predictions
      */
-    public void predict() throws Exception {
+    private void predict() throws Exception {
 
         boolean log = false;
         float _eps = 0.0000001f;
