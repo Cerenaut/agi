@@ -69,7 +69,7 @@ public class Svm extends NamedObject implements Callback, SupervisedBatchTrainin
     @Override
     public void loadModel( ) {
         String modelString = _config.getModelString();
-        if ( modelString != null) {
+        if ( modelString != null && modelString.length() != 0 ) {
             loadModel( modelString );
         }
     }
@@ -117,7 +117,7 @@ public class Svm extends NamedObject implements Callback, SupervisedBatchTrainin
 
         if ( _model != null ) {
             try {
-                String filename = "temp_svmmodel";
+                String filename = "temp_svm.model";
                 File modelFile = new File( filename );
                 svm.svm_save_model( filename, _model );
                 modelString = FileUtils.readFileToString( modelFile );
@@ -127,7 +127,7 @@ public class Svm extends NamedObject implements Callback, SupervisedBatchTrainin
                 _logger.error( e.toString(), e );
             }
         } else {
-            String errorMessage = "Cannot to save LibLinear model before it is defined";
+            String errorMessage = "Cannot to save svm model before it is defined";
             _logger.error( errorMessage );
             throw new Exception( errorMessage );
         }
@@ -136,6 +136,8 @@ public class Svm extends NamedObject implements Callback, SupervisedBatchTrainin
     }
 
     public void train( Data featuresMatrix, Data classTruthVector ) {
+
+        int n = SupervisedUtil.calcNFromFeatureMatrix( featuresMatrix );
 
         svm_parameter parameters = setupParameters();
 
@@ -162,7 +164,7 @@ public class Svm extends NamedObject implements Callback, SupervisedBatchTrainin
                 double xi = SupervisedUtil.getFeatureValue( featuresMatrixTrain, n, j, i );
 
                 x[ j ][ i ] = new svm_node();
-                x[ j ][ i ].index = j+1;
+                x[ j ][ i ].index = i + 1;
                 x[ j ][ i ].value = xi;
             }
 
@@ -195,11 +197,13 @@ public class Svm extends NamedObject implements Callback, SupervisedBatchTrainin
                 }
 
                 prob.x[ j ][ i ] = new svm_node();
-                prob.x[ j ][ i ].index = i+1;
+                prob.x[ j ][ i ].index = i + 1;
                 prob.x[ j ][ i ].value = xi;
                 prob.y[ j ] = classTruth;
             }
         }
+
+
 
         return prob;
     }

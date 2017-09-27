@@ -35,12 +35,12 @@ import java.util.Arrays;
 import java.util.Collection;
 
 /**
- * Created by gideon on 27/12/16.
+ * Created by abdel on 14/09/17.
  */
 @RunWith(value = Parameterized.class)
-public class LogisticRegressionTest {
+public class SvmTest {
 
-    private LogisticRegression _learner = null;
+    private Svm _learner = null;
 
     private Data _featuresMatrixTrain = null;
     private Data _predictionsVector = null;
@@ -66,7 +66,7 @@ public class LogisticRegressionTest {
      * @param featuresIdxMax The column ID where features end
      * @param classTruthIdx The column ID of the target (y) / class truth
      */
-    public LogisticRegressionTest(String trainPath, String testPath, int featuresIdxMin, int featuresIdxMax, int classTruthIdx) {
+    public SvmTest(String trainPath, String testPath, int featuresIdxMin, int featuresIdxMax, int classTruthIdx) {
         this.trainPath = trainPath;
         this.testPath = testPath;
         this.featuresIdxMin = featuresIdxMin;
@@ -82,7 +82,6 @@ public class LogisticRegressionTest {
     @Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"skin.train.csv", "skin.test.csv", 0, 2, 3},
                 {"spectf.train.csv", "spectf.test.csv", 1, 44, 0}
         });
     }
@@ -125,17 +124,18 @@ public class LogisticRegressionTest {
 
         // instantiate learner
         ObjectMap om = ObjectMap.GetInstance();
-        _learner = new LogisticRegression( "logisticRegression", om );
+        _learner = new Svm( "svm", om );
 
         // setup learner
-        FastRandom r = new FastRandom(  );
-        SupervisedBatchTrainingConfig config = new SupervisedBatchTrainingConfig( );
-        config.setup( om, "test-logistic-config", r, "", true, 100f);
+        FastRandom r = new FastRandom();
+        SupervisedBatchTrainingConfig config = new SupervisedBatchTrainingConfig();
+        config.setup( om, "test-svm-config", r, "", true, 100f );
         _learner.setup( config );
 
         // train model
         _learner.train( _featuresMatrixTrain, _classTruthVector );
         String modelString = _learner.getModelString();
+
         assertTrue( modelString != null );
     }
 
@@ -158,7 +158,7 @@ public class LogisticRegressionTest {
         if ( log )
         {
             String features = Data2d.toString( _featuresMatrixTrain );
-            String predictions = Data2d.toString( _predictionsVectorTest );
+            String predictions = Data2d.toString( _predictionsVector );
             String classTruth = Data2d.toString( _classTruthVector );
 
             System.out.println( "Features" );
@@ -169,6 +169,7 @@ public class LogisticRegressionTest {
 
             System.out.println( "ClassTruth" );
             System.out.println( classTruth );
+
         }
 
         // set values to 1 if error, 0 if not
@@ -176,11 +177,10 @@ public class LogisticRegressionTest {
         _predictionsVectorTest.approxEquals( _classTruthVectorTest, _eps );
 
         if ( log ) {
-            String error = Data2d.toString( _predictionsVectorTest );
+            String error = Data2d.toString( _predictionsVector );
             System.out.println( "Error" );
             System.out.println( error );
         }
-
 
         // count how many errors - an error is where the diff between prediction and label is greater than eps
         double trainMeanError = _predictionsVector.mean();
