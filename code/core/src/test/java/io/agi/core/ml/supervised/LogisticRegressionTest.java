@@ -21,50 +21,67 @@ package io.agi.core.ml.supervised;
 
 import io.agi.core.data.Data;
 import io.agi.core.data.Data2d;
-import io.agi.core.data.DataSize;
 import io.agi.core.math.FastRandom;
-import io.agi.core.ml.supervised.LogisticRegression;
-import io.agi.core.ml.supervised.SupervisedBatchTrainingConfig;
 import io.agi.core.orm.ObjectMap;
-import io.agi.core.orm.UnitTest;
-import org.junit.After;
-import org.junit.Before;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import static org.junit.Assert.*;
+
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * Created by gideon on 27/12/16.
  */
-public class LogisticRegressionTest implements UnitTest {
+@RunWith(value = Parameterized.class)
+public class LogisticRegressionTest {
 
-    LogisticRegression _learner = null;
-    String _modelString;
+    private LogisticRegression _learner = null;
 
-    Data _featuresMatrixTrain = null;
-    Data _classTruthVector = null;
+    private Data _featuresMatrixTrain = null;
+    private Data _predictionsVector = null;
+    private Data _classTruthVector = null;
 
-    Data _featuresMatrixTest = null;
-    Data _predictionsVectorTest = null;
-    Data _classTruthVectorTest = null;
+    private Data _featuresMatrixTest = null;
+    private Data _predictionsVectorTest = null;
+    private Data _classTruthVectorTest = null;
 
-    float _eps = 0.0000001f;
-    private ObjectMap _om;
-    private FastRandom _r;
+    // Parameters
+    private String trainPath;
+    private String testPath;
+    private int featuresIdxMin;
+    private int featuresIdxMax;
+    private int classTruthIdx;
 
-    public static void main( String[] args ) {
-        LogisticRegressionTest logisticTest = new LogisticRegressionTest();
-        logisticTest.test( args );
+    public LogisticRegressionTest(String trainPath, String testPath, int featuresIdxMin, int featuresIdxMax, int classTruthIdx) {
+        this.trainPath = trainPath;
+        this.testPath = testPath;
+        this.featuresIdxMin = featuresIdxMin;
+        this.featuresIdxMax = featuresIdxMax;
+        this.classTruthIdx = classTruthIdx;
     }
-    @Override
-    public void test( String[] args ) {
 
+    @Parameters
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][]{
+                {"skin.train.csv", "skin.test.csv", 0, 2, 3},
+                {"spectf.train.csv", "spectf.test.csv", 1, 44, 0}
+        });
+    }
+
+    @Test
+    public void evaluate() {
         try {
             setUp();
         }
         catch( Exception e ) {
             e.printStackTrace();
         }
+
         try {
             predict();
         }
@@ -73,51 +90,50 @@ public class LogisticRegressionTest implements UnitTest {
         }
     }
 
-    @Before
     public void setUp() throws Exception {
 
         // get data from file
-        String filePath = "src/test/resources/supervised-linear-data.csv";
-        _featuresMatrixTrain = Data2d.createFromCSV( filePath, 0, 1 );
-        _classTruthVector = Data2d.createFromCSV( filePath, 2, 2 );
+        String filePath = "src/test/resources/" + trainPath;
+        _featuresMatrixTrain = Data2d.createFromCSV( filePath, featuresIdxMin, featuresIdxMax);
+        _classTruthVector = Data2d.createFromCSV( filePath, classTruthIdx, classTruthIdx );
 
-        filePath = "src/test/resources/supervised-linear-data-test.csv";
-        _featuresMatrixTest = Data2d.createFromCSV( filePath, 0, 1 );
-        _predictionsVectorTest = new Data( _classTruthVector._dataSize );
-        _classTruthVectorTest = new Data( _classTruthVector._dataSize.getSize( DataSize.DIMENSION_Y ) );
+        filePath = "src/test/resources/" + testPath;
+        _featuresMatrixTest = Data2d.createFromCSV( filePath, featuresIdxMin, featuresIdxMax );
+        _classTruthVectorTest = Data2d.createFromCSV( filePath, classTruthIdx, classTruthIdx );
+
+        _predictionsVector = new Data( _classTruthVector._dataSize );
+        _predictionsVectorTest = new Data( _classTruthVectorTest._dataSize );
 
         // instantiate learner
-        _om = ObjectMap.GetInstance();
-        _learner = new LogisticRegression( "logisticRegression", _om );
+        ObjectMap om = ObjectMap.GetInstance();
+        _learner = new LogisticRegression( "logisticRegression", om );
 
         // setup learner
-        _r = new FastRandom(  );
+        FastRandom r = new FastRandom(  );
         SupervisedBatchTrainingConfig config = new SupervisedBatchTrainingConfig( );
-        config.setup( _om, "test-logistic-config", _r, "", true, 100f);
+        config.setup( om, "test-logistic-config", r, "", true, 100f);
         _learner.setup( config );
 
         // train model
         _learner.train( _featuresMatrixTrain, _classTruthVector );
-        _modelString = _learner.getModelString();
-        assertTrue( _modelString != null );
-    }
-
-    @After
-    public void tearDown() throws Exception {
-
+        String modelString = _learner.getModelString();
+        assertTrue( modelString != null );
     }
 
     /**
      * Tests loading the model and predicting
      * @throws Exception
      */
-    @Test
     public void predict() throws Exception {
 
         boolean log = false;
+        float _eps = 0.0000001f;
 
-        // test on the training data (for unit test this is good, but not the way to test the effectiveness of ml algorithm)
-        _learner.predict( _featuresMatrixTrain, _predictionsVectorTest );
+        // Evaluate on training data
+        _learner.predict( _featuresMatrixTrain, _predictionsVector );
+
+        // Evaluate on testing data
+        _learner.predict( _featuresMatrixTest, _predictionsVectorTest );
 
         if ( log )
         {
@@ -134,9 +150,10 @@ public class LogisticRegressionTest implements UnitTest {
             System.out.println( "ClassTruth" );
             System.out.println( classTruth );
         }
-            // set values to 1 if error, 0 if not
-        _predictionsVectorTest.approxEquals( _classTruthVector, _eps );
 
+        // set values to 1 if error, 0 if not
+        _predictionsVector.approxEquals( _classTruthVector, _eps );
+        _predictionsVectorTest.approxEquals( _classTruthVectorTest, _eps );
 
         if ( log ) {
             String error = Data2d.toString( _predictionsVectorTest );
@@ -146,12 +163,15 @@ public class LogisticRegressionTest implements UnitTest {
 
 
         // count how many errors - an error is where the diff between prediction and label is greater than eps
-        double meanError = _predictionsVectorTest.mean();
+        double trainMeanError = _predictionsVector.mean();
+        double testMeanError = _predictionsVectorTest.mean();
 
         System.out.println( "Model = " + _learner.getModelString() );
-        System.out.println( "Accuracy = " + meanError * 100 + "%" );
+        System.out.println( "Training Accuracy = " + trainMeanError * 100 + "%" );
+        System.out.println( "Testing Accuracy = " + testMeanError * 100 + "%" );
 
-        assertTrue( meanError > 0.89 );
+        assertTrue( trainMeanError > 0.89 );
+        assertTrue( testMeanError > 0.89 );
     }
 
 }
