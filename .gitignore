@@ -28,3 +28,7 @@ workspace.xml
 
 # models
 *.model
+
+# python
+*.pyc
+.ipynb_checkpoints
