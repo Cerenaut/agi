@@ -190,8 +190,8 @@ public class LogisticRegressionTest {
         System.out.println( "Training Accuracy = " + trainMeanError * 100 + "%" );
         System.out.println( "Testing Accuracy = " + testMeanError * 100 + "%" );
 
-        assertTrue( trainMeanError > 0.89 );
-        assertTrue( testMeanError > 0.89 );
+        assertTrue( trainMeanError > 0.91 );
+        assertTrue( testMeanError > 0.91 );
     }
 
 }
