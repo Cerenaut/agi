@@ -215,7 +215,7 @@ public class Svm extends NamedObject implements Callback, SupervisedBatchTrainin
         param.svm_type = svm_parameter.C_SVC;
         param.kernel_type = svm_parameter.RBF;
         param.degree = 3;
-        param.gamma = 0;
+        param.gamma = 0.1;
         param.coef0 = 0;
         param.nu = 0.5;
         param.cache_size = 40;
