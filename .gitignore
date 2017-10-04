@@ -25,3 +25,10 @@ workspace.xml
 .classpath
 .project
 .settings
+
+# models
+*.model
+
+# python
+*.pyc
+.ipynb_checkpoints

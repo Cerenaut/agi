@@ -104,6 +104,10 @@ public class CommonEntityFactory implements EntityFactory {
             return new GrowingNeuralGasEntity( objectMap, _n, modelEntity );
         }
 
+        if( entityType.equals( KSparseGngEntity.ENTITY_TYPE ) ) {
+            return new KSparseGngEntity( objectMap, _n, modelEntity );
+        }
+
         if( entityType.equals( PlasticNeuralGasEntity.ENTITY_TYPE ) ) {
             return new PlasticNeuralGasEntity( objectMap, _n, modelEntity );
         }

@@ -35,6 +35,8 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 /**
+ * TESTED Batch size 128, 60k train, 10k test: 5255 of 60000 = 91.24167% correct / 1033 of 10000 = 89.670006% correct.
+ *
  * Created by dave on 8/07/16.
  */
 public class KSparseDemo extends CreateEntityMain {

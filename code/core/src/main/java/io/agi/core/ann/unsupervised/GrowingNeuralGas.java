@@ -44,10 +44,10 @@ import java.util.stream.IntStream;
  * Created by dave on 29/12/15.
  */
 public class GrowingNeuralGas extends CompetitiveLearning {
-    private static final Logger _logger = LogManager.getLogger();
+    protected static final Logger _logger = LogManager.getLogger();
 
     public GrowingNeuralGasConfig _c;
-    private Set< Integer > _sparseUnitInput;
+    protected Set< Integer > _sparseUnitInput;
     public Data _inputValues;
     public Data _cellWeights;
     public Data _cellErrors;
@@ -61,11 +61,11 @@ public class GrowingNeuralGas extends CompetitiveLearning {
     public Data _edgesAges;
     public Data _ageSinceGrowth; // 1 element
 
-    private int _bestCell = 0;
-    private int _2ndBestCell = 0;
+    protected int _bestCell = 0;
+    protected int _2ndBestCell = 0;
 
-    private Set< Integer > _originalSparseUnitInput;
-    private Data _originalInputValues;
+    protected Set< Integer > _originalSparseUnitInput;
+    protected Data _originalInputValues;
 
     public GrowingNeuralGas( String name, ObjectMap om ) {
         super( name, om );
@@ -183,7 +183,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
     /**
      * Denoise the input by selecting a random set of pixels to set to zero.
      */
-    private void denoiseInput() {
+    protected void denoiseInput() {
         if( _c.getDenoisePercentage() > 0 ) {
             _originalSparseUnitInput = _sparseUnitInput;
             _originalInputValues = _inputValues;
@@ -203,14 +203,14 @@ public class GrowingNeuralGas extends CompetitiveLearning {
     /**
      * Undo input denoising by resetting the inputs back to what they were before the last call to denoiseInput().  
      */
-    private void undoDenoiseInput() {
+    protected void undoDenoiseInput() {
         if( _c.getDenoisePercentage() > 0 ) {
             _sparseUnitInput = _originalSparseUnitInput;
             _inputValues = _originalInputValues;
         }
     }
 
-    private void removeLowUtilityCell() {
+    protected void removeLowUtilityCell() {
         // Do nothing if the utility is disabled (i.e., normal GNG)
         float threshold = _c.getUtilityThreshold();
         if( threshold < 0f ) {
@@ -304,7 +304,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         return _inputValues;
     }
 
-    private int getCellCount() { // can be local or global cell count
+    public int getCellCount() { // can be local or global cell count
         int cells = _c.getNbrCells();
         int cellCount = 0;
 
@@ -318,7 +318,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         return cellCount;
     }
 
-    private boolean addCellPairLazy() {
+    protected boolean addCellPairLazy() {
 
         //find 2 globally available cells, and assign them to the local cell mask.
         // activate 2 cells ONLY
@@ -351,7 +351,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
     /**
      * @return the first cell with mask value of zero, or null if no such cell can be found.
      */
-    private Integer findFreeCell() {
+    protected Integer findFreeCell() {
         int cells = _c.getNbrCells();
         for( int cell = 0; cell < cells; ++cell ) {
             if( _cellMask._values[ cell ] == 0.f ) {
@@ -361,7 +361,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         return null;
     }
 
-    private boolean addCells() {
+    protected boolean addCells() {
         Integer freeCell = findFreeCell(); // Note: look for globally available cell
         if( freeCell == null ) {
             //System.err.println( "ERR: no free cell");
@@ -376,7 +376,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         return true;
     }
 
-    private AbstractPair< Integer, Integer > findStressedCells() {
+    protected AbstractPair< Integer, Integer > findStressedCells() {
         // find the cell with the largest error
         float minStressThreshold = _c.getStressThreshold();
 
@@ -432,7 +432,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         return new AbstractPair<>( worstCell, worstCell2 );
     }
 
-    private void bisectCells( int worstCell, int worstCell2, int freeCell ) {
+    protected void bisectCells( int worstCell, int worstCell2, int freeCell ) {
 
         // OK now we have the two cells we want to divide by putting a new cell
         // between them
@@ -536,7 +536,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         _cellUtility._values[ _bestCell ] = utilityNew;
     }
 
-    private void reduceStress() {
+    protected void reduceStress() {
         // exponentially decay stress
         // S = S - Eta * S
         float cellStressLearningRate = _c.getStressLearningRate();
@@ -545,7 +545,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         }
     }
 
-    private void reduceUtility() {
+    protected void reduceUtility() {
         // exponentially decay utility
         // U = U - Beta * U
         float cellUtilityLearningRate = _c.getUtilityLearningRate();
@@ -554,7 +554,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         }
     }
 
-    private void trainCells() {
+    protected void trainCells() {
         float bestCellLearningRate = _c.getLearningRate();
         float neighboursLearningRate = _c.getLearningRateNeighbours();
         int inputs = _c.getNbrInputs();
@@ -611,18 +611,27 @@ public class GrowingNeuralGas extends CompetitiveLearning {
     }
 
     protected void updateEdges() {
-        int maxEdgeAge = _c.getEdgeMaxAge();
-        int cells = _c.getNbrCells();
+        addEdge( _bestCell, _2ndBestCell );
+        removeOldEdges();
+    }
 
+    protected void addEdge( int cell1, int cell2 ) {
+
+        // add new edge
         int offset = getEdgeOffset( _bestCell, _2ndBestCell );
 //        edgeAges.add( 1.f ); only increment ages of neighbours of bestCellA
         _edgesAges._values[ offset ] = 0.f; // this one was just used
         _edges._values[ offset ] = 1.f; // Create the edge if not already
+    }
+
+    protected void removeOldEdges() {
+        int maxEdgeAge = _c.getEdgeMaxAge();
+        int cells = _c.getNbrCells();
 
         // now go and prune
         for( int cell1 = 0; cell1 < cells; ++cell1 ) {
             for( int cell2 = cell1 + 1; cell2 < cells; ++cell2 ) {
-                offset = cell1 * cells + cell2;
+                int offset = cell1 * cells + cell2;
                 float edge = _edges._values[ offset ];
                 if( edge <= 0.f ) {
                     continue; // not a neighbour
