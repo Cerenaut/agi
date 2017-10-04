@@ -117,7 +117,8 @@ public class ReinforcedUnsupervisedExpt extends CreateEntityMain {
         parentName = Framework.CreateEntity( policyName, EpsilonGreedyEntity.ENTITY_TYPE, n.getName(), parentName ); // select actions given
         parentName = Framework.CreateEntity( problemName, VectorProblemEntity.ENTITY_TYPE, n.getName(), parentName ); // update reward
 
-check ordering to assign rewards.
+//check ordering to assign rewards.
+//change to non-conv?
 
         // Logging
         parentName = Framework.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
