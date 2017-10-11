@@ -178,6 +178,9 @@ public class CommonEntityFactory implements EntityFactory {
         if( entityType.equals( LifetimeSparseAutoencoderEntity.ENTITY_TYPE ) ) {
             return new LifetimeSparseAutoencoderEntity( objectMap, _n, modelEntity );
         }
+        if( entityType.equals( BiasedSparseAutoencoderEntity.ENTITY_TYPE ) ) {
+            return new BiasedSparseAutoencoderEntity( objectMap, _n, modelEntity );
+        }
 
         if( entityType.equals( OnlineKSparseAutoencoderEntity.ENTITY_TYPE ) ) {
             return new OnlineKSparseAutoencoderEntity( objectMap, _n, modelEntity );
@@ -270,6 +273,9 @@ public class CommonEntityFactory implements EntityFactory {
         }
         if( entityType.equals( VectorProblemEntity.ENTITY_TYPE ) ) {
             return new VectorProblemEntity( objectMap, _n, modelEntity );
+        }
+        if( entityType.equals( Reward2LearningRateEntity.ENTITY_TYPE ) ) {
+            return new Reward2LearningRateEntity( objectMap, _n, modelEntity );
         }
 
         return null;

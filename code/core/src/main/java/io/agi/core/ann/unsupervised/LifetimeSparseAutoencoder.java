@@ -155,13 +155,25 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
         update( learn );
     }
 
-    public void encode() {
+    protected void encode() {
+        int sparsity = _c.getSparsity();
+        encode( _inputValues, _cellWeights, _cellBiases1, _cellWeightedSum, _cellSpikes, sparsity );
+    }
+
+    public static void encode(
+        Data inputValues,
+        Data cellWeights,
+        Data cellBiases1,
+        Data cellWeightedSum,
+        Data cellSpikes,
+        int sparsity
+    ) {
         // Hidden layer (forward pass)
         TreeMap< Float, ArrayList< Integer > > ranking = new TreeMap< Float, ArrayList< Integer > >();
 
-        int inputs = _c.getNbrInputs();
-        int cells = _c.getNbrCells();
-        int sparsity = _c.getSparsity();
+        int inputs = inputValues.getSize();//_c.getNbrInputs();
+        int cells = cellSpikes.getSize();//_c.getNbrCells();
+//        int sparsity = _c.getSparsity();
 
         for( int c = 0; c < cells; ++c ) {
             float sum = 0.f;
@@ -170,17 +182,17 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
 
                 int offset = c * inputs +i;
 
-                float input = _inputValues._values[ i ];
-                float weight = _cellWeights._values[ offset ];
+                float input = inputValues._values[ i ];
+                float weight = cellWeights._values[ offset ];
                 float product = input * weight;
                 sum += product;
             }
 
-            float bias = _cellBiases1._values[ c ];
+            float bias = cellBiases1._values[ c ];
 
             sum += bias;
 
-            _cellWeightedSum._values[ c ] = sum;
+            cellWeightedSum._values[ c ] = sum;
 
             Ranking.add( ranking, sum, c );
         }
@@ -189,10 +201,10 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
         boolean findMaxima = true;
         int maxRank = sparsity;
         ArrayList< Integer > activeCells = Ranking.getBestValues( ranking, findMaxima, maxRank );
-        _cellSpikes.set( 0.f );
+        cellSpikes.set( 0.f );
         for( Integer c : activeCells ) {
-            float transfer = _cellWeightedSum._values[ c ]; // otherwise zero
-            _cellSpikes._values[ c ] = transfer;
+            float transfer = cellWeightedSum._values[ c ]; // otherwise zero
+            cellSpikes._values[ c ] = transfer;
         }
 
     }

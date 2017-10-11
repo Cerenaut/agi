@@ -37,25 +37,25 @@ public class QLearningEntity extends Entity {
 
     public static final String ENTITY_TYPE = "q-learning";
 
-    public static final String INPUT_REWARD = "input-reward";
+    public static final String INPUT_REWARD_NEW = "input-reward-new";
     public static final String INPUT_STATES_NEW  = "input-states-new";
-    public static final String INPUT_ACTIONS_NEW = "input-actions-new";
+    public static final String INPUT_ACTIONS_OLD = "input-actions-old";
 
     public static final String OUTPUT_STATES_OLD   = "output-states-old";
-    public static final String OUTPUT_ACTIONS_OLD  = "output-actions-old";
+//    public static final String OUTPUT_ACTIONS_OLD  = "output-actions-old";
     public static final String OUTPUT_STATES_NEW   = "output-states-new";
-    public static final String OUTPUT_ACTIONS_NEW  = "output-actions-new";
+//    public static final String OUTPUT_ACTIONS_NEW  = "output-actions-new";
     public static final String OUTPUT_ACTIONS_QUALITY = "output-actions-quality";
-    public static final String OUTPUT_STATES_ACTIONS_QUALITY = "output-states-actions-quality";
+    public static final String OUTPUT_STATES_ACTIONS_QUALITY = "output-states-actions-quality"; // Q-table
 
     public QLearningEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
     }
 
     public void getInputAttributes( Collection< String > attributes ) {
-        attributes.add( INPUT_REWARD );
+        attributes.add( INPUT_REWARD_NEW );
         attributes.add( INPUT_STATES_NEW );
-        attributes.add( INPUT_ACTIONS_NEW );
+        attributes.add( INPUT_ACTIONS_OLD );
     }
 
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
@@ -64,17 +64,17 @@ public class QLearningEntity extends Entity {
         flags.putFlag( OUTPUT_STATES_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( OUTPUT_STATES_OLD, DataFlags.FLAG_SPARSE_BINARY );
 
-        attributes.add( OUTPUT_ACTIONS_OLD );
-        flags.putFlag( OUTPUT_ACTIONS_OLD, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( OUTPUT_ACTIONS_OLD, DataFlags.FLAG_SPARSE_BINARY );
+//        attributes.add( OUTPUT_ACTIONS_OLD );
+//        flags.putFlag( OUTPUT_ACTIONS_OLD, DataFlags.FLAG_NODE_CACHE );
+//        flags.putFlag( OUTPUT_ACTIONS_OLD, DataFlags.FLAG_SPARSE_BINARY );
 
         attributes.add( OUTPUT_STATES_NEW );
         flags.putFlag( OUTPUT_STATES_NEW, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( OUTPUT_STATES_NEW, DataFlags.FLAG_SPARSE_BINARY );
 
-        attributes.add( OUTPUT_ACTIONS_NEW );
-        flags.putFlag( OUTPUT_ACTIONS_NEW, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( OUTPUT_ACTIONS_NEW, DataFlags.FLAG_SPARSE_BINARY );
+//        attributes.add( OUTPUT_ACTIONS_NEW );
+//        flags.putFlag( OUTPUT_ACTIONS_NEW, DataFlags.FLAG_NODE_CACHE );
+//        flags.putFlag( OUTPUT_ACTIONS_NEW, DataFlags.FLAG_SPARSE_BINARY );
 
         attributes.add( OUTPUT_ACTIONS_QUALITY );
         flags.putFlag( OUTPUT_ACTIONS_QUALITY, DataFlags.FLAG_NODE_CACHE );
@@ -93,9 +93,9 @@ public class QLearningEntity extends Entity {
         QLearningEntityConfig config = ( QLearningEntityConfig ) _config;
 
         // Do nothing unless the input is defined
-        Data inputR = getData( INPUT_REWARD );
+        Data inputR = getData( INPUT_REWARD_NEW );
         Data inputS = getData( INPUT_STATES_NEW );
-        Data inputA = getData( INPUT_ACTIONS_NEW );
+        Data inputA = getData( INPUT_ACTIONS_OLD );
 
         if( ( inputR == null ) || ( inputS == null ) || ( inputA == null ) ) {
             Data actionQuality = new Data( config.actions );
@@ -123,7 +123,7 @@ public class QLearningEntity extends Entity {
                 config.discountRate );
 
         QLearning ql = new QLearning();
-        ql.setup( qLearningConfig, null, null, null );
+        ql.setup( qLearningConfig );//, null, null, null );
 
         copyDataFromPersistence( ql );
 
@@ -152,8 +152,8 @@ public class QLearningEntity extends Entity {
 
         ql._stateNew = getDataLazyResize( OUTPUT_STATES_NEW, dataSizeS );
         ql._stateOld = getDataLazyResize( OUTPUT_STATES_OLD, dataSizeS );
-        ql._actionNew = getDataLazyResize( OUTPUT_ACTIONS_NEW, dataSizeA );
-        ql._actionOld = getDataLazyResize( OUTPUT_ACTIONS_OLD, dataSizeA );
+//        ql._actionNew = getDataLazyResize( OUTPUT_ACTIONS_NEW, dataSizeA );
+//        ql._actionOld = getDataLazyResize( OUTPUT_ACTIONS_OLD, dataSizeA );
         ql._actionQuality = getDataLazyResize( OUTPUT_ACTIONS_QUALITY, dataSizeA );
         ql._quality = getDataLazyResize( OUTPUT_STATES_ACTIONS_QUALITY, dataSizeSA );
     }
@@ -161,8 +161,8 @@ public class QLearningEntity extends Entity {
     protected void copyDataToPersistence( QLearning ql ) {
         setData( OUTPUT_STATES_NEW, ql._stateNew );
         setData( OUTPUT_STATES_OLD, ql._stateOld );
-        setData( OUTPUT_ACTIONS_NEW, ql._actionNew );
-        setData( OUTPUT_ACTIONS_OLD, ql._actionOld );
+//        setData( OUTPUT_ACTIONS_NEW, ql._actionNew );
+//        setData( OUTPUT_ACTIONS_OLD, ql._actionOld );
         setData( OUTPUT_ACTIONS_QUALITY, ql._actionQuality );
         setData( OUTPUT_STATES_ACTIONS_QUALITY, ql._quality );
     }

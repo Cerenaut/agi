@@ -71,7 +71,7 @@ public class VectorProblemEntity extends Entity {
         // default input
 //        Data inputS = getData( INPUT_STATES );
         Data inputA = getData( INPUT_ACTIONS );
-        Data inputIA = getData( INPUT_ACTIONS_IDEAL );
+        Data inputAI = getData( INPUT_ACTIONS_IDEAL );
 
         VectorProblem p = new VectorProblem();
 
@@ -85,7 +85,7 @@ public class VectorProblemEntity extends Entity {
 
 //        p.setState( inputS );
         p.setActions( inputA );
-        p.setIdealActions( inputIA );
+        p.setIdealActions( inputAI );
 
         // load state
         copyDataFromPersistence( p );

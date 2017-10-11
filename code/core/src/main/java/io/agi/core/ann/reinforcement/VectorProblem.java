@@ -80,7 +80,7 @@ public class VectorProblem implements QLearningProblem, Reward {
     }
 
     protected void updateReward() {
-        // e.g. len 10, 2 prompts, 10-2=8,9 are the test ones
+
         float maxError = 0f;
 
         int actions = _idealActions.getSize();

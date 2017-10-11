@@ -42,7 +42,6 @@ public class EpsilonGreedyEntity extends Entity {
 
     public static final String INPUT_STATES_NEW  = "input-states-new";
     public static final String INPUT_ACTIONS_QUALITY = "input-actions-quality";
-    public static final String OUTPUT_ACTIONS_  = "output-actions-";
     public static final String OUTPUT_ACTIONS  = "output-actions";
 
     public EpsilonGreedyEntity( ObjectMap om, Node n, ModelEntity model ) {
@@ -56,24 +55,9 @@ public class EpsilonGreedyEntity extends Entity {
 
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
 
-//        EpsilonGreedyEntityConfig config = ( EpsilonGreedyEntityConfig ) _config;
-//
-//        int sets = config.getNbrSelectionSets();
-//
-//        for( int i = 0; i < sets; ++i ) {
-//            String suffix = GetSelectionSetSuffix( i );
-//            attributes.add( suffix );
-//            flags.putFlag( suffix, DataFlags.FLAG_NODE_CACHE );
-//            flags.putFlag( suffix, DataFlags.FLAG_SPARSE_BINARY );
-//        }
-
         attributes.add( OUTPUT_ACTIONS );
         flags.putFlag( OUTPUT_ACTIONS, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( OUTPUT_ACTIONS, DataFlags.FLAG_SPARSE_BINARY );
-    }
-
-    public static String GetSelectionSetSuffix( int i ) {
-        return OUTPUT_ACTIONS_ + i;
     }
 
     @Override
@@ -90,40 +74,10 @@ public class EpsilonGreedyEntity extends Entity {
         Data inputAQ = getData( INPUT_ACTIONS_QUALITY );
         Data outputA = new Data( inputAQ._dataSize );
 
-        ArrayList< Integer > selectionSetSizes = config.getSelectionSetSizes();
-
-        int sets = config.getNbrSelectionSets();
-        int actionOffset = 0;
-
-        for( int i = 0; i < sets; ++i ) {
-
-            String suffix = GetSelectionSetSuffix( i );
-            int setSize = selectionSetSizes.get( i );
-
-            int selectionSize = setSize;
-//            if( config.selectNone ) {
-//                ++selectionSize;
-//            }
-
-            Data actionQuality = new Data( selectionSize );
-            Data actionSelection = new Data( selectionSize );
-
-            actionQuality.copyRange( inputAQ, 0, actionOffset, selectionSize );
-
-            EpsilonGreedyQLearningPolicy egp = new EpsilonGreedyQLearningPolicy();
-            egp.setup( _r, config.epsilon );
-            egp._learn = config.learn;
-            egp.selectActions( inputS, actionQuality, actionSelection ); // select one action
-
-            // create a copy without the "select none" representation
-            Data actionSelectionExcludingNone = new Data( setSize );
-            actionSelectionExcludingNone.copyRange( actionSelection, 0, 0, setSize ); // the last action is the "none"
-            setData( suffix, actionSelectionExcludingNone );
-
-            outputA.copyRange( actionSelection, actionOffset, 0, selectionSize );
-
-            actionOffset += selectionSize;
-        }
+        EpsilonGreedyQLearningPolicy egp = new EpsilonGreedyQLearningPolicy();
+        egp.setup( _r, config.epsilon );
+        egp._learn = config.learn;
+        egp.selectActions( inputS, inputAQ, outputA ); // select one action
 
         setData( OUTPUT_ACTIONS, outputA );
     }
