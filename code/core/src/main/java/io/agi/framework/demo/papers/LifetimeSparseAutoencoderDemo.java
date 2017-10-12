@@ -101,8 +101,8 @@ public class LifetimeSparseAutoencoderDemo extends CreateEntityMain {
 
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         Framework.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), experimentName );
-//        Framework.CreateEntity( autoencoderName, LifetimeSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), imageLabelName );
-        Framework.CreateEntity( autoencoderName, BiasedSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), imageLabelName );
+        Framework.CreateEntity( autoencoderName, LifetimeSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), imageLabelName );
+//        Framework.CreateEntity( autoencoderName, BiasedSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), imageLabelName );
         Framework.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), autoencoderName ); // 2nd, class region updates after first to get its feedback
         Framework.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), vectorSeriesName ); // 2nd, class region updates after first to get its feedback
 
