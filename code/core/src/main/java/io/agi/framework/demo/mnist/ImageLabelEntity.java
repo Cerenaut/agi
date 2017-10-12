@@ -335,8 +335,15 @@ public class ImageLabelEntity extends Entity {
         // write outputs back to persistence
         ImageLabelEntityConfig config = (ImageLabelEntityConfig ) _config;
 
-        Data label = new Data( 1 );
-        label.set( imageLabel );
+        Data label = null;
+        if( config.imageLabelUniqueValues > 0 ) {
+            label = new Data( config.imageLabelUniqueValues );
+            label._values[ imageLabel ] = 1f;
+        }
+        else {
+            label = new Data( 1 );
+            label.set( imageLabel );
+        }
 
         setData( OUTPUT_LABEL, label );
         setData( OUTPUT_IMAGE, image );

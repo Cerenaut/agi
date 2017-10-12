@@ -26,12 +26,7 @@ import io.agi.framework.Main;
 import io.agi.framework.Node;
 import io.agi.framework.entities.*;
 import io.agi.framework.entities.reinforcement_learning.*;
-import io.agi.framework.entities.stdp.ConvolutionalSpikeEncoderEntity;
-import io.agi.framework.entities.stdp.ConvolutionalSpikeEncoderEntityConfig;
-import io.agi.framework.entities.stdp.DifferenceOfGaussiansEntity;
-import io.agi.framework.entities.stdp.SpikingConvolutionalNetworkEntity;
 import io.agi.framework.factories.CommonEntityFactory;
-import io.agi.framework.persistence.models.ModelData;
 
 import java.util.ArrayList;
 import java.util.Properties;
@@ -148,9 +143,9 @@ public class DistractedSequenceRecallDemo {
         classifierInputDatas.add( new AbstractPair<>( memory2Name, GatedRecurrentMemoryEntity.OUTPUT_CONTENT ) );
         Framework.SetDataReferences( stateClassifierName, GrowingNeuralGasEntity.INPUT, classifierInputDatas );
 
-        Framework.SetDataReference( qLearningName, QLearningEntity.INPUT_REWARD, problemName, DistractedSequenceRecallEntity.OUTPUT_REWARD );
+        Framework.SetDataReference( qLearningName, QLearningEntity.INPUT_REWARD_NEW, problemName, DistractedSequenceRecallEntity.OUTPUT_REWARD );
         Framework.SetDataReference( qLearningName, QLearningEntity.INPUT_STATES_NEW, stateClassifierName, GrowingNeuralGasEntity.OUTPUT_ACTIVE );
-        Framework.SetDataReference( qLearningName, QLearningEntity.INPUT_ACTIONS_NEW, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS );
+        Framework.SetDataReference( qLearningName, QLearningEntity.INPUT_ACTIONS_OLD, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS );
 
         Framework.SetDataReference( policyName, EpsilonGreedyEntity.INPUT_STATES_NEW, problemName, DistractedSequenceRecallEntity.OUTPUT_STATES );
         Framework.SetDataReference( policyName, EpsilonGreedyEntity.INPUT_ACTIONS_QUALITY, qLearningName, QLearningEntity.OUTPUT_ACTIONS_QUALITY );
@@ -170,10 +165,6 @@ public class DistractedSequenceRecallDemo {
         Framework.SetDataReference( memory2Name, GatedRecurrentMemoryEntity.INPUT_CONTENT    , problemName, DistractedSequenceRecallEntity.OUTPUT_STATES );
         Framework.SetDataReference( memory2Name, GatedRecurrentMemoryEntity.INPUT_GATES_WRITE, copyAction3Name, VectorCopyRangeEntity.OUTPUT );
         Framework.SetDataReference( memory2Name, GatedRecurrentMemoryEntity.INPUT_GATES_CLEAR, copyAction4Name, VectorCopyRangeEntity.OUTPUT );
-
-// TODO flight back: enable training of Q and classifier during testing?
-// TODO flight back: observe long term see if it is able to learn the sequence of improvements one by one?
-
 
 //        Framework.SetDataReference( problemName, DistractedSequenceRecallEntity.INPUT_ACTIONS, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS_NEW );
         Framework.SetDataReference( problemName, DistractedSequenceRecallEntity.INPUT_ACTIONS, copyAction0Name, VectorCopyRangeEntity.OUTPUT );
@@ -366,7 +357,7 @@ public class DistractedSequenceRecallDemo {
         entityConfig.epsilon = epsilon;
 //        entityConfig.selectNone = selectNone;
 //        entityConfig.simultaneousActions = simultaneousActions;
-        entityConfig.setSelectionSetSizes( selectionSetSizes );
+//        entityConfig.setSelectionSetSizes( selectionSetSizes );
 
         Framework.SetConfig( entityName, entityConfig );
     }

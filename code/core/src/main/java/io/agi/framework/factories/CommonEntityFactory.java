@@ -32,10 +32,7 @@ import io.agi.framework.demo.sequence.DistractedSequenceRecallEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.entities.convolutional.AutoencoderConvolutionalNetworkEntity;
 import io.agi.framework.entities.convolutional.CompetitiveLearningConvolutionalNetworkEntity;
-import io.agi.framework.entities.reinforcement_learning.EpsilonGreedyEntity;
-import io.agi.framework.entities.reinforcement_learning.GatedRecurrentMemoryEntity;
-import io.agi.framework.entities.reinforcement_learning.QLearningEntity;
-import io.agi.framework.entities.reinforcement_learning.TrainingScheduleEntity;
+import io.agi.framework.entities.reinforcement_learning.*;
 import io.agi.framework.entities.stdp.ConvolutionalSpikeEncoderEntity;
 import io.agi.framework.entities.stdp.DifferenceOfGaussiansEntity;
 import io.agi.framework.entities.stdp.LocalNormalizationEntity;
@@ -181,6 +178,9 @@ public class CommonEntityFactory implements EntityFactory {
         if( entityType.equals( LifetimeSparseAutoencoderEntity.ENTITY_TYPE ) ) {
             return new LifetimeSparseAutoencoderEntity( objectMap, _n, modelEntity );
         }
+        if( entityType.equals( BiasedSparseAutoencoderEntity.ENTITY_TYPE ) ) {
+            return new BiasedSparseAutoencoderEntity( objectMap, _n, modelEntity );
+        }
 
         if( entityType.equals( OnlineKSparseAutoencoderEntity.ENTITY_TYPE ) ) {
             return new OnlineKSparseAutoencoderEntity( objectMap, _n, modelEntity );
@@ -270,6 +270,12 @@ public class CommonEntityFactory implements EntityFactory {
         }
         if( entityType.equals( GatedRecurrentMemoryEntity.ENTITY_TYPE ) ) {
             return new GatedRecurrentMemoryEntity( objectMap, _n, modelEntity );
+        }
+        if( entityType.equals( VectorProblemEntity.ENTITY_TYPE ) ) {
+            return new VectorProblemEntity( objectMap, _n, modelEntity );
+        }
+        if( entityType.equals( Reward2LearningRateEntity.ENTITY_TYPE ) ) {
+            return new Reward2LearningRateEntity( objectMap, _n, modelEntity );
         }
 
         return null;

@@ -17,18 +17,14 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.entities.reinforcement_learning;
-
-import io.agi.framework.EntityConfig;
-
-import java.util.ArrayList;
+package io.agi.core.ann.unsupervised;
 
 /**
- * Created by dave on 2/06/17.
+ * Created by dave on 5/10/17.
  */
-public class EpsilonGreedyEntityConfig extends EntityConfig {
+public class BiasedSparseAutoencoderConfig extends LifetimeSparseAutoencoderConfig {
 
-    public float epsilon = 0f;
+    public BiasedSparseAutoencoderConfig() {
+    }
 
 }
-
