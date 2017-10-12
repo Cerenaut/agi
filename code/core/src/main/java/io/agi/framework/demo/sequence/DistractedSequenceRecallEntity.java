@@ -42,7 +42,7 @@ import java.util.Collection;
 /**
  * Created by dave on 19/05/17.
  */
-public class DistractedSequenceRecallEntity  extends Entity {
+public class DistractedSequenceRecallEntity extends Entity {
 
     public static final String ENTITY_TYPE = "distracted-sequence-recall";
 

@@ -30,28 +30,28 @@ import java.util.HashSet;
 public class QLearning {
 
     public QLearningConfig _c;
-    public QLearningProblem _w;
-    public QLearningPolicy _p;
-    public Reward _r;
+//    public QLearningProblem _w;
+//    public QLearningPolicy _p;
+//    public Reward _r;
 
     public Data _quality;
     public Data _actionQuality;
     public Data _stateOld;
     public Data _stateNew;
     public Data _actionOld;
-    public Data _actionNew;
+//    public Data _actionNew;
     public Data _rewardNew;
 
     public QLearning() {
 
     }
 
-    public void setup( QLearningConfig c, Reward r, QLearningPolicy p, QLearningProblem w ) {
+    public void setup( QLearningConfig c ) {//, Reward r, QLearningPolicy p, QLearningProblem w ) {
 
         _c = c;
-        _p = p;
-        _r = r;
-        _w = w;
+//        _p = p;
+//        _r = r;
+//        _w = w;
 
         int S = c.getNbrStates();
         int A = c.getNbrActions();
@@ -60,7 +60,7 @@ public class QLearning {
         _stateOld = new Data( S );
         _stateNew = new Data( S );
         _actionOld = new Data( A );
-        _actionNew = new Data( A );
+//        _actionNew = new Data( A );
 
         _actionQuality = new Data( A );
         _quality = new Data( A, S );
@@ -70,7 +70,7 @@ public class QLearning {
         _quality.set( 1f ); // encourage exploration
     }
 
-    public void update() {
+/*    public void update() {
         float rewardNew = _r.getReward();
         Data stateNew = _w.getState();
         update( stateNew, rewardNew, _actionNew );
@@ -78,14 +78,22 @@ public class QLearning {
         _w.setActions( _actionNew );
         _w.update(); // update the world in response to the action
         //print();
-    }
+    }*/
 
-    public void update( Data stateNew, float rewardNew, Data actionNew ) {
-        _rewardNew.set( rewardNew );
-        _stateOld.copy( _stateNew );
-        _stateNew.copy( stateNew );
-        _actionOld.copy( _actionNew );
-        _actionNew.copy( actionNew );
+    /**
+     * We pass in the latest state, the latest reward, and the previous action because we can't select the new action
+     * until Q-Learning has output the Q-values for each action.
+     *
+     * @param stateNew The current state
+     * @param rewardNew The reward from transiting TO the current state
+     * @param actionOld The action that transited from the old state to the current state
+     */
+    public void update( Data stateNew, float rewardNew, Data actionOld ) {
+        _rewardNew.set( rewardNew ); // reward on arriving at state(t), want to pair with state(t-1) and action(t-1)
+        _stateOld.copy( _stateNew ); // old = state(t-1)
+        _stateNew.copy( stateNew ); // new = state(t)
+        _actionOld.copy( actionOld );//_actionNew ); // old = action( t-1 )
+//        _actionNew.copy( actionNew ); // the param
 
         if( _c.getLearn() ) {
             // state,action old -> state,reward new
@@ -100,12 +108,12 @@ public class QLearning {
     public void print() {
         System.err.println( "STATES ---> " );
         int states = _stateNew.getSize();
-        int actions = _actionNew.getSize();
+        int actions = _actionOld.getSize();
 
         for( int y = 0; y < actions; ++y ) {
             for( int x = 0; x < states; ++x ) {
                 int offset = getQualityOffset( x, y, states, actions );
-               float q = _quality._values[ offset ];
+                float q = _quality._values[ offset ];
                 System.err.printf( "%.2f", q );
                 System.err.print( ", " );
             }
@@ -179,9 +187,9 @@ public class QLearning {
 
         float r2Value = r2._values[ 0 ];
 
-        HashSet< Integer > s1Active = s1.indicesMoreThan( 0.5f );
-        HashSet< Integer > s2Active = s2.indicesMoreThan( 0.5f );
-        HashSet< Integer > a1Active = a1.indicesMoreThan( 0.5f ); // chosen actions
+        HashSet< Integer > s1Active = s1.indicesMoreThan( 0.f );
+        HashSet< Integer > s2Active = s2.indicesMoreThan( 0.f );
+        HashSet< Integer > a1Active = a1.indicesMoreThan( 0.f ); // chosen actions
 
         int S = s1.getSize();
         int A = a1.getSize();
@@ -200,10 +208,10 @@ public class QLearning {
                     for( int a2Bit = 0; a2Bit < A; ++a2Bit ) {
                         int offsetS2A2 = getQualityOffset( s2Bit, a2Bit, S, A );
 
-                        if( offsetS2A2 >= _quality._values.length ) {
-                            int g = 0;
-                            g++;
-                        }
+//                        if( offsetS2A2 >= _quality._values.length ) {
+//                            int g = 0;
+//                            g++;
+//                        }
                         float QS2A2 = _quality._values[ offsetS2A2 ];
 
                         if( QS2A2 > maxQS2A2 ) {

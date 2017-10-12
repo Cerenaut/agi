@@ -234,6 +234,11 @@ public class ConvolutionalNetworkConfig extends NetworkConfig {
 
     public String getLayerValue( String key, int layer ) {
         String values = _om.getString( getKey( key ) );
+        return GetLayerValue( values, layer );
+    }
+
+    public static String GetLayerValue( String values, int layer ) {
+
         String[] sizes = values.split( "," );
         if( layer >= sizes.length ) {
             return "";
