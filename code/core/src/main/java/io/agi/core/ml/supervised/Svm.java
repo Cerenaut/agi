@@ -34,12 +34,12 @@ import java.io.IOException;
 /**
  * Created by gideon on 14/12/16.
  */
-public class Svm extends NamedObject implements Callback, SupervisedBatchTraining {
+public class Svm extends NamedObject implements Callback, SupervisedBatchTraining<SvmConfig> {
 
     protected static final Logger _logger = LogManager.getLogger();
 
-    private SupervisedBatchTrainingConfig _config;
-    svm_model _model = null;
+    private SvmConfig _config;
+    private svm_model _model = null;
 
     public Svm( String name, ObjectMap om ) {
         super( name, om );
@@ -55,7 +55,7 @@ public class Svm extends NamedObject implements Callback, SupervisedBatchTrainin
     }
 
     @Override
-    public void setup( SupervisedBatchTrainingConfig config ) {
+    public void setup( SvmConfig config ) {
         this._config = config;
         loadModel();    // load model if it exists in config object
     }

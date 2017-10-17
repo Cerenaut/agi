@@ -128,8 +128,8 @@ public class SvmTest {
 
         // setup learner
         FastRandom r = new FastRandom();
-        SupervisedBatchTrainingConfig config = new SupervisedBatchTrainingConfig();
-        config.setup( om, "test-svm-config", r, "", true, 100f );
+        SvmConfig config = new SvmConfig();
+        config.setup( om, "test-svm-config", r, "", 100f, 0.1 );
         _learner.setup( config );
 
         // train model
