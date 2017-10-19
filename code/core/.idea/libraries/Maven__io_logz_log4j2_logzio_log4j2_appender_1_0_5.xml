@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: io.logz.log4j2:logzio-log4j2-appender:1.0.5">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/io/logz/log4j2/logzio-log4j2-appender/1.0.5/logzio-log4j2-appender-1.0.5.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/io/logz/log4j2/logzio-log4j2-appender/1.0.5/logzio-log4j2-appender-1.0.5-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/io/logz/log4j2/logzio-log4j2-appender/1.0.5/logzio-log4j2-appender-1.0.5-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
