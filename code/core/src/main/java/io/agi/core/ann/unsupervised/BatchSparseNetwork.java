@@ -32,35 +32,34 @@ import java.util.HashSet;
 import java.util.TreeMap;
 
 /**
- * A variation on "Winner-Take-All Autoencoders" by Alireza Makhzani, Brendan Frey. Their system is a convolutional
- * autoencoder with ReLU and enforced spatial and lifetime sparsity.
- *
- * The changes are that this doesn't have the separate deconvolution process, so is more similar to the K-Sparse auto
- * encoder. However, they warn that this may cause the convolutional use of this to produce lots of compressed copies
- * of the input, and then decompress with deconvolution.
- *
- * Created by dave on 1/07/16.
+ * Derived from the LifetimeSparseAutoencoder but now using a sparse coding approximation to perform arbitrary functions.
+ * Created by dave on 16/10/17.
  */
-public class LifetimeSparseAutoencoder extends CompetitiveLearning {
+public class BatchSparseNetwork extends CompetitiveLearning {
 
     protected static final Logger logger = LogManager.getLogger();
 
-    public LifetimeSparseAutoencoderConfig _c;
-    public Data _inputValues;
-    public Data _inputReconstruction;
-    public Data _cellWeights;
+    public BatchSparseNetworkConfig _c;
+
+    public Data _testingInputValues; // input
+    public Data _trainingInputValues; // input
+    public Data _trainingOutputValues; // input
+
+    public Data _testingOutputValues; // output
+
+    public Data _cellWeights1;
+    public Data _cellWeights2;
     public Data _cellBiases1;
     public Data _cellBiases2;
-    public Data _cellWeightsVelocity;
+    public Data _cellWeights1Velocity;
+    public Data _cellWeights2Velocity;
     public Data _cellBiases1Velocity;
     public Data _cellBiases2Velocity;
-    public Data _cellErrors;
-    public Data _cellWeightedSum;
-    public Data _cellSpikes;
+//    public Data _cellErrors;
+    public Data _testingHiddenWeightedSum;
+    public Data _testingHiddenSpikes;
 
-//    public Data _outputErrors; // was inputGradients
-//    public Data _hiddenErrors; // was cellGradients
-
+    public Data _batchOutputIdeal; // new
     public Data _batchOutputOutput;
     public Data _batchOutputInput;
     public Data _batchOutputInputLifetime;
@@ -69,49 +68,55 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
     public Data _batchHiddenWeightedSum;
     public Data _batchHiddenErrors;
 
-    public LifetimeSparseAutoencoder( String name, ObjectMap om ) {
+    public BatchSparseNetwork( String name, ObjectMap om ) {
         super( name, om );
     }
 
-    public void setInput( Data input ) {
-        _inputValues.copy( input );
+    public void setInput( Data testingInput, Data trainingInput, Data trainingOutput ) {
+        _testingInputValues.copy( testingInput );
+        _trainingInputValues.copy( trainingInput );
+        _trainingOutputValues.copy( trainingOutput );
     }
 
-    public Data getInput() {
-        return _inputValues;
-    }
-
-    public void setup( LifetimeSparseAutoencoderConfig c ) {
+    public void setup( BatchSparseNetworkConfig c ) {
         _c = c;
 
         int batchSize = c.getBatchSize();
         int inputs = c.getNbrInputs();
+        int outputs = c.getOutputs();
         int w = c.getWidthCells();
         int h = c.getHeightCells();
         int cells = w * h;
 
-        _inputValues = new Data( inputs );
-        _inputReconstruction = new Data( inputs );
-        _cellWeights = new Data( w, h, inputs );
-        _cellBiases1 = new Data( w, h );
-        _cellBiases2 = new Data( inputs );
-        _cellWeightsVelocity = new Data( w, h, inputs );
+        _testingInputValues = new Data( inputs );
+        _trainingInputValues = new Data( inputs );
+        _trainingOutputValues = new Data( outputs );
+        _testingOutputValues = new Data( outputs );
+
+        _cellWeights1 = new Data( inputs, cells );
+        _cellWeights2 = new Data( cells, outputs );
+        _cellBiases1 = new Data( w, h ); // 1 bias per cell
+//        _cellBiases2 = new Data( inputs );
+        _cellBiases2 = new Data( outputs ); // 1 bias per output
+        _cellWeights1Velocity = new Data( inputs, cells );
+        _cellWeights2Velocity = new Data( cells, outputs );
         _cellBiases1Velocity = new Data( w, h );
-        _cellBiases2Velocity = new Data( inputs );
-        _cellErrors = new Data( w, h );
-        _cellWeightedSum = new Data( w, h );
-        _cellSpikes = new Data( w, h );
+//        _cellBiases2Velocity = new Data( inputs );
+        _cellBiases2Velocity = new Data( outputs );
+//        _cellErrors = new Data( w, h );
+        _testingHiddenWeightedSum = new Data( w, h );
+        _testingHiddenSpikes = new Data( w, h );
 
-//        _outputErrors = new Data( inputs );
-//        _hiddenErrors = new Data( w, h );
-
-        _batchOutputOutput = new Data( inputs, batchSize );
-        _batchOutputInput = new Data(  cells, batchSize );
-        _batchOutputInputLifetime = new Data(  cells, batchSize );
-        _batchOutputErrors = new Data( inputs, batchSize );
+        _batchOutputIdeal = new Data( outputs, batchSize );
+//        _batchOutputOutput = new Data( inputs, batchSize );
+        _batchOutputOutput = new Data( outputs, batchSize );
+        _batchOutputInput = new Data( cells, batchSize );
+        _batchOutputInputLifetime = new Data( cells, batchSize );
+//        _batchOutputErrors = new Data( inputs, batchSize );
+        _batchOutputErrors = new Data( outputs, batchSize );
         _batchHiddenInput = new Data( inputs, batchSize );
         _batchHiddenWeightedSum = new Data( cells, batchSize );
-        _batchHiddenErrors = new Data(  cells, batchSize );
+        _batchHiddenErrors = new Data( cells, batchSize );
     }
 
     public void reset() {
@@ -125,77 +130,91 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
         _batchHiddenInput.set( 0f );
         _batchHiddenErrors.set( 0f );
 
-        _cellWeightsVelocity.set( 0f );
+        _cellWeights1Velocity.set( 0f );
+        _cellWeights2Velocity.set( 0f );
         _cellBiases1Velocity.set( 0f );
         _cellBiases2Velocity.set( 0f );
 
         float weightsStdDev = _c.getWeightsStdDev();
 
-        for( int i = 0; i < _cellWeights.getSize(); ++i ) {
+        for( int i = 0; i < _cellWeights1.getSize(); ++i ) {
             double r = _c._r.nextGaussian(); // mean: 0, SD: 1
             r *= weightsStdDev;
-            _cellWeights._values[ i ] = (float)r;// / sqRtInputs;
+            _cellWeights1._values[ i ] = ( float ) r;// / sqRtInputs;
+        }
+
+        for( int i = 0; i < _cellWeights2.getSize(); ++i ) {
+            double r = _c._r.nextGaussian(); // mean: 0, SD: 1
+            r *= weightsStdDev;
+            _cellWeights2._values[ i ] = ( float ) r;// / sqRtInputs;
         }
 
         for( int i = 0; i < _cellBiases1.getSize(); ++i ) {
             double r = _c._r.nextGaussian(); // mean: 0, SD: 1
             r *= weightsStdDev;
-            _cellBiases1._values[ i ] = (float)r;
+            _cellBiases1._values[ i ] = ( float ) r;
         }
 
         for( int i = 0; i < _cellBiases2.getSize(); ++i ) {
             double r = _c._r.nextGaussian(); // mean: 0, SD: 1
             r *= weightsStdDev;
-            _cellBiases2._values[ i ] = (float)r;
+            _cellBiases2._values[ i ] = ( float ) r;
         }
     }
 
-    public void update() {
-        boolean learn = _c.getLearn();
-        update( learn );
-    }
+    public static void feedForwardLayer(
+            int nbrLayerInputs,
+            int nbrLayerOutputs,
+            Data cellWeights,
+            Data cellBiases,
+            Data layerInputs,
+            Data output,
+            TreeMap< Float, ArrayList< Integer > > ranking ) {
 
-    protected void encode() {
-        int sparsity = _c.getSparsity();
-        encode( _inputValues, _cellWeights, _cellBiases1, _cellWeightedSum, _cellSpikes, sparsity );
-    }
-
-    public static void encode(
-        Data inputValues,
-        Data cellWeights,
-        Data cellBiases1,
-        Data cellWeightedSum,
-        Data cellSpikes,
-        int sparsity
-    ) {
-        // Hidden layer (forward pass)
-        TreeMap< Float, ArrayList< Integer > > ranking = new TreeMap< Float, ArrayList< Integer > >();
-
-        int inputs = inputValues.getSize();//_c.getNbrInputs();
-        int cells = cellSpikes.getSize();//_c.getNbrCells();
-//        int sparsity = _c.getSparsity();
-
-        for( int c = 0; c < cells; ++c ) {
+        for( int i = 0; i < nbrLayerOutputs; ++i ) {
             float sum = 0.f;
 
-            for( int i = 0; i < inputs; ++i ) {
+            for( int j = 0; j < nbrLayerInputs; ++j ) {
 
-                int offset = c * inputs +i;
+                float layerInput = layerInputs._values[ j ];
 
-                float input = inputValues._values[ i ];
+                int offset = i * nbrLayerInputs +j;
                 float weight = cellWeights._values[ offset ];
-                float product = input * weight;
+                float product = layerInput * weight;
                 sum += product;
             }
 
-            float bias = cellBiases1._values[ c ];
+            float bias = cellBiases._values[ i ];
 
             sum += bias;
 
-            cellWeightedSum._values[ c ] = sum;
+            output._values[ i ] = sum;
 
-            Ranking.add( ranking, sum, c );
+            if( ranking != null ) {
+                Ranking.add( ranking, sum, i );
+            }
         }
+
+    }
+
+    public static void feedForward(
+            Data inputValues, // input
+            Data cellWeights1,
+            Data cellWeights2,
+            Data cellBiases1,
+            Data cellBiases2,
+            Data cellWeightedSum, // hidden
+            Data cellSpikes, // hidden
+            Data outputValues, // output
+            int sparsity ) {
+        // Hidden layer (forward pass)
+        TreeMap< Float, ArrayList< Integer > > ranking = new TreeMap< Float, ArrayList< Integer > >();
+
+        int inputs = inputValues.getSize();
+        int outputs = outputValues.getSize();
+        int cells = cellSpikes.getSize();
+
+        feedForwardLayer( inputs, cells, cellWeights1, cellBiases1, inputValues, cellWeightedSum, ranking );
 
         // Hidden Layer Nonlinearity: Make all except top k cells zero.
         boolean findMaxima = true;
@@ -207,27 +226,51 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
             cellSpikes._values[ c ] = transfer;
         }
 
+        // now produce an output
+        feedForwardLayer( cells, outputs, cellWeights2, cellBiases2, cellSpikes, outputValues, null );
     }
 
-    public void update( boolean learn ) {
-        encode();
+    public void update() {
 
-        // Output layer (forward pass)
-        // dont really need to do this if not learning.
-        _inputReconstruction.setSize( _inputValues._dataSize ); // copy the size of the current input
-        decode( _c, _cellWeights, _cellBiases2, _cellSpikes, _inputReconstruction ); // for output
+        boolean learn = _c.getLearn();
+        int sparsity = _c.getSparsity();
+
+        feedForward(
+            _testingInputValues, // input layer
+            _cellWeights1,
+            _cellWeights2,
+            _cellBiases1,
+            _cellBiases2,
+            _testingHiddenWeightedSum,
+            _testingHiddenSpikes, // hidden layer
+            _testingOutputValues, // output layer
+            sparsity );
 
         // don't go any further unless learning is enabled
         if( !learn ) {
             return;
         }
 
+        // Training sample
+        Data hiddenLayerInput       = _trainingInputValues;
+        Data hiddenLayerWeightedSum = new Data( _testingHiddenWeightedSum._dataSize );
+        Data outputLayerInput       = new Data( _testingHiddenSpikes._dataSize ); // == hiddenLayerSpikes
+        Data outputLayerOutput      = new Data( _testingOutputValues._dataSize );
+        Data outputLayerIdeal       = _trainingOutputValues;
+
+        feedForward(
+                hiddenLayerInput,
+                _cellWeights1,
+                _cellWeights2,
+                _cellBiases1,
+                _cellBiases2,
+                hiddenLayerWeightedSum, //_testingHiddenWeightedSum,
+                outputLayerInput,//_testingHiddenSpikes,
+                outputLayerOutput, // not actually used?
+                sparsity );
+
         int batchSize = _c.getBatchSize();
         int batchCount = _c.getBatchCount();
-
-        Data hiddenLayerInput = _inputValues;
-        Data hiddenLayerWeightedSum = _cellWeightedSum;
-        Data outputLayerInput = _cellSpikes;
 
         Data hiddenLayerWeightedSumBatch = _batchHiddenWeightedSum;
         Data hiddenLayerInputBatch = _batchHiddenInput;
@@ -236,17 +279,21 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
         Data outputLayerInputBatchLifetime = _batchOutputInputLifetime;
         Data outputLayerErrorBatch = _batchOutputErrors;
         Data outputLayerOutputBatch = _batchOutputOutput;
+        Data outputLayerIdealBatch = _batchOutputIdeal;
 
         batchAccumulate(
                 _c,
+
                 hiddenLayerInput,
                 hiddenLayerWeightedSum,
                 outputLayerInput,
-//                outputLayerOutput,
+                outputLayerIdeal,
+
                 hiddenLayerInputBatch,
                 hiddenLayerWeightedSumBatch,
                 outputLayerInputBatch,
-//                outputLayerOutputBatch,
+                outputLayerIdealBatch,
+
                 batchCount );
 
         // decide whether to learn or accumulate more gradients first (mini batch)
@@ -258,28 +305,30 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
         }
 
         // add the winning cells from each column PLUS the
-        batchSelectHiddenCells(
-            _c,
-            _cellWeights,
-            _cellBiases2,
-            hiddenLayerWeightedSumBatch, // raw unfiltered output of hidden layer cells
-            outputLayerInputBatch, // original winning cells
-            outputLayerInputBatchLifetime, // calculated: original winning cells AND lifetime sparsity winning cells
-            outputLayerOutputBatch ); //
-
-        batchBackpropagateError(
+        batchSelectHiddenCells( // OK
                 _c,
-                _cellWeights,
-                hiddenLayerInputBatch,
+                _cellWeights2,
+                _cellBiases2,
+                hiddenLayerWeightedSumBatch, // raw unfiltered output of hidden layer cells
+                outputLayerInputBatch, // original winning cells
+                outputLayerInputBatchLifetime, // calculated: original winning cells AND lifetime sparsity winning cells
+                outputLayerOutputBatch ); // calculated: output given superset of winning cells
+
+        batchBackpropagateError( // OK
+                _c,
+                _cellWeights2,
+                outputLayerIdealBatch,
                 hiddenLayerErrorBatch, // calculated
                 outputLayerInputBatchLifetime,
                 outputLayerErrorBatch, // calculated
                 outputLayerOutputBatch );
 
-        batchTrain(
+        batchTrain( // OK
                 _c,
-                _cellWeights,
-                _cellWeightsVelocity,
+                _cellWeights1,
+                _cellWeights2,
+                _cellWeights1Velocity,
+                _cellWeights2Velocity,
                 _cellBiases1,
                 _cellBiases2,
                 _cellBiases1Velocity,
@@ -305,9 +354,11 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
 //    Data outputLayerOutputBatch = _batchOutputOutput;
 
     public static void batchTrain(
-            LifetimeSparseAutoencoderConfig config,
-            Data cellWeights,
-            Data cellWeightsVelocity,
+            BatchSparseNetworkConfig config,
+            Data cellWeights1,
+            Data cellWeights2,
+            Data cellWeights1Velocity,
+            Data cellWeights2Velocity,
             Data cellBiases1,
             Data cellBiases2,
             Data cellBiases1Velocity,
@@ -320,18 +371,19 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
         float learningRate = config.getLearningRate();
         float momentum = config.getMomentum();
         int inputs = config.getNbrInputs();
+        int outputs = config.getOutputs();
         int cells = config.getNbrCells();
         int batchSize = config.getBatchSize();
 
         // now gradient descent in the hidden->output layer
         int inputSize = cells;
-        int layerSize = inputs;
-        boolean weightsInputMajor = true;
+        int layerSize = outputs;//inputs;
+        boolean weightsInputMajor = false;//true; no longer tied weights
 
         KSparseAutoencoder.StochasticGradientDescent(
                 inputSize, layerSize, batchSize, learningRate, momentum, weightsInputMajor,
                 outputLayerInputBatch, outputLayerErrorBatch,
-                cellWeights, cellWeightsVelocity, cellBiases2, cellBiases2Velocity );
+                cellWeights2, cellWeights2Velocity, cellBiases2, cellBiases2Velocity );
 
         // now gradient descent in the input->hidden layer. can't skip this because we need to update the biases
         inputSize = inputs;
@@ -341,36 +393,32 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
         KSparseAutoencoder.StochasticGradientDescent(
                 inputSize, layerSize, batchSize, learningRate, momentum, weightsInputMajor,
                 hiddenLayerInputBatch, hiddenLayerErrorBatch,
-                cellWeights, cellWeightsVelocity, cellBiases1, cellBiases1Velocity );
+                cellWeights1, cellWeights1Velocity, cellBiases1, cellBiases1Velocity );
 
 //        System.err.println( "Age: " + this._c.getAge() + " Sparsity: " + k  + " vMax = " + vMax );
     }
 
     public static void batchAccumulate(
-            LifetimeSparseAutoencoderConfig config,
+            BatchSparseNetworkConfig config,
+
             Data hiddenLayerInput,
             Data hiddenLayerWeightedSum,
             Data outputLayerInput,
-//            Data outputLayerOutput,
+            Data outputLayerIdeal,
 
             Data hiddenLayerInputBatch,
             Data hiddenLayerWeightedSumBatch,
             Data outputLayerInputBatch,
-//            Data outputLayerOutputBatch,
+            Data outputLayerIdealBatch,
 
             int batchIndex ) {
 
         int inputs = config.getNbrInputs();
+        int outputs = config.getOutputs();
         int cells = config.getNbrCells();
 
         // accumulate the error gradients and inputs over the batch
         int b = batchIndex;
-
-        for( int i = 0; i < cells; ++i ) {
-            float r = outputLayerInput._values[ i ];
-            int batchOffset = b * cells + i;
-            outputLayerInputBatch._values[ batchOffset ] = r;
-        }
 
         for( int i = 0; i < inputs; ++i ) {
             float r = hiddenLayerInput._values[ i ];
@@ -383,42 +431,49 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
             int batchOffset = b * cells + i;
             hiddenLayerWeightedSumBatch._values[ batchOffset ] = r;
         }
+
+        for( int i = 0; i < cells; ++i ) {
+            float r = outputLayerInput._values[ i ];
+            int batchOffset = b * cells + i;
+            outputLayerInputBatch._values[ batchOffset ] = r;
+        }
+
+        for( int i = 0; i < outputs; ++i ) {
+            float r = outputLayerIdeal._values[ i ];
+            int batchOffset = b * outputs + i;
+            outputLayerIdealBatch._values[ batchOffset ] = r;
+        }
+
     }
 
     public static void batchBackpropagateError(
-            LifetimeSparseAutoencoderConfig config,
-            Data cellWeights,
-            Data hiddenLayerInputBatch,
+            BatchSparseNetworkConfig config,
+//            Data cellWeights1,
+            Data cellWeights2,
+//            Data hiddenLayerInputBatch,
+            Data outputLayerIdealBatch,
             Data hiddenLayerErrorBatch, // calculated
             Data outputLayerInputBatch,
             Data outputLayerErrorBatch, // calculated
             Data outputLayerOutputBatch ) {
 
-        int inputs = config.getNbrInputs();
+//        int inputs = config.getNbrInputs();
+        int outputs = config.getOutputs();
         int cells = config.getNbrCells();
         int batchSize = config.getBatchSize();
-
-//        float minValE = 0f;
-//        float maxValE = 0f;
-//        float minValD = 0f;
-//        float maxValD = 0f;
-//        float minValW = 0f;
-//        float maxValW = 0f;
 
         for( int b = 0; b < batchSize; ++b ) {
 
             // OUTPUT LAYER
             // d output layer
-            for( int i = 0; i < inputs; ++i ) {
-                int batchOffset = b * inputs + i;
-                float target = hiddenLayerInputBatch._values[ batchOffset ]; // y
+            for( int i = 0; i < outputs; ++i ) {
+                int batchOffset = b * outputs + i;
+                float target = outputLayerIdealBatch ._values[ batchOffset ]; // y
                 float output = outputLayerOutputBatch._values[ batchOffset ]; // a
                 float error = output - target; // == d^L
                 //float weightedSum = output; // z
                 float derivative = 1f;//(float)TransferFunction.logisticSigmoidDerivative( weightedSum );
                 outputLayerErrorBatch._values[ batchOffset ] = error * derivative; // eqn 30
-//                maxValE = Math.max( maxValE, error );
-//                minValE = Math.min( minValE, error );
             }
 
             // HIDDEN LAYER
@@ -430,19 +485,15 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
                 float transferTopK = outputLayerInputBatch._values[ batchOffsetCell ];
                 float derivative = 1f;//(float)TransferFunction.logisticSigmoidDerivative( weightedSum );
 
-                if( transferTopK > 0f ) { // if was cell active
-                    for( int i = 0; i < inputs; ++i ) {
+                if( transferTopK > 0f ) { // if was cell active, ie input nonzero
+                    for( int i = 0; i < outputs; ++i ) {
                         //int offset = j * K + k; // K = inputs, storage is all inputs adjacent
-                        int offset = c * inputs + i;
-                        float w = cellWeights._values[ offset ];
+                        int offset = i * cells + c;// was: c * inputs + i; ? But now the weight from c --> i in output layer
+                        float w = cellWeights2._values[ offset ];
                         //float d = dOutput._values[ i ]; // d_j i.e. partial derivative of loss fn with respect to the activation of j
-                        int batchOffsetInput = b * inputs + i;
+                        int batchOffsetInput = b * outputs + i;
                         float d = outputLayerErrorBatch._values[ batchOffsetInput ]; // d_j i.e. partial derivative of loss fn with respect to the activation of j
                         float product = d * w;// + ( l2R * w );
-//                        maxValD = Math.max( maxValD, d );
-//                        minValD = Math.min( minValD, d );
-//                        maxValW = Math.max( maxValW, w );
-//                        minValW = Math.min( minValW, w );
                         product = BackPropagation.ClipErrorGradient( product, 10.f );
 
                         // TODO add gradient clipping
@@ -469,8 +520,8 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
     }
 
     public static void batchSelectHiddenCells(
-            LifetimeSparseAutoencoderConfig config,
-            Data cellWeights,
+            BatchSparseNetworkConfig config,
+            Data cellWeights2,
             Data cellBiases2,
             Data hiddenLayerActivityBatch, // pre-binarization of winners ie weighted sums
             Data hiddenLayerSpikesBatch, // original winning cells
@@ -478,7 +529,8 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
             Data outputLayerOutputBatch ) { // calculated
 
         // filter all except top-k activations for
-        int inputs = config.getNbrInputs();
+        //int inputs = config.getNbrInputs();
+        int outputs = config.getOutputs();
         int cells = config.getNbrCells();
         int batchSize = config.getBatchSize();
         int sparsityLifetime = config.getSparsityLifetime(); // different, because related to batch size
@@ -534,153 +586,19 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
 
         // Now calculate the output based on this new pattern of hidden layer activity
         Data outputLayerInput = new Data( cells );
-        Data outputLayerOutput = new Data( inputs );
+        Data outputLayerOutput = new Data( outputs );
 
         for( int b = 0; b < batchSize; ++b ) {
             int offsetThis = 0;
             int offsetThat = b * cells;
             outputLayerInput.copyRange( outputLayerInputBatch, offsetThis, offsetThat, cells );
-            decode( config, cellWeights, cellBiases2, outputLayerInput, outputLayerOutput ); // for output
-            offsetThis = b * inputs;
+            //decode( config, cellWeights, cellBiases2, outputLayerInput, outputLayerOutput ); // for output
+            feedForwardLayer( cells, outputs, cellWeights2, cellBiases2, outputLayerInput, outputLayerOutput, null );
+            offsetThis = b * outputs;//b * inputs;
             offsetThat = 0;
-            outputLayerOutputBatch.copyRange( outputLayerOutput, offsetThis, offsetThat, inputs );
+            outputLayerOutputBatch.copyRange( outputLayerOutput, offsetThis, offsetThat, outputs );
         }
 
     }
 
-//    public static void StochasticGradientDescent(
-//            int inputSize,
-//            int layerSize,
-//            int batchSize,
-//            float learningRate,
-//            float momentum,
-//            boolean weightsInputMajor,
-//            Data batchInput,
-//            Data batchErrors,
-//            Data weights,
-//            Data weightsVelocity,
-//            Data biases,
-//            Data biasesVelocity ) {
-//
-//        boolean useMomentum = false;
-//        if( momentum != 0f ) {
-//            useMomentum = true;
-//        }
-//
-//        float miniBatchNorm = 1f / (float)batchSize;
-//
-//        for( int c = 0; c < layerSize; ++c ) { // computing error for each "input"
-//
-//            for( int i = 0; i < inputSize; ++i ) {
-//
-//                // foreach( batch sample )
-//                for( int b = 0; b < batchSize; ++b ) {
-//
-//                    // tied weights
-//                    int weightsOffset = c * inputSize + i;
-//                    if( weightsInputMajor ) {
-//                        weightsOffset = i * layerSize + c;
-//                    }
-//
-//                    int inputOffset = b * inputSize + i;
-//                    int errorOffset = b * layerSize + c;
-//
-//                    //float errorGradient = _cellGradients._values[ c ];
-//                    float errorGradient = batchErrors._values[ errorOffset ];
-//
-//                    //float a = _inputValues._values[ i ];
-//                    float a = batchInput._values[ inputOffset ];
-//                    float wOld = weights._values[ weightsOffset ];
-//                    float wDelta = learningRate * miniBatchNorm * errorGradient * a;
-//
-//                    if( useMomentum ) {
-//                        // Momentum
-//                        float wNew = wOld - wDelta;
-//
-//                        if( Useful.IsBad( wNew ) ) {
-//                            String error = "Autoencoder weight update produced a bad value: " + wNew;
-//                            logger.error( error );
-//                            logger.traceExit();
-//                            System.exit( -1 );
-//                        }
-//
-//                        weights._values[ weightsOffset ] = wNew;
-//                    } else {
-//                        // Momentum
-//                        float vOld = weightsVelocity._values[ weightsOffset ];
-//                        float vNew = ( vOld * momentum ) - wDelta;
-//                        float wNew = wOld + vNew;
-//
-//                        if( Useful.IsBad( wNew ) ) {
-//                            String error = "Autoencoder weight update produced a bad value: " + wNew;
-//                            logger.error( error );
-//                            logger.traceExit();
-//                            System.exit( -1 );
-//                        }
-//
-//                        weights._values[ weightsOffset ] = wNew;
-//                        weightsVelocity._values[ weightsOffset ] = vNew;
-//                    } // momentum
-//                } // batch
-//            } // inputs
-//
-//            for( int b = 0; b < batchSize; ++b ) {
-//                int errorOffset = b * layerSize + c;
-//                float errorGradient = batchErrors._values[ errorOffset ];
-//
-//                float bOld = biases._values[ c ];
-//                float bDelta = learningRate * miniBatchNorm * errorGradient;
-//
-//                if( useMomentum ) {
-//                    float vOld = biasesVelocity._values[ c ];
-//                    float vNew = ( vOld * momentum ) - bDelta;
-//                    float bNew = bOld + vNew;
-//
-//                    biases._values[ c ] = bNew;
-//                    biasesVelocity._values[ c ] = vNew;
-//                } else {
-//                    float bNew = bOld - bDelta;
-//
-//                    biases._values[ c ] = bNew;
-//                }
-//            }
-//        }
-//    }
-
-    public void decode(
-            Data hiddenActivity,
-            Data inputReconstruction ) {
-        decode( _c, _cellWeights, _cellBiases2, hiddenActivity, inputReconstruction );
-    }
-
-    public static void decode(
-            LifetimeSparseAutoencoderConfig config,
-            Data cellWeights,
-            Data cellBiases2,
-            Data hiddenActivity,
-            Data inputReconstruction ) {
-        int inputs = config.getNbrInputs();
-        int cells = config.getNbrCells();
-
-        for( int i = 0; i < inputs; ++i ) {
-            float sum = 0.f;
-
-            for( int c = 0; c < cells; ++c ) {
-
-                float response = hiddenActivity._values[ c ];// _cellTransferTopK._values[ c ];
-
-                int offset = c * inputs +i;
-                float weight = cellWeights._values[ offset ];
-                float product = response * weight;
-                sum += product;
-            }
-
-            float bias = cellBiases2._values[ i ];
-
-            sum += bias;
-
-            inputReconstruction._values[ i ] = sum;
-        }
-
-    }
 }

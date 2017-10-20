@@ -375,7 +375,7 @@ public class KSparseAutoencoder extends CompetitiveLearning {
             float sum = 0.f;
 
             float transferTopK = outputInput._values[ c ];//_cellSpikesTopK._values[ c ];
-//            float weightedSum = _cellWeightedSum._values[ c ];
+//            float weightedSum = _testingHiddenWeightedSum._values[ c ];
             float derivative = 1f;//(float)TransferFunction.logisticSigmoidDerivative( weightedSum );
 
             if( transferTopK > 0f ) { // if was cell active

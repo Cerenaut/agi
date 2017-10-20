@@ -68,6 +68,10 @@ public class CommonEntityFactory implements EntityFactory {
             return new ExperimentEntity( objectMap, _n, modelEntity );
         }
 
+        if( entityType.equals( DelayEntity.ENTITY_TYPE ) ) {
+            return new DelayEntity( objectMap, _n, modelEntity );
+        }
+
         if( entityType.equals( ThresholdEntity.ENTITY_TYPE ) ) {
             return new ThresholdEntity( objectMap, _n, modelEntity );
         }
@@ -180,6 +184,10 @@ public class CommonEntityFactory implements EntityFactory {
         }
         if( entityType.equals( BiasedSparseAutoencoderEntity.ENTITY_TYPE ) ) {
             return new BiasedSparseAutoencoderEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( BatchSparseNetworkEntity.ENTITY_TYPE ) ) {
+            return new BatchSparseNetworkEntity( objectMap, _n, modelEntity );
         }
 
         if( entityType.equals( OnlineKSparseAutoencoderEntity.ENTITY_TYPE ) ) {

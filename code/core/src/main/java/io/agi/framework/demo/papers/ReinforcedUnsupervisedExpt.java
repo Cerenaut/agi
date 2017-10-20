@@ -66,6 +66,14 @@ import java.util.ArrayList;
  *
  * OR do I want to associate individual cells over time?
  *
+ * batchSize 64 1x 60k train:
+ * Errors: 10407 of 60000 = 82.655% correct.
+ * Errors: 1746 of 10000 = 82.54% correct.
+ *
+ * batchSize 64 4x 60k train:
+ * Errors: 6840 of 60000 = 88.6% correct.
+ * Errors: 1202 of 10000 = 87.98% correct.
+ *
  * Created by dave on 12/08/17.
  */
 public class ReinforcedUnsupervisedExpt extends CreateEntityMain {
@@ -104,7 +112,7 @@ public class ReinforcedUnsupervisedExpt extends CreateEntityMain {
         boolean debug = false;
         boolean terminateByAge = false;
         int terminationAge = 1000;//50000;//25000;
-        int trainingEpochs = 16; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
+        int trainingEpochs = 4; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
         int testingEpochs = 1; // = 1 * 10 images * 30 repeats = 300
         int imageLabels = 10;
 
@@ -128,7 +136,7 @@ public class ReinforcedUnsupervisedExpt extends CreateEntityMain {
         parentName = Framework.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), parentName );
 
         // Representation
-        parentName = Framework.CreateEntity( classifierName, LifetimeSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = Framework.CreateEntity( classifierName, BiasedSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), parentName );
 
         // Reinforcement Learning
         parentName = Framework.CreateEntity( reinforcementName, QLearningEntity.ENTITY_TYPE, n.getName(), parentName );
@@ -144,16 +152,16 @@ public class ReinforcedUnsupervisedExpt extends CreateEntityMain {
 
         // Connect the entities' data
         // Input image --> Algo
-        Framework.SetDataReference( classifierName, LifetimeSparseAutoencoderEntity.INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
+        Framework.SetDataReference( classifierName, BiasedSparseAutoencoderEntity.INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
 
         // Algo --> logging for offline classifier after training
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList<>();
-        featureDatas.add( new AbstractPair<>( classifierName, LifetimeSparseAutoencoderEntity.SPIKES ) );
+        featureDatas.add( new AbstractPair<>( classifierName, BiasedSparseAutoencoderEntity.SPIKES ) );
         Framework.SetDataReferences( featureSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
 
         // Reinforcement learning
         String statesEntityName = classifierName;
-        String statesDataName = LifetimeSparseAutoencoderEntity.SPIKES;
+        String statesDataName = BiasedSparseAutoencoderEntity.SPIKES;
 
         // Update Q-Learning first to generate action quality. Q-Learning needs latest reward, and latest state, plus OLD actions that caused this state.
         Framework.SetDataReference ( reinforcementName, QLearningEntity.INPUT_STATES_NEW, statesEntityName, statesDataName );
@@ -193,7 +201,7 @@ public class ReinforcedUnsupervisedExpt extends CreateEntityMain {
         if( logDuringTraining ) {
             trainingEntities += "," + featureSeriesName + "," + labelSeriesName;
         }
-        testingEntities = featureSeriesName + "," + labelSeriesName;
+        testingEntities = featureSeriesName + "," + labelSeriesName + "," + rewardSeriesName;
         int imageRepeats = 1;
         SetImageLabelEntityConfig( imageLabelName, trainingPath, testingPath, trainingEpochs, testingEpochs, imageRepeats, imageLabels, trainingEntities, testingEntities );
 
@@ -204,7 +212,7 @@ public class ReinforcedUnsupervisedExpt extends CreateEntityMain {
         int batchSize = 64; // want small for faster training, but large enough to do lifetime sparsity
         int sparsityLifetime = 2;
         float learningRate = 0.01f;
-        float momentum = 0.5f; // 0.9 in paper
+        float momentum = 0.9f; // 0.9 in paper
         float weightsStdDev = 0.01f; // confirmed. Sigma From paper. used at reset
 
         Framework.SetConfig( classifierName, "learningRate", String.valueOf( learningRate ) );
@@ -249,6 +257,8 @@ public class ReinforcedUnsupervisedExpt extends CreateEntityMain {
         Framework.SetConfig( featureSeriesName, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( labelSeriesName, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( rewardSeriesName, "cache", String.valueOf( cacheAllData ) );
+
+        Framework.SetConfig( rewardSeriesName, "learn", String.valueOf( false ) ); // disable reward logging during training
     }
 
     protected static void SetImageLabelEntityConfig( String entityName, String trainingPath, String testingPath, int trainingEpochs, int testingEpochs, int repeats, int imageLabels, String trainingEntities, String testingEntities ) {

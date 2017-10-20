@@ -101,8 +101,11 @@ public class PredictiveCoding extends NamedObject {
 
     public void update() {
 
+        float observationThreshold = 0f;
+        float predictionThreshold = 0.5f;
+
         _transient = new PyramidRegionLayerTransient();
-        _transient._spikesNew = _inputObserved.indicesMoreThan( 0.5f );
+        _transient._spikesNew = _inputObserved.indicesMoreThan( observationThreshold );
 
 //        updatePrediction( _inputC );//_inputClassifierSpikes );
 
@@ -133,7 +136,7 @@ public class PredictiveCoding extends NamedObject {
             //    errorFN = true; // if you inhibit the prediction, then it can't be predicted
             //}
             //else if( prediction < 1.f ) {
-            if( prediction < 0.5f ) {
+            if( prediction < predictionThreshold ) {
                 errorFN = true; // cell becomes active, wasn't predicted
             }
 
@@ -153,7 +156,7 @@ public class PredictiveCoding extends NamedObject {
         }
 
         // Now look for False-positive errors (mainly for diagnostics, not integral to the algorithm)
-        HashSet< Integer > predictions = _inputPredicted.indicesMoreThan( 0.5f ); //_predictor._statePredicted.indicesMoreThan( 0.5f );
+        HashSet< Integer > predictions = _inputPredicted.indicesMoreThan( predictionThreshold );
 
         for( Integer p : predictions ) {
 

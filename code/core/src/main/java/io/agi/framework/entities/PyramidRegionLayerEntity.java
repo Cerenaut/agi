@@ -483,7 +483,7 @@ public class PyramidRegionLayerEntity extends Entity {
 //        setData( CLASSIFIER_BIASES_2_VELOCITY, rl._classifier._cellBiases2Velocity );
 //
 //        setData( CLASSIFIER_ERRORS, rl._classifier._cellErrors );
-//        setData( CLASSIFIER_WEIGHTED_SUM, rl._classifier._cellWeightedSum );
+//        setData( CLASSIFIER_WEIGHTED_SUM, rl._classifier._testingHiddenWeightedSum );
 //        setData( CLASSIFIER_TRANSFER, rl._classifier._cellTransfer );
 //        setData( CLASSIFIER_TRANSFER_PROMOTED, rl._classifier._cellTransferPromoted );
 //        setData( CLASSIFIER_TRANSFER_TOP_K, rl._classifier._cellTransferTopK );
