@@ -95,6 +95,7 @@ public class BufferedImageSourceImageFile extends BufferedImageSource {
                         }
                     } catch( IOException ex ) {
                         _logger.error( "IO Exception reading files in folder: " + folderName );
+                        _logger.error(  ex.toString(), ex );
                     } finally {
                         if( directoryStream != null ) {
                             try {
