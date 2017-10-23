@@ -31,34 +31,52 @@ import io.agi.framework.persistence.models.ModelData;
 import java.util.ArrayList;
 
 /**
+ * Ad-hoc experiments:
  * TESTED 81.37% / 77.20% on 10k train, 1k test, batchsize = 50, lifetime = 2, sparsity=25.
  * TESTED 89.31% / 88.66% on 60k train, 10k test, batchsize = 32, lifetime = 2, sparsity=25, momentum=0.5
+ * TESTED 82.98% / 83.23% on 4x 60k train, 60+10k test, batchsize = 128, lifetime = 1 others same, learningRate = 0.01    <-- this looked pretty good in terms of reconstructions, a few errors, in the GUI
+ * TESTED 50.06% / 49.92% as above but faster learningrate = 0.1, seems to be bad to increase learning rate
+ * TESTED 98.95% / 97.39% learningRate 0.01 momentum 0.1 32x32 cells, sparsity 25, sparsityLifetime 2, batchSize 32 ?epochs=?
+ *
+ * TESTED - as above, but with biased memory feature coded and disabled:
+ * 88.90% / 88.43%
+ * 89.05% / 88.00% So we have a stable score.
  *
  * Created by dave on 8/07/16.
  */
 public class LifetimeSparseAutoencoderDemo extends CreateEntityMain {
+
+    // TODO list:
+    //- store and plot lifetime usage rates for all cells
+    //- 128 x1 vs 32*2 = 1/16th vs 1/128= 8 times less learning updates. But only 4x training epochs.. vs 1 or 2.
 
     public static void main( String[] args ) {
         LifetimeSparseAutoencoderDemo demo = new LifetimeSparseAutoencoderDemo();
         demo.mainImpl(args);
     }
 
+    public static String getTrainingPath() {
+//        String trainingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train";
+        return trainingPath;
+    }
+
+    public static String getTestingPath() {
+//        String testingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small, /Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/testing-small";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train,/home/dave/workspace/agi.io/data/mnist/1k_test";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+        String testingPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train,/home/dave/workspace/agi.io/data/mnist/all/all_t10k";
+        return testingPath;
+    }
+
     public void createEntities( Node n ) {
 
-//        String trainingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small";
-//        String testingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small, /Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/testing-small";
-
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
-//        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
-
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
-//        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train,/home/dave/workspace/agi.io/data/mnist/1k_test";
-
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train";
-        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train,/home/dave/workspace/agi.io/data/mnist/all/all_t10k";
-
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+        String trainingPath = getTrainingPath();
+        String testingPath = getTestingPath();
 
 //        int flushInterval = 20;
         int flushInterval = -1; // never flush
@@ -71,7 +89,7 @@ public class LifetimeSparseAutoencoderDemo extends CreateEntityMain {
         boolean cacheAllData = true;
         boolean terminateByAge = false;
         int terminationAge = -1;//50000;//25000;
-        int trainingEpochs = 1;
+        int trainingEpochs = 1;//16;
         int testingEpochs = 1;
 
         // Define some entities
@@ -84,6 +102,7 @@ public class LifetimeSparseAutoencoderDemo extends CreateEntityMain {
         Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         Framework.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), experimentName );
         Framework.CreateEntity( autoencoderName, LifetimeSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), imageLabelName );
+//        Framework.CreateEntity( autoencoderName, BiasedSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), imageLabelName );
         Framework.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), autoencoderName ); // 2nd, class region updates after first to get its feedback
         Framework.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), vectorSeriesName ); // 2nd, class region updates after first to get its feedback
 
@@ -153,9 +172,10 @@ public class LifetimeSparseAutoencoderDemo extends CreateEntityMain {
         //        "         momentum=.9,\n",
         //        "         learning_rate=.01,\n",
 //        int batchSize = 128; // value from Ali's code.
-        int batchSize = 32; // want small for faster training, but large enough to do lifetime sparsity
-        int sparsityLifetime = 2;
+        int batchSize = 32;//128; // want small for faster training, but large enough to do lifetime sparsity
+        int sparsityLifetime = 2;//1;
         float learningRate = 0.01f;
+//        float learningRate = 0.1f; BAD
         float momentum = 0.5f; // 0.9 in paper
         float weightsStdDev = 0.01f; // confirmed. Sigma From paper. used at reset
 
@@ -177,7 +197,7 @@ public class LifetimeSparseAutoencoderDemo extends CreateEntityMain {
         Framework.SetConfig( vectorSeriesName, "learn", String.valueOf( "true" ) );
 
         // Log labels of each image produced during all phases
-        Framework.SetConfig( vectorSeriesName, "writeFileEncoding", ModelData.ENCODING_DENSE );
+        Framework.SetConfig( valueSeriesName, "writeFileEncoding", ModelData.ENCODING_DENSE );
         Framework.SetConfig( valueSeriesName, "flushPeriod", String.valueOf( flushInterval ) ); // accumulate and flush, or accumulate only
         Framework.SetConfig( valueSeriesName, "period", String.valueOf( "-1" ) ); // infinite
         Framework.SetConfig( valueSeriesName, "learn", String.valueOf( "true" ) );

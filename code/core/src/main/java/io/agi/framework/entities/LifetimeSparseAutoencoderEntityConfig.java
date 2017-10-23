@@ -20,6 +20,7 @@
 package io.agi.framework.entities;
 
 import io.agi.framework.EntityConfig;
+import io.agi.framework.Framework;
 
 /**
  *
@@ -37,5 +38,32 @@ public class LifetimeSparseAutoencoderEntityConfig extends EntityConfig {
 
     int batchCount = 0;
     int batchSize = 0;
+
+    public static void Set(
+            String entityName,
+            boolean cache,
+            int widthCells,
+            int heightCells,
+            int sparsity,
+            int sparsityLifetime,
+            int batchSize,
+            float learningRate,
+            float momentum,
+            float weightsStdDev ) {
+
+        LifetimeSparseAutoencoderEntityConfig config = new LifetimeSparseAutoencoderEntityConfig();
+
+        config.cache = cache;
+        config.widthCells = widthCells;
+        config.heightCells = heightCells;
+        config.sparsity = sparsity;
+        config.sparsityLifetime = sparsityLifetime;
+        config.batchSize = batchSize;
+        config.learningRate = learningRate;
+        config.momentum = momentum;
+        config.weightsStdDev = weightsStdDev;
+
+        Framework.SetConfig( entityName, config );
+    }
 
 }

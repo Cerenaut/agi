@@ -23,40 +23,50 @@ import io.agi.framework.EntityConfig;
 import io.agi.framework.Framework;
 
 /**
- *
- * Created by dave on 7/07/16.
+ * Created by dave on 16/10/17.
  */
-public class PredictiveCodingEntityConfig extends EntityConfig {
+public class BatchSparseNetworkEntityConfig extends EntityConfig {
 
-    // parameters you can adjust
-    public int widthCells = 0;
-    public int heightCells = 0;
+    float learningRate = 0f;
+    float momentum = 0f;
+    int widthCells = 0;
+    int heightCells = 0;
+    int outputs = 0;
+    int sparsity = 0; // current value, computed
+    int sparsityLifetime = 0; // current value, computed
+    float weightsStdDev = 0f; // used at reset
 
-    public float outputDecayRate = 0.0f;
-    public int outputSpikeAgeMax = 0;
-
-    // stats calculated during operation
-    public boolean resetDelayed = false;
-
-    public float sumPredictionErrorFP = 0;
-    public float sumPredictionErrorFN = 0;
+    int batchCount = 0;
+    int batchSize = 0;
 
     public static void Set(
             String entityName,
             boolean cache,
             int widthCells,
             int heightCells,
-            int outputSpikeAgeMax,
-            float outputDecayRate ) {
+            int outputs,
+            int sparsity,
+            int sparsityLifetime,
+            int batchSize,
+            float learningRate,
+            float momentum,
+            float weightsStdDev ) {
 
-        PredictiveCodingEntityConfig config = new PredictiveCodingEntityConfig();
+        BatchSparseNetworkEntityConfig config = new BatchSparseNetworkEntityConfig();
 
+        config.cache = cache;
         config.widthCells = widthCells;
         config.heightCells = heightCells;
-        config.cache = cache;
-        config.outputSpikeAgeMax = outputSpikeAgeMax;
-        config.outputDecayRate = outputDecayRate;
+        config.outputs = outputs;
+        config.sparsity = sparsity;
+        config.sparsityLifetime = sparsityLifetime;
+        config.batchSize = batchSize;
+        config.learningRate = learningRate;
+        config.momentum = momentum;
+        config.weightsStdDev = weightsStdDev;
 
         Framework.SetConfig( entityName, config );
     }
+
 }
+

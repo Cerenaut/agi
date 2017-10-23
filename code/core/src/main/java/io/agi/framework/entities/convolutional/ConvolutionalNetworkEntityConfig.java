@@ -19,6 +19,8 @@
 
 package io.agi.framework.entities.convolutional;
 
+import io.agi.core.ann.convolutional.ConvolutionalNetworkConfig;
+import io.agi.core.math.Useful;
 import io.agi.framework.EntityConfig;
 
 /**
@@ -40,6 +42,12 @@ public class ConvolutionalNetworkEntityConfig extends EntityConfig {
     public String layerfieldDepth = "";
     public String layerPoolingWidth = "";
     public String layerPoolingHeight = "";
+
+    public static Integer GetLayerValueInteger( int layer, String values ) {
+        String value = ConvolutionalNetworkConfig.GetLayerValue( values, layer );
+        Integer intValue = Integer.valueOf( value );
+        return intValue;
+    }
 
     public static void Set(
             ConvolutionalNetworkEntityConfig entityConfig,
@@ -94,8 +102,8 @@ public class ConvolutionalNetworkEntityConfig extends EntityConfig {
             entityConfig.layerPoolingHeight += prefix + ph;
 
             // Auto calculate layer widths and heights
-            iw = lw / pw;
-            ih = lh / ph;
+            iw = Useful.DivideRoundUp( lw, pw ); //lw / pw;
+            ih = Useful.DivideRoundUp( lh, ph ); //lh / ph;
             id = ld;
         }
     }

@@ -17,18 +17,16 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.entities.reinforcement_learning;
+package io.agi.framework.entities;
 
+import io.agi.core.sdr.ScalarEncoder;
 import io.agi.framework.EntityConfig;
 
-import java.util.ArrayList;
-
 /**
- * Created by dave on 2/06/17.
+ * Created by dave on 2/04/16.
  */
-public class EpsilonGreedyEntityConfig extends EntityConfig {
+public class Reward2LearningRateEntityConfig extends EntityConfig {
 
-    public float epsilon = 0f;
+        public float weight = 1f;
 
 }
-
