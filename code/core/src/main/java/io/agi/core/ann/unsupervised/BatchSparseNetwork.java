@@ -232,6 +232,7 @@ public class BatchSparseNetwork extends CompetitiveLearning {
 
     public void update() {
 
+        // TODO consider increased hidden sparsity for hidden output?
         boolean learn = _c.getLearn();
         int sparsity = _c.getSparsity();
 

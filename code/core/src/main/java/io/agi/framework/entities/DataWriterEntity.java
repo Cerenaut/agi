@@ -89,7 +89,8 @@ public class DataWriterEntity extends Entity {
 
             StringBuilder sb = new StringBuilder( 100 );
             ModelData.ModelDatasToJsonStringBuilder( modelDatas, sb ); // build the string efficiently
-            boolean b = FileUtil.WriteFileMemoryEfficient( filePathName, sb ); // write the file efficiently
+            boolean append = false;
+            boolean b = FileUtil.WriteFileMemoryEfficient( filePathName, sb, append ); // write the file efficiently
             if( !b ) {
                 _logger.error( "Unable to serialize some Data objects to file." );
             }

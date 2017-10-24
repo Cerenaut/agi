@@ -33,6 +33,7 @@ public class AutoencoderConvolutionalNetworkConfig extends ConvolutionalNetworkC
 
     public static final String KEY_LAYER_SPARSITY = "layer-sparsity";
     public static final String KEY_LAYER_SPARSITY_LIFETIME = "layer-sparsity-lifetime";
+    public static final String KEY_LAYER_SPARSITY_OUTPUT = "layer-sparsity-output";
 
     LifetimeSparseAutoencoderConfig _classifierConfig;
 
@@ -52,6 +53,7 @@ public class AutoencoderConvolutionalNetworkConfig extends ConvolutionalNetworkC
 
             String layerSparsity,
             String layerSparsityLifetime,
+            String layerSparsityOutput,
 
             int nbrLayers,
 
@@ -70,6 +72,7 @@ public class AutoencoderConvolutionalNetworkConfig extends ConvolutionalNetworkC
 
         setLayerValues( KEY_LAYER_SPARSITY, layerSparsity );
         setLayerValues( KEY_LAYER_SPARSITY_LIFETIME, layerSparsityLifetime );
+        setLayerValues( KEY_LAYER_SPARSITY_OUTPUT, layerSparsityOutput );
 
         String classifierName = name + "-classifier";
 
@@ -80,6 +83,7 @@ public class AutoencoderConvolutionalNetworkConfig extends ConvolutionalNetworkC
 
         int sparsity = 0; // per layer
         int sparsityLifetime = 0; // per layer
+        int sparsityOutput = 0; // per layer
         int batchCount = 0; // reset to 0
 
         _classifierConfig = new LifetimeSparseAutoencoderConfig();
@@ -92,6 +96,7 @@ public class AutoencoderConvolutionalNetworkConfig extends ConvolutionalNetworkC
                 momentum,
                 sparsity,
                 sparsityLifetime,
+                sparsityOutput,
                 weightsStdDev,
                 batchCount,
                 batchSize );
@@ -104,6 +109,7 @@ public class AutoencoderConvolutionalNetworkConfig extends ConvolutionalNetworkC
 
         setLayerValues( KEY_LAYER_SPARSITY, c.getLayerValues( KEY_LAYER_SPARSITY ) );
         setLayerValues( KEY_LAYER_SPARSITY_LIFETIME, c.getLayerValues( KEY_LAYER_SPARSITY_LIFETIME ) );
+        setLayerValues( KEY_LAYER_SPARSITY_OUTPUT, c.getLayerValues( KEY_LAYER_SPARSITY_OUTPUT ) );
 
         _classifierConfig.copyFrom( c._classifierConfig, _classifierConfig._name );
     }

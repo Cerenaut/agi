@@ -132,6 +132,7 @@ public class AutoencoderConvolutionalNetworkEntity extends Entity {
                 config.batchSize,
                 config.layerSparsity,
                 config.layerSparsityLifetime,
+                config.layerSparsityOutput,
                 config.nbrLayers,
                 config.layerInputPadding,
                 config.layerInputStride,

@@ -32,8 +32,9 @@ public class LifetimeSparseAutoencoderEntityConfig extends EntityConfig {
     float momentum = 0f;
     int widthCells = 0;
     int heightCells = 0;
-    int sparsity = 0; // current value, computed
-    int sparsityLifetime = 0; // current value, computed
+    int sparsity = 0;
+    int sparsityLifetime = 0;
+    int sparsityOutput = 0;
     float weightsStdDev = 0f; // used at reset
 
     int batchCount = 0;
@@ -46,6 +47,7 @@ public class LifetimeSparseAutoencoderEntityConfig extends EntityConfig {
             int heightCells,
             int sparsity,
             int sparsityLifetime,
+            int sparsityOutput,
             int batchSize,
             float learningRate,
             float momentum,
@@ -58,6 +60,7 @@ public class LifetimeSparseAutoencoderEntityConfig extends EntityConfig {
         config.heightCells = heightCells;
         config.sparsity = sparsity;
         config.sparsityLifetime = sparsityLifetime;
+        config.sparsityOutput = sparsityOutput;
         config.batchSize = batchSize;
         config.learningRate = learningRate;
         config.momentum = momentum;

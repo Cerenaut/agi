@@ -30,6 +30,10 @@ public class AnalyticsEntityConfig extends EntityConfig {
     public static final String PHASE_TESTING = "testing";
     public static final String PHASE_TERMINATING = "terminating";
 
+    public boolean useInputFiles; // option to read results directly from a file
+    public String fileNameFeatures;
+    public String fileNameLabels;
+
     public String testingEntities = "";    // the subscribed entities for performing the analytics
 
     // there is one feature and one label matrix, that is segmented into training and test sets using these params

@@ -84,7 +84,8 @@ public class AnalyticsEntity extends Entity {
         flags.putFlag( OUTPUT_FEATURES, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( OUTPUT_LABELS, DataFlags.FLAG_NODE_CACHE );
 
-        flags.putFlag( OUTPUT_FEATURES, DataFlags.FLAG_SPARSE_BINARY );
+//        flags.putFlag( OUTPUT_FEATURES, DataFlags.FLAG_SPARSE_BINARY );
+        flags.putFlag( OUTPUT_FEATURES, DataFlags.FLAG_SPARSE_REAL );
 
     }
 
@@ -115,11 +116,19 @@ public class AnalyticsEntity extends Entity {
             config.reset = false;
         }
 
-        Data features = getData( INPUT_FEATURES );
-        Data labels = getData( INPUT_LABELS );
+        Data features = null;
+        Data labels = null;
 
-        if ( features == null || labels == null )
-        {
+        if( config.useInputFiles ) {
+            features = Data2d.readCsvFile( config.fileNameFeatures );
+            labels = Data2d.readCsvFile( config.fileNameLabels );
+        }
+        else {
+            features = getData( INPUT_FEATURES );
+            labels = getData( INPUT_LABELS );
+        }
+
+        if( features == null || labels == null ) {
             String message = "Features or Labels are empty";
             _logger.error( message );
             return;

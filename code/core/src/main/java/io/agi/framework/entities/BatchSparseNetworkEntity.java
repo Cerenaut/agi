@@ -199,6 +199,7 @@ HashSet< Integer > to = trainingOutput.indicesMoreThan( 0.1f );
                 config.momentum,
                 config.sparsity,
                 config.sparsityLifetime,
+                config.sparsityOutput,
                 config.weightsStdDev,
                 config.batchCount, config.batchSize );
 

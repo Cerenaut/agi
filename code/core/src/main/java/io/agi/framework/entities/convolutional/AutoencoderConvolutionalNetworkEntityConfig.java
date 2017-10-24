@@ -34,5 +34,6 @@ public class AutoencoderConvolutionalNetworkEntityConfig extends ConvolutionalNe
 
     public String layerSparsity = "";
     public String layerSparsityLifetime = "";
+    public String layerSparsityOutput = "";
 
 }

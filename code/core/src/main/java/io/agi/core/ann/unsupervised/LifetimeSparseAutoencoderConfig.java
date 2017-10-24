@@ -34,6 +34,7 @@ public class LifetimeSparseAutoencoderConfig extends CompetitiveLearningConfig {
     public static final String WEIGHTS_STD_DEV = "weights-std-dev";
     public static final String SPARSITY = "sparsity";
     public static final String SPARSITY_LIFETIME = "sparsity-lifetime";
+    public static final String SPARSITY_OUTPUT = "sparsity-output";
     public static final String BATCH_COUNT = "batch-age";
     public static final String BATCH_SIZE = "batch-size";
 
@@ -65,6 +66,7 @@ public class LifetimeSparseAutoencoderConfig extends CompetitiveLearningConfig {
             float momentum,
             int sparsity,
             int sparsityLifetime,
+            int sparsityOutput,
             float weightsStdDev,
             int batchCount,
             int batchSize ){
@@ -74,6 +76,7 @@ public class LifetimeSparseAutoencoderConfig extends CompetitiveLearningConfig {
         setLearningRate( learningRate );
         setSparsity( sparsity );
         setSparsityLifetime( sparsityLifetime );
+        setSparsityOutput( sparsityOutput );
         setMomentum(momentum);
         setWeightsStdDev(weightsStdDev);
         setBatchCount(batchCount);
@@ -88,6 +91,7 @@ public class LifetimeSparseAutoencoderConfig extends CompetitiveLearningConfig {
         setLearningRate( c.getLearningRate() );
         setSparsity(c.getSparsity());
         setSparsityLifetime(c.getSparsityLifetime());
+        setSparsityOutput(c.getSparsityOutput());
         setMomentum(c.getMomentum());
         setWeightsStdDev(c.getWeightsStdDev());
         setBatchCount( c.getBatchCount() );
@@ -104,6 +108,10 @@ public class LifetimeSparseAutoencoderConfig extends CompetitiveLearningConfig {
 
     public void setSparsityLifetime( int n ) {
         _om.put( getKey( SPARSITY_LIFETIME ), n );
+    }
+
+    public void setSparsityOutput( int n ) {
+        _om.put( getKey( SPARSITY_OUTPUT ), n );
     }
 
     public void setMomentum( float r ) {
@@ -144,6 +152,11 @@ public class LifetimeSparseAutoencoderConfig extends CompetitiveLearningConfig {
 
     public int getSparsityLifetime() {
         Integer n = _om.getInteger( getKey( SPARSITY_LIFETIME ) );
+        return n.intValue();
+    }
+
+    public int getSparsityOutput() {
+        Integer n = _om.getInteger( getKey( SPARSITY_OUTPUT ) );
         return n.intValue();
     }
 

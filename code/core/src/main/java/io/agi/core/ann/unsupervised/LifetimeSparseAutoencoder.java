@@ -114,6 +114,11 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
         _batchHiddenErrors = new Data(  cells, batchSize );
     }
 
+    public static int FindOutputSparsity( int sparsity, float outputSparsityFactor ) {
+        int outputSparsity = (int)( (float)sparsity * outputSparsityFactor );
+        return outputSparsity;
+    }
+
     public void reset() {
 
         _c.setBatchCount( 0 );
@@ -155,10 +160,10 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
         update( learn );
     }
 
-    protected void encode() {
-        int sparsity = _c.getSparsity();
-        encode( _inputValues, _cellWeights, _cellBiases1, _cellWeightedSum, _cellSpikes, sparsity );
-    }
+//    protected void encode() {
+//        int sparsity = _c.getSparsityOutput();
+//        encode( _inputValues, _cellWeights, _cellBiases1, _cellWeightedSum, _cellSpikes, sparsity );
+//    }
 
     public static void encode(
         Data inputValues,
@@ -210,7 +215,10 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
     }
 
     public void update( boolean learn ) {
-        encode();
+//        encode();
+        int sparsityOutput = _c.getSparsityOutput();
+        encode( _inputValues, _cellWeights, _cellBiases1, _cellWeightedSum, _cellSpikes, sparsityOutput );
+
 
         // Output layer (forward pass)
         // dont really need to do this if not learning.
@@ -224,10 +232,15 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
 
         int batchSize = _c.getBatchSize();
         int batchCount = _c.getBatchCount();
+        int sparsityTraining = _c.getSparsity();
+
+        Data cellWeightedSumTraining = new Data( _cellWeightedSum._dataSize );
+        Data cellSpikesTraining = new Data( _cellSpikes._dataSize );
+        encode( _inputValues, _cellWeights, _cellBiases1, cellWeightedSumTraining, cellSpikesTraining, sparsityTraining );
 
         Data hiddenLayerInput = _inputValues;
-        Data hiddenLayerWeightedSum = _cellWeightedSum;
-        Data outputLayerInput = _cellSpikes;
+        Data hiddenLayerWeightedSum = cellWeightedSumTraining;//_cellWeightedSum;
+        Data outputLayerInput = cellSpikesTraining;//_cellSpikes;
 
         Data hiddenLayerWeightedSumBatch = _batchHiddenWeightedSum;
         Data hiddenLayerInputBatch = _batchHiddenInput;

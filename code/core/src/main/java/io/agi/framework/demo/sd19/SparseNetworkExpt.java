@@ -19,6 +19,7 @@
 
 package io.agi.framework.demo.sd19;
 
+import io.agi.core.ann.unsupervised.LifetimeSparseAutoencoder;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
@@ -179,6 +180,9 @@ public class SparseNetworkExpt extends CreateEntityMain {
             int sparsity = 25; // k sparse confirmed err = 1.35%
             int batchSize = 32;//128; // want small for faster training, but large enough to do lifetime sparsity
             int sparsityLifetime = 2;//1;
+            int sparsityOutputClassifier = LifetimeSparseAutoencoder.FindOutputSparsity( sparsity, 1.5f );//1;
+            int sparsityOutputPredictor = sparsity;
+
             float learningRate = 0.01f;
             float momentum = 0.5f; // 0.9 in paper, seems better
             float weightsStdDev = 0.01f; // confirmed. Sigma From paper. used at reset
@@ -186,7 +190,7 @@ public class SparseNetworkExpt extends CreateEntityMain {
             String classifierEntityName = classifierName + layer;
             learningEntities.add( classifierEntityName );
             parentName = Framework.CreateEntity( classifierEntityName, LifetimeSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), parentName );
-            LifetimeSparseAutoencoderEntityConfig.Set( classifierEntityName, cacheAllData, widthCells, heightCells, sparsity, sparsityLifetime, batchSize, learningRate, momentum, weightsStdDev );
+            LifetimeSparseAutoencoderEntityConfig.Set( classifierEntityName, cacheAllData, widthCells, heightCells, sparsity, sparsityLifetime, sparsityOutputClassifier, batchSize, learningRate, momentum, weightsStdDev );
 
             String delayEntityName = "delay-" + layer;
             parentName = Framework.CreateEntity( delayEntityName, DelayEntity.ENTITY_TYPE, n.getName(), parentName );
@@ -203,7 +207,7 @@ public class SparseNetworkExpt extends CreateEntityMain {
             String predictorEntityName = predictorName + layer;
             learningEntities.add( predictorEntityName );
             parentName = Framework.CreateEntity( predictorEntityName, BatchSparseNetworkEntity.ENTITY_TYPE, n.getName(), parentName );
-            BatchSparseNetworkEntityConfig.Set( predictorEntityName, cacheAllData, widthCells, heightCells, predictorOutputs, sparsity, sparsityLifetime, batchSize, learningRate, momentum, weightsStdDev );
+            BatchSparseNetworkEntityConfig.Set( predictorEntityName, cacheAllData, widthCells, heightCells, predictorOutputs, sparsity, sparsityLifetime, sparsityOutputPredictor, batchSize, learningRate, momentum, weightsStdDev );
 
 
             // Now connect the entities Data together:

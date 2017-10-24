@@ -19,6 +19,7 @@
 
 package io.agi.framework.demo.papers;
 
+import io.agi.core.ann.unsupervised.LifetimeSparseAutoencoder;
 import io.agi.core.orm.AbstractPair;
 import io.agi.core.orm.Keys;
 import io.agi.framework.Framework;
@@ -211,6 +212,7 @@ public class ReinforcedUnsupervisedExpt extends CreateEntityMain {
         int sparsity = 25; // k sparse confirmed err = 1.35%
         int batchSize = 64; // want small for faster training, but large enough to do lifetime sparsity
         int sparsityLifetime = 2;
+        int sparsityOutput = LifetimeSparseAutoencoder.FindOutputSparsity( sparsity, 1.5f );//1;
         float learningRate = 0.01f;
         float momentum = 0.9f; // 0.9 in paper
         float weightsStdDev = 0.01f; // confirmed. Sigma From paper. used at reset
@@ -222,6 +224,7 @@ public class ReinforcedUnsupervisedExpt extends CreateEntityMain {
         Framework.SetConfig( classifierName, "weightsStdDev", String.valueOf( weightsStdDev ) );
         Framework.SetConfig( classifierName, "sparsity", String.valueOf( sparsity ) );
         Framework.SetConfig( classifierName, "sparsityLifetime", String.valueOf( sparsityLifetime ) );
+        Framework.SetConfig( classifierName, "sparsityOutput", String.valueOf( sparsityOutput ) );
         Framework.SetConfig( classifierName, "batchSize", String.valueOf( batchSize ) );
 
         int states = widthCells * heightCells;

@@ -19,6 +19,7 @@
 
 package io.agi.framework.demo.papers;
 
+import io.agi.core.ann.unsupervised.LifetimeSparseAutoencoder;
 import io.agi.core.orm.AbstractPair;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
@@ -29,6 +30,7 @@ import io.agi.framework.entities.*;
 import io.agi.framework.entities.convolutional.*;
 import io.agi.framework.persistence.models.ModelData;
 
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -48,6 +50,7 @@ import java.util.ArrayList;
  *
  * 91.71% / 84.3% -- Expt 1, Auto-CNN
  * 85.03% / 80.79% -- Expt 2, GNG-CNN big receptive fields, 1 layer
+ *
  * Created by dave on 12/08/17.
  */
 
@@ -73,25 +76,36 @@ public class ConvolutionalUnsupervisedExpt extends CreateEntityMain {
 // - 3/  add prediction to help classification
 // - 4/  add predictive coding (larger spike train output on prediction FN error)
 
+    public static String getTrainingPath() {
+//        String trainingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train";
+        return trainingPath;
+    }
+
+    public static String getTestingPath() {
+//        String testingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small, /Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/testing-small";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train,/home/dave/workspace/agi.io/data/mnist/1k_test";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
+        String testingPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train,/home/dave/workspace/agi.io/data/mnist/all/all_t10k";
+        return testingPath;
+    }
+
+    public static String getOutputPath() {
+        return "/home/dave/Desktop/agi/data";
+    }
+
     public void createEntities( Node n ) {
 
         // Dataset
-//        String trainingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small";
-//        String testingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small, /Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/testing-small";
+        String trainingPath = getTrainingPath();
+        String testingPath = getTestingPath();
 
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
-//        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
-
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
-        String  testingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train,/home/dave/workspace/agi.io/data/mnist/1k_test";
-
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
-//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle3";
-
-//        String trainingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small";
-//        String testingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/testing-small";
+        String fileNameWriteFeatures = getOutputPath() + File.separator + "features.csv";
+        String fileNameWriteLabels = getOutputPath() + File.separator + "labels.csv";
 
         // Parameters
         boolean logDuringTraining = false;
@@ -104,14 +118,14 @@ public class ConvolutionalUnsupervisedExpt extends CreateEntityMain {
 //        int trainingEpochs = 50;//20; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
         int trainingEpochs = 1; // = 5 * 10 images * 30 repeats = 1500      30*10*30 =
         int testingEpochs = 1; // = 1 * 10 images * 30 repeats = 300
-        boolean useAutoencoder = true;
-        boolean useCompetitive = false;
+        boolean useAutoencoder = false;
+        boolean useCompetitive = true;
 
         // Entity names
         String experimentName           = Framework.GetEntityName( "experiment" );
         String imageLabelName           = Framework.GetEntityName( "image-class" );
-        String vectorSeriesName         = Framework.GetEntityName( "feature-series" );
-        String valueSeriesName          = Framework.GetEntityName( "label-series" );
+        String featureSeriesName        = Framework.GetEntityName( "feature-series" );
+        String labelSeriesName          = Framework.GetEntityName( "label-series" );
 
         // Algorithm
         String convolutionalName = Framework.GetEntityName( "cnn" );
@@ -128,8 +142,10 @@ public class ConvolutionalUnsupervisedExpt extends CreateEntityMain {
             parentName = Framework.CreateEntity( convolutionalName, AutoencoderConvolutionalNetworkEntity.ENTITY_TYPE, n.getName(), parentName );
         }
 
-        parentName = Framework.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
-        parentName = Framework.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
+//        parentName = Framework.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
+//        parentName = Framework.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
+        parentName = Framework.CreateEntity( featureSeriesName, DataFileEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
+        parentName = Framework.CreateEntity(   labelSeriesName, DataFileEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
 
         // Connect the entities' data
         if( useCompetitive ) {
@@ -146,7 +162,8 @@ public class ConvolutionalUnsupervisedExpt extends CreateEntityMain {
         if( useAutoencoder ) {
             featureDatas.add( new AbstractPair<>( convolutionalName, AutoencoderConvolutionalNetworkEntity.DATA_OUTPUT ) );
         }
-        Framework.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
+        Framework.SetDataReferences( featureSeriesName, DataFileEntity.INPUT_WRITE, featureDatas ); // get current state from the region to be used to predict
+        Framework.SetDataReference( labelSeriesName, DataFileEntity.INPUT_WRITE, imageLabelName, ImageLabelEntity.OUTPUT_LABEL ); // get current state from the region to be used to predict
 
         // Experiment config
         if( !terminateByAge ) {
@@ -162,16 +179,14 @@ public class ConvolutionalUnsupervisedExpt extends CreateEntityMain {
         Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( imageLabelName, "cache", String.valueOf( cacheAllData ) );
         Framework.SetConfig( convolutionalName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( vectorSeriesName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( valueSeriesName, "cache", String.valueOf( cacheAllData ) );
 
         // MNIST config
         String trainingEntities = convolutionalName;
         String testingEntities = "";
         if( logDuringTraining ) {
-            trainingEntities += "," + vectorSeriesName + "," + valueSeriesName;
+            trainingEntities += "," + featureSeriesName + "," + labelSeriesName;
         }
-        testingEntities = vectorSeriesName + "," + valueSeriesName;
+        testingEntities = featureSeriesName + "," + labelSeriesName;
         int imageRepeats = 1;
         SetImageLabelEntityConfig( imageLabelName, trainingPath, testingPath, trainingEpochs, testingEpochs, imageRepeats, trainingEntities, testingEntities );
 
@@ -186,19 +201,25 @@ public class ConvolutionalUnsupervisedExpt extends CreateEntityMain {
                 useCompetitive, useAutoencoder );
 
         // LOGGING config
-        // NOTE about logging: We accumulate the labels and features for all images, but then we only append a new sample of (features,label) every N steps
-        // This timing corresponds with the change from one image to another. In essence we allow the network to respond to the image for a few steps, while recording its output
-        int accumulatePeriod = imageRepeats;
-        int period = -1;
-        VectorSeriesEntityConfig.Set( vectorSeriesName, accumulatePeriod, period, ModelData.ENCODING_SPARSE_BINARY );
+        boolean write = true;
+        boolean read = false;
+        boolean append = true;
+        String fileNameRead = null;
+        DataFileEntityConfig.Set(
+                featureSeriesName, cacheAllData, write, read, append, ModelData.ENCODING_SPARSE_REAL, fileNameWriteFeatures, fileNameRead );
+//        int accumulatePeriod = imageRepeats;
+//        int period = -1;
+//        VectorSeriesEntityConfig.Set( vectorSeriesName, accumulatePeriod, period, ModelData.ENCODING_SPARSE_BINARY );
 
         // Log image label for each set of features
-        String valueSeriesInputEntityName = imageLabelName;
-        String valueSeriesInputConfigPath = "imageLabel";
-        String valueSeriesInputDataName = "";
-        int inputDataOffset = 0;
-        float accumulateFactor = 1f / imageRepeats;
-        ValueSeriesEntityConfig.Set( valueSeriesName, accumulatePeriod, accumulateFactor, -1, period, valueSeriesInputEntityName, valueSeriesInputConfigPath, valueSeriesInputDataName, inputDataOffset );
+        DataFileEntityConfig.Set(
+                labelSeriesName, cacheAllData, write, read, append, ModelData.ENCODING_DENSE, fileNameWriteLabels, fileNameRead );
+//        String valueSeriesInputEntityName = imageLabelName;
+//        String valueSeriesInputConfigPath = "imageLabel";
+//        String valueSeriesInputDataName = "";
+//        int inputDataOffset = 0;
+//        float accumulateFactor = 1f / imageRepeats;
+//        ValueSeriesEntityConfig.Set( valueSeriesName, accumulatePeriod, accumulateFactor, -1, period, valueSeriesInputEntityName, valueSeriesInputConfigPath, valueSeriesInputDataName, inputDataOffset );
         // LOGGING config
 
         // Debug the algorithm
@@ -251,21 +272,27 @@ public class ConvolutionalUnsupervisedExpt extends CreateEntityMain {
             ec.learningRate = 0.015f;
             ec.learningRateNeighbours = ec.learningRate * 0.2f;;
             ec.noiseMagnitude = 0f;
+            ec.edgeMaxAge = 800;
+            ec.growthInterval = 100;
             ec.stressLearningRate = 0.005f;
             ec.stressSplitLearningRate = 0.5f;
             ec.stressThreshold = 0.01f;
             ec.utilityLearningRate = 0;
             ec.utilityThreshold = -1f;
+
             entityConfig = ec;
         }
         if( useAutoencoder ) {
             AutoencoderConvolutionalNetworkEntityConfig ec = new AutoencoderConvolutionalNetworkEntityConfig();
+            int sparsity = 25;
+            int sparsityOutput = LifetimeSparseAutoencoder.FindOutputSparsity( sparsity, 1.5f );//1;
             ec.learningRate = 0.01f;
             ec.momentum = 0.5f;
             ec.weightsStdDev = 0.01f;
-            ec.layerSparsity = "1";
-            ec.layerSparsityLifetime = "1";
-            ec.batchSize = 20;
+            ec.layerSparsity = String.valueOf( sparsity );
+            ec.layerSparsityLifetime = "2";
+            ec.layerSparsityOutput = String.valueOf( sparsityOutput );
+            ec.batchSize = 128;
             entityConfig = ec;
         }
 
@@ -279,13 +306,22 @@ public class ConvolutionalUnsupervisedExpt extends CreateEntityMain {
 //        int[] layerInputStrides = { 3 };
 
 ////////////////////////////////////////////
+// Single layer expt
+        int nbrLayers = 1;
+        int[] layerDepths = { 64 }; // 7x7=64 cells
+        int[] layerPoolingSize = { 1 }; // no pooling
+        int[] layerFieldSize = { 6 }; // 6x6 input fields
+        int[] layerInputPaddings = { 0 };
+        int[] layerInputStrides = { 3 };
+
+////////////////////////////////////////////
 // EXPT 1 OK
-        int nbrLayers = 2;
-        int[] layerDepths = { 8,64 };
-        int[] layerPoolingSize = { 2,2 };
-        int[] layerFieldSize = { 3,3 };
-        int[] layerInputPaddings = { 0,0 };
-        int[] layerInputStrides = { 1,1 };
+//        int nbrLayers = 2;
+//        int[] layerDepths = { 8,64 };
+//        int[] layerPoolingSize = { 2,2 };
+//        int[] layerFieldSize = { 3,3 };
+//        int[] layerInputPaddings = { 0,0 };
+//        int[] layerInputStrides = { 1,1 };
 
 ////////////////////////////////////////////
 // EXPT 2

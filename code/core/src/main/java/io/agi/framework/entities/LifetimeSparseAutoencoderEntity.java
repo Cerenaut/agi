@@ -166,6 +166,7 @@ public class LifetimeSparseAutoencoderEntity extends Entity {
                 config.momentum,
                 config.sparsity,
                 config.sparsityLifetime,
+                config.sparsityOutput,
                 config.weightsStdDev,
                 config.batchCount, config.batchSize );
 
