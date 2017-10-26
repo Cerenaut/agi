@@ -136,7 +136,21 @@ There is also a set of experiment folders already defined and ready to go at [ex
 * Alternatively, open any of the web pages in `/code/wwww`
 * Start with `index.html`
 
-
 ## Resources
 Have a look in the `/resources` folder for useful .... resources!
 There is a code formatting style file, log4j configuration file template, an empty run-folder with necessary assets for the working directory and a template for the variables.sh file.
+
+
+# Testing
+The purpose of the unit tests is to evaluate algorithms, such as Logistic Regression, on small datasets in order to confirm that they are functional. 
+The tests use the [JUnit](http://junit.org/) testing framework and utilise the [Maven Surefire Plugin](https://maven.apache.org/surefire/maven-surefire-plugin/) to execute the tests.
+
+**Testing during Build**
+Tests are disabled by default during builds using Maven. To re-enable them during builds, change the `skipTests` flag in the properties of the `pom.xml` file.
+
+**Executing All Tests**
+The tests can be executed using `mvn surefire:test -dskipTests=false`, or `mvn test -DskipTests=false` to also execute a build beforehand.
+
+**Execute a Single Test**
+A single test can be executed using `mvn surefire:test -DskipTests=false -Dtest=CLASS_NAME` where `CLASS_NAME` is the name of the unit test class, for e.g. `LogisticRegressionTest`.
+
