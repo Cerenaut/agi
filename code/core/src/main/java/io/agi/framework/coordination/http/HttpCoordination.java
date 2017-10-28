@@ -20,14 +20,19 @@
 package io.agi.framework.coordination.http;
 
 import com.sun.net.httpserver.HttpServer;
+import io.agi.core.orm.AbstractPair;
 import io.agi.framework.Node;
 import io.agi.framework.coordination.Coordination;
+import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -152,6 +157,82 @@ public class HttpCoordination implements Coordination {
     }
 
     /**
+     * Broadcast the event that the specified Node has updated a Data.
+     *
+     * @param dataName
+     */
+    public void onSetData( String dataName, String nodeName ) {
+        _logger.debug( "Coordination.onSetData( " + dataName + ")" );
+        String query = getQuery( dataName, HttpCoordinationHandler.VALUE_SET_DATA, _n.getName() );
+        broadcast( query );
+    }
+
+    public void onSetDataExternal( String dataName, String origin ) {
+        _logger.debug( "Coordination.onSetDataInternal( " + dataName + ", " + origin + " )" );
+
+        if( origin != null ) {
+            if( origin.equals( _n.getName() ) ) {
+                return; // ignore self events
+            }
+        }
+
+        // Tell the local Node the Data is out of date.
+        _n.onSetData( dataName, origin );
+
+// I don't think you can invalidate Data without writing it in the Node.
+//        else { // origin is null, i.e. was generated outside the network
+//            // append origin=this/here and broadcast to rest of network
+//            onSetDataBroadcast( dataName );
+//        }
+    }
+
+    /**
+     * Synchronously fetch a Data fom a Node.
+     *
+     * @param dataName
+     * @param nodeName
+     * @return
+     */
+    public ModelData getData( String dataName, String nodeName ) {
+        _logger.debug( "Coordination.getData( " + dataName + ", " + nodeName + " )" );
+        Collection< ModelNode > nodes = _n.getPersistence().getNodes();
+
+        ModelNode destModelNode = null;
+
+        for( ModelNode modelNode : nodes ) {
+            if( modelNode._name.equals( nodeName ) ) {
+                destModelNode = modelNode;
+            }
+        }
+
+        // Node not found?
+        if( destModelNode == null ) {
+            _logger.warn( "Coordination.getData( " + dataName + ", " + nodeName + " ), couldn't find Node." );
+            return null;
+        }
+
+        String query = HttpDataHandler.CONTEXT + "?" + HttpDataHandler.PARAMETER_NAME + "=" + dataName;
+        String url = "http://" + destModelNode._host + ":" + destModelNode._port + query;
+
+        AbstractPair< String, Integer > response = Get( url );
+
+        if( response._second == HttpURLConnection.HTTP_OK ) {
+            try {
+                Collection< ModelData > modelDatas = ModelData.StringToModelDatas( response._first );
+                for( ModelData modelData : modelDatas ) {
+                    if( modelData.name.equals( dataName ) ) {
+                        return modelData;
+                    }
+                }
+            }
+            catch( Exception e ) {
+                _logger.warn( "Coordination.getData( " + dataName + ", " + nodeName + " ), couldn't deserialize model datas from response." );
+            }
+        }
+        return null; // couldn't be found or fetched for some reason.
+    }
+
+    /**
      * This is an internally generated request for a distributed updated notification.
      *
      * @param entityName
@@ -215,7 +296,7 @@ public class HttpCoordination implements Coordination {
      * @param query
      */
     public void broadcast( String query ) {
-        Collection< ModelNode > nodes = _n.getPersistence().fetchNodes();
+        Collection< ModelNode > nodes = _n.getPersistence().getNodes();
 
         for( ModelNode jn : nodes ) {
             if( jn._name.equals( _n.getName() ) ) {
@@ -286,5 +367,46 @@ public class HttpCoordination implements Coordination {
             _logger.error( "Unable to handle HTTP Coordination - malformed URL.");
             _logger.error( e.toString(), e );
         }
+    }
+
+    protected static AbstractPair< String, Integer > Get( String url ) {
+        AbstractPair< String, Integer > ap = new AbstractPair<>();
+        try {
+            URL obj = new URL( url );
+            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+            con.setRequestMethod( "GET" ); // optional default is GET
+
+            //add request header
+            //con.setRequestProperty("User-Agent", USER_AGENT);
+
+            ap._second = con.getResponseCode();
+            //System.out.println( "\nSending 'GET' request to URL : " + url );
+            //System.out.println( "Response Code : " + responseCode );
+
+            BufferedReader in = new BufferedReader( new InputStreamReader( con.getInputStream() ) );
+            StringBuffer sb = new StringBuffer();
+            String inputLine;
+
+            try {
+                while( ( inputLine = in.readLine() ) != null ) {
+                    sb.append( inputLine );
+                }
+            }
+            finally {
+                in.close();
+            }
+
+            //print result
+            //System.out.println( response.toString() );
+            ap._first = sb.toString();
+        }
+        catch( java.net.MalformedURLException mue ) {
+
+        }
+        catch( java.io.IOException ioe ) {
+
+        }
+
+        return ap;
     }
 }

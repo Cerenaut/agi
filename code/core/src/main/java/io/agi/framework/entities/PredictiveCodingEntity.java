@@ -75,22 +75,13 @@ public class PredictiveCodingEntity extends Entity {
 
         attributes.add( OUTPUT_SPIKES_AGE );
 
-        flags.putFlag( OUTPUT_SPIKES_AGE, DataFlags.FLAG_NODE_CACHE );
-
         attributes.add( OUTPUT_SPIKES_OLD );
         attributes.add( OUTPUT_SPIKES_NEW );
         attributes.add( OUTPUT );
 
-        flags.putFlag( OUTPUT_SPIKES_OLD, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( OUTPUT_SPIKES_NEW, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( OUTPUT, DataFlags.FLAG_NODE_CACHE );
-
         // predictor
         attributes.add( PREDICTION_ERROR_FP );
         attributes.add( PREDICTION_ERROR_FN );
-
-        flags.putFlag( PREDICTION_ERROR_FP, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_ERROR_FN, DataFlags.FLAG_NODE_CACHE );
     }
 
     @Override
@@ -115,8 +106,8 @@ public class PredictiveCodingEntity extends Entity {
             Data output          = new Data( config.widthCells, config.heightCells );
             setData( OUTPUT_SPIKES_OLD, outputSpikesOld );
             setData( OUTPUT_SPIKES_NEW, outputSpikesNew );
-//            setData( CLASSIFIER_SPIKES_OLD, classifierSpikesOld );
-//            setData( CLASSIFIER_SPIKES_NEW, classifierSpikesNew );
+//            serialize( CLASSIFIER_SPIKES_OLD, classifierSpikesOld );
+//            serialize( CLASSIFIER_SPIKES_NEW, classifierSpikesNew );
             setData( OUTPUT, output );
 
             if( config.reset ) {
@@ -207,8 +198,8 @@ public class PredictiveCodingEntity extends Entity {
 
     protected void copyDataToPersistence( PredictiveCoding rl ) {
 
-//        setData( INPUT_P_OLD, rl._inputPOld );
-//        setData( INPUT_P_NEW, rl._inputPNew );
+//        serialize( INPUT_P_OLD, rl._inputPOld );
+//        serialize( INPUT_P_NEW, rl._inputPNew );
 
         setData( OUTPUT_SPIKES_OLD, rl._outputSpikesOld );
         setData( OUTPUT_SPIKES_NEW, rl._outputSpikesNew );

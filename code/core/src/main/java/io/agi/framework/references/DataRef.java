@@ -17,30 +17,41 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.persistence;
+package io.agi.framework.references;
 
 import io.agi.core.data.Data;
-import io.agi.framework.persistence.models.ModelData;
+import io.agi.framework.Node;
 
 /**
- * An object that combines both the Object and serialized form of Data.
+ * A Data object that can be a reference to other Data objects.
  *
- * Created by dave on 25/01/17.
+ * Created by dave on 24/10/17.
  */
-public class DataModelData {
+public class DataRef {
 
-    public String _encoding;
+    public String _key;
+    public String _encoding; // hint as to how to serialize
     public String _refKeys;
-    public Data _d;
-    public ModelData _md;
+    public Data _data;
 
-    public boolean hasReferences() {
+    public DataRef( String key, String encoding, String refKeys, Data d ) {
+        _key = key;
+        _encoding = encoding;
+        _refKeys = refKeys;
+        _data = d;
+    }
+
+    public boolean isReference() {
         if( _refKeys != null ) {
-            if( _refKeys.length() > 0 ) {
+            if( !_refKeys.isEmpty() ) {
                 return true;
             }
         }
-
         return false;
     }
+
+    public Data getData( Node n, DataRefResolver drr ) {
+        return drr.getData( n, this );
+    }
+
 }

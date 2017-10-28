@@ -199,9 +199,9 @@ public class HqClRegionLayerEntity { /*extends Entity {
     protected void doUpdateSelf() {
 
         // Do nothing unless the input is defined
-        Data inputFf1 = getData( INPUT_FF_1 );
-        Data inputFf2 = getData( INPUT_FF_2 );
-        Data inputFb1 = getData( INPUT_FB_1 );
+        Data inputFf1 = deserialize( INPUT_FF_1 );
+        Data inputFf2 = deserialize( INPUT_FF_2 );
+        Data inputFb1 = deserialize( INPUT_FB_1 );
 
         if( ( inputFf1 == null ) || ( inputFf2 == null ) || ( inputFb1 == null ) ) {
             return; // can't update yet.
@@ -295,9 +295,9 @@ public class HqClRegionLayerEntity { /*extends Entity {
 
     protected void copyDataFromPersistence( HierarchicalQuiltedCompetitiveLearning hqcl ) {
 
-        hqcl._ffInput1 = getData( INPUT_FF_1 );
-        hqcl._ffInput2 = getData( INPUT_FF_2 );
-        hqcl._fbInput1 = getData( INPUT_FB_1 );
+        hqcl._ffInput1 = deserialize( INPUT_FF_1 );
+        hqcl._ffInput2 = deserialize( INPUT_FF_2 );
+        hqcl._fbInput1 = deserialize( INPUT_FB_1 );
 
         hqcl._ffInput1Old = getDataLazyResize( INPUT_FF_1_OLD, hqcl._ffInput1Old._dataSize );
         hqcl._ffInput2Old = getDataLazyResize( INPUT_FF_2_OLD, hqcl._ffInput2Old._dataSize );
@@ -362,20 +362,20 @@ public class HqClRegionLayerEntity { /*extends Entity {
 
     protected void copyDataToPersistence( HierarchicalQuiltedCompetitiveLearning hqcl ) {
 
-        setData( INPUT_FF_1_OLD, hqcl._ffInput1Old );
-        setData( INPUT_FF_2_OLD, hqcl._ffInput2Old );
-        setData( INPUT_FB_1_OLD, hqcl._fbInput1Old );
+        serialize( INPUT_FF_1_OLD, hqcl._ffInput1Old );
+        serialize( INPUT_FF_2_OLD, hqcl._ffInput2Old );
+        serialize( INPUT_FB_1_OLD, hqcl._fbInput1Old );
 
-        setData( REGION_ACTIVITY, hqcl._regionActivity );
-        setData( REGION_ACTIVITY_INFERRED, hqcl._regionActivityInferred );
-        setData( REGION_PREDICTION_WEIGHTS, hqcl._regionPredictionWeights );
-        setData( REGION_PREDICTION, hqcl._regionPrediction );
-        setData( REGION_LIKELIHOOD, hqcl._regionLikelihood );
-//        setData( REGION_ERROR_HISTORY, hqcl._regionErrorHistory );
-//        setData( REGION_ERROR_HISTORY_INDEX, hqcl._regionErrorHistoryIndex );
+        serialize( REGION_ACTIVITY, hqcl._regionActivity );
+        serialize( REGION_ACTIVITY_INFERRED, hqcl._regionActivityInferred );
+        serialize( REGION_PREDICTION_WEIGHTS, hqcl._regionPredictionWeights );
+        serialize( REGION_PREDICTION, hqcl._regionPrediction );
+        serialize( REGION_LIKELIHOOD, hqcl._regionLikelihood );
+//        serialize( REGION_ERROR_HISTORY, hqcl._regionErrorHistory );
+//        serialize( REGION_ERROR_HISTORY_INDEX, hqcl._regionErrorHistoryIndex );
 
-        setData( ORGANIZER_CELL_MASK, hqcl._organizer._cellMask );
-        setData( ORGANIZER_CELL_WEIGHTS, hqcl._organizer._cellWeights );
+        serialize( ORGANIZER_CELL_MASK, hqcl._organizer._cellMask );
+        serialize( ORGANIZER_CELL_WEIGHTS, hqcl._organizer._cellWeights );
 
         // 1. pack the data:
         int classifiers = hqcl._config.getOrganizerAreaCells();
@@ -404,16 +404,16 @@ public class HqClRegionLayerEntity { /*extends Entity {
 
         // 2. Store the packed data.
         String prefix = "";//hqcl._config.CLASSIFIER;
-        setData( CLASSIFIER_CELL_WEIGHTS, _classifierCellWeights );
-        setData( CLASSIFIER_CELL_ERRORS, _classifierCellErrors );
-//        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), _classifierCellActivity );
-        setData( CLASSIFIER_CELL_MASK, _classifierCellMask );
+        serialize( CLASSIFIER_CELL_WEIGHTS, _classifierCellWeights );
+        serialize( CLASSIFIER_CELL_ERRORS, _classifierCellErrors );
+//        serialize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), _classifierCellActivity );
+        serialize( CLASSIFIER_CELL_MASK, _classifierCellMask );
 
-        setData( CLASSIFIER_CELL_STRESS, _classifierCellStress );
-        setData( CLASSIFIER_CELL_AGES, _classifierCellAges );
-        setData( CLASSIFIER_EDGES, _classifierEdges );
-        setData( CLASSIFIER_EDGES_AGES, _classifierEdgesAges );
-        setData( CLASSIFIER_AGE_SINCE_GROWTH, _classifierAgeSinceGrowth );
+        serialize( CLASSIFIER_CELL_STRESS, _classifierCellStress );
+        serialize( CLASSIFIER_CELL_AGES, _classifierCellAges );
+        serialize( CLASSIFIER_EDGES, _classifierEdges );
+        serialize( CLASSIFIER_EDGES_AGES, _classifierEdgesAges );
+        serialize( CLASSIFIER_AGE_SINCE_GROWTH, _classifierAgeSinceGrowth );
 
     }
 */

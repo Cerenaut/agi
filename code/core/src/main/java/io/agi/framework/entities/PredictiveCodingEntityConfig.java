@@ -21,6 +21,7 @@ package io.agi.framework.entities;
 
 import io.agi.framework.EntityConfig;
 import io.agi.framework.Framework;
+import io.agi.framework.persistence.PersistenceUtil;
 
 /**
  *
@@ -57,6 +58,6 @@ public class PredictiveCodingEntityConfig extends EntityConfig {
         config.outputSpikeAgeMax = outputSpikeAgeMax;
         config.outputDecayRate = outputDecayRate;
 
-        Framework.SetConfig( entityName, config );
+        PersistenceUtil.SetConfig( entityName, config );
     }
 }

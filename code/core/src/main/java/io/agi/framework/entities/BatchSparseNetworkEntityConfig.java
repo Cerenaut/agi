@@ -21,6 +21,7 @@ package io.agi.framework.entities;
 
 import io.agi.framework.EntityConfig;
 import io.agi.framework.Framework;
+import io.agi.framework.persistence.PersistenceUtil;
 
 /**
  * Created by dave on 16/10/17.
@@ -68,7 +69,7 @@ public class BatchSparseNetworkEntityConfig extends EntityConfig {
         config.momentum = momentum;
         config.weightsStdDev = weightsStdDev;
 
-        Framework.SetConfig( entityName, config );
+        PersistenceUtil.SetConfig( entityName, config );
     }
 
 }

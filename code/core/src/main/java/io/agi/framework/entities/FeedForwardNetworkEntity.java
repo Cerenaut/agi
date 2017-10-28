@@ -72,15 +72,6 @@ public class FeedForwardNetworkEntity extends SupervisedLearningEntity {
         attributes.add( BATCH_ERROR_GRADIENTS_2 );
         attributes.add( BATCH_INPUTS_1 );
         attributes.add( BATCH_INPUTS_2 );
-
-        flags.putFlag( WEIGHTS_1, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( WEIGHTS_2, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BIASES_1, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BIASES_2, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_ERROR_GRADIENTS_1, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_ERROR_GRADIENTS_2, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_INPUTS_1, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_INPUTS_2, DataFlags.FLAG_NODE_CACHE );
     }
 
     protected void reset( int features, int labelClasses ) {

@@ -24,6 +24,7 @@ import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
@@ -87,7 +88,7 @@ public class ExperimentEntity extends Entity {
         // see if external condition says terminate
         try {
 
-            String stringValue = Framework.GetConfig( config.terminationEntityName, config.terminationConfigPath );
+            String stringValue = PersistenceUtil.GetConfig( config.terminationEntityName, config.terminationConfigPath );
 
             Boolean b = Boolean.valueOf( stringValue );
 
@@ -116,10 +117,10 @@ public class ExperimentEntity extends Entity {
         }
 
         // flush if we will be terminating.
-        if( config.terminate ) {
-            _logger.info( "Experiment: " + getName() + " enabling flush due to imminent termination." );
-            config.flush = true; // ensure data is flushed. Since this is the end of the experiment, we don't need to disable flush again
-        }
+        //if( config.terminate ) {
+        //    _logger.info( "Experiment: " + getName() + " enabling flush due to imminent termination." );
+        //    config.flush = true; // ensure data is flushed. Since this is the end of the experiment, we don't need to disable flush again
+        //}
 
         // if reset, then undo any termination:
         if( config.reset ) {
@@ -143,7 +144,7 @@ public class ExperimentEntity extends Entity {
         if( config.terminating ) {
             _logger.info( "Experiment: " + getName() + " terminated at age: " + _config.age + " t: " + System.currentTimeMillis() );
             config.terminated = true;
-            Framework.SetConfigBoolean( getName(), "terminated", config.terminated ); // config has already been persisted, so changing it now has no effect.
+            PersistenceUtil.SetConfigBoolean( getName(), "terminated", config.terminated ); // config has already been persisted, so changing it now has no effect.
         }
 
         if( ( !config.terminated ) && ( !config.pause ) ) {

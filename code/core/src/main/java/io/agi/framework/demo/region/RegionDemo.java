@@ -30,6 +30,8 @@ import io.agi.framework.entities.ImageSensorEntity;
 import io.agi.framework.entities.RegionEntity;
 import io.agi.framework.factories.CommonEntityFactory;
 import io.agi.framework.persistence.Persistence;
+import io.agi.framework.persistence.PersistenceUtil;
+import io.agi.framework.references.DataRefUtil;
 
 import java.util.Properties;
 
@@ -55,15 +57,15 @@ public class RegionDemo {
 
         // Create custom entities and references
         if( args.length > 1 ) {
-            Framework.LoadEntities( args[ 1 ] );
+            PersistenceUtil.ReadEntities( args[ 1 ] );
         }
 
         if( args.length > 2 ) {
-            Framework.LoadDataReferences( args[ 2 ] );
+            DataRefUtil.LoadDataReferences( args[ 2 ] );
         }
 
         if( args.length > 3 ) {
-            Framework.LoadConfigs( args[ 3 ] );
+            PersistenceUtil.LoadConfigs( args[ 3 ] );
         }
 
         // Programmatic hook to Create entities and references..
@@ -80,20 +82,20 @@ public class RegionDemo {
         String constantMatrixName = "constant-matrix";
         String regionName = "region";
 
-        Framework.CreateEntity( imageSourceName, ImageSensorEntity.ENTITY_TYPE, n.getName(), null );
-        Framework.CreateEntity( constantMatrixName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), imageSourceName );
-        Framework.CreateEntity( regionName, RegionEntity.ENTITY_TYPE, n.getName(), constantMatrixName );
+        PersistenceUtil.CreateEntity( imageSourceName, ImageSensorEntity.ENTITY_TYPE, n.getName(), null );
+        PersistenceUtil.CreateEntity( constantMatrixName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), imageSourceName );
+        PersistenceUtil.CreateEntity( regionName, RegionEntity.ENTITY_TYPE, n.getName(), constantMatrixName );
 
         // Connect the entities' data
         Persistence p = n.getPersistence();
 
-        Framework.SetDataReference( regionName, RegionEntity.FF_INPUT, imageSourceName, ImageSensorEntity.IMAGE_DATA );
-        Framework.SetDataReference( regionName, RegionEntity.FB_INPUT, constantMatrixName, ConstantMatrixEntity.OUTPUT );
+        DataRefUtil.SetDataReference( regionName, RegionEntity.FF_INPUT, imageSourceName, ImageSensorEntity.IMAGE_DATA );
+        DataRefUtil.SetDataReference( regionName, RegionEntity.FB_INPUT, constantMatrixName, ConstantMatrixEntity.OUTPUT );
 
         // Set properties
-        Framework.SetConfig( regionName, Entity.SUFFIX_RESET, "true" );
-        Framework.SetConfig( imageSourceName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
-        Framework.SetConfig( imageSourceName, "greyscale", "true" );
-        Framework.SetConfig( imageSourceName, "sourceFilesPath", "/home/dave/workspace/agi.io/agi/algorithms/code/core/run/line" );
+        PersistenceUtil.SetConfig( regionName, Entity.SUFFIX_RESET, "true" );
+        PersistenceUtil.SetConfig( imageSourceName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
+        PersistenceUtil.SetConfig( imageSourceName, "greyscale", "true" );
+        PersistenceUtil.SetConfig( imageSourceName, "sourceFilesPath", "/home/dave/workspace/agi.io/agi/algorithms/code/core/run/line" );
     }
 }

@@ -22,13 +22,17 @@ package io.agi.framework.demo.papers;
 import io.agi.core.ann.unsupervised.LifetimeSparseAutoencoder;
 import io.agi.core.orm.AbstractPair;
 import io.agi.framework.Framework;
+import io.agi.framework.Naming;
 import io.agi.framework.Node;
 import io.agi.framework.demo.CreateEntityMain;
 import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.demo.mnist.ImageLabelEntityConfig;
 import io.agi.framework.entities.*;
 import io.agi.framework.entities.convolutional.*;
+import io.agi.framework.persistence.DataJsonSerializer;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelData;
+import io.agi.framework.references.DataRefUtil;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -50,6 +54,9 @@ import java.util.ArrayList;
  *
  * 91.71% / 84.3% -- Expt 1, Auto-CNN
  * 85.03% / 80.79% -- Expt 2, GNG-CNN big receptive fields, 1 layer
+ *
+ * 1 Epoch 60k/10k Conv GNG. 1 layer, RF: 6x6 Z: 64 Stride 3 no pooling.
+ * Errors: 253 of 60000 = 99.57833% / Errors: 300 of 10000 = 97.0%
  *
  * Created by dave on 12/08/17.
  */
@@ -122,37 +129,37 @@ public class ConvolutionalUnsupervisedExpt extends CreateEntityMain {
         boolean useCompetitive = true;
 
         // Entity names
-        String experimentName           = Framework.GetEntityName( "experiment" );
-        String imageLabelName           = Framework.GetEntityName( "image-class" );
-        String featureSeriesName        = Framework.GetEntityName( "feature-series" );
-        String labelSeriesName          = Framework.GetEntityName( "label-series" );
+        String experimentName           = Naming.GetEntityName( "experiment" );
+        String imageLabelName           = Naming.GetEntityName( "image-class" );
+        String featureSeriesName        = Naming.GetEntityName( "feature-series" );
+        String labelSeriesName          = Naming.GetEntityName( "label-series" );
 
         // Algorithm
-        String convolutionalName = Framework.GetEntityName( "cnn" );
+        String convolutionalName = Naming.GetEntityName( "cnn" );
 
         // Create entities
         String parentName = null;
-        parentName = Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
-        parentName = Framework.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
+        parentName = PersistenceUtil.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), parentName );
 
         if( useCompetitive ) {
-            parentName = Framework.CreateEntity( convolutionalName, CompetitiveLearningConvolutionalNetworkEntity.ENTITY_TYPE, n.getName(), parentName );
+            parentName = PersistenceUtil.CreateEntity( convolutionalName, CompetitiveLearningConvolutionalNetworkEntity.ENTITY_TYPE, n.getName(), parentName );
         }
         if( useAutoencoder ) {
-            parentName = Framework.CreateEntity( convolutionalName, AutoencoderConvolutionalNetworkEntity.ENTITY_TYPE, n.getName(), parentName );
+            parentName = PersistenceUtil.CreateEntity( convolutionalName, AutoencoderConvolutionalNetworkEntity.ENTITY_TYPE, n.getName(), parentName );
         }
 
-//        parentName = Framework.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
-//        parentName = Framework.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
-        parentName = Framework.CreateEntity( featureSeriesName, DataFileEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
-        parentName = Framework.CreateEntity(   labelSeriesName, DataFileEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
+//        parentName = PersistenceUtil.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
+//        parentName = PersistenceUtil.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
+        parentName = PersistenceUtil.CreateEntity( featureSeriesName, DataFileEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
+        parentName = PersistenceUtil.CreateEntity(   labelSeriesName, DataFileEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
 
         // Connect the entities' data
         if( useCompetitive ) {
-            Framework.SetDataReference( convolutionalName, CompetitiveLearningConvolutionalNetworkEntity.DATA_INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
+            DataRefUtil.SetDataReference( convolutionalName, CompetitiveLearningConvolutionalNetworkEntity.DATA_INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
         }
         if( useAutoencoder ) {
-            Framework.SetDataReference( convolutionalName, AutoencoderConvolutionalNetworkEntity.DATA_INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
+            DataRefUtil.SetDataReference( convolutionalName, AutoencoderConvolutionalNetworkEntity.DATA_INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
         }
 
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList<>();
@@ -162,23 +169,23 @@ public class ConvolutionalUnsupervisedExpt extends CreateEntityMain {
         if( useAutoencoder ) {
             featureDatas.add( new AbstractPair<>( convolutionalName, AutoencoderConvolutionalNetworkEntity.DATA_OUTPUT ) );
         }
-        Framework.SetDataReferences( featureSeriesName, DataFileEntity.INPUT_WRITE, featureDatas ); // get current state from the region to be used to predict
-        Framework.SetDataReference( labelSeriesName, DataFileEntity.INPUT_WRITE, imageLabelName, ImageLabelEntity.OUTPUT_LABEL ); // get current state from the region to be used to predict
+        DataRefUtil.SetDataReferences( featureSeriesName, DataFileEntity.INPUT_WRITE, featureDatas ); // get current state from the region to be used to predict
+        DataRefUtil.SetDataReference( labelSeriesName, DataFileEntity.INPUT_WRITE, imageLabelName, ImageLabelEntity.OUTPUT_LABEL ); // get current state from the region to be used to predict
 
         // Experiment config
         if( !terminateByAge ) {
-            Framework.SetConfig( experimentName, "terminationEntityName", imageLabelName );
-            Framework.SetConfig( experimentName, "terminationConfigPath", "terminate" );
-            Framework.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
+            PersistenceUtil.SetConfig( experimentName, "terminationEntityName", imageLabelName );
+            PersistenceUtil.SetConfig( experimentName, "terminationConfigPath", "terminate" );
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
         }
         else {
-            Framework.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
         }
 
         // cache all data for speed, when enabled
-        Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( imageLabelName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( convolutionalName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( imageLabelName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( convolutionalName, "cache", String.valueOf( cacheAllData ) );
 
         // MNIST config
         String trainingEntities = convolutionalName;
@@ -206,14 +213,14 @@ public class ConvolutionalUnsupervisedExpt extends CreateEntityMain {
         boolean append = true;
         String fileNameRead = null;
         DataFileEntityConfig.Set(
-                featureSeriesName, cacheAllData, write, read, append, ModelData.ENCODING_SPARSE_REAL, fileNameWriteFeatures, fileNameRead );
+                featureSeriesName, cacheAllData, write, read, append, DataJsonSerializer.ENCODING_SPARSE_REAL, fileNameWriteFeatures, fileNameRead );
 //        int accumulatePeriod = imageRepeats;
 //        int period = -1;
 //        VectorSeriesEntityConfig.Set( vectorSeriesName, accumulatePeriod, period, ModelData.ENCODING_SPARSE_BINARY );
 
         // Log image label for each set of features
         DataFileEntityConfig.Set(
-                labelSeriesName, cacheAllData, write, read, append, ModelData.ENCODING_DENSE, fileNameWriteLabels, fileNameRead );
+                labelSeriesName, cacheAllData, write, read, append, DataJsonSerializer.ENCODING_DENSE, fileNameWriteLabels, fileNameRead );
 //        String valueSeriesInputEntityName = imageLabelName;
 //        String valueSeriesInputConfigPath = "imageLabel";
 //        String valueSeriesInputDataName = "";
@@ -255,7 +262,7 @@ public class ConvolutionalUnsupervisedExpt extends CreateEntityMain {
         entityConfig.shuffleTraining = false;
         entityConfig.imageRepeats = repeats;
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
     protected static void SetConvolutionalEntityConfig(
@@ -270,7 +277,7 @@ public class ConvolutionalUnsupervisedExpt extends CreateEntityMain {
         if( useCompetitive ) {
             CompetitiveLearningConvolutionalNetworkEntityConfig ec = new CompetitiveLearningConvolutionalNetworkEntityConfig();
             ec.learningRate = 0.015f;
-            ec.learningRateNeighbours = ec.learningRate * 0.2f;;
+            ec.learningRateNeighbours = ec.learningRate * 0.2f;
             ec.noiseMagnitude = 0f;
             ec.edgeMaxAge = 800;
             ec.growthInterval = 100;
@@ -368,7 +375,7 @@ public class ConvolutionalUnsupervisedExpt extends CreateEntityMain {
 
         entityConfig.cache = true;
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
 }

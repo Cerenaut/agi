@@ -28,7 +28,9 @@ import io.agi.framework.coordination.http.HttpCoordination;
 import io.agi.framework.factories.CommonEntityFactory;
 import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.PersistenceFactory;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelNode;
+import io.agi.framework.references.DataRefUtil;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -123,7 +125,7 @@ public class Main {
         try {
             if( _c instanceof HttpCoordination ) {
                 HttpCoordination c = ( HttpCoordination ) _c;
-                c.setNode( _n );
+                //c.setNode( _n );
                 c.start();
             }
         }
@@ -187,13 +189,13 @@ public class Main {
 
         // Create custom entities and references
         if( entityJson != null && !entityJson.toLowerCase().equals( "null" ) ) {
-            Framework.LoadEntities( entityJson );
+            PersistenceUtil.ReadEntities( entityJson );
         }
         if( dataJson != null  && !entityJson.toLowerCase().equals( "null" ) ) {
-            Framework.LoadData( dataJson );
+            DataRefUtil.ReadData( dataJson );
         }
         if( configJson != null && !entityJson.toLowerCase().equals( "null" ) ) {
-            Framework.LoadConfigs( configJson ); // apply a delta config patch to loaded entities
+            PersistenceUtil.LoadConfigs( configJson ); // apply a delta config patch to loaded entities
         }
 
         // Start the system

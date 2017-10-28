@@ -26,6 +26,7 @@ import io.agi.core.util.FileUtil;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
+import io.agi.framework.persistence.DataJsonSerializer;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
 
@@ -56,10 +57,10 @@ public class DataFileEntity extends Entity {
 
         attributes.add( OUTPUT_READ );
 
-        if( config.encoding.equals( ModelData.ENCODING_SPARSE_BINARY ) ) {
+        if( config.encoding.equals( DataJsonSerializer.ENCODING_SPARSE_BINARY ) ) {
             flags.putFlag( OUTPUT_READ, DataFlags.FLAG_SPARSE_BINARY );
         }
-        else if( config.encoding.equals( ModelData.ENCODING_SPARSE_REAL ) ) {
+        else if( config.encoding.equals( DataJsonSerializer.ENCODING_SPARSE_REAL ) ) {
             flags.putFlag( OUTPUT_READ, DataFlags.FLAG_SPARSE_REAL );
         }
         else { // remove existing flag, if any

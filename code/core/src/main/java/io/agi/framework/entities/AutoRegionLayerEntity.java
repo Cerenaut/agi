@@ -105,18 +105,10 @@ public class AutoRegionLayerEntity extends Entity {
         attributes.add( OUTPUT_INPUT_1 );
         attributes.add( OUTPUT_INPUT_2 );
 
-        flags.putFlag( OUTPUT_INPUT_1, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( OUTPUT_INPUT_2, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( OUTPUT_INPUT_1, DataFlags.FLAG_PERSIST_ONLY );
-        flags.putFlag( OUTPUT_INPUT_2, DataFlags.FLAG_PERSIST_ONLY );
-
         attributes.add( CONTEXT_FREE_ACTIVITY );
         attributes.add( CONTEXT_FREE_ACTIVITY_OLD );
         attributes.add( CONTEXT_FREE_ACTIVITY_NEW );
 
-        flags.putFlag( CONTEXT_FREE_ACTIVITY, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( CONTEXT_FREE_ACTIVITY_OLD, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( CONTEXT_FREE_ACTIVITY_NEW, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( CONTEXT_FREE_ACTIVITY, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( CONTEXT_FREE_ACTIVITY_OLD, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( CONTEXT_FREE_ACTIVITY_NEW, DataFlags.FLAG_SPARSE_BINARY );
@@ -132,11 +124,6 @@ public class AutoRegionLayerEntity extends Entity {
         attributes.add( PREDICTION_NEW_REAL );
         attributes.add( PREDICTION_INHIBITION );
 
-        flags.putFlag( PREDICTION_FP, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_FN, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_NEW_REAL, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( PREDICTION_FP, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( PREDICTION_FN, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_SPARSE_BINARY );
@@ -145,12 +132,9 @@ public class AutoRegionLayerEntity extends Entity {
         attributes.add( OUTPUT );
         attributes.add( OUTPUT_AGE );
 
-        flags.putFlag( OUTPUT, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( OUTPUT, DataFlags.FLAG_SPARSE_BINARY );
 
         attributes.add( PREDICTOR_WEIGHTS );
-
-        flags.putFlag( PREDICTOR_WEIGHTS, DataFlags.FLAG_NODE_CACHE );
 
         attributes.add( CONTEXT_FREE_WEIGHTS );
         attributes.add( CONTEXT_FREE_BIASES_1 );
@@ -169,23 +153,6 @@ public class AutoRegionLayerEntity extends Entity {
         attributes.add( CONTEXT_FREE_RATES );
         attributes.add( CONTEXT_FREE_PROMOTION );
         attributes.add( CONTEXT_FREE_INHIBITION );
-
-        flags.putFlag( CONTEXT_FREE_WEIGHTS, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( CONTEXT_FREE_BIASES_1, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( CONTEXT_FREE_BIASES_2, DataFlags.FLAG_NODE_CACHE );
-
-//        flags.putFlag( CONTEXT_FREE_WEIGHTS_VELOCITY, DataFlags.FLAG_NODE_CACHE );
-//        flags.putFlag( CONTEXT_FREE_BIASES_1_VELOCITY, DataFlags.FLAG_NODE_CACHE );
-//        flags.putFlag( CONTEXT_FREE_BIASES_2_VELOCITY, DataFlags.FLAG_NODE_CACHE );
-
-        flags.putFlag( CONTEXT_FREE_ERRORS, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( CONTEXT_FREE_TRANSFER, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( CONTEXT_FREE_RESPONSE, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( CONTEXT_FREE_RECONSTRUCTION, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( CONTEXT_FREE_AGES, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( CONTEXT_FREE_RATES, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( CONTEXT_FREE_PROMOTION, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( CONTEXT_FREE_INHIBITION, DataFlags.FLAG_NODE_CACHE );
 
 //        attributes.add( CONTEXTUAL_WEIGHTS );
 //        attributes.add( CONTEXTUAL_BIASES_1 );
@@ -351,9 +318,9 @@ public class AutoRegionLayerEntity extends Entity {
         setData( CONTEXT_FREE_ACTIVITY_OLD, rl._contextFreeActivityOld );
         setData( CONTEXT_FREE_ACTIVITY_NEW, rl._contextFreeActivityNew );
 
-//        setData( CONTEXTUAL_ACTIVITY, rl._contextualActivity );
-//        setData( CONTEXTUAL_ACTIVITY_OLD, rl._contextualActivityOld );
-//        setData( CONTEXTUAL_ACTIVITY_NEW, rl._contextualActivityNew );
+//        serialize( CONTEXTUAL_ACTIVITY, rl._contextualActivity );
+//        serialize( CONTEXTUAL_ACTIVITY_OLD, rl._contextualActivityOld );
+//        serialize( CONTEXTUAL_ACTIVITY_NEW, rl._contextualActivityNew );
         setData( PREDICTION_FP, rl._predictionFP );
         setData( PREDICTION_FN, rl._predictionFN );
         setData( PREDICTION_OLD, rl._predictionOld );
@@ -364,32 +331,32 @@ public class AutoRegionLayerEntity extends Entity {
         setData( OUTPUT, rl._output );
         setData( OUTPUT_AGE, rl._outputAge );
 
-//        setData( PREDICTOR_WEIGHTS, rl._predictor._weights );
+//        serialize( PREDICTOR_WEIGHTS, rl._predictor._weights );
 
         setData( CONTEXT_FREE_WEIGHTS, rl._contextFreeClassifier._cellWeights );
         setData( CONTEXT_FREE_BIASES_1, rl._contextFreeClassifier._cellBiases1 );
         setData( CONTEXT_FREE_BIASES_2, rl._contextFreeClassifier._cellBiases2 );
 
-//        setData( CONTEXT_FREE_WEIGHTS_VELOCITY, rl._contextFreeClassifier._cellWeightsVelocity );
-//        setData( CONTEXT_FREE_BIASES_1_VELOCITY, rl._contextFreeClassifier._cellBiases1Velocity );
-//        setData( CONTEXT_FREE_BIASES_2_VELOCITY, rl._contextFreeClassifier._cellBiases2Velocity );
+//        serialize( CONTEXT_FREE_WEIGHTS_VELOCITY, rl._contextFreeClassifier._cellWeightsVelocity );
+//        serialize( CONTEXT_FREE_BIASES_1_VELOCITY, rl._contextFreeClassifier._cellBiases1Velocity );
+//        serialize( CONTEXT_FREE_BIASES_2_VELOCITY, rl._contextFreeClassifier._cellBiases2Velocity );
 
         setData( CONTEXT_FREE_ERRORS, rl._contextFreeClassifier._cellErrors );
         setData( CONTEXT_FREE_WEIGHTED_SUM, rl._contextFreeClassifier._cellWeightedSum );
-//HACK        setData( CONTEXT_FREE_TRANSFER, rl._contextFreeClassifier._cellTransfer );
-//HACK        setData( CONTEXT_FREE_RESPONSE, rl._contextFreeClassifier._cellTransferTopK );
-//HACK        setData( CONTEXT_FREE_RECONSTRUCTION, rl._contextFreeClassifier._inputReconstruction );
+//HACK        serialize( CONTEXT_FREE_TRANSFER, rl._contextFreeClassifier._cellTransfer );
+//HACK        serialize( CONTEXT_FREE_RESPONSE, rl._contextFreeClassifier._cellTransferTopK );
+//HACK        serialize( CONTEXT_FREE_RECONSTRUCTION, rl._contextFreeClassifier._inputReconstruction );
         setData( CONTEXT_FREE_AGES, rl._contextFreeClassifier._cellAges );
-//HACK        setData( CONTEXT_FREE_RATES, rl._contextFreeClassifier._cellRates );
-//HACK        setData( CONTEXT_FREE_PROMOTION, rl._contextFreeClassifier._cellPromotion );
-//HACK        setData( CONTEXT_FREE_INHIBITION, rl._contextFreeClassifier._cellInhibition );
+//HACK        serialize( CONTEXT_FREE_RATES, rl._contextFreeClassifier._cellRates );
+//HACK        serialize( CONTEXT_FREE_PROMOTION, rl._contextFreeClassifier._cellPromotion );
+//HACK        serialize( CONTEXT_FREE_INHIBITION, rl._contextFreeClassifier._cellInhibition );
 
-//        setData( CONTEXTUAL_WEIGHTS, rl._contextualClassifier._cellWeights );
-//        setData( CONTEXTUAL_BIASES_1, rl._contextualClassifier._cellBiases1 );
-//        setData( CONTEXTUAL_BIASES_2, rl._contextualClassifier._cellBiases2 );
-//        setData( CONTEXTUAL_ERRORS, rl._contextualClassifier._cellErrors );
-//        setData( CONTEXTUAL_RESPONSE, rl._contextualClassifier._cellResponse );
-//        setData( CONTEXTUAL_RECONSTRUCTION, rl._contextualClassifier._inputReconstruction );
+//        serialize( CONTEXTUAL_WEIGHTS, rl._contextualClassifier._cellWeights );
+//        serialize( CONTEXTUAL_BIASES_1, rl._contextualClassifier._cellBiases1 );
+//        serialize( CONTEXTUAL_BIASES_2, rl._contextualClassifier._cellBiases2 );
+//        serialize( CONTEXTUAL_ERRORS, rl._contextualClassifier._cellErrors );
+//        serialize( CONTEXTUAL_RESPONSE, rl._contextualClassifier._cellResponse );
+//        serialize( CONTEXTUAL_RECONSTRUCTION, rl._contextualClassifier._inputReconstruction );
 
     }
 

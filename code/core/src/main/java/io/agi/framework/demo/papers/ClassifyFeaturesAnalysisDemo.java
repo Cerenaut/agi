@@ -22,11 +22,14 @@ package io.agi.framework.demo.papers;
 import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
+import io.agi.framework.Naming;
 import io.agi.framework.Node;
 import io.agi.framework.demo.mnist.ClassificationAnalysisEntity;
 import io.agi.framework.entities.ExperimentEntity;
 import io.agi.framework.entities.ExperimentEntityConfig;
 import io.agi.framework.factories.CommonEntityFactory;
+import io.agi.framework.persistence.PersistenceUtil;
+import io.agi.framework.references.DataRefUtil;
 
 import java.util.Properties;
 
@@ -55,7 +58,7 @@ public class ClassifyFeaturesAnalysisDemo {
             String arg = args[ i ];
             if( arg.equalsIgnoreCase( "prefix" ) ) {
                 String prefix = args[ i+1 ];
-                Framework.SetEntityNamePrefix( prefix );
+                Naming.SetEntityNamePrefix( prefix );
 //                Framework.SetEntityNamePrefixDateTime();
             }
         }
@@ -76,8 +79,8 @@ public class ClassifyFeaturesAnalysisDemo {
 
         // 1) Define entities
         // ---------------------------------------------
-        String experimentName   = Framework.GetEntityName( "experiment" );
-        String classificationAnalysisName = Framework.GetEntityName( "classification-analysis" );
+        String experimentName   = PersistenceUtil.GetEntityName( "experiment" );
+        String classificationAnalysisName = PersistenceUtil.GetEntityName( "classification-analysis" );
 
 
         // 2) Configuration values
@@ -87,24 +90,24 @@ public class ClassifyFeaturesAnalysisDemo {
         ExperimentEntityConfig experimentConfig = new ExperimentEntityConfig();
         experimentConfig.terminationAge = 1;       // wait for analytics entity to decide
 
-        Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
-        Framework.CreateEntity( classificationAnalysisName, ClassificationAnalysisEntity.ENTITY_TYPE, n.getName(), experimentName );
+        PersistenceUtil.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
+        PersistenceUtil.CreateEntity( classificationAnalysisName, ClassificationAnalysisEntity.ENTITY_TYPE, n.getName(), experimentName );
 
 
         // 3) Connect entities
         // ---------------------------------------------
         // Connect the 'testing entities' data input to the training data set directly
         // TODO: Set this programmatically
-        Framework.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_TRUTH, "classifier", "truth" );
-        Framework.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_PREDICTED, "classifier", "predicted" );
+        DataRefUtil.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_TRUTH, "classifier", "truth" );
+        DataRefUtil.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_PREDICTED, "classifier", "predicted" );
 
 
         // 4) Set configurations
         // ---------------------------------------------
-        Framework.SetConfig( experimentName, experimentConfig );
+        PersistenceUtil.SetConfig( experimentName, experimentConfig );
 
         // cache all data for speed, when enabled (override this property in configs)
-        Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
     }
 
 }

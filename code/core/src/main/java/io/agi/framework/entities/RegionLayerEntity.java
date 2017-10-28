@@ -121,31 +121,22 @@ public class RegionLayerEntity extends Entity {
         attributes.add( FB_OUTPUT_2_UNFOLDED_PREDICTION_RAW );
         attributes.add( FB_OUTPUT_2_UNFOLDED_PREDICTION );
 
-        flags.putFlag( FB_OUTPUT_1_UNFOLDED_ACTIVITY, DataFlags.FLAG_PERSIST_ONLY ); // never read
         flags.putFlag( FB_OUTPUT_2_UNFOLDED_ACTIVITY, DataFlags.FLAG_SPARSE_BINARY );
 
-        flags.putFlag( FB_OUTPUT_1_UNFOLDED_PREDICTION, DataFlags.FLAG_PERSIST_ONLY ); // never read
         flags.putFlag( FB_OUTPUT_2_UNFOLDED_PREDICTION, DataFlags.FLAG_SPARSE_BINARY );
 
         attributes.add( FB_INPUT_OLD );
         attributes.add( FF_INPUT_1_OLD );
         attributes.add( FF_INPUT_2_OLD );
 
-        flags.putFlag( FF_INPUT_1_OLD, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( FF_INPUT_2_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( FF_INPUT_1_OLD, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( FF_INPUT_2_OLD, DataFlags.FLAG_SPARSE_BINARY );
 
-        flags.putFlag( FB_INPUT_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( FB_INPUT_OLD, DataFlags.FLAG_SPARSE_BINARY );
 
         attributes.add( ACTIVITY_OLD );
         attributes.add( ACTIVITY_NEW );
         attributes.add( ACTIVITY );
-
-        flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( ACTIVITY,     DataFlags.FLAG_NODE_CACHE );
 
         flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_SPARSE_BINARY );
@@ -163,10 +154,6 @@ public class RegionLayerEntity extends Entity {
         attributes.add( PREDICTION_NEW );
         attributes.add( PREDICTION_RAW );
 
-        flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_RAW, DataFlags.FLAG_NODE_CACHE );
-
         flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( PREDICTION_RAW, DataFlags.FLAG_SPARSE_REAL );
@@ -175,9 +162,6 @@ public class RegionLayerEntity extends Entity {
         attributes.add( PREDICTION_FN );
         attributes.add( PREDICTION_INHIBITION );
 
-        flags.putFlag( PREDICTION_FP, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_FN, DataFlags.FLAG_NODE_CACHE );
-
         flags.putFlag( PREDICTION_FP, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( PREDICTION_FN, DataFlags.FLAG_SPARSE_BINARY );
 
@@ -185,11 +169,8 @@ public class RegionLayerEntity extends Entity {
         attributes.add( PREDICTOR_CONTEXTS );
         attributes.add( PREDICTOR_WEIGHTS );
 
-        flags.putFlag( PREDICTOR_CONTEXTS, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( PREDICTOR_CONTEXTS, DataFlags.FLAG_SPARSE_BINARY );
 
-        flags.putFlag( PREDICTOR_WEIGHTS, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTOR_WEIGHTS, DataFlags.FLAG_PERSIST_ON_FLUSH );
         flags.putFlag( PREDICTOR_WEIGHTS, DataFlags.FLAG_SPARSE_REAL ); // drops from about 2.2 to 1.5 sec.
 
         // The organizer
@@ -225,32 +206,6 @@ public class RegionLayerEntity extends Entity {
 
         // These rarely change:
 //        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), DataFlags.FLAG_LAZY_PERSIST );
-
-        // These are written by only me, so can be cached, avoiding the read.
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ), DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), DataFlags.FLAG_NODE_CACHE );
-
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS ), DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES ), DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES ), DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH ), DataFlags.FLAG_NODE_CACHE );
-
-        // These are only written on a flush event:
-//        if( flag ) {
-            flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-            flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-            flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-            flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-//        }
-
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-        //flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES), DataFlags.FLAG_PERSIST_ON_FLUSH); lazy
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH ), DataFlags.FLAG_PERSIST_ON_FLUSH );
     }
 
     @Override
@@ -559,7 +514,7 @@ public class RegionLayerEntity extends Entity {
         setData( ACTIVITY,     r._regionActivity );
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//        setData( ACTIVITY_1,     r._regionActivity1 );
+//        serialize( ACTIVITY_1,     r._regionActivity1 );
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         setData( PREDICTION_OLD       , r._regionPredictionOld );
@@ -631,10 +586,10 @@ public class RegionLayerEntity extends Entity {
     }
 //
 //    protected void copyDataToPersistence( String prefix, DynamicSelfOrganizingMap dsom ) {
-//        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), dsom._cellWeights );
-//        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ), dsom._cellErrors );
-//        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), dsom._cellActivity );
-//        setData( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), dsom._cellMask );
+//        serialize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), dsom._cellWeights );
+//        serialize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ), dsom._cellErrors );
+//        serialize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), dsom._cellActivity );
+//        serialize( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), dsom._cellMask );
 //    }
 
     protected void copyDataToPersistence( String prefix, GrowingNeuralGas gng ) {

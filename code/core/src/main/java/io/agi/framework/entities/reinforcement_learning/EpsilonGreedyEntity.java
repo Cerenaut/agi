@@ -56,7 +56,6 @@ public class EpsilonGreedyEntity extends Entity {
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
 
         attributes.add( OUTPUT_ACTIONS );
-        flags.putFlag( OUTPUT_ACTIONS, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( OUTPUT_ACTIONS, DataFlags.FLAG_SPARSE_BINARY );
     }
 

@@ -94,67 +94,22 @@ public class QuiltedCompetitiveLearningEntity extends Entity {
         attributes.add( OUTPUT_2 );
         attributes.add( OUTPUT_QUILT );
 
-        flags.putFlag( OUTPUT_1, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( OUTPUT_2, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( OUTPUT_QUILT, DataFlags.FLAG_NODE_CACHE );
-
         attributes.add( QUILT_MASK );
         attributes.add( QUILT_INPUT_MASK );
 
         flags.putFlag( OUTPUT_QUILT, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( QUILT_INPUT_MASK, DataFlags.FLAG_SPARSE_BINARY );
 
-        flags.putFlag( QUILT_MASK, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( QUILT_INPUT_MASK, DataFlags.FLAG_NODE_CACHE );
-
         attributes.add( CLASSIFIER_CELL_WEIGHTS );
-
-        flags.putFlag( CLASSIFIER_CELL_WEIGHTS, DataFlags.FLAG_PERSIST_ON_FLUSH );
-        flags.putFlag( CLASSIFIER_CELL_WEIGHTS, DataFlags.FLAG_NODE_CACHE );
-
         attributes.add( CLASSIFIER_CELL_ERRORS );
-
-//        flags.putFlag( Keys.concatenate( prefix, CLASSIFIER_CELL_ERRORS ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-        flags.putFlag( CLASSIFIER_CELL_ERRORS, DataFlags.FLAG_NODE_CACHE );
-
         attributes.add(CLASSIFIER_CELL_ACTIVITY);
-        flags.putFlag(CLASSIFIER_CELL_ACTIVITY, DataFlags.FLAG_NODE_CACHE);
-
         attributes.add( CLASSIFIER_CELL_MASK );
-
-//        flags.putFlag( CLASSIFIER_CELL_MASK, DataFlags.FLAG_SPARSE_BINARY );
-        flags.putFlag( CLASSIFIER_CELL_MASK, DataFlags.FLAG_NODE_CACHE );
-
         attributes.add( CLASSIFIER_CELL_STRESS );
-
-//        flags.putFlag( Keys.concatenate( prefix, CLASSIFIER_CELL_STRESS ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-        flags.putFlag( CLASSIFIER_CELL_STRESS, DataFlags.FLAG_NODE_CACHE );
-
         attributes.add( CLASSIFIER_CELL_UTILITY );
-
-//        flags.putFlag( Keys.concatenate( prefix, CLASSIFIER_CELL_STRESS ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-        flags.putFlag( CLASSIFIER_CELL_UTILITY, DataFlags.FLAG_NODE_CACHE );
-
         attributes.add( CLASSIFIER_CELL_AGES );
-
-//        flags.putFlag( Keys.concatenate( prefix, CLASSIFIER_CELL_AGES ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-        flags.putFlag( CLASSIFIER_CELL_AGES, DataFlags.FLAG_NODE_CACHE );
-
         attributes.add( CLASSIFIER_EDGES );
-
-//        flags.putFlag( Keys.concatenate( prefix, CLASSIFIER_EDGES ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-        flags.putFlag( CLASSIFIER_EDGES, DataFlags.FLAG_NODE_CACHE );
-
         attributes.add( CLASSIFIER_EDGES_AGES );
-
-//        flags.putFlag( Keys.concatenate( prefix, CLASSIFIER_EDGES_AGES ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-        flags.putFlag( CLASSIFIER_EDGES_AGES, DataFlags.FLAG_NODE_CACHE );
-
         attributes.add( CLASSIFIER_AGE_SINCE_GROWTH );
-
-//        flags.putFlag( Keys.concatenate( prefix, CLASSIFIER_AGE_SINCE_GROWTH ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-        flags.putFlag( CLASSIFIER_AGE_SINCE_GROWTH, DataFlags.FLAG_NODE_CACHE );
-
     }
 
     @Override

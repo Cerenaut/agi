@@ -29,7 +29,10 @@ import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.demo.mnist.ImageLabelEntityConfig;
 import io.agi.framework.entities.*;
 import io.agi.framework.entities.reinforcement_learning.*;
+import io.agi.framework.persistence.DataJsonSerializer;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelData;
+import io.agi.framework.references.DataRefUtil;
 
 import java.util.ArrayList;
 
@@ -118,80 +121,80 @@ public class ReinforcedUnsupervisedExpt extends CreateEntityMain {
         int imageLabels = 10;
 
         // Entity names
-        String experimentName           = Framework.GetEntityName( "experiment" );
-        String imageLabelName           = Framework.GetEntityName( "image-class" );
-        String featureSeriesName        = Framework.GetEntityName( "feature-series" );
-        String labelSeriesName          = Framework.GetEntityName( "label-series" );
-        String rewardSeriesName         = Framework.GetEntityName( "reward-series" );
+        String experimentName           = PersistenceUtil.GetEntityName( "experiment" );
+        String imageLabelName           = PersistenceUtil.GetEntityName( "image-class" );
+        String featureSeriesName        = PersistenceUtil.GetEntityName( "feature-series" );
+        String labelSeriesName          = PersistenceUtil.GetEntityName( "label-series" );
+        String rewardSeriesName         = PersistenceUtil.GetEntityName( "reward-series" );
 
         // Algorithm
-        String classifierName = Framework.GetEntityName( "cnn" );
-        String problemName = Framework.GetEntityName( "problem" );
-        String reinforcementName = Framework.GetEntityName( "ql" );
-        String policyName = Framework.GetEntityName( "policy" );
-        String reward2LearningName = Framework.GetEntityName( "reward-2-learning-rate" );
+        String classifierName = PersistenceUtil.GetEntityName( "cnn" );
+        String problemName = PersistenceUtil.GetEntityName( "problem" );
+        String reinforcementName = PersistenceUtil.GetEntityName( "ql" );
+        String policyName = PersistenceUtil.GetEntityName( "policy" );
+        String reward2LearningName = PersistenceUtil.GetEntityName( "reward-2-learning-rate" );
 
         // Create entities
         String parentName = null;
-        parentName = Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
-        parentName = Framework.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
+        parentName = PersistenceUtil.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), parentName );
 
         // Representation
-        parentName = Framework.CreateEntity( classifierName, BiasedSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( classifierName, BiasedSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), parentName );
 
         // Reinforcement Learning
-        parentName = Framework.CreateEntity( reinforcementName, QLearningEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( policyName, EpsilonGreedyEntity.ENTITY_TYPE, n.getName(), parentName ); // select actions given
-        parentName = Framework.CreateEntity( problemName, VectorProblemEntity.ENTITY_TYPE, n.getName(), parentName ); // update reward
+        parentName = PersistenceUtil.CreateEntity( reinforcementName, QLearningEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( policyName, EpsilonGreedyEntity.ENTITY_TYPE, n.getName(), parentName ); // select actions given
+        parentName = PersistenceUtil.CreateEntity( problemName, VectorProblemEntity.ENTITY_TYPE, n.getName(), parentName ); // update reward
 
-        parentName = Framework.CreateEntity( reward2LearningName, Reward2LearningRateEntity.ENTITY_TYPE, n.getName(), parentName ); // update reward
+        parentName = PersistenceUtil.CreateEntity( reward2LearningName, Reward2LearningRateEntity.ENTITY_TYPE, n.getName(), parentName ); // update reward
 
         // Logging
-        parentName = Framework.CreateEntity( featureSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
-        parentName = Framework.CreateEntity( labelSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
-        parentName = Framework.CreateEntity( rewardSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
+        parentName = PersistenceUtil.CreateEntity( featureSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
+        parentName = PersistenceUtil.CreateEntity( labelSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
+        parentName = PersistenceUtil.CreateEntity( rewardSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
 
         // Connect the entities' data
         // Input image --> Algo
-        Framework.SetDataReference( classifierName, BiasedSparseAutoencoderEntity.INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
+        DataRefUtil.SetDataReference( classifierName, BiasedSparseAutoencoderEntity.INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
 
         // Algo --> logging for offline classifier after training
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList<>();
         featureDatas.add( new AbstractPair<>( classifierName, BiasedSparseAutoencoderEntity.SPIKES ) );
-        Framework.SetDataReferences( featureSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
+        DataRefUtil.SetDataReferences( featureSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
 
         // Reinforcement learning
         String statesEntityName = classifierName;
         String statesDataName = BiasedSparseAutoencoderEntity.SPIKES;
 
         // Update Q-Learning first to generate action quality. Q-Learning needs latest reward, and latest state, plus OLD actions that caused this state.
-        Framework.SetDataReference ( reinforcementName, QLearningEntity.INPUT_STATES_NEW, statesEntityName, statesDataName );
-        Framework.SetDataReference ( reinforcementName, QLearningEntity.INPUT_ACTIONS_OLD, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS );
-        Framework.SetDataReference ( reinforcementName, QLearningEntity.INPUT_REWARD_NEW, problemName, VectorProblemEntity.OUTPUT_REWARD );
+        DataRefUtil.SetDataReference ( reinforcementName, QLearningEntity.INPUT_STATES_NEW, statesEntityName, statesDataName );
+        DataRefUtil.SetDataReference ( reinforcementName, QLearningEntity.INPUT_ACTIONS_OLD, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS );
+        DataRefUtil.SetDataReference ( reinforcementName, QLearningEntity.INPUT_REWARD_NEW, problemName, VectorProblemEntity.OUTPUT_REWARD );
 
         // Update the Policy next. The policy chooses the action to take given the latest state and the resultant quality of the various actions
-        Framework.SetDataReference ( policyName, EpsilonGreedyEntity.INPUT_STATES_NEW, statesEntityName, statesDataName );
-        Framework.SetDataReference ( policyName, EpsilonGreedyEntity.INPUT_ACTIONS_QUALITY, reinforcementName, QLearningEntity.OUTPUT_ACTIONS_QUALITY );
+        DataRefUtil.SetDataReference ( policyName, EpsilonGreedyEntity.INPUT_STATES_NEW, statesEntityName, statesDataName );
+        DataRefUtil.SetDataReference ( policyName, EpsilonGreedyEntity.INPUT_ACTIONS_QUALITY, reinforcementName, QLearningEntity.OUTPUT_ACTIONS_QUALITY );
 
         // Finally update the problem to calculate the reward given the chosen action. In this case, we compare the output
         // of the Policy to the correct classification. The output label from the ImageLabelEntity has been configured to be a 1-hot vector
         // rather than a scalar with a value. This means we can compare them directly.
-        Framework.SetDataReference ( problemName, VectorProblemEntity.INPUT_ACTIONS, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS );
-        Framework.SetDataReference ( problemName, VectorProblemEntity.INPUT_ACTIONS_IDEAL, imageLabelName, ImageLabelEntity.OUTPUT_LABEL );
+        DataRefUtil.SetDataReference ( problemName, VectorProblemEntity.INPUT_ACTIONS, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS );
+        DataRefUtil.SetDataReference ( problemName, VectorProblemEntity.INPUT_ACTIONS_IDEAL, imageLabelName, ImageLabelEntity.OUTPUT_LABEL );
 
         // The reward output is 1 if the classification was correct, which means the error was zero. If the classification was wrong,
         // the reward is 0. What we need to do is tie it to the biased autoencoder as the learning rate.
-        Framework.SetDataReference ( reward2LearningName, Reward2LearningRateEntity.INPUT_REWARD, problemName, VectorProblemEntity.OUTPUT_REWARD );
-        Framework.SetDataReference ( classifierName, BiasedSparseAutoencoderEntity.INPUT_LEARNING_RATE, reward2LearningName, Reward2LearningRateEntity.OUTPUT_LEARNING_RATE );
+        DataRefUtil.SetDataReference ( reward2LearningName, Reward2LearningRateEntity.INPUT_REWARD, problemName, VectorProblemEntity.OUTPUT_REWARD );
+        DataRefUtil.SetDataReference ( classifierName, BiasedSparseAutoencoderEntity.INPUT_LEARNING_RATE, reward2LearningName, Reward2LearningRateEntity.OUTPUT_LEARNING_RATE );
 
         // Experiment config
         if( !terminateByAge ) {
-            Framework.SetConfig( experimentName, "terminationEntityName", imageLabelName );
-            Framework.SetConfig( experimentName, "terminationConfigPath", "terminate" );
-            Framework.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
+            PersistenceUtil.SetConfig( experimentName, "terminationEntityName", imageLabelName );
+            PersistenceUtil.SetConfig( experimentName, "terminationConfigPath", "terminate" );
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
         }
         else {
-            Framework.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
         }
 
         SetEpsilonGreedyEntityConfig( policyName, imageLabels );
@@ -217,15 +220,15 @@ public class ReinforcedUnsupervisedExpt extends CreateEntityMain {
         float momentum = 0.9f; // 0.9 in paper
         float weightsStdDev = 0.01f; // confirmed. Sigma From paper. used at reset
 
-        Framework.SetConfig( classifierName, "learningRate", String.valueOf( learningRate ) );
-        Framework.SetConfig( classifierName, "momentum", String.valueOf( momentum ) );
-        Framework.SetConfig( classifierName, "widthCells", String.valueOf( widthCells ) );
-        Framework.SetConfig( classifierName, "heightCells", String.valueOf( heightCells ) );
-        Framework.SetConfig( classifierName, "weightsStdDev", String.valueOf( weightsStdDev ) );
-        Framework.SetConfig( classifierName, "sparsity", String.valueOf( sparsity ) );
-        Framework.SetConfig( classifierName, "sparsityLifetime", String.valueOf( sparsityLifetime ) );
-        Framework.SetConfig( classifierName, "sparsityOutput", String.valueOf( sparsityOutput ) );
-        Framework.SetConfig( classifierName, "batchSize", String.valueOf( batchSize ) );
+        PersistenceUtil.SetConfig( classifierName, "learningRate", String.valueOf( learningRate ) );
+        PersistenceUtil.SetConfig( classifierName, "momentum", String.valueOf( momentum ) );
+        PersistenceUtil.SetConfig( classifierName, "widthCells", String.valueOf( widthCells ) );
+        PersistenceUtil.SetConfig( classifierName, "heightCells", String.valueOf( heightCells ) );
+        PersistenceUtil.SetConfig( classifierName, "weightsStdDev", String.valueOf( weightsStdDev ) );
+        PersistenceUtil.SetConfig( classifierName, "sparsity", String.valueOf( sparsity ) );
+        PersistenceUtil.SetConfig( classifierName, "sparsityLifetime", String.valueOf( sparsityLifetime ) );
+        PersistenceUtil.SetConfig( classifierName, "sparsityOutput", String.valueOf( sparsityOutput ) );
+        PersistenceUtil.SetConfig( classifierName, "batchSize", String.valueOf( batchSize ) );
 
         int states = widthCells * heightCells;
         int actions = imageLabels;
@@ -236,7 +239,7 @@ public class ReinforcedUnsupervisedExpt extends CreateEntityMain {
         // This timing corresponds with the change from one image to another. In essence we allow the network to respond to the image for a few steps, while recording its output
         int accumulatePeriod = imageRepeats;
         int period = -1;
-        VectorSeriesEntityConfig.Set( featureSeriesName, accumulatePeriod, period, ModelData.ENCODING_SPARSE_BINARY );
+        VectorSeriesEntityConfig.Set( featureSeriesName, accumulatePeriod, period, DataJsonSerializer.ENCODING_SPARSE_BINARY );
 
         // Log image label for each set of features
         // We use the config path to get the true labels, not the Data.
@@ -254,14 +257,14 @@ public class ReinforcedUnsupervisedExpt extends CreateEntityMain {
 
         // cache all data for speed, when enabled. do this last so it's not overriden by a config object
         boolean cacheAllData = true;
-        Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( imageLabelName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( classifierName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( featureSeriesName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( labelSeriesName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( rewardSeriesName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( imageLabelName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( classifierName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( featureSeriesName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( labelSeriesName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( rewardSeriesName, "cache", String.valueOf( cacheAllData ) );
 
-        Framework.SetConfig( rewardSeriesName, "learn", String.valueOf( false ) ); // disable reward logging during training
+        PersistenceUtil.SetConfig( rewardSeriesName, "learn", String.valueOf( false ) ); // disable reward logging during training
     }
 
     protected static void SetImageLabelEntityConfig( String entityName, String trainingPath, String testingPath, int trainingEpochs, int testingEpochs, int repeats, int imageLabels, String trainingEntities, String testingEntities ) {
@@ -292,7 +295,7 @@ public class ReinforcedUnsupervisedExpt extends CreateEntityMain {
 
         entityConfig.imageLabelUniqueValues = imageLabels;
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
     protected static void SetQLearningEntityConfig(
@@ -311,7 +314,7 @@ public class ReinforcedUnsupervisedExpt extends CreateEntityMain {
         entityConfig.states = states;
         entityConfig.actions = actions;
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
     protected static void SetEpsilonGreedyEntityConfig(
@@ -323,7 +326,7 @@ public class ReinforcedUnsupervisedExpt extends CreateEntityMain {
 //        entityConfig.selectionSetSizes = String.valueOf( labels );
         entityConfig.cache = true;
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
 }

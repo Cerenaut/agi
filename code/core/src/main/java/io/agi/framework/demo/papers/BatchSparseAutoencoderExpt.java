@@ -27,7 +27,10 @@ import io.agi.framework.Node;
 import io.agi.framework.demo.CreateEntityMain;
 import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.entities.*;
+import io.agi.framework.persistence.DataJsonSerializer;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelData;
+import io.agi.framework.references.DataRefUtil;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -43,6 +46,10 @@ import java.util.ArrayList;
  * TESTED - as above, but with biased memory feature coded and disabled:
  * 88.90% / 88.43%
  * 89.05% / 88.00% So we have a stable score.
+ *
+ * 1.5x output sparsity, 1 epoch (60k). New data refactor. Batch size 32, momentum 0.9
+ * Errors: 2968 of 60000 = 95.05333% correct. / Errors: 574 of 10000 = 94.26% correct.
+ *
  *
  * Created by dave on 8/07/16.
  */
@@ -60,23 +67,23 @@ public class BatchSparseAutoencoderExpt extends CreateEntityMain {
     public static String getTrainingPath() {
 //        String trainingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small";
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
-        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
+//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train";
 //        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10";
-//        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train";
+        String trainingPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train";
         return trainingPath;
     }
 
     public static String getTestingPath() {
 //        String testingPath = "/Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/training-small, /Users/gideon/Development/ProjectAGI/AGIEF/datasets/mnist/testing-small";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/1k_test";
-        String testingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train,/home/dave/workspace/agi.io/data/mnist/1k_test";
+//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/10k_train,/home/dave/workspace/agi.io/data/mnist/1k_test";
 //        String testingPath = "/home/dave/workspace/agi.io/data/mnist/cycle10,/home/dave/workspace/agi.io/data/mnist/cycle10";
-//        String testingPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train,/home/dave/workspace/agi.io/data/mnist/all/all_t10k";
+        String testingPath = "/home/dave/workspace/agi.io/data/mnist/all/all_train,/home/dave/workspace/agi.io/data/mnist/all/all_t10k";
         return testingPath;
     }
 
     public static String getOutputPath() {
-        return "/home/dave/Desktop/agi/data";
+        return "/home/dave/Desktop/agi/data/batch_sparse";
     }
 
     public void createEntities( Node n ) {
@@ -96,65 +103,65 @@ public class BatchSparseAutoencoderExpt extends CreateEntityMain {
         int testingEpochs = 1;
 
         // Define some entities
-        String experimentName           = Framework.GetEntityName( "experiment" );
-        String imageLabelName           = Framework.GetEntityName( "image-class" );
-        String autoencoderName          = Framework.GetEntityName( "autoencoder" );
-        String featureSeriesName        = Framework.GetEntityName( "feature-series" );
-        String labelSeriesName          = Framework.GetEntityName( "label-series" );
+        String experimentName           = PersistenceUtil.GetEntityName( "experiment" );
+        String imageLabelName           = PersistenceUtil.GetEntityName( "image-class" );
+        String autoencoderName          = PersistenceUtil.GetEntityName( "autoencoder" );
+        String featureSeriesName        = PersistenceUtil.GetEntityName( "feature-series" );
+        String labelSeriesName          = PersistenceUtil.GetEntityName( "label-series" );
 
         String parentName = null;
-        parentName = Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), parentName ); // experiment is the root entity
-        parentName = Framework.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( autoencoderName, LifetimeSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), parentName );
-//        parentName = Framework.CreateEntity( autoencoderName, BiasedSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( featureSeriesName, DataFileEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
-        parentName = Framework.CreateEntity(   labelSeriesName, DataFileEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
+        parentName = PersistenceUtil.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), parentName ); // experiment is the root entity
+        parentName = PersistenceUtil.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( autoencoderName, LifetimeSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), parentName );
+//        parentName = PersistenceUtil.CreateEntity( autoencoderName, BiasedSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( featureSeriesName, DataFileEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
+        parentName = PersistenceUtil.CreateEntity(   labelSeriesName, DataFileEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
 
         // Connect the entities' data
         // a) Image to image region, and decode
-        Framework.SetDataReference( autoencoderName, LifetimeSparseAutoencoderEntity.INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
+        DataRefUtil.SetDataReference( autoencoderName, LifetimeSparseAutoencoderEntity.INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
 
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList<>();
         featureDatas.add( new AbstractPair<>( autoencoderName, LifetimeSparseAutoencoderEntity.SPIKES ) );
-        Framework.SetDataReferences( featureSeriesName, DataFileEntity.INPUT_WRITE, featureDatas ); // get current state from the region to be used to predict
-        Framework.SetDataReference( labelSeriesName, DataFileEntity.INPUT_WRITE, imageLabelName, ImageLabelEntity.OUTPUT_LABEL ); // get current state from the region to be used to predict
+        DataRefUtil.SetDataReferences( featureSeriesName, DataFileEntity.INPUT_WRITE, featureDatas ); // get current state from the region to be used to predict
+        DataRefUtil.SetDataReference( labelSeriesName, DataFileEntity.INPUT_WRITE, imageLabelName, ImageLabelEntity.OUTPUT_LABEL ); // get current state from the region to be used to predict
 
         // Experiment config
         if( !terminateByAge ) {
-            Framework.SetConfig( experimentName, "terminationEntityName", imageLabelName );
-            Framework.SetConfig( experimentName, "terminationConfigPath", "terminate" );
-            Framework.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
+            PersistenceUtil.SetConfig( experimentName, "terminationEntityName", imageLabelName );
+            PersistenceUtil.SetConfig( experimentName, "terminationConfigPath", "terminate" );
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
         }
         else {
-            Framework.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
         }
 
         // cache all data for speed, when enabled
-        Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( imageLabelName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( autoencoderName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( featureSeriesName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( labelSeriesName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( imageLabelName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( autoencoderName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( featureSeriesName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( labelSeriesName, "cache", String.valueOf( cacheAllData ) );
 
         // MNIST config
-        Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldX", "0" );
-        Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldY", "0" );
-        Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldW", "28" );
-        Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldH", "28" );
-        Framework.SetConfig( imageLabelName, "resolution.resolutionX", "28" );
-        Framework.SetConfig( imageLabelName, "resolution.resolutionY", "28" );
-        Framework.SetConfig( imageLabelName, "greyscale", "true" );
-        Framework.SetConfig( imageLabelName, "invert", "true" );
-        Framework.SetConfig( imageLabelName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
-        Framework.SetConfig( imageLabelName, "sourceFilesPrefix", "postproc" );
-        Framework.SetConfig( imageLabelName, "sourceFilesLabelIndex", "2" );
-        Framework.SetConfig( imageLabelName, "sourceFilesPathTraining", trainingPath );
-        Framework.SetConfig( imageLabelName, "sourceFilesPathTesting", testingPath );
-        Framework.SetConfig( imageLabelName, "trainingEpochs", String.valueOf( trainingEpochs ) );
-        Framework.SetConfig( imageLabelName, "testingEpochs", String.valueOf( testingEpochs ) );
-        Framework.SetConfig( imageLabelName, "trainingEntities", String.valueOf( autoencoderName ) );
+        PersistenceUtil.SetConfig( imageLabelName, "receptiveField.receptiveFieldX", "0" );
+        PersistenceUtil.SetConfig( imageLabelName, "receptiveField.receptiveFieldY", "0" );
+        PersistenceUtil.SetConfig( imageLabelName, "receptiveField.receptiveFieldW", "28" );
+        PersistenceUtil.SetConfig( imageLabelName, "receptiveField.receptiveFieldH", "28" );
+        PersistenceUtil.SetConfig( imageLabelName, "resolution.resolutionX", "28" );
+        PersistenceUtil.SetConfig( imageLabelName, "resolution.resolutionY", "28" );
+        PersistenceUtil.SetConfig( imageLabelName, "greyscale", "true" );
+        PersistenceUtil.SetConfig( imageLabelName, "invert", "true" );
+        PersistenceUtil.SetConfig( imageLabelName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
+        PersistenceUtil.SetConfig( imageLabelName, "sourceFilesPrefix", "postproc" );
+        PersistenceUtil.SetConfig( imageLabelName, "sourceFilesLabelIndex", "2" );
+        PersistenceUtil.SetConfig( imageLabelName, "sourceFilesPathTraining", trainingPath );
+        PersistenceUtil.SetConfig( imageLabelName, "sourceFilesPathTesting", testingPath );
+        PersistenceUtil.SetConfig( imageLabelName, "trainingEpochs", String.valueOf( trainingEpochs ) );
+        PersistenceUtil.SetConfig( imageLabelName, "testingEpochs", String.valueOf( testingEpochs ) );
+        PersistenceUtil.SetConfig( imageLabelName, "trainingEntities", String.valueOf( autoencoderName ) );
         if( !logDuringTraining ) {
-            Framework.SetConfig( imageLabelName, "testingEntities", featureSeriesName + "," + labelSeriesName );
+            PersistenceUtil.SetConfig( imageLabelName, "testingEntities", featureSeriesName + "," + labelSeriesName );
         }
 
         /* Suppose we are aiming for a sparsity level of k = 15.
@@ -185,14 +192,14 @@ public class BatchSparseAutoencoderExpt extends CreateEntityMain {
         float momentum = 0.9f; // 0.9 in paper
         float weightsStdDev = 0.01f; // confirmed. Sigma From paper. used at reset
 
-//        Framework.SetConfig( autoencoderName, "learningRate", String.valueOf( learningRate ) );
-//        Framework.SetConfig( autoencoderName, "momentum", String.valueOf( momentum ) );
-//        Framework.SetConfig( autoencoderName, "widthCells", String.valueOf( widthCells ) );
-//        Framework.SetConfig( autoencoderName, "heightCells", String.valueOf( heightCells ) );
-//        Framework.SetConfig( autoencoderName, "weightsStdDev", String.valueOf( weightsStdDev ) );
-//        Framework.SetConfig( autoencoderName, "sparsity", String.valueOf( sparsity ) );
-//        Framework.SetConfig( autoencoderName, "sparsityLifetime", String.valueOf( sparsityLifetime ) );
-//        Framework.SetConfig( autoencoderName, "batchSize", String.valueOf( batchSize ) );
+//        PersistenceUtil.SetConfig( autoencoderName, "learningRate", String.valueOf( learningRate ) );
+//        PersistenceUtil.SetConfig( autoencoderName, "momentum", String.valueOf( momentum ) );
+//        PersistenceUtil.SetConfig( autoencoderName, "widthCells", String.valueOf( widthCells ) );
+//        PersistenceUtil.SetConfig( autoencoderName, "heightCells", String.valueOf( heightCells ) );
+//        PersistenceUtil.SetConfig( autoencoderName, "weightsStdDev", String.valueOf( weightsStdDev ) );
+//        PersistenceUtil.SetConfig( autoencoderName, "sparsity", String.valueOf( sparsity ) );
+//        PersistenceUtil.SetConfig( autoencoderName, "sparsityLifetime", String.valueOf( sparsityLifetime ) );
+//        PersistenceUtil.SetConfig( autoencoderName, "batchSize", String.valueOf( batchSize ) );
         LifetimeSparseAutoencoderEntityConfig.Set(
                 autoencoderName, cacheAllData,
                 widthCells, heightCells,
@@ -205,26 +212,26 @@ public class BatchSparseAutoencoderExpt extends CreateEntityMain {
         boolean append = true;
         String fileNameRead = null;
         DataFileEntityConfig.Set(
-                featureSeriesName, cacheAllData, write, read, append, ModelData.ENCODING_SPARSE_REAL, fileNameWriteFeatures, fileNameRead );
-//        Framework.SetConfig( vectorSeriesName, "encoding", ModelData.ENCODING_SPARSE_REAL );
-//        Framework.SetConfig( vectorSeriesName, "flushPeriod", String.valueOf( flushInterval ) ); // accumulate and flush, or accumulate only
-//        Framework.SetConfig( vectorSeriesName, "period", String.valueOf( "-1" ) );
-//        Framework.SetConfig( vectorSeriesName, "writeFilePath", flushWriteFilePath );
-//        Framework.SetConfig( vectorSeriesName, "writeFilePrefix", flushWriteFilePrefixFeatures );
-//        Framework.SetConfig( vectorSeriesName, "learn", String.valueOf( "true" ) );
+                featureSeriesName, cacheAllData, write, read, append, DataJsonSerializer.ENCODING_SPARSE_REAL, fileNameWriteFeatures, fileNameRead );
+//        PersistenceUtil.SetConfig( vectorSeriesName, "encoding", ModelData.ENCODING_SPARSE_REAL );
+//        PersistenceUtil.SetConfig( vectorSeriesName, "flushPeriod", String.valueOf( flushInterval ) ); // accumulate and flush, or accumulate only
+//        PersistenceUtil.SetConfig( vectorSeriesName, "period", String.valueOf( "-1" ) );
+//        PersistenceUtil.SetConfig( vectorSeriesName, "writeFilePath", flushWriteFilePath );
+//        PersistenceUtil.SetConfig( vectorSeriesName, "writeFilePrefix", flushWriteFilePrefixFeatures );
+//        PersistenceUtil.SetConfig( vectorSeriesName, "learn", String.valueOf( "true" ) );
 
 
         // Log labels of each image produced during all phases
         DataFileEntityConfig.Set(
-                labelSeriesName, cacheAllData, write, read, append, ModelData.ENCODING_DENSE, fileNameWriteLabels, fileNameRead );
-//        Framework.SetConfig( labelSeriesName, "writeFileEncoding", ModelData.ENCODING_DENSE );
-//        Framework.SetConfig( labelSeriesName, "flushPeriod", String.valueOf( flushInterval ) ); // accumulate and flush, or accumulate only
-//        Framework.SetConfig( labelSeriesName, "period", String.valueOf( "-1" ) ); // infinite
-//        Framework.SetConfig( labelSeriesName, "learn", String.valueOf( "true" ) );
-//        Framework.SetConfig( labelSeriesName, "writeFilePath", flushWriteFilePath );
-//        Framework.SetConfig( labelSeriesName, "writeFilePrefix", flushWriteFilePrefixTruth );
-//        Framework.SetConfig( labelSeriesName, "entityName", imageLabelName );
-//        Framework.SetConfig( labelSeriesName, "configPath", "imageLabel" );
+                labelSeriesName, cacheAllData, write, read, append, DataJsonSerializer.ENCODING_DENSE, fileNameWriteLabels, fileNameRead );
+//        PersistenceUtil.SetConfig( labelSeriesName, "writeFileEncoding", ModelData.ENCODING_DENSE );
+//        PersistenceUtil.SetConfig( labelSeriesName, "flushPeriod", String.valueOf( flushInterval ) ); // accumulate and flush, or accumulate only
+//        PersistenceUtil.SetConfig( labelSeriesName, "period", String.valueOf( "-1" ) ); // infinite
+//        PersistenceUtil.SetConfig( labelSeriesName, "learn", String.valueOf( "true" ) );
+//        PersistenceUtil.SetConfig( labelSeriesName, "writeFilePath", flushWriteFilePath );
+//        PersistenceUtil.SetConfig( labelSeriesName, "writeFilePrefix", flushWriteFilePrefixTruth );
+//        PersistenceUtil.SetConfig( labelSeriesName, "entityName", imageLabelName );
+//        PersistenceUtil.SetConfig( labelSeriesName, "configPath", "imageLabel" );
     }
 
 }

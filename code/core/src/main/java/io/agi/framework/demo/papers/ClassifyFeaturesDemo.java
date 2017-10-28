@@ -22,12 +22,15 @@ package io.agi.framework.demo.papers;
 import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
+import io.agi.framework.Naming;
 import io.agi.framework.Node;
 import io.agi.framework.demo.mnist.AnalyticsEntity;
 import io.agi.framework.demo.mnist.AnalyticsEntityConfig;
 import io.agi.framework.demo.mnist.ClassificationAnalysisEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.factories.CommonEntityFactory;
+import io.agi.framework.persistence.PersistenceUtil;
+import io.agi.framework.references.DataRefUtil;
 
 import java.util.Properties;
 
@@ -71,7 +74,7 @@ public class ClassifyFeaturesDemo {
             String arg = args[ i ];
             if( arg.equalsIgnoreCase( "prefix" ) ) {
                 String prefix = args[ i+1 ];
-                Framework.SetEntityNamePrefix( prefix );
+                Naming.SetEntityNamePrefix( prefix );
 //                Framework.SetEntityNamePrefixDateTime();
             }
         }
@@ -92,10 +95,10 @@ public class ClassifyFeaturesDemo {
 
         // 1) Define entities
         // ---------------------------------------------
-        String experimentName   = Framework.GetEntityName( "experiment" );
-        String analyticsName    = Framework.GetEntityName( "analytics" );
-        String logisticRegressionName = Framework.GetEntityName( "logistic-regression" );
-        String classificationAnalysisName = Framework.GetEntityName( "classification-analysis" );
+        String experimentName   = PersistenceUtil.GetEntityName( "experiment" );
+        String analyticsName    = PersistenceUtil.GetEntityName( "analytics" );
+        String logisticRegressionName = PersistenceUtil.GetEntityName( "logistic-regression" );
+        String classificationAnalysisName = PersistenceUtil.GetEntityName( "classification-analysis" );
 
 
         // 2) Configuration values
@@ -134,35 +137,35 @@ public class ClassifyFeaturesDemo {
         logisticRegressionEntityConfig.C = 1.f;
         logisticRegressionEntityConfig.labelClasses = 10;
 
-        Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
-        Framework.CreateEntity( analyticsName, AnalyticsEntity.ENTITY_TYPE, n.getName(), experimentName );
-        Framework.CreateEntity( logisticRegressionName, SupervisedBatchTrainingEntity.ENTITY_TYPE, n.getName(), analyticsName );
-        Framework.CreateEntity( classificationAnalysisName, ClassificationAnalysisEntity.ENTITY_TYPE, n.getName(), logisticRegressionName );
+        PersistenceUtil.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
+        PersistenceUtil.CreateEntity( analyticsName, AnalyticsEntity.ENTITY_TYPE, n.getName(), experimentName );
+        PersistenceUtil.CreateEntity( logisticRegressionName, SupervisedBatchTrainingEntity.ENTITY_TYPE, n.getName(), analyticsName );
+        PersistenceUtil.CreateEntity( classificationAnalysisName, ClassificationAnalysisEntity.ENTITY_TYPE, n.getName(), logisticRegressionName );
 
 
         // 3) Connect entities
         // ---------------------------------------------
         // Connect the 'testing entities' data input to the training data set directly
-        Framework.SetDataReference( analyticsName, AnalyticsEntity.INPUT_FEATURES, seriesPrefix + "feature-series", "output" );
-        Framework.SetDataReference( analyticsName, AnalyticsEntity.INPUT_LABELS, seriesPrefix + "label-series", "output" );
+        DataRefUtil.SetDataReference( analyticsName, AnalyticsEntity.INPUT_FEATURES, seriesPrefix + "feature-series", "output" );
+        DataRefUtil.SetDataReference( analyticsName, AnalyticsEntity.INPUT_LABELS, seriesPrefix + "label-series", "output" );
 
-        Framework.SetDataReference( logisticRegressionName, SupervisedBatchTrainingEntity.INPUT_FEATURES, analyticsName, AnalyticsEntity.OUTPUT_FEATURES );
-        Framework.SetDataReference( logisticRegressionName, SupervisedBatchTrainingEntity.INPUT_LABELS, analyticsName, AnalyticsEntity.OUTPUT_LABELS );
+        DataRefUtil.SetDataReference( logisticRegressionName, SupervisedBatchTrainingEntity.INPUT_FEATURES, analyticsName, AnalyticsEntity.OUTPUT_FEATURES );
+        DataRefUtil.SetDataReference( logisticRegressionName, SupervisedBatchTrainingEntity.INPUT_LABELS, analyticsName, AnalyticsEntity.OUTPUT_LABELS );
 
-        Framework.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_TRUTH, logisticRegressionName, SupervisedBatchTrainingEntity.OUTPUT_LABELS_TRUTH );
-        Framework.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_PREDICTED, logisticRegressionName, SupervisedBatchTrainingEntity.OUTPUT_LABELS_PREDICTED );
+        DataRefUtil.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_TRUTH, logisticRegressionName, SupervisedBatchTrainingEntity.OUTPUT_LABELS_TRUTH );
+        DataRefUtil.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_PREDICTED, logisticRegressionName, SupervisedBatchTrainingEntity.OUTPUT_LABELS_PREDICTED );
 
 
         // 4) Set configurations
         // ---------------------------------------------
-        Framework.SetConfig( experimentName, experimentConfig );
-        Framework.SetConfig( analyticsName, analyticsEntityConfig );
-        Framework.SetConfig( logisticRegressionName, logisticRegressionEntityConfig );
+        PersistenceUtil.SetConfig( experimentName, experimentConfig );
+        PersistenceUtil.SetConfig( analyticsName, analyticsEntityConfig );
+        PersistenceUtil.SetConfig( logisticRegressionName, logisticRegressionEntityConfig );
 
         // cache all data for speed, when enabled (override this property in configs)
-        Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( analyticsName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( logisticRegressionName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( analyticsName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( logisticRegressionName, "cache", String.valueOf( cacheAllData ) );
     }
 
 }

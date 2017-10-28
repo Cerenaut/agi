@@ -19,15 +19,15 @@
 
 package io.agi.framework.entities;
 
-import io.agi.core.data.Data;
 import io.agi.core.orm.ObjectMap;
 import io.agi.core.util.FileUtil;
 import io.agi.framework.DataFlags;
+import io.agi.framework.references.DataRef;
 import io.agi.framework.Entity;
 import io.agi.framework.Node;
-import io.agi.framework.persistence.DenseDataDeserializer;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
+import io.agi.framework.references.DataRefMap;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -74,11 +74,17 @@ public class DataWriterEntity extends Entity {
 
             ArrayList< ModelData > modelDatas = new ArrayList< ModelData >();
 
+            DataRefMap map = _n.getDataRefMap();
+
             for( String dataName : dataNames ) {
                 String dataNameTrim = dataName.trim();
-                ModelData m = _n.getModelData( dataNameTrim, new DenseDataDeserializer() ); // benefit from existing serialization if any
-
-                modelDatas.add( m );
+                DataRef dataRef = map.getData( dataNameTrim );
+                ModelData md = new ModelData();
+                if( md.serialize( dataRef ) ) {
+                    modelDatas.add( md );
+                }
+                //ModelData m = _n.getModelData( dataNameTrim, new DataRef.DenseDataRefResolver() ); // benefit from existing serialization if any
+                //modelDatas.add( m );
             }
 
             // filename for output looks like this:

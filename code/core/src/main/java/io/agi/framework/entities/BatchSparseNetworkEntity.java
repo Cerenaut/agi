@@ -106,30 +106,6 @@ public class BatchSparseNetworkEntity extends Entity {
         attributes.add( BATCH_HIDDEN_INPUT );
         attributes.add( BATCH_HIDDEN_WEIGHTED_SUM );
         attributes.add( BATCH_HIDDEN_ERRORS );
-
-        flags.putFlag( WEIGHTS_1, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( WEIGHTS_2, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BIASES_1, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BIASES_2, DataFlags.FLAG_NODE_CACHE );
-
-        flags.putFlag( WEIGHTS_1_VELOCITY, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( WEIGHTS_2_VELOCITY, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BIASES_1_VELOCITY, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BIASES_2_VELOCITY, DataFlags.FLAG_NODE_CACHE );
-
-//        flags.putFlag( ERRORS, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( SPIKES, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( WEIGHTED_SUM, DataFlags.FLAG_NODE_CACHE );
-//        flags.putFlag( OUTPUT_RECONSTRUCTION, DataFlags.FLAG_NODE_CACHE );
-
-        flags.putFlag( BATCH_OUTPUT_IDEAL, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_OUTPUT_OUTPUT, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_OUTPUT_INPUT, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_OUTPUT_INPUT_LIFETIME, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_OUTPUT_ERRORS, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_HIDDEN_INPUT, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_HIDDEN_WEIGHTED_SUM, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_HIDDEN_ERRORS, DataFlags.FLAG_NODE_CACHE );
     }
 
     @Override
@@ -270,10 +246,10 @@ HashSet< Integer > to = trainingOutput.indicesMoreThan( 0.1f );
         setData( BIASES_1_VELOCITY, ksa._cellBiases1Velocity );
         setData( BIASES_2_VELOCITY, ksa._cellBiases2Velocity );
 
-//        setData( ERRORS, ksa._cellErrors );
+//        serialize( ERRORS, ksa._cellErrors );
         setData( WEIGHTED_SUM, ksa._testingHiddenWeightedSum );
         setData( SPIKES, ksa._testingHiddenSpikes );
-//        setData( OUTPUT_RECONSTRUCTION, ksa._inputReconstruction );
+//        serialize( OUTPUT_RECONSTRUCTION, ksa._inputReconstruction );
 
         setData( BATCH_OUTPUT_IDEAL, ksa._batchOutputIdeal );
         setData( BATCH_OUTPUT_OUTPUT, ksa._batchOutputOutput );

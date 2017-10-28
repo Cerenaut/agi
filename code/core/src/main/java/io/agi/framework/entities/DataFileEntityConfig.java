@@ -21,6 +21,8 @@ package io.agi.framework.entities;
 
 import io.agi.framework.EntityConfig;
 import io.agi.framework.Framework;
+import io.agi.framework.persistence.DataJsonSerializer;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelData;
 
 /**
@@ -28,7 +30,7 @@ import io.agi.framework.persistence.models.ModelData;
  */
 public class DataFileEntityConfig extends EntityConfig {
 
-    public String encoding = ModelData.ENCODING_DENSE;
+    public String encoding = DataJsonSerializer.ENCODING_DENSE;
 
     // for writing to disk:
     public String fileNameWrite = "";
@@ -66,7 +68,7 @@ public class DataFileEntityConfig extends EntityConfig {
         entityConfig.fileNameWrite = fileNameWrite;
         entityConfig.fileNameRead = fileNameRead;
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
 }

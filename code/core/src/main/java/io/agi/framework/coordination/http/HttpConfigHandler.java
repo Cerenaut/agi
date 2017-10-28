@@ -24,6 +24,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.agi.framework.Framework;
 import io.agi.framework.persistence.Persistence;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -94,10 +95,10 @@ public class HttpConfigHandler implements HttpHandler {
                     config = m.get( PARAMETER_CONFIG ).trim();
                 }
 
-                ModelEntity me = _p.fetchEntity( entityName );
+                ModelEntity me = _p.getEntity( entityName );
 
                 if( method.equalsIgnoreCase( "GET" ) ) {
-                    configValue = Framework.GetConfig( entityName );
+                    configValue = PersistenceUtil.GetConfig( entityName );
                     if( configValue == null ) {
                         configValue = "null";
                     }
@@ -113,7 +114,7 @@ public class HttpConfigHandler implements HttpHandler {
                         response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_VALUE + "\" : " + config + " }";
                     }
                     else if( ( configPath != null ) && ( configValue != null ) ) {
-                        Framework.SetConfig( entityName, configPath, configValue );
+                        PersistenceUtil.SetConfig( entityName, configPath, configValue );
                         response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_PATH + "\" : \"" + configPath + "\", \"" + PARAMETER_VALUE + "\" : \"" + configValue + "\" }";
                     }
                 }
