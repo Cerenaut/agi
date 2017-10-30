@@ -40,6 +40,7 @@ public class HttpCoordinationHandler implements HttpHandler {
 
     public static final String VALUE_UPDATE = "update";
     public static final String VALUE_UPDATED = "updated";
+    public static final String VALUE_SET_DATA = "set-data";
 
     public HttpCoordination _c;
 
@@ -72,10 +73,16 @@ public class HttpCoordinationHandler implements HttpHandler {
                         _c.doUpdateExternal( entityName, originValue );
                         status = 200;
                         response = GetResponse( entityName, VALUE_UPDATE, originValue );
-                    } else if( eventValue.equalsIgnoreCase( VALUE_UPDATED ) ) {
+                    }
+                    else if( eventValue.equalsIgnoreCase( VALUE_UPDATED ) ) {
                         _c.onUpdatedExternal( entityName, originValue );
                         status = 200;
                         response = GetResponse( entityName, VALUE_UPDATED, originValue );
+                    }
+                    else if( eventValue.equalsIgnoreCase( VALUE_SET_DATA ) ) {
+                        _c.onSetDataExternal( entityName, originValue );
+                        status = 200;
+                        response = GetResponse( entityName, VALUE_SET_DATA, originValue );
                     }
                 }
             }

@@ -24,12 +24,16 @@ import io.agi.core.util.PropertiesUtil;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
+import io.agi.framework.Naming;
 import io.agi.framework.Node;
 import io.agi.framework.demo.CreateEntityMain;
 import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.factories.CommonEntityFactory;
+import io.agi.framework.persistence.DataJsonSerializer;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelData;
+import io.agi.framework.references.DataRefUtil;
 
 import java.util.ArrayList;
 import java.util.Properties;
@@ -72,70 +76,70 @@ public class QuiltedCompetitiveLearningDemo extends CreateEntityMain {
         int testingEpochs = 1;//80; // good for up to 80k
 
         // Define some entities
-        String experimentName           = Framework.GetEntityName( "experiment" );
-        String constantName             = Framework.GetEntityName( "constant" );
-        String imageLabelName           = Framework.GetEntityName( "image-class" );
-        String quiltName                = Framework.GetEntityName( "quilt" );
-        String vectorSeriesName         = Framework.GetEntityName( "feature-series" );
-        String valueSeriesName          = Framework.GetEntityName( "label-series" );
+        String experimentName           = Naming.GetEntityName( "experiment" );
+        String constantName             = Naming.GetEntityName( "constant" );
+        String imageLabelName           = Naming.GetEntityName( "image-class" );
+        String quiltName                = Naming.GetEntityName( "quilt" );
+        String vectorSeriesName         = Naming.GetEntityName( "feature-series" );
+        String valueSeriesName          = Naming.GetEntityName( "label-series" );
 
-        Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
-        Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), experimentName ); // ok all input to the regions is ready
-        Framework.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), constantName );
-        Framework.CreateEntity( quiltName, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), imageLabelName );
-        Framework.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), quiltName ); // 2nd, class region updates after first to get its feedback
-        Framework.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), vectorSeriesName ); // 2nd, class region updates after first to get its feedback
+        PersistenceUtil.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
+        PersistenceUtil.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), experimentName ); // ok all input to the regions is ready
+        PersistenceUtil.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), constantName );
+        PersistenceUtil.CreateEntity( quiltName, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), imageLabelName );
+        PersistenceUtil.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), quiltName ); // 2nd, class region updates after first to get its feedback
+        PersistenceUtil.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), vectorSeriesName ); // 2nd, class region updates after first to get its feedback
 
         // Connect the entities' data
         // a) Image to image region, and decode
-        Framework.SetDataReference( quiltName, QuiltedCompetitiveLearningEntity.INPUT_1, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
-        Framework.SetDataReference( quiltName, QuiltedCompetitiveLearningEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
+        DataRefUtil.SetDataReference( quiltName, QuiltedCompetitiveLearningEntity.INPUT_1, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
+        DataRefUtil.SetDataReference( quiltName, QuiltedCompetitiveLearningEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
 
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList<>();
         featureDatas.add( new AbstractPair<>( quiltName, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT ) );
-        Framework.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
+        DataRefUtil.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
 
         // Experiment config
         if( !terminateByAge ) {
-            Framework.SetConfig( experimentName, "terminationEntityName", imageLabelName );
-            Framework.SetConfig( experimentName, "terminationConfigPath", "terminate" );
-            Framework.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
+            PersistenceUtil.SetConfig( experimentName, "terminationEntityName", imageLabelName );
+            PersistenceUtil.SetConfig( experimentName, "terminationConfigPath", "terminate" );
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
         }
         else {
-            Framework.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
         }
 
         // cache all data for speed, when enabled
-        Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( constantName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( imageLabelName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( quiltName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( vectorSeriesName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( valueSeriesName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( constantName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( imageLabelName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( quiltName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( vectorSeriesName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( valueSeriesName, "cache", String.valueOf( cacheAllData ) );
 
         // Fix seed for repeatable runs
         if( seed != null ) {
-            Framework.SetConfig( imageLabelName, "seed", String.valueOf( seed ) );
-            Framework.SetConfig( quiltName, "seed", String.valueOf( seed ) );
+            PersistenceUtil.SetConfig( imageLabelName, "seed", String.valueOf( seed ) );
+            PersistenceUtil.SetConfig( quiltName, "seed", String.valueOf( seed ) );
         }
 
         // MNIST config
-        Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldX", "0" );
-        Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldY", "0" );
-        Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldW", "28" );
-        Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldH", "28" );
-        Framework.SetConfig( imageLabelName, "resolution.resolutionX", "28" );
-        Framework.SetConfig( imageLabelName, "resolution.resolutionY", "28" );
-        Framework.SetConfig( imageLabelName, "greyscale", "true" );
-        Framework.SetConfig( imageLabelName, "invert", "true" );
-        Framework.SetConfig( imageLabelName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
-        Framework.SetConfig( imageLabelName, "sourceFilesPrefix", "postproc" );
-        Framework.SetConfig( imageLabelName, "sourceFilesPathTraining", trainingPath );
-        Framework.SetConfig( imageLabelName, "sourceFilesPathTesting", testingPath );
-        Framework.SetConfig( imageLabelName, "trainingEpochs", String.valueOf( trainingEpochs ) );
-        Framework.SetConfig( imageLabelName, "testingEpochs", String.valueOf( testingEpochs ) );
-        Framework.SetConfig( imageLabelName, "trainingEntities", String.valueOf( quiltName ) );
-        Framework.SetConfig( imageLabelName, "testingEntities", vectorSeriesName + "," + valueSeriesName );
+        PersistenceUtil.SetConfig( imageLabelName, "receptiveField.receptiveFieldX", "0" );
+        PersistenceUtil.SetConfig( imageLabelName, "receptiveField.receptiveFieldY", "0" );
+        PersistenceUtil.SetConfig( imageLabelName, "receptiveField.receptiveFieldW", "28" );
+        PersistenceUtil.SetConfig( imageLabelName, "receptiveField.receptiveFieldH", "28" );
+        PersistenceUtil.SetConfig( imageLabelName, "resolution.resolutionX", "28" );
+        PersistenceUtil.SetConfig( imageLabelName, "resolution.resolutionY", "28" );
+        PersistenceUtil.SetConfig( imageLabelName, "greyscale", "true" );
+        PersistenceUtil.SetConfig( imageLabelName, "invert", "true" );
+        PersistenceUtil.SetConfig( imageLabelName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
+        PersistenceUtil.SetConfig( imageLabelName, "sourceFilesPrefix", "postproc" );
+        PersistenceUtil.SetConfig( imageLabelName, "sourceFilesPathTraining", trainingPath );
+        PersistenceUtil.SetConfig( imageLabelName, "sourceFilesPathTesting", testingPath );
+        PersistenceUtil.SetConfig( imageLabelName, "trainingEpochs", String.valueOf( trainingEpochs ) );
+        PersistenceUtil.SetConfig( imageLabelName, "testingEpochs", String.valueOf( testingEpochs ) );
+        PersistenceUtil.SetConfig( imageLabelName, "trainingEntities", String.valueOf( quiltName ) );
+        PersistenceUtil.SetConfig( imageLabelName, "testingEntities", vectorSeriesName + "," + valueSeriesName );
 
         boolean emit2ndBest = false;
         int edgeMaxAge = 500;
@@ -209,49 +213,49 @@ public class QuiltedCompetitiveLearningDemo extends CreateEntityMain {
         int field1StrideX = 3;
         int field1StrideY = 3;
 
-        Framework.SetConfig( quiltName, "quiltWidth", String.valueOf( quiltWidthColumns ) );
-        Framework.SetConfig( quiltName, "quiltHeight", String.valueOf( quiltHeightColumns ) );
+        PersistenceUtil.SetConfig( quiltName, "quiltWidth", String.valueOf( quiltWidthColumns ) );
+        PersistenceUtil.SetConfig( quiltName, "quiltHeight", String.valueOf( quiltHeightColumns ) );
 
-        Framework.SetConfig( quiltName, "classifierWidth", String.valueOf( columnWidthCells ) );
-        Framework.SetConfig( quiltName, "classifierHeight", String.valueOf( columnHeightCells ) );
+        PersistenceUtil.SetConfig( quiltName, "classifierWidth", String.valueOf( columnWidthCells ) );
+        PersistenceUtil.SetConfig( quiltName, "classifierHeight", String.valueOf( columnHeightCells ) );
 
-        Framework.SetConfig( quiltName, "field1OffsetX", String.valueOf( field1OffsetX ) );
-        Framework.SetConfig( quiltName, "field1OffsetY", String.valueOf( field1OffsetY ) );
-        Framework.SetConfig( quiltName, "field1StrideX", String.valueOf( field1StrideX ) );
-        Framework.SetConfig( quiltName, "field1StrideY", String.valueOf( field1StrideY ) );
-        Framework.SetConfig( quiltName, "field1SizeX", String.valueOf( field1SizeX ) );
-        Framework.SetConfig( quiltName, "field1SizeY", String.valueOf( field1SizeY ) );
+        PersistenceUtil.SetConfig( quiltName, "field1OffsetX", String.valueOf( field1OffsetX ) );
+        PersistenceUtil.SetConfig( quiltName, "field1OffsetY", String.valueOf( field1OffsetY ) );
+        PersistenceUtil.SetConfig( quiltName, "field1StrideX", String.valueOf( field1StrideX ) );
+        PersistenceUtil.SetConfig( quiltName, "field1StrideY", String.valueOf( field1StrideY ) );
+        PersistenceUtil.SetConfig( quiltName, "field1SizeX", String.valueOf( field1SizeX ) );
+        PersistenceUtil.SetConfig( quiltName, "field1SizeY", String.valueOf( field1SizeY ) );
 
-        Framework.SetConfig( quiltName, "field2OffsetX", String.valueOf( field2OffsetX ) );
-        Framework.SetConfig( quiltName, "field2OffsetY", String.valueOf( field2OffsetY ) );
-        Framework.SetConfig( quiltName, "field2StrideX", String.valueOf( field2StrideX ) );
-        Framework.SetConfig( quiltName, "field2StrideY", String.valueOf( field2StrideY ) );
-        Framework.SetConfig( quiltName, "field2SizeX", String.valueOf( field2SizeX ) );
-        Framework.SetConfig( quiltName, "field2SizeY", String.valueOf( field2SizeY ) );
+        PersistenceUtil.SetConfig( quiltName, "field2OffsetX", String.valueOf( field2OffsetX ) );
+        PersistenceUtil.SetConfig( quiltName, "field2OffsetY", String.valueOf( field2OffsetY ) );
+        PersistenceUtil.SetConfig( quiltName, "field2StrideX", String.valueOf( field2StrideX ) );
+        PersistenceUtil.SetConfig( quiltName, "field2StrideY", String.valueOf( field2StrideY ) );
+        PersistenceUtil.SetConfig( quiltName, "field2SizeX", String.valueOf( field2SizeX ) );
+        PersistenceUtil.SetConfig( quiltName, "field2SizeY", String.valueOf( field2SizeY ) );
 
-        Framework.SetConfig( quiltName, "emit2ndBest", String.valueOf( emit2ndBest ) );
+        PersistenceUtil.SetConfig( quiltName, "emit2ndBest", String.valueOf( emit2ndBest ) );
 
-        Framework.SetConfig( quiltName, "classifierLearningRate", String.valueOf( learningRate ) );
-        Framework.SetConfig( quiltName, "classifierLearningRateNeighbours", String.valueOf( learningRateNeighbours ) );
-        Framework.SetConfig( quiltName, "classifierNoiseMagnitude", String.valueOf( noiseMagnitude ) );
-        Framework.SetConfig( quiltName, "classifierEdgeMaxAge", String.valueOf( edgeMaxAge ) );
-        Framework.SetConfig( quiltName, "classifierStressLearningRate", String.valueOf( stressLearningRate ) );
-        Framework.SetConfig( quiltName, "classifierStressSplitLearningRate", String.valueOf( stressSplitLearningRate ) );
-        Framework.SetConfig( quiltName, "classifierStressThreshold", String.valueOf( stressThreshold ) );
-        Framework.SetConfig( quiltName, "classifierUtilityLearningRate", String.valueOf( utilityLearningRate ) );
-        Framework.SetConfig( quiltName, "classifierUtilityThreshold", String.valueOf( utilityThreshold ) );
-        Framework.SetConfig( quiltName, "classifierGrowthInterval", String.valueOf( growthInterval ) );
+        PersistenceUtil.SetConfig( quiltName, "classifierLearningRate", String.valueOf( learningRate ) );
+        PersistenceUtil.SetConfig( quiltName, "classifierLearningRateNeighbours", String.valueOf( learningRateNeighbours ) );
+        PersistenceUtil.SetConfig( quiltName, "classifierNoiseMagnitude", String.valueOf( noiseMagnitude ) );
+        PersistenceUtil.SetConfig( quiltName, "classifierEdgeMaxAge", String.valueOf( edgeMaxAge ) );
+        PersistenceUtil.SetConfig( quiltName, "classifierStressLearningRate", String.valueOf( stressLearningRate ) );
+        PersistenceUtil.SetConfig( quiltName, "classifierStressSplitLearningRate", String.valueOf( stressSplitLearningRate ) );
+        PersistenceUtil.SetConfig( quiltName, "classifierStressThreshold", String.valueOf( stressThreshold ) );
+        PersistenceUtil.SetConfig( quiltName, "classifierUtilityLearningRate", String.valueOf( utilityLearningRate ) );
+        PersistenceUtil.SetConfig( quiltName, "classifierUtilityThreshold", String.valueOf( utilityThreshold ) );
+        PersistenceUtil.SetConfig( quiltName, "classifierGrowthInterval", String.valueOf( growthInterval ) );
 
         // Log features of the algorithm during all phases
-        Framework.SetConfig( vectorSeriesName, "period", String.valueOf( "-1" ) ); // infinite
-        Framework.SetConfig( vectorSeriesName, "learn", String.valueOf( "true" ) ); // infinite
-        Framework.SetConfig( vectorSeriesName, "encoding", ModelData.ENCODING_SPARSE_BINARY );
+        PersistenceUtil.SetConfig( vectorSeriesName, "period", String.valueOf( "-1" ) ); // infinite
+        PersistenceUtil.SetConfig( vectorSeriesName, "learn", String.valueOf( "true" ) ); // infinite
+        PersistenceUtil.SetConfig( vectorSeriesName, "encoding", DataJsonSerializer.ENCODING_SPARSE_BINARY );
 
         // Log labels of each image produced during all phases
-        Framework.SetConfig( valueSeriesName, "period", "-1" );
-        Framework.SetConfig( valueSeriesName, "learn", String.valueOf( "true" ) ); // infinite
-        Framework.SetConfig( valueSeriesName, "entityName", imageLabelName ); // log forever
-        Framework.SetConfig( valueSeriesName, "configPath", "imageLabel" ); // log forever
+        PersistenceUtil.SetConfig( valueSeriesName, "period", "-1" );
+        PersistenceUtil.SetConfig( valueSeriesName, "learn", String.valueOf( "true" ) ); // infinite
+        PersistenceUtil.SetConfig( valueSeriesName, "entityName", imageLabelName ); // log forever
+        PersistenceUtil.SetConfig( valueSeriesName, "configPath", "imageLabel" ); // log forever
 
     }
 

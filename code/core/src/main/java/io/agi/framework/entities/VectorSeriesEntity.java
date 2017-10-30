@@ -28,8 +28,10 @@ import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
+import io.agi.framework.persistence.DataJsonSerializer;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
+import io.agi.framework.references.DataRef;
 
 import java.io.File;
 import java.util.Collection;
@@ -62,10 +64,10 @@ public class VectorSeriesEntity extends Entity {
 
         attributes.add( OUTPUT );
 
-        if( config.encoding.equals( ModelData.ENCODING_SPARSE_BINARY ) ) {
+        if( config.encoding.equals( DataJsonSerializer.ENCODING_SPARSE_BINARY ) ) {
             flags.putFlag( OUTPUT, DataFlags.FLAG_SPARSE_BINARY );
         }
-        else if( config.encoding.equals( ModelData.ENCODING_SPARSE_REAL ) ) {
+        else if( config.encoding.equals( DataJsonSerializer.ENCODING_SPARSE_REAL ) ) {
             flags.putFlag( OUTPUT, DataFlags.FLAG_SPARSE_REAL );
         }
         else { // remove existing flag, if any
@@ -159,12 +161,23 @@ public class VectorSeriesEntity extends Entity {
         _logger.info( "Writing Datas: " + key + " to file: " + filePathName );
 
         StringBuilder sb = new StringBuilder( 100 );
-        ModelData md = new ModelData( key, accumulated, config.encoding );
-        md.toString( sb );
-        boolean b = FileUtil.WriteFileMemoryEfficient( filePathName, sb ); // write the file efficiently
-        if( !b ) {
+        //ModelData md = new ModelData( key, accumulated, config.encoding );
+
+        DataRef dataRef = new DataRef( key, config.encoding, null, accumulated );
+        ModelData md = new ModelData();
+        if( md.serialize( dataRef ) ) {
+            md.toString( sb );
+
+            boolean append = false;
+            boolean b = FileUtil.WriteFileMemoryEfficient( filePathName, sb, append ); // write the file efficiently
+            if( !b ) {
+                _logger.error( "Unable to write some Data objects to file." );
+            }
+        }
+        else {
             _logger.error( "Unable to serialize some Data objects to file." );
         }
+
     }
 
 }

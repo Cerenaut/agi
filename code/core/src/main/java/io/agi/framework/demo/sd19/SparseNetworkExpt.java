@@ -19,12 +19,15 @@
 
 package io.agi.framework.demo.sd19;
 
+import io.agi.core.ann.unsupervised.LifetimeSparseAutoencoder;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
 import io.agi.framework.demo.CreateEntityMain;
 import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.entities.*;
+import io.agi.framework.persistence.PersistenceUtil;
+import io.agi.framework.references.DataRefUtil;
 
 import java.util.ArrayList;
 
@@ -96,69 +99,69 @@ public class SparseNetworkExpt extends CreateEntityMain {
         int layers = 1;
 
         // Define some entities
-        String experimentName           = Framework.GetEntityName( "experiment" );
-        String constantName             = Framework.GetEntityName( "constant" );
-        String imageSourceName          = Framework.GetEntityName( "image-source" );
-//        String valueSeriesTruthName     = Framework.GetEntityName( "value-series-truth" );
-//        String valueSeriesErrorFnName   = Framework.GetEntityName( "value-series-error-fn" );
-        String dataQueueClassificationName  = Framework.GetEntityName( "data-queue-classification" );
-        String dataQueuePredictionName  = Framework.GetEntityName( "data-queue-prediction" );
+        String experimentName           = PersistenceUtil.GetEntityName( "experiment" );
+        String constantName             = PersistenceUtil.GetEntityName( "constant" );
+        String imageSourceName          = PersistenceUtil.GetEntityName( "image-source" );
+//        String valueSeriesTruthName     = PersistenceUtil.GetEntityName( "value-series-truth" );
+//        String valueSeriesErrorFnName   = PersistenceUtil.GetEntityName( "value-series-error-fn" );
+        String dataQueueClassificationName  = PersistenceUtil.GetEntityName( "data-queue-classification" );
+        String dataQueuePredictionName  = PersistenceUtil.GetEntityName( "data-queue-prediction" );
 
-//        String dataQueueOutputName = Framework.GetEntityName( "data-queue-output-" );
-        String classifierName = Framework.GetEntityName( "classifier-" );
-        String predictorName = Framework.GetEntityName( "predictor-" );
-        String poolingName = Framework.GetEntityName( "pooler-" );
+//        String dataQueueOutputName = PersistenceUtil.GetEntityName( "data-queue-output-" );
+        String classifierName = PersistenceUtil.GetEntityName( "classifier-" );
+        String predictorName = PersistenceUtil.GetEntityName( "predictor-" );
+        String poolingName = PersistenceUtil.GetEntityName( "pooler-" );
 
         String parentName = null;
-        parentName = Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), parentName ); // experiment is the root entity
-        parentName = Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), parentName ); // ok all input to the regions is ready
+        parentName = PersistenceUtil.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), parentName ); // experiment is the root entity
+        parentName = PersistenceUtil.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), parentName ); // ok all input to the regions is ready
 
         if( testType == TEST_TYPE_IMAGE_SEQUENCE ) {
-            parentName = Framework.CreateEntity( imageSourceName, ImageLabelEntity.ENTITY_TYPE, n.getName(), parentName );
+            parentName = PersistenceUtil.CreateEntity( imageSourceName, ImageLabelEntity.ENTITY_TYPE, n.getName(), parentName );
         }
         else if( testType == TEST_TYPE_TEXT_SEQUENCE ) {
-            parentName = Framework.CreateEntity( imageSourceName, Text2ImageLabelEntity.ENTITY_TYPE, n.getName(), parentName );
+            parentName = PersistenceUtil.CreateEntity( imageSourceName, Text2ImageLabelEntity.ENTITY_TYPE, n.getName(), parentName );
         }
 
         // Experiment
-        Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
 
         // Experiment config
         if( !terminateByAge ) {
-            Framework.SetConfig( experimentName, "terminationEntityName", imageSourceName );
-            Framework.SetConfig( experimentName, "terminationConfigPath", "terminate" );
-            Framework.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
+            PersistenceUtil.SetConfig( experimentName, "terminationEntityName", imageSourceName );
+            PersistenceUtil.SetConfig( experimentName, "terminationConfigPath", "terminate" );
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
         }
         else {
-            Framework.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
         }
 
         // Mnist config
-        Framework.SetConfig( imageSourceName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( imageSourceName, "receptiveField.receptiveFieldX", "0" );
-        Framework.SetConfig( imageSourceName, "receptiveField.receptiveFieldY", "0" );
-        Framework.SetConfig( imageSourceName, "receptiveField.receptiveFieldW", "28" );
-        Framework.SetConfig( imageSourceName, "receptiveField.receptiveFieldH", "28" );
-        Framework.SetConfig( imageSourceName, "resolution.resolutionX", "28" );
-        Framework.SetConfig( imageSourceName, "resolution.resolutionY", "28" );
-        Framework.SetConfig( imageSourceName, "greyscale", "true" );
-        Framework.SetConfig( imageSourceName, "invert", "true" );
-        Framework.SetConfig( imageSourceName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
-        Framework.SetConfig( imageSourceName, "sourceFilesPrefix", "postproc" );
-        Framework.SetConfig( imageSourceName, "sourceFilesPathTraining", imagesPathTraining );
-        Framework.SetConfig( imageSourceName, "sourceFilesPathTesting", imagesPathTesting );
-        Framework.SetConfig( imageSourceName, "sourceFilesLabelIndex", String.valueOf( sourceFilesLabelIndex ) );
-        Framework.SetConfig( imageSourceName, "trainingEpochs", String.valueOf( trainingEpochs ) );
-        Framework.SetConfig( imageSourceName, "testingEpochs", String.valueOf( testingEpochs ) );
-        Framework.SetConfig( imageSourceName, "shuffleTraining", String.valueOf( shuffleTrainingImages ) );
-        Framework.SetConfig( imageSourceName, "shuffleTesting", String.valueOf( shuffleTestingImages ) );
-        Framework.SetConfig( imageSourceName, "imageRepeats", String.valueOf( imageRepeats ) );
+        PersistenceUtil.SetConfig( imageSourceName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( imageSourceName, "receptiveField.receptiveFieldX", "0" );
+        PersistenceUtil.SetConfig( imageSourceName, "receptiveField.receptiveFieldY", "0" );
+        PersistenceUtil.SetConfig( imageSourceName, "receptiveField.receptiveFieldW", "28" );
+        PersistenceUtil.SetConfig( imageSourceName, "receptiveField.receptiveFieldH", "28" );
+        PersistenceUtil.SetConfig( imageSourceName, "resolution.resolutionX", "28" );
+        PersistenceUtil.SetConfig( imageSourceName, "resolution.resolutionY", "28" );
+        PersistenceUtil.SetConfig( imageSourceName, "greyscale", "true" );
+        PersistenceUtil.SetConfig( imageSourceName, "invert", "true" );
+        PersistenceUtil.SetConfig( imageSourceName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
+        PersistenceUtil.SetConfig( imageSourceName, "sourceFilesPrefix", "postproc" );
+        PersistenceUtil.SetConfig( imageSourceName, "sourceFilesPathTraining", imagesPathTraining );
+        PersistenceUtil.SetConfig( imageSourceName, "sourceFilesPathTesting", imagesPathTesting );
+        PersistenceUtil.SetConfig( imageSourceName, "sourceFilesLabelIndex", String.valueOf( sourceFilesLabelIndex ) );
+        PersistenceUtil.SetConfig( imageSourceName, "trainingEpochs", String.valueOf( trainingEpochs ) );
+        PersistenceUtil.SetConfig( imageSourceName, "testingEpochs", String.valueOf( testingEpochs ) );
+        PersistenceUtil.SetConfig( imageSourceName, "shuffleTraining", String.valueOf( shuffleTrainingImages ) );
+        PersistenceUtil.SetConfig( imageSourceName, "shuffleTesting", String.valueOf( shuffleTestingImages ) );
+        PersistenceUtil.SetConfig( imageSourceName, "imageRepeats", String.valueOf( imageRepeats ) );
 
         if( testType == TEST_TYPE_IMAGE_SEQUENCE ) {
         }
         else if( testType == TEST_TYPE_TEXT_SEQUENCE ) {
-            Framework.SetConfig( imageSourceName, "sourceTextFileTraining", textFileTraining );
-            Framework.SetConfig( imageSourceName, "sourceTextFileTesting", textFileTesting );
+            PersistenceUtil.SetConfig( imageSourceName, "sourceTextFileTraining", textFileTraining );
+            PersistenceUtil.SetConfig( imageSourceName, "sourceTextFileTesting", textFileTesting );
         }
 
         // Region-layers
@@ -179,64 +182,67 @@ public class SparseNetworkExpt extends CreateEntityMain {
             int sparsity = 25; // k sparse confirmed err = 1.35%
             int batchSize = 32;//128; // want small for faster training, but large enough to do lifetime sparsity
             int sparsityLifetime = 2;//1;
+            int sparsityOutputClassifier = LifetimeSparseAutoencoder.FindOutputSparsity( sparsity, 1.5f );//1;
+            int sparsityOutputPredictor = sparsity;
+
             float learningRate = 0.01f;
             float momentum = 0.5f; // 0.9 in paper, seems better
             float weightsStdDev = 0.01f; // confirmed. Sigma From paper. used at reset
 
             String classifierEntityName = classifierName + layer;
             learningEntities.add( classifierEntityName );
-            parentName = Framework.CreateEntity( classifierEntityName, LifetimeSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), parentName );
-            LifetimeSparseAutoencoderEntityConfig.Set( classifierEntityName, cacheAllData, widthCells, heightCells, sparsity, sparsityLifetime, batchSize, learningRate, momentum, weightsStdDev );
+            parentName = PersistenceUtil.CreateEntity( classifierEntityName, LifetimeSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), parentName );
+            LifetimeSparseAutoencoderEntityConfig.Set( classifierEntityName, cacheAllData, widthCells, heightCells, sparsity, sparsityLifetime, sparsityOutputClassifier, batchSize, learningRate, momentum, weightsStdDev );
 
             String delayEntityName = "delay-" + layer;
-            parentName = Framework.CreateEntity( delayEntityName, DelayEntity.ENTITY_TYPE, n.getName(), parentName );
+            parentName = PersistenceUtil.CreateEntity( delayEntityName, DelayEntity.ENTITY_TYPE, n.getName(), parentName );
 
             float outputDecayRate = 0.95f;
             int outputSpikeAgeMax = 20;
 
             String poolingEntityName = poolingName + layer;
-            parentName = Framework.CreateEntity( poolingEntityName, PredictiveCodingEntity.ENTITY_TYPE, n.getName(), parentName );
+            parentName = PersistenceUtil.CreateEntity( poolingEntityName, PredictiveCodingEntity.ENTITY_TYPE, n.getName(), parentName );
             PredictiveCodingEntityConfig.Set( poolingEntityName, cacheAllData, widthCells, heightCells, outputSpikeAgeMax, outputDecayRate );
 
             // generate a new prediction given current state
             int predictorOutputs = areaCells;
             String predictorEntityName = predictorName + layer;
             learningEntities.add( predictorEntityName );
-            parentName = Framework.CreateEntity( predictorEntityName, BatchSparseNetworkEntity.ENTITY_TYPE, n.getName(), parentName );
-            BatchSparseNetworkEntityConfig.Set( predictorEntityName, cacheAllData, widthCells, heightCells, predictorOutputs, sparsity, sparsityLifetime, batchSize, learningRate, momentum, weightsStdDev );
+            parentName = PersistenceUtil.CreateEntity( predictorEntityName, BatchSparseNetworkEntity.ENTITY_TYPE, n.getName(), parentName );
+            BatchSparseNetworkEntityConfig.Set( predictorEntityName, cacheAllData, widthCells, heightCells, predictorOutputs, sparsity, sparsityLifetime, sparsityOutputPredictor, batchSize, learningRate, momentum, weightsStdDev );
 
 
             // Now connect the entities Data together:
 
             // Connect inputs to the classifier
-            Framework.SetDataReference( classifierEntityName, LifetimeSparseAutoencoderEntity.INPUT, ffEntityName, ffDataSuffix );
+            DataRefUtil.SetDataReference( classifierEntityName, LifetimeSparseAutoencoderEntity.INPUT, ffEntityName, ffDataSuffix );
 
             // Delay the classifier spikes
-            Framework.SetDataReference( delayEntityName, DelayEntity.DATA_INPUT, classifierEntityName, LifetimeSparseAutoencoderEntity.SPIKES );
+            DataRefUtil.SetDataReference( delayEntityName, DelayEntity.DATA_INPUT, classifierEntityName, LifetimeSparseAutoencoderEntity.SPIKES );
 
             // Connect inputs to the temporal pooling
-            Framework.SetDataReference( poolingEntityName, PredictiveCodingEntity.INPUT_OBSERVED, classifierEntityName, LifetimeSparseAutoencoderEntity.SPIKES );
-            Framework.SetDataReference( poolingEntityName, PredictiveCodingEntity.INPUT_PREDICTED, predictorEntityName, BatchSparseNetworkEntity.OUTPUT_TESTING_OUTPUT );
+            DataRefUtil.SetDataReference( poolingEntityName, PredictiveCodingEntity.INPUT_OBSERVED, classifierEntityName, LifetimeSparseAutoencoderEntity.SPIKES );
+            DataRefUtil.SetDataReference( poolingEntityName, PredictiveCodingEntity.INPUT_PREDICTED, predictorEntityName, BatchSparseNetworkEntity.OUTPUT_TESTING_OUTPUT );
 
             // Connect inputs to the predictor
-            Framework.SetDataReference( predictorEntityName, BatchSparseNetworkEntity.INPUT_TESTING_INPUT, classifierEntityName, LifetimeSparseAutoencoderEntity.SPIKES );
-            Framework.SetDataReference( predictorEntityName, BatchSparseNetworkEntity.INPUT_TRAINING_INPUT, delayEntityName, DelayEntity.DATA_OUTPUT ); // use old spikes
-            Framework.SetDataReference( predictorEntityName, BatchSparseNetworkEntity.INPUT_TRAINING_OUTPUT, classifierEntityName, LifetimeSparseAutoencoderEntity.SPIKES ); // to predict new spikes
+            DataRefUtil.SetDataReference( predictorEntityName, BatchSparseNetworkEntity.INPUT_TESTING_INPUT, classifierEntityName, LifetimeSparseAutoencoderEntity.SPIKES );
+            DataRefUtil.SetDataReference( predictorEntityName, BatchSparseNetworkEntity.INPUT_TRAINING_INPUT, delayEntityName, DelayEntity.DATA_OUTPUT ); // use old spikes
+            DataRefUtil.SetDataReference( predictorEntityName, BatchSparseNetworkEntity.INPUT_TRAINING_OUTPUT, classifierEntityName, LifetimeSparseAutoencoderEntity.SPIKES ); // to predict new spikes
 
             // Connect the predictor back to the classifier to invert the prediction into the input space
             if( layer == 0 ) {
-                Framework.SetDataReference( classifierEntityName, LifetimeSparseAutoencoderEntity.INPUT_SPIKES, predictorEntityName, BatchSparseNetworkEntity.OUTPUT_TESTING_OUTPUT ); // current prediction
+                DataRefUtil.SetDataReference( classifierEntityName, LifetimeSparseAutoencoderEntity.INPUT_SPIKES, predictorEntityName, BatchSparseNetworkEntity.OUTPUT_TESTING_OUTPUT ); // current prediction
 
                 // Add data queues for debugging
-                parentName = Framework.CreateEntity( dataQueueClassificationName, DataQueueEntity.ENTITY_TYPE, n.getName(), parentName );
-                Framework.SetDataReference( dataQueueClassificationName, DataQueueEntity.DATA_INPUT, classifierEntityName, LifetimeSparseAutoencoderEntity.OUTPUT_RECONSTRUCTION ); // current prediction
-                Framework.SetConfig( dataQueueClassificationName, "queueLength", String.valueOf( queueLength ) );
-                Framework.SetConfig( dataQueueClassificationName, "cache", String.valueOf( cacheAllData ) );
+                parentName = PersistenceUtil.CreateEntity( dataQueueClassificationName, DataQueueEntity.ENTITY_TYPE, n.getName(), parentName );
+                DataRefUtil.SetDataReference( dataQueueClassificationName, DataQueueEntity.DATA_INPUT, classifierEntityName, LifetimeSparseAutoencoderEntity.OUTPUT_RECONSTRUCTION ); // current prediction
+                PersistenceUtil.SetConfig( dataQueueClassificationName, "queueLength", String.valueOf( queueLength ) );
+                PersistenceUtil.SetConfig( dataQueueClassificationName, "cache", String.valueOf( cacheAllData ) );
 
-                parentName = Framework.CreateEntity( dataQueuePredictionName, DataQueueEntity.ENTITY_TYPE, n.getName(), parentName );
-                Framework.SetDataReference( dataQueuePredictionName, DataQueueEntity.DATA_INPUT, classifierEntityName, LifetimeSparseAutoencoderEntity.OUTPUT_DECODED ); // current prediction
-                Framework.SetConfig( dataQueuePredictionName, "queueLength", String.valueOf( queueLength ) );
-                Framework.SetConfig( dataQueuePredictionName, "cache", String.valueOf( cacheAllData ) );
+                parentName = PersistenceUtil.CreateEntity( dataQueuePredictionName, DataQueueEntity.ENTITY_TYPE, n.getName(), parentName );
+                DataRefUtil.SetDataReference( dataQueuePredictionName, DataQueueEntity.DATA_INPUT, classifierEntityName, LifetimeSparseAutoencoderEntity.OUTPUT_DECODED ); // current prediction
+                PersistenceUtil.SetConfig( dataQueuePredictionName, "queueLength", String.valueOf( queueLength ) );
+                PersistenceUtil.SetConfig( dataQueuePredictionName, "cache", String.valueOf( cacheAllData ) );
             }
 
             // Update the feed-forward data reference:

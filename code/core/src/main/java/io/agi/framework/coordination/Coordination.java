@@ -19,13 +19,46 @@
 
 package io.agi.framework.coordination;
 
+import io.agi.framework.Node;
+import io.agi.framework.persistence.models.ModelData;
+import io.agi.framework.references.DataRef;
+
 /**
  * Created by dave on 16/02/16.
  */
 public interface Coordination {
 
+    Node getNode();
+    void setNode( Node n );
+
+    /**
+     * Instructs the owning Node to update() this Entity.
+     * @param entityName
+     */
     void doUpdate( String entityName );
 
+    /**
+     * Notification that an update of the Entity has completed.
+     * @param entityName
+     */
     void onUpdated( String entityName );
+
+    /**
+     * Notification that a Data has been updated in the local Node, which
+     * invalidates any remote copies.
+     *
+     * @param dataName
+     * @param nodeName
+     */
+    void onSetData( String dataName, String nodeName );
+
+    /**
+     * Fetches a Data from the Node that has the most recent copy.
+     *
+     * @param dataName
+     * @param nodeName
+     * @return
+     */
+    ModelData getData( String dataName, String nodeName );
 
 }

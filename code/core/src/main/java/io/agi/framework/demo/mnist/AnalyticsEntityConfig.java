@@ -20,6 +20,7 @@
 package io.agi.framework.demo.mnist;
 
 import io.agi.framework.EntityConfig;
+import io.agi.framework.persistence.DataJsonSerializer;
 
 /**
  * Created by gideon on 08/01/2017.
@@ -29,6 +30,11 @@ public class AnalyticsEntityConfig extends EntityConfig {
     public static final String PHASE_TRAINING = "training";
     public static final String PHASE_TESTING = "testing";
     public static final String PHASE_TERMINATING = "terminating";
+
+    public String featuresEncoding = DataJsonSerializer.ENCODING_SPARSE_REAL;
+    public boolean useInputFiles; // option to read results directly from a file
+    public String fileNameFeatures;
+    public String fileNameLabels;
 
     public String testingEntities = "";    // the subscribed entities for performing the analytics
 

@@ -21,7 +21,10 @@ package io.agi.framework.entities;
 
 import io.agi.framework.EntityConfig;
 import io.agi.framework.Framework;
+import io.agi.framework.persistence.DataJsonSerializer;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelData;
+import io.agi.framework.references.DataRefUtil;
 
 /**
  * Created by dave on 2/04/16.
@@ -34,7 +37,7 @@ public class VectorSeriesEntityConfig extends EntityConfig {
 
     public int countAccumulate = 0; // how many samples have been accumulated
 
-    public String encoding = ModelData.ENCODING_DENSE;
+    public String encoding = DataJsonSerializer.ENCODING_DENSE;
 
     // for writing to disk:
     public String writeFilePath = "";
@@ -51,7 +54,7 @@ public class VectorSeriesEntityConfig extends EntityConfig {
         entityConfig.countAccumulate = 0;
         entityConfig.encoding = encoding;
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
     public static void Set( String entityName, int periodAccumulate, int period, String encoding, String inputEntityName, String inputEntityDataSuffix ) {
@@ -64,8 +67,8 @@ public class VectorSeriesEntityConfig extends EntityConfig {
         entityConfig.countAccumulate = 0;
         entityConfig.encoding = encoding;
 
-        Framework.SetConfig( entityName, entityConfig );
-        Framework.SetDataReference( entityName, VectorSeriesEntity.INPUT, inputEntityName, inputEntityDataSuffix );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
+        DataRefUtil.SetDataReference( entityName, VectorSeriesEntity.INPUT, inputEntityName, inputEntityDataSuffix );
     }
 
 }

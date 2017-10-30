@@ -22,10 +22,13 @@ package io.agi.framework.coordination.http;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.agi.core.orm.AbstractPair;
+import io.agi.framework.persistence.PersistenceUtil;
+import io.agi.framework.references.DataRefMap;
+import io.agi.framework.references.DataRef;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
-import io.agi.framework.persistence.DenseDataDeserializer;
 import io.agi.framework.persistence.models.ModelData;
+import io.agi.framework.references.DataRefUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -55,6 +58,7 @@ public class HttpDataHandler implements HttpHandler {
 
         try {
             Node n = Node.NodeInstance();
+            DataRefMap dataRefMap = n.getDataRefMap();
 
             String query = t.getRequestURI().getQuery();
             _logger.info( "Request: " + HttpDataHandler.CONTEXT + " " + query );
@@ -72,21 +76,26 @@ public class HttpDataHandler implements HttpHandler {
                     String key = ap._first;
                     String value = ap._second;
                     if( key.equalsIgnoreCase( PARAMETER_NAME ) ) {
-                        ModelData m = n.getModelData( value, new DenseDataDeserializer() );
-
-                        if( m != null ) {
-                            results.add( m ); // a complete data (specifically fetched)
+                        DataRef dr = dataRefMap.getData( value );
+                        ModelData md = new ModelData();
+                        boolean ok = md.serialize( dr );
+//                        ModelData m = n.getModelData( value, new DataRef.DenseDataRefResolver() );
+                        if( ok ) {
+                            results.add( md ); // a complete data (specifically fetched)
                         }
                     }
                     else if( key.equalsIgnoreCase( PARAMETER_FILTER ) ) {
-                        Collection< ModelData > c = n.getDataMeta( value );
+                        DataRefMap map = n.getDataRefMap();
+                        Collection< ModelData > c = map.getDataMeta( value );
+                        //Collection< ModelData > c = n.getPersistence().getDataMeta( value );
                         results.addAll( c );
                     }
                 }
 
                 // if no data specified, get all data names.
                 if( results.isEmpty() ) {
-                    Collection< String > names = n.getDataNames();
+
+                    Collection< String > names = dataRefMap.getDataKeys();
 
                     for( String name : names ) {
                         ModelData m = new ModelData();
@@ -132,7 +141,7 @@ public class HttpDataHandler implements HttpHandler {
 
                     if( key.equalsIgnoreCase( PARAMETER_MODEL ) ) {
                         String jsonData = value;
-                        Framework.ImportData( jsonData );
+                        DataRefUtil.ImportData( jsonData );
                     }
                 }
 

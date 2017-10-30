@@ -106,15 +106,15 @@ public class FeedForwardNetworkQuiltPredictorEntity extends QuiltPredictorEntity
 //
 //        FeedForwardNetworkQuiltPredictorEntityConfig config = ( FeedForwardNetworkQuiltPredictorEntityConfig ) _config;
 //
-//        Data inputC = getData( INPUT_C );
-//        Data inputP = getData( INPUT_P );
+//        Data inputC = deserialize( INPUT_C );
+//        Data inputP = deserialize( INPUT_P );
 //
 //        if( ( inputC == null ) || ( inputP == null )  ) {
 //            // we need to produce our output even if we can't write to it yet, to allow circular dependencies to be formed.
 //            Data predictionOld = new Data( config.widthCells, config.heightCells );
 //            Data predictionNew = new Data( config.widthCells, config.heightCells );
-//            setData( PREDICTION_OLD, predictionOld );
-//            setData( PREDICTION_OLD, predictionNew );
+//            serialize( PREDICTION_OLD, predictionOld );
+//            serialize( PREDICTION_OLD, predictionNew );
 //
 //            if( config.reset ) {
 //                config.resetDelayed = true;
@@ -231,8 +231,8 @@ public class FeedForwardNetworkQuiltPredictorEntity extends QuiltPredictorEntity
 
         FeedForwardNetworkQuiltPredictor predictorAlgorithm = (FeedForwardNetworkQuiltPredictor)rl._predictor;
 
-//        rl._inputC = getData( INPUT_C );
-//        rl._inputP = getData( INPUT_P );
+//        rl._inputC = deserialize( INPUT_C );
+//        rl._inputP = deserialize( INPUT_P );
 //
 //        rl._inputPOld = getDataLazyResize( INPUT_P_OLD, rl._inputPOld._dataSize );
 //        rl._inputPNew = getDataLazyResize( INPUT_P_NEW, rl._inputPNew._dataSize );
@@ -260,12 +260,12 @@ public class FeedForwardNetworkQuiltPredictorEntity extends QuiltPredictorEntity
 
         FeedForwardNetworkQuiltPredictor predictorAlgorithm = (FeedForwardNetworkQuiltPredictor)rl._predictor;
 
-//        setData( INPUT_P_OLD, rl._inputPOld );
-//        setData( INPUT_P_NEW, rl._inputPNew );
+//        serialize( INPUT_P_OLD, rl._inputPOld );
+//        serialize( INPUT_P_NEW, rl._inputPNew );
 //
-//        setData( PREDICTION_OLD, rl._predictionOld );
-//        setData( PREDICTION_NEW, rl._predictionNew );
-//        setData( PREDICTION_NEW_UNIT, rl._predictionNewUnit );
+//        serialize( PREDICTION_OLD, rl._predictionOld );
+//        serialize( PREDICTION_NEW, rl._predictionNew );
+//        serialize( PREDICTION_NEW_UNIT, rl._predictionNewUnit );
 
         NetworkLayer layer1 = predictorAlgorithm._ffn._layers.get( 0 );
         NetworkLayer layer2 = predictorAlgorithm._ffn._layers.get( 1 );

@@ -51,7 +51,7 @@ public class FileUtil {
      * @param sb
      * @return
      */
-    public static boolean WriteFileMemoryEfficient( String filePathName, StringBuilder sb ) {
+    public static boolean WriteFileMemoryEfficient( String filePathName, StringBuilder sb, boolean append ) {
 
         // Some performance tips for large files:
         // http://stackoverflow.com/questions/1677194/dumping-a-java-stringbuilder-to-file
@@ -59,7 +59,7 @@ public class FileUtil {
         File f = null;
         FileWriter writer = null;
         boolean result = false;
-        boolean append = false;
+//        boolean append = false;
 
         try {
             f = new File( filePathName );
@@ -77,7 +77,7 @@ public class FileUtil {
                     writer.close();
                 }
                 catch( IOException ioe ) {
-
+                    result = false;
                 }
             }
         }

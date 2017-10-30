@@ -29,6 +29,8 @@ import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
+import io.agi.framework.persistence.DataJsonSerializer;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -80,12 +82,17 @@ public class AnalyticsEntity extends Entity {
         attributes.add( OUTPUT_FEATURES );
         attributes.add( OUTPUT_LABELS );
 
-        // don't serialise each update
-        flags.putFlag( OUTPUT_FEATURES, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( OUTPUT_LABELS, DataFlags.FLAG_NODE_CACHE );
-
-        flags.putFlag( OUTPUT_FEATURES, DataFlags.FLAG_SPARSE_BINARY );
-
+        AnalyticsEntityConfig config = ( AnalyticsEntityConfig ) _config;
+//        flags.putFlag( OUTPUT_FEATURES, DataFlags.FLAG_SPARSE_BINARY );
+        if( config.featuresEncoding.equals( DataJsonSerializer.ENCODING_DENSE ) ) {
+            flags._dataFlags.clear();
+        }
+        else if( config.featuresEncoding.equals( DataJsonSerializer.ENCODING_SPARSE_BINARY ) ) {
+            flags.putFlag( OUTPUT_FEATURES, DataFlags.FLAG_SPARSE_BINARY );
+        }
+        else if( config.featuresEncoding.equals( DataJsonSerializer.ENCODING_SPARSE_REAL ) ) {
+            flags.putFlag( OUTPUT_FEATURES, DataFlags.FLAG_SPARSE_REAL );
+        }
     }
 
     // DO NOT USE THIS FUNCTIONALITY FOR NOW (may or may not use it)
@@ -115,11 +122,19 @@ public class AnalyticsEntity extends Entity {
             config.reset = false;
         }
 
-        Data features = getData( INPUT_FEATURES );
-        Data labels = getData( INPUT_LABELS );
+        Data features = null;
+        Data labels = null;
 
-        if ( features == null || labels == null )
-        {
+        if( config.useInputFiles ) {
+            features = Data2d.readCsvFile( config.fileNameFeatures );
+            labels = Data2d.readCsvFile( config.fileNameLabels );
+        }
+        else {
+            features = getData( INPUT_FEATURES );
+            labels = getData( INPUT_LABELS );
+        }
+
+        if( features == null || labels == null ) {
             String message = "Features or Labels are empty";
             _logger.error( message );
             return;
@@ -175,11 +190,11 @@ public class AnalyticsEntity extends Entity {
 
                 // NB: Need to intersperse these, or the log will be inaccurate in the event of an exception. (not needed, framework logs anyway)
                 //_logger.info( "Set entity flag: 'reset', Entity = " + entityName + ", " + doReset );
-                Framework.SetConfig( entityName, "predict", String.valueOf( doReset ) );
+                PersistenceUtil.SetConfig( entityName, "predict", String.valueOf( doReset ) );
                 //_logger.info( "Set entity flag: 'learn', Entity = " + entityName + ", " + doLearn );
-                Framework.SetConfig( entityName, "learn", String.valueOf( doLearn ) );
+                PersistenceUtil.SetConfig( entityName, "learn", String.valueOf( doLearn ) );
                 //_logger.info( "Set entity flag: 'predict', Entity = " + entityName + ", " + doPredict );
-                Framework.SetConfig( entityName, "predict", String.valueOf( doPredict ) );
+                PersistenceUtil.SetConfig( entityName, "predict", String.valueOf( doPredict ) );
             }
         }
         catch( Exception e ) {

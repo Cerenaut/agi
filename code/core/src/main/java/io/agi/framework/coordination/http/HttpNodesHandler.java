@@ -56,7 +56,7 @@ public class HttpNodesHandler implements HttpHandler {
 
             if( method.equalsIgnoreCase( "GET" ) ) {
 
-                Collection< ModelNode > nodes = _p.fetchNodes();
+                Collection< ModelNode > nodes = _p.getNodes();
 
                 response += "[ ";
 

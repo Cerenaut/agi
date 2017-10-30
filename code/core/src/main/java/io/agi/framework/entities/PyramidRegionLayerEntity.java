@@ -136,9 +136,6 @@ public class PyramidRegionLayerEntity extends Entity {
         attributes.add( INPUT_P_OLD );
         attributes.add( INPUT_P_NEW );
 
-        flags.putFlag( INPUT_P_OLD, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( INPUT_P_NEW, DataFlags.FLAG_NODE_CACHE );
-
 //        flags.putFlag( INPUT_P_OLD, DataFlags.FLAG_SPARSE_BINARY );
 //        flags.putFlag( INPUT_NEW, DataFlags.FLAG_SPARSE_BINARY );
 
@@ -151,7 +148,6 @@ public class PyramidRegionLayerEntity extends Entity {
 //        flags.putFlag( CLASSIFIER_SPIKES_OLD, DataFlags.FLAG_NODE_CACHE );
 //        flags.putFlag( CLASSIFIER_SPIKES_NEW, DataFlags.FLAG_NODE_CACHE );
 ////        flags.putFlag( CLASSIFIER_SPIKES_INTEGRATED, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( OUTPUT_SPIKES_AGE, DataFlags.FLAG_NODE_CACHE );
 //
 //        flags.putFlag( CLASSIFIER_SPIKES_OLD, DataFlags.FLAG_SPARSE_BINARY );
 //        flags.putFlag( CLASSIFIER_SPIKES_NEW, DataFlags.FLAG_SPARSE_BINARY );
@@ -159,10 +155,6 @@ public class PyramidRegionLayerEntity extends Entity {
         attributes.add( OUTPUT_SPIKES_OLD );
         attributes.add( OUTPUT_SPIKES_NEW );
         attributes.add( OUTPUT );
-
-        flags.putFlag( OUTPUT_SPIKES_OLD, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( OUTPUT_SPIKES_NEW, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( OUTPUT, DataFlags.FLAG_NODE_CACHE );
 
 //        flags.putFlag( OUTPUT_SPIKES_OLD, DataFlags.FLAG_SPARSE_BINARY );
 //        flags.putFlag( OUTPUT_SPIKES_NEW, DataFlags.FLAG_SPARSE_BINARY );
@@ -173,12 +165,6 @@ public class PyramidRegionLayerEntity extends Entity {
         attributes.add(PREDICTION_OLD);
         attributes.add(PREDICTION_NEW);
         attributes.add( PREDICTION_NEW_UNIT );
-
-        flags.putFlag( PREDICTION_ERROR_FP, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_ERROR_FN, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_NEW_UNIT, DataFlags.FLAG_NODE_CACHE );
 
 //        flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_SPARSE_BINARY );
 //        flags.putFlag(PREDICTION_NEW, DataFlags.FLAG_SPARSE_BINARY);
@@ -259,10 +245,10 @@ public class PyramidRegionLayerEntity extends Entity {
         PyramidRegionLayerEntityConfig config = ( PyramidRegionLayerEntityConfig ) _config;
 
         // Do nothing unless the input is defined
-//        Data inputC1 = getData( INPUT_C1 );
-//        Data inputC2 = getData( INPUT_C2 );
-//        Data inputP1 = getData( INPUT_P1 );
-//        Data inputP2 = getData( INPUT_P2 );
+//        Data inputC1 = deserialize( INPUT_C1 );
+//        Data inputC2 = deserialize( INPUT_C2 );
+//        Data inputP1 = deserialize( INPUT_P1 );
+//        Data inputP2 = deserialize( INPUT_P2 );
 
         Data inputC = getData( INPUT_C );
         Data inputP = getData( INPUT_P );
@@ -277,8 +263,8 @@ public class PyramidRegionLayerEntity extends Entity {
             Data output          = new Data( config.widthCells, config.heightCells );
             setData( OUTPUT_SPIKES_OLD, outputSpikesOld );
             setData( OUTPUT_SPIKES_NEW, outputSpikesNew );
-//            setData( CLASSIFIER_SPIKES_OLD, classifierSpikesOld );
-//            setData( CLASSIFIER_SPIKES_NEW, classifierSpikesNew );
+//            serialize( CLASSIFIER_SPIKES_OLD, classifierSpikesOld );
+//            serialize( CLASSIFIER_SPIKES_NEW, classifierSpikesNew );
             setData( OUTPUT, output );
 
             if( config.reset ) {
@@ -400,10 +386,10 @@ public class PyramidRegionLayerEntity extends Entity {
         rl._inputC = getData( INPUT_C );
         rl._inputP = getData( INPUT_P );
 
-//        rl._inputC1 = getData(INPUT_C1);
-//        rl._inputC2 = getData(INPUT_C2);
-//        rl._inputP1 = getData(INPUT_P1);
-//        rl._inputP2 = getData(INPUT_P2);
+//        rl._inputC1 = deserialize(INPUT_C1);
+//        rl._inputC2 = deserialize(INPUT_C2);
+//        rl._inputP1 = deserialize(INPUT_P1);
+//        rl._inputP2 = deserialize(INPUT_P2);
 
         rl._inputPOld = getDataLazyResize( INPUT_P_OLD, rl._inputPOld._dataSize );
         rl._inputPNew = getDataLazyResize( INPUT_P_NEW, rl._inputPNew._dataSize );
@@ -441,14 +427,14 @@ public class PyramidRegionLayerEntity extends Entity {
         setData( INPUT_P_OLD, rl._inputPOld );
         setData( INPUT_P_NEW, rl._inputPNew );
 
-//        setData( INPUT_C1_PREDICTED, rl._inputC1Predicted );
-//        setData( INPUT_C2_PREDICTED, rl._inputC2Predicted );
+//        serialize( INPUT_C1_PREDICTED, rl._inputC1Predicted );
+//        serialize( INPUT_C2_PREDICTED, rl._inputC2Predicted );
 
-//        setData( INPUT_C_PREDICTED, rl._inputCPredicted );
+//        serialize( INPUT_C_PREDICTED, rl._inputCPredicted );
 
-//        setData( CLASSIFIER_SPIKES_OLD, rl._classifierSpikesOld );
-//        setData( CLASSIFIER_SPIKES_NEW, rl._classifierSpikesNew );
-//        setData( CLASSIFIER_SPIKES_INTEGRATED, rl._spikesIntegrated );
+//        serialize( CLASSIFIER_SPIKES_OLD, rl._classifierSpikesOld );
+//        serialize( CLASSIFIER_SPIKES_NEW, rl._classifierSpikesNew );
+//        serialize( CLASSIFIER_SPIKES_INTEGRATED, rl._spikesIntegrated );
 
         setData( OUTPUT_SPIKES_OLD, rl._outputSpikesOld );
         setData( OUTPUT_SPIKES_NEW, rl._outputSpikesNew );
@@ -474,34 +460,34 @@ public class PyramidRegionLayerEntity extends Entity {
         setData( BATCH_INPUTS_1, layer1._batchInputs );
         setData( BATCH_INPUTS_2, layer2._batchInputs );
 
-//        setData( CLASSIFIER_WEIGHTS, rl._classifier._cellWeights );
-//        setData( CLASSIFIER_BIASES_1, rl._classifier._cellBiases1 );
-//        setData( CLASSIFIER_BIASES_2, rl._classifier._cellBiases2 );
+//        serialize( CLASSIFIER_WEIGHTS, rl._classifier._cellWeights );
+//        serialize( CLASSIFIER_BIASES_1, rl._classifier._cellBiases1 );
+//        serialize( CLASSIFIER_BIASES_2, rl._classifier._cellBiases2 );
 //
-//        setData( CLASSIFIER_WEIGHTS_VELOCITY, rl._classifier._cellWeightsVelocity );
-//        setData( CLASSIFIER_BIASES_1_VELOCITY, rl._classifier._cellBiases1Velocity );
-//        setData( CLASSIFIER_BIASES_2_VELOCITY, rl._classifier._cellBiases2Velocity );
+//        serialize( CLASSIFIER_WEIGHTS_VELOCITY, rl._classifier._cellWeightsVelocity );
+//        serialize( CLASSIFIER_BIASES_1_VELOCITY, rl._classifier._cellBiases1Velocity );
+//        serialize( CLASSIFIER_BIASES_2_VELOCITY, rl._classifier._cellBiases2Velocity );
 //
-//        setData( CLASSIFIER_ERRORS, rl._classifier._cellErrors );
-//        setData( CLASSIFIER_WEIGHTED_SUM, rl._classifier._testingHiddenWeightedSum );
-//        setData( CLASSIFIER_TRANSFER, rl._classifier._cellTransfer );
-//        setData( CLASSIFIER_TRANSFER_PROMOTED, rl._classifier._cellTransferPromoted );
-//        setData( CLASSIFIER_TRANSFER_TOP_K, rl._classifier._cellTransferTopK );
-//        setData( CLASSIFIER_TRANSFER_TOP_KA, rl._classifier._cellTransferTopKA );
+//        serialize( CLASSIFIER_ERRORS, rl._classifier._cellErrors );
+//        serialize( CLASSIFIER_WEIGHTED_SUM, rl._classifier._testingHiddenWeightedSum );
+//        serialize( CLASSIFIER_TRANSFER, rl._classifier._cellTransfer );
+//        serialize( CLASSIFIER_TRANSFER_PROMOTED, rl._classifier._cellTransferPromoted );
+//        serialize( CLASSIFIER_TRANSFER_TOP_K, rl._classifier._cellTransferTopK );
+//        serialize( CLASSIFIER_TRANSFER_TOP_KA, rl._classifier._cellTransferTopKA );
 //
-//        setData( CLASSIFIER_SPIKES_TOP_K, rl._classifier._cellSpikesTopK );
-//        setData( CLASSIFIER_SPIKES_TOP_KA, rl._classifier._cellSpikesTopKA );
+//        serialize( CLASSIFIER_SPIKES_TOP_K, rl._classifier._cellSpikesTopK );
+//        serialize( CLASSIFIER_SPIKES_TOP_KA, rl._classifier._cellSpikesTopKA );
 //
-//        setData( CLASSIFIER_RECONSTRUCTION_WEIGHTED_SUM, rl._classifier._inputReconstructionWeightedSum );
-//        setData( CLASSIFIER_RECONSTRUCTION_TRANSFER, rl._classifier._inputReconstructionTransfer );
+//        serialize( CLASSIFIER_RECONSTRUCTION_WEIGHTED_SUM, rl._classifier._inputReconstructionWeightedSum );
+//        serialize( CLASSIFIER_RECONSTRUCTION_TRANSFER, rl._classifier._inputReconstructionTransfer );
 //
-//        setData( CLASSIFIER_AGES, rl._classifier._cellAges );
-//        setData( CLASSIFIER_RATES, rl._classifier._cellRates );
-//        setData( CLASSIFIER_PROMOTION, rl._classifier._cellPromotion );
-//        setData( CLASSIFIER_INHIBITION, rl._classifier._cellInhibition );
+//        serialize( CLASSIFIER_AGES, rl._classifier._cellAges );
+//        serialize( CLASSIFIER_RATES, rl._classifier._cellRates );
+//        serialize( CLASSIFIER_PROMOTION, rl._classifier._cellPromotion );
+//        serialize( CLASSIFIER_INHIBITION, rl._classifier._cellInhibition );
 //
-//        setData( CLASSIFIER_OUTPUT_GRADIENTS, rl._classifier._inputGradients );
-//        setData( CLASSIFIER_HIDDEN_GRADIENTS, rl._classifier._cellGradients );
+//        serialize( CLASSIFIER_OUTPUT_GRADIENTS, rl._classifier._inputGradients );
+//        serialize( CLASSIFIER_HIDDEN_GRADIENTS, rl._classifier._cellGradients );
     }
 
 }

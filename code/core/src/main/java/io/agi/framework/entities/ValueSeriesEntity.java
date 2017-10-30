@@ -27,9 +27,13 @@ import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
+import io.agi.framework.persistence.DataJsonSerializer;
 import io.agi.framework.persistence.Persistence;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.persistence.models.ModelEntity;
+import io.agi.framework.references.DataRef;
+import io.agi.framework.references.DataRefMap;
 
 import java.io.File;
 import java.util.Collection;
@@ -162,7 +166,9 @@ public class ValueSeriesEntity extends Entity {
         Float newValue = null;
 
         if( ( config.dataName != null ) && ( config.dataName.length() > 0 ) ) {
-            Data d = _n.getData( config.dataName, this ); // gets data, from cache if available
+            DataRefMap map = _n.getDataRefMap();
+            DataRef dataRef = map.getData( config.dataName );
+            Data d = dataRef._data;// gets data, from cache if available
             if( d != null ) {
                 if( d._values.length > config.dataOffset ) {
                     newValue = d._values[ config.dataOffset ];
@@ -170,7 +176,7 @@ public class ValueSeriesEntity extends Entity {
             }
         }
         else {
-            String stringValue = Framework.GetConfig( config.entityName, config.configPath );
+            String stringValue = PersistenceUtil.GetConfig( config.entityName, config.configPath );
             if( stringValue != null ) {
                 newValue = Float.valueOf( stringValue );
             }
@@ -191,10 +197,18 @@ public class ValueSeriesEntity extends Entity {
         _logger.info( "Writing Datas: " + key + " to file: " + filePathName );
 
         StringBuilder sb = new StringBuilder( 100 );
-        ModelData md = new ModelData( key, accumulated, config.writeFileEncoding );
-        md.toString( sb );
-        boolean b = FileUtil.WriteFileMemoryEfficient( filePathName, sb ); // write the file efficiently
-        if( !b ) {
+        DataRef dataRef = new DataRef( key, config.writeFileEncoding, null, accumulated );
+        ModelData md = new ModelData();
+        if( md.serialize( dataRef ) ) {
+            md.toString( sb );
+
+            boolean append = false;
+            boolean b = FileUtil.WriteFileMemoryEfficient( filePathName, sb, append ); // write the file efficiently
+            if( !b ) {
+                _logger.error( "Unable to write some Data objects to file." );
+            }
+        }
+        else {
             _logger.error( "Unable to serialize some Data objects to file." );
         }
     }

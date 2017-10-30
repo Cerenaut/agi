@@ -26,6 +26,7 @@ import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
@@ -64,11 +65,9 @@ public class GreedySpikingConvolutionalNetworkEntity extends Entity {
     @Override
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
         attributes.add( DATA_OUTPUT );
-        flags.putFlag( DATA_OUTPUT, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( DATA_OUTPUT, DataFlags.FLAG_SPARSE_BINARY );
 
         attributes.add( DATA_INVERSE );
-        flags.putFlag( DATA_INVERSE, DataFlags.FLAG_NODE_CACHE );
 
         GreedySpikingConvolutionalNetworkConfig networkConfig = createNetworkConfig();
 
@@ -77,31 +76,14 @@ public class GreedySpikingConvolutionalNetworkEntity extends Entity {
         for( int layer = 0; layer < layers; ++layer ) {
 
             attributes.add( DATA_LAYER_INPUT_SPIKES_ + layer );
-            flags.putFlag( DATA_LAYER_INPUT_SPIKES_, DataFlags.FLAG_NODE_CACHE );
-
             attributes.add( DATA_LAYER_INPUT_TRACES_ + layer );
-            flags.putFlag( DATA_LAYER_INPUT_TRACES_, DataFlags.FLAG_NODE_CACHE );
-
             attributes.add( DATA_LAYER_KERNEL_WEIGHTS_ + layer );
-            flags.putFlag( DATA_LAYER_KERNEL_WEIGHTS_, DataFlags.FLAG_NODE_CACHE );
-
             attributes.add( DATA_LAYER_CONV_SUMS_ + layer );
-            flags.putFlag( DATA_LAYER_CONV_SUMS_, DataFlags.FLAG_NODE_CACHE );
-
             attributes.add( DATA_LAYER_CONV_INHIBITION_ + layer );
-            flags.putFlag( DATA_LAYER_CONV_INHIBITION_, DataFlags.FLAG_NODE_CACHE );
-
             attributes.add( DATA_LAYER_CONV_INTEGRATED_ + layer );
-            flags.putFlag( DATA_LAYER_CONV_INTEGRATED_, DataFlags.FLAG_NODE_CACHE );
-
             attributes.add( DATA_LAYER_CONV_SPIKES_ + layer );
-            flags.putFlag( DATA_LAYER_CONV_SPIKES_, DataFlags.FLAG_NODE_CACHE );
-
             attributes.add( DATA_LAYER_POOL_SPIKES_ + layer );
-            flags.putFlag( DATA_LAYER_POOL_SPIKES_, DataFlags.FLAG_NODE_CACHE );
-
             attributes.add( DATA_LAYER_POOL_INHIBITION_ + layer );
-            flags.putFlag( DATA_LAYER_POOL_INHIBITION_, DataFlags.FLAG_NODE_CACHE );
         }
     }
 
@@ -168,7 +150,7 @@ public class GreedySpikingConvolutionalNetworkEntity extends Entity {
         boolean clear = false;
 
         try {
-            String stringValue = Framework.GetConfig( config.clearFlagEntityName, config.clearFlagConfigPath );
+            String stringValue = PersistenceUtil.GetConfig( config.clearFlagEntityName, config.clearFlagConfigPath );
             clear = Boolean.valueOf( stringValue );
         }
         catch( Exception e ) {

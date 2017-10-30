@@ -26,6 +26,8 @@ import io.agi.framework.Main;
 import io.agi.framework.Node;
 import io.agi.framework.entities.*;
 import io.agi.framework.factories.CommonEntityFactory;
+import io.agi.framework.persistence.PersistenceUtil;
+import io.agi.framework.references.DataRefUtil;
 
 import java.util.Properties;
 
@@ -65,41 +67,41 @@ public class ClassifierDemo {
         String classifierName = "classifier";
 
         String experimentName = "experiment";
-        Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
+        PersistenceUtil.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
 
 //        boolean discrete = false;
         boolean discrete = true;
 
         if( discrete ) {
-            Framework.CreateEntity( modelName, DiscreteRandomEntity.ENTITY_TYPE, n.getName(), experimentName );
+            PersistenceUtil.CreateEntity( modelName, DiscreteRandomEntity.ENTITY_TYPE, n.getName(), experimentName );
         }
         else {
-            Framework.CreateEntity( modelName, RandomVectorEntity.ENTITY_TYPE, n.getName(), experimentName );
-            Framework.SetConfig( modelName, "elements", "2" );
+            PersistenceUtil.CreateEntity( modelName, RandomVectorEntity.ENTITY_TYPE, n.getName(), experimentName );
+            PersistenceUtil.SetConfig( modelName, "elements", "2" );
         }
-        Framework.CreateEntity( classifierName, GrowingNeuralGasEntity.ENTITY_TYPE, n.getName(), modelName );
-//        Framework.CreateEntity( classifierName, ParameterLessSelfOrganizingMapEntity.ENTITY_TYPE, n.getName(), modelName );
-//        Framework.CreateEntity( classifierName, PlasticNeuralGasEntity.ENTITY_TYPE, n.getName(), modelName );
+        PersistenceUtil.CreateEntity( classifierName, GrowingNeuralGasEntity.ENTITY_TYPE, n.getName(), modelName );
+//        PersistenceUtil.CreateEntity( classifierName, ParameterLessSelfOrganizingMapEntity.ENTITY_TYPE, n.getName(), modelName );
+//        PersistenceUtil.CreateEntity( classifierName, PlasticNeuralGasEntity.ENTITY_TYPE, n.getName(), modelName );
 
-        Framework.SetDataReference( classifierName, ParameterLessSelfOrganizingMapEntity.INPUT, modelName, RandomVectorEntity.OUTPUT );
+        DataRefUtil.SetDataReference( classifierName, ParameterLessSelfOrganizingMapEntity.INPUT, modelName, RandomVectorEntity.OUTPUT );
 
         boolean terminateByAge = true;
         int terminationAge = 20;
 
         // Experiment config
         if( !terminateByAge ) {
-            Framework.SetConfig( experimentName, "terminationEntityName", modelName );
-            Framework.SetConfig( experimentName, "terminationConfigPath", "terminate" );
-            Framework.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
+            PersistenceUtil.SetConfig( experimentName, "terminationEntityName", modelName );
+            PersistenceUtil.SetConfig( experimentName, "terminationConfigPath", "terminate" );
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
         }
         else {
-            Framework.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
         }
 
 
 
         // Set a property:
-        Framework.SetConfig( modelName, "elements", "2" );
-        Framework.SetConfig( classifierName, Entity.SUFFIX_RESET, "true" );
+        PersistenceUtil.SetConfig( modelName, "elements", "2" );
+        PersistenceUtil.SetConfig( classifierName, Entity.SUFFIX_RESET, "true" );
     }
 }

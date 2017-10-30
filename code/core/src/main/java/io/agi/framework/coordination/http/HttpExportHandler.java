@@ -24,6 +24,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.agi.core.util.MemoryUtil;
 import io.agi.framework.Framework;
+import io.agi.framework.persistence.PersistenceUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -72,7 +73,7 @@ public class HttpExportHandler implements HttpHandler {
                 String entityName = m.get( PARAMETER_ENTITY ).trim(); // essential
                 String type = m.get( PARAMETER_TYPE ).trim(); // essential
                 
-                if ( Framework.containsEntity( entityName ) ) {
+                if ( PersistenceUtil.EntityExists( entityName ) ) {
 
                     // There are often memory exceptions when exporting (via API or saving to disk)
                     // We want to catch those exceptions, return an error status, and still continue
@@ -90,7 +91,7 @@ public class HttpExportHandler implements HttpHandler {
                             // make sure that the export folder is writable by others
                             folder.setWritable( true, false );
 
-                            boolean success = Framework.SaveSubtree( entityName, type, filepath.toString() );
+                            boolean success = PersistenceUtil.SaveSubtree( entityName, type, filepath.toString() );
 
                             HashMap< String, String > responseMap = new HashMap<>();
                             responseMap.put( "entity", entityName );
@@ -109,7 +110,7 @@ public class HttpExportHandler implements HttpHandler {
 
                         }
                         else {
-                            response = Framework.ExportSubtree( entityName, type );
+                            response = PersistenceUtil.ExportSubtree( entityName, type );
                             t.getResponseHeaders().add( "Content-type", "text/json/force-download" );
                             t.getResponseHeaders().add( "Content-Disposition", "attachment; filename=" + filename );
                             status = 200;

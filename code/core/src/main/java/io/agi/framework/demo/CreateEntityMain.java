@@ -22,6 +22,7 @@ package io.agi.framework.demo;
 import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
+import io.agi.framework.Naming;
 import io.agi.framework.Node;
 import io.agi.framework.factories.CommonEntityFactory;
 
@@ -51,7 +52,7 @@ public abstract class CreateEntityMain {
             String arg = args[ i ];
             if( arg.equalsIgnoreCase( "prefix" ) ) {
                 String prefix = args[ i+1 ];
-                Framework.SetEntityNamePrefix(prefix);
+                Naming.SetEntityNamePrefix( prefix );
 //                Framework.SetEntityNamePrefixDateTime();
             }
         }

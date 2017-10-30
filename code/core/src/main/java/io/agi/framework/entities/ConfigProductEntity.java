@@ -26,6 +26,7 @@ import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
@@ -69,7 +70,7 @@ public class ConfigProductEntity extends Entity {
         Float factor = null;
 
         try {
-            String stringValue = Framework.GetConfig( config.entityName, config.configPath );
+            String stringValue = PersistenceUtil.GetConfig( config.entityName, config.configPath );
             factor = Float.valueOf( stringValue );
         }
         catch( Exception e ) {
@@ -77,7 +78,7 @@ public class ConfigProductEntity extends Entity {
 
         if( factor == null ) {
             try {
-                String stringValue = Framework.GetConfig( config.entityName, config.configPath );
+                String stringValue = PersistenceUtil.GetConfig( config.entityName, config.configPath );
                 factor = (float)Integer.valueOf( stringValue );
             }
             catch( Exception e ) {
@@ -86,7 +87,7 @@ public class ConfigProductEntity extends Entity {
 
         if( factor == null ) {
             try {
-                String stringValue = Framework.GetConfig( config.entityName, config.configPath );
+                String stringValue = PersistenceUtil.GetConfig( config.entityName, config.configPath );
                 boolean b = Boolean.valueOf( stringValue );
                 if( b ) {
                     factor = 1f;

@@ -21,6 +21,7 @@ package io.agi.framework.entities;
 
 import io.agi.framework.EntityConfig;
 import io.agi.framework.Framework;
+import io.agi.framework.persistence.PersistenceUtil;
 
 /**
  * Created by dave on 16/10/17.
@@ -32,8 +33,9 @@ public class BatchSparseNetworkEntityConfig extends EntityConfig {
     int widthCells = 0;
     int heightCells = 0;
     int outputs = 0;
-    int sparsity = 0; // current value, computed
-    int sparsityLifetime = 0; // current value, computed
+    int sparsity = 0;
+    int sparsityLifetime = 0;
+    int sparsityOutput = 0;
     float weightsStdDev = 0f; // used at reset
 
     int batchCount = 0;
@@ -47,6 +49,7 @@ public class BatchSparseNetworkEntityConfig extends EntityConfig {
             int outputs,
             int sparsity,
             int sparsityLifetime,
+            int sparsityOutput,
             int batchSize,
             float learningRate,
             float momentum,
@@ -60,12 +63,13 @@ public class BatchSparseNetworkEntityConfig extends EntityConfig {
         config.outputs = outputs;
         config.sparsity = sparsity;
         config.sparsityLifetime = sparsityLifetime;
+        config.sparsityOutput = sparsityOutput;
         config.batchSize = batchSize;
         config.learningRate = learningRate;
         config.momentum = momentum;
         config.weightsStdDev = weightsStdDev;
 
-        Framework.SetConfig( entityName, config );
+        PersistenceUtil.SetConfig( entityName, config );
     }
 
 }

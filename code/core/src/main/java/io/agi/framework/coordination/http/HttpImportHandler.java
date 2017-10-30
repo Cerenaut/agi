@@ -19,6 +19,8 @@
 
 package io.agi.framework.coordination.http;
 
+import io.agi.framework.persistence.PersistenceUtil;
+import io.agi.framework.references.DataRefUtil;
 import org.apache.commons.fileupload.FileItem;
 
 import org.apache.commons.fileupload.RequestContext;
@@ -102,14 +104,14 @@ public class HttpImportHandler implements HttpHandler {
                 String fieldName = fi.getFieldName();
 
                 if( fieldName.equalsIgnoreCase( "entity-file" ) ) {
-                    Framework.ImportEntities( value );
+                    PersistenceUtil.ImportEntities( value );
                     status = 200;
                     response = response + "Imported Entities from: " + fi.getName() + "\n";
 
                     _logger.info( "Import: entities file: " + fi.getName() );
                 }
                 else if( fieldName.equalsIgnoreCase( "data-file" ) ) {
-                    Framework.ImportData( value );
+                    DataRefUtil.ImportData( value );
                     status = 200;
                     response = response + "Imported Data from: " + fi.getName() + "\n";
 

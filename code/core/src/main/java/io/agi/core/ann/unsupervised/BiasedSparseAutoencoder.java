@@ -67,10 +67,13 @@ public class BiasedSparseAutoencoder extends LifetimeSparseAutoencoder {
     }
 
     public void update( boolean learn ) {
-        encode();
+//        encode();
+        int sparsityOutput = _c.getSparsityOutput();
+        encode( _inputValues, _cellWeights, _cellBiases1, _cellWeightedSum, _cellSpikes, sparsityOutput );
 
         // Output layer (forward pass)
         // dont really need to do this if not learning.
+        _inputReconstruction.setSize( _inputValues._dataSize ); // copy the size of the current input
         decode( _c, _cellWeights, _cellBiases2, _cellSpikes, _inputReconstruction ); // for output
 
         // don't go any further unless learning is enabled
@@ -79,10 +82,11 @@ public class BiasedSparseAutoencoder extends LifetimeSparseAutoencoder {
         }
 
         // Result of encoding:
-        int sparsity = _c.getSparsity();
+        //int sparsity = _c.getSparsity();
+        int sparsityTraining = _c.getSparsity();
         Data cellWeightedSumOld = new Data( _cellWeightedSum._dataSize );
         Data cellSpikesOld = new Data( _cellSpikes._dataSize );
-        encode( _inputValuesOld, _cellWeights, _cellBiases1, cellWeightedSumOld, cellSpikesOld, sparsity );
+        encode( _inputValuesOld, _cellWeights, _cellBiases1, cellWeightedSumOld, cellSpikesOld, sparsityTraining );
 
         Data inputLearningRate = _inputLearningRate; // new value of input learning rate
         Data hiddenLayerInput = _inputValuesOld; // old values of input i.e. delayed feedback
@@ -106,7 +110,10 @@ public class BiasedSparseAutoencoder extends LifetimeSparseAutoencoder {
             Data hiddenLayerInput,
             Data hiddenLayerWeightedSum,
             Data outputLayerInput  ) {
-
+//if( inputLearningRate._values[ 0 ] == 0f ) {
+//    int g = 0;
+//    g++;
+//}
         // Batch data
         Data hiddenLayerWeightedSumBatch   = _batchHiddenWeightedSum;
         Data hiddenLayerInputBatch         = _batchHiddenInput;

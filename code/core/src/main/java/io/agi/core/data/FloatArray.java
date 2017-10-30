@@ -68,6 +68,27 @@ public class FloatArray {
         return ( _values != null );
     }
 
+    public String toCsv() {
+        StringBuilder sb = new StringBuilder( 128 );
+        toCsv( sb, "\n"  );
+        return sb.toString();
+    }
+
+    public void toCsv( StringBuilder sb, String newLine ) {
+        if( _values == null ) {
+            return;
+        }
+
+        for( int i = 0; i < _values.length; ++i ) {
+            sb.append( _values[ i ] );
+            if( i < ( _values.length -1 ) ) {
+                sb.append( "," );
+            }
+        }
+
+        sb.append( newLine );
+    }
+
     /**
      * Cycles the whole vector n steps. n may be positive or negative.
      * @param n

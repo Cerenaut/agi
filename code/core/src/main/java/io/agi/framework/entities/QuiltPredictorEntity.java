@@ -60,16 +60,9 @@ public abstract class QuiltPredictorEntity extends Entity {
         attributes.add( INPUT_P_OLD );
         attributes.add( INPUT_P_NEW );
 
-        flags.putFlag( INPUT_P_OLD, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( INPUT_P_NEW, DataFlags.FLAG_NODE_CACHE );
-
         attributes.add( PREDICTION_OLD );
         attributes.add( PREDICTION_NEW );
         attributes.add( PREDICTION_NEW_UNIT );
-
-        flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_NEW_UNIT, DataFlags.FLAG_NODE_CACHE );
     }
 
     @Override

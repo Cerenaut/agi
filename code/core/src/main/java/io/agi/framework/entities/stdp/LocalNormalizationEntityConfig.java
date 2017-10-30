@@ -21,6 +21,7 @@ package io.agi.framework.entities.stdp;
 
 import io.agi.framework.EntityConfig;
 import io.agi.framework.Framework;
+import io.agi.framework.persistence.PersistenceUtil;
 
 /**
  * Created by dave on 9/08/17.
@@ -34,7 +35,7 @@ public class LocalNormalizationEntityConfig extends EntityConfig {
         entityConfig.cache = true;
         entityConfig.radius = radius;
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
 }

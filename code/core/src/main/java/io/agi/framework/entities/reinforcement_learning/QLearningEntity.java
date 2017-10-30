@@ -61,26 +61,11 @@ public class QLearningEntity extends Entity {
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
 
         attributes.add( OUTPUT_STATES_OLD );
-        flags.putFlag( OUTPUT_STATES_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( OUTPUT_STATES_OLD, DataFlags.FLAG_SPARSE_BINARY );
-
-//        attributes.add( OUTPUT_ACTIONS_OLD );
-//        flags.putFlag( OUTPUT_ACTIONS_OLD, DataFlags.FLAG_NODE_CACHE );
-//        flags.putFlag( OUTPUT_ACTIONS_OLD, DataFlags.FLAG_SPARSE_BINARY );
-
         attributes.add( OUTPUT_STATES_NEW );
-        flags.putFlag( OUTPUT_STATES_NEW, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( OUTPUT_STATES_NEW, DataFlags.FLAG_SPARSE_BINARY );
-
-//        attributes.add( OUTPUT_ACTIONS_NEW );
-//        flags.putFlag( OUTPUT_ACTIONS_NEW, DataFlags.FLAG_NODE_CACHE );
-//        flags.putFlag( OUTPUT_ACTIONS_NEW, DataFlags.FLAG_SPARSE_BINARY );
-
         attributes.add( OUTPUT_ACTIONS_QUALITY );
-        flags.putFlag( OUTPUT_ACTIONS_QUALITY, DataFlags.FLAG_NODE_CACHE );
-
         attributes.add( OUTPUT_STATES_ACTIONS_QUALITY );
-        flags.putFlag( OUTPUT_STATES_ACTIONS_QUALITY, DataFlags.FLAG_NODE_CACHE );
     }
 
     @Override
@@ -161,8 +146,8 @@ public class QLearningEntity extends Entity {
     protected void copyDataToPersistence( QLearning ql ) {
         setData( OUTPUT_STATES_NEW, ql._stateNew );
         setData( OUTPUT_STATES_OLD, ql._stateOld );
-//        setData( OUTPUT_ACTIONS_NEW, ql._actionNew );
-//        setData( OUTPUT_ACTIONS_OLD, ql._actionOld );
+//        serialize( OUTPUT_ACTIONS_NEW, ql._actionNew );
+//        serialize( OUTPUT_ACTIONS_OLD, ql._actionOld );
         setData( OUTPUT_ACTIONS_QUALITY, ql._actionQuality );
         setData( OUTPUT_STATES_ACTIONS_QUALITY, ql._quality );
     }

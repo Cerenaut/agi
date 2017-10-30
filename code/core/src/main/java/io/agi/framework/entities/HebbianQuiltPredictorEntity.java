@@ -86,15 +86,15 @@ public class HebbianQuiltPredictorEntity extends QuiltPredictorEntity {
 
 //    protected void doUpdateSelf() {
 //
-//        Data inputC = getData( INPUT_C );
-//        Data inputP = getData( INPUT_P );
+//        Data inputC = deserialize( INPUT_C );
+//        Data inputP = deserialize( INPUT_P );
 //
 //        if( ( inputC == null ) || ( inputP == null )  ) {
 //            // we need to produce our output even if we can't write to it yet, to allow circular dependencies to be formed.
 //            Data predictionOld = new Data( config.widthCells, config.heightCells );
 //            Data predictionNew = new Data( config.widthCells, config.heightCells );
-//            setData( PREDICTION_OLD, predictionOld );
-//            setData( PREDICTION_OLD, predictionNew );
+//            serialize( PREDICTION_OLD, predictionOld );
+//            serialize( PREDICTION_OLD, predictionNew );
 //
 //            if( config.reset ) {
 //                config.resetDelayed = true;
