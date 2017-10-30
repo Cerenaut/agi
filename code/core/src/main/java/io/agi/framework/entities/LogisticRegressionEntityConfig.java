@@ -22,13 +22,9 @@ package io.agi.framework.entities;
 /**
  * Created by dave on 9/07/16.
  */
-public class SupervisedBatchTrainingEntityConfig extends SupervisedLearningEntityConfig {
-
-    public static final String ALGORITHM_SVM = "algorithm-svm";
-    public static final String ALGORITHM_LOGISTIC_REGRESSION = "algorithm-logistic-regression";
+public class LogisticRegressionEntityConfig extends SupervisedLearningEntityConfig {
 
     public String modelString = "";     // serialised form of the model
     public float C = 1.f;               // regularization parameter
     public boolean bias;                // add bias term to input features before training (and predicting)
-    public String algorithm;            // the algorithm to use
 }

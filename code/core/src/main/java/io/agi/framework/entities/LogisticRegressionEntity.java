@@ -20,10 +20,7 @@
 package io.agi.framework.entities;
 
 import io.agi.core.data.Data;
-import io.agi.core.ml.supervised.LogisticRegression;
-import io.agi.core.ml.supervised.SupervisedBatchTraining;
-import io.agi.core.ml.supervised.SupervisedBatchTrainingConfig;
-import io.agi.core.ml.supervised.Svm;
+import io.agi.core.ml.supervised.*;
 import io.agi.core.orm.ObjectMap;
 import io.agi.framework.DataFlags;
 import io.agi.framework.Node;
@@ -32,17 +29,15 @@ import io.agi.framework.persistence.models.ModelEntity;
 import java.util.Collection;
 
 /**
- *
- *
  * Created by gideon on 11/07/2016.
  */
-public class SupervisedBatchTrainingEntity extends SupervisedLearningEntity {
+public class LogisticRegressionEntity extends SupervisedLearningEntity {
 
-    public static final String ENTITY_TYPE = "supervised-batch-training-entity";
+    public static final String ENTITY_TYPE = "logistic-regression-entity";
 
-    SupervisedBatchTraining _learner;
+    private LogisticRegression _learner;
 
-    public SupervisedBatchTrainingEntity( ObjectMap om, Node n, ModelEntity model ) {
+    public LogisticRegressionEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
     }
 
@@ -55,7 +50,7 @@ public class SupervisedBatchTrainingEntity extends SupervisedLearningEntity {
     }
 
     public Class getConfigClass() {
-        return SupervisedBatchTrainingEntityConfig.class;
+        return LogisticRegressionEntityConfig.class;
     }
 
     protected void reset( int features, int labelClasses ) {
@@ -71,7 +66,7 @@ public class SupervisedBatchTrainingEntity extends SupervisedLearningEntity {
     protected void saveModel() {
 
         // Set the model parameter:
-        SupervisedBatchTrainingEntityConfig config = ( SupervisedBatchTrainingEntityConfig ) _config;
+        LogisticRegressionEntityConfig config = ( LogisticRegressionEntityConfig ) _config;
         config.modelString = _learner.getModelString();
     }
 
@@ -82,23 +77,12 @@ public class SupervisedBatchTrainingEntity extends SupervisedLearningEntity {
     protected void loadModel( int features, int labelClasses ) {
 
         // Get all the parameters:
-        SupervisedBatchTrainingEntityConfig config = ( SupervisedBatchTrainingEntityConfig ) _config;
+        LogisticRegressionEntityConfig config = ( LogisticRegressionEntityConfig ) _config;
 
-        // Create the config object for the supervised learning algorithm:
-        SupervisedBatchTrainingConfig learnerConfig = new SupervisedBatchTrainingConfig();
-        learnerConfig.setup( _om, "SupervisedBatchTrainingConfig", _r, config.modelString, config.bias, config.C );
+        LogisticRegressionConfig learnerConfig = new LogisticRegressionConfig();
+        learnerConfig.setup( _om, "LogisticRegressionConfig", _r, config.modelString, config.C, config.bias );
 
-        // Create the implementing object itself, using data from persistence:
-        if( config.algorithm.equals( SupervisedBatchTrainingEntityConfig.ALGORITHM_SVM ) ) {
-            _learner = new Svm( getName(), _om );
-        }
-        else if( config.algorithm.equals( SupervisedBatchTrainingEntityConfig.ALGORITHM_LOGISTIC_REGRESSION ) ) {
-            _learner = new LogisticRegression( getName(), _om );
-        }
-        else {
-            throw new java.lang.UnsupportedOperationException( "Algorithm type not supported" );
-        }
-
+        _learner = new LogisticRegression( getName(), _om );
         _learner.setup( learnerConfig );
     }
 
@@ -125,7 +109,7 @@ public class SupervisedBatchTrainingEntity extends SupervisedLearningEntity {
     }
 
     protected void doUpdateSelf() {
-        SupervisedBatchTrainingEntityConfig config = ( SupervisedBatchTrainingEntityConfig ) _config;
+        LogisticRegressionEntityConfig config = ( LogisticRegressionEntityConfig ) _config;
         config.learningMode = SupervisedLearningEntity.LEARNING_MODE_BATCH;
         config.learnBatchOnce = true;
 
