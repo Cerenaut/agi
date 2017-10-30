@@ -33,7 +33,7 @@ public class EntityConfig {
     public int age = 0;            // default = 'not set'      optional
     public Long seed = null;       // default = 'not set'      optional
     public boolean reset = false;  // default                  optional
-    public boolean flush = false;  // default
+//    public boolean flush = false;  // default
     public boolean learn = true;   // default
     public boolean cache = false;  // default false. If true, will cache all data in the Node avoiding serialization.
 

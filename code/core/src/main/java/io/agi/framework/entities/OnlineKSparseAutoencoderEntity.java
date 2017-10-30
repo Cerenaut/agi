@@ -111,33 +111,6 @@ public class OnlineKSparseAutoencoderEntity extends Entity {
 
         attributes.add( OUTPUT_GRADIENTS );
         attributes.add( HIDDEN_GRADIENTS );
-
-        flags.putFlag(WEIGHTS, DataFlags.FLAG_NODE_CACHE);
-        flags.putFlag(BIASES_1, DataFlags.FLAG_NODE_CACHE);
-        flags.putFlag( BIASES_2, DataFlags.FLAG_NODE_CACHE );
-
-        flags.putFlag( WEIGHTS_VELOCITY, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BIASES_1_VELOCITY, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BIASES_2_VELOCITY, DataFlags.FLAG_NODE_CACHE );
-
-        flags.putFlag( ERRORS, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( SPIKES_TOP_KA, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( SPIKES_TOP_K, DataFlags.FLAG_NODE_CACHE );
-
-        flags.putFlag( TRANSFER, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( TRANSFER_TOP_K, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( TRANSFER_TOP_KA, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( TRANSFER_PROMOTED, DataFlags.FLAG_NODE_CACHE );
-
-        flags.putFlag( RECONSTRUCTION_WEIGHTED_SUM, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( RECONSTRUCTION_TRANSFER, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( AGES, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( RATES, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PROMOTION, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( INHIBITION, DataFlags.FLAG_NODE_CACHE );
-
-        flags.putFlag( OUTPUT_GRADIENTS, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( HIDDEN_GRADIENTS, DataFlags.FLAG_NODE_CACHE );
     }
 
     @Override

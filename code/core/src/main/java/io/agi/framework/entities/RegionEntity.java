@@ -91,27 +91,19 @@ public class RegionEntity extends Entity {
         attributes.add( FB_OUTPUT_UNFOLDED_ACTIVITY );
         attributes.add( FB_OUTPUT_UNFOLDED_PREDICTION );
 
-        flags.putFlag( FB_OUTPUT_UNFOLDED_ACTIVITY, DataFlags.FLAG_PERSIST_ONLY ); // never read
-        flags.putFlag( FB_OUTPUT_UNFOLDED_PREDICTION, DataFlags.FLAG_PERSIST_ONLY ); // never read
         flags.putFlag( FB_OUTPUT_UNFOLDED_ACTIVITY, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( FB_OUTPUT_UNFOLDED_PREDICTION, DataFlags.FLAG_SPARSE_BINARY );
 
         attributes.add( FB_INPUT_OLD );
         attributes.add( FF_INPUT_OLD );
 
-        flags.putFlag( FF_INPUT_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( FF_INPUT_OLD, DataFlags.FLAG_SPARSE_BINARY );
 
-        flags.putFlag( FB_INPUT_OLD, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( FB_INPUT_OLD, DataFlags.FLAG_SPARSE_BINARY );
 
         attributes.add( ACTIVITY_OLD );
         attributes.add( ACTIVITY_NEW );
         attributes.add( ACTIVITY );
-
-        flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( ACTIVITY,     DataFlags.FLAG_NODE_CACHE );
 
         flags.putFlag( ACTIVITY_OLD, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( ACTIVITY_NEW, DataFlags.FLAG_SPARSE_BINARY );
@@ -125,19 +117,12 @@ public class RegionEntity extends Entity {
         attributes.add( PREDICTION_NEW );
         attributes.add( PREDICTION_RAW );
 
-        flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_RAW, DataFlags.FLAG_NODE_CACHE );
-
         flags.putFlag( PREDICTION_OLD, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( PREDICTION_NEW, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( PREDICTION_RAW, DataFlags.FLAG_SPARSE_REAL );
 
         attributes.add( PREDICTION_FP );
         attributes.add( PREDICTION_FN );
-
-        flags.putFlag( PREDICTION_FP, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( PREDICTION_FN, DataFlags.FLAG_NODE_CACHE );
 
         flags.putFlag( PREDICTION_FP, DataFlags.FLAG_SPARSE_BINARY );
         flags.putFlag( PREDICTION_FN, DataFlags.FLAG_SPARSE_BINARY );
@@ -146,11 +131,8 @@ public class RegionEntity extends Entity {
         attributes.add( HEBBIAN_PREDICTOR_CONTEXTS );
         attributes.add( HEBBIAN_PREDICTOR_WEIGHTS );
 
-        flags.putFlag( HEBBIAN_PREDICTOR_CONTEXTS, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( HEBBIAN_PREDICTOR_CONTEXTS, DataFlags.FLAG_SPARSE_BINARY );
 
-        flags.putFlag( HEBBIAN_PREDICTOR_WEIGHTS, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( HEBBIAN_PREDICTOR_WEIGHTS, DataFlags.FLAG_PERSIST_ON_FLUSH );
         flags.putFlag( HEBBIAN_PREDICTOR_WEIGHTS, DataFlags.FLAG_SPARSE_REAL ); // drops from about 2.2 to 1.5 sec.
 
         // The organizer
@@ -214,35 +196,6 @@ public class RegionEntity extends Entity {
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), DataFlags.FLAG_SPARSE_BINARY );
 
         flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), DataFlags.FLAG_SPARSE_REAL );
-
-        // These rarely change:
-//        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), DataFlags.FLAG_LAZY_PERSIST );
-
-        // These are written by only me, so can be cached, avoiding the read.
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ), DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), DataFlags.FLAG_NODE_CACHE );
-
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS ), DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES ), DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES ), DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES ), DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH ), DataFlags.FLAG_NODE_CACHE );
-
-        // These are only written on a flush event:
-//        if( flag ) {
-            flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_WEIGHTS ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-            flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ERROR ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-            flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_ACTIVE ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-            flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_MASK ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-//        }
-
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_STRESS ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_CELL_AGES ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-        //flags.putFlag(Keys.concatenate(prefix, GrowingNeuralGasEntity.OUTPUT_EDGES), DataFlags.FLAG_PERSIST_ON_FLUSH); lazy
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_EDGES_AGES ), DataFlags.FLAG_PERSIST_ON_FLUSH );
-        flags.putFlag( Keys.concatenate( prefix, GrowingNeuralGasEntity.OUTPUT_AGE_SINCE_GROWTH ), DataFlags.FLAG_PERSIST_ON_FLUSH );
     }
 
     @Override
@@ -442,12 +395,12 @@ public class RegionEntity extends Entity {
             NetworkLayer nl = r._predictor._layers.get( l );
             String prefix = Keys.concatenate( RegionConfig.SUFFIX_PREDICTOR, String.valueOf( l ) );
 
-            nl._inputs         = getData( Keys.concatenate( prefix, NetworkLayer.INPUT ), nl._inputs._dataSize );
-            nl._weights        = getData( Keys.concatenate( prefix, NetworkLayer.WEIGHTS ), nl._weights._dataSize );
-            nl._biases         = getData( Keys.concatenate( prefix, NetworkLayer.BIASES ), nl._biases._dataSize );
-            nl._weightedSums   = getData( Keys.concatenate( prefix, NetworkLayer.WEIGHTED_SUMS ), nl._weightedSums._dataSize );
-            nl._outputs        = getData( Keys.concatenate( prefix, NetworkLayer.OUTPUTS ), nl._outputs._dataSize );
-            nl._costGradients = getData( Keys.concatenate( prefix, NetworkLayer.ERROR_GRADIENTS ), nl._costGradients._dataSize );
+            nl._inputs         = deserialize( Keys.concatenate( prefix, NetworkLayer.INPUT ), nl._inputs._dataSize );
+            nl._weights        = deserialize( Keys.concatenate( prefix, NetworkLayer.WEIGHTS ), nl._weights._dataSize );
+            nl._biases         = deserialize( Keys.concatenate( prefix, NetworkLayer.BIASES ), nl._biases._dataSize );
+            nl._weightedSums   = deserialize( Keys.concatenate( prefix, NetworkLayer.WEIGHTED_SUMS ), nl._weightedSums._dataSize );
+            nl._outputs        = deserialize( Keys.concatenate( prefix, NetworkLayer.OUTPUTS ), nl._outputs._dataSize );
+            nl._costGradients = deserialize( Keys.concatenate( prefix, NetworkLayer.ERROR_GRADIENTS ), nl._costGradients._dataSize );
         }*/
     }
 
@@ -571,12 +524,12 @@ public class RegionEntity extends Entity {
             NetworkLayer nl = r._predictor._layers.get( l );
             String prefix = Keys.concatenate( RegionConfig.SUFFIX_PREDICTOR, String.valueOf( l ) );
 
-            setData( Keys.concatenate( prefix, NetworkLayer.INPUT ), nl._inputs );
-            setData( Keys.concatenate( prefix, NetworkLayer.WEIGHTS ), nl._weights );
-            setData( Keys.concatenate( prefix, NetworkLayer.BIASES ), nl._biases );
-            setData( Keys.concatenate( prefix, NetworkLayer.WEIGHTED_SUMS ), nl._weightedSums );
-            setData( Keys.concatenate( prefix, NetworkLayer.OUTPUTS ), nl._outputs );
-            setData( Keys.concatenate( prefix, NetworkLayer.ERROR_GRADIENTS ), nl._costGradients );
+            serialize( Keys.concatenate( prefix, NetworkLayer.INPUT ), nl._inputs );
+            serialize( Keys.concatenate( prefix, NetworkLayer.WEIGHTS ), nl._weights );
+            serialize( Keys.concatenate( prefix, NetworkLayer.BIASES ), nl._biases );
+            serialize( Keys.concatenate( prefix, NetworkLayer.WEIGHTED_SUMS ), nl._weightedSums );
+            serialize( Keys.concatenate( prefix, NetworkLayer.OUTPUTS ), nl._outputs );
+            serialize( Keys.concatenate( prefix, NetworkLayer.ERROR_GRADIENTS ), nl._costGradients );
         }*/
     }
 

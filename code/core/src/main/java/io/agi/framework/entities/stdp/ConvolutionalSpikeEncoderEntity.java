@@ -25,6 +25,7 @@ import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.awt.*;
@@ -111,7 +112,7 @@ public class ConvolutionalSpikeEncoderEntity extends Entity {
         boolean clear = false;
 
         try {
-            String stringValue = Framework.GetConfig( config.clearFlagEntityName, config.clearFlagConfigPath );
+            String stringValue = PersistenceUtil.GetConfig( config.clearFlagEntityName, config.clearFlagConfigPath );
             clear = Boolean.valueOf( stringValue );
         }
         catch( Exception e ) {

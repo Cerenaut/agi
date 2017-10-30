@@ -57,11 +57,9 @@ public class GatedRecurrentMemoryEntity extends Entity {
 
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
         attributes.add( OUTPUT_STORED );
-        flags.putFlag( OUTPUT_STORED, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( OUTPUT_STORED, DataFlags.FLAG_SPARSE_BINARY );
 
         attributes.add( OUTPUT_CONTENT );
-        flags.putFlag( OUTPUT_CONTENT, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( OUTPUT_CONTENT, DataFlags.FLAG_SPARSE_BINARY );
     }
 

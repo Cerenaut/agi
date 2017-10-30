@@ -25,6 +25,7 @@ import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
 import io.agi.framework.persistence.Persistence;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
@@ -65,7 +66,7 @@ public class ThresholdEntity extends Entity {
 
         Persistence p = _n.getPersistence();
 
-        String stringValue = Framework.GetConfig( config.entityName, config.configPath );
+        String stringValue = PersistenceUtil.GetConfig( config.entityName, config.configPath );
         Float newValue = Float.valueOf( stringValue );
 
         if( newValue == null ) {

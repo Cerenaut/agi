@@ -27,7 +27,10 @@ import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.demo.mnist.ImageLabelEntityConfig;
 import io.agi.framework.entities.*;
 import io.agi.framework.entities.stdp.*;
+import io.agi.framework.persistence.DataJsonSerializer;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelData;
+import io.agi.framework.references.DataRefUtil;
 
 import java.util.ArrayList;
 
@@ -80,28 +83,28 @@ public class GreedySpikingConvolutionalDemo extends CreateEntityMain {
         // total 1802 steps
 
         // Define some entities
-        String experimentName           = Framework.GetEntityName( "experiment" );
-        String imageLabelName           = Framework.GetEntityName( "image-class" );
-        String vectorSeriesName         = Framework.GetEntityName( "feature-series" );
-        String valueSeriesName          = Framework.GetEntityName( "label-series" );
+        String experimentName           = PersistenceUtil.GetEntityName( "experiment" );
+        String imageLabelName           = PersistenceUtil.GetEntityName( "image-class" );
+        String vectorSeriesName         = PersistenceUtil.GetEntityName( "feature-series" );
+        String valueSeriesName          = PersistenceUtil.GetEntityName( "label-series" );
 
         // Algorithm
-        String dogPosName               = Framework.GetEntityName( "dog-pos" );
-        String dogNegName               = Framework.GetEntityName( "dog-neg" );
-        String spikeEncoderName         = Framework.GetEntityName( "spike-encoder" );
-        String spikingConvolutionalName = Framework.GetEntityName( "stdp-cnn" );
+        String dogPosName               = PersistenceUtil.GetEntityName( "dog-pos" );
+        String dogNegName               = PersistenceUtil.GetEntityName( "dog-neg" );
+        String spikeEncoderName         = PersistenceUtil.GetEntityName( "spike-encoder" );
+        String spikingConvolutionalName = PersistenceUtil.GetEntityName( "stdp-cnn" );
 
         String parentName = null;
-        parentName = Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
-        parentName = Framework.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
+        parentName = PersistenceUtil.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), parentName );
 
-        parentName = Framework.CreateEntity( dogPosName, DifferenceOfGaussiansEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( dogNegName, DifferenceOfGaussiansEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( spikeEncoderName, ConvolutionalSpikeEncoderEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( dogPosName, DifferenceOfGaussiansEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( dogNegName, DifferenceOfGaussiansEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( spikeEncoderName, ConvolutionalSpikeEncoderEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.ENTITY_TYPE, n.getName(), parentName );
 
-        parentName = Framework.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
-        parentName = Framework.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
+        parentName = PersistenceUtil.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
+        parentName = PersistenceUtil.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
 
         // Debug logs
 //        String vectorSeriesParentName = vectorSeriesName;
@@ -115,27 +118,27 @@ public class GreedySpikingConvolutionalDemo extends CreateEntityMain {
 //        CreateVectorSeriesLog( "vector-series-2p", vectorSeriesParentName, spikingConvolutionalName, SpikingConvolutionalNetworkEntity.DATA_LAYER_POOL_SPIKES_ + "1", ModelData.ENCODING_SPARSE_BINARY );
 
         // Connect the entities' data
-        Framework.SetDataReference( dogPosName, DifferenceOfGaussiansEntity.DATA_INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
-        Framework.SetDataReference( dogNegName, DifferenceOfGaussiansEntity.DATA_INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
+        DataRefUtil.SetDataReference( dogPosName, DifferenceOfGaussiansEntity.DATA_INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
+        DataRefUtil.SetDataReference( dogNegName, DifferenceOfGaussiansEntity.DATA_INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
 
-        Framework.SetDataReference( spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_INPUT_POS, dogPosName, DifferenceOfGaussiansEntity.DATA_OUTPUT );
-        Framework.SetDataReference( spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_INPUT_NEG, dogNegName, DifferenceOfGaussiansEntity.DATA_OUTPUT );
+        DataRefUtil.SetDataReference( spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_INPUT_POS, dogPosName, DifferenceOfGaussiansEntity.DATA_OUTPUT );
+        DataRefUtil.SetDataReference( spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_INPUT_NEG, dogNegName, DifferenceOfGaussiansEntity.DATA_OUTPUT );
 
         // a) Image to image region, and decode
-        Framework.SetDataReference( spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_INPUT, spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_OUTPUT );
+        DataRefUtil.SetDataReference( spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_INPUT, spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_OUTPUT );
 
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList<>();
         featureDatas.add( new AbstractPair<>( spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_OUTPUT ) );
-        Framework.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
+        DataRefUtil.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
 
         // Experiment config
         if( !terminateByAge ) {
-            Framework.SetConfig( experimentName, "terminationEntityName", imageLabelName );
-            Framework.SetConfig( experimentName, "terminationConfigPath", "terminate" );
-            Framework.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
+            PersistenceUtil.SetConfig( experimentName, "terminationEntityName", imageLabelName );
+            PersistenceUtil.SetConfig( experimentName, "terminationConfigPath", "terminate" );
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
         }
         else {
-            Framework.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
         }
 
 // QUESTIONS:
@@ -201,12 +204,12 @@ public class GreedySpikingConvolutionalDemo extends CreateEntityMain {
         SetSpikeEncoderEntityConfig( spikeEncoderName, spikeDensity, clearFlagEntityName, clearFlagConfigPath );
 
         // cache all data for speed, when enabled
-        Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( imageLabelName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( spikeEncoderName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( spikingConvolutionalName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( vectorSeriesName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( valueSeriesName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( imageLabelName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( spikeEncoderName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( spikingConvolutionalName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( vectorSeriesName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( valueSeriesName, "cache", String.valueOf( cacheAllData ) );
 
         // MNIST config
         String trainingEntities = "";
@@ -238,7 +241,7 @@ public class GreedySpikingConvolutionalDemo extends CreateEntityMain {
         // Log features of the algorithm during all phases
         int accumulatePeriod = imageRepeats;
         int period = -1;
-        VectorSeriesEntityConfig.Set( vectorSeriesName, accumulatePeriod, period, ModelData.ENCODING_SPARSE_REAL );
+        VectorSeriesEntityConfig.Set( vectorSeriesName, accumulatePeriod, period, DataJsonSerializer.ENCODING_SPARSE_REAL );
 
         // Log image label for each set of features
         String valueSeriesInputEntityName = imageLabelName;
@@ -249,55 +252,55 @@ public class GreedySpikingConvolutionalDemo extends CreateEntityMain {
         ValueSeriesEntityConfig.Set( valueSeriesName, accumulatePeriod, accumulateFactor, -1, period, valueSeriesInputEntityName, valueSeriesInputConfigPath, valueSeriesInputDataName, inputDataOffset );
 
         // Debug logs
-        String encoderIntSeriesName = Framework.GetEntityName( "enc-int-series" );
-        String encoderOutSeriesName = Framework.GetEntityName( "enc-out-series" );
+        String encoderIntSeriesName = PersistenceUtil.GetEntityName( "enc-int-series" );
+        String encoderOutSeriesName = PersistenceUtil.GetEntityName( "enc-out-series" );
 
-        parentName = Framework.CreateEntity( encoderIntSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( encoderOutSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( encoderIntSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( encoderOutSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
 
-        Framework.SetDataReference( encoderIntSeriesName, VectorSeriesEntity.INPUT, spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_INHIBITED );
-        Framework.SetDataReference( encoderOutSeriesName, VectorSeriesEntity.INPUT, spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_OUTPUT );
+        DataRefUtil.SetDataReference( encoderIntSeriesName, VectorSeriesEntity.INPUT, spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_INHIBITED );
+        DataRefUtil.SetDataReference( encoderOutSeriesName, VectorSeriesEntity.INPUT, spikeEncoderName, ConvolutionalSpikeEncoderEntity.DATA_OUTPUT );
 
         accumulatePeriod = 1;
-        VectorSeriesEntityConfig.Set( encoderIntSeriesName, accumulatePeriod, period, ModelData.ENCODING_SPARSE_REAL );
-        VectorSeriesEntityConfig.Set( encoderOutSeriesName, accumulatePeriod, period, ModelData.ENCODING_SPARSE_REAL );
+        VectorSeriesEntityConfig.Set( encoderIntSeriesName, accumulatePeriod, period, DataJsonSerializer.ENCODING_SPARSE_REAL );
+        VectorSeriesEntityConfig.Set( encoderOutSeriesName, accumulatePeriod, period, DataJsonSerializer.ENCODING_SPARSE_REAL );
 
         // Debug the algorithm
-        String netInh1SeriesName = Framework.GetEntityName( "net-inh-1-series" );
-        String netInt1SeriesName = Framework.GetEntityName( "net-int-1-series" );
-        String netSpk1SeriesName = Framework.GetEntityName( "net-spk-1-series" );
+        String netInh1SeriesName = PersistenceUtil.GetEntityName( "net-inh-1-series" );
+        String netInt1SeriesName = PersistenceUtil.GetEntityName( "net-int-1-series" );
+        String netSpk1SeriesName = PersistenceUtil.GetEntityName( "net-spk-1-series" );
 
-        String netInh2SeriesName = Framework.GetEntityName( "net-inh-2-series" );
-        String netInt2SeriesName = Framework.GetEntityName( "net-int-2-series" );
-        String netSpk2SeriesName = Framework.GetEntityName( "net-spk-2-series" );
+        String netInh2SeriesName = PersistenceUtil.GetEntityName( "net-inh-2-series" );
+        String netInt2SeriesName = PersistenceUtil.GetEntityName( "net-int-2-series" );
+        String netSpk2SeriesName = PersistenceUtil.GetEntityName( "net-spk-2-series" );
 
-        parentName = Framework.CreateEntity( netInh1SeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( netInt1SeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( netSpk1SeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( netInh1SeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( netInt1SeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( netSpk1SeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
 
-        parentName = Framework.CreateEntity( netInh2SeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( netInt2SeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( netSpk2SeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( netInh2SeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( netInt2SeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( netSpk2SeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), parentName );
 
         String layer = "0";
-        Framework.SetDataReference( netInh1SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_INHIBITION_ + layer );
-        Framework.SetDataReference( netInt1SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_INTEGRATED_ + layer );
-        Framework.SetDataReference( netSpk1SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_SPIKES_ + layer );
+        DataRefUtil.SetDataReference( netInh1SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_INHIBITION_ + layer );
+        DataRefUtil.SetDataReference( netInt1SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_INTEGRATED_ + layer );
+        DataRefUtil.SetDataReference( netSpk1SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_SPIKES_ + layer );
 
         layer = "1";
-        Framework.SetDataReference( netInh2SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_INHIBITION_ + layer );
-        Framework.SetDataReference( netInt2SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_INTEGRATED_ + layer );
-        Framework.SetDataReference( netSpk2SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_SPIKES_ + layer );
+        DataRefUtil.SetDataReference( netInh2SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_INHIBITION_ + layer );
+        DataRefUtil.SetDataReference( netInt2SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_INTEGRATED_ + layer );
+        DataRefUtil.SetDataReference( netSpk2SeriesName, VectorSeriesEntity.INPUT, spikingConvolutionalName, GreedySpikingConvolutionalNetworkEntity.DATA_LAYER_CONV_SPIKES_ + layer );
 
         period = 300;
         accumulatePeriod = 1;
-        VectorSeriesEntityConfig.Set( netInh1SeriesName, accumulatePeriod, period, ModelData.ENCODING_SPARSE_REAL );
-        VectorSeriesEntityConfig.Set( netInt1SeriesName, accumulatePeriod, period, ModelData.ENCODING_SPARSE_REAL );
-        VectorSeriesEntityConfig.Set( netSpk1SeriesName, accumulatePeriod, period, ModelData.ENCODING_SPARSE_REAL );
+        VectorSeriesEntityConfig.Set( netInh1SeriesName, accumulatePeriod, period, DataJsonSerializer.ENCODING_SPARSE_REAL );
+        VectorSeriesEntityConfig.Set( netInt1SeriesName, accumulatePeriod, period, DataJsonSerializer.ENCODING_SPARSE_REAL );
+        VectorSeriesEntityConfig.Set( netSpk1SeriesName, accumulatePeriod, period, DataJsonSerializer.ENCODING_SPARSE_REAL );
 
-        VectorSeriesEntityConfig.Set( netInh2SeriesName, accumulatePeriod, period, ModelData.ENCODING_SPARSE_REAL );
-        VectorSeriesEntityConfig.Set( netInt2SeriesName, accumulatePeriod, period, ModelData.ENCODING_SPARSE_REAL );
-        VectorSeriesEntityConfig.Set( netSpk2SeriesName, accumulatePeriod, period, ModelData.ENCODING_SPARSE_REAL );
+        VectorSeriesEntityConfig.Set( netInh2SeriesName, accumulatePeriod, period, DataJsonSerializer.ENCODING_SPARSE_REAL );
+        VectorSeriesEntityConfig.Set( netInt2SeriesName, accumulatePeriod, period, DataJsonSerializer.ENCODING_SPARSE_REAL );
+        VectorSeriesEntityConfig.Set( netSpk2SeriesName, accumulatePeriod, period, DataJsonSerializer.ENCODING_SPARSE_REAL );
     }
 
     protected static void SetImageLabelEntityConfig( String entityName, String trainingPath, String testingPath, int trainingEpochs, int testingEpochs, int repeats, String trainingEntities, String testingEntities ) {
@@ -325,7 +328,7 @@ public class GreedySpikingConvolutionalDemo extends CreateEntityMain {
 
         entityConfig.imageRepeats = repeats;
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
     protected static void SetSpikeEncoderEntityConfig( String entityName, float spikeDensity, String clearFlagEntityName, String clearFlagConfigPath ) {
@@ -337,7 +340,7 @@ public class GreedySpikingConvolutionalDemo extends CreateEntityMain {
         entityConfig.clearFlagEntityName = clearFlagEntityName;
         entityConfig.clearFlagConfigPath = clearFlagConfigPath;
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
     protected static void SetSpikingConvolutionalEntityConfig(
@@ -419,7 +422,7 @@ public class GreedySpikingConvolutionalDemo extends CreateEntityMain {
             id = ld;
         }
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
     // Input 1: 28 x 28 (x2)

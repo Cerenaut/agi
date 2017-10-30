@@ -50,7 +50,7 @@ public class NodeMemoryPersistence implements Persistence {
     }
 
     // Nodes
-    public Collection< ModelNode > fetchNodes() {
+    public Collection< ModelNode > getNodes() {
         return _nodeMap.values();
     }
 
@@ -58,7 +58,7 @@ public class NodeMemoryPersistence implements Persistence {
         _nodeMap.put( e._name, e );
     }
 
-    public ModelNode fetchNode( String nodeName ) {
+    public ModelNode getNode( String nodeName ) {
         return _nodeMap.get( nodeName );
     }
 
@@ -91,7 +91,7 @@ public class NodeMemoryPersistence implements Persistence {
         _entityMap.put( e.name, e );
     }
 
-    public ModelEntity fetchEntity( String name ) {
+    public ModelEntity getEntity( String name ) {
         return _entityMap.get( name );
     }
 
@@ -110,7 +110,12 @@ public class NodeMemoryPersistence implements Persistence {
         for( String key : _dataMap.keySet() ) {
             if( key.indexOf( filter ) >= 0 ) {
                 ModelData md = _dataMap.get( key );
-                ModelData md2 = new ModelData( md.name, md.refKeys, md.sizes, null ); // sans actual data
+                //ModelData md2 = new ModelData( md.name, md.refKeys, md.sizes, null ); // sans actual data
+                ModelData md2 = new ModelData();
+                md2.name = md.name;
+                md2.refKeys = md.refKeys;
+                md2.encoding = md.encoding;
+                md2.sizes = md.sizes;
                 al.add( md2 );
             }
         }
@@ -118,13 +123,13 @@ public class NodeMemoryPersistence implements Persistence {
         return al;
     }
 
-    public Collection< String > getData() {
+    public Collection< String > getDataKeys() {
         ArrayList< String > names = new ArrayList< String >();
         names.addAll( _dataMap.keySet() );
         return names;
     }
 
-    public ModelData fetchData( String key ) {
+    public ModelData getData( String key ) {
         return _dataMap.get( key );
     }
 

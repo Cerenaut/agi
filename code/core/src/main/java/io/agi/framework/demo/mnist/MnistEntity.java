@@ -29,6 +29,7 @@ import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
 import io.agi.framework.entities.ImageSensorEntity;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
@@ -174,7 +175,7 @@ public class MnistEntity extends Entity {
 
         // set learning status of entities
         try {
-            Framework.SetConfig( config.learningEntityName, config.learningConfigPath, String.valueOf( training ) );
+            PersistenceUtil.SetConfig( config.learningEntityName, config.learningConfigPath, String.valueOf( training ) );
             _logger.info( "Setting learning flag entity: " + config.learningEntityName + " config path: " + config.learningConfigPath + " training? " + training );
         }
         catch( Exception e ) {

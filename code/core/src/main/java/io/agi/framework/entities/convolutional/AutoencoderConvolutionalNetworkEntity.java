@@ -78,14 +78,11 @@ public class AutoencoderConvolutionalNetworkEntity extends Entity {
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
 
         attributes.add( DATA_OUTPUT );
-        flags.putFlag( DATA_OUTPUT, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( DATA_OUTPUT, DataFlags.FLAG_SPARSE_BINARY );
 
         attributes.add( DATA_INVERSE );
-        flags.putFlag( DATA_INVERSE, DataFlags.FLAG_NODE_CACHE );
 
         attributes.add( DATA_INVERSE_SELECTED );
-        flags.putFlag( DATA_INVERSE_SELECTED, DataFlags.FLAG_NODE_CACHE );
 
         AutoencoderConvolutionalNetworkConfig networkConfig = createNetworkConfig();
 
@@ -132,6 +129,7 @@ public class AutoencoderConvolutionalNetworkEntity extends Entity {
                 config.batchSize,
                 config.layerSparsity,
                 config.layerSparsityLifetime,
+                config.layerSparsityOutput,
                 config.nbrLayers,
                 config.layerInputPadding,
                 config.layerInputStride,

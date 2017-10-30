@@ -26,6 +26,7 @@ import io.agi.core.data.FloatArray;
 import io.agi.core.math.Statistics;
 import io.agi.core.util.FileUtil;
 import io.agi.framework.persistence.models.ModelData;
+import io.agi.framework.references.DataRef;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -85,12 +86,16 @@ public class ClassificationAnalysis {
                 if( modelData.name.equals( dataNameTruth ) ) {
                     System.out.println( "Found data: " + modelData.name );
 
-                    truth = modelData.getData();
+                    DataRef dataRef = modelData.deserialize();
+                    truth = dataRef._data;
+                    //truth = modelData.deserialize();
                 }
                 else if( modelData.name.equals( dataNamePredicted ) ) {
                     System.out.println( "Found data: " + modelData.name );
 
-                    predicted = modelData.getData();
+                    DataRef dataRef = modelData.deserialize();
+                    predicted = dataRef._data;
+                    //predicted = modelData.deserialize();
                 }
                 else {
                     System.out.println( "Skipping data: " + modelData.name );

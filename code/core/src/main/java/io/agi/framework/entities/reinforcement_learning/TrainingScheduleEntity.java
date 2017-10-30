@@ -26,6 +26,7 @@ import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
@@ -116,7 +117,7 @@ System.err.println( "Epoch: " + epoch );
     protected float getReward() {
         TrainingScheduleEntityConfig config = ( TrainingScheduleEntityConfig ) _config;
 
-        String stringValue = Framework.GetConfig( config.rewardEntityName, config.rewardConfigPath );
+        String stringValue = PersistenceUtil.GetConfig( config.rewardEntityName, config.rewardConfigPath );
         Float rewardValue = Float.valueOf( stringValue );
 
         // default missing values to 0
@@ -131,7 +132,7 @@ System.err.println( "Epoch: " + epoch );
         TrainingScheduleEntityConfig config = ( TrainingScheduleEntityConfig ) _config;
 
         // get the current epoch of the test problem
-        String stringValue = Framework.GetConfig( config.epochEntityName, config.epochConfigPath );
+        String stringValue = PersistenceUtil.GetConfig( config.epochEntityName, config.epochConfigPath );
         Integer epoch = Integer.valueOf( stringValue );
 
         // default missing values to 0
@@ -159,10 +160,10 @@ System.err.println( "Epoch: " + epoch );
         }
 
         for( String entityName : entityNamesTraining ) {
-            Framework.SetConfig( entityName, "learn", String.valueOf( doLearnTraining ) );
+            PersistenceUtil.SetConfig( entityName, "learn", String.valueOf( doLearnTraining ) );
         }
         for( String entityName : entityNamesTesting ) {
-            Framework.SetConfig( entityName, "learn", String.valueOf( doLearnTesting ) );
+            PersistenceUtil.SetConfig( entityName, "learn", String.valueOf( doLearnTesting ) );
         }
     }
 }

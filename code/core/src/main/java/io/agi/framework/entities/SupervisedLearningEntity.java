@@ -27,6 +27,7 @@ import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -127,11 +128,6 @@ public class SupervisedLearningEntity extends Entity {
      */
     protected void addFlags( Collection< String > attributes, DataFlags flags ) {
         SupervisedLearningEntityConfig config = ( SupervisedLearningEntityConfig ) _config;
-
-        if( config.accumulateSamples ) {
-            flags.putFlag( FEATURES_BY_TIME, DataFlags.FLAG_NODE_CACHE );
-            flags.putFlag( LABELS_BY_TIME, DataFlags.FLAG_NODE_CACHE );
-        }
     }
 
     @Override
@@ -310,7 +306,7 @@ public class SupervisedLearningEntity extends Entity {
             && ( config.labelEntityName.length() > 0 )
             && ( config.labelConfigPath != null )
             && ( config.labelConfigPath.length() > 0 ) ) {
-            String stringLabelValue = Framework.GetConfig( config.labelEntityName, config.labelConfigPath );
+            String stringLabelValue = PersistenceUtil.GetConfig( config.labelEntityName, config.labelConfigPath );
             Integer label = Integer.valueOf( stringLabelValue );
 
             // Now sanitize

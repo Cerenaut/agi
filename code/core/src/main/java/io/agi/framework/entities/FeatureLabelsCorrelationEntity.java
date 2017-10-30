@@ -256,7 +256,7 @@ public class FeatureLabelsCorrelationEntity extends SupervisedLearningEntity {
 
         FeatureLabelsCorrelationEntityConfig config = ( FeatureLabelsCorrelationEntityConfig ) _config;
 
-        Data featureData = getData( FEATURES );
+        Data featureData = deserialize( FEATURES );
         if( featureData == null ) {
             return;
         }
@@ -292,7 +292,7 @@ public class FeatureLabelsCorrelationEntity extends SupervisedLearningEntity {
                 }
             }
 
-            setData( FEATURE_CLASS_COUNT, featureClassCount );
+            serialize( FEATURE_CLASS_COUNT, featureClassCount );
         }*/
 
         // predict:
@@ -312,7 +312,7 @@ public class FeatureLabelsCorrelationEntity extends SupervisedLearningEntity {
         }
 
         classPrediction.scaleSum( 1.f );
-        setData( CLASS_PREDICTION, classPrediction );
+        serialize( CLASS_PREDICTION, classPrediction );
 
         // calculate the result
         int maxAt = classPrediction.maxAt().offset();

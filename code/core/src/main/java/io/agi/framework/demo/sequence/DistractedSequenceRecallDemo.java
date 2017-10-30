@@ -23,10 +23,13 @@ import io.agi.core.orm.AbstractPair;
 import io.agi.core.util.PropertiesUtil;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
+import io.agi.framework.Naming;
 import io.agi.framework.Node;
 import io.agi.framework.entities.*;
 import io.agi.framework.entities.reinforcement_learning.*;
 import io.agi.framework.factories.CommonEntityFactory;
+import io.agi.framework.persistence.PersistenceUtil;
+import io.agi.framework.references.DataRefUtil;
 
 import java.util.ArrayList;
 import java.util.Properties;
@@ -55,7 +58,7 @@ public class DistractedSequenceRecallDemo {
             String arg = args[ i ];
             if( arg.equalsIgnoreCase( "prefix" ) ) {
                 String prefix = args[ i + 1 ];
-                Framework.SetEntityNamePrefix( prefix );
+                Naming.SetEntityNamePrefix( prefix );
 //                Framework.SetEntityNamePrefixDateTime();
             }
         }
@@ -100,40 +103,40 @@ public class DistractedSequenceRecallDemo {
     public static void createEntities( Node n ) {
 
         // Define some entities
-        String experimentName = Framework.GetEntityName( "experiment" );
-        String trainingScheduleName = Framework.GetEntityName( "training-schedule" );
-        String stateClassifierName  = Framework.GetEntityName( "state-classifier" );
-        String problemName = Framework.GetEntityName( "problem" );
-        String qLearningName = Framework.GetEntityName( "q-learning" );
-        String policyName = Framework.GetEntityName( "policy" );
-        String copyAction0Name = Framework.GetEntityName( "copy-action-0" );
-        String copyAction1Name = Framework.GetEntityName( "copy-action-1" );
-        String copyAction2Name = Framework.GetEntityName( "copy-action-2" );
-        String copyAction3Name = Framework.GetEntityName( "copy-action-3" );
-        String copyAction4Name = Framework.GetEntityName( "copy-action-4" );
-        String memory1Name = Framework.GetEntityName( "memory-1" );
-        String memory2Name = Framework.GetEntityName( "memory-2" );
-        String valueSeriesRewardTrainingName = Framework.GetEntityName( "vs-reward-training" );
-        String valueSeriesRewardTestingName = Framework.GetEntityName( "vs-reward-testing" );
+        String experimentName = PersistenceUtil.GetEntityName( "experiment" );
+        String trainingScheduleName = PersistenceUtil.GetEntityName( "training-schedule" );
+        String stateClassifierName  = PersistenceUtil.GetEntityName( "state-classifier" );
+        String problemName = PersistenceUtil.GetEntityName( "problem" );
+        String qLearningName = PersistenceUtil.GetEntityName( "q-learning" );
+        String policyName = PersistenceUtil.GetEntityName( "policy" );
+        String copyAction0Name = PersistenceUtil.GetEntityName( "copy-action-0" );
+        String copyAction1Name = PersistenceUtil.GetEntityName( "copy-action-1" );
+        String copyAction2Name = PersistenceUtil.GetEntityName( "copy-action-2" );
+        String copyAction3Name = PersistenceUtil.GetEntityName( "copy-action-3" );
+        String copyAction4Name = PersistenceUtil.GetEntityName( "copy-action-4" );
+        String memory1Name = PersistenceUtil.GetEntityName( "memory-1" );
+        String memory2Name = PersistenceUtil.GetEntityName( "memory-2" );
+        String valueSeriesRewardTrainingName = PersistenceUtil.GetEntityName( "vs-reward-training" );
+        String valueSeriesRewardTestingName = PersistenceUtil.GetEntityName( "vs-reward-testing" );
 
         String parentName = null;
-        parentName = Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), parentName ); // experiment is the root entity
-        parentName = Framework.CreateEntity( trainingScheduleName, TrainingScheduleEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( problemName, DistractedSequenceRecallEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( stateClassifierName, GrowingNeuralGasEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( qLearningName, QLearningEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( policyName, EpsilonGreedyEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( valueSeriesRewardTrainingName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
-        parentName = Framework.CreateEntity( valueSeriesRewardTestingName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
+        parentName = PersistenceUtil.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), parentName ); // experiment is the root entity
+        parentName = PersistenceUtil.CreateEntity( trainingScheduleName, TrainingScheduleEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( problemName, DistractedSequenceRecallEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( stateClassifierName, GrowingNeuralGasEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( qLearningName, QLearningEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( policyName, EpsilonGreedyEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( valueSeriesRewardTrainingName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
+        parentName = PersistenceUtil.CreateEntity( valueSeriesRewardTestingName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), parentName ); // 2nd, class region updates after first to get its feedback
 
-        parentName = Framework.CreateEntity( copyAction0Name, VectorCopyRangeEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( copyAction1Name, VectorCopyRangeEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( copyAction2Name, VectorCopyRangeEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( copyAction3Name, VectorCopyRangeEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( copyAction4Name, VectorCopyRangeEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( copyAction0Name, VectorCopyRangeEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( copyAction1Name, VectorCopyRangeEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( copyAction2Name, VectorCopyRangeEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( copyAction3Name, VectorCopyRangeEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( copyAction4Name, VectorCopyRangeEntity.ENTITY_TYPE, n.getName(), parentName );
 
-        parentName = Framework.CreateEntity( memory1Name, GatedRecurrentMemoryEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = Framework.CreateEntity( memory2Name, GatedRecurrentMemoryEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( memory1Name, GatedRecurrentMemoryEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( memory2Name, GatedRecurrentMemoryEntity.ENTITY_TYPE, n.getName(), parentName );
 
         // Connect the entities' data
         // state + memory are input to state classifier
@@ -141,33 +144,33 @@ public class DistractedSequenceRecallDemo {
         classifierInputDatas.add( new AbstractPair<>( problemName, DistractedSequenceRecallEntity.OUTPUT_STATES ) );
         classifierInputDatas.add( new AbstractPair<>( memory1Name, GatedRecurrentMemoryEntity.OUTPUT_CONTENT ) );
         classifierInputDatas.add( new AbstractPair<>( memory2Name, GatedRecurrentMemoryEntity.OUTPUT_CONTENT ) );
-        Framework.SetDataReferences( stateClassifierName, GrowingNeuralGasEntity.INPUT, classifierInputDatas );
+        DataRefUtil.SetDataReferences( stateClassifierName, GrowingNeuralGasEntity.INPUT, classifierInputDatas );
 
-        Framework.SetDataReference( qLearningName, QLearningEntity.INPUT_REWARD_NEW, problemName, DistractedSequenceRecallEntity.OUTPUT_REWARD );
-        Framework.SetDataReference( qLearningName, QLearningEntity.INPUT_STATES_NEW, stateClassifierName, GrowingNeuralGasEntity.OUTPUT_ACTIVE );
-        Framework.SetDataReference( qLearningName, QLearningEntity.INPUT_ACTIONS_OLD, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS );
+        DataRefUtil.SetDataReference( qLearningName, QLearningEntity.INPUT_REWARD_NEW, problemName, DistractedSequenceRecallEntity.OUTPUT_REWARD );
+        DataRefUtil.SetDataReference( qLearningName, QLearningEntity.INPUT_STATES_NEW, stateClassifierName, GrowingNeuralGasEntity.OUTPUT_ACTIVE );
+        DataRefUtil.SetDataReference( qLearningName, QLearningEntity.INPUT_ACTIONS_OLD, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS );
 
-        Framework.SetDataReference( policyName, EpsilonGreedyEntity.INPUT_STATES_NEW, problemName, DistractedSequenceRecallEntity.OUTPUT_STATES );
-        Framework.SetDataReference( policyName, EpsilonGreedyEntity.INPUT_ACTIONS_QUALITY, qLearningName, QLearningEntity.OUTPUT_ACTIONS_QUALITY );
+        DataRefUtil.SetDataReference( policyName, EpsilonGreedyEntity.INPUT_STATES_NEW, problemName, DistractedSequenceRecallEntity.OUTPUT_STATES );
+        DataRefUtil.SetDataReference( policyName, EpsilonGreedyEntity.INPUT_ACTIONS_QUALITY, qLearningName, QLearningEntity.OUTPUT_ACTIONS_QUALITY );
 
         // unpack actions
-        Framework.SetDataReference( copyAction0Name, VectorCopyRangeEntity.INPUT, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS );
-        Framework.SetDataReference( copyAction1Name, VectorCopyRangeEntity.INPUT, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS );
-        Framework.SetDataReference( copyAction2Name, VectorCopyRangeEntity.INPUT, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS );
-        Framework.SetDataReference( copyAction3Name, VectorCopyRangeEntity.INPUT, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS );
-        Framework.SetDataReference( copyAction4Name, VectorCopyRangeEntity.INPUT, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS );
+        DataRefUtil.SetDataReference( copyAction0Name, VectorCopyRangeEntity.INPUT, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS );
+        DataRefUtil.SetDataReference( copyAction1Name, VectorCopyRangeEntity.INPUT, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS );
+        DataRefUtil.SetDataReference( copyAction2Name, VectorCopyRangeEntity.INPUT, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS );
+        DataRefUtil.SetDataReference( copyAction3Name, VectorCopyRangeEntity.INPUT, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS );
+        DataRefUtil.SetDataReference( copyAction4Name, VectorCopyRangeEntity.INPUT, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS );
 
         // connect actions to memory
-        Framework.SetDataReference( memory1Name, GatedRecurrentMemoryEntity.INPUT_CONTENT    , problemName, DistractedSequenceRecallEntity.OUTPUT_STATES );
-        Framework.SetDataReference( memory1Name, GatedRecurrentMemoryEntity.INPUT_GATES_WRITE, copyAction1Name, VectorCopyRangeEntity.OUTPUT );
-        Framework.SetDataReference( memory1Name, GatedRecurrentMemoryEntity.INPUT_GATES_CLEAR, copyAction2Name, VectorCopyRangeEntity.OUTPUT );
+        DataRefUtil.SetDataReference( memory1Name, GatedRecurrentMemoryEntity.INPUT_CONTENT    , problemName, DistractedSequenceRecallEntity.OUTPUT_STATES );
+        DataRefUtil.SetDataReference( memory1Name, GatedRecurrentMemoryEntity.INPUT_GATES_WRITE, copyAction1Name, VectorCopyRangeEntity.OUTPUT );
+        DataRefUtil.SetDataReference( memory1Name, GatedRecurrentMemoryEntity.INPUT_GATES_CLEAR, copyAction2Name, VectorCopyRangeEntity.OUTPUT );
 
-        Framework.SetDataReference( memory2Name, GatedRecurrentMemoryEntity.INPUT_CONTENT    , problemName, DistractedSequenceRecallEntity.OUTPUT_STATES );
-        Framework.SetDataReference( memory2Name, GatedRecurrentMemoryEntity.INPUT_GATES_WRITE, copyAction3Name, VectorCopyRangeEntity.OUTPUT );
-        Framework.SetDataReference( memory2Name, GatedRecurrentMemoryEntity.INPUT_GATES_CLEAR, copyAction4Name, VectorCopyRangeEntity.OUTPUT );
+        DataRefUtil.SetDataReference( memory2Name, GatedRecurrentMemoryEntity.INPUT_CONTENT    , problemName, DistractedSequenceRecallEntity.OUTPUT_STATES );
+        DataRefUtil.SetDataReference( memory2Name, GatedRecurrentMemoryEntity.INPUT_GATES_WRITE, copyAction3Name, VectorCopyRangeEntity.OUTPUT );
+        DataRefUtil.SetDataReference( memory2Name, GatedRecurrentMemoryEntity.INPUT_GATES_CLEAR, copyAction4Name, VectorCopyRangeEntity.OUTPUT );
 
-//        Framework.SetDataReference( problemName, DistractedSequenceRecallEntity.INPUT_ACTIONS, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS_NEW );
-        Framework.SetDataReference( problemName, DistractedSequenceRecallEntity.INPUT_ACTIONS, copyAction0Name, VectorCopyRangeEntity.OUTPUT );
+//        DataRefUtil.SetDataReference( problemName, DistractedSequenceRecallEntity.INPUT_ACTIONS, policyName, EpsilonGreedyEntity.OUTPUT_ACTIONS_NEW );
+        DataRefUtil.SetDataReference( problemName, DistractedSequenceRecallEntity.INPUT_ACTIONS, copyAction0Name, VectorCopyRangeEntity.OUTPUT );
 
         // Configs
         int terminationAge = -1;
@@ -322,7 +325,7 @@ public class DistractedSequenceRecallDemo {
         entityConfig.growthInterval = growthInterval;
         entityConfig.noiseMagnitude = 0;
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
     protected static void SetVectorCopyRangeEntityConfig( String entityName, int offsetInput, int offsetOutput, int range ) {
@@ -333,7 +336,7 @@ public class DistractedSequenceRecallDemo {
         entityConfig.offsetOutput = offsetOutput;
         entityConfig.range = range;
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
     protected static void SetExperimentEntityConfig( String entityName, int terminationAge, String terminationEntityName, String terminationEntityConfigPath ) {
@@ -347,7 +350,7 @@ public class DistractedSequenceRecallDemo {
             entityConfig.terminationAge = terminationAge;
         }
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
     protected static void SetPolicyEntityConfig( String entityName, float epsilon, ArrayList< Integer > selectionSetSizes ) {//}, boolean selectNone ) {//, int simultaneousActions ) {
@@ -359,7 +362,7 @@ public class DistractedSequenceRecallDemo {
 //        entityConfig.simultaneousActions = simultaneousActions;
 //        entityConfig.setSelectionSetSizes( selectionSetSizes );
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
     protected static void SetQLearningEntityConfig( String entityName, float learningRate, float discountRate, int states, int actions ) {
@@ -371,7 +374,7 @@ public class DistractedSequenceRecallDemo {
         entityConfig.states = states;
         entityConfig.actions = actions;
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
     protected static void SetGatedRecurrentMemoryEntityConfig( String entityName ) {
@@ -379,7 +382,7 @@ public class DistractedSequenceRecallDemo {
 
         entityConfig.cache = true;
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
     protected static void SetDistractedSequenceRecallEntityConfig( String entityName, int sequenceLength, int distractors, int targets, int prompts ) {
@@ -391,7 +394,7 @@ public class DistractedSequenceRecallDemo {
         entityConfig.targets = targets;
         entityConfig.prompts = prompts;
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
     protected static void SetTrainingScheduleEntityConfig(
@@ -418,7 +421,7 @@ public class DistractedSequenceRecallDemo {
         entityConfig.trainingEntities = trainingEntities;
         entityConfig.testingEntities = testingEntities;
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
 }

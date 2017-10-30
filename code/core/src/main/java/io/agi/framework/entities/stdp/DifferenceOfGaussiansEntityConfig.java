@@ -21,6 +21,7 @@ package io.agi.framework.entities.stdp;
 
 import io.agi.framework.EntityConfig;
 import io.agi.framework.Framework;
+import io.agi.framework.persistence.PersistenceUtil;
 
 /**
  * Created by dave on 6/05/17.
@@ -54,7 +55,7 @@ public class DifferenceOfGaussiansEntityConfig extends EntityConfig {
         entityConfig.scaleMin = scaleMin;
         entityConfig.scaleMax = scaleMax;
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
 

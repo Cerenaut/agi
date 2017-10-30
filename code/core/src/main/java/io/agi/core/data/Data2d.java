@@ -29,7 +29,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.awt.*;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -47,7 +47,72 @@ public class Data2d {
     protected static final Logger _logger = LogManager.getLogger();
 
     /**
+     * Memory efficient read of a CSV file assumed to contain a 2-d matrix of values.
+     *
+     * @param filePathName
+     * @return
+     */
+    public static Data readCsvFile( String filePathName ) {
+        try {
+            FileReader fileReader = new FileReader( filePathName );
+            BufferedReader br = new BufferedReader( fileReader );
+
+            Integer cols = null;
+            String line = null;
+            int rows = 0;
+
+            // since values are smaller after float conversion, store as floats
+            // Avoid memcopies
+            ArrayList< float[] > allRowValues = new ArrayList< float[] >();
+
+            while( ( line = br.readLine() ) != null ) {
+
+                String[] values = line.trim().split( "," );
+
+                // we take the number of cols from the first row.
+                if( cols == null ) {
+                    cols = values.length;
+                }
+
+                int rowCols = values.length;
+                if( values.length != cols ) {
+                    _logger.warn( "Inconsistent number of columns in file: " + filePathName );
+
+                }
+
+                float[] rowValues = new float[ cols ];
+
+                for( int i = 0; i < rowCols; ++i ) {
+                    String s = values[ i ];
+                    rowValues[ i ] = Float.valueOf( s );
+                }
+
+                allRowValues.add( rowValues );
+
+                ++rows;
+            }
+
+            Data d = new Data( cols, rows );
+
+            for( int row = 0; row < rows; ++row ) {
+                float[] rowValues = allRowValues.get( row );
+                for( int col = 0; col < rowValues.length; ++col ) {
+                    int offset = Data2d.getOffset( cols, col, row );
+                    d._values[ offset ] = rowValues[ col ];
+                }
+            }
+
+            return d;
+        }
+        catch( Exception e ) {
+            _logger.error( "Couldn't read from file: " + filePathName );
+            return null;
+        }
+    }
+
+    /**
      * Construct and return a 2D Data object by reading in all columns of a csv file/
+     *
      * @param filepath the full name of the file including path.
      * @return the 2D Data object
      */

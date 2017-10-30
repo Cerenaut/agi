@@ -66,23 +66,18 @@ public class DistractedSequenceRecallEntity extends Entity {
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
 
         attributes.add( OUTPUT_SEQUENCE_STATES );
-        flags.putFlag( OUTPUT_SEQUENCE_STATES, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( OUTPUT_SEQUENCE_STATES, DataFlags.FLAG_SPARSE_BINARY );
 
         attributes.add( OUTPUT_SEQUENCE_ACTIONS );
-        flags.putFlag( OUTPUT_SEQUENCE_ACTIONS, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( OUTPUT_SEQUENCE_ACTIONS, DataFlags.FLAG_SPARSE_BINARY );
 
         attributes.add( OUTPUT_STATES );
-        flags.putFlag( OUTPUT_STATES, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( OUTPUT_STATES, DataFlags.FLAG_SPARSE_BINARY );
 
         attributes.add( OUTPUT_ACTIONS_IDEAL );
-        flags.putFlag( OUTPUT_ACTIONS_IDEAL, DataFlags.FLAG_NODE_CACHE );
         flags.putFlag( OUTPUT_ACTIONS_IDEAL, DataFlags.FLAG_SPARSE_BINARY );
 
         attributes.add( OUTPUT_REWARD );
-        flags.putFlag( OUTPUT_REWARD, DataFlags.FLAG_NODE_CACHE );
     }
 
     @Override
@@ -153,7 +148,7 @@ public class DistractedSequenceRecallEntity extends Entity {
         setData( OUTPUT_SEQUENCE_STATES, p._sequenceState );
         setData( OUTPUT_SEQUENCE_ACTIONS, p._sequenceActions );
         setData( OUTPUT_STATES, p._state );
-        //setData( OUTPUT_STATES_OLD, p._actions );
+        //serialize( OUTPUT_STATES_OLD, p._actions );
         setData( OUTPUT_ACTIONS_IDEAL, p._idealActions );
         setData( OUTPUT_REWARD, rewardData );
     }

@@ -84,7 +84,7 @@ public class JdbcPersistence implements Persistence {
     }
 
     // Nodes
-    public Collection< ModelNode > fetchNodes() {
+    public Collection< ModelNode > getNodes() {
         String sql = "SELECT name, host, port FROM nodes";
         ResultSetMap rsm = new ResultSetMap();
         rsm._fields.add( "name" );
@@ -110,7 +110,7 @@ public class JdbcPersistence implements Persistence {
         execute( sql2 );
     }
 
-    public ModelNode fetchNode( String nodeName ) {
+    public ModelNode getNode( String nodeName ) {
         String sql = "SELECT name, host, port FROM nodes where name = '" + nodeName + "'";
         ResultSetMap rsm = new ResultSetMap();
         rsm._fields.add( "host" );
@@ -179,7 +179,7 @@ public class JdbcPersistence implements Persistence {
         execute( sql2 );
     }
 
-    public ModelEntity fetchEntity( String name ) {
+    public ModelEntity getEntity( String name ) {
         String sql = "SELECT type, node, parent, config FROM entities where name = '" + name + "'";
         ResultSetMap rsm = new ResultSetMap();
         rsm._fields.add( "type" );
@@ -231,14 +231,19 @@ public class JdbcPersistence implements Persistence {
             String name    = rsm.getRowValue( i, "name" );
             String refKeys = rsm.getRowValue( i, "ref_name" );
             String sizes   = rsm.getRowValue( i, "sizes" );
-            ModelData md2 = new ModelData( name, refKeys, sizes, null ); // sans actual data
+//            ModelData md2 = new ModelData( name, refKeys, sizes, null ); // sans actual data
+            ModelData md2 = new ModelData();
+            md2.name = name;
+            md2.refKeys = refKeys;
+            md2.encoding = null;
+            md2.sizes = sizes;
             al.add( md2 );
         }
 
         return al;
     }
 
-    public Collection< String > getData() {
+    public Collection< String > getDataKeys() {
         String sql = "SELECT name FROM data";
         ResultSetMap rsm = new ResultSetMap();
         rsm._fields.add( "name" );
@@ -254,7 +259,7 @@ public class JdbcPersistence implements Persistence {
         return names;
     }
 
-    public ModelData fetchData( String key ) {
+    public ModelData getData( String key ) {
         String sql = "SELECT ref_name, sizes, elements FROM data where name = '" + key + "'";
         ResultSetMap rsm = new ResultSetMap();
         rsm._fields.add( "ref_name" );
@@ -274,7 +279,13 @@ public class JdbcPersistence implements Persistence {
         }
         String sizes = rsm.getRowValue( 0, "sizes" );
         String elements = rsm.getRowValue( 0, "elements" );
-        ModelData modelData = new ModelData( key, refKey, sizes, elements );
+        //ModelData modelData = new ModelData( key, refKey, sizes, elements );
+        ModelData modelData = new ModelData();
+        modelData.name = key;
+        modelData.refKeys = refKey;
+        modelData.encoding = null;
+        modelData.sizes = sizes;
+        modelData.elements = elements;
         return modelData;
     }
 

@@ -191,11 +191,6 @@ public class Svm extends NamedObject implements Callback, SupervisedBatchTrainin
                 float classTruth = SupervisedUtil.getClassTruth( classTruthVector, j );
                 double xi = SupervisedUtil.getFeatureValue( featuresMatrix, n, j, i );
 
-                // sparse representation
-                if ( xi == 0.f ) {
-                    continue;
-                }
-
                 prob.x[ j ][ i ] = new svm_node();
                 prob.x[ j ][ i ].index = i + 1;
                 prob.x[ j ][ i ].value = xi;

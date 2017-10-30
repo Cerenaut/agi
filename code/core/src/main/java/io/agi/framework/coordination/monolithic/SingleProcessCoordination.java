@@ -21,8 +21,11 @@ package io.agi.framework.coordination.monolithic;
 
 import io.agi.framework.Node;
 import io.agi.framework.coordination.Coordination;
+import io.agi.framework.persistence.models.ModelData;
 
 /**
+ * Runs everything locally.
+ *
  * Created by dave on 16/02/16.
  */
 public class SingleProcessCoordination implements Coordination {
@@ -31,6 +34,10 @@ public class SingleProcessCoordination implements Coordination {
 
     public SingleProcessCoordination() {
 
+    }
+
+    public Node getNode() {
+        return _n;
     }
 
     public void setNode( Node n ) {
@@ -44,4 +51,27 @@ public class SingleProcessCoordination implements Coordination {
     public void onUpdated( String entityName ) {
         _n.onUpdated( entityName );
     }
+
+    /**
+     * Notification that a Data has been updated in the local Node, which
+     * invalidates any remote copies.
+     *
+     * @param dataName
+     * @param nodeName
+     */
+    public void onSetData( String dataName, String nodeName ) {
+        // Nothing to broadcast to.
+    }
+
+    /**
+     * Fetches a Data from the Node that has the most recent copy.
+     *
+     * @param dataName
+     * @param nodeName
+     * @return
+     */
+    public ModelData getData( String dataName, String nodeName ) {
+        return null; // Only 1 Node in this case.
+    }
+
 }

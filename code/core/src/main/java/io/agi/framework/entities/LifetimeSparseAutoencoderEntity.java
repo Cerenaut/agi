@@ -98,27 +98,6 @@ public class LifetimeSparseAutoencoderEntity extends Entity {
         attributes.add( BATCH_HIDDEN_OUTPUT );
         attributes.add( BATCH_HIDDEN_WEIGHTED_SUM );
         attributes.add( BATCH_HIDDEN_ERRORS );
-
-        flags.putFlag( WEIGHTS, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BIASES_1, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BIASES_2, DataFlags.FLAG_NODE_CACHE );
-
-        flags.putFlag( WEIGHTS_VELOCITY, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BIASES_1_VELOCITY, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BIASES_2_VELOCITY, DataFlags.FLAG_NODE_CACHE );
-
-        flags.putFlag( ERRORS, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( SPIKES, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( WEIGHTED_SUM, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( OUTPUT_RECONSTRUCTION, DataFlags.FLAG_NODE_CACHE );
-
-        flags.putFlag( BATCH_OUTPUT_OUTPUT, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_OUTPUT_INPUT, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_OUTPUT_INPUT_LIFETIME, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_OUTPUT_ERRORS, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_HIDDEN_OUTPUT, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_HIDDEN_WEIGHTED_SUM, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_HIDDEN_ERRORS, DataFlags.FLAG_NODE_CACHE );
     }
 
     @Override
@@ -166,6 +145,7 @@ public class LifetimeSparseAutoencoderEntity extends Entity {
                 config.momentum,
                 config.sparsity,
                 config.sparsityLifetime,
+                config.sparsityOutput,
                 config.weightsStdDev,
                 config.batchCount, config.batchSize );
 

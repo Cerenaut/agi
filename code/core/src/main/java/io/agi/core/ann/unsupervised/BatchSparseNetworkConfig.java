@@ -62,11 +62,12 @@ public class BatchSparseNetworkConfig extends LifetimeSparseAutoencoderConfig {
             float momentum,
             int sparsity,
             int sparsityLifetime,
+            int sparsityOutput,
             float weightsStdDev,
             int batchCount,
             int batchSize ){
 
-        super.setup( om, name, r, inputs, w, h, learningRate, momentum, sparsity, sparsityLifetime, weightsStdDev, batchCount, batchSize );
+        super.setup( om, name, r, inputs, w, h, learningRate, momentum, sparsity, sparsityLifetime, sparsityOutput, weightsStdDev, batchCount, batchSize );
 
         setOutputs( outputs );
     }

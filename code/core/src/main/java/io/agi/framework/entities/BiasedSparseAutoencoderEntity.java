@@ -61,9 +61,6 @@ public class BiasedSparseAutoencoderEntity extends LifetimeSparseAutoencoderEnti
 
         attributes.add( BATCH_LEARNING_RATES );
         attributes.add( INPUT_OLD );
-
-        flags.putFlag( BATCH_LEARNING_RATES, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( INPUT_OLD, DataFlags.FLAG_NODE_CACHE );
     }
 
     @Override
@@ -110,6 +107,7 @@ public class BiasedSparseAutoencoderEntity extends LifetimeSparseAutoencoderEnti
                 config.momentum,
                 config.sparsity,
                 config.sparsityLifetime,
+                config.sparsityOutput,
                 config.weightsStdDev,
                 config.batchCount, config.batchSize );
 

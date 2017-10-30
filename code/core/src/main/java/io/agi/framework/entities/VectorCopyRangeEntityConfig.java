@@ -20,6 +20,7 @@
 package io.agi.framework.entities;
 
 import io.agi.framework.EntityConfig;
+import io.agi.framework.persistence.DataJsonSerializer;
 import io.agi.framework.persistence.models.ModelData;
 
 /**
@@ -31,6 +32,6 @@ public class VectorCopyRangeEntityConfig extends EntityConfig {
     public int offsetOutput = 0;
     public int range = 100;
 
-    public String encoding = ModelData.ENCODING_DENSE;
+    public String encoding = DataJsonSerializer.ENCODING_DENSE;
 
 }

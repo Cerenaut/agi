@@ -20,12 +20,10 @@
 package io.agi.framework.persistence;
 
 import io.agi.core.util.PropertiesUtil;
-import io.agi.framework.persistence.couchbase.CouchbasePersistence;
 import io.agi.framework.persistence.jdbc.JdbcPersistence;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.FileInputStream;
 import java.util.Properties;
 
 /**
@@ -47,11 +45,7 @@ public class PersistenceFactory {
 
         Persistence p = null;
 
-        if( type.equals( PERSISTENCE_TYPE_COUCHBASE ) ) {
-            logger.info( "Using Couchbase for persistence." );
-            p = CouchbasePersistence.Create( properties );
-        }
-        else if( type.equals( PERSISTENCE_TYPE_JDBC ) ) {
+        if( type.equals( PERSISTENCE_TYPE_JDBC ) ) {
             logger.info( "Using JDBC (SQL) for persistence." );
             p = JdbcPersistence.Create( properties );
         }

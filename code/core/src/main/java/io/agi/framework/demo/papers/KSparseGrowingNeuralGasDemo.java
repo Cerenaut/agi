@@ -26,6 +26,8 @@ import io.agi.framework.Node;
 import io.agi.framework.demo.CreateEntityMain;
 import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.entities.*;
+import io.agi.framework.persistence.PersistenceUtil;
+import io.agi.framework.references.DataRefUtil;
 
 import java.util.ArrayList;
 
@@ -63,61 +65,61 @@ public class KSparseGrowingNeuralGasDemo extends CreateEntityMain {
         int testingEpochs = 1;
 
         // Define some entities
-        String experimentName           = Framework.GetEntityName( "experiment" );
-        String imageLabelName           = Framework.GetEntityName( "image-class" );
-        String competitiveLearningName  = Framework.GetEntityName( "competitive-learning" );
-        String vectorSeriesName         = Framework.GetEntityName( "feature-series" );
-        String valueSeriesName          = Framework.GetEntityName( "label-series" );
+        String experimentName           = PersistenceUtil.GetEntityName( "experiment" );
+        String imageLabelName           = PersistenceUtil.GetEntityName( "image-class" );
+        String competitiveLearningName  = PersistenceUtil.GetEntityName( "competitive-learning" );
+        String vectorSeriesName         = PersistenceUtil.GetEntityName( "feature-series" );
+        String valueSeriesName          = PersistenceUtil.GetEntityName( "label-series" );
 
-        Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
-        Framework.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), experimentName );
-        Framework.CreateEntity( competitiveLearningName, KSparseGngEntity.ENTITY_TYPE, n.getName(), imageLabelName );
-        Framework.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), competitiveLearningName ); // 2nd, class region updates after first to get its feedback
-        Framework.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), vectorSeriesName ); // 2nd, class region updates after first to get its feedback
+        PersistenceUtil.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
+        PersistenceUtil.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), experimentName );
+        PersistenceUtil.CreateEntity( competitiveLearningName, KSparseGngEntity.ENTITY_TYPE, n.getName(), imageLabelName );
+        PersistenceUtil.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), competitiveLearningName ); // 2nd, class region updates after first to get its feedback
+        PersistenceUtil.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), vectorSeriesName ); // 2nd, class region updates after first to get its feedback
 
         // Connect the entities' data
         // a) Image to image region, and decode
-        Framework.SetDataReference( competitiveLearningName, GrowingNeuralGasEntity.INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
+        DataRefUtil.SetDataReference( competitiveLearningName, GrowingNeuralGasEntity.INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
 
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList<>();
         featureDatas.add( new AbstractPair<>( competitiveLearningName, GrowingNeuralGasEntity.OUTPUT_ACTIVE ) );
-        Framework.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
+        DataRefUtil.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
 
 
         // Experiment config
         if( !terminateByAge ) {
-            Framework.SetConfig( experimentName, "terminationEntityName", imageLabelName );
-            Framework.SetConfig( experimentName, "terminationConfigPath", "terminate" );
-            Framework.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
+            PersistenceUtil.SetConfig( experimentName, "terminationEntityName", imageLabelName );
+            PersistenceUtil.SetConfig( experimentName, "terminationConfigPath", "terminate" );
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
         }
         else {
-            Framework.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
         }
 
         // cache all data for speed, when enabled
-        Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( imageLabelName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( competitiveLearningName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( vectorSeriesName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( valueSeriesName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( imageLabelName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( competitiveLearningName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( vectorSeriesName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( valueSeriesName, "cache", String.valueOf( cacheAllData ) );
 
         // MNIST config
-        Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldX", "0" );
-        Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldY", "0" );
-        Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldW", "28" );
-        Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldH", "28" );
-        Framework.SetConfig( imageLabelName, "resolution.resolutionX", "28" );
-        Framework.SetConfig( imageLabelName, "resolution.resolutionY", "28" );
-        Framework.SetConfig( imageLabelName, "greyscale", "true" );
-        Framework.SetConfig( imageLabelName, "invert", "true" );
-        Framework.SetConfig( imageLabelName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
-        Framework.SetConfig( imageLabelName, "sourceFilesPrefix", "postproc" );
-        Framework.SetConfig( imageLabelName, "sourceFilesPathTraining", trainingPath );
-        Framework.SetConfig( imageLabelName, "sourceFilesPathTesting", testingPath );
-        Framework.SetConfig( imageLabelName, "trainingEpochs", String.valueOf( trainingEpochs ) );
-        Framework.SetConfig( imageLabelName, "testingEpochs", String.valueOf( testingEpochs ) );
-        Framework.SetConfig( imageLabelName, "trainingEntities", String.valueOf( competitiveLearningName ) );
-        Framework.SetConfig( imageLabelName, "testingEntities", vectorSeriesName + "," + valueSeriesName );
+        PersistenceUtil.SetConfig( imageLabelName, "receptiveField.receptiveFieldX", "0" );
+        PersistenceUtil.SetConfig( imageLabelName, "receptiveField.receptiveFieldY", "0" );
+        PersistenceUtil.SetConfig( imageLabelName, "receptiveField.receptiveFieldW", "28" );
+        PersistenceUtil.SetConfig( imageLabelName, "receptiveField.receptiveFieldH", "28" );
+        PersistenceUtil.SetConfig( imageLabelName, "resolution.resolutionX", "28" );
+        PersistenceUtil.SetConfig( imageLabelName, "resolution.resolutionY", "28" );
+        PersistenceUtil.SetConfig( imageLabelName, "greyscale", "true" );
+        PersistenceUtil.SetConfig( imageLabelName, "invert", "true" );
+        PersistenceUtil.SetConfig( imageLabelName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
+        PersistenceUtil.SetConfig( imageLabelName, "sourceFilesPrefix", "postproc" );
+        PersistenceUtil.SetConfig( imageLabelName, "sourceFilesPathTraining", trainingPath );
+        PersistenceUtil.SetConfig( imageLabelName, "sourceFilesPathTesting", testingPath );
+        PersistenceUtil.SetConfig( imageLabelName, "trainingEpochs", String.valueOf( trainingEpochs ) );
+        PersistenceUtil.SetConfig( imageLabelName, "testingEpochs", String.valueOf( testingEpochs ) );
+        PersistenceUtil.SetConfig( imageLabelName, "trainingEntities", String.valueOf( competitiveLearningName ) );
+        PersistenceUtil.SetConfig( imageLabelName, "testingEntities", vectorSeriesName + "," + valueSeriesName );
 
         float sparsity = 0.02442f; // 25/1024
         int widthCells = 32;
@@ -133,27 +135,27 @@ public class KSparseGrowingNeuralGasDemo extends CreateEntityMain {
         float stressSplitLearningRate = 0.5f; // change to stress after a split
         float stressThreshold = 0.01f; // when it ceases to split
 
-        Framework.SetConfig( competitiveLearningName, "learningRate", String.valueOf( learningRate ) );
-        Framework.SetConfig( competitiveLearningName, "widthCells", String.valueOf( widthCells ) );
-        Framework.SetConfig( competitiveLearningName, "heightCells", String.valueOf( heightCells ) );
-        Framework.SetConfig( competitiveLearningName, "learningRateNeighbours", String.valueOf( learningRateNeighbours ) );
-        Framework.SetConfig( competitiveLearningName, "noiseMagnitude", String.valueOf( noiseMagnitude ) );
-        Framework.SetConfig( competitiveLearningName, "edgeMaxAge", String.valueOf( edgeMaxAge ) );
-        Framework.SetConfig( competitiveLearningName, "stressLearningRate", String.valueOf( stressLearningRate ) );
-        Framework.SetConfig( competitiveLearningName, "stressSplitLearningRate", String.valueOf( stressSplitLearningRate ) );
-        Framework.SetConfig( competitiveLearningName, "stressThreshold", String.valueOf( stressThreshold ) );
-        Framework.SetConfig( competitiveLearningName, "growthInterval", String.valueOf( growthInterval ) );
-        Framework.SetConfig( competitiveLearningName, "sparsity", String.valueOf( sparsity ) );
+        PersistenceUtil.SetConfig( competitiveLearningName, "learningRate", String.valueOf( learningRate ) );
+        PersistenceUtil.SetConfig( competitiveLearningName, "widthCells", String.valueOf( widthCells ) );
+        PersistenceUtil.SetConfig( competitiveLearningName, "heightCells", String.valueOf( heightCells ) );
+        PersistenceUtil.SetConfig( competitiveLearningName, "learningRateNeighbours", String.valueOf( learningRateNeighbours ) );
+        PersistenceUtil.SetConfig( competitiveLearningName, "noiseMagnitude", String.valueOf( noiseMagnitude ) );
+        PersistenceUtil.SetConfig( competitiveLearningName, "edgeMaxAge", String.valueOf( edgeMaxAge ) );
+        PersistenceUtil.SetConfig( competitiveLearningName, "stressLearningRate", String.valueOf( stressLearningRate ) );
+        PersistenceUtil.SetConfig( competitiveLearningName, "stressSplitLearningRate", String.valueOf( stressSplitLearningRate ) );
+        PersistenceUtil.SetConfig( competitiveLearningName, "stressThreshold", String.valueOf( stressThreshold ) );
+        PersistenceUtil.SetConfig( competitiveLearningName, "growthInterval", String.valueOf( growthInterval ) );
+        PersistenceUtil.SetConfig( competitiveLearningName, "sparsity", String.valueOf( sparsity ) );
 
         // Log features of the algorithm during all phases
-        Framework.SetConfig( vectorSeriesName, "period", String.valueOf( "-1" ) ); // infinite
-        Framework.SetConfig( vectorSeriesName, "learn", String.valueOf( "true" ) ); // infinite
+        PersistenceUtil.SetConfig( vectorSeriesName, "period", String.valueOf( "-1" ) ); // infinite
+        PersistenceUtil.SetConfig( vectorSeriesName, "learn", String.valueOf( "true" ) ); // infinite
 
         // Log labels of each image produced during all phases
-        Framework.SetConfig( valueSeriesName, "period", "-1" );
-        Framework.SetConfig( valueSeriesName, "learn", String.valueOf( "true" ) ); // infinite
-        Framework.SetConfig( valueSeriesName, "entityName", imageLabelName ); // log forever
-        Framework.SetConfig( valueSeriesName, "configPath", "imageLabel" ); // log forever
+        PersistenceUtil.SetConfig( valueSeriesName, "period", "-1" );
+        PersistenceUtil.SetConfig( valueSeriesName, "learn", String.valueOf( "true" ) ); // infinite
+        PersistenceUtil.SetConfig( valueSeriesName, "entityName", imageLabelName ); // log forever
+        PersistenceUtil.SetConfig( valueSeriesName, "configPath", "imageLabel" ); // log forever
 
     }
 

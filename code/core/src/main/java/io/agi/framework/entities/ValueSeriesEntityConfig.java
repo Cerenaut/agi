@@ -21,6 +21,8 @@ package io.agi.framework.entities;
 
 import io.agi.framework.EntityConfig;
 import io.agi.framework.Framework;
+import io.agi.framework.persistence.DataJsonSerializer;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelData;
 
 /**
@@ -48,7 +50,7 @@ public class ValueSeriesEntityConfig extends EntityConfig {
     public int dataOffset = 0; // default, pick first value in input data
 
     // For periodically flushing to disk:
-    public String writeFileEncoding = ModelData.ENCODING_DENSE;
+    public String writeFileEncoding = DataJsonSerializer.ENCODING_DENSE;
     public String writeFilePath = "";
     public String writeFilePrefix = "";
     public String writeFileExtension = "json";
@@ -76,14 +78,14 @@ public class ValueSeriesEntityConfig extends EntityConfig {
         entityConfig.learn = true;
         entityConfig.writeFilePath = "";
         entityConfig.writeFilePrefix = "";
-        entityConfig.writeFileEncoding = ModelData.ENCODING_DENSE;
+        entityConfig.writeFileEncoding = DataJsonSerializer.ENCODING_DENSE;
 
         entityConfig.entityName = inputEntityName;
         entityConfig.configPath = inputConfigPath;
         entityConfig.dataName = inputDataName;
         entityConfig.dataOffset = inputDataOffset;
 
-        Framework.SetConfig( entityName, entityConfig );
+        PersistenceUtil.SetConfig( entityName, entityConfig );
     }
 
 

@@ -23,6 +23,8 @@ import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.agi.framework.Framework;
+import io.agi.framework.persistence.PersistenceUtil;
+import io.agi.framework.references.DataRefUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import net.lingala.zip4j.core.ZipFile;
@@ -96,12 +98,12 @@ public class HttpImportFileHandler implements HttpHandler {
 
                 boolean success = false;
                 if ( type.equals( TYPE_ENTITY ) ) {
-                    success = Framework.LoadEntities( filepath );
+                    success = PersistenceUtil.ReadEntities( filepath );
                     responseMap.put( "message", "Success" );
                     responseMap.put( "type", type );
                 }
                 else if ( type.equals( TYPE_DATA ) ) {
-                    success = Framework.LoadData( filepath );
+                    success = DataRefUtil.ReadData( filepath );
                     responseMap.put( "message", "Success" );
                     responseMap.put( "type", type );
                 }

@@ -94,26 +94,6 @@ public class KSparseAutoencoderEntity extends Entity {
         attributes.add( BATCH_INPUTS_HIDDEN );
         attributes.add( BATCH_INPUTS_OUTPUT );
 
-        flags.putFlag( WEIGHTS, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BIASES_1, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BIASES_2, DataFlags.FLAG_NODE_CACHE );
-
-        flags.putFlag( WEIGHTS_VELOCITY, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BIASES_1_VELOCITY, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BIASES_2_VELOCITY, DataFlags.FLAG_NODE_CACHE );
-
-        flags.putFlag( ERRORS, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( SPIKES_TOP_KA, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( SPIKES_TOP_K, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( RECONSTRUCTION_KA, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( RECONSTRUCTION_K, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( AGES, DataFlags.FLAG_NODE_CACHE );
-
-        flags.putFlag( BATCH_ERROR_GRADIENTS_HIDDEN, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_ERROR_GRADIENTS_OUTPUT, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_INPUTS_HIDDEN, DataFlags.FLAG_NODE_CACHE );
-        flags.putFlag( BATCH_INPUTS_OUTPUT, DataFlags.FLAG_NODE_CACHE );
-
         flags.putFlag( SPIKES_TOP_KA, DataFlags.FLAG_SPARSE_REAL );
         flags.putFlag( SPIKES_TOP_K, DataFlags.FLAG_SPARSE_REAL );
     }

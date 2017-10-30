@@ -24,9 +24,12 @@ import io.agi.core.util.PropertiesUtil;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
+import io.agi.framework.Naming;
 import io.agi.framework.Node;
 import io.agi.framework.entities.*;
 import io.agi.framework.factories.CommonEntityFactory;
+import io.agi.framework.persistence.PersistenceUtil;
+import io.agi.framework.references.DataRefUtil;
 
 import java.util.ArrayList;
 import java.util.Properties;
@@ -54,7 +57,7 @@ public class AutoRegionLayerDemo {
             String arg = args[ i ];
             if( arg.equalsIgnoreCase( "prefix" ) ) {
                 String prefix = args[ i+1 ];
-                Framework.SetEntityNamePrefix( prefix );
+                Naming.SetEntityNamePrefix( prefix );
 //                Framework.SetEntityNamePrefixDateTime();
             }
         }
@@ -100,106 +103,106 @@ public class AutoRegionLayerDemo {
         int layers = 2;
 
         // Define some entities
-        String experimentName           = Framework.GetEntityName( "experiment" );
-        String imageClassName           = Framework.GetEntityName( "image-class" );
-        String constantName             = Framework.GetEntityName( "constant" );
-        String region1FfName            = Framework.GetEntityName( "image-region-1-ff" );
-        String region2FfName            = Framework.GetEntityName( "image-region-2-ff" );
-        String region3FfName            = Framework.GetEntityName( "image-region-3-ff" );
-        String imageEncoderName         = Framework.GetEntityName( "image-encoder" );
-        String featureLabelsName        = Framework.GetEntityName( "feature-labels" );
-        String valueSeriesPredictedName = Framework.GetEntityName( "value-series-predicted" );
-        String valueSeriesErrorName     = Framework.GetEntityName( "value-series-error" );
-        String valueSeriesTruthName     = Framework.GetEntityName( "value-series-truth" );
+        String experimentName           = PersistenceUtil.GetEntityName( "experiment" );
+        String imageClassName           = PersistenceUtil.GetEntityName( "image-class" );
+        String constantName             = PersistenceUtil.GetEntityName( "constant" );
+        String region1FfName            = PersistenceUtil.GetEntityName( "image-region-1-ff" );
+        String region2FfName            = PersistenceUtil.GetEntityName( "image-region-2-ff" );
+        String region3FfName            = PersistenceUtil.GetEntityName( "image-region-3-ff" );
+        String imageEncoderName         = PersistenceUtil.GetEntityName( "image-encoder" );
+        String featureLabelsName        = PersistenceUtil.GetEntityName( "feature-labels" );
+        String valueSeriesPredictedName = PersistenceUtil.GetEntityName( "value-series-predicted" );
+        String valueSeriesErrorName     = PersistenceUtil.GetEntityName( "value-series-error" );
+        String valueSeriesTruthName     = PersistenceUtil.GetEntityName( "value-series-truth" );
 
-        Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
-        Framework.CreateEntity( imageClassName, ImageLabelEntity.ENTITY_TYPE, n.getName(), experimentName );
-        Framework.CreateEntity( imageEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), imageClassName );
-        Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), imageEncoderName ); // ok all input to the regions is ready
+        PersistenceUtil.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
+        PersistenceUtil.CreateEntity( imageClassName, ImageLabelEntity.ENTITY_TYPE, n.getName(), experimentName );
+        PersistenceUtil.CreateEntity( imageEncoderName, EncoderEntity.ENTITY_TYPE, n.getName(), imageClassName );
+        PersistenceUtil.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), imageEncoderName ); // ok all input to the regions is ready
 
-        Framework.CreateEntity( region1FfName, AutoRegionLayerEntity.ENTITY_TYPE, n.getName(), constantName );
+        PersistenceUtil.CreateEntity( region1FfName, AutoRegionLayerEntity.ENTITY_TYPE, n.getName(), constantName );
         String learningEntitiesAlgorithm = region1FfName;
         String topLayerName = region1FfName;
         if( layers > 1 ) {
-            Framework.CreateEntity( region2FfName, AutoRegionLayerEntity.ENTITY_TYPE, n.getName(), region1FfName );
+            PersistenceUtil.CreateEntity( region2FfName, AutoRegionLayerEntity.ENTITY_TYPE, n.getName(), region1FfName );
             topLayerName = region2FfName;
             learningEntitiesAlgorithm = learningEntitiesAlgorithm + "," + region2FfName;
         }
         if( layers > 2 ) {
-            Framework.CreateEntity( region3FfName, AutoRegionLayerEntity.ENTITY_TYPE, n.getName(), region2FfName );
+            PersistenceUtil.CreateEntity( region3FfName, AutoRegionLayerEntity.ENTITY_TYPE, n.getName(), region2FfName );
             topLayerName = region3FfName;
             learningEntitiesAlgorithm = learningEntitiesAlgorithm + "," + region3FfName;
         }
 
-        Framework.CreateEntity( featureLabelsName, FeatureLabelsCorrelationEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
-        Framework.CreateEntity( valueSeriesPredictedName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), featureLabelsName ); // 2nd, class region updates after first to get its feedback
-        Framework.CreateEntity( valueSeriesErrorName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), featureLabelsName ); // 2nd, class region updates after first to get its feedback
-        Framework.CreateEntity( valueSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), featureLabelsName ); // 2nd, class region updates after first to get its feedback
+        PersistenceUtil.CreateEntity( featureLabelsName, FeatureLabelsCorrelationEntity.ENTITY_TYPE, n.getName(), topLayerName ); // 2nd, class region updates after first to get its feedback
+        PersistenceUtil.CreateEntity( valueSeriesPredictedName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), featureLabelsName ); // 2nd, class region updates after first to get its feedback
+        PersistenceUtil.CreateEntity( valueSeriesErrorName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), featureLabelsName ); // 2nd, class region updates after first to get its feedback
+        PersistenceUtil.CreateEntity( valueSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), featureLabelsName ); // 2nd, class region updates after first to get its feedback
 
         // Connect the entities' data
         // a) Image to image region, and decode
-        Framework.SetDataReference( imageEncoderName, EncoderEntity.DATA_INPUT, imageClassName, ImageLabelEntity.OUTPUT_IMAGE );
+        DataRefUtil.SetDataReference( imageEncoderName, EncoderEntity.DATA_INPUT, imageClassName, ImageLabelEntity.OUTPUT_IMAGE );
 
-        Framework.SetDataReference( region1FfName, AutoRegionLayerEntity.INPUT_1, imageEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
-        Framework.SetDataReference( region1FfName, AutoRegionLayerEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
+        DataRefUtil.SetDataReference( region1FfName, AutoRegionLayerEntity.INPUT_1, imageEncoderName, EncoderEntity.DATA_OUTPUT_ENCODED );
+        DataRefUtil.SetDataReference( region1FfName, AutoRegionLayerEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
 
         if( layers > 1 ) {
-            Framework.SetDataReference( region2FfName, AutoRegionLayerEntity.INPUT_1, region1FfName, AutoRegionLayerEntity.OUTPUT );
-            Framework.SetDataReference( region2FfName, AutoRegionLayerEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
+            DataRefUtil.SetDataReference( region2FfName, AutoRegionLayerEntity.INPUT_1, region1FfName, AutoRegionLayerEntity.OUTPUT );
+            DataRefUtil.SetDataReference( region2FfName, AutoRegionLayerEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
         }
 
         if( layers > 2 ) {
-            Framework.SetDataReference( region3FfName, AutoRegionLayerEntity.INPUT_1, region2FfName, AutoRegionLayerEntity.OUTPUT );
-            Framework.SetDataReference( region3FfName, AutoRegionLayerEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
+            DataRefUtil.SetDataReference( region3FfName, AutoRegionLayerEntity.INPUT_1, region2FfName, AutoRegionLayerEntity.OUTPUT );
+            DataRefUtil.SetDataReference( region3FfName, AutoRegionLayerEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
         }
 
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList< AbstractPair< String, String > >();
         if( layers == 1 ) featureDatas.add( new AbstractPair< String, String >( region1FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
         if( layers == 2 ) featureDatas.add( new AbstractPair< String, String >( region2FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
         if( layers == 3 ) featureDatas.add( new AbstractPair< String, String >( region3FfName, AutoRegionLayerEntity.CONTEXT_FREE_ACTIVITY_NEW ) );
-        Framework.SetDataReferences( featureLabelsName, SupervisedLearningEntity.INPUT_FEATURES, featureDatas ); // get current state from the region to be used to predict
+        DataRefUtil.SetDataReferences( featureLabelsName, SupervisedLearningEntity.INPUT_FEATURES, featureDatas ); // get current state from the region to be used to predict
 
         // Experiment config
         if( !terminateByAge ) {
-            Framework.SetConfig( experimentName, "terminationEntityName", imageClassName );
-            Framework.SetConfig( experimentName, "terminationConfigPath", "terminate" );
-            Framework.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
+            PersistenceUtil.SetConfig( experimentName, "terminationEntityName", imageClassName );
+            PersistenceUtil.SetConfig( experimentName, "terminationConfigPath", "terminate" );
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
         }
         else {
-            Framework.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
         }
 
         // Mnist config
-        Framework.SetConfig( imageClassName, "receptiveField.receptiveFieldX", "0" );
-        Framework.SetConfig( imageClassName, "receptiveField.receptiveFieldY", "0" );
-        Framework.SetConfig( imageClassName, "receptiveField.receptiveFieldW", "28" );
-        Framework.SetConfig( imageClassName, "receptiveField.receptiveFieldH", "28" );
-        Framework.SetConfig( imageClassName, "resolution.resolutionX", "28" );
-        Framework.SetConfig( imageClassName, "resolution.resolutionY", "28" );
-        Framework.SetConfig( imageClassName, "greyscale", "true" );
-        Framework.SetConfig( imageClassName, "invert", "true" );
-        Framework.SetConfig( imageClassName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
-        Framework.SetConfig( imageClassName, "sourceFilesPrefix", "postproc" );
-        Framework.SetConfig( imageClassName, "sourceFilesPathTraining", trainingPath );
-        Framework.SetConfig( imageClassName, "sourceFilesPathTesting", testingPath );
-        Framework.SetConfig( imageClassName, "trainingBatches", String.valueOf( trainingBatches ) );
+        PersistenceUtil.SetConfig( imageClassName, "receptiveField.receptiveFieldX", "0" );
+        PersistenceUtil.SetConfig( imageClassName, "receptiveField.receptiveFieldY", "0" );
+        PersistenceUtil.SetConfig( imageClassName, "receptiveField.receptiveFieldW", "28" );
+        PersistenceUtil.SetConfig( imageClassName, "receptiveField.receptiveFieldH", "28" );
+        PersistenceUtil.SetConfig( imageClassName, "resolution.resolutionX", "28" );
+        PersistenceUtil.SetConfig( imageClassName, "resolution.resolutionY", "28" );
+        PersistenceUtil.SetConfig( imageClassName, "greyscale", "true" );
+        PersistenceUtil.SetConfig( imageClassName, "invert", "true" );
+        PersistenceUtil.SetConfig( imageClassName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
+        PersistenceUtil.SetConfig( imageClassName, "sourceFilesPrefix", "postproc" );
+        PersistenceUtil.SetConfig( imageClassName, "sourceFilesPathTraining", trainingPath );
+        PersistenceUtil.SetConfig( imageClassName, "sourceFilesPathTesting", testingPath );
+        PersistenceUtil.SetConfig( imageClassName, "trainingBatches", String.valueOf( trainingBatches ) );
 
         String learningEntitiesAnalytics = featureLabelsName;
-        Framework.SetConfig( imageClassName, "learningEntitiesAlgorithm", String.valueOf( learningEntitiesAlgorithm ) );
-        Framework.SetConfig( imageClassName, "learningEntitiesAnalytics", String.valueOf( learningEntitiesAnalytics ) );
+        PersistenceUtil.SetConfig( imageClassName, "learningEntitiesAlgorithm", String.valueOf( learningEntitiesAlgorithm ) );
+        PersistenceUtil.SetConfig( imageClassName, "learningEntitiesAnalytics", String.valueOf( learningEntitiesAnalytics ) );
 
         // constant config
         if( encodeZero ) {
             // image encoder config
-            Framework.SetConfig( imageEncoderName, "density", "1" );
-            Framework.SetConfig( imageEncoderName, "bits", "2" );
-            Framework.SetConfig( imageEncoderName, "encodeZero", "true" );
+            PersistenceUtil.SetConfig( imageEncoderName, "density", "1" );
+            PersistenceUtil.SetConfig( imageEncoderName, "bits", "2" );
+            PersistenceUtil.SetConfig( imageEncoderName, "encodeZero", "true" );
         }
         else {
             // image encoder config
-            Framework.SetConfig( imageEncoderName, "density", "1" );
-            Framework.SetConfig( imageEncoderName, "bits", "1" );
-            Framework.SetConfig( imageEncoderName, "encodeZero", "false" );
+            PersistenceUtil.SetConfig( imageEncoderName, "density", "1" );
+            PersistenceUtil.SetConfig( imageEncoderName, "bits", "1" );
+            PersistenceUtil.SetConfig( imageEncoderName, "encodeZero", "false" );
         }
 
         // image region config
@@ -281,25 +284,25 @@ public class AutoRegionLayerDemo {
                 rateScale, rateLearningRate );
 
         // feature-class config
-        Framework.SetConfig( featureLabelsName, "classEntityName", imageClassName );
-        Framework.SetConfig( featureLabelsName, "classConfigPath", "imageClass" );
-        Framework.SetConfig( featureLabelsName, "classes", "10" );
-        Framework.SetConfig( featureLabelsName, "onlineLearning", String.valueOf( featureLabelsOnline ) );
-//        Framework.SetConfig( classFeaturesName, "onlineLearningRate", "0.001" );
-        Framework.SetConfig( featureLabelsName, "onlineLearningRate", "0.01" );
+        PersistenceUtil.SetConfig( featureLabelsName, "classEntityName", imageClassName );
+        PersistenceUtil.SetConfig( featureLabelsName, "classConfigPath", "imageClass" );
+        PersistenceUtil.SetConfig( featureLabelsName, "classes", "10" );
+        PersistenceUtil.SetConfig( featureLabelsName, "onlineLearning", String.valueOf( featureLabelsOnline ) );
+//        PersistenceUtil.SetConfig( classFeaturesName, "onlineLearningRate", "0.001" );
+        PersistenceUtil.SetConfig( featureLabelsName, "onlineLearningRate", "0.01" );
 
         // data series logging
-        Framework.SetConfig( valueSeriesPredictedName, "period", "-1" ); // log forever
-        Framework.SetConfig( valueSeriesErrorName, "period", "-1" );
-        Framework.SetConfig( valueSeriesTruthName, "period", "-1" );
+        PersistenceUtil.SetConfig( valueSeriesPredictedName, "period", "-1" ); // log forever
+        PersistenceUtil.SetConfig( valueSeriesErrorName, "period", "-1" );
+        PersistenceUtil.SetConfig( valueSeriesTruthName, "period", "-1" );
 
-        Framework.SetConfig( valueSeriesPredictedName, "entityName", featureLabelsName ); // log forever
-        Framework.SetConfig( valueSeriesErrorName, "entityName", featureLabelsName );
-        Framework.SetConfig( valueSeriesTruthName, "entityName", featureLabelsName );
+        PersistenceUtil.SetConfig( valueSeriesPredictedName, "entityName", featureLabelsName ); // log forever
+        PersistenceUtil.SetConfig( valueSeriesErrorName, "entityName", featureLabelsName );
+        PersistenceUtil.SetConfig( valueSeriesTruthName, "entityName", featureLabelsName );
 
-        Framework.SetConfig( valueSeriesPredictedName, "configPath", "classPredicted" ); // log forever
-        Framework.SetConfig( valueSeriesErrorName, "configPath", "classError" );
-        Framework.SetConfig( valueSeriesTruthName, "configPath", "classTruth" );
+        PersistenceUtil.SetConfig( valueSeriesPredictedName, "configPath", "classPredicted" ); // log forever
+        PersistenceUtil.SetConfig( valueSeriesErrorName, "configPath", "classError" );
+        PersistenceUtil.SetConfig( valueSeriesTruthName, "configPath", "classTruth" );
     }
 
     public static void setRegionLayerConfig(
@@ -320,35 +323,35 @@ public class AutoRegionLayerDemo {
             float rateScale,
             float rateLearningRate ) {
 
-        Framework.SetConfig( regionLayerName, "contextFreeLearningRate", String.valueOf( sparseLearningRate ) );
-        Framework.SetConfig( regionLayerName, "contextFreeWidthCells", String.valueOf( widthCells ) );
-        Framework.SetConfig( regionLayerName, "contextFreeHeightCells", String.valueOf( heightCells ) );
-        Framework.SetConfig( regionLayerName, "contextFreeBinaryOutput", String.valueOf( true ) );
-        Framework.SetConfig( regionLayerName, "contextFreeSparsity", String.valueOf( 0 ) );
-        Framework.SetConfig( regionLayerName, "contextFreeSparsityOutput", String.valueOf( sparsityFactor ) );
-        Framework.SetConfig( regionLayerName, "contextFreeSparsityMin", String.valueOf( sparsityMin ) );
-        Framework.SetConfig( regionLayerName, "contextFreeSparsityMax", String.valueOf( sparsityMax ) );
-        Framework.SetConfig( regionLayerName, "contextFreeAgeMin", String.valueOf( ageMin ) );
-        Framework.SetConfig( regionLayerName, "contextFreeAgeMax", String.valueOf( ageMax ) );
-        Framework.SetConfig( regionLayerName, "contextFreeAge", String.valueOf( 0 ) );
-        Framework.SetConfig( regionLayerName, "contextFreeAgeScale", String.valueOf( ageScale ) );
+        PersistenceUtil.SetConfig( regionLayerName, "contextFreeLearningRate", String.valueOf( sparseLearningRate ) );
+        PersistenceUtil.SetConfig( regionLayerName, "contextFreeWidthCells", String.valueOf( widthCells ) );
+        PersistenceUtil.SetConfig( regionLayerName, "contextFreeHeightCells", String.valueOf( heightCells ) );
+        PersistenceUtil.SetConfig( regionLayerName, "contextFreeBinaryOutput", String.valueOf( true ) );
+        PersistenceUtil.SetConfig( regionLayerName, "contextFreeSparsity", String.valueOf( 0 ) );
+        PersistenceUtil.SetConfig( regionLayerName, "contextFreeSparsityOutput", String.valueOf( sparsityFactor ) );
+        PersistenceUtil.SetConfig( regionLayerName, "contextFreeSparsityMin", String.valueOf( sparsityMin ) );
+        PersistenceUtil.SetConfig( regionLayerName, "contextFreeSparsityMax", String.valueOf( sparsityMax ) );
+        PersistenceUtil.SetConfig( regionLayerName, "contextFreeAgeMin", String.valueOf( ageMin ) );
+        PersistenceUtil.SetConfig( regionLayerName, "contextFreeAgeMax", String.valueOf( ageMax ) );
+        PersistenceUtil.SetConfig( regionLayerName, "contextFreeAge", String.valueOf( 0 ) );
+        PersistenceUtil.SetConfig( regionLayerName, "contextFreeAgeScale", String.valueOf( ageScale ) );
 
-        Framework.SetConfig( regionLayerName, "rateScale", String.valueOf( rateScale ) );
-        Framework.SetConfig( regionLayerName, "rateLearningRate", String.valueOf( rateLearningRate ) );
-//        Framework.SetConfig( regionLayerName, "contextualLearningRate", String.valueOf( sparseLearningRate ) );
-//        Framework.SetConfig( regionLayerName, "contextualWidthCells", String.valueOf( widthCells ) );
-//        Framework.SetConfig( regionLayerName, "contextualHeightCells", String.valueOf( heightCells ) );
-//        Framework.SetConfig( regionLayerName, "contextualSparsity", String.valueOf( 0 ) );
-//        Framework.SetConfig( regionLayerName, "contextualSparsityOutput", String.valueOf( sparsityFactor ) );
-//        Framework.SetConfig( regionLayerName, "contextualSparsityMin", String.valueOf( sparsityMin ) );
-//        Framework.SetConfig( regionLayerName, "contextualSparsityMax", String.valueOf( sparsityMax ) );
-//        Framework.SetConfig( regionLayerName, "contextualAgeMin", String.valueOf( ageMin ) );
-//        Framework.SetConfig( regionLayerName, "contextualAgeMax", String.valueOf( ageMax ) );
-//        Framework.SetConfig( regionLayerName, "contextualAge", String.valueOf( 0 ) );
+        PersistenceUtil.SetConfig( regionLayerName, "rateScale", String.valueOf( rateScale ) );
+        PersistenceUtil.SetConfig( regionLayerName, "rateLearningRate", String.valueOf( rateLearningRate ) );
+//        PersistenceUtil.SetConfig( regionLayerName, "contextualLearningRate", String.valueOf( sparseLearningRate ) );
+//        PersistenceUtil.SetConfig( regionLayerName, "contextualWidthCells", String.valueOf( widthCells ) );
+//        PersistenceUtil.SetConfig( regionLayerName, "contextualHeightCells", String.valueOf( heightCells ) );
+//        PersistenceUtil.SetConfig( regionLayerName, "contextualSparsity", String.valueOf( 0 ) );
+//        PersistenceUtil.SetConfig( regionLayerName, "contextualSparsityOutput", String.valueOf( sparsityFactor ) );
+//        PersistenceUtil.SetConfig( regionLayerName, "contextualSparsityMin", String.valueOf( sparsityMin ) );
+//        PersistenceUtil.SetConfig( regionLayerName, "contextualSparsityMax", String.valueOf( sparsityMax ) );
+//        PersistenceUtil.SetConfig( regionLayerName, "contextualAgeMin", String.valueOf( ageMin ) );
+//        PersistenceUtil.SetConfig( regionLayerName, "contextualAgeMax", String.valueOf( ageMax ) );
+//        PersistenceUtil.SetConfig( regionLayerName, "contextualAge", String.valueOf( 0 ) );
 
-        Framework.SetConfig( regionLayerName, "outputSparsity", String.valueOf( sparsityOutput ) );
-        Framework.SetConfig( regionLayerName, "defaultPredictionInhibition", String.valueOf( defaultPredictionInhibition ) );
-        Framework.SetConfig( regionLayerName, "predictorLearningRate", String.valueOf( predictorLearningRate ) );
+        PersistenceUtil.SetConfig( regionLayerName, "outputSparsity", String.valueOf( sparsityOutput ) );
+        PersistenceUtil.SetConfig( regionLayerName, "defaultPredictionInhibition", String.valueOf( defaultPredictionInhibition ) );
+        PersistenceUtil.SetConfig( regionLayerName, "predictorLearningRate", String.valueOf( predictorLearningRate ) );
 
     }
 

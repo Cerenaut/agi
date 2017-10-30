@@ -17,69 +17,67 @@
  * along with Project AGI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.agi.framework.persistence;
+package io.agi.framework.references;
 
 import io.agi.core.data.Data;
+import io.agi.framework.persistence.DataJsonSerializer;
 import io.agi.framework.persistence.models.ModelData;
 
 import java.util.HashMap;
 
 /**
- * Useful standard implementation.
- *
- * Created by dave on 25/01/17.
+ * Created by dave on 24/10/17.
  */
-public class DenseDataDeserializer implements DataDeserializer {
+public class DenseDataRefResolver  extends DataRefResolver {
 
-    public Data getCombinedData( String inputAttribute, HashMap< String, Data > allRefs ) {
+    public Data getCombinedData( DataRef dataRef, HashMap< String, DataRef > referred ) {
 
         // case 1: No input.
-        int nbrRefs = allRefs.size();
+        int nbrRefs = referred.size();
         if( nbrRefs == 0 ) {
             return null;
         }
 
         // case 2: Single input
         if( nbrRefs == 1 ) {
-            String refKey = allRefs.keySet().iterator().next();
-            Data refData = allRefs.get( refKey );
-            if( refData == null ) {
+            String refKey = referred.keySet().iterator().next();
+            DataRef dataRef2 = referred.get( refKey );
+            if( dataRef2._data == null ) {
                 return null;
             }
-            Data d = new Data( refData );
+            Data d = new Data( dataRef2._data ); // deep binary copy
             return d;
         }
 
         // case 3: Multiple inputs (combine as vector)
         int sumVolume = 0;
 
-        for( String refKey : allRefs.keySet() ) {
-            Data refData = allRefs.get( refKey );
-            if( refData == null ) {
-                return null;
+        for( String refKey : referred.keySet() ) {
+            DataRef dataRef2 = referred.get( refKey );
+            if( dataRef2._data == null ) {
+                return null; // missing data
             }
-            int volume = refData.getSize();
+            int volume = dataRef2._data.getSize();
             sumVolume += volume;
         }
 
+        // Create new structure of sufficint volume and copy content
         Data d = new Data( sumVolume );
 
         int offset = 0;
 
-        for( String refKey : allRefs.keySet() ) {
-            Data refData = allRefs.get( refKey );
-            int volume = refData.getSize();
-
-            d.copyRange( refData, offset, 0, volume );
-
+        for( String refKey : referred.keySet() ) {
+            DataRef dataRef2 = referred.get( refKey );
+            int volume = dataRef2._data.getSize();
+            d.copyRange( dataRef2._data, offset, 0, volume );
             offset += volume;
         }
 
         return d;
     }
 
-    public String getEncoding( String inputAttribute ) {
-        return ModelData.ENCODING_DENSE;
+    public String getCombinedEncoding( String key ) {
+        return DataJsonSerializer.ENCODING_DENSE;
     }
 
 }

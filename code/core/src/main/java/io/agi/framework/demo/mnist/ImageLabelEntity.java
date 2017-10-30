@@ -29,6 +29,7 @@ import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
 import io.agi.framework.entities.ImageSensorEntity;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelEntity;
 
 import java.util.Collection;
@@ -185,7 +186,7 @@ public class ImageLabelEntity extends Entity {
         try {
             Collection< String > entityNames = getEntityNames( config.trainingEntities );
             for( String entityName : entityNames ) {
-                Framework.SetConfig( entityName, "learn", String.valueOf( learnTraining ) );
+                PersistenceUtil.SetConfig( entityName, "learn", String.valueOf( learnTraining ) );
             }
         }
         catch( Exception e ) {} // this is ok, the experiment is just not configured to have a learning flag
@@ -193,7 +194,7 @@ public class ImageLabelEntity extends Entity {
         try {
             Collection< String > entityNames = getEntityNames( config.testingEntities );
             for( String entityName : entityNames ) {
-                Framework.SetConfig( entityName, "learn", String.valueOf( learnTesting ) );
+                PersistenceUtil.SetConfig( entityName, "learn", String.valueOf( learnTesting ) );
             }
         }
         catch( Exception e ) {} // this is ok, the experiment is just not configured to have a learning flag

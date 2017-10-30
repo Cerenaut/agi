@@ -26,6 +26,9 @@ import io.agi.framework.persistence.models.ModelNode;
 import java.util.Collection;
 
 /**
+ * An interface for an object that can create a serializable model of the entire system.
+ * The implementation can be any long-term storage really, e.g. SQL DB or flat files.
+ *
  * Created by dave on 14/02/16.
  */
 public interface Persistence {
@@ -35,34 +38,24 @@ public interface Persistence {
 //               Could be JSON string for entities: { name: xxx, type: yyy } etc
 
     // Nodes
-    Collection< ModelNode > fetchNodes(); // list all
-
+    Collection< ModelNode > getNodes(); // list all
+    ModelNode getNode( String nodeName ); /// retrieves if exists, or null
     void persistNode( ModelNode m ); /// creates if nonexistent (upsert)
-
-    ModelNode fetchNode( String nodeName ); /// retrieves if exists, or null
-
     void removeNode( String nodeName ); /// removes if exists
 
     // Entities
     Collection< ModelEntity > getEntities(); // list all
-
     Collection< String > getChildEntities( String parent );
 
+    ModelEntity getEntity( String name );
     void persistEntity( ModelEntity m );
-
-    ModelEntity fetchEntity( String name );
-
     void removeEntity( String name );
 
     // Data
-    Collection< String > getData(); // list all, note, only obtains keys, as the volume of data would be too large to fetch all.
-
-    Collection< ModelData > getDataMeta( String filter ); // return matching data, but only the meta properties.
-
-    void persistData( ModelData modelData );
-
-    ModelData fetchData( String name );
-
-    void removeData( String name );
+//    Collection< String > getDataKeys(); // list all, note, only obtains keys, as the volume of data would be too large to fetch all.
+//    Collection< ModelData > getDataMeta( String filter ); // return matching data, but only the meta properties.
+//    ModelData getData( String name );
+//    void persistData( ModelData modelData );
+//    void removeData( String name );
 
 }

@@ -24,11 +24,15 @@ import io.agi.core.util.PropertiesUtil;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
+import io.agi.framework.Naming;
 import io.agi.framework.Node;
 import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.factories.CommonEntityFactory;
+import io.agi.framework.persistence.DataJsonSerializer;
+import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelData;
+import io.agi.framework.references.DataRefUtil;
 
 import java.util.ArrayList;
 import java.util.Properties;
@@ -56,7 +60,7 @@ public class OnlineKSparseDemo {
             String arg = args[ i ];
             if( arg.equalsIgnoreCase( "prefix" ) ) {
                 String prefix = args[ i+1 ];
-                Framework.SetEntityNamePrefix( prefix );
+                Naming.SetEntityNamePrefix( prefix );
 //                Framework.SetEntityNamePrefixDateTime();
             }
         }
@@ -101,21 +105,21 @@ public class OnlineKSparseDemo {
         boolean unitOutput = false;
 
         // Define some entities
-        String experimentName           = Framework.GetEntityName( "experiment" );
-        String imageLabelName           = Framework.GetEntityName( "image-class" );
-        String autoencoderName          = Framework.GetEntityName( "autoencoder" );
-        String vectorSeriesName         = Framework.GetEntityName( "feature-series" );
-        String valueSeriesName          = Framework.GetEntityName( "label-series" );
+        String experimentName           = PersistenceUtil.GetEntityName( "experiment" );
+        String imageLabelName           = PersistenceUtil.GetEntityName( "image-class" );
+        String autoencoderName          = PersistenceUtil.GetEntityName( "autoencoder" );
+        String vectorSeriesName         = PersistenceUtil.GetEntityName( "feature-series" );
+        String valueSeriesName          = PersistenceUtil.GetEntityName( "label-series" );
 
-        Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
-        Framework.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), experimentName );
-        Framework.CreateEntity( autoencoderName, OnlineKSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), imageLabelName );
-        Framework.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), autoencoderName ); // 2nd, class region updates after first to get its feedback
-        Framework.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), vectorSeriesName ); // 2nd, class region updates after first to get its feedback
+        PersistenceUtil.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
+        PersistenceUtil.CreateEntity( imageLabelName, ImageLabelEntity.ENTITY_TYPE, n.getName(), experimentName );
+        PersistenceUtil.CreateEntity( autoencoderName, OnlineKSparseAutoencoderEntity.ENTITY_TYPE, n.getName(), imageLabelName );
+        PersistenceUtil.CreateEntity( vectorSeriesName, VectorSeriesEntity.ENTITY_TYPE, n.getName(), autoencoderName ); // 2nd, class region updates after first to get its feedback
+        PersistenceUtil.CreateEntity( valueSeriesName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), vectorSeriesName ); // 2nd, class region updates after first to get its feedback
 
         // Connect the entities' data
         // a) Image to image region, and decode
-        Framework.SetDataReference( autoencoderName, OnlineKSparseAutoencoderEntity.INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
+        DataRefUtil.SetDataReference( autoencoderName, OnlineKSparseAutoencoderEntity.INPUT, imageLabelName, ImageLabelEntity.OUTPUT_IMAGE );
 
         ArrayList< AbstractPair< String, String > > featureDatas = new ArrayList< AbstractPair< String, String > >();
         if( unitOutput ) {
@@ -125,43 +129,43 @@ public class OnlineKSparseDemo {
             featureDatas.add( new AbstractPair<>( autoencoderName, OnlineKSparseAutoencoderEntity.TRANSFER_TOP_KA ) );
         }
 
-        Framework.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
+        DataRefUtil.SetDataReferences( vectorSeriesName, VectorSeriesEntity.INPUT, featureDatas ); // get current state from the region to be used to predict
 
         // Experiment config
         if( !terminateByAge ) {
-            Framework.SetConfig( experimentName, "terminationEntityName", imageLabelName );
-            Framework.SetConfig( experimentName, "terminationConfigPath", "terminate" );
-            Framework.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
+            PersistenceUtil.SetConfig( experimentName, "terminationEntityName", imageLabelName );
+            PersistenceUtil.SetConfig( experimentName, "terminationConfigPath", "terminate" );
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
         }
         else {
-            Framework.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
         }
 
         // cache all data for speed, when enabled
-        Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( imageLabelName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( autoencoderName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( vectorSeriesName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( valueSeriesName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( imageLabelName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( autoencoderName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( vectorSeriesName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( valueSeriesName, "cache", String.valueOf( cacheAllData ) );
 
         // MNIST config
-        Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldX", "0" );
-        Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldY", "0" );
-        Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldW", "28" );
-        Framework.SetConfig( imageLabelName, "receptiveField.receptiveFieldH", "28" );
-        Framework.SetConfig( imageLabelName, "resolution.resolutionX", "28" );
-        Framework.SetConfig( imageLabelName, "resolution.resolutionY", "28" );
-        Framework.SetConfig( imageLabelName, "greyscale", "true" );
-        Framework.SetConfig( imageLabelName, "invert", "true" );
-        Framework.SetConfig( imageLabelName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
-        Framework.SetConfig( imageLabelName, "sourceFilesPrefix", "postproc" );
-        Framework.SetConfig( imageLabelName, "sourceFilesPathTraining", trainingPath );
-        Framework.SetConfig( imageLabelName, "sourceFilesPathTesting", testingPath );
-        Framework.SetConfig( imageLabelName, "trainingEpochs", String.valueOf( trainingEpochs ) );
-        Framework.SetConfig( imageLabelName, "testingEpochs", String.valueOf( testingEpochs ) );
-        Framework.SetConfig( imageLabelName, "trainingEntities", String.valueOf( autoencoderName ) );
+        PersistenceUtil.SetConfig( imageLabelName, "receptiveField.receptiveFieldX", "0" );
+        PersistenceUtil.SetConfig( imageLabelName, "receptiveField.receptiveFieldY", "0" );
+        PersistenceUtil.SetConfig( imageLabelName, "receptiveField.receptiveFieldW", "28" );
+        PersistenceUtil.SetConfig( imageLabelName, "receptiveField.receptiveFieldH", "28" );
+        PersistenceUtil.SetConfig( imageLabelName, "resolution.resolutionX", "28" );
+        PersistenceUtil.SetConfig( imageLabelName, "resolution.resolutionY", "28" );
+        PersistenceUtil.SetConfig( imageLabelName, "greyscale", "true" );
+        PersistenceUtil.SetConfig( imageLabelName, "invert", "true" );
+        PersistenceUtil.SetConfig( imageLabelName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
+        PersistenceUtil.SetConfig( imageLabelName, "sourceFilesPrefix", "postproc" );
+        PersistenceUtil.SetConfig( imageLabelName, "sourceFilesPathTraining", trainingPath );
+        PersistenceUtil.SetConfig( imageLabelName, "sourceFilesPathTesting", testingPath );
+        PersistenceUtil.SetConfig( imageLabelName, "trainingEpochs", String.valueOf( trainingEpochs ) );
+        PersistenceUtil.SetConfig( imageLabelName, "testingEpochs", String.valueOf( testingEpochs ) );
+        PersistenceUtil.SetConfig( imageLabelName, "trainingEntities", String.valueOf( autoencoderName ) );
         if( !logDuringTraining ) {
-            Framework.SetConfig( imageLabelName, "testingEntities", vectorSeriesName + "," + valueSeriesName );
+            PersistenceUtil.SetConfig( imageLabelName, "testingEntities", vectorSeriesName + "," + valueSeriesName );
         }
 
         /* Suppose we are aiming for a sparsity level of k = 15.
@@ -200,44 +204,44 @@ public class OnlineKSparseDemo {
         float rateMax = 0.05f; // i.e. 1/20th
         float rateLearningRate = learningRate * 0.1f; // slower than the learning rate
 
-        Framework.SetConfig( autoencoderName, "unitOutput", String.valueOf( unitOutput ) );
-        Framework.SetConfig( autoencoderName, "learningRate", String.valueOf( learningRate ) );
-        Framework.SetConfig( autoencoderName, "momentum", String.valueOf( momentum ) );
-        Framework.SetConfig( autoencoderName, "widthCells", String.valueOf( widthCells ) );
-        Framework.SetConfig( autoencoderName, "heightCells", String.valueOf( heightCells ) );
-        Framework.SetConfig( autoencoderName, "weightsStdDev", String.valueOf( weightsStdDev ) );
-        Framework.SetConfig( autoencoderName, "sparsityOutput", String.valueOf( sparsityOutput ) );
-        Framework.SetConfig( autoencoderName, "sparsity", String.valueOf( sparsity ) );
+        PersistenceUtil.SetConfig( autoencoderName, "unitOutput", String.valueOf( unitOutput ) );
+        PersistenceUtil.SetConfig( autoencoderName, "learningRate", String.valueOf( learningRate ) );
+        PersistenceUtil.SetConfig( autoencoderName, "momentum", String.valueOf( momentum ) );
+        PersistenceUtil.SetConfig( autoencoderName, "widthCells", String.valueOf( widthCells ) );
+        PersistenceUtil.SetConfig( autoencoderName, "heightCells", String.valueOf( heightCells ) );
+        PersistenceUtil.SetConfig( autoencoderName, "weightsStdDev", String.valueOf( weightsStdDev ) );
+        PersistenceUtil.SetConfig( autoencoderName, "sparsityOutput", String.valueOf( sparsityOutput ) );
+        PersistenceUtil.SetConfig( autoencoderName, "sparsity", String.valueOf( sparsity ) );
 
-        Framework.SetConfig( autoencoderName, "ageMin", String.valueOf( ageMin ) );
-        Framework.SetConfig( autoencoderName, "ageMax", String.valueOf( ageMax ) );
+        PersistenceUtil.SetConfig( autoencoderName, "ageMin", String.valueOf( ageMin ) );
+        PersistenceUtil.SetConfig( autoencoderName, "ageMax", String.valueOf( ageMax ) );
 
-        Framework.SetConfig( autoencoderName, "ageTruncationFactor", String.valueOf( ageTruncationFactor ) );
-        Framework.SetConfig( autoencoderName, "ageScale", String.valueOf( ageScale ) );
+        PersistenceUtil.SetConfig( autoencoderName, "ageTruncationFactor", String.valueOf( ageTruncationFactor ) );
+        PersistenceUtil.SetConfig( autoencoderName, "ageScale", String.valueOf( ageScale ) );
 
-        Framework.SetConfig( autoencoderName, "rateScale", String.valueOf( rateScale ) );
-        Framework.SetConfig( autoencoderName, "rateMax", String.valueOf( rateMax ) );
-        Framework.SetConfig( autoencoderName, "rateLearningRate", String.valueOf( rateLearningRate ) );
+        PersistenceUtil.SetConfig( autoencoderName, "rateScale", String.valueOf( rateScale ) );
+        PersistenceUtil.SetConfig( autoencoderName, "rateMax", String.valueOf( rateMax ) );
+        PersistenceUtil.SetConfig( autoencoderName, "rateLearningRate", String.valueOf( rateLearningRate ) );
 
-        Framework.SetConfig( autoencoderName, "batchSize", String.valueOf( batchSize ) );
+        PersistenceUtil.SetConfig( autoencoderName, "batchSize", String.valueOf( batchSize ) );
 
         // Log features of the algorithm during all phases
-        Framework.SetConfig( vectorSeriesName, "encoding", ModelData.ENCODING_SPARSE_REAL );
-        Framework.SetConfig( vectorSeriesName, "flushPeriod", String.valueOf( flushInterval ) ); // accumulate and flush, or accumulate only
-        Framework.SetConfig( vectorSeriesName, "period", String.valueOf( "-1" ) );
-        Framework.SetConfig( vectorSeriesName, "writeFilePath", flushWriteFilePath );
-        Framework.SetConfig( vectorSeriesName, "writeFilePrefix", flushWriteFilePrefixFeatures );
-        Framework.SetConfig( vectorSeriesName, "learn", String.valueOf( "true" ) );
+        PersistenceUtil.SetConfig( vectorSeriesName, "encoding", DataJsonSerializer.ENCODING_SPARSE_REAL );
+        PersistenceUtil.SetConfig( vectorSeriesName, "flushPeriod", String.valueOf( flushInterval ) ); // accumulate and flush, or accumulate only
+        PersistenceUtil.SetConfig( vectorSeriesName, "period", String.valueOf( "-1" ) );
+        PersistenceUtil.SetConfig( vectorSeriesName, "writeFilePath", flushWriteFilePath );
+        PersistenceUtil.SetConfig( vectorSeriesName, "writeFilePrefix", flushWriteFilePrefixFeatures );
+        PersistenceUtil.SetConfig( vectorSeriesName, "learn", String.valueOf( "true" ) );
 
         // Log labels of each image produced during all phases
-        Framework.SetConfig( vectorSeriesName, "writeFileEncoding", ModelData.ENCODING_DENSE );
-        Framework.SetConfig( valueSeriesName, "flushPeriod", String.valueOf( flushInterval ) ); // accumulate and flush, or accumulate only
-        Framework.SetConfig( valueSeriesName, "period", String.valueOf( "-1" ) ); // infinite
-        Framework.SetConfig( valueSeriesName, "learn", String.valueOf( "true" ) );
-        Framework.SetConfig( valueSeriesName, "writeFilePath", flushWriteFilePath );
-        Framework.SetConfig( valueSeriesName, "writeFilePrefix", flushWriteFilePrefixTruth );
-        Framework.SetConfig( valueSeriesName, "entityName", imageLabelName );
-        Framework.SetConfig( valueSeriesName, "configPath", "imageLabel" );
+        PersistenceUtil.SetConfig( vectorSeriesName, "writeFileEncoding", DataJsonSerializer.ENCODING_DENSE );
+        PersistenceUtil.SetConfig( valueSeriesName, "flushPeriod", String.valueOf( flushInterval ) ); // accumulate and flush, or accumulate only
+        PersistenceUtil.SetConfig( valueSeriesName, "period", String.valueOf( "-1" ) ); // infinite
+        PersistenceUtil.SetConfig( valueSeriesName, "learn", String.valueOf( "true" ) );
+        PersistenceUtil.SetConfig( valueSeriesName, "writeFilePath", flushWriteFilePath );
+        PersistenceUtil.SetConfig( valueSeriesName, "writeFilePrefix", flushWriteFilePrefixTruth );
+        PersistenceUtil.SetConfig( valueSeriesName, "entityName", imageLabelName );
+        PersistenceUtil.SetConfig( valueSeriesName, "configPath", "imageLabel" );
 
     }
 

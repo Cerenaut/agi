@@ -54,9 +54,7 @@ public class VectorProblemEntity extends Entity {
 
     @Override
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
-
         attributes.add( OUTPUT_REWARD );
-        flags.putFlag( OUTPUT_REWARD, DataFlags.FLAG_NODE_CACHE );
     }
 
     @Override
@@ -69,7 +67,7 @@ public class VectorProblemEntity extends Entity {
         VectorProblemEntityConfig config = ( VectorProblemEntityConfig ) _config;
 
         // default input
-//        Data inputS = getData( INPUT_STATES );
+//        Data inputS = deserialize( INPUT_STATES );
         Data inputA = getData( INPUT_ACTIONS );
         Data inputAI = getData( INPUT_ACTIONS_IDEAL );
 

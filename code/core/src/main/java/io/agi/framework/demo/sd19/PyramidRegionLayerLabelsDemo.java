@@ -24,10 +24,13 @@ import io.agi.core.util.PropertiesUtil;
 import io.agi.core.util.images.BufferedImageSource.BufferedImageSourceFactory;
 import io.agi.framework.Framework;
 import io.agi.framework.Main;
+import io.agi.framework.Naming;
 import io.agi.framework.Node;
 import io.agi.framework.demo.mnist.ImageLabelEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.factories.CommonEntityFactory;
+import io.agi.framework.persistence.PersistenceUtil;
+import io.agi.framework.references.DataRefUtil;
 
 import java.util.ArrayList;
 import java.util.Properties;
@@ -58,7 +61,7 @@ public class PyramidRegionLayerLabelsDemo {
             String arg = args[ i ];
             if( arg.equalsIgnoreCase( "prefix" ) ) {
                 String prefix = args[ i+1 ];
-                Framework.SetEntityNamePrefix( prefix );
+                Naming.SetEntityNamePrefix( prefix );
 //                Framework.SetEntityNamePrefixDateTime();
             }
         }
@@ -165,41 +168,41 @@ public class PyramidRegionLayerLabelsDemo {
         int queueLength = 46;
 
         // Define some entities
-        String experimentName           = Framework.GetEntityName( "experiment" );
-        String constantName             = Framework.GetEntityName( "constant" );
-        String imageSourceName          = Framework.GetEntityName( "image-source" );
-        String valueSeriesTruthName     = Framework.GetEntityName( "value-series-truth" );
-        String valueSeriesErrorFnName   = Framework.GetEntityName( "value-series-error-fn" );
-        String dataQueuePredictionName  = Framework.GetEntityName( "data-queue-prediction" );
-        String dataQueueOutput1Name     = Framework.GetEntityName( "data-queue-output-1" );
-        String dataQueueOutput2Name     = Framework.GetEntityName( "data-queue-output-2" );
-        String dataQueueOutput3Name     = Framework.GetEntityName( "data-queue-output-3" );
-        String dataQueueOutput4Name     = Framework.GetEntityName( "data-queue-output-4" );
-        String dataQueueOutput5Name     = Framework.GetEntityName( "data-queue-output-5" );
-        String dataQueueOutput6Name     = Framework.GetEntityName( "data-queue-output-6" );
+        String experimentName           = PersistenceUtil.GetEntityName( "experiment" );
+        String constantName             = PersistenceUtil.GetEntityName( "constant" );
+        String imageSourceName          = PersistenceUtil.GetEntityName( "image-source" );
+        String valueSeriesTruthName     = PersistenceUtil.GetEntityName( "value-series-truth" );
+        String valueSeriesErrorFnName   = PersistenceUtil.GetEntityName( "value-series-error-fn" );
+        String dataQueuePredictionName  = PersistenceUtil.GetEntityName( "data-queue-prediction" );
+        String dataQueueOutput1Name     = PersistenceUtil.GetEntityName( "data-queue-output-1" );
+        String dataQueueOutput2Name     = PersistenceUtil.GetEntityName( "data-queue-output-2" );
+        String dataQueueOutput3Name     = PersistenceUtil.GetEntityName( "data-queue-output-3" );
+        String dataQueueOutput4Name     = PersistenceUtil.GetEntityName( "data-queue-output-4" );
+        String dataQueueOutput5Name     = PersistenceUtil.GetEntityName( "data-queue-output-5" );
+        String dataQueueOutput6Name     = PersistenceUtil.GetEntityName( "data-queue-output-6" );
 
-        String classifier1Name           = Framework.GetEntityName( "classifier-1" );
-        String classifier2Name           = Framework.GetEntityName( "classifier-2" );
-        String classifier3Name           = Framework.GetEntityName( "classifier-3" );
-        String classifier4Name           = Framework.GetEntityName( "classifier-4" );
-        String classifier5Name           = Framework.GetEntityName( "classifier-5" );
-        String classifier6Name           = Framework.GetEntityName( "classifier-6" );
+        String classifier1Name           = PersistenceUtil.GetEntityName( "classifier-1" );
+        String classifier2Name           = PersistenceUtil.GetEntityName( "classifier-2" );
+        String classifier3Name           = PersistenceUtil.GetEntityName( "classifier-3" );
+        String classifier4Name           = PersistenceUtil.GetEntityName( "classifier-4" );
+        String classifier5Name           = PersistenceUtil.GetEntityName( "classifier-5" );
+        String classifier6Name           = PersistenceUtil.GetEntityName( "classifier-6" );
 
-        String regionLayer1Name         = Framework.GetEntityName( "region-layer-1" );
-        String regionLayer2Name         = Framework.GetEntityName( "region-layer-2" );
-        String regionLayer3Name         = Framework.GetEntityName( "region-layer-3" );
-        String regionLayer4Name         = Framework.GetEntityName( "region-layer-4" );
-        String regionLayer5Name         = Framework.GetEntityName( "region-layer-5" );
-        String regionLayer6Name         = Framework.GetEntityName( "region-layer-6" );
+        String regionLayer1Name         = PersistenceUtil.GetEntityName( "region-layer-1" );
+        String regionLayer2Name         = PersistenceUtil.GetEntityName( "region-layer-2" );
+        String regionLayer3Name         = PersistenceUtil.GetEntityName( "region-layer-3" );
+        String regionLayer4Name         = PersistenceUtil.GetEntityName( "region-layer-4" );
+        String regionLayer5Name         = PersistenceUtil.GetEntityName( "region-layer-5" );
+        String regionLayer6Name         = PersistenceUtil.GetEntityName( "region-layer-6" );
 
-        Framework.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
-        Framework.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), experimentName ); // ok all input to the regions is ready
+        PersistenceUtil.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
+        PersistenceUtil.CreateEntity( constantName, ConstantMatrixEntity.ENTITY_TYPE, n.getName(), experimentName ); // ok all input to the regions is ready
 
         if( testType == TEST_TYPE_IMAGE_SEQUENCE ) {
-            Framework.CreateEntity( imageSourceName, ImageLabelEntity.ENTITY_TYPE, n.getName(), constantName );
+            PersistenceUtil.CreateEntity( imageSourceName, ImageLabelEntity.ENTITY_TYPE, n.getName(), constantName );
         }
         else if( testType == TEST_TYPE_TEXT_SEQUENCE ) {
-            Framework.CreateEntity( imageSourceName, Text2ImageLabelEntity.ENTITY_TYPE, n.getName(), constantName );
+            PersistenceUtil.CreateEntity( imageSourceName, Text2ImageLabelEntity.ENTITY_TYPE, n.getName(), constantName );
         }
 
         // Region-layers
@@ -209,113 +212,113 @@ public class PyramidRegionLayerLabelsDemo {
         ArrayList< String > learningEntities = new ArrayList< String >();
 
         String previousName = imageSourceName;
-        Framework.CreateEntity( classifier1Name, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), previousName );
+        PersistenceUtil.CreateEntity( classifier1Name, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), previousName );
         previousName = classifier1Name;
         learningEntities.add( previousName );
 
-        Framework.CreateEntity( regionLayer1Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), previousName );
+        PersistenceUtil.CreateEntity( regionLayer1Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), previousName );
         previousName = regionLayer1Name;
         learningEntities.add( previousName );
 
-        Framework.CreateEntity( classifier2Name, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), previousName );
+        PersistenceUtil.CreateEntity( classifier2Name, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), previousName );
         previousName = classifier2Name;
         learningEntities.add( previousName );
 
-        Framework.CreateEntity( regionLayer2Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), previousName );
+        PersistenceUtil.CreateEntity( regionLayer2Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), previousName );
         previousName = regionLayer2Name;
         learningEntities.add( previousName );
 
-        Framework.CreateEntity( classifier3Name, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), previousName );
+        PersistenceUtil.CreateEntity( classifier3Name, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), previousName );
         previousName = classifier3Name;
         learningEntities.add( previousName );
 
-        Framework.CreateEntity( regionLayer3Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), previousName );
+        PersistenceUtil.CreateEntity( regionLayer3Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), previousName );
         previousName = regionLayer3Name;
         learningEntities.add( previousName );
 
-        Framework.CreateEntity( classifier4Name, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), previousName );
+        PersistenceUtil.CreateEntity( classifier4Name, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), previousName );
         previousName = classifier4Name;
         learningEntities.add( previousName );
 
-        Framework.CreateEntity( regionLayer4Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), previousName );
+        PersistenceUtil.CreateEntity( regionLayer4Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), previousName );
         previousName = regionLayer4Name;
         learningEntities.add( previousName );
 
-        Framework.CreateEntity( classifier5Name, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), previousName );
+        PersistenceUtil.CreateEntity( classifier5Name, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), previousName );
         previousName = classifier5Name;
         learningEntities.add( previousName );
 
-        Framework.CreateEntity( regionLayer5Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), previousName );
+        PersistenceUtil.CreateEntity( regionLayer5Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), previousName );
         previousName = regionLayer5Name;
         learningEntities.add( previousName );
 
-        Framework.CreateEntity( classifier6Name, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), previousName );
+        PersistenceUtil.CreateEntity( classifier6Name, QuiltedCompetitiveLearningEntity.ENTITY_TYPE, n.getName(), previousName );
         previousName = classifier6Name;
         learningEntities.add( previousName );
 
-        Framework.CreateEntity( regionLayer6Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), previousName );
+        PersistenceUtil.CreateEntity( regionLayer6Name, PyramidRegionLayerEntity.ENTITY_TYPE, n.getName(), previousName );
         previousName = regionLayer6Name;
         learningEntities.add( previousName );
         // Region-layers
 
-//        Framework.CreateEntity( classifierName, FeedForwardNetworkEntity.ENTITY_TYPE, n.getName(), previousName ); // ok all input to the regions is ready
+//        PersistenceUtil.CreateEntity( classifierName, FeedForwardNetworkEntity.ENTITY_TYPE, n.getName(), previousName ); // ok all input to the regions is ready
 
         if( doLogging ) {
-            Framework.CreateEntity( valueSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), previousName );
-            Framework.CreateEntity( valueSeriesErrorFnName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), previousName );
+            PersistenceUtil.CreateEntity( valueSeriesTruthName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), previousName );
+            PersistenceUtil.CreateEntity( valueSeriesErrorFnName, ValueSeriesEntity.ENTITY_TYPE, n.getName(), previousName );
 
-            Framework.CreateEntity( dataQueuePredictionName, DataQueueEntity.ENTITY_TYPE, n.getName(), previousName );
-            Framework.CreateEntity( dataQueueOutput1Name, DataQueueEntity.ENTITY_TYPE, n.getName(), previousName );
-            Framework.CreateEntity( dataQueueOutput2Name, DataQueueEntity.ENTITY_TYPE, n.getName(), previousName );
-            Framework.CreateEntity( dataQueueOutput3Name, DataQueueEntity.ENTITY_TYPE, n.getName(), previousName );
-            Framework.CreateEntity( dataQueueOutput4Name, DataQueueEntity.ENTITY_TYPE, n.getName(), previousName );
-            Framework.CreateEntity( dataQueueOutput5Name, DataQueueEntity.ENTITY_TYPE, n.getName(), previousName );
-            Framework.CreateEntity( dataQueueOutput6Name, DataQueueEntity.ENTITY_TYPE, n.getName(), previousName );
+            PersistenceUtil.CreateEntity( dataQueuePredictionName, DataQueueEntity.ENTITY_TYPE, n.getName(), previousName );
+            PersistenceUtil.CreateEntity( dataQueueOutput1Name, DataQueueEntity.ENTITY_TYPE, n.getName(), previousName );
+            PersistenceUtil.CreateEntity( dataQueueOutput2Name, DataQueueEntity.ENTITY_TYPE, n.getName(), previousName );
+            PersistenceUtil.CreateEntity( dataQueueOutput3Name, DataQueueEntity.ENTITY_TYPE, n.getName(), previousName );
+            PersistenceUtil.CreateEntity( dataQueueOutput4Name, DataQueueEntity.ENTITY_TYPE, n.getName(), previousName );
+            PersistenceUtil.CreateEntity( dataQueueOutput5Name, DataQueueEntity.ENTITY_TYPE, n.getName(), previousName );
+            PersistenceUtil.CreateEntity( dataQueueOutput6Name, DataQueueEntity.ENTITY_TYPE, n.getName(), previousName );
 
             if( cacheAllData ) {
-                Framework.SetConfig( valueSeriesTruthName, "cache", String.valueOf( cacheAllData ) );
-                Framework.SetConfig( valueSeriesErrorFnName, "cache", String.valueOf( cacheAllData ) );
-                Framework.SetConfig( dataQueuePredictionName, "cache", String.valueOf( cacheAllData ) );
-                Framework.SetConfig( dataQueueOutput1Name, "cache", String.valueOf( cacheAllData ) );
-                Framework.SetConfig( dataQueueOutput2Name, "cache", String.valueOf( cacheAllData ) );
-                Framework.SetConfig( dataQueueOutput3Name, "cache", String.valueOf( cacheAllData ) );
-                Framework.SetConfig( dataQueueOutput4Name, "cache", String.valueOf( cacheAllData ) );
-                Framework.SetConfig( dataQueueOutput5Name, "cache", String.valueOf( cacheAllData ) );
-                Framework.SetConfig( dataQueueOutput6Name, "cache", String.valueOf( cacheAllData ) );
+                PersistenceUtil.SetConfig( valueSeriesTruthName, "cache", String.valueOf( cacheAllData ) );
+                PersistenceUtil.SetConfig( valueSeriesErrorFnName, "cache", String.valueOf( cacheAllData ) );
+                PersistenceUtil.SetConfig( dataQueuePredictionName, "cache", String.valueOf( cacheAllData ) );
+                PersistenceUtil.SetConfig( dataQueueOutput1Name, "cache", String.valueOf( cacheAllData ) );
+                PersistenceUtil.SetConfig( dataQueueOutput2Name, "cache", String.valueOf( cacheAllData ) );
+                PersistenceUtil.SetConfig( dataQueueOutput3Name, "cache", String.valueOf( cacheAllData ) );
+                PersistenceUtil.SetConfig( dataQueueOutput4Name, "cache", String.valueOf( cacheAllData ) );
+                PersistenceUtil.SetConfig( dataQueueOutput5Name, "cache", String.valueOf( cacheAllData ) );
+                PersistenceUtil.SetConfig( dataQueueOutput6Name, "cache", String.valueOf( cacheAllData ) );
             }
 
-            Framework.SetConfig( dataQueuePredictionName, "queueLength", String.valueOf( queueLength ) );
-            Framework.SetConfig( dataQueueOutput1Name, "queueLength", String.valueOf( queueLength ) );
-            Framework.SetConfig( dataQueueOutput2Name, "queueLength", String.valueOf( queueLength ) );
-            Framework.SetConfig( dataQueueOutput3Name, "queueLength", String.valueOf( queueLength ) );
-            Framework.SetConfig( dataQueueOutput4Name, "queueLength", String.valueOf( queueLength ) );
-            Framework.SetConfig( dataQueueOutput5Name, "queueLength", String.valueOf( queueLength ) );
-            Framework.SetConfig( dataQueueOutput6Name, "queueLength", String.valueOf( queueLength ) );
+            PersistenceUtil.SetConfig( dataQueuePredictionName, "queueLength", String.valueOf( queueLength ) );
+            PersistenceUtil.SetConfig( dataQueueOutput1Name, "queueLength", String.valueOf( queueLength ) );
+            PersistenceUtil.SetConfig( dataQueueOutput2Name, "queueLength", String.valueOf( queueLength ) );
+            PersistenceUtil.SetConfig( dataQueueOutput3Name, "queueLength", String.valueOf( queueLength ) );
+            PersistenceUtil.SetConfig( dataQueueOutput4Name, "queueLength", String.valueOf( queueLength ) );
+            PersistenceUtil.SetConfig( dataQueueOutput5Name, "queueLength", String.valueOf( queueLength ) );
+            PersistenceUtil.SetConfig( dataQueueOutput6Name, "queueLength", String.valueOf( queueLength ) );
 
-            Framework.SetDataReference( dataQueuePredictionName, DataQueueEntity.DATA_INPUT, classifier1Name, QuiltedCompetitiveLearningEntity.OUTPUT_1 );
-            Framework.SetDataReference( dataQueueOutput1Name, DataQueueEntity.DATA_INPUT, regionLayer1Name, PyramidRegionLayerEntity.OUTPUT );
-            Framework.SetDataReference( dataQueueOutput2Name, DataQueueEntity.DATA_INPUT, regionLayer2Name, PyramidRegionLayerEntity.OUTPUT );
-            Framework.SetDataReference( dataQueueOutput3Name, DataQueueEntity.DATA_INPUT, regionLayer3Name, PyramidRegionLayerEntity.OUTPUT );
-            Framework.SetDataReference( dataQueueOutput4Name, DataQueueEntity.DATA_INPUT, regionLayer4Name, PyramidRegionLayerEntity.OUTPUT );
-            Framework.SetDataReference( dataQueueOutput5Name, DataQueueEntity.DATA_INPUT, regionLayer5Name, PyramidRegionLayerEntity.OUTPUT );
-            Framework.SetDataReference( dataQueueOutput6Name, DataQueueEntity.DATA_INPUT, regionLayer6Name, PyramidRegionLayerEntity.OUTPUT );
+            DataRefUtil.SetDataReference( dataQueuePredictionName, DataQueueEntity.DATA_INPUT, classifier1Name, QuiltedCompetitiveLearningEntity.OUTPUT_1 );
+            DataRefUtil.SetDataReference( dataQueueOutput1Name, DataQueueEntity.DATA_INPUT, regionLayer1Name, PyramidRegionLayerEntity.OUTPUT );
+            DataRefUtil.SetDataReference( dataQueueOutput2Name, DataQueueEntity.DATA_INPUT, regionLayer2Name, PyramidRegionLayerEntity.OUTPUT );
+            DataRefUtil.SetDataReference( dataQueueOutput3Name, DataQueueEntity.DATA_INPUT, regionLayer3Name, PyramidRegionLayerEntity.OUTPUT );
+            DataRefUtil.SetDataReference( dataQueueOutput4Name, DataQueueEntity.DATA_INPUT, regionLayer4Name, PyramidRegionLayerEntity.OUTPUT );
+            DataRefUtil.SetDataReference( dataQueueOutput5Name, DataQueueEntity.DATA_INPUT, regionLayer5Name, PyramidRegionLayerEntity.OUTPUT );
+            DataRefUtil.SetDataReference( dataQueueOutput6Name, DataQueueEntity.DATA_INPUT, regionLayer6Name, PyramidRegionLayerEntity.OUTPUT );
         }
 
         // cache all data for speed, when enabled
-        Framework.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
-        Framework.SetConfig( imageSourceName, "cache", String.valueOf( cacheAllData ) );
-//        Framework.SetConfig( regionLayer2Name, "cache", String.valueOf( cacheAllData ) );
-//        Framework.SetConfig( regionLayer3Name, "cache", String.valueOf( cacheAllData ) );
-  //      Framework.SetConfig( classifierName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( imageSourceName, "cache", String.valueOf( cacheAllData ) );
+//        PersistenceUtil.SetConfig( regionLayer2Name, "cache", String.valueOf( cacheAllData ) );
+//        PersistenceUtil.SetConfig( regionLayer3Name, "cache", String.valueOf( cacheAllData ) );
+  //      PersistenceUtil.SetConfig( classifierName, "cache", String.valueOf( cacheAllData ) );
 
         // RL1
         // it is more stable with the current spikes only as feedback.. ?
         // The current spikes represent a sequence over time, due to the slow decay
         {
-            Framework.SetDataReference( classifier1Name, QuiltedCompetitiveLearningEntity.INPUT_1, imageSourceName, ImageLabelEntity.OUTPUT_IMAGE );
-            Framework.SetDataReference( classifier1Name, QuiltedCompetitiveLearningEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
-            Framework.SetDataReference( classifier1Name, QuiltedCompetitiveLearningEntity.INPUT_QUILT, regionLayer1Name, PyramidRegionLayerEntity.PREDICTION_NEW );
-            Framework.SetDataReference( regionLayer1Name, PyramidRegionLayerEntity.INPUT_C, classifier1Name, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT );
+            DataRefUtil.SetDataReference( classifier1Name, QuiltedCompetitiveLearningEntity.INPUT_1, imageSourceName, ImageLabelEntity.OUTPUT_IMAGE );
+            DataRefUtil.SetDataReference( classifier1Name, QuiltedCompetitiveLearningEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
+            DataRefUtil.SetDataReference( classifier1Name, QuiltedCompetitiveLearningEntity.INPUT_QUILT, regionLayer1Name, PyramidRegionLayerEntity.PREDICTION_NEW );
+            DataRefUtil.SetDataReference( regionLayer1Name, PyramidRegionLayerEntity.INPUT_C, classifier1Name, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT );
 
             ArrayList< AbstractPair< String, String > > referenceEntitySuffixes = new ArrayList< AbstractPair< String, String > >();
 // 1st order
@@ -326,104 +329,104 @@ public class PyramidRegionLayerLabelsDemo {
 //            referenceEntitySuffixes.add( new AbstractPair< String, String >( classifier4Name, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT ) );
 //            referenceEntitySuffixes.add( new AbstractPair< String, String >( classifier5Name, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT ) );
 //            referenceEntitySuffixes.add( new AbstractPair< String, String >( classifier6Name, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT ) );
-            Framework.SetDataReferences( regionLayer1Name, PyramidRegionLayerEntity.INPUT_P, referenceEntitySuffixes );
+            DataRefUtil.SetDataReferences( regionLayer1Name, PyramidRegionLayerEntity.INPUT_P, referenceEntitySuffixes );
         }
 
         // RL2
         {
-            Framework.SetDataReference( classifier2Name, QuiltedCompetitiveLearningEntity.INPUT_1, regionLayer1Name, PyramidRegionLayerEntity.OUTPUT );
-            Framework.SetDataReference( classifier2Name, QuiltedCompetitiveLearningEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
-            Framework.SetDataReference( classifier2Name, QuiltedCompetitiveLearningEntity.INPUT_QUILT, regionLayer2Name, PyramidRegionLayerEntity.PREDICTION_NEW );
-            Framework.SetDataReference( regionLayer2Name, PyramidRegionLayerEntity.INPUT_C, classifier2Name, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT );
+            DataRefUtil.SetDataReference( classifier2Name, QuiltedCompetitiveLearningEntity.INPUT_1, regionLayer1Name, PyramidRegionLayerEntity.OUTPUT );
+            DataRefUtil.SetDataReference( classifier2Name, QuiltedCompetitiveLearningEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
+            DataRefUtil.SetDataReference( classifier2Name, QuiltedCompetitiveLearningEntity.INPUT_QUILT, regionLayer2Name, PyramidRegionLayerEntity.PREDICTION_NEW );
+            DataRefUtil.SetDataReference( regionLayer2Name, PyramidRegionLayerEntity.INPUT_C, classifier2Name, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT );
 
             ArrayList< AbstractPair< String, String > > referenceEntitySuffixes = new ArrayList< AbstractPair< String, String > >();
             referenceEntitySuffixes.add( new AbstractPair< String, String >( classifier3Name, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT ) );
-            Framework.SetDataReferences( regionLayer2Name, PyramidRegionLayerEntity.INPUT_P, referenceEntitySuffixes );
+            DataRefUtil.SetDataReferences( regionLayer2Name, PyramidRegionLayerEntity.INPUT_P, referenceEntitySuffixes );
         }
 
         // RL3
         {
-            Framework.SetDataReference( classifier3Name, QuiltedCompetitiveLearningEntity.INPUT_1, regionLayer2Name, PyramidRegionLayerEntity.OUTPUT );
-            Framework.SetDataReference( classifier3Name, QuiltedCompetitiveLearningEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
-            Framework.SetDataReference( classifier3Name, QuiltedCompetitiveLearningEntity.INPUT_QUILT, regionLayer3Name, PyramidRegionLayerEntity.PREDICTION_NEW );
-            Framework.SetDataReference( regionLayer3Name, PyramidRegionLayerEntity.INPUT_C, classifier3Name, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT );
+            DataRefUtil.SetDataReference( classifier3Name, QuiltedCompetitiveLearningEntity.INPUT_1, regionLayer2Name, PyramidRegionLayerEntity.OUTPUT );
+            DataRefUtil.SetDataReference( classifier3Name, QuiltedCompetitiveLearningEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
+            DataRefUtil.SetDataReference( classifier3Name, QuiltedCompetitiveLearningEntity.INPUT_QUILT, regionLayer3Name, PyramidRegionLayerEntity.PREDICTION_NEW );
+            DataRefUtil.SetDataReference( regionLayer3Name, PyramidRegionLayerEntity.INPUT_C, classifier3Name, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT );
 
             ArrayList< AbstractPair< String, String > > referenceEntitySuffixes = new ArrayList< AbstractPair< String, String > >();
             referenceEntitySuffixes.add( new AbstractPair< String, String >( constantName, ConstantMatrixEntity.OUTPUT ) );
-            Framework.SetDataReferences( regionLayer3Name, PyramidRegionLayerEntity.INPUT_P, referenceEntitySuffixes );
+            DataRefUtil.SetDataReferences( regionLayer3Name, PyramidRegionLayerEntity.INPUT_P, referenceEntitySuffixes );
         }
 
         // RL 4
         {
-            Framework.SetDataReference( classifier4Name, QuiltedCompetitiveLearningEntity.INPUT_1, regionLayer3Name, PyramidRegionLayerEntity.OUTPUT );
-            Framework.SetDataReference( classifier4Name, QuiltedCompetitiveLearningEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
-            Framework.SetDataReference( classifier4Name, QuiltedCompetitiveLearningEntity.INPUT_QUILT, regionLayer4Name, PyramidRegionLayerEntity.PREDICTION_NEW );
-            Framework.SetDataReference( regionLayer4Name, PyramidRegionLayerEntity.INPUT_C, classifier4Name, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT );
+            DataRefUtil.SetDataReference( classifier4Name, QuiltedCompetitiveLearningEntity.INPUT_1, regionLayer3Name, PyramidRegionLayerEntity.OUTPUT );
+            DataRefUtil.SetDataReference( classifier4Name, QuiltedCompetitiveLearningEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
+            DataRefUtil.SetDataReference( classifier4Name, QuiltedCompetitiveLearningEntity.INPUT_QUILT, regionLayer4Name, PyramidRegionLayerEntity.PREDICTION_NEW );
+            DataRefUtil.SetDataReference( regionLayer4Name, PyramidRegionLayerEntity.INPUT_C, classifier4Name, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT );
 
             ArrayList< AbstractPair< String, String > > referenceEntitySuffixes = new ArrayList< AbstractPair< String, String > >();
             referenceEntitySuffixes.add( new AbstractPair< String, String >( constantName, ConstantMatrixEntity.OUTPUT ) );
-            Framework.SetDataReferences( regionLayer4Name, PyramidRegionLayerEntity.INPUT_P, referenceEntitySuffixes );
+            DataRefUtil.SetDataReferences( regionLayer4Name, PyramidRegionLayerEntity.INPUT_P, referenceEntitySuffixes );
         }
 
         // RL 5
         {
-            Framework.SetDataReference( classifier5Name, QuiltedCompetitiveLearningEntity.INPUT_1, regionLayer4Name, PyramidRegionLayerEntity.OUTPUT );
-            Framework.SetDataReference( classifier5Name, QuiltedCompetitiveLearningEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
-            Framework.SetDataReference( classifier5Name, QuiltedCompetitiveLearningEntity.INPUT_QUILT, regionLayer5Name, PyramidRegionLayerEntity.PREDICTION_NEW );
-            Framework.SetDataReference( regionLayer5Name, PyramidRegionLayerEntity.INPUT_C, classifier5Name, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT );
+            DataRefUtil.SetDataReference( classifier5Name, QuiltedCompetitiveLearningEntity.INPUT_1, regionLayer4Name, PyramidRegionLayerEntity.OUTPUT );
+            DataRefUtil.SetDataReference( classifier5Name, QuiltedCompetitiveLearningEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
+            DataRefUtil.SetDataReference( classifier5Name, QuiltedCompetitiveLearningEntity.INPUT_QUILT, regionLayer5Name, PyramidRegionLayerEntity.PREDICTION_NEW );
+            DataRefUtil.SetDataReference( regionLayer5Name, PyramidRegionLayerEntity.INPUT_C, classifier5Name, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT );
 
             ArrayList< AbstractPair< String, String > > referenceEntitySuffixes = new ArrayList< AbstractPair< String, String > >();
             referenceEntitySuffixes.add( new AbstractPair< String, String >( constantName, ConstantMatrixEntity.OUTPUT ) );
-            Framework.SetDataReferences( regionLayer5Name, PyramidRegionLayerEntity.INPUT_P, referenceEntitySuffixes );
+            DataRefUtil.SetDataReferences( regionLayer5Name, PyramidRegionLayerEntity.INPUT_P, referenceEntitySuffixes );
         }
 
         // RL 6
         {
-            Framework.SetDataReference( classifier6Name, QuiltedCompetitiveLearningEntity.INPUT_1, regionLayer5Name, PyramidRegionLayerEntity.OUTPUT );
-            Framework.SetDataReference( classifier6Name, QuiltedCompetitiveLearningEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
-            Framework.SetDataReference( classifier6Name, QuiltedCompetitiveLearningEntity.INPUT_QUILT, regionLayer6Name, PyramidRegionLayerEntity.PREDICTION_NEW );
-            Framework.SetDataReference( regionLayer6Name, PyramidRegionLayerEntity.INPUT_C, classifier6Name, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT );
+            DataRefUtil.SetDataReference( classifier6Name, QuiltedCompetitiveLearningEntity.INPUT_1, regionLayer5Name, PyramidRegionLayerEntity.OUTPUT );
+            DataRefUtil.SetDataReference( classifier6Name, QuiltedCompetitiveLearningEntity.INPUT_2, constantName, ConstantMatrixEntity.OUTPUT );
+            DataRefUtil.SetDataReference( classifier6Name, QuiltedCompetitiveLearningEntity.INPUT_QUILT, regionLayer6Name, PyramidRegionLayerEntity.PREDICTION_NEW );
+            DataRefUtil.SetDataReference( regionLayer6Name, PyramidRegionLayerEntity.INPUT_C, classifier6Name, QuiltedCompetitiveLearningEntity.OUTPUT_QUILT );
 
             ArrayList< AbstractPair< String, String > > referenceEntitySuffixes = new ArrayList< AbstractPair< String, String > >();
             referenceEntitySuffixes.add( new AbstractPair< String, String >( constantName, ConstantMatrixEntity.OUTPUT ) );
-            Framework.SetDataReferences( regionLayer6Name, PyramidRegionLayerEntity.INPUT_P, referenceEntitySuffixes );
+            DataRefUtil.SetDataReferences( regionLayer6Name, PyramidRegionLayerEntity.INPUT_P, referenceEntitySuffixes );
         }
 
         // Experiment config
         if( !terminateByAge ) {
-            Framework.SetConfig( experimentName, "terminationEntityName", imageSourceName );
-            Framework.SetConfig( experimentName, "terminationConfigPath", "terminate" );
-            Framework.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
+            PersistenceUtil.SetConfig( experimentName, "terminationEntityName", imageSourceName );
+            PersistenceUtil.SetConfig( experimentName, "terminationConfigPath", "terminate" );
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", "-1" ); // wait for mnist to decide
         }
         else {
-            Framework.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
+            PersistenceUtil.SetConfig( experimentName, "terminationAge", String.valueOf( terminationAge ) ); // fixed steps
         }
 
         // Mnist config
-        Framework.SetConfig( imageSourceName, "receptiveField.receptiveFieldX", "0" );
-        Framework.SetConfig( imageSourceName, "receptiveField.receptiveFieldY", "0" );
-        Framework.SetConfig( imageSourceName, "receptiveField.receptiveFieldW", "28" );
-        Framework.SetConfig( imageSourceName, "receptiveField.receptiveFieldH", "28" );
-        Framework.SetConfig( imageSourceName, "resolution.resolutionX", "28" );
-        Framework.SetConfig( imageSourceName, "resolution.resolutionY", "28" );
-        Framework.SetConfig( imageSourceName, "greyscale", "true" );
-        Framework.SetConfig( imageSourceName, "invert", "true" );
-        Framework.SetConfig( imageSourceName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
-        Framework.SetConfig( imageSourceName, "sourceFilesPrefix", "postproc" );
-        Framework.SetConfig( imageSourceName, "sourceFilesPathTraining", imagesPathTraining );
-        Framework.SetConfig( imageSourceName, "sourceFilesPathTesting", imagesPathTesting );
-        Framework.SetConfig( imageSourceName, "sourceFilesLabelIndex", String.valueOf( sourceFilesLabelIndex ) );
-        Framework.SetConfig( imageSourceName, "trainingEpochs", String.valueOf( trainingEpochs ) );
-        Framework.SetConfig( imageSourceName, "testingEpochs", String.valueOf( testingEpochs ) );
-        Framework.SetConfig( imageSourceName, "shuffleTraining", String.valueOf( shuffleTrainingImages ) );
-        Framework.SetConfig( imageSourceName, "shuffleTesting", String.valueOf( shuffleTestingImages ) );
-        Framework.SetConfig( imageSourceName, "imageRepeats", String.valueOf( imageRepeats ) );
+        PersistenceUtil.SetConfig( imageSourceName, "receptiveField.receptiveFieldX", "0" );
+        PersistenceUtil.SetConfig( imageSourceName, "receptiveField.receptiveFieldY", "0" );
+        PersistenceUtil.SetConfig( imageSourceName, "receptiveField.receptiveFieldW", "28" );
+        PersistenceUtil.SetConfig( imageSourceName, "receptiveField.receptiveFieldH", "28" );
+        PersistenceUtil.SetConfig( imageSourceName, "resolution.resolutionX", "28" );
+        PersistenceUtil.SetConfig( imageSourceName, "resolution.resolutionY", "28" );
+        PersistenceUtil.SetConfig( imageSourceName, "greyscale", "true" );
+        PersistenceUtil.SetConfig( imageSourceName, "invert", "true" );
+        PersistenceUtil.SetConfig( imageSourceName, "sourceType", BufferedImageSourceFactory.TYPE_IMAGE_FILES );
+        PersistenceUtil.SetConfig( imageSourceName, "sourceFilesPrefix", "postproc" );
+        PersistenceUtil.SetConfig( imageSourceName, "sourceFilesPathTraining", imagesPathTraining );
+        PersistenceUtil.SetConfig( imageSourceName, "sourceFilesPathTesting", imagesPathTesting );
+        PersistenceUtil.SetConfig( imageSourceName, "sourceFilesLabelIndex", String.valueOf( sourceFilesLabelIndex ) );
+        PersistenceUtil.SetConfig( imageSourceName, "trainingEpochs", String.valueOf( trainingEpochs ) );
+        PersistenceUtil.SetConfig( imageSourceName, "testingEpochs", String.valueOf( testingEpochs ) );
+        PersistenceUtil.SetConfig( imageSourceName, "shuffleTraining", String.valueOf( shuffleTrainingImages ) );
+        PersistenceUtil.SetConfig( imageSourceName, "shuffleTesting", String.valueOf( shuffleTestingImages ) );
+        PersistenceUtil.SetConfig( imageSourceName, "imageRepeats", String.valueOf( imageRepeats ) );
 
         if( testType == TEST_TYPE_IMAGE_SEQUENCE ) {
         }
         else if( testType == TEST_TYPE_TEXT_SEQUENCE ) {
-            Framework.SetConfig( imageSourceName, "sourceTextFileTraining", textFileTraining );
-            Framework.SetConfig( imageSourceName, "sourceTextFileTesting", textFileTesting );
+            PersistenceUtil.SetConfig( imageSourceName, "sourceTextFileTraining", textFileTraining );
+            PersistenceUtil.SetConfig( imageSourceName, "sourceTextFileTesting", textFileTesting );
         }
 
         // Classifier config
@@ -431,9 +434,9 @@ public class PyramidRegionLayerLabelsDemo {
         // i.e. the algorithm will generate an image of the character it thinks will happen next.
         // Is this worth it? I could just train it on the features? Well there might be different features that are the same digit...?
 //        Need a delay entity?
-//        Framework.SetDataReference( classifierName, FeedForwardNetworkEntity.INPUT_FEATURES, regionLayer1Name, PyramidRegionLayerEntity.INPUT_C1_PREDICTED_OLD );
+//        DataRefUtil.SetDataReference( classifierName, FeedForwardNetworkEntity.INPUT_FEATURES, regionLayer1Name, PyramidRegionLayerEntity.INPUT_C1_PREDICTED_OLD );
 //I could digitize with the reconstruction of input - actually with label prediction I could digitize either.
-//        Framework.SetConfig( classifierName, "imageRepeats", String.valueOf(  ) );
+//        PersistenceUtil.SetConfig( classifierName, "imageRepeats", String.valueOf(  ) );
 //
 //        int hiddenLayerSize = 0;
 //        float regularization = 0;
@@ -461,13 +464,13 @@ public class PyramidRegionLayerLabelsDemo {
 
         // data series logging
         if( doLogging ) {
-            Framework.SetConfig( valueSeriesTruthName, "period", "-1" );
-            Framework.SetConfig( valueSeriesTruthName, "entityName", imageSourceName );
-            Framework.SetConfig( valueSeriesTruthName, "configPath", "imageLabel" );
+            PersistenceUtil.SetConfig( valueSeriesTruthName, "period", "-1" );
+            PersistenceUtil.SetConfig( valueSeriesTruthName, "entityName", imageSourceName );
+            PersistenceUtil.SetConfig( valueSeriesTruthName, "configPath", "imageLabel" );
 
-            Framework.SetConfig( valueSeriesErrorFnName, "period", "-1" );
-            Framework.SetConfig( valueSeriesErrorFnName, "entityName", regionLayer1Name );
-            Framework.SetConfig( valueSeriesErrorFnName, "configPath", "sumPredictionErrorFN" );
+            PersistenceUtil.SetConfig( valueSeriesErrorFnName, "period", "-1" );
+            PersistenceUtil.SetConfig( valueSeriesErrorFnName, "entityName", regionLayer1Name );
+            PersistenceUtil.SetConfig( valueSeriesErrorFnName, "configPath", "sumPredictionErrorFN" );
         }
 
         // region layer config
@@ -678,11 +681,11 @@ public class PyramidRegionLayerLabelsDemo {
                 field1StrideX, field1StrideY, field1SizeX, field1SizeY,
                 qclec, prlec, classifier6Name, regionLayer6Name );
 
-//        Framework.SetConfig( classifier3Name, qclec );
+//        PersistenceUtil.SetConfig( classifier3Name, qclec );
 //
-//        Framework.SetConfig( regionLayer1Name, prlec );
-//        Framework.SetConfig( regionLayer2Name, prlec );
-//        Framework.SetConfig( regionLayer3Name, prlec );
+//        PersistenceUtil.SetConfig( regionLayer1Name, prlec );
+//        PersistenceUtil.SetConfig( regionLayer2Name, prlec );
+//        PersistenceUtil.SetConfig( regionLayer3Name, prlec );
 //
     }
 
@@ -718,8 +721,8 @@ public class PyramidRegionLayerLabelsDemo {
         prlec.columnWidthCells = columnWidthCells;
         prlec.columnHeightCells = columnHeightCells;
 
-        Framework.SetConfig( classifierName, qclec );
-        Framework.SetConfig( regionLayerName, prlec );
+        PersistenceUtil.SetConfig( classifierName, qclec );
+        PersistenceUtil.SetConfig( regionLayerName, prlec );
 
     }
 }
