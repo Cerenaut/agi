@@ -225,8 +225,12 @@ public class CommonEntityFactory implements EntityFactory {
             return new AnalyticsEntity( objectMap, _n, modelEntity );
         }
 
-        if( entityType.equals( SupervisedBatchTrainingEntity.ENTITY_TYPE ) ) {
-            return new SupervisedBatchTrainingEntity( objectMap, _n, modelEntity );
+        if( entityType.equals( LogisticRegressionEntity.ENTITY_TYPE ) ) {
+            return new LogisticRegressionEntity( objectMap, _n, modelEntity );
+        }
+
+        if( entityType.equals( SvmEntity.ENTITY_TYPE ) ) {
+            return new SvmEntity( objectMap, _n, modelEntity );
         }
 
         if( entityType.equals( ClassificationAnalysisEntity.ENTITY_TYPE ) ) {
