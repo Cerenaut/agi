@@ -81,9 +81,10 @@ public class SvmTest {
      */
     @Parameters
     public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {"skin.train.sample.csv", "skin.test.sample.csv", 0, 2, 3},
-                {"spectf.train.csv", "spectf.test.csv", 1, 44, 0}
+        return Arrays.asList(new Object[][] {
+                {"iris.train.csv", "iris.test.csv", 0, 3, 4},
+                {"spectf.train.csv", "spectf.test.csv", 1, 44, 0},
+                {"skin.train.sample.csv", "skin.test.sample.csv", 0, 2, 3}
         });
     }
 
