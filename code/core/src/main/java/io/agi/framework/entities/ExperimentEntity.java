@@ -88,19 +88,21 @@ public class ExperimentEntity extends Entity {
         // see if external condition says terminate
         try {
 
-            String stringValue = PersistenceUtil.GetConfig( config.terminationEntityName, config.terminationConfigPath );
+            if( ( config.terminationEntityName != null ) && ( config.terminationConfigPath != null ) ) {
+                String stringValue = PersistenceUtil.GetConfig( config.terminationEntityName, config.terminationConfigPath );
 
-            Boolean b = Boolean.valueOf( stringValue );
+                Boolean b = Boolean.valueOf( stringValue );
 
-            if( b != null ) {
-                if( b ) {
-                    _logger.info( "Experiment: " + getName() + " terminating due to external condition." );
-                    config.terminate = true;
+                if( b != null ) {
+                    if( b ) {
+                        _logger.info( "Experiment: " + getName() + " terminating due to external condition." );
+                        config.terminate = true;
+                    }
+                    // don't force un-terminate...
+                    //                else {
+                    //                    config.terminate = false;
+                    //                }
                 }
-// don't force un-terminate...
-//                else {
-//                    config.terminate = false;
-//                }
             }
         }
         catch( Exception e ) {

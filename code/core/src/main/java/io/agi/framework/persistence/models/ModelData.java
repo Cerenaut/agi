@@ -92,8 +92,10 @@ public class ModelData {
             this.name = dataRef._key;
             this.refKeys = dataRef._refKeys;
             this.encoding = dataRef._encoding;
-            this.sizes = DataJsonSerializer.DataSizeToString( dataRef._data._dataSize );
-            this.elements = DataJsonSerializer.FloatArrayToString( dataRef._data, dataRef._encoding );
+            if( dataRef._data != null ) {
+                this.sizes = DataJsonSerializer.DataSizeToString( dataRef._data._dataSize );
+                this.elements = DataJsonSerializer.FloatArrayToString( dataRef._data, dataRef._encoding );
+            }
             return true;
         }
         catch( Exception e ) {

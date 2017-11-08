@@ -620,6 +620,20 @@ public class FloatArray {
         return sum;
     }
 
+    public float sumAbs() {
+
+        float sum = 0.0f;
+
+        int offset = 0;
+
+        while( offset < _values.length ) {
+            sum += Math.abs( _values[ offset ] );
+            ++offset;
+        }
+
+        return sum;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Scaling operations, normalization
     ////////////////////////////////////////////////////////////////////////////
