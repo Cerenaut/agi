@@ -34,12 +34,12 @@ import java.io.IOException;
 /**
  * Created by gideon on 14/12/16.
  */
-public class Svm extends NamedObject implements Callback, SupervisedBatchTraining {
+public class Svm extends NamedObject implements Callback, SupervisedBatchTraining<SvmConfig> {
 
     protected static final Logger _logger = LogManager.getLogger();
 
-    private SupervisedBatchTrainingConfig _config;
-    svm_model _model = null;
+    private SvmConfig _config;
+    private svm_model _model = null;
 
     public Svm( String name, ObjectMap om ) {
         super( name, om );
@@ -55,7 +55,7 @@ public class Svm extends NamedObject implements Callback, SupervisedBatchTrainin
     }
 
     @Override
-    public void setup( SupervisedBatchTrainingConfig config ) {
+    public void setup( SvmConfig config ) {
         this._config = config;
         loadModel();    // load model if it exists in config object
     }
@@ -198,8 +198,6 @@ public class Svm extends NamedObject implements Callback, SupervisedBatchTrainin
             }
         }
 
-
-
         return prob;
     }
 
@@ -210,7 +208,6 @@ public class Svm extends NamedObject implements Callback, SupervisedBatchTrainin
         param.svm_type = svm_parameter.C_SVC;
         param.kernel_type = svm_parameter.RBF;
         param.degree = 3;
-        param.gamma = 0.1;
         param.coef0 = 0;
         param.nu = 0.5;
         param.cache_size = 40;
@@ -224,6 +221,7 @@ public class Svm extends NamedObject implements Callback, SupervisedBatchTrainin
 
         // values from config
         param.C = _config.getConstraintsViolation();
+        param.gamma = _config.getGamma();
 
         return param;
     }

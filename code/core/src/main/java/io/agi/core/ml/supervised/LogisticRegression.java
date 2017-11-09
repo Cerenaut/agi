@@ -37,11 +37,11 @@ import java.util.ArrayList;
 /**
  * Created by gideon on 23/12/16.
  */
-public class LogisticRegression extends NamedObject implements Callback, SupervisedBatchTraining {
+public class LogisticRegression extends NamedObject implements Callback, SupervisedBatchTraining<LogisticRegressionConfig> {
 
     protected static final Logger _logger = LogManager.getLogger();
 
-    private SupervisedBatchTrainingConfig _config;
+    private LogisticRegressionConfig _config;
     private Model _model = null;
 
     public LogisticRegression( String name, ObjectMap om ) {
@@ -58,7 +58,7 @@ public class LogisticRegression extends NamedObject implements Callback, Supervi
     }
 
     @Override
-    public void setup( SupervisedBatchTrainingConfig config ) {
+    public void setup( LogisticRegressionConfig config ) {
         this._config = config;
         loadModel();    // load model if it exists in config object
     }

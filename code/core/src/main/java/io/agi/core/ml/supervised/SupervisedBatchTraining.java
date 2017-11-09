@@ -24,9 +24,9 @@ import io.agi.core.data.Data;
 /**
  * Created by gideon on 14/12/16.
  */
-public interface SupervisedBatchTraining {
+public interface SupervisedBatchTraining<DerivedConfigClass extends SupervisedBatchTrainingConfig> {
 
-    void setup( SupervisedBatchTrainingConfig config );
+    void setup( DerivedConfigClass config );
 
     void reset();
 

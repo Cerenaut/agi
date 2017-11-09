@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016.
+ * Copyright (c) 2017.
  *
  * This file is part of Project AGI. <http://agi.io>
  *
@@ -20,15 +20,11 @@
 package io.agi.framework.entities;
 
 /**
- * Created by dave on 9/07/16.
+ * Created by abdel on 30/10/17.
  */
-public class SupervisedBatchTrainingEntityConfig extends SupervisedLearningEntityConfig {
-
-    public static final String ALGORITHM_SVM = "algorithm-svm";
-    public static final String ALGORITHM_LOGISTIC_REGRESSION = "algorithm-logistic-regression";
+public class SvmEntityConfig extends SupervisedLearningEntityConfig {
 
     public String modelString = "";     // serialised form of the model
     public float C = 1.f;               // regularization parameter
-    public boolean bias;                // add bias term to input features before training (and predicting)
-    public String algorithm;            // the algorithm to use
+    public float gamma = 1.f;           // add bias term to input features before training (and predicting)
 }

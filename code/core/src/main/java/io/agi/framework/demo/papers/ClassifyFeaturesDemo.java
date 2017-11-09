@@ -131,15 +131,14 @@ public class ClassifyFeaturesDemo {
         analyticsEntityConfig.predictDuringTraining = true;
         analyticsEntityConfig.trainingDropoutProbability = trainingDropoutProbability;
 
-        SupervisedBatchTrainingEntityConfig logisticRegressionEntityConfig = new SupervisedBatchTrainingEntityConfig();
-        logisticRegressionEntityConfig.algorithm = SupervisedBatchTrainingEntityConfig.ALGORITHM_LOGISTIC_REGRESSION;
+        LogisticRegressionEntityConfig logisticRegressionEntityConfig = new LogisticRegressionEntityConfig();
         logisticRegressionEntityConfig.bias = true;
         logisticRegressionEntityConfig.C = 1.f;
         logisticRegressionEntityConfig.labelClasses = 10;
 
         PersistenceUtil.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
         PersistenceUtil.CreateEntity( analyticsName, AnalyticsEntity.ENTITY_TYPE, n.getName(), experimentName );
-        PersistenceUtil.CreateEntity( logisticRegressionName, SupervisedBatchTrainingEntity.ENTITY_TYPE, n.getName(), analyticsName );
+        PersistenceUtil.CreateEntity( logisticRegressionName, LogisticRegressionEntity.ENTITY_TYPE, n.getName(), analyticsName );
         PersistenceUtil.CreateEntity( classificationAnalysisName, ClassificationAnalysisEntity.ENTITY_TYPE, n.getName(), logisticRegressionName );
 
 
@@ -149,11 +148,11 @@ public class ClassifyFeaturesDemo {
         DataRefUtil.SetDataReference( analyticsName, AnalyticsEntity.INPUT_FEATURES, seriesPrefix + "feature-series", "output" );
         DataRefUtil.SetDataReference( analyticsName, AnalyticsEntity.INPUT_LABELS, seriesPrefix + "label-series", "output" );
 
-        DataRefUtil.SetDataReference( logisticRegressionName, SupervisedBatchTrainingEntity.INPUT_FEATURES, analyticsName, AnalyticsEntity.OUTPUT_FEATURES );
-        DataRefUtil.SetDataReference( logisticRegressionName, SupervisedBatchTrainingEntity.INPUT_LABELS, analyticsName, AnalyticsEntity.OUTPUT_LABELS );
+        DataRefUtil.SetDataReference( logisticRegressionName, LogisticRegressionEntity.INPUT_FEATURES, analyticsName, AnalyticsEntity.OUTPUT_FEATURES );
+        DataRefUtil.SetDataReference( logisticRegressionName, LogisticRegressionEntity.INPUT_LABELS, analyticsName, AnalyticsEntity.OUTPUT_LABELS );
 
-        DataRefUtil.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_TRUTH, logisticRegressionName, SupervisedBatchTrainingEntity.OUTPUT_LABELS_TRUTH );
-        DataRefUtil.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_PREDICTED, logisticRegressionName, SupervisedBatchTrainingEntity.OUTPUT_LABELS_PREDICTED );
+        DataRefUtil.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_TRUTH, logisticRegressionName, LogisticRegressionEntity.OUTPUT_LABELS_TRUTH );
+        DataRefUtil.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_PREDICTED, logisticRegressionName, LogisticRegressionEntity.OUTPUT_LABELS_PREDICTED );
 
 
         // 4) Set configurations

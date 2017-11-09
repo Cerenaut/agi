@@ -19,6 +19,7 @@
 
 package io.agi.framework.demo.papers;
 
+import io.agi.core.ml.supervised.LogisticRegression;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
 import io.agi.framework.demo.CreateEntityMain;
@@ -75,7 +76,7 @@ public class Phase2b extends CreateEntityMain {
 //        parentName = PersistenceUtil.CreateEntity( featureSeriesName, DataFileEntity.ENTITY_TYPE, n.getName(), parentName ); // experiment is the root entity
 //        parentName = PersistenceUtil.CreateEntity( labelSeriesName, DataFileEntity.ENTITY_TYPE, n.getName(), parentName ); // experiment is the root entity
         parentName = PersistenceUtil.CreateEntity( analyticsName, AnalyticsEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = PersistenceUtil.CreateEntity( logisticRegressionName, SupervisedBatchTrainingEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( logisticRegressionName, LogisticRegressionEntity.ENTITY_TYPE, n.getName(), parentName );
         parentName = PersistenceUtil.CreateEntity( classificationAnalysisName, ClassificationAnalysisEntity.ENTITY_TYPE, n.getName(), parentName );
 
 
@@ -111,8 +112,7 @@ public class Phase2b extends CreateEntityMain {
         analyticsEntityConfig.fileNameFeatures = fileNameReadFeatures;
         analyticsEntityConfig.fileNameLabels = fileNameReadLabels;
 
-        SupervisedBatchTrainingEntityConfig logisticRegressionEntityConfig = new SupervisedBatchTrainingEntityConfig();
-        logisticRegressionEntityConfig.algorithm = SupervisedBatchTrainingEntityConfig.ALGORITHM_LOGISTIC_REGRESSION;
+        LogisticRegressionEntityConfig logisticRegressionEntityConfig = new LogisticRegressionEntityConfig();
         logisticRegressionEntityConfig.bias = true;
         logisticRegressionEntityConfig.C = C;
         logisticRegressionEntityConfig.labelClasses = labelClasses;
@@ -135,11 +135,11 @@ public class Phase2b extends CreateEntityMain {
 //        DataRefUtil.SetDataReference( analyticsName, AnalyticsEntity.INPUT_FEATURES, featureSeriesName, DataFileEntity.OUTPUT_READ );
 //        DataRefUtil.SetDataReference( analyticsName, AnalyticsEntity.INPUT_LABELS, labelSeriesName, DataFileEntity.OUTPUT_READ );
 
-        DataRefUtil.SetDataReference( logisticRegressionName, SupervisedBatchTrainingEntity.INPUT_FEATURES, analyticsName, AnalyticsEntity.OUTPUT_FEATURES );
-        DataRefUtil.SetDataReference( logisticRegressionName, SupervisedBatchTrainingEntity.INPUT_LABELS, analyticsName, AnalyticsEntity.OUTPUT_LABELS );
+        DataRefUtil.SetDataReference( logisticRegressionName, LogisticRegressionEntity.INPUT_FEATURES, analyticsName, AnalyticsEntity.OUTPUT_FEATURES );
+        DataRefUtil.SetDataReference( logisticRegressionName, LogisticRegressionEntity.INPUT_LABELS, analyticsName, AnalyticsEntity.OUTPUT_LABELS );
 
-        DataRefUtil.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_TRUTH, logisticRegressionName, SupervisedBatchTrainingEntity.OUTPUT_LABELS_TRUTH );
-        DataRefUtil.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_PREDICTED, logisticRegressionName, SupervisedBatchTrainingEntity.OUTPUT_LABELS_PREDICTED );
+        DataRefUtil.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_TRUTH, logisticRegressionName, LogisticRegressionEntity.OUTPUT_LABELS_TRUTH );
+        DataRefUtil.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_PREDICTED, logisticRegressionName, LogisticRegressionEntity.OUTPUT_LABELS_PREDICTED );
 
 
         // 4) Set configurations

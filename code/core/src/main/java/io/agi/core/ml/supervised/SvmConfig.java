@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016.
+ * Copyright (c) 2017.
  *
  * This file is part of Project AGI. <http://agi.io>
  *
@@ -25,37 +25,29 @@ import io.agi.core.orm.ObjectMap;
 import java.util.Random;
 
 /**
- * Created by gideon on 23/12/16.
+ * Created by abdel on 12/10/17.
  */
-public class SupervisedBatchTrainingConfig extends NetworkConfig {
+public class SvmConfig extends SupervisedBatchTrainingConfig {
 
-    public String _keyConstraintsViolation = "constraints-violation";      // used for regularisation. C is the terminology used commonly for SVM.
-    public String _keyModelString = "modelString";  // represent the model in serialised form as a string
+    private String _keyGamma = "gamma";
 
     public void setup( ObjectMap om,
                        String name,
                        Random r,
                        String modelString,
-                       float constraintsViolation) {
-        super.setup( om, name, r );
+                       float constraintsViolation,
+                       double gamma) {
+        super.setup( om, name, r, modelString, constraintsViolation);
         setModelString( modelString );
-        setConstraintsViolation( constraintsViolation );
+        setGamma( gamma );
     }
 
-    public void setConstraintsViolation( float C ) {
-        _om.put( getKey( _keyConstraintsViolation ), C );
+    public void setGamma( double gamma ) {
+        _om.put( getKey( _keyGamma ), gamma );
     }
 
-    public float getConstraintsViolation() {
-        return _om.getFloat( getKey( _keyConstraintsViolation ) );
-    }
-
-    public void setModelString( String modelString ) {
-        _om.put( getKey( _keyModelString ), modelString );
-    }
-
-    public String getModelString() {
-        return _om.getString( getKey( _keyModelString ) );
+    public double getGamma() {
+        return _om.getDouble( getKey( _keyGamma ) );
     }
 
 }

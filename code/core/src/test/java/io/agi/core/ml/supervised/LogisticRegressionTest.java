@@ -130,8 +130,8 @@ public class LogisticRegressionTest {
 
         // setup learner
         FastRandom r = new FastRandom(  );
-        SupervisedBatchTrainingConfig config = new SupervisedBatchTrainingConfig( );
-        config.setup( om, "test-logistic-config", r, "", true, 100f);
+        LogisticRegressionConfig config = new LogisticRegressionConfig( );
+        config.setup( om, "test-logistic-config", r, "", 100f, true);
         _learner.setup( config );
 
         // train model
