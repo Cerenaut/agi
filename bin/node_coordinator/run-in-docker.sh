@@ -84,6 +84,7 @@ fi
 # should use the script /docker/run.sh,  but thinking of deprecating, not worth maintaining another script that isn't that useful
 dcmd="docker run $switch
         -w /root/dev/agi/bin/node_coordinator
+        -e AGI_LOGZIO_TOKEN=$AGI_LOGZIO_TOKEN
         -e VARIABLES_FILE='/root/dev/variables/variables-docker.sh'
         -v $AGI_HOME:/root/dev/agi
         -v $AGI_DATA_HOME:/root/dev/data
