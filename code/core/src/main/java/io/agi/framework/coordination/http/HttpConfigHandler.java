@@ -55,7 +55,7 @@ public class HttpConfigHandler implements HttpHandler {
     @Override
     public void handle( HttpExchange t ) throws IOException {
         int status = 400;
-        String response = "";
+        String response = "generic response";
         String request = "";
 
         try {
@@ -95,31 +95,41 @@ public class HttpConfigHandler implements HttpHandler {
                     config = m.get( PARAMETER_CONFIG ).trim();
                 }
 
-                ModelEntity me = _p.getEntity( entityName );
+                ModelEntity modelEntity = _p.getEntity( entityName );
 
-                if( method.equalsIgnoreCase( "GET" ) ) {
-                    configValue = PersistenceUtil.GetConfig( entityName );
-                    if( configValue == null ) {
-                        configValue = "null";
-                    }
-                    if( configValue.length() == 0 ) {
-                        configValue = "{}";
-                    }
-                    response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_VALUE + "\" : " + configValue + " }";
+                if( modelEntity == null ) {
+                    response = "Entity Name is incorrect - there is no entity by the name: " + entityName;
                 }
-                else if( method.equalsIgnoreCase( "POST" ) || method.equalsIgnoreCase( "PUT" ) ) {
-                    if( config != null ) {
-                        me.config = config; // replace entire config
-                        _p.persistEntity( me );
-                        response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_VALUE + "\" : " + config + " }";
+                else {
+                    if( method.equalsIgnoreCase( "GET" ) ) {
+                        configValue = PersistenceUtil.GetConfig( entityName );
+                        if( configValue == null ) {
+                            configValue = "null";
+                        }
+                        if( configValue.length() == 0 ) {
+                            configValue = "{}";
+                        }
+                        response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_VALUE + "\" : " + configValue + " }";
+                        status = 200;
                     }
-                    else if( ( configPath != null ) && ( configValue != null ) ) {
-                        PersistenceUtil.SetConfig( entityName, configPath, configValue );
-                        response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_PATH + "\" : \"" + configPath + "\", \"" + PARAMETER_VALUE + "\" : \"" + configValue + "\" }";
+                    else if( method.equalsIgnoreCase( "POST" ) || method.equalsIgnoreCase( "PUT" ) ) {
+                        if( config != null ) {
+                            modelEntity.config = config; // replace entire config
+                            _p.persistEntity( modelEntity );
+                            response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_VALUE + "\" : " + config + " }";
+                            status = 200;
+                        }
+                        else if( ( configPath != null ) && ( configValue != null ) ) {
+                            PersistenceUtil.SetConfig( entityName, configPath, configValue );
+                            response = "{ \"" + PARAMETER_ENTITY + "\" : \"" + entityName + "\", \"" + PARAMETER_PATH + "\" : \"" + configPath + "\", \"" + PARAMETER_VALUE + "\" : \"" + configValue + "\" }";
+                            status = 200;
+                        }
+                        else {
+                            response = "You must specify parameters 'config' or both 'value' and 'path'";
+                            status = 400;
+                        }
                     }
                 }
-
-                status = 200;
             }
         }
         catch( Exception e ) {
