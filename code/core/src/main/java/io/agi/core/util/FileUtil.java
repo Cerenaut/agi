@@ -63,6 +63,7 @@ public class FileUtil {
 
         try {
             f = new File( filePathName );
+            f.getParentFile().mkdirs();
             writer = new FileWriter( f.getAbsoluteFile(), append );
             writer.append( sb );
             writer.close();
