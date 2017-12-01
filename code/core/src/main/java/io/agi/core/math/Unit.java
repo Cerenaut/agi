@@ -82,6 +82,10 @@ public class Unit {
         return ( Math.min( Math.max( x, 0.0 ), 1.0 ) );
     }
 
+    public static float clamp( float x ) {
+        return ( Math.min( Math.max( x, 0f ), 1f ) );
+    }
+
     /**
      * Should be like normal add (ie linear) but with saturation approaching 1.
      * This is roughly what you get with the (atan(x)/(pi/2)) function.
