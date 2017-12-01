@@ -278,13 +278,14 @@ s     * @param errorBatch The derivative of the cost function with respect to th
 
     /**
      * Computes the error gradient d for a layer l_1 which feeds forward to a layer l_2.
-     * Therefore, the error gradient is backpropagated from layer 2 to layer 1
+     * Therefore, the error gradient is backpropagated from layer 2 to layer 1.
+     * This is the erorr gradient with respect to the weights, because we used the derivative of the activation fn.
      *
      * @param z_l1 The weighted sum of layer 1
-     * @param d_l1 The cost gradient in layer 1 (the output)
+     * @param d_l1 The cost gradient of weights in layer 1 (the output)
      * @param w_l2 The weights in layer 2.
-     * @param d_l2 The cost gradient in layer 2.
-     * @param f_l1 The transfer function and its derivative.
+     * @param d_l2 The cost gradient of weights in layer 2.
+     * @param f_l1 The transfer function and its derivative in layer 1.
      */
     public static void CostGradientInternal(
             FloatArray z_l1,
@@ -299,8 +300,10 @@ s     * @param errorBatch The derivative of the cost function with respect to th
         assert ( z_l1.getSize() == K );
         assert ( w_l2.getSize() == ( K * J ) );
 
+        CostGradientInput( d_l1, w_l2, d_l2 );
+
         for( int k = 0; k < K; ++k ) { // computing error for each "input"
-            float sum = 0.f;
+/*            float sum = 0.f;
 
             for( int j = 0; j < J; ++j ) {
                 int offset = j * K + k; // K = inputs, storage is all inputs adjacent
@@ -311,12 +314,46 @@ s     * @param errorBatch The derivative of the cost function with respect to th
                 Useful.IsBad( product );
 
                 sum += product;
-            }
+            }*/
+            float sum = d_l1._values[ k ];
 
             // d^l_k = sum_j :
             float z = z_l1._values[ k ];
             float d = ( float ) f_l1.fDerivative( z );
             d_l1._values[ k ] = sum * d;
+        }
+    }
+
+    /**
+     * Cost gradient at the input to a layer.
+     * @param di_l2
+     * @param w_l2
+     * @param d_l2
+     */
+    public static void CostGradientInput(
+            FloatArray di_l2,
+            FloatArray w_l2,
+            FloatArray d_l2 ) {
+
+        int K = di_l2.getSize(); // layer inputs ie neurons in layer l-1
+        int J = d_l2.getSize(); // layer outputs ie neurons in this layer l
+        assert ( w_l2.getSize() == ( K * J ) );
+
+        for( int k = 0; k < K; ++k ) { // computing error for each "input"
+            float sum = 0.f;
+
+            for( int j = 0; j < J; ++j ) {
+                int offset = j * K + k; // K = inputs, storage is all inputs adjacent
+                float w = w_l2._values[ offset ];
+                float d = d_l2._values[ j ]; // d_j i.e. partial derivative of loss fn with respect to the activation of j
+                float product = d * w;// + ( l2R * w );
+
+//                Useful.IsBad( product );
+
+                sum += product;
+            }
+
+            di_l2._values[ k ] = sum;
         }
     }
 

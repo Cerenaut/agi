@@ -121,11 +121,18 @@ public class NetworkLayer extends NamedObject {
         return af;
     }
 
+    public Data getOutput() {
+        return _outputs;
+    }
+
+    public void setInput( Data inputs ) {
+        _inputs.copy( inputs );
+    }
     public void setBatchInput( Data input, int batchCount ) {
         int nbrInputs = _inputs.getSize();
         int offsetThis = batchCount * nbrInputs;
         int offsetThat = 0;
-        _batchInputs.copyRange( _inputs, offsetThis, offsetThat, nbrInputs );
+        _batchInputs.copyRange( input, offsetThis, offsetThat, nbrInputs );
     }
 
     /**

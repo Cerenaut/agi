@@ -75,7 +75,7 @@ public abstract class ActivationFunction {
 
     /**
      * Returns the derivative of r.
-     *
+     * Always a positive quantity.
      * @param r
      * @return
      */
@@ -201,6 +201,13 @@ public abstract class ActivationFunction {
         return Math.tanh( x );
     }
 
+    /**
+     * https://theclevermachine.wordpress.com/2014/09/08/derivation-derivatives-for-common-neural-network-activation-functions/
+     * Similar to the derivative for the logistic sigmoid, the derivative of g_{tanh}(z) is a function of feed-forward
+     * activation evaluated at z, namely (1-g_{tanh}(z)^2).
+     * @param x
+     * @return
+     */
     public static double tanhDerivative( double x ) {
         double r = ActivationFunction.tanh(x);
         double d = 1.0 - ( r * r ); // equation 3.6
