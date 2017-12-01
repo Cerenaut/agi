@@ -297,14 +297,14 @@ public class DistractedSequenceRecallProblem implements QLearningProblem, Reward
         for( int sequence = 0; sequence < _sequenceLength; ++sequence ) {
 
             for( int c = 0; c < observations; ++c ) {
-                String s = " - ";
+                String s = "   ";
                 float r = _sequenceState._values[ sequence * observations + c ];
                 if( r > 0.f ) {
                     if( c < ( _targets + _prompts ) ) {
-                        s = " * ";
+                        s = "*  ";
                     }
                     else {
-                        s = " + ";
+                        s = "+  ";
                     }
                 }
 
@@ -314,17 +314,45 @@ public class DistractedSequenceRecallProblem implements QLearningProblem, Reward
             System.err.print( "| " );
 
             for( int c = 0; c < _targets; ++c ) {
-                String s = " - ";
+//                String s = "   ";
                 float r = _sequenceActions._values[ sequence * _targets + c ];
-                if( r > 0.f ) {
-                    if( c < ( _targets + _prompts ) ) {
-                        s = " * ";
-                    }
-                    else {
-                        s = " + ";
-                    }
+                String ideal = "";
+//                if( r > 0.f ) {
+//                    if( c < ( _targets + _prompts ) ) {
+//                        s = "*  ";
+//                    }
+//                    else {
+//                        s = "+  ";
+//                    }
+
+                    r = Math.min( 0.999f, Math.max( 0f, r ) );
+                    int n = (int)( r * 100f ); // 0..99
+                    String val = String.valueOf( n );
+                    while( val.length() < 3 ) val = " " + val;
+                    ideal += val;
+//                }
+                System.err.print( ideal );
+//                System.err.print( s );
+            }
+
+            String seq = String.valueOf( sequence );
+            while( seq.length() < 3 ) seq = " " + seq;
+            System.err.print( "-" + seq + "-" );
+
+            if( sequence == _sequence ) {
+                String agent = "";
+                for( int c = 0; c < _targets; ++c ) {
+//                    float r = _idealActions._values[ c ];
+                    float r = _actions._values[ c ];
+                    r = Math.min( 0.999f, Math.max( 0f, r ) );
+                    int n = (int)( r * 100f ); // 0..99
+                    String val = String.valueOf( n );
+                    while( val.length() < 3 ) val = " " + val;
+                    agent += val;
                 }
-                System.err.print( s );
+
+                System.err.print( agent );
+                System.err.print( " <---" );
             }
 
             System.err.println();
@@ -410,10 +438,10 @@ public class DistractedSequenceRecallProblem implements QLearningProblem, Reward
 
         _reward = 1f - maxError; // error = 0, reward = 1
 
-        if( _reward > 0.5f ) {
-            int g = 0;
-            g++;
-        }
+//        if( _reward > 0.5f ) {
+//            int g = 0;
+//            g++;
+//        }
     }
 
     public void update() {
