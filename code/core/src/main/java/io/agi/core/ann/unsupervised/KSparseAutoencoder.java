@@ -541,7 +541,23 @@ public class KSparseAutoencoder extends CompetitiveLearning {
                     float wDelta = learningRate * errorGradient;// * a;
 
                     if( useMomentum ) {
-                        // Momentum
+                        if( wDelta != 0f ) { // don't update momentum when we're not updating the weights
+                            // Momentum
+                            float vOld = weightsVelocity._values[ weightsOffset ];
+                            float vNew = ( vOld * momentum ) - wDelta;
+                            float wNew = wOld + vNew;
+
+                            if( Useful.IsBad( wNew ) ) {
+                                String error = "Autoencoder weight update produced a bad value: " + wNew;
+                                logger.error( error );
+                                logger.traceExit();
+                                System.exit( -1 );
+                            }
+
+                            weights._values[ weightsOffset ] = wNew;
+                            weightsVelocity._values[ weightsOffset ] = vNew;
+                        }
+                    } else {
                         float wNew = wOld - wDelta;
 
                         if( Useful.IsBad( wNew ) ) {
@@ -552,21 +568,6 @@ public class KSparseAutoencoder extends CompetitiveLearning {
                         }
 
                         weights._values[ weightsOffset ] = wNew;
-                    } else {
-                        // Momentum
-                        float vOld = weightsVelocity._values[ weightsOffset ];
-                        float vNew = ( vOld * momentum ) - wDelta;
-                        float wNew = wOld + vNew;
-
-                        if( Useful.IsBad( wNew ) ) {
-                            String error = "Autoencoder weight update produced a bad value: " + wNew;
-                            logger.error( error );
-                            logger.traceExit();
-                            System.exit( -1 );
-                        }
-
-                        weights._values[ weightsOffset ] = wNew;
-                        weightsVelocity._values[ weightsOffset ] = vNew;
                     } // momentum
 //                } // batch
             } // inputs
