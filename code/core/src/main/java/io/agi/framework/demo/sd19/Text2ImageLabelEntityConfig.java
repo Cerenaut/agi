@@ -32,6 +32,7 @@ public class Text2ImageLabelEntityConfig extends ImageLabelEntityConfig {
     // Set these
     public String sourceTextFileTraining;
     public String sourceTextFileTesting;
+    public boolean asciiEncoding = true; // if false, integer
 
     // defaults, automatically updated
     public int charIndex = -1;

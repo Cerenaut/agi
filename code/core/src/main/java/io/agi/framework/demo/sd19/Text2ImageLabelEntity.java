@@ -140,14 +140,22 @@ public class Text2ImageLabelEntity extends ImageLabelEntity {
         Text2ImageLabelEntityConfig config = ( Text2ImageLabelEntityConfig ) _config;
 
         char c = text.charAt( config.charIndex );
-        c = Character.toUpperCase(c);
+        c = Character.toUpperCase( c );
         int code = (int)c;
 
         config.character = String.valueOf( c );
-        config.characterCode = code;
 
-        code = Math.min( 255, code );
-        code = Math.max(   0, code );
+        if( config.asciiEncoding ) {
+            code = Math.min( 255, code );
+            code = Math.max(   0, code );
+            config.characterCode = code;
+        }
+        else {
+            code = Integer.valueOf( config.character );
+            code = Math.min( 9, code );
+            code = Math.max( 0, code );
+            config.characterCode = code;
+        }
 
         return code;
 //        String codeString = String.valueOf( code );
