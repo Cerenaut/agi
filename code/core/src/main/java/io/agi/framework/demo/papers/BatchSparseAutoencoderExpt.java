@@ -50,6 +50,11 @@ import java.util.ArrayList;
  * 1.5x output sparsity, 1 epoch (60k). New data refactor. Batch size 32, momentum 0.9
  * Errors: 2968 of 60000 = 95.05333% correct. / Errors: 574 of 10000 = 94.26% correct.
  *
+ * With momentum bug fixed and training batch idle cells towards max error in reconstruction:
+ * TESTED 88.9% / 84.8% 1 epoch (60k). momentum 0.9
+ * TESTED 96.8% / 94.8% 1 epoch (60k) momentum 0.0
+ * Existing results are momentum = 0, (old) lifetime sparsity selection. So try old sparsity selection WITH momentum.
+ * TESTED 98.6% / 96.82% momentum 0.9
  *
  * Created by dave on 8/07/16.
  */
@@ -190,6 +195,7 @@ public class BatchSparseAutoencoderExpt extends CreateEntityMain {
         float learningRate = 0.01f;
 //        float learningRate = 0.1f; BAD
         float momentum = 0.9f; // 0.9 in paper
+//        float momentum = 0f; // 0.9 in paper
         float weightsStdDev = 0.01f; // confirmed. Sigma From paper. used at reset
 
 //        PersistenceUtil.SetConfig( autoencoderName, "learningRate", String.valueOf( learningRate ) );
