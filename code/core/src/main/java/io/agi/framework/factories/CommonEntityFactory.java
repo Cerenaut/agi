@@ -188,6 +188,9 @@ public class CommonEntityFactory implements EntityFactory {
         if( entityType.equals( BiasedSparseAutoencoderEntity.ENTITY_TYPE ) ) {
             return new BiasedSparseAutoencoderEntity( objectMap, _n, modelEntity );
         }
+        if( entityType.equals( SparseSequenceAutoencoderEntity.ENTITY_TYPE ) ) {
+            return new SparseSequenceAutoencoderEntity( objectMap, _n, modelEntity );
+        }
 
         if( entityType.equals( BatchSparseNetworkEntity.ENTITY_TYPE ) ) {
             return new BatchSparseNetworkEntity( objectMap, _n, modelEntity );
