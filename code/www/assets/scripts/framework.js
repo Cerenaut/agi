@@ -102,6 +102,66 @@ var Framework = {
     Framework.doAjaxJson( suffix, callback, "GET" );
   },
 
+  // Follows references for you, but returns the JSON object of the Data directly.
+  getDataJson : function( dataName, callback ) {
+    var suffix = Framework.contextData + "?name=" + dataName;
+//    Framework.doAjaxJson( suffix, callback, "GET" );
+    Framework.doAjaxJson( suffix, function( json ) {
+      if( json.status != 200 ) {
+        callback( null ); // refer errors to caller
+        return;
+      }
+
+      var datas = JSON.parse( json.responseText );
+      if( datas.length != 1 ) {
+        callback( null ); // refer errors to caller
+        return;
+      }
+
+      var data = datas[ 0 ];
+
+      if( data.refKeys != "null" ) { // TODO in the API this should be fixed to a true null.
+        var dataRefName = data.refKeys
+        var suffixRef = Framework.contextData + "?name=" + dataRefName;
+        Framework.doAjaxJson( suffixRef, function( jsonRef ) {
+          if( jsonRef.status != 200 ) {
+            callback( null ); // refer errors to caller
+            return;
+          }
+
+          var datasRef = JSON.parse( jsonRef.responseText );
+          if( datasRef.length != 1 ) {
+            callback( null ); // refer errors to caller
+            return;
+          }
+
+          var dataRef = datasRef[ 0 ];
+          Framework.decode( dataRef );
+          
+          data.sizes = dataRef.sizes;
+          data.elements = dataRef.elements;       
+
+          callback( data ); 
+        }, "GET" );
+      }
+      else {  // no references
+        Framework.decode( data );
+        callback( data );
+      }
+    }, "GET" );
+  },
+
+  onGetData : function( json ) {
+
+    var data = datas[ 0 ];
+
+    Framework.decode( data );
+
+    Region.dataMap[ data.name ] = data;
+    Region.getData(); // get next data.
+  },
+
+
   getDataMeta : function( dataFilter, callback ) {
     var suffix = Framework.contextData + "?filter=" + dataFilter;
     Framework.doAjaxJson( suffix, callback, "GET" );
