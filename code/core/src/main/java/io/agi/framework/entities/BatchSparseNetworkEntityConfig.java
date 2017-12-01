@@ -41,6 +41,9 @@ public class BatchSparseNetworkEntityConfig extends EntityConfig {
     int batchCount = 0;
     int batchSize = 0;
 
+    boolean resetDelayed = false;
+
+
     public static void Set(
             String entityName,
             boolean cache,

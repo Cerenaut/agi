@@ -121,6 +121,7 @@ public class BatchSparseNetworkEntity extends Entity {
 
         // Get all the parameters:
         String name = getName();
+        BatchSparseNetworkEntityConfig config = ( BatchSparseNetworkEntityConfig ) _config;
 
         // Do nothing unless the input is defined
         Data trainingInput  = getData( INPUT_TRAINING_INPUT );
@@ -144,24 +145,26 @@ public class BatchSparseNetworkEntity extends Entity {
             // This is to break dependency cycles in the Entity-graph
             setData( OUTPUT_TESTING_OUTPUT, testingOutput );
 
+            if( config.reset ) {
+                config.resetDelayed = true;
+            }
+
             return;
         }
 
-HashSet< Integer > from = trainingInput.indicesMoreThan( 0.1f );
-HashSet< Integer > to = trainingOutput.indicesMoreThan( 0.1f );
+//HashSet< Integer > from = trainingInput.indicesMoreThan( 0.1f );
+//HashSet< Integer > to = trainingOutput.indicesMoreThan( 0.1f );
 
-        Point inputSize = Data2d.getSize( trainingInput );
-
-        int inputWidth = inputSize.x;
-        int inputHeight = inputSize.y;
-        int inputArea = inputWidth * inputHeight;
+//        Point inputSize = Data2d.getSize( trainingInput );
+//
+//        int inputWidth = inputSize.x;
+//        int inputHeight = inputSize.y;
+//        int inputArea = inputWidth * inputHeight;
+        int inputArea = trainingInput.getSize();
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Algorithm specific parameters
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Region size
-        BatchSparseNetworkEntityConfig config = ( BatchSparseNetworkEntityConfig ) _config;
-
         // Build the algorithm
         ObjectMap om = ObjectMap.GetInstance();
 
@@ -187,8 +190,9 @@ HashSet< Integer > to = trainingOutput.indicesMoreThan( 0.1f );
         copyDataFromPersistence( ksa );
 
         // Update the region-layer, including optional reset and learning on/off switch
-        if( config.reset ) {
+        if( config.reset || config.resetDelayed ) {
             ksa.reset();
+            config.resetDelayed = false;
         }
 
         ksa._c.setLearn( config.learn );
@@ -222,7 +226,7 @@ HashSet< Integer > to = trainingOutput.indicesMoreThan( 0.1f );
         ksa._testingHiddenSpikes = getDataLazyResize( SPIKES, ksa._testingHiddenSpikes._dataSize );
 //        ksa._inputReconstruction = getDataLazyResize( OUTPUT_RECONSTRUCTION, ksa._inputReconstruction._dataSize );
 
-        ksa._batchOutputIdeal = getDataLazyResize( BATCH_OUTPUT_IDEAL, ksa._batchOutputOutput._dataSize );
+        ksa._batchOutputIdeal = getDataLazyResize( BATCH_OUTPUT_IDEAL, ksa._batchOutputIdeal._dataSize );
         ksa._batchOutputOutput = getDataLazyResize( BATCH_OUTPUT_OUTPUT, ksa._batchOutputOutput._dataSize );
         ksa._batchOutputInput = getDataLazyResize( BATCH_OUTPUT_INPUT, ksa._batchOutputInput._dataSize );
         ksa._batchOutputInputLifetime = getDataLazyResize( BATCH_OUTPUT_INPUT_LIFETIME, ksa._batchOutputInputLifetime._dataSize );
