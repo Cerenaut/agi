@@ -188,7 +188,6 @@ public class LogisticRegressionTest {
             System.out.println( error );
         }
 
-
         // total correct values / total values
         double trainAccuracy = _predictionsVector.mean();
         double testAccuracy = _predictionsVectorTest.mean();
