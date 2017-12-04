@@ -1341,6 +1341,21 @@ public class FloatArray {
         }
     }
 
+    public void equals( FloatArray v ) {
+
+        int offset = 0;
+
+        while( offset < _values.length ) {
+            if ( _values[ offset ] == v._values[ offset ] ) {
+                _values[ offset ] = 1.0f;    // set to 'True'
+            }
+            else {
+                _values[ offset ] = 0.0f;   // set to 'False'
+            }
+            ++offset;
+        }
+    }
+
     public void add( FloatArray v ) {
 
         int offset = 0;
