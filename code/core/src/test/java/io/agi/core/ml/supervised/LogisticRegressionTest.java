@@ -155,6 +155,7 @@ public class LogisticRegressionTest {
     private void predict() throws Exception {
 
         boolean log = false;
+        float eps = 0.0000001f;
 
         // Evaluate on training data
         _learner.predict( _featuresMatrixTrain, _predictionsVector );
@@ -178,9 +179,9 @@ public class LogisticRegressionTest {
             System.out.println( classTruth );
         }
 
-        // set values to 1 if correct, 0 if not
-        _predictionsVector.equals( _classTruthVector );
-        _predictionsVectorTest.equals( _classTruthVectorTest );
+        // set values to 1 if error, 0 if not
+        _predictionsVector.approxEquals( _classTruthVector, eps );
+        _predictionsVectorTest.approxEquals( _classTruthVectorTest, eps );
 
         if ( log ) {
             String error = Data2d.toString( _predictionsVectorTest );
@@ -188,16 +189,16 @@ public class LogisticRegressionTest {
             System.out.println( error );
         }
 
-        // total correct values / total values
-        double trainAccuracy = _predictionsVector.mean();
-        double testAccuracy = _predictionsVectorTest.mean();
+        // count how many errors - an error is where the diff between prediction and label is greater than eps
+        double trainMeanError = _predictionsVector.mean();
+        double testMeanError = _predictionsVectorTest.mean();
 
         System.out.println( "Model = " + _learner.getModelString() );
-        System.out.println( "Training Accuracy = " + trainAccuracy * 100 + "%" );
-        System.out.println( "Testing Accuracy = " + testAccuracy * 100 + "%" );
+        System.out.println( "Training Accuracy = " + trainMeanError * 100 + "%" );
+        System.out.println( "Testing Accuracy = " + testMeanError * 100 + "%" );
 
-        assertTrue( trainAccuracy >= _trainAccuracy );
-        assertTrue( testAccuracy >= _testAccuracy );
+        assertTrue( trainMeanError >= _trainAccuracy );
+        assertTrue( testMeanError >= _testAccuracy );
     }
 
 }
