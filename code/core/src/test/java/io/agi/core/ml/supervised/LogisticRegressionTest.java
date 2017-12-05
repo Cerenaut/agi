@@ -51,11 +51,13 @@ public class LogisticRegressionTest {
     private Data _classTruthVectorTest = null;
 
     // Parameters
-    private String trainPath;
-    private String testPath;
-    private int featuresIdxMin;
-    private int featuresIdxMax;
-    private int classTruthIdx;
+    private String _trainPath;
+    private String _testPath;
+    private int _featuresIdxMin;
+    private int _featuresIdxMax;
+    private int _classTruthIdx;
+    private double _trainAccuracy;
+    private double _testAccuracy;
 
     /**
      * Sets up the parameters for the test
@@ -65,13 +67,17 @@ public class LogisticRegressionTest {
      * @param featuresIdxMin The column ID where features start
      * @param featuresIdxMax The column ID where features end
      * @param classTruthIdx The column ID of the target (y) / class truth
+     * @param trainAccuracy The expected training accuracy for assertion
+     * @param testAccuracy The expected test accuracy for assertion
      */
-    public LogisticRegressionTest(String trainPath, String testPath, int featuresIdxMin, int featuresIdxMax, int classTruthIdx) {
-        this.trainPath = trainPath;
-        this.testPath = testPath;
-        this.featuresIdxMin = featuresIdxMin;
-        this.featuresIdxMax = featuresIdxMax;
-        this.classTruthIdx = classTruthIdx;
+    public LogisticRegressionTest(String trainPath, String testPath, int featuresIdxMin, int featuresIdxMax, int classTruthIdx, double trainAccuracy, double testAccuracy) {
+        this._trainPath = trainPath;
+        this._testPath = testPath;
+        this._featuresIdxMin = featuresIdxMin;
+        this._featuresIdxMax = featuresIdxMax;
+        this._classTruthIdx = classTruthIdx;
+        this._trainAccuracy = trainAccuracy;
+        this._testAccuracy = testAccuracy;
     }
 
     /**
@@ -82,9 +88,10 @@ public class LogisticRegressionTest {
     @Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                {"iris.train.csv", "iris.test.csv", 0, 3, 4},
-                {"spectf.train.csv", "spectf.test.csv", 1, 44, 0},
-                {"skin.train.sample.csv", "skin.test.sample.csv", 0, 2, 3}
+                // trainPath, testPath, featuresIdxMin, featuresIdxMax, classTruthIdx, trainAccuracy, testAccuracy
+                {"iris.train.csv", "iris.test.csv", 0, 3, 4, 0.99, 0.95},
+                {"spectf.train.csv", "spectf.test.csv", 1, 44, 0, 1, 0.59},
+                {"skin.train.sample.csv", "skin.test.sample.csv", 0, 2, 3, 0.92, 0.92}
         });
     }
 
@@ -113,13 +120,13 @@ public class LogisticRegressionTest {
     public void setUp() throws Exception {
 
         // get data from file
-        String filePath = "src/test/resources/" + trainPath;
-        _featuresMatrixTrain = Data2d.createFromCSV( filePath, featuresIdxMin, featuresIdxMax);
-        _classTruthVector = Data2d.createFromCSV( filePath, classTruthIdx, classTruthIdx );
+        String filePath = "src/test/resources/" + _trainPath;
+        _featuresMatrixTrain = Data2d.createFromCSV( filePath, _featuresIdxMin, _featuresIdxMax);
+        _classTruthVector = Data2d.createFromCSV( filePath, _classTruthIdx, _classTruthIdx );
 
-        filePath = "src/test/resources/" + testPath;
-        _featuresMatrixTest = Data2d.createFromCSV( filePath, featuresIdxMin, featuresIdxMax );
-        _classTruthVectorTest = Data2d.createFromCSV( filePath, classTruthIdx, classTruthIdx );
+        filePath = "src/test/resources/" + _testPath;
+        _featuresMatrixTest = Data2d.createFromCSV( filePath, _featuresIdxMin, _featuresIdxMax );
+        _classTruthVectorTest = Data2d.createFromCSV( filePath, _classTruthIdx, _classTruthIdx );
 
         _predictionsVector = new Data( _classTruthVector._dataSize );
         _predictionsVectorTest = new Data( _classTruthVectorTest._dataSize );
@@ -148,7 +155,6 @@ public class LogisticRegressionTest {
     private void predict() throws Exception {
 
         boolean log = false;
-        float _eps = 0.0000001f;
 
         // Evaluate on training data
         _learner.predict( _featuresMatrixTrain, _predictionsVector );
@@ -158,9 +164,9 @@ public class LogisticRegressionTest {
 
         if ( log )
         {
-            String features = Data2d.toString( _featuresMatrixTrain );
+            String features = Data2d.toString( _featuresMatrixTest );
             String predictions = Data2d.toString( _predictionsVectorTest );
-            String classTruth = Data2d.toString( _classTruthVector );
+            String classTruth = Data2d.toString( _classTruthVectorTest );
 
             System.out.println( "Features" );
             System.out.println( features );
@@ -172,9 +178,9 @@ public class LogisticRegressionTest {
             System.out.println( classTruth );
         }
 
-        // set values to 1 if error, 0 if not
-        _predictionsVector.approxEquals( _classTruthVector, _eps );
-        _predictionsVectorTest.approxEquals( _classTruthVectorTest, _eps );
+        // set values to 1 if correct, 0 if not
+        _predictionsVector.equals( _classTruthVector );
+        _predictionsVectorTest.equals( _classTruthVectorTest );
 
         if ( log ) {
             String error = Data2d.toString( _predictionsVectorTest );
@@ -182,17 +188,16 @@ public class LogisticRegressionTest {
             System.out.println( error );
         }
 
-
-        // count how many errors - an error is where the diff between prediction and label is greater than eps
-        double trainMeanError = _predictionsVector.mean();
-        double testMeanError = _predictionsVectorTest.mean();
+        // total correct values / total values
+        double trainAccuracy = _predictionsVector.mean();
+        double testAccuracy = _predictionsVectorTest.mean();
 
         System.out.println( "Model = " + _learner.getModelString() );
-        System.out.println( "Training Accuracy = " + trainMeanError * 100 + "%" );
-        System.out.println( "Testing Accuracy = " + testMeanError * 100 + "%" );
+        System.out.println( "Training Accuracy = " + trainAccuracy * 100 + "%" );
+        System.out.println( "Testing Accuracy = " + testAccuracy * 100 + "%" );
 
-        assertTrue( trainMeanError > 0.91 );
-        assertTrue( testMeanError > 0.91 );
+        assertTrue( trainAccuracy >= _trainAccuracy );
+        assertTrue( testAccuracy >= _testAccuracy );
     }
 
 }
