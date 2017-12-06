@@ -336,7 +336,7 @@ public class LifetimeSparseAutoencoder extends CompetitiveLearning {
 
         // add the winning cells from each column PLUS the
         // Also calculates the output layer output
-        boolean batchSelectGreedy = false;
+        boolean batchSelectGreedy = true;
         if( batchSelectGreedy ) {
             batchSelectHiddenCells(
                     this._c,
