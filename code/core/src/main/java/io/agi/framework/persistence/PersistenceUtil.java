@@ -251,6 +251,46 @@ public class PersistenceUtil {
         persistence.persistEntity( modelEntity );
     }
 
+    public static void SetConfigLong( String entityName, String configPath, Long value ) {
+
+        _logger.debug( "Set config of: " + entityName + " path: " + configPath + " value: " + value );
+
+        Persistence persistence = Node.NodeInstance().getPersistence();
+        ModelEntity modelEntity = persistence.getEntity( entityName );
+        JsonParser parser = new JsonParser();
+        JsonObject root = parser.parse( modelEntity.config ).getAsJsonObject();
+
+        // navigate to the nested property
+        // N.B. String.split : http://stackoverflow.com/questions/3481828/how-to-split-a-string-in-java
+        JsonObject parent = root;
+        String[] pathParts = configPath.split( "[.]" );
+        int index = 0;
+        int maxIndex = pathParts.length - 1; // NOTE: one before the one we're looking for
+        String part = null;
+//        if( pathParts.length < 2 ) { // i.e. 0 or 1
+//            part = configPath;
+//        }
+
+        while( index < maxIndex ) {
+            part = pathParts[ index ];
+            JsonElement child = parent.get( part );
+
+            ++index;
+
+            parent = ( JsonObject ) child;
+        }
+
+        part = pathParts[ index ];
+
+        // replace the property:
+        parent.remove( part );
+        parent.addProperty( part, value );
+
+        // re-serialize the whole thing
+        modelEntity.config = root.toString();//getAsString();
+        persistence.persistEntity( modelEntity );
+    }
+
     /**
      * Allows a single config property to be obtained.
      *
