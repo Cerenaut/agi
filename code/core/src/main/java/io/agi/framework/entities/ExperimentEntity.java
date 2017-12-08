@@ -74,8 +74,8 @@ public class ExperimentEntity extends Entity {
         ExperimentEntityConfig config = ( ExperimentEntityConfig ) _config;
 
         if( config.age == 0 ) {
-            _startTime = System.currentTimeMillis();
-            System.out.println("Start time:" + _startTime);
+            config.startTime = System.currentTimeMillis();
+            PersistenceUtil.SetConfigLong( getName(), "startTime", config.startTime );
             _logger.info( "Experiment: " + getName() + " starting at age: " + _config.age + " t: " + System.currentTimeMillis() );
         }
         _logger.debug( "Experiment: " + getName() + " age: " + _config.age + " terminationAge: " + ( (ExperimentEntityConfig) _config ).terminationAge );
@@ -149,8 +149,7 @@ public class ExperimentEntity extends Entity {
 
         // After all children have finished updating and have flushed
         if( config.terminating ) {
-            config.runTime = System.currentTimeMillis() - _startTime;
-
+            config.runTime = System.currentTimeMillis() - config.startTime;
             _logger.info( "Experiment: " + getName() + " terminated at age: " + _config.age + " t: " + System.currentTimeMillis() );
             _logger.info( "Experiment Run Time: " + config.runTime );
 
