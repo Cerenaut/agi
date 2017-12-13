@@ -152,6 +152,7 @@ public class QuiltedCompetitiveLearningDemo extends CreateEntityMain {
         float stressThreshold = 0.01f; // when it ceases to split
         float utilityLearningRate = stressLearningRate;
         float utilityThreshold = -1f;//5f;//-1f;   -1 disables
+        float denoisePercentage = 0;
 
         // 25 * 49 = 1225
         // 36 * 36 = 1296
@@ -245,6 +246,7 @@ public class QuiltedCompetitiveLearningDemo extends CreateEntityMain {
         PersistenceUtil.SetConfig( quiltName, "classifierUtilityLearningRate", String.valueOf( utilityLearningRate ) );
         PersistenceUtil.SetConfig( quiltName, "classifierUtilityThreshold", String.valueOf( utilityThreshold ) );
         PersistenceUtil.SetConfig( quiltName, "classifierGrowthInterval", String.valueOf( growthInterval ) );
+        PersistenceUtil.SetConfig( quiltName, "classifierDenoisePercentage", String.valueOf( denoisePercentage ) );
 
         // Log features of the algorithm during all phases
         PersistenceUtil.SetConfig( vectorSeriesName, "period", String.valueOf( "-1" ) ); // infinite
