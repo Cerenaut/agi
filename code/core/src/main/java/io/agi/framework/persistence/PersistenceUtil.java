@@ -91,7 +91,7 @@ public class PersistenceUtil {
     /**
      * Allows a single config property to be modified.
      */
-    public static void SetConfig( String entityName, String configPath, String value ) {
+    private static void SetConfigProperty( String entityName, String configPath, Object value ) {
 
         _logger.debug( "Set config of: " + entityName + " path: " + configPath + " value: " + value );
 
@@ -124,171 +124,50 @@ public class PersistenceUtil {
 
         // replace the property:
         parent.remove( part );
-        parent.addProperty( part, value );
+
+        if( value instanceof Boolean ) {
+            parent.addProperty( part, ( Boolean ) value );
+        } else if( value instanceof Integer ) {
+            parent.addProperty( part, ( Integer ) value );
+        } else if( value instanceof Float ) {
+            parent.addProperty( part, ( Float ) value );
+        } else if ( value instanceof Long ) {
+            parent.addProperty( part, ( Long ) value );
+        } else {
+            parent.addProperty( part, ( String ) value );
+        }
 
         // re-serialize the whole thing
         modelEntity.config = root.toString();//getAsString();
         persistence.persistEntity( modelEntity );
+    }
+
+    /**
+     * Allows a single config property to be modified.
+     */
+    public static void SetConfig( String entityName, String configPath, String value ) {
+
+        SetConfigProperty( entityName, configPath, value );
     }
 
     public static void SetConfigBoolean( String entityName, String configPath, Boolean value ) {
 
-        _logger.debug( "Set config of: " + entityName + " path: " + configPath + " value: " + value );
-
-        Persistence persistence = Node.NodeInstance().getPersistence();
-        ModelEntity modelEntity = persistence.getEntity( entityName );
-        JsonParser parser = new JsonParser();
-        JsonObject root = parser.parse( modelEntity.config ).getAsJsonObject();
-
-        // navigate to the nested property
-        // N.B. String.split : http://stackoverflow.com/questions/3481828/how-to-split-a-string-in-java
-        JsonObject parent = root;
-        String[] pathParts = configPath.split( "[.]" );
-        int index = 0;
-        int maxIndex = pathParts.length - 1; // NOTE: one before the one we're looking for
-        String part = null;
-//        if( pathParts.length < 2 ) { // i.e. 0 or 1
-//            part = configPath;
-//        }
-
-        while( index < maxIndex ) {
-            part = pathParts[ index ];
-            JsonElement child = parent.get( part );
-
-            ++index;
-
-            parent = ( JsonObject ) child;
-        }
-
-        part = pathParts[ index ];
-
-        // replace the property:
-        parent.remove( part );
-        parent.addProperty( part, value );
-
-        // re-serialize the whole thing
-        modelEntity.config = root.toString();//getAsString();
-        persistence.persistEntity( modelEntity );
+        SetConfigProperty( entityName, configPath, value );
     }
 
     public static void SetConfigInteger( String entityName, String configPath, Integer value ) {
 
-        _logger.debug( "Set config of: " + entityName + " path: " + configPath + " value: " + value );
-
-        Persistence persistence = Node.NodeInstance().getPersistence();
-        ModelEntity modelEntity = persistence.getEntity( entityName );
-        JsonParser parser = new JsonParser();
-        JsonObject root = parser.parse( modelEntity.config ).getAsJsonObject();
-
-        // navigate to the nested property
-        // N.B. String.split : http://stackoverflow.com/questions/3481828/how-to-split-a-string-in-java
-        JsonObject parent = root;
-        String[] pathParts = configPath.split( "[.]" );
-        int index = 0;
-        int maxIndex = pathParts.length - 1; // NOTE: one before the one we're looking for
-        String part = null;
-//        if( pathParts.length < 2 ) { // i.e. 0 or 1
-//            part = configPath;
-//        }
-
-        while( index < maxIndex ) {
-            part = pathParts[ index ];
-            JsonElement child = parent.get( part );
-
-            ++index;
-
-            parent = ( JsonObject ) child;
-        }
-
-        part = pathParts[ index ];
-
-        // replace the property:
-        parent.remove( part );
-        parent.addProperty( part, value );
-
-        // re-serialize the whole thing
-        modelEntity.config = root.toString();//getAsString();
-        persistence.persistEntity( modelEntity );
+        SetConfigProperty( entityName, configPath, value );
     }
 
     public static void SetConfigFloat( String entityName, String configPath, Float value ) {
 
-        _logger.debug( "Set config of: " + entityName + " path: " + configPath + " value: " + value );
-
-        Persistence persistence = Node.NodeInstance().getPersistence();
-        ModelEntity modelEntity = persistence.getEntity( entityName );
-        JsonParser parser = new JsonParser();
-        JsonObject root = parser.parse( modelEntity.config ).getAsJsonObject();
-
-        // navigate to the nested property
-        // N.B. String.split : http://stackoverflow.com/questions/3481828/how-to-split-a-string-in-java
-        JsonObject parent = root;
-        String[] pathParts = configPath.split( "[.]" );
-        int index = 0;
-        int maxIndex = pathParts.length - 1; // NOTE: one before the one we're looking for
-        String part = null;
-//        if( pathParts.length < 2 ) { // i.e. 0 or 1
-//            part = configPath;
-//        }
-
-        while( index < maxIndex ) {
-            part = pathParts[ index ];
-            JsonElement child = parent.get( part );
-
-            ++index;
-
-            parent = ( JsonObject ) child;
-        }
-
-        part = pathParts[ index ];
-
-        // replace the property:
-        parent.remove( part );
-        parent.addProperty( part, value );
-
-        // re-serialize the whole thing
-        modelEntity.config = root.toString();//getAsString();
-        persistence.persistEntity( modelEntity );
+        SetConfigProperty( entityName, configPath, value );
     }
 
     public static void SetConfigLong( String entityName, String configPath, Long value ) {
 
-        _logger.debug( "Set config of: " + entityName + " path: " + configPath + " value: " + value );
-
-        Persistence persistence = Node.NodeInstance().getPersistence();
-        ModelEntity modelEntity = persistence.getEntity( entityName );
-        JsonParser parser = new JsonParser();
-        JsonObject root = parser.parse( modelEntity.config ).getAsJsonObject();
-
-        // navigate to the nested property
-        // N.B. String.split : http://stackoverflow.com/questions/3481828/how-to-split-a-string-in-java
-        JsonObject parent = root;
-        String[] pathParts = configPath.split( "[.]" );
-        int index = 0;
-        int maxIndex = pathParts.length - 1; // NOTE: one before the one we're looking for
-        String part = null;
-//        if( pathParts.length < 2 ) { // i.e. 0 or 1
-//            part = configPath;
-//        }
-
-        while( index < maxIndex ) {
-            part = pathParts[ index ];
-            JsonElement child = parent.get( part );
-
-            ++index;
-
-            parent = ( JsonObject ) child;
-        }
-
-        part = pathParts[ index ];
-
-        // replace the property:
-        parent.remove( part );
-        parent.addProperty( part, value );
-
-        // re-serialize the whole thing
-        modelEntity.config = root.toString();//getAsString();
-        persistence.persistEntity( modelEntity );
+        SetConfigProperty( entityName, configPath, value );
     }
 
     /**
