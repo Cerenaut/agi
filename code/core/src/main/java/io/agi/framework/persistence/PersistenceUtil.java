@@ -125,9 +125,7 @@ public class PersistenceUtil {
         // replace the property:
         parent.remove( part );
 
-        if( value instanceof String ) {
-            parent.addProperty( part, ( String ) value );
-        } else if( value instanceof Boolean ) {
+        if( value instanceof Boolean ) {
             parent.addProperty( part, ( Boolean ) value );
         } else if( value instanceof Integer ) {
             parent.addProperty( part, ( Integer ) value );
@@ -135,6 +133,8 @@ public class PersistenceUtil {
             parent.addProperty( part, ( Float ) value );
         } else if ( value instanceof Long ) {
             parent.addProperty( part, ( Long ) value );
+        } else {
+            parent.addProperty( part, ( String ) value );
         }
 
         // re-serialize the whole thing
