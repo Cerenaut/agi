@@ -133,6 +133,7 @@ public class GrowingNeuralGasDemo extends CreateEntityMain {
         float stressLearningRate = 0.01f; // not used now?
         float stressSplitLearningRate = 0.5f; // change to stress after a split
         float stressThreshold = 0.01f; // when it ceases to split
+        float denoisePercentage = 0;
 
         PersistenceUtil.SetConfig( competitiveLearningName, "learningRate", String.valueOf( learningRate ) );
         PersistenceUtil.SetConfig( competitiveLearningName, "widthCells", String.valueOf( widthCells ) );
@@ -144,6 +145,7 @@ public class GrowingNeuralGasDemo extends CreateEntityMain {
         PersistenceUtil.SetConfig( competitiveLearningName, "stressSplitLearningRate", String.valueOf( stressSplitLearningRate ) );
         PersistenceUtil.SetConfig( competitiveLearningName, "stressThreshold", String.valueOf( stressThreshold ) );
         PersistenceUtil.SetConfig( competitiveLearningName, "growthInterval", String.valueOf( growthInterval ) );
+        PersistenceUtil.SetConfig( competitiveLearningName, "denoisePercentage", String.valueOf( denoisePercentage ) );
 
         // Log features of the algorithm during all phases
         PersistenceUtil.SetConfig( vectorSeriesName, "period", String.valueOf( "-1" ) ); // infinite
