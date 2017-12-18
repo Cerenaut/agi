@@ -111,7 +111,7 @@ public class ClassifyFeaturesDemo {
         int trainingSamples = 60000;
         int testingSamples = 10000;
 
-        String seriesPrefix = "PREFIX--";
+        String seriesPrefix = "PASTASAUCE--";
         //String seriesPrefix = "";
 
         ExperimentEntityConfig experimentConfig = new ExperimentEntityConfig();
