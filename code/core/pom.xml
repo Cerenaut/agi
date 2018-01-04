@@ -24,7 +24,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.agi.core</groupId>
     <artifactId>agief</artifactId>
-    <version>1.0.179(3827ee8)</version>
+    <version>1.0.180(0454808)</version>
     <name>agief</name>
 
     <properties>
