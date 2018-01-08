@@ -1,6 +1,6 @@
 # Artificial General Intelligence Experimental Framework
 
-This repository contains code that might help us develop an artificial general intelligence - one day!
+This repository contains code for the development of artificial general intelligence.
 
 ## Introduction
 For an introduction to the content and purpose of this repository, see the [Wiki](https://github.com/ProjectAGI/agi/wiki). Motivation, results, ideas and other natural language stuff is on our [website](https://agi.io) and in particular our [blog](https://blog.agi.io).
