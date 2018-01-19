@@ -96,7 +96,7 @@ public class Phase2b extends CreateEntityMain {
         experimentConfig.terminationEntityName = analyticsName;
         experimentConfig.terminationConfigPath = "terminate";
         experimentConfig.terminationAge = -1;       // wait for analytics entity to decide
-        experimentConfig.reportingEntityName = classificationAnalysisName;
+        experimentConfig.reportingEntities = classificationAnalysisName;
         experimentConfig.reportingEntityConfigPath = "resultsSummary";
 
         AnalyticsEntityConfig analyticsEntityConfig = new AnalyticsEntityConfig();
