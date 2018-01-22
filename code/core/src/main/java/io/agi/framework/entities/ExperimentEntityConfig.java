@@ -37,7 +37,7 @@ public class ExperimentEntityConfig extends EntityConfig {
     public long startTime = 0;
     public long runTime = 0;
 
-    public String reportingEntities;
+    public String reportingEntityName;
     public String reportingEntityConfigPath;
 
 }
