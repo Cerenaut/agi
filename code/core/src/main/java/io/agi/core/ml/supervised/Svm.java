@@ -28,7 +28,11 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
+import java.io.File;
+import java.io.Reader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.BufferedReader;
 
 /**
  * Created by gideon on 14/12/16.
