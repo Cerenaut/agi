@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017.
+ * Copyright (c) 2018.
  *
  * This file is part of Project AGI. <http://agi.io>
  *
@@ -19,8 +19,6 @@
 
 package io.agi.framework.demo.papers;
 
-import io.agi.core.ml.supervised.LogisticRegression;
-import io.agi.framework.Framework;
 import io.agi.framework.Node;
 import io.agi.framework.demo.CreateEntityMain;
 import io.agi.framework.demo.mnist.AnalyticsEntity;
@@ -28,7 +26,6 @@ import io.agi.framework.demo.mnist.AnalyticsEntityConfig;
 import io.agi.framework.demo.mnist.ClassificationAnalysisEntity;
 import io.agi.framework.entities.*;
 import io.agi.framework.persistence.PersistenceUtil;
-import io.agi.framework.persistence.models.ModelData;
 import io.agi.framework.references.DataRefUtil;
 
 import java.io.File;
@@ -37,20 +34,17 @@ import java.io.File;
  * Applies a supervised classifier to a matrix of features and a vector of labels to try to predict the labels given
  * a testing set of features.
  *
- * Created by dave on 21/10/17.
+ * Created by abdel on 19/01/18.
  */
-public class Phase2b extends CreateEntityMain {
+public class Phase2bSvm extends CreateEntityMain {
 
     public static void main( String[] args ) {
-        Phase2b main = new Phase2b();
+        Phase2bSvm main = new Phase2bSvm();
         main.mainImpl( args );
     }
 
     public String getInputFilesPath() {
-//        return "/home/dave/Desktop/agi/data/";
-//        return "/home/dave/Desktop/agi/data/fast_data_test/2";
-//        return "/home/dave/Desktop/agi/data/Conv-GNG/1_epoch";
-        return "/home/dave/Desktop/agi/data/batch_sparse/1_epoch";
+        return "/Users/Abdel/Developer/code/ProjectAGI/data/batch_sparse/1_epoch";
     }
 
     public void createEntities( Node n ) {
@@ -62,10 +56,8 @@ public class Phase2b extends CreateEntityMain {
         // 1) Define entities
         // ---------------------------------------------
         String experimentName = PersistenceUtil.GetEntityName( "experiment" );
-//        String featureSeriesName = PersistenceUtil.GetEntityName( "feature-series" );
-//        String labelSeriesName = PersistenceUtil.GetEntityName( "label-series" );
         String analyticsName = PersistenceUtil.GetEntityName( "analytics" );
-        String logisticRegressionName = PersistenceUtil.GetEntityName( "logistic-regression" );
+        String svmName = PersistenceUtil.GetEntityName( "svm" );
         String classificationAnalysisName = PersistenceUtil.GetEntityName( "classification-analysis" );
 
 
@@ -73,24 +65,21 @@ public class Phase2b extends CreateEntityMain {
         // ---------------------------------------------
         String parentName = null;
         parentName = PersistenceUtil.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), parentName ); // experiment is the root entity
-//        parentName = PersistenceUtil.CreateEntity( featureSeriesName, DataFileEntity.ENTITY_TYPE, n.getName(), parentName ); // experiment is the root entity
-//        parentName = PersistenceUtil.CreateEntity( labelSeriesName, DataFileEntity.ENTITY_TYPE, n.getName(), parentName ); // experiment is the root entity
         parentName = PersistenceUtil.CreateEntity( analyticsName, AnalyticsEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = PersistenceUtil.CreateEntity( logisticRegressionName, LogisticRegressionEntity.ENTITY_TYPE, n.getName(), parentName );
-        parentName = PersistenceUtil.CreateEntity( classificationAnalysisName, ClassificationAnalysisEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( svmName, SvmEntity.ENTITY_TYPE, n.getName(), parentName );
+        PersistenceUtil.CreateEntity( classificationAnalysisName, ClassificationAnalysisEntity.ENTITY_TYPE, n.getName(), parentName );
 
 
         // 2) Configuration values
         // ---------------------------------------------
         int trainingSamples = 60000;
         int testingSamples = 10000;
-        float C = 1f;
         int labelClasses = 10;
+        float gamma = 0.1f;
+        float C = 1f;
 
         boolean cacheAllData = true;
         float trainingDropoutProbability = 0f;
-        //String seriesPrefix = "PREFIX--";
-        //String seriesPrefix = "";
 
         ExperimentEntityConfig experimentConfig = new ExperimentEntityConfig();
         experimentConfig.terminationEntityName = analyticsName;
@@ -105,55 +94,37 @@ public class Phase2b extends CreateEntityMain {
         analyticsEntityConfig.testSetOffset = trainingSamples;
         analyticsEntityConfig.trainSetSize = trainingSamples;
         analyticsEntityConfig.testSetSize = testingSamples;
-        analyticsEntityConfig.testingEntities = logisticRegressionName;
+        analyticsEntityConfig.testingEntities = svmName;
         analyticsEntityConfig.predictDuringTraining = true;
         analyticsEntityConfig.trainingDropoutProbability = trainingDropoutProbability;
         analyticsEntityConfig.useInputFiles = true;
         analyticsEntityConfig.fileNameFeatures = fileNameReadFeatures;
         analyticsEntityConfig.fileNameLabels = fileNameReadLabels;
 
-        LogisticRegressionEntityConfig logisticRegressionEntityConfig = new LogisticRegressionEntityConfig();
-        logisticRegressionEntityConfig.bias = true;
-        logisticRegressionEntityConfig.C = C;
-        logisticRegressionEntityConfig.labelClasses = labelClasses;
-
-        // Read data files
-        // ---------------------------------------------
-//        boolean write = false;
-//        boolean read = true;
-//        boolean append = false;
-//        String fileNameWrite = null;;
-//        DataFileEntityConfig.Set( featureSeriesName, cacheAllData, write, read, append, ModelData.ENCODING_SPARSE_REAL, fileNameWrite, fileNameReadFeatures );
-//        DataFileEntityConfig.Set( labelSeriesName, cacheAllData, write, read, append, ModelData.ENCODING_DENSE, fileNameWrite, fileNameReadLabels );
-
+        SvmEntityConfig svmEntityConfig = new SvmEntityConfig();
+        svmEntityConfig.C = C;
+        svmEntityConfig.gamma = gamma;
+        svmEntityConfig.labelClasses = labelClasses;
 
         // 3) Connect entities data
         // ---------------------------------------------
-        // Connect the 'testing entities' data input to the training data set directly
-////        DataRefUtil.SetDataReference( analyticsName, AnalyticsEntity.INPUT_FEATURES, seriesPrefix + "feature-series", "output" );
-////        DataRefUtil.SetDataReference( analyticsName, AnalyticsEntity.INPUT_LABELS, seriesPrefix + "label-series", "output" );
-//        DataRefUtil.SetDataReference( analyticsName, AnalyticsEntity.INPUT_FEATURES, featureSeriesName, DataFileEntity.OUTPUT_READ );
-//        DataRefUtil.SetDataReference( analyticsName, AnalyticsEntity.INPUT_LABELS, labelSeriesName, DataFileEntity.OUTPUT_READ );
+        DataRefUtil.SetDataReference( svmName, SvmEntity.INPUT_FEATURES, analyticsName, AnalyticsEntity.OUTPUT_FEATURES );
+        DataRefUtil.SetDataReference( svmName, SvmEntity.INPUT_LABELS, analyticsName, AnalyticsEntity.OUTPUT_LABELS );
 
-        DataRefUtil.SetDataReference( logisticRegressionName, LogisticRegressionEntity.INPUT_FEATURES, analyticsName, AnalyticsEntity.OUTPUT_FEATURES );
-        DataRefUtil.SetDataReference( logisticRegressionName, LogisticRegressionEntity.INPUT_LABELS, analyticsName, AnalyticsEntity.OUTPUT_LABELS );
-
-        DataRefUtil.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_TRUTH, logisticRegressionName, LogisticRegressionEntity.OUTPUT_LABELS_TRUTH );
-        DataRefUtil.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_PREDICTED, logisticRegressionName, LogisticRegressionEntity.OUTPUT_LABELS_PREDICTED );
+        DataRefUtil.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_TRUTH, svmName, SvmEntity.OUTPUT_LABELS_TRUTH );
+        DataRefUtil.SetDataReference( classificationAnalysisName, ClassificationAnalysisEntity.INPUT_PREDICTED, svmName, SvmEntity.OUTPUT_LABELS_PREDICTED );
 
 
         // 4) Set configurations
         // ---------------------------------------------
         PersistenceUtil.SetConfig( experimentName, experimentConfig );
         PersistenceUtil.SetConfig( analyticsName, analyticsEntityConfig );
-        PersistenceUtil.SetConfig( logisticRegressionName, logisticRegressionEntityConfig );
+        PersistenceUtil.SetConfig( svmName, svmEntityConfig );
 
         // cache all data for speed, when enabled (override this property in configs)
         PersistenceUtil.SetConfig( experimentName, "cache", String.valueOf( cacheAllData ) );
         PersistenceUtil.SetConfig( analyticsName, "cache", String.valueOf( cacheAllData ) );
-//        PersistenceUtil.SetConfig( featureSeriesName, "cache", String.valueOf( cacheAllData ) );
-//        PersistenceUtil.SetConfig( labelSeriesName, "cache", String.valueOf( cacheAllData ) );
-        PersistenceUtil.SetConfig( logisticRegressionName, "cache", String.valueOf( cacheAllData ) );
+        PersistenceUtil.SetConfig( svmName, "cache", String.valueOf( cacheAllData ) );
     }
 
 }
