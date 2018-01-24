@@ -10,18 +10,20 @@ The remainder of this file contains technical information for setting up and usi
 
 ## Table of Contents
 
-* [Introduction](#introduction)
-* [This Repository](#this-repository)
 * [Code Structure](#code-structure)
-* [Important Notes](#important-notes)
+* [Requirements](#requirements)
+   * [Basic](#basic)
+   * [Advanced](#advanced)
 * [Getting Started](#getting-started)
-    * [Supported Operating Systems](#supported-operating-systems)
-    * [Installation Instructions](#installation-instructions)
-    * [Running Basic](#running-basic)
-    * [Run a Demo](#run-a-demo)
-    * [Run Generic Experiments](#run-generic-experiments)
-    * [Run Advanced Experiments](#run-advanced-experiments)
-    * [Running the GUI](#running-the-gui)
+   * [Setup Instructions](#setup-instructions)
+   * [Running Basic](#running-basic)
+   * [Run a Demo](#run-a-demo)
+   * [Run Generic Experiments](#run-generic-experiments)
+   * [Run Advanced Experiments](#run-advanced-experiments)
+   * [Running the GUI](#running-the-gui)
+* [Development Environment](#development-environment)
+   * [Building](#building)
+   * [Testing](#testing)
 * [Resources](#resources)
 
 ## Code Structure
