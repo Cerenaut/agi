@@ -71,8 +71,10 @@ public class Phase2bDual extends CreateEntityMain {
         String analyticsName = PersistenceUtil.GetEntityName( "analytics" );
         String svmName = PersistenceUtil.GetEntityName( "svm" );
         String logisticRegressionName = PersistenceUtil.GetEntityName( "logistic-regression" );
-        String classificationAnalysisName1 = PersistenceUtil.GetEntityName( "classification-analysis-svm" );
-        String classificationAnalysisName2 = PersistenceUtil.GetEntityName( "classification-analysis-reg" );
+        String classificationAnalysisSvmName = PersistenceUtil.GetEntityName(
+                                                    "classification-analysis-svm" );
+        String classificationAnalysisRegName = PersistenceUtil.GetEntityName(
+                                                    "classification-analysis-reg" );
 
 
         // Create Entities
@@ -81,14 +83,20 @@ public class Phase2bDual extends CreateEntityMain {
         String childSvmName;
         String childLogisticRegressionName;
 
-        parentName = PersistenceUtil.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(), null ); // experiment is the root entity
-        parentName = PersistenceUtil.CreateEntity( analyticsName, AnalyticsEntity.ENTITY_TYPE, n.getName(), parentName );
+        parentName = PersistenceUtil.CreateEntity( experimentName, ExperimentEntity.ENTITY_TYPE, n.getName(),
+                                                   null ); // experiment is the root entity
+        parentName = PersistenceUtil.CreateEntity( analyticsName, AnalyticsEntity.ENTITY_TYPE, n.getName(),
+                                                   parentName );
 
         childSvmName = PersistenceUtil.CreateEntity( svmName, SvmEntity.ENTITY_TYPE, n.getName(), parentName );
-        PersistenceUtil.CreateEntity( classificationAnalysisName1, ClassificationAnalysisEntity.ENTITY_TYPE, n.getName(), childSvmName );
+        PersistenceUtil.CreateEntity( classificationAnalysisSvmName, ClassificationAnalysisEntity.ENTITY_TYPE,
+                                      n.getName(), childSvmName );
 
-        childLogisticRegressionName = PersistenceUtil.CreateEntity( logisticRegressionName, LogisticRegressionEntity.ENTITY_TYPE, n.getName(), parentName );
-        PersistenceUtil.CreateEntity( classificationAnalysisName2, ClassificationAnalysisEntity.ENTITY_TYPE, n.getName(), childLogisticRegressionName );
+        childLogisticRegressionName = PersistenceUtil.CreateEntity( logisticRegressionName,
+                                                                    LogisticRegressionEntity.ENTITY_TYPE,
+                                                                    n.getName(), parentName );
+        PersistenceUtil.CreateEntity( classificationAnalysisRegName, ClassificationAnalysisEntity.ENTITY_TYPE,
+                                      n.getName(), childLogisticRegressionName );
 
 
         // 2) Configuration values
@@ -106,7 +114,7 @@ public class Phase2bDual extends CreateEntityMain {
         experimentConfig.terminationEntityName = analyticsName;
         experimentConfig.terminationConfigPath = "terminate";
         experimentConfig.terminationAge = -1;       // wait for analytics entity to decide
-        experimentConfig.reportingEntities = classificationAnalysisName1  + "," + classificationAnalysisName2;
+        experimentConfig.reportingEntities = classificationAnalysisSvmName  + "," + classificationAnalysisRegName;
         experimentConfig.reportingEntityConfigPath = "resultsSummary";
 
         AnalyticsEntityConfig analyticsEntityConfig = new AnalyticsEntityConfig();
@@ -115,7 +123,7 @@ public class Phase2bDual extends CreateEntityMain {
         analyticsEntityConfig.testSetOffset = trainingSamples;
         analyticsEntityConfig.trainSetSize = trainingSamples;
         analyticsEntityConfig.testSetSize = testingSamples;
-        analyticsEntityConfig.testingEntities = logisticRegressionName + "," + svmName;
+        analyticsEntityConfig.testingEntities = svmName + "," + logisticRegressionName;
         analyticsEntityConfig.predictDuringTraining = true;
         analyticsEntityConfig.trainingDropoutProbability = trainingDropoutProbability;
         analyticsEntityConfig.useInputFiles = true;
@@ -134,17 +142,24 @@ public class Phase2bDual extends CreateEntityMain {
 
         // 3) Connect entities data
         // ---------------------------------------------
-        DataRefUtil.SetDataReference( svmName, SvmEntity.INPUT_FEATURES, analyticsName, AnalyticsEntity.OUTPUT_FEATURES );
+        DataRefUtil.SetDataReference( svmName, SvmEntity.INPUT_FEATURES, analyticsName,
+                                      AnalyticsEntity.OUTPUT_FEATURES );
         DataRefUtil.SetDataReference( svmName, SvmEntity.INPUT_LABELS, analyticsName, AnalyticsEntity.OUTPUT_LABELS );
 
-        DataRefUtil.SetDataReference( classificationAnalysisName1, ClassificationAnalysisEntity.INPUT_TRUTH, svmName, SvmEntity.OUTPUT_LABELS_TRUTH );
-        DataRefUtil.SetDataReference( classificationAnalysisName1, ClassificationAnalysisEntity.INPUT_PREDICTED, svmName, SvmEntity.OUTPUT_LABELS_PREDICTED );
+        DataRefUtil.SetDataReference( classificationAnalysisSvmName, ClassificationAnalysisEntity.INPUT_TRUTH, svmName,
+                                      SvmEntity.OUTPUT_LABELS_TRUTH );
+        DataRefUtil.SetDataReference( classificationAnalysisSvmName, ClassificationAnalysisEntity.INPUT_PREDICTED,
+                                      svmName, SvmEntity.OUTPUT_LABELS_PREDICTED );
 
-        DataRefUtil.SetDataReference( logisticRegressionName, LogisticRegressionEntity.INPUT_FEATURES, analyticsName, AnalyticsEntity.OUTPUT_FEATURES );
-        DataRefUtil.SetDataReference( logisticRegressionName, LogisticRegressionEntity.INPUT_LABELS, analyticsName, AnalyticsEntity.OUTPUT_LABELS );
+        DataRefUtil.SetDataReference( logisticRegressionName, LogisticRegressionEntity.INPUT_FEATURES, analyticsName,
+                                      AnalyticsEntity.OUTPUT_FEATURES );
+        DataRefUtil.SetDataReference( logisticRegressionName, LogisticRegressionEntity.INPUT_LABELS, analyticsName,
+                                      AnalyticsEntity.OUTPUT_LABELS );
 
-        DataRefUtil.SetDataReference( classificationAnalysisName2, ClassificationAnalysisEntity.INPUT_TRUTH, logisticRegressionName, LogisticRegressionEntity.OUTPUT_LABELS_TRUTH );
-        DataRefUtil.SetDataReference( classificationAnalysisName2, ClassificationAnalysisEntity.INPUT_PREDICTED, logisticRegressionName, LogisticRegressionEntity.OUTPUT_LABELS_PREDICTED );
+        DataRefUtil.SetDataReference( classificationAnalysisRegName, ClassificationAnalysisEntity.INPUT_TRUTH,
+                                      logisticRegressionName, LogisticRegressionEntity.OUTPUT_LABELS_TRUTH );
+        DataRefUtil.SetDataReference( classificationAnalysisRegName, ClassificationAnalysisEntity.INPUT_PREDICTED,
+                                      logisticRegressionName, LogisticRegressionEntity.OUTPUT_LABELS_PREDICTED );
 
 
         // 4) Set configurations
