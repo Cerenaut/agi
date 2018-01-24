@@ -125,29 +125,17 @@ The unit tests are written using the [JUnit](http://junit.org/) testing framewor
 
 - **Execute a Single Test:** A single test can be executed using `mvn surefire:test -DskipTests=false -Dtest=CLASS_NAME` where `CLASS_NAME` is the name of the unit test class, for e.g. `LogisticRegressionTest`
 
-## Important Notes
-
-* The framework supports a distributed graph of compute nodes.
-
-* Each compute node has any number of Entity nodes (Entity class), which can own Data (Data class).
-
-* Entities have zero or one parents and zero or more child entities. An update to an Entity causes its children to be updated also.
-
-* An Experiment is a root entity without a parent, and with its descendants is therefore a self-contained subtree.
-
-* This framework allows parallel and consecutive dependencies between Entities to be described (siblings are parallel, children are sequential).
-
-* We currently use Java for compute nodes, but this isn't essential.
-
-* We use JSON format for remote serialization, which is slow but web friendly for debugging / understanding.
-
-* We use JDBC, JSON file, and in-memory implementations of a persistence layer.
-
-* Algorithms are updated iteratively. Between iterations, all data is persisted, therefore components are otherwise stateless and reproducible, repeatable, visualisable
-
-* We provide a HTML user interface to explore and visualize the state of the algorithms.
-
-* The code can be executed on a single local computer in an IDE, or on remote cloud instances.
-
 ## Resources
 Have a look in the `/resources` folder for useful .... resources! There is a code formatting style file, log4j configuration file template, an empty run-folder with necessary assets for the working directory and a template for the variables.sh file
+
+## Contributing
+The purpose of this repository is to continue to improve AGIEF, making it better, faster and easier to use for the research community. The development happens in the open on GitHub, and we are grateful to the community for contributing bug fixes and improvements. Read below to learn how you can start contributing.
+
+### [Code of Conduct](CODE_OF_CONDUCT.md)
+We have adopted a Code of Conduct that we expect project participants to adhere to. Please read the [full text](CODE_OF_CONDUCT.md) so that you can understand what actions will and will not be tolerated.
+
+### [Contributing Guide](CONTRIBUTING.md)
+Read our contributing guide to learn about the development process, how to setup a development environment, how to build and test the framework and how to propose improvements and bug fixes.
+
+### License
+The code is licensed under the [GNU General Public License v3.0](LICENSE).
