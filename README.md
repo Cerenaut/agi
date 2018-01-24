@@ -4,7 +4,7 @@ This repository contains code for the development of artificial general intellig
 
 The code includes a simple graphical UI, an interprocess layer for distributed coordination and communication, and base classes for the entities that you need for building an AGI experiment. We also include implementations of many algorithms from the AI and ML literature.
 
-For an introduction to the content and purpose of this repository, see the [Wiki](https://github.com/ProjectAGI/agi/wiki). Motivation, results, ideas and other natural language stuff is on our [website](https://agi.io) and in particular our [blog](https://blog.agi.io). Additional technical documentation and tips can also be found in the [docs](./docs) directory.
+For an introduction to the content and purpose of this repository, see the [Wiki](https://github.com/ProjectAGI/agi/wiki). Motivation, results, ideas and other natural language stuff is on our [website](https://agi.io). Additional technical documentation and tips can also be found in the [docs](./docs) directory.
 
 The remainder of this file contains technical information for setting up and using the code in this repository.
 
@@ -26,42 +26,13 @@ The remainder of this file contains technical information for setting up and usi
    * [Testing](#testing)
 * [Resources](#resources)
 
-## Code Structure
-
-This repository consists of:
-
-- Java core algorithmic components ```/code/core/src/io/agi/core```
-- Java experimental framework components ```/code/core/src/io/agi/framework```
-- Web based graphical UI ```/code/www```
-- Associated scripts ```/bin```
-
-Compute nodes have a RESTful API, so it is possible to implement components in other languages, or write alternative visualisations.
-**The API is documented at ```/doc/API/http.swagger.yaml```**
-
 ## Requirements
-
-### Basic
 These are the basic requirements necessary for running experiments with AGIEF.
 
 - Linux or macOS
    - We aim to support Microsoft Windows in the future. However, it requires a custom build of the database HTTP API.
 - [Docker](https://www.docker.com/)
 
-### Advanced
-These are additional requirements necessary for setting up a development environment.
-
-- [Maven](https://maven.apache.org/) build dependency system for Java
-- [Java](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) Development Kit (JDK) version 1.8 or later
-
-Installation of the following is optional (keep reading to see when appropriate):
-
-- [PostgreSQL](http://www.postgresql.org/download) database
-   - In-memory persistence is currently preferred, but PostgreSQL can be used instead
-- [PGAdmin](http://www.pgadmin.org/download) database administration tool
-   - If using PostgreSQL, to administer the database manually (not essential, but useful for examining the state of the system), we recommend the PGAdmin utility.
-- [IntelliJ IDEA](https://www.jetbrains.com/idea) Java development environment
-   - We provide project files to help you build and browse code using IntelliJ IDEA. If you wish to take advantage of this convenience, you should also install IntelliJ.
-   
 ## Getting Started
 To start running experiments, the `/bin/node_coordinator/run-in-docker.sh` script allows you to build and run compute in a Docker container, which means you won't need to do any environment configuration on your own computer, save for installation of Docker.
 
@@ -108,25 +79,11 @@ There is also a set of experiment folders already defined and ready to go at [ex
 
 ### Running the GUI
 * Run GUI by running the web server `/bin/www/python_server.sh` and going to [http://localhost:8000](http://localhost:8000)
-* Alternatively, open any of the web pages in `/code/wwww`
+* Alternatively, open any of the web pages in `/code/www`
 * Start with `index.html`
 
-## Development Environment
-
-### Building
-The project can be easily compiled and built by executing the `/bin/node_coordinator/build.sh`. This script performs a version update as well as a clean build using Maven.
-
-### Testing
-The unit tests are written using the [JUnit](http://junit.org/) testing framework and executed using the [Maven Surefire Plugin](https://maven.apache.org/surefire/maven-surefire-plugin/).
-
-- **Testing during Build:** Tests are disabled by default during builds using Maven. To re-enable them during builds, change the `skipTests` flag in the properties of the `pom.xml` file
-
-- **Executing All Tests:** The tests can be executed using `mvn surefire:test -dskipTests=false`, or `mvn test -DskipTests=false` to also execute a build beforehand
-
-- **Execute a Single Test:** A single test can be executed using `mvn surefire:test -DskipTests=false -Dtest=CLASS_NAME` where `CLASS_NAME` is the name of the unit test class, for e.g. `LogisticRegressionTest`
-
 ## Resources
-Have a look in the `/resources` folder for useful .... resources! There is a code formatting style file, log4j configuration file template, an empty run-folder with necessary assets for the working directory and a template for the variables.sh file
+There are additional useful resources available in the [/resources](./resources) directory. This includes a code formatting style file, log4j configuration file template, an empty run-folder with necessary assets for the working directory and a template for the `variables.sh` file
 
 ## Contributing
 The purpose of this repository is to continue to improve AGIEF, making it better, faster and easier to use for the research community. The development happens in the open on GitHub, and we are grateful to the community for contributing bug fixes and improvements. Read below to learn how you can start contributing.
