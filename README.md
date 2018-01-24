@@ -43,9 +43,12 @@ That is necessary even if you are using the `run-in-docker.sh` script.
 
 ### Setup Instructions
 1. Clone the repository using `git clone https://github.com/ProjectAGI/agi.git`
-2. Set variables. Duplicate `/resources/variables-template.sh`, and overwrite with values suitable for your environment. Copy it to a convenient location and set an environmental variable `VARIABLES_FILE` to point to it using the full path. We recommend you set that up in `.bashrc` so that it is always defined correctly.
+2. Set variables
+    - Duplicate `/resources/variables-template.sh` and overwrite with values suitable for your environment
+    - Copy it to a convenient location and set an environmental variable `VARIABLES_FILE` to point to it using the full path
+    - Note: We recommend you set that up in `.bashrc` so that it is always defined correctly.
 
-**Note:** The favoured (and our current) approach is to use 'in memory' persistence, specified in `node.properties` in the working folder. However, postgres is an option. If using postgres, setup and run the db by executing `/bin/db/setup.sh`
+**Note:** The favoured (and our current) approach is to use 'in memory' persistence, specified in `node.properties` in the working folder. However, `postgres` is an option. If using PostgreSQL, setup and run the db by executing `/bin/db/setup.sh`
 
 ### Running Basic
 * The folder that you are running from must contain the file `node.properties` and a log4j configuration file. A working template is given in `/resources/run-empty`.
