@@ -8,30 +8,21 @@ For an introduction to the content and purpose of this repository, see the [Wiki
 
 The remainder of this file contains technical information for setting up and using the code in this repository.
 
-## Table of Contents
-
-* [Code Structure](#code-structure)
-* [Requirements](#requirements)
-   * [Basic](#basic)
-   * [Advanced](#advanced)
-* [Getting Started](#getting-started)
-   * [Setup Instructions](#setup-instructions)
-   * [Running Basic](#running-basic)
-   * [Run a Demo](#run-a-demo)
-   * [Run Generic Experiments](#run-generic-experiments)
-   * [Run Advanced Experiments](#run-advanced-experiments)
-   * [Running the GUI](#running-the-gui)
-* [Development Environment](#development-environment)
-   * [Building](#building)
-   * [Testing](#testing)
-* [Resources](#resources)
-
 ## Requirements
 These are the basic requirements necessary for running experiments with AGIEF.
 
 - Linux or macOS
    - We aim to support Microsoft Windows in the future. However, it requires a custom build of the database HTTP API.
 - [Docker](https://www.docker.com/)
+
+## Installation
+1. Clone the repository using `git clone https://github.com/ProjectAGI/agi.git`
+2. Set variables
+    - Duplicate `/resources/variables-template.sh` and overwrite with values suitable for your environment
+    - Copy it to a convenient location and set an environmental variable `VARIABLES_FILE` to point to it using the full path
+    - Note: We recommend you set that up in `.bashrc` so that it is always defined correctly.
+
+**Note:** The favoured (and our current) approach is to use 'in memory' persistence, specified in `node.properties` in the working folder. However, `postgres` is an option. If using PostgreSQL, setup and run the db by executing `/bin/db/setup.sh`
 
 ## Getting Started
 To start running experiments, the `/bin/node_coordinator/run-in-docker.sh` script allows you to build and run compute in a Docker container, which means you won't need to do any environment configuration on your own computer, save for installation of Docker.
@@ -40,15 +31,6 @@ All scripts utilise environmental variables defined in a 'variables' file. Every
 **IMPORTANT:** Then set the ENV variable `VARIABLES_FILE` to it using the full path.
 
 That is necessary even if you are using the `run-in-docker.sh` script.
-
-### Setup Instructions
-1. Clone the repository using `git clone https://github.com/ProjectAGI/agi.git`
-2. Set variables
-    - Duplicate `/resources/variables-template.sh` and overwrite with values suitable for your environment
-    - Copy it to a convenient location and set an environmental variable `VARIABLES_FILE` to point to it using the full path
-    - Note: We recommend you set that up in `.bashrc` so that it is always defined correctly.
-
-**Note:** The favoured (and our current) approach is to use 'in memory' persistence, specified in `node.properties` in the working folder. However, `postgres` is an option. If using PostgreSQL, setup and run the db by executing `/bin/db/setup.sh`
 
 ### Running Basic
 * The folder that you are running from must contain the file `node.properties` and a log4j configuration file. A working template is given in `/resources/run-empty`.
@@ -90,9 +72,6 @@ There are additional useful resources available in the [/resources](./resources)
 
 ## Contributing
 The purpose of this repository is to continue to improve AGIEF, making it better, faster and easier to use for the research community. The development happens in the open on GitHub, and we are grateful to the community for contributing bug fixes and improvements. Read below to learn how you can start contributing.
-
-### [Code of Conduct](CODE_OF_CONDUCT.md)
-We have adopted a Code of Conduct that we expect project participants to adhere to. Please read the [full text](CODE_OF_CONDUCT.md) so that you can understand what actions will and will not be tolerated.
 
 ### [Contributing Guide](CONTRIBUTING.md)
 Read our contributing guide to learn about the development process, how to setup a development environment, how to build and test the framework and how to propose improvements and bug fixes.
