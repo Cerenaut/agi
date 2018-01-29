@@ -7,18 +7,6 @@ development environment, understand the development process and how to build and
 - [Project AGI Website](https://agi.io)
 - [Technical Documentation](./docs)
 
-## Code Structure
-This repository consists of:
-
-- Java core algorithmic components ```/code/core/src/io/agi/core```
-- Java experimental framework components ```/code/core/src/io/agi/framework```
-- Web based graphical UI ```/code/www```
-- Associated scripts ```/bin```
-
-Compute nodes have a RESTful API, so it is possible to implement components in
-other languages, or write alternative visualisations. The full documentation for
-the API can be found in [/docs/API/http.swagger.yaml](./docs/API/http.swagger.yaml).
-
 ## Development Environment
 This section builds upon the basic instructions given in the README. The following instructions only applies for setting up
 the local environment for development purposes.
