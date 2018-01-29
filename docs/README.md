@@ -8,17 +8,22 @@ This directory contains additional technical information, including documentatio
 - [Notes & Gotchas](./notes.md)
 - [API Documentation](./API/http.swagger.yaml)
 
+## System Overview
+![image](./diagrams/AGIEF%20v3.0%20-%20System%20Architecture%20-%20conceptual.png)
+
+The diagram provides a high-level overview of the AGIEF system architecture, and highlights the interactions between the main system components. Please refer to the [Wiki](https://github.com/ProjectAGI/agi/wiki) for details on the architecture and [our website](https://agi.io/) for information about on the ongoing research and experiments.
+
 ## Code Structure
 This repository consists of:
 
-- Java core algorithmic components ```/code/core/src/io/agi/core```
-- Java experimental framework components ```/code/core/src/io/agi/framework```
-- Web based graphical UI ```/code/www```
-- Associated scripts ```/bin```
+- Java core algorithmic components in `/code/core/src/main/java/io/agi/core`
+- Java experimental framework components in `/code/core/src/main/java/io/agi/framework`
+- Web based graphical UI in `/code/www`
+- Associated scripts `/bin`
 
 Compute nodes have a RESTful API, so it is possible to implement components in
-other languages, or write alternative visualisations. The full documentation for
-the API can be found in [/docs/API/http.swagger.yaml](./docs/API/http.swagger.yaml).
+other languages, or write alternative visualisations. Refer to the full full [API documentation](./docs/API/http.swagger.yaml) for
+more details.
 
 ## Development Environment
 This section builds upon the basic instructions given in the README. The following instructions only applies for setting up
