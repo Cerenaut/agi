@@ -9,22 +9,20 @@ For an introduction to the content and purpose of this repository, see the [Wiki
 The remainder of this file contains technical information for setting up and using the code in this repository.
 
 ## Requirements
-These are the basic requirements necessary for running experiments with AGIEF.
+The only requirement for running experiments with AGIEF is [Docker](https://www.docker.com/). Additional requirements are required for setting up a development environment for building the source code, which can be found in the [Contributing Guide](CONTRIBUTING.md).
 
-- Linux or macOS
-   - We aim to support Microsoft Windows in the future. However, it requires a custom build of the database HTTP API.
-- [Docker](https://www.docker.com/)
+**Note:** We currently support Linux and macOS, and aim to support Microsoft Windows in the future. However, it requires a custom build of the database HTTP API.
 
 ## Installation
 1. Clone the repository using `git clone https://github.com/ProjectAGI/agi.git`
-2. Set variables
-    - Duplicate `/resources/variables-template.sh` and overwrite with values suitable for your environment
-    - Copy it to a convenient location and set an environmental variable `VARIABLES_FILE` to point to it using the full path
-    - Note: We recommend you set that up in `.bashrc` so that it is always defined correctly.
-
+2. Set variables:
+    1. Duplicate `/resources/variables-template.sh` and overwrite with values suitable for your environment
+    2. Copy it to a convenient location and set an environmental variable `VARIABLES_FILE` to point to it using the full path
+         - Note: We recommend you set that up in `.bashrc` so that it is always defined correctly.
+         
 **Note:** The favoured (and our current) approach is to use 'in memory' persistence, specified in `node.properties` in the working folder. However, `postgres` is an option. If using PostgreSQL, setup and run the db by executing `/bin/db/setup.sh`
 
-## Getting Started
+## Usage
 To start running experiments, the `/bin/node_coordinator/run-in-docker.sh` script allows you to build and run compute in a Docker container, which means you won't need to do any environment configuration on your own computer, save for installation of Docker.
 
 All scripts utilise environmental variables defined in a 'variables' file. Every script begins by sourcing this file. `/resources/variables-template.sh` is an example with explanations of each variable. You can modify that file, or create your own instead.
