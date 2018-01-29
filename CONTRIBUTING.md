@@ -3,9 +3,9 @@ The aim of this guide is to help potential contributers setup a local
 development environment, understand the development process and how to build and test the code.
 
 ## Documentation
-- [Technical Documentation](./docs): API documentation, other technical information & gotchas
 - [AGIEF Wiki](https://github.com/ProjectAGI/agi/wiki)
 - [Project AGI Website](https://agi.io)
+- [Technical Documentation](./docs)
 
 ## Code Structure
 This repository consists of:
