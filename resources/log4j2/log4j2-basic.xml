@@ -7,17 +7,21 @@
         <File name="MyFile" fileName="all.log" immediateFlush="false" append="false">
             <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
         </File>
-        <LogglyAppender name="LogglyAppender"
-                        endpointUrl="https://logs-01.loggly.com/bulk/66f0d3a1-37a5-4317-89ad-fd50af09ed19">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
-        </LogglyAppender>
+        <<LogzioAppender name="Logzio">
+            <logzioToken>$AGI_LOGZIO_TOKEN</logzioToken>
+            <logzioType>java</logzioType>
+            <addHostname>true</addHostname>
+            <additionalFields>
+                experiment=log4j2-basic-example;
+                dataset=mnist
+            </additionalFields>
+        </LogzioAppender>
     </Appenders>
     <Loggers>
         <!-- Show only error level as default -->
         <Root level="info">
-            <AppenderRef ref="Console"/>
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="Logzio" />
         </Root>
-        <!-- show the following at the desired level -->
-        <Logger name="io.agi.framework.persistence.jdbc.JdbcUtil" level="INFO"/>
     </Loggers>
 </Configuration>
