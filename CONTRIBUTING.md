@@ -1,39 +1,33 @@
 # Contributing Guide
-The aim of this guide is to help potential contributers setup a local
-development environment, understand the development process and how to build and test the code.
+The following is a set of guidelines for contributing to AGIEF that aim to provide the necessary information for new contributers to help them get started.
 
 ## Documentation
 - [AGIEF Wiki](https://github.com/ProjectAGI/agi/wiki)
 - [Project AGI Website](https://agi.io)
 - [Technical Documentation](./docs)
 
-## Development Environment
-This section builds upon the basic instructions given in the README. The following instructions only applies for setting up
-the local environment for development purposes.
+## What should I know before I get started?
 
-### Requirements
-These are additional requirements necessary for setting up a development environment.
+### System Architecture
+Reading the [wiki](https://github.com/ProjectAGI/agi/wiki) and the [documentation](./docs) should give you a good understanding of how the framework works, and how different system components interact. This will be particularly useful in debugging any issues you encounter, and for making valuable contributions to the codebase.
+   
+### Coding Conventions
+The coding conventions for this codebase can be found [here](https://github.com/ProjectAGI/agi/wiki/Coding-Conventions). To make it easier for contributers to follow the coding guidelines, we provide a coding format for the IntelliJ IDEA development environment which can be found [here](./resources/code-format).
 
-- [Maven](https://maven.apache.org/) build dependency system for Java
-- [Java](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) Development Kit (JDK) version 1.8 or later
+### Development Environment
+Setting up a local development environment is necessary for advanced users or contributers who wish to submit bug fixes or improvements. The [technical documentation](./docs) contains the necessary information for setting up a local development environment, as well as information about system components and additional notes.
 
-Installation of the following is optional (keep reading to see when appropriate):
+## How Can I Contribute?
 
-- [PostgreSQL](http://www.postgresql.org/download) database
-   - In-memory persistence is currently preferred, but PostgreSQL can be used instead
-- [PGAdmin](http://www.pgadmin.org/download) database administration tool
-   - If using PostgreSQL, to administer the database manually (not essential, but useful for examining the state of the system), we recommend the PGAdmin utility.
-- [IntelliJ IDEA](https://www.jetbrains.com/idea) Java development environment
-   - We provide project files to help you build and browse code using IntelliJ IDEA. If you wish to take advantage of this convenience, you should also install IntelliJ.
+### Reporting Bugs
+Bugs can be reported through [GitHub Issues](https://github.com/ProjectAGI/agi/issues) for this repository. The following is a set of guidelines for producing a good bug report:
 
-### Building
-The project can be easily compiled and built by executing the `/bin/node_coordinator/build.sh`. This script performs a version update as well as a clean build using Maven.
+1. Read the [documentation](./docs) which may address known issues
+2. Search GitHub Issues for similar bugs if the documentation does not cover your issue
+3. If the bug is not reported, start by creating a new issue on GitHub
+4. Provide the necessary details in order to reproduce your bug along with relevant system information
+5. Label the issue appropriately as a `bug`
 
-### Testing
-The unit tests are written using the [JUnit](http://junit.org/) testing framework and executed using the [Maven Surefire Plugin](https://maven.apache.org/surefire/maven-surefire-plugin/).
+### Suggesting Improvements
 
-- **Testing during Build:** Tests are disabled by default during builds using Maven. To re-enable them during builds, change the `skipTests` flag in the properties of the `pom.xml` file
-
-- **Executing All Tests:** The tests can be executed using `mvn surefire:test -dskipTests=false`, or `mvn test -DskipTests=false` to also execute a build beforehand
-
-- **Execute a Single Test:** A single test can be executed using `mvn surefire:test -DskipTests=false -Dtest=CLASS_NAME` where `CLASS_NAME` is the name of the unit test class, for e.g. `LogisticRegressionTest`
+### Code Contributions
