@@ -50,7 +50,7 @@ This section will guide you through submitting an enhancement suggestion for AGI
 
 #### Before Submitting An Enhancement Suggestion
 * Determine which [repository](https://github.com/ProjectAGI) the enhancement should be suggested in.
-* Perform a [cursory search](https://github.com/search?utf8=%E2%9C%93&q=+is%3Aissue+user%3Aprojectagi) to see if the enhancement has already been suggested. If it has, add a comment to the existing issue instead of opening a new one.
+* Perform a [cursory search](https://github.com/search?utf8=%E2%9C%93&q=+is%3Aissue+user%3Ate a new one.
 
 #### How Do I Submit A Good Enhancement Suggestion?
 Enhancement suggestions are tracked as [GitHub issues](https://github.com/ProjectAGI/agi/issues). After you've determined which repository your enhancement suggestion is related to, create an issue on that repository and provide the following information:
@@ -65,4 +65,14 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/Projec
 * Specify the name and version of the operating system you're using.
 
 ### Code Contributions
+To start contributing to the codebase, ensure that you have the appropriate local development environment and adhere to the [coding guidelines](https://github.com/ProjectAGI/agi/wiki/Coding-Conventions). The development environment can be setup by following the instructions in the [documentation](./docs).
 
+#### Pull Requests
+* Fork the repository and perform the necessary code changes
+* Create a new pull request on this repository to merge your changes
+* The pull request should contain the following details:
+    * Description of the change
+    * Alternative designs
+    * Benefits of the change
+    * Potential drawbacks
+    * Verification process
