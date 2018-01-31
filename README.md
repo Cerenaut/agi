@@ -9,7 +9,7 @@ For an introduction to the content and purpose of this repository, see the [Wiki
 The remainder of this file contains technical information for setting up and using the code in this repository.
 
 ## Requirements
-The only requirement for running experiments with AGIEF is [Docker](https://www.docker.com/). Additional requirements are required for setting up a development environment for building the source code, which can be found in the [Contributing Guide](CONTRIBUTING.md).
+The only requirement for running experiments with AGIEF is [Docker](https://www.docker.com/). Additional requirements are required for setting up a development environment for building the source code, which can be found in the [documentation](./docs).
 
 **Note:** We currently support Linux and macOS, and aim to support Microsoft Windows in the future. However, it requires a custom build of the database HTTP API.
 
@@ -69,10 +69,7 @@ There is also a set of experiment folders already defined and ready to go at [ex
 There are additional useful resources available in the [/resources](./resources) directory. This includes a code formatting style file, log4j configuration file template, an empty run-folder with necessary assets for the working directory and a template for the `variables.sh` file
 
 ## Contributing
-The purpose of this repository is to continue to improve AGIEF, making it better, faster and easier to use for the research community. The development happens in the open on GitHub, and we are grateful to the community for contributing bug fixes and improvements. Read below to learn how you can start contributing.
-
-### [Contributing Guide](CONTRIBUTING.md)
-Read our contributing guide to learn about the development process, how to setup a development environment, how to build and test the framework and how to propose improvements and bug fixes.
+The purpose of this repository is to continue to improve AGIEF, making it better, faster and easier to use for the research community. We gladly accept contributions via GitHub pull requests that address existing bugs or propose improvements. Please read the [Contributing Guide](CONTRIBUTING.md) for more details.
 
 ### License
 The code is licensed under the [GNU General Public License v3.0](LICENSE).
