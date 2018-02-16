@@ -70,7 +70,8 @@ public class CompetitiveLearningConvolutionalNetworkLayer extends ConvolutionalN
     }
 
     public Data getOutput() {
-        return _poolBest; // these cells fire
+        return _poolError; // max inverse error
+//        return _poolBest; // these cells fire
     }
 
     public void update( boolean train ) {
@@ -80,7 +81,9 @@ public class CompetitiveLearningConvolutionalNetworkLayer extends ConvolutionalN
 
     public void pool( boolean train ) {
         // pool with min error? make that one active
-        poolMin( _config, _convError, _classifier._cellMask, _poolError, _poolBest );
+//        poolMin( _config, _convError, _classifier._cellMask, _poolError, _poolBest );
+//        poolMax( _config, _convError, _classifier._cellMask, _poolError, _poolBest );
+        poolMaxRanking( _config, _convError, _classifier._cellMask, _poolError, _poolBest );
     }
 
     public void convolve( boolean train ) {
@@ -145,6 +148,9 @@ public class CompetitiveLearningConvolutionalNetworkLayer extends ConvolutionalN
                 int best1 = _classifier.getBestCell();
                 int best2 = _classifier.get2ndBestCell();
 
+                // max error:
+                float maxError = _classifier._cellErrors.max();
+
                 for( int cz = 0; cz < _config._depth; ++cz ) {
 
                     int convOffset = ConvolutionData3d.getOffset( cx, cy, cz, _config._width, _config._height, _config._depth );
@@ -157,7 +163,14 @@ public class CompetitiveLearningConvolutionalNetworkLayer extends ConvolutionalN
                         bestValue = 0.5f;
                     }
 
-                    _convError._values[ convOffset ] = _classifier._cellErrors._values[ cz ];
+                    // normalize error:
+                    float error = _classifier._cellErrors._values[ cz ];
+                    if( maxError > 0.0f ) {
+                        error = error / maxError; // i.e. error = 0, ans =
+                    }
+                    error = 1f - error; // ie higher if more error
+
+                    _convError._values[ convOffset ] = error;
                     _convBest ._values[ convOffset ] = bestValue;
                 }
             }

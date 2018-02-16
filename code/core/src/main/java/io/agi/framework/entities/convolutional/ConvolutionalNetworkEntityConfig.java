@@ -108,6 +108,66 @@ public class ConvolutionalNetworkEntityConfig extends EntityConfig {
         }
     }
 
+    public static void Set(
+            ConvolutionalNetworkEntityConfig entityConfig,
+//            int inputWidth,
+//            int inputHeight,
+            int inputDepth,
+            int nbrLayers,
+            int[] layerSizes,
+            int[] layerInputPaddings,
+            int[] layerInputStrides,
+            int[] layerDepths,
+            int[] layerPoolingSize,
+            int[] layerFieldSize ) {
+
+        entityConfig.nbrLayers = nbrLayers;
+
+//        int iw = inputWidth;
+//        int ih = inputHeight;
+        int id = inputDepth;
+
+        // Generate config properties from these values:
+        for( int layer = 0; layer < entityConfig.nbrLayers; ++layer ) {
+
+            // Geometry of layer
+            String prefix = "";
+            if( layer > 0 ) prefix = ",";
+
+            int layerInputPadding = layerInputPaddings[ layer ];
+            int layerInputStride = layerInputStrides[ layer ];
+            int ld = layerDepths[ layer ];
+            int pw = layerPoolingSize[ layer ];
+            int ph = pw;
+            int fw = layerFieldSize[ layer ];
+            int fh = fw;
+            int fd = id;
+
+//            int lw = iw - fw +1;//layerWidths[ layer ];;
+//            int lh = ih - fh +1;//layerHeights[ layer ];;
+
+            int lw = layerSizes[ layer ];
+            int lh = lw;
+
+            // Geometric parameters:
+            entityConfig.layerInputPadding += prefix + layerInputPadding;
+            entityConfig.layerInputStride  += prefix + layerInputStride;
+            entityConfig.layerWidth  += prefix + lw;
+            entityConfig.layerHeight += prefix + lh;
+            entityConfig.layerDepth  += prefix + ld;
+            entityConfig.layerfieldWidth += prefix + fw;
+            entityConfig.layerfieldHeight += prefix + fh;
+            entityConfig.layerfieldDepth += prefix + fd;
+            entityConfig.layerPoolingWidth += prefix + pw;
+            entityConfig.layerPoolingHeight += prefix + ph;
+
+            // Auto calculate layer widths and heights
+//            iw = Useful.DivideRoundUp( lw, pw ); //lw / pw;
+//            ih = Useful.DivideRoundUp( lh, ph ); //lh / ph;
+            id = ld;
+        }
+    }
+
     public static int getLayerSize( int inputSize, int inputPadding, int inputStride, int fieldSize ) {
         //int totalInputsize = inputSize + ( inputPadding * 2 ); // pad both sides
 

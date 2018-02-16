@@ -24,7 +24,9 @@ import io.agi.core.data.*;
 import io.agi.core.math.Unit;
 import io.agi.core.math.Useful;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TreeMap;
 
 /**
  * Created by dave on 11/08/17.
@@ -273,11 +275,12 @@ public abstract class ConvolutionalNetworkLayer {
                 float zMax = -Float.MIN_VALUE;
                 int zMaxAt = 0;
 
+                // for-each Z, pick the max value observed.
                 for( int oz = 0; oz < od; ++oz ) {
 
                     float maskValue = convMask._values[ oz ];
                     if( maskValue < 1f ) {
-                        continue;
+                        continue; // all zeros
                     }
 
                     int poolOffset = ConvolutionData3d.getOffset( ox, oy, oz, ow, oh, od );
@@ -314,6 +317,100 @@ public abstract class ConvolutionalNetworkLayer {
 
                 int poolOffset = ConvolutionData3d.getOffset( ox, oy, zMaxAt, ow, oh, od );
 
+                poolBest._values[ poolOffset ] = 1f;
+            } // out x
+        } // out y
+    }
+
+    protected static void poolMaxRanking(
+            ConvolutionalNetworkLayerConfig config,
+            Data conv,
+            Data convMask,
+            Data poolValue,
+            Data poolBest ) {
+
+        Int3d i3d = ConvolutionData3d.getSize( conv );
+        int iw = i3d.getWidth();
+        int ih = i3d.getHeight();
+        int id = i3d.getDepth();
+
+        int pw = config._poolingWidth;
+        int ph = config._poolingHeight;
+
+        int ow = Useful.DivideRoundUp( iw, pw );
+        int oh = Useful.DivideRoundUp( ih, ph );
+        int od = id;
+
+        poolBest.set( 0f );
+
+        for( int oy = 0; oy < oh; oy++ ) {
+            for( int ox = 0; ox < ow; ox++ ) {
+
+                int maxRank = od;
+                boolean findMaxima = true;
+                TreeMap< Float, ArrayList< Integer > > ranking = new TreeMap<>();
+
+                float zMax = -Float.MIN_VALUE;
+                int zMaxAt = 0;
+
+                // for-each Z, pick the max value observed.
+                for( int oz = 0; oz < od; ++oz ) {
+
+                    float maskValue = convMask._values[ oz ];
+                    if( maskValue < 1f ) {
+                        continue; // all zeros
+                    }
+
+                    int poolOffset = ConvolutionData3d.getOffset( ox, oy, oz, ow, oh, od );
+
+                    // find max or some other operator within a spatial area
+                    float max = -Float.MIN_VALUE;
+
+                    for( int py = 0; py < ph; py++ ) {
+                        for( int px = 0; px < pw; px++ ) {
+
+                            int ix = ox * pw + px;
+                            int iy = oy * ph + py;
+
+                            if( ( ix >= iw ) || ( iy >= ih ) ) {
+                                continue;
+                            }
+
+                            int convolvedOffset = ConvolutionData3d.getOffset( ix, iy, oz, iw, ih, id );
+
+                            float convolvedValue = conv._values[ convolvedOffset ];
+                            max = Math.max( convolvedValue, max );
+
+                        } // px
+                    } // py
+
+//                    poolValue._values[ poolOffset ] = max; // max integrated value for concept z in the pooled input area.
+
+                    // rank this value:
+                    Ranking.add( ranking, max, oz );
+
+                    if( max >= zMax ) {
+                        zMax = max;
+                        zMaxAt = oz;
+                    }
+
+                } // out z
+
+                // for-each Z, pick the max value observed.
+                ArrayList< Integer > bestValues = Ranking.getBestValues( ranking, findMaxima, maxRank );
+                int rankedValues = bestValues.size();
+                for( int r = 0; r < rankedValues; ++r ) {
+                    int oz = bestValues.get( r ); // ie. 0 = best
+                    int poolOffset = ConvolutionData3d.getOffset( ox, oy, oz, ow, oh, od );
+                    float relativeRank = ( (float)r / (float)od ); // so 0 is best
+
+                    float Q = 10f;
+                    //http://www.wolframalpha.com/input/?i=plot+1-e%5E(-10(x))+for+x+%3D+0+to+1
+                    float scaledRelativeRank = (float)Math.exp( -Q * relativeRank );
+                    poolValue._values[ poolOffset ] = scaledRelativeRank;
+                }
+
+                int poolOffset = ConvolutionData3d.getOffset( ox, oy, zMaxAt, ow, oh, od );
                 poolBest._values[ poolOffset ] = 1f;
             } // out x
         } // out y

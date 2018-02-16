@@ -75,7 +75,7 @@ public class CompetitiveLearningConvolutionalNetworkEntity extends Entity {
     public void getOutputAttributes( Collection< String > attributes, DataFlags flags ) {
 
         attributes.add( DATA_OUTPUT );
-        flags.putFlag( DATA_OUTPUT, DataFlags.FLAG_SPARSE_BINARY );
+//        flags.putFlag( DATA_OUTPUT, DataFlags.FLAG_SPARSE_BINARY );
         attributes.add( DATA_INVERSE );
         attributes.add( DATA_INVERSE_SELECTED );
 
@@ -169,7 +169,8 @@ public class CompetitiveLearningConvolutionalNetworkEntity extends Entity {
 
 //        Data output = scn.getOutput(); // the potential max-pooling
         CompetitiveLearningConvolutionalNetworkLayer cnl = (CompetitiveLearningConvolutionalNetworkLayer)cn._layers.get( cn._layers.size() -1 );
-        Data output = cnl._poolBest;
+//        Data output = cnl._poolBest;
+        Data output = cnl._poolError;
         Data inverted = cn.invert( output );
 
         setData( DATA_OUTPUT, output );

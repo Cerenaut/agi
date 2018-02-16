@@ -167,7 +167,8 @@ public class GrowingNeuralGas extends CompetitiveLearning {
 
         // Create new cells where the space is poorly represented (the cells are stressed)
         int ageSinceGrowth = ( int ) _ageSinceGrowth._values[ 0 ];
-        if( ageSinceGrowth >= _c.getGrowthInterval() ) {
+        int growthInterval = _c.getGrowthInterval();
+        if( ageSinceGrowth >= growthInterval ) {
             removeLowUtilityCell();
             if( addCells() ) {
                 ageSinceGrowth = 0;

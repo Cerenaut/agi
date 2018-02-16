@@ -20,6 +20,7 @@
 package io.agi.framework.entities;
 
 import io.agi.framework.EntityConfig;
+import io.agi.framework.persistence.PersistenceUtil;
 
 /**
  * Created by dave on 2/04/16.
@@ -37,5 +38,24 @@ public class ExperimentEntityConfig extends EntityConfig {
 
     public String reportingEntityName;
     public String reportingEntityConfigPath;
+
+    public static void Set(
+            String entityName,
+            Integer terminationAge,
+            String terminationEntityName,
+            String terminationConfigPath ) {
+
+        ExperimentEntityConfig entityConfig = new ExperimentEntityConfig();
+
+        entityConfig.pause = false;
+        entityConfig.terminate = false;
+        entityConfig.terminating = false;
+        entityConfig.terminated = false;
+        entityConfig.terminationAge = terminationAge;
+        entityConfig.terminationEntityName = terminationEntityName;
+        entityConfig.terminationConfigPath = terminationConfigPath;
+
+        PersistenceUtil.SetConfig( entityName, entityConfig );
+    }
 
 }
