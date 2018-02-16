@@ -218,8 +218,8 @@ public class ConvolutionalGngExpt extends CreateEntityMain {
         ec.growthInterval = 200;
 
         // Faster, but not as good?
-        ec.edgeMaxAge = 250;
-        ec.growthInterval = 20;
+//        ec.edgeMaxAge = 250;
+//        ec.growthInterval = 20;
 
         // Fixed parameters
         ec.noiseMagnitude = 0f;
