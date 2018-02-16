@@ -1330,7 +1330,7 @@ public class FloatArray {
         int offset = 0;
 
         while( offset < _values.length ) {
-            float diff = _values[ offset ] - v._values[ offset ];
+            float diff = Math.abs(_values[ offset ] - v._values[ offset ]);
             if ( diff < tolerance ) {
                 _values[ offset ] = 1.0f;    // set to 'True'
             }

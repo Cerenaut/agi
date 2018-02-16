@@ -29,12 +29,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.io.Reader;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.BufferedReader;
 
 /**
  * Created by gideon on 14/12/16.
  */
 public class Svm extends NamedObject implements Callback, SupervisedBatchTraining<SvmConfig> {
+
+    public static final String MODEL_FILENAME = "temp_svm.model";
 
     protected static final Logger _logger = LogManager.getLogger();
 
@@ -76,8 +81,11 @@ public class Svm extends NamedObject implements Callback, SupervisedBatchTrainin
 
     @Override
     public void loadModel( String modelString ) {
+        Reader stringReader = new StringReader( modelString );
+        BufferedReader bufferedReader = new BufferedReader( stringReader );
+
         try {
-            _model = svm.svm_load_model( modelString );
+            _model = svm.svm_load_model( bufferedReader );
             saveModel();
         }
         catch( IOException e ) {
@@ -117,9 +125,8 @@ public class Svm extends NamedObject implements Callback, SupervisedBatchTrainin
 
         if ( _model != null ) {
             try {
-                String filename = "temp_svm.model";
-                File modelFile = new File( filename );
-                svm.svm_save_model( filename, _model );
+                File modelFile = new File( MODEL_FILENAME );
+                svm.svm_save_model( MODEL_FILENAME, _model );
                 modelString = FileUtils.readFileToString( modelFile );
             }
             catch( IOException e ) {

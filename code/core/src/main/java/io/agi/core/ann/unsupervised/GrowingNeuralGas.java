@@ -103,7 +103,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
     }
 
     public void update() {
-        //denoiseInput();
+        denoiseInput();
 
         // given current cell mask local, ensure that there are at least 2 cells locally.
         if( !addCellPairLazy() ) {
@@ -178,7 +178,7 @@ public class GrowingNeuralGas extends CompetitiveLearning {
         _ageSinceGrowth._values[ 0 ] = ageSinceGrowth + 1;
         updateCellsAges();
 
-        //undoDenoiseInput();
+        undoDenoiseInput();
     }
 
     /**

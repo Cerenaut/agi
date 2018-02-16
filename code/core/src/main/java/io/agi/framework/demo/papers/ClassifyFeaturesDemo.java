@@ -111,14 +111,14 @@ public class ClassifyFeaturesDemo {
         int trainingSamples = 60000;
         int testingSamples = 10000;
 
-        String seriesPrefix = "PREFIX--";
+        String seriesPrefix = "PASTASAUCE--";
         //String seriesPrefix = "";
 
         ExperimentEntityConfig experimentConfig = new ExperimentEntityConfig();
         experimentConfig.terminationEntityName = analyticsName;
         experimentConfig.terminationConfigPath = "terminate";
         experimentConfig.terminationAge = -1;       // wait for analytics entity to decide
-        experimentConfig.reportingEntityName = classificationAnalysisName;
+        experimentConfig.reportingEntities = classificationAnalysisName;
         experimentConfig.reportingEntityConfigPath = "resultsSummary";
 
         AnalyticsEntityConfig analyticsEntityConfig = new AnalyticsEntityConfig();

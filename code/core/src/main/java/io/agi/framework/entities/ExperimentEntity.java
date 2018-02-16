@@ -24,6 +24,7 @@ import io.agi.framework.DataFlags;
 import io.agi.framework.Entity;
 import io.agi.framework.Framework;
 import io.agi.framework.Node;
+import io.agi.framework.persistence.Persistence;
 import io.agi.framework.persistence.PersistenceUtil;
 import io.agi.framework.persistence.models.ModelEntity;
 
@@ -45,6 +46,8 @@ import java.util.Collection;
 public class ExperimentEntity extends Entity {
 
     public static final String ENTITY_TYPE = "experiment";
+
+    private long _startTime;
 
     public ExperimentEntity( ObjectMap om, Node n, ModelEntity model ) {
         super( om, n, model );
@@ -71,6 +74,8 @@ public class ExperimentEntity extends Entity {
         ExperimentEntityConfig config = ( ExperimentEntityConfig ) _config;
 
         if( config.age == 0 ) {
+            config.startTime = System.currentTimeMillis();
+            PersistenceUtil.SetConfigLong( getName(), "startTime", config.startTime );
             _logger.info( "Experiment: " + getName() + " starting at age: " + _config.age + " t: " + System.currentTimeMillis() );
         }
         _logger.debug( "Experiment: " + getName() + " age: " + _config.age + " terminationAge: " + ( (ExperimentEntityConfig) _config ).terminationAge );
@@ -144,9 +149,13 @@ public class ExperimentEntity extends Entity {
 
         // After all children have finished updating and have flushed
         if( config.terminating ) {
+            config.runTime = System.currentTimeMillis() - config.startTime;
             _logger.info( "Experiment: " + getName() + " terminated at age: " + _config.age + " t: " + System.currentTimeMillis() );
+            _logger.info( "Experiment Run Time: " + config.runTime );
+
             config.terminated = true;
             PersistenceUtil.SetConfigBoolean( getName(), "terminated", config.terminated ); // config has already been persisted, so changing it now has no effect.
+            PersistenceUtil.SetConfigLong( getName(), "runTime", config.runTime );
         }
 
         if( ( !config.terminated ) && ( !config.pause ) ) {

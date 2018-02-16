@@ -27,7 +27,7 @@ workspace.xml
 .settings
 
 # models
-*.model
+*.model*
 
 # python
 *.pyc
