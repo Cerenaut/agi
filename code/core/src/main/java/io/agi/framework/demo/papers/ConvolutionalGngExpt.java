@@ -241,14 +241,13 @@ public class ConvolutionalGngExpt extends CreateEntityMain {
         // Dense Layer #1: 1,024 neurons, with dropout regularization rate of 0.4 (probability of 0.4 that any given element will be dropped during training)
         // Dense Layer #2 (Logits Layer): 10 neurons, one for each digit target class (0–9).
 
-        int nbrLayers = 2;
-        int[] layerDepths = { 64,1024 };
-        int[] layerPoolingSize = { 2,2 };
-        int[] layerFieldSize = { 5,5 };
-        int[] layerInputPaddings = { 0,0 };
-        int[] layerInputStrides = { 2,1 };
-
-        int[] layerSizes = { 12,2 };
+//        int nbrLayers = 2;
+//        int[] layerDepths = { 64,1024 };
+//        int[] layerPoolingSize = { 2,2 };
+//        int[] layerFieldSize = { 5,5 };
+//        int[] layerInputPaddings = { 0,0 };
+//        int[] layerInputStrides = { 2,1 };
+//        int[] layerSizes = { 12,2 };
 
         // Conv 1
         //     00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 |
@@ -291,6 +290,63 @@ public class ConvolutionalGngExpt extends CreateEntityMain {
 
         // = 1 x 1 x 1024
 
+
+        int nbrLayers = 2;
+        int[] layerDepths = { 64,256 };
+        int[] layerFieldSize = { 6,3 };
+        int[] layerInputPaddings = { 0,0 };
+        int[] layerInputStrides = { 2,1 };
+        int[] layerSizes = { 12,4 };
+        int[] layerPoolingSize = { 2,2 };
+
+
+        // Conv 1
+        //     00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 |
+        //  F0 -- -- -- -- -- --                                                                      |
+        //  F1       -- -- -- -- -- --                                                                 |
+        //  F2             -- -- -- -- -- --                                                          |
+        //  F3                   -- -- -- -- -- --                                                   |
+        //  F4                         -- -- -- -- -- --                                             |
+        //  F5                               -- -- -- -- -- --                                       |
+        //  F6                                     -- -- -- -- -- --
+        //  F7                                           -- -- -- -- -- --
+        //  F8                                                 -- -- -- -- -- --
+        //  F9                                                       -- -- -- -- -- --
+        // F10                                                             -- -- -- -- -- --
+        // F11                                                                   -- -- -- -- -- --  so 12
+        // = 12
+
+        // = 12 x 12 x 64 = 9216
+
+        // Pool 1
+        //     00 01 02 03 04 05 06 07 08 09 10 11  |
+        //  F0 -- --
+        //  F1       -- --
+        //  F2             -- --
+        //  F3                   -- --
+        //  F4                         -- --
+        //  F5                               -- --
+        // = 6
+
+        // = 6 x 6 x 64 = 4608
+
+        // Conv 2
+        //     00 01 02 03 04 05  |
+        //  F0 -- -- --           |
+        //  F1    -- -- --        |
+        //  F2       -- -- --     |
+        //  F3          -- -- --  |
+        // = 4
+
+        // = 4 x 4 x 256 = 4096
+
+
+        // Pool 2
+        //     00 01 02 03 |
+        //  F0 -- --       |
+        //  F1       -- -- |
+
+        // = 2 x 2 x 256 = 1024
 
 ////////////////////////////////////////////
 // EXPT 1 OK
