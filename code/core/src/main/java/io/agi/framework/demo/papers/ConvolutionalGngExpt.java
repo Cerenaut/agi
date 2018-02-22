@@ -231,6 +231,15 @@ public class ConvolutionalGngExpt extends CreateEntityMain {
         ec.utilityLearningRate = 0.01f;
         ec.utilityThreshold = -1f;
 
+        // Make it work with nonstationary..!
+        boolean GNGU = true;
+        if( GNGU ) {
+            ec.stressThreshold = 0f; // grow whenever possible
+            ec.utilityThreshold = 0f; // recycle low utility cells every interval steps.
+            ec.growthInterval = 350; // think about how long it needs to establish the stats for cell recycling and splitting
+//            ec.growthInterval = 3; // TEST to check cell population establishes itself
+        }
+
         entityConfig = ec;
 
         // https://www.tensorflow.org/tutorials/layers
