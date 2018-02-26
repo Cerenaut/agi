@@ -301,8 +301,8 @@ public class ConvolutionalGngExpt extends CreateEntityMain {
 
 
         int nbrLayers = 2;
-        int[] layerDepths = { 64,256 };
-        int[] layerFieldSize = { 6,3 };
+        int[] layerDepths = { 80,300 };
+        int[] layerFieldSize = { 1,80 };
         int[] layerInputPaddings = { 0,0 };
         int[] layerInputStrides = { 2,1 };
         int[] layerSizes = { 12,4 };
