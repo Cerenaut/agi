@@ -55,6 +55,9 @@ import java.util.ArrayList;
  * Errors: 3310 of 60000 = 94.48334% correct.
  * Errors: 647 of 10000 = 93.53% correct.
  *
+ * Log-likelihood output:
+ * Errors: 2968 of 60000 = 95.05333% correct.
+ * Errors: 574 of 10000 = 94.26% correct.
  *
  * Created by dave on 12/08/17.
  */
