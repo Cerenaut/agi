@@ -83,7 +83,8 @@ public class CompetitiveLearningConvolutionalNetworkLayer extends ConvolutionalN
         // pool with min error? make that one active
 //        poolMin( _config, _convError, _classifier._cellMask, _poolError, _poolBest );
 //        poolMax( _config, _convError, _classifier._cellMask, _poolError, _poolBest );
-        poolMaxRanking( _config, _convError, _classifier._cellMask, _poolError, _poolBest );
+        //poolMaxRanking( _config, _convError, _classifier._cellMask, _poolError, _poolBest );
+        poolMaxInvRelativeError( _config, _convError, _classifier._cellMask, _poolError, _poolBest );
     }
 
     public void convolve( boolean train ) {
@@ -164,13 +165,41 @@ public class CompetitiveLearningConvolutionalNetworkLayer extends ConvolutionalN
                     }
 
                     // normalize error:
-                    float error = _classifier._cellErrors._values[ cz ];
+/*                    float error = _classifier._cellErrors._values[ cz ];
                     if( maxError > 0.0f ) {
                         error = error / maxError; // i.e. error = 0, ans =
                     }
-                    error = 1f - error; // ie higher if more error
+                    // if error = 0, error / max err = 0
+                    // if error = max, max/max = 1
+                    // 1-err = 0 => 1
+                    error = 1f - error; // ie higher if LESS error
 
+weird scaling, for ranking its ok but for positive its weird
                     _convError._values[ convOffset ] = error;
+*/
+
+                    double sumSqError = _classifier._cellErrors._values[ cz ];
+                    float output = 1f;
+                    if( sumSqError > 0.0 ) {
+                        double inputs = (double)_classifier.getInput().getSize();
+                        double sumError = Math.sqrt( sumSqError );
+                        double error = sumError / inputs; // error now at most 1.
+//                        if( error > 1f ) {
+//                            int g = 0;
+//                            g++;
+//                        }
+                        // http://www.wolframalpha.com/input/?i=plot+-log(x)+for+x+%3D+0+to+1
+                        double negLogLikelihood = -Math.log( error );
+                        double scaled = negLogLikelihood * 0.1;
+//                        if( scaled >1.0 ) {
+//                            int g= 0;
+//                            g++;
+//                        }
+                        double unit = Math.min( 1.0, scaled );
+                        output = (float)unit;
+                    }
+
+                    _convError._values[ convOffset ] = output;
                     _convBest ._values[ convOffset ] = bestValue;
                 }
             }
